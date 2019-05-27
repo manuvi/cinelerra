@@ -1491,11 +1491,17 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 
 	if(!track) return 0;
 //printf("CWindowCanvas::do_mask 3\n");
-
+	CWindowMaskGUI *mask_gui = (CWindowMaskGUI *)
+		(gui->tool_panel ? gui->tool_panel->tool_gui : 0);
+	int draw_markers = mask_gui ? mask_gui->markers : 0;
+	int draw_boundary = mask_gui ? mask_gui->boundary : 0;
 	MaskAutos *mask_autos = (MaskAutos*)track->automation->autos[AUTOMATION_MASK];
 	int64_t position = track->to_units(
 		mwindow->edl->local_session->get_selectionstart(1),
 		0);
+	Auto *prev_auto = 0;
+	mask_autos->get_prev_auto(position, PLAY_FORWARD, (Auto *&)prev_auto, 1);
+	MaskAuto *prev_mask = (MaskAuto *)prev_auto;
 	ArrayList<MaskPoint*> points;
 
 // Determine the points based on whether
@@ -1503,19 +1509,16 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 // If keyframe generation occurs, use the interpolated mask.
 // If no keyframe generation occurs, use the previous mask.
 	int use_interpolated = 0;
-	if(button_press || cursor_motion) {
+	if( button_press || cursor_motion ) {
 #ifdef USE_KEYFRAME_SPANNING
 		double selection_start = mwindow->edl->local_session->get_selectionstart(0);
 		double selection_end = mwindow->edl->local_session->get_selectionend(0);
-
-		Auto *first = 0;
-		mask_autos->get_prev_auto(track->to_units(selection_start, 0),
-			PLAY_FORWARD, first, 1);
-		Auto *last = 0;
-		mask_autos->get_prev_auto(track->to_units(selection_end, 0),
-			PLAY_FORWARD, last, 1);
-
-		if(last == first && (!mwindow->edl->session->auto_keyframes))
+		int64_t start_pos = track->to_units(selection_start, 0);
+		int64_t end_pos = track->to_units(selection_end, 0);
+		Auto *first = 0, *last = 0;
+		mask_autos->get_prev_auto(start_pos, PLAY_FORWARD, first, 1);
+		mask_autos->get_prev_auto(end_pos, PLAY_FORWARD, last, 1);
+		if( last == first && (!mwindow->edl->session->auto_keyframes) )
 			use_interpolated = 0;
 		else
 // If keyframe spanning occurs, use the interpolated points.
@@ -1523,28 +1526,22 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 			use_interpolated = 1;
 
 #else
-		if(mwindow->edl->session->auto_keyframes)
+		if( mwindow->edl->session->auto_keyframes )
 			use_interpolated = 1;
 #endif
 	}
 	else
 		use_interpolated = 1;
 
-	if(use_interpolated) {
+	if( use_interpolated ) {
 // Interpolate the points to get exactly what is being rendered at this position.
 		mask_autos->get_points(&points,
 			mwindow->edl->session->cwindow_mask,
-			position,
-			PLAY_FORWARD);
+			position, PLAY_FORWARD);
 	}
 	else {
 // Use the prev mask
-		Auto *prev = 0;
-		mask_autos->get_prev_auto(position,
-			PLAY_FORWARD,
-			prev,
-			1);
-		((MaskAuto*)prev)->get_points(&points,
+		prev_mask->get_points(&points,
 			mwindow->edl->session->cwindow_mask);
 	}
 
@@ -1718,15 +1715,15 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 
 				output_to_canvas(mwindow->edl, 0, canvas_x, canvas_y);
 
-				if(j > 0) {
+				if( j > 0 ) {
 
-					if(draw) { // Draw joining line
+					if( draw ) { // Draw joining line
 						x_points.append((int)canvas_x);
 						y_points.append((int)canvas_y);
 					}
 
-					if(j == segments) {
-						if(draw) { // Draw second anchor
+					if( j == segments ) {
+						if( draw && draw_markers ) { // Draw second anchor
 							if(i < points.size() - 1) {
 								if(i == gui->affected_point - 1)
 									get_canvas()->draw_disc(
@@ -1756,23 +1753,30 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 				}
 				else {
 // Draw first anchor
-					if(i == 0 && draw) {
-						char mask_label[BCSTRLEN];
-						sprintf(mask_label, "%d",
-							mwindow->edl->session->cwindow_mask);
-						get_canvas()->draw_text(
-							(int)canvas_x - FIRST_CONTROL_W,
-							(int)canvas_y - FIRST_CONTROL_H,
-							mask_label);
-
-						get_canvas()->draw_disc(
-							(int)canvas_x - FIRST_CONTROL_W / 2,
-							(int)canvas_y - FIRST_CONTROL_H / 2,
-							FIRST_CONTROL_W, FIRST_CONTROL_H);
+					if( i == 0 && draw ) {
+						if( draw_boundary ) {
+							char mask_label[BCSTRLEN];
+							int k = mwindow->edl->session->cwindow_mask;
+							if( !prev_mask || prev_mask->is_default ||
+							    k < 0 || k >= prev_mask->masks.size() )
+								sprintf(mask_label, "%d", k);
+							else
+								sprintf(mask_label, "%s", prev_mask->masks[k]->name);
+							get_canvas()->draw_text(
+								(int)canvas_x - FIRST_CONTROL_W,
+								(int)canvas_y - FIRST_CONTROL_H,
+								mask_label);
+						}
+						if( draw_markers ) {
+							get_canvas()->draw_disc(
+								(int)canvas_x - FIRST_CONTROL_W / 2,
+								(int)canvas_y - FIRST_CONTROL_H / 2,
+								FIRST_CONTROL_W, FIRST_CONTROL_H);
+						}
 					}
 
 // Draw first control point.
-					if(draw) {
+					if( draw && draw_markers ) {
 						output_to_canvas(mwindow->edl, 0, canvas_x1, canvas_y1);
 						get_canvas()->draw_line(
 							(int)canvas_x, (int)canvas_y,
@@ -1793,25 +1797,22 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 //printf("CWindowCanvas::do_mask 1\n");
 
 		BC_WindowBase *cvs_win = get_canvas();
-		if(draw) {
+		if( draw && draw_boundary ) {
 			cvs_win->draw_polygon(&x_points, &y_points);
 			cvs_win->set_opaque();
 		}
-		if( draw && gui->tool_panel ) {
-			CWindowMaskGUI *mask_gui = (CWindowMaskGUI*)gui->tool_panel->tool_gui;
-			if( mask_gui && mask_gui->focused ) {
-				float fx = atof(mask_gui->focus_x->get_text());
-				float fy = atof(mask_gui->focus_y->get_text());
-				output_to_canvas(mwindow->edl, 0, fx, fy);
-				float r = bmax(cvs_win->get_w(), cvs_win->get_h());
-				float d = 0.005*r;
-				cvs_win->set_line_width((int)(0.0025*r) + 1);
-				cvs_win->set_color(BLUE);
-				cvs_win->draw_line(fx-d,fy-d, fx+d, fy+d);
-				cvs_win->draw_line(fx-d,fy+d, fx+d, fy-d);
-				cvs_win->set_line_width(0);
-				cvs_win->set_color(WHITE);
-			}
+		if( draw && mask_gui && mask_gui->focused ) {
+			float fx = atof(mask_gui->focus_x->get_text());
+			float fy = atof(mask_gui->focus_y->get_text());
+			output_to_canvas(mwindow->edl, 0, fx, fy);
+			float r = bmax(cvs_win->get_w(), cvs_win->get_h());
+			float d = 0.005*r;
+			cvs_win->set_line_width((int)(0.0025*r) + 1);
+			cvs_win->set_color(BLUE);
+			cvs_win->draw_line(fx-d,fy-d, fx+d, fy+d);
+			cvs_win->draw_line(fx-d,fy+d, fx+d, fy-d);
+			cvs_win->set_line_width(0);
+			cvs_win->set_color(WHITE);
 		}
 //printf("CWindowCanvas::do_mask 1\n");
 	}
@@ -2103,12 +2104,9 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 				float st = sin(theta), ct = cos(theta);
 				gui->x_origin = mask_cursor_x;
 				gui->y_origin = mask_cursor_y;
-				if( gui->tool_panel ) {
-					CWindowMaskGUI *mask_gui = (CWindowMaskGUI*)gui->tool_panel->tool_gui;
-					if( mask_gui && mask_gui->focused ) {
-						gui->x_origin = atof(mask_gui->focus_x->get_text());
-						gui->y_origin = atof(mask_gui->focus_y->get_text());
-					}
+				if( mask_gui && mask_gui->focused ) {
+					gui->x_origin = atof(mask_gui->focus_x->get_text());
+					gui->y_origin = atof(mask_gui->focus_y->get_text());
 				}
 				for( int i=0; i<mask_points.size(); ++i ) {
 					MaskPoint *point = mask_points.values[i];

@@ -29,7 +29,7 @@
 #include "bcwindowbase.inc"
 #include "canvas.inc"
 #include "condition.inc"
-#include "maskauto.inc"
+#include "maskauto.h"
 #include "maskautos.inc"
 #include "mutex.inc"
 #include "mwindow.inc"
@@ -285,13 +285,9 @@ public:
 	void do_fade(Canvas *canvas, VFrame *frame, float fade);
 	void convert_cmodel(Canvas *canvas, VFrame *output, int dst_cmodel);
 
-	void do_mask(Canvas *canvas,
-		VFrame *output,
-		int64_t start_position_project,
-		MaskAutos *keyframe_set,
-		MaskAuto *keyframe,
-		MaskAuto *default_auto);
-
+	void draw_spots(MaskSpots &spots, int ix1,int iy1, int ix2,int iy2);
+	void do_mask(Canvas *canvas, VFrame *output, int64_t start_position_project,
+		MaskAutos *keyframe_set, MaskAuto *keyframe, MaskAuto *default_auto);
 
 // Overlay a virtual node on the framebuffer
 	void overlay(Canvas *canvas,

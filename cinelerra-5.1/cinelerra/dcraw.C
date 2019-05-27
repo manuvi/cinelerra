@@ -1225,7 +1225,7 @@ void CLASS nikon_yuv_load_raw()
 {
   int row, col, yuv[4], rgb[3], b, c;
   UINT64 bitbuf=0;
-
+  memset(yuv,0,sizeof(yuv));
   for (row=0; row < raw_height; row++)
     for (col=0; col < raw_width; col++) {
       if (!(b = col & 1)) {

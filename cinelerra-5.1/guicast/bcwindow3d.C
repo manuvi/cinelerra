@@ -237,14 +237,14 @@ void BC_WindowBase::flip_opengl()
 #endif
 }
 
-unsigned int BC_WindowBase::get_shader(char *source, int *got_it)
+int BC_WindowBase::get_shader(unsigned int *handle, const char *vert, const char *frag)
 {
-	return get_resources()->get_synchronous()->get_shader(source, got_it);
+	return get_resources()->get_synchronous()->get_shader(handle, vert, frag);
 }
 
-void BC_WindowBase::put_shader(unsigned int handle, char *source)
+void BC_WindowBase::put_shader(unsigned int handle, const char *vert, const char *frag)
 {
-	get_resources()->get_synchronous()->put_shader(handle, source);
+	get_resources()->get_synchronous()->put_shader(handle, vert, frag);
 }
 
 int BC_WindowBase::get_opengl_server_version()

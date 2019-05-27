@@ -66,6 +66,7 @@ public:
 		float in_x1, float in_y1, float in_x2, float in_y2,
 		float out_x1, float out_y1, float out_x2, float out_y2);
 
+	void write_tex(const char *fn, int id);
 	void write_tex(const char *fn);
 private:
 	void clear_objects();

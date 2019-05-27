@@ -93,7 +93,7 @@ public:
 		int direction,
 		PlayableTracks *playable_tracks);
 
-// Convert position to frame boundry times
+// Convert position to frame boundary times
 	double frame_align(double position, int round);
 // frame align if cursor alignment is enabled
 	double align_to_frame(double position, int round);

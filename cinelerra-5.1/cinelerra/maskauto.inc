@@ -28,7 +28,7 @@ class MaskAuto;
 class MaskPoint;
 class SubMask;
 
-enum {
+enum {  // no longer used, legacy value
 	MASK_MULTIPLY_ALPHA,
 	MASK_SUBTRACT_ALPHA,
 };

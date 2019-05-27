@@ -72,11 +72,12 @@ public:
 class ShaderID
 {
 public:
-	ShaderID(int window_id, unsigned int handle, char *source);
+	ShaderID(int window_id, unsigned int handle,
+		 const char *vert, const char *frag);
 	~ShaderID();
 
 // Should really use an MD5 to compare sources but this is easiest.
-	char *source;
+	char *vert, *frag;
 	int window_id;
 	unsigned int handle;
 };
@@ -182,13 +183,9 @@ public:
 // Can be called outside synchronous loop.
 	void release_texture(int window_id, int id);
 
-// Get the shader by window_id and source comparison if it exists.
-// Not run in OpenGL thread because it has its own lock.
-// Sets *got_it to 1 on success.
-	unsigned int get_shader(char *source, int *got_it);
-// Add a new shader program by title if it doesn't exist.
-// Doesn't check if it already exists.
-	void put_shader(unsigned int handle, char *source);
+// Get the shader by window_id and vertex/fragment source comparison
+	int get_shader(unsigned int *handle, const char *vert, const char *frag);
+	void put_shader(unsigned int handle, const char *vert, const char *frag);
 	void dump_shader(unsigned int handle);
 
 

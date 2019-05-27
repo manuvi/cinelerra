@@ -307,103 +307,136 @@ void VFrame::init_screen()
 	init_screen(get_w(), get_h());
 }
 
-static int print_error(char *source, unsigned int object, int is_program)
-{
+
+
 #ifdef HAVE_GL
-    char string[BCTEXTLEN];
+
+static int print_error(const char *text, unsigned int object, int is_program)
+{
+	char info[BCTEXTLEN];
 	int len = 0;
-    if(is_program)
-		glGetProgramInfoLog(object, BCTEXTLEN, &len, string);
+	if( is_program )
+		glGetProgramInfoLog(object, BCTEXTLEN, &len, info);
 	else
-		glGetShaderInfoLog(object, BCTEXTLEN, &len, string);
-	if(len > 0) printf("Playback3D::print_error:\n%s\n%s\n", source, string);
-	if(len > 0) return 1;
-#endif
-	return 0;
+		glGetShaderInfoLog(object, BCTEXTLEN, &len, info);
+	if( len > 0 ) printf("Playback3D::print_error:\n%s\n%s\n", text, info);
+	return !len ? 0 : 1;
 }
 
-
-
-// call as:
-//    make_shader(0, frag1, .., fragn, 0);
-// or make_shader(fragments);
-
-unsigned int VFrame::make_shader(const char **fragments, ...)
+static char *shader_segs(const char **segs, int n)
 {
-	unsigned int result = 0;
-#ifdef HAVE_GL
-// Construct single source file out of arguments
-	char *program = 0;
-	int nb_mains = 0;
-
-	int nb_frags = 1;
-	if( !fragments ) {
-		va_list list;  va_start(list, fragments);
-		while( va_arg(list, char*) != 0 ) ++nb_frags;
-		va_end(list);
-	}
-	const char *frags[nb_frags], *text = 0;
-	if( !fragments ) {
-		va_list list;  va_start(list, fragments);
-		for( int i=0; i<nb_frags; ++i ) frags[i] = va_arg(list, char*);
-		va_end(list);
-		fragments = frags;
-	}
-
-	while( (text = *fragments++) ) {
-		char src[strlen(text) + BCSTRLEN + 1];
+	if( !segs || !n ) return 0;
+// concat source segs
+	int ids = 0;
+	char *ret = 0;
+	for( int i=0; i<n; ++i ) {
+		const char *text = *segs++;
+		char src[strlen(text) + BCSTRLEN + 1], *sp = src;
 		const char *tp = strstr(text, "main()");
 		if( tp ) {
 // Replace main() with a mainxxx()
-			char mainxxx[BCSTRLEN], *sp = src;
-			sprintf(mainxxx, "main%03d()", nb_mains++);
 			int n = tp - text;
 			memcpy(sp, text, n);  sp += n;
-			n = strlen(mainxxx);
-			memcpy(sp, mainxxx, n);  sp += n;
-			tp += strlen("main()");
-			strcpy(sp, tp);
+			sp += sprintf(sp, "main%03d()", ids++);
+			strcpy(sp, tp+strlen("main()"));
 			text = src;
 		}
-
-		char *new_program = !program ? cstrdup(text) :
-			cstrcat(2, program, text);
-		delete [] program;  program = new_program;
+		char *cp = !ret ? cstrdup(text) : cstrcat(2, ret, text);
+		delete [] ret;  ret = cp;
 	}
 
-// Add main() which calls mainxxx() in order
-	char main_program[BCTEXTLEN], *cp = main_program;
+// add main() which calls mainxxx() in order
+	char main_prog[BCTEXTLEN];
+	char *cp = main_prog;
 	cp += sprintf(cp, "\nvoid main() {\n");
-	for( int i=0; i < nb_mains; ++i )
+	for( int i=0; i < ids; ++i )
 		cp += sprintf(cp, "\tmain%03d();\n", i);
 	cp += sprintf(cp, "}\n");
-	cp = !program ? cstrdup(main_program) :
-		cstrcat(2, program, main_program);
-	delete [] program;  program = cp;
+	if( ret ) {
+		cp = cstrcat(2, ret, main_prog);
+		delete [] ret;  ret = cp;
+	}
+	else
+		ret = cstrdup(main_prog);
+	return ret;
+}
 
-	int got_it = 0;
-	result = BC_WindowBase::get_synchronous()->get_shader(program, &got_it);
-	if( !got_it ) {
-		result = glCreateProgram();
-		unsigned int shader = glCreateShader(GL_FRAGMENT_SHADER);
-		const GLchar *text_ptr = program;
-		glShaderSource(shader, 1, &text_ptr, NULL);
-		glCompileShader(shader);
-		int error = print_error(program, shader, 0);
-		glAttachShader(result, shader);
-		glDeleteShader(shader);
-		glLinkProgram(result);
-		if( !error )
-			error = print_error(program, result, 1);
-//printf("BC_WindowBase::make_shader: shader=%d window_id=%d\n", result,
-// BC_WindowBase::get_synchronous()->current_window->get_id());
-		BC_WindowBase::get_synchronous()->put_shader(result, program);
+static int compile_shader(unsigned int &shader, int type, const GLchar *text)
+{
+	shader = glCreateShader(type);
+	glShaderSource(shader, 1, &text, 0);
+	glCompileShader(shader);
+	return print_error(text, shader, 0);
+}
+
+static unsigned int build_shader(const char *vert, const char *frag)
+{
+	int error = 0;
+	unsigned int vertex_shader = 0;
+	unsigned int fragment_shader = 0;
+	unsigned int program = glCreateProgram();
+	if( !error && vert )
+		error = compile_shader(vertex_shader, GL_VERTEX_SHADER, vert);
+	if( !error && frag )
+		error = compile_shader(fragment_shader, GL_FRAGMENT_SHADER, frag);
+	if( !error && vert ) glAttachShader(program, vertex_shader);
+	if( !error && frag ) glAttachShader(program, fragment_shader);
+	if( !error ) glLinkProgram(program);
+	if( !error ) error = print_error("link", program, 1);
+	if( !error )
+		BC_WindowBase::get_synchronous()->put_shader(program, vert, frag);
+	else {
+		glDeleteProgram(program);
+		program = 0;
+	}
+	return program;
+}
+
+#endif
+
+// call as:
+//    make_shader(0, seg1, .., segn, 0);
+// or make_shader(&seg);
+// line 1: optional comment // vertex shader
+
+unsigned int VFrame::make_shader(const char **segments, ...)
+{
+	unsigned int program = 0;
+#ifdef HAVE_GL
+// Construct single source file out of arguments
+	int nb_segs = 1;
+	if( !segments ) {
+		va_list list;  va_start(list, segments);
+		while( va_arg(list, char*) != 0 ) ++nb_segs;
+		va_end(list);
+	}
+	const char *segs[nb_segs];
+	if( !segments ) {
+		va_list list;  va_start(list, segments);
+		for( int i=0; i<nb_segs; ++i )
+			segs[i] = va_arg(list, const char *);
+		va_end(list);
+		segments = segs;
 	}
 
-//printf("VFrame::make_shader\n%s\n", program);
-	delete [] program;
+	const char *vert_shaders[nb_segs];  int vert_segs = 0;
+	const char *frag_shaders[nb_segs];  int frag_segs = 0;
+	for( int i=0; segments[i]!=0; ++i ) {
+		const char *seg = segments[i];
+		if( strstr(seg, "// vertex shader") )
+			vert_shaders[vert_segs++] = seg;
+		else
+			frag_shaders[frag_segs++] = seg;
+	}
+
+	char *vert = shader_segs(vert_shaders, vert_segs);
+	char *frag = shader_segs(frag_shaders, frag_segs);
+	if( !BC_WindowBase::get_synchronous()->get_shader(&program, vert, frag) )
+		program = build_shader(vert, frag);
+	delete [] vert;
+	delete [] frag;
 #endif
-	return result;
+	return program;
 }
 
 void VFrame::dump_shader(int shader_id)

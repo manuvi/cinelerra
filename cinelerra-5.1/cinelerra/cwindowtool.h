@@ -145,6 +145,26 @@ public:
 	void update_items(MaskAuto *keyframe);
 };
 
+class CWindowMaskDelMask : public BC_GenericButton
+{
+public:
+	CWindowMaskDelMask(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
+	int handle_event();
+	MWindow *mwindow;
+	CWindowToolGUI *gui;
+};
+
+class CWindowMaskClrMask : public BC_Button
+{
+public:
+	CWindowMaskClrMask(MWindow *mwindow, CWindowMaskGUI *gui, int x, int y);
+	~CWindowMaskClrMask();
+	static int calculate_w(MWindow *mwindow);
+	int handle_event();
+	MWindow *mwindow;
+	CWindowMaskGUI *gui;
+};
+
 class CWindowMaskFade : public BC_TumbleTextBox
 {
 public:
@@ -169,23 +189,15 @@ public:
 	MWindow *mwindow;
 	CWindowToolGUI *gui;
 	int stick;
+	float last_v;
 	Timer *timer;
 };
 
-class CWindowMaskMode : public BC_Toggle
+class CWindowMaskGangFader : public BC_Toggle
 {
 public:
-	CWindowMaskMode(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
-	~CWindowMaskMode();
-	int handle_event();
-	MWindow *mwindow;
-	CWindowToolGUI *gui;
-};
-
-class CWindowMaskDelMask : public BC_GenericButton
-{
-public:
-	CWindowMaskDelMask(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
+	CWindowMaskGangFader(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
+	~CWindowMaskGangFader();
 	int handle_event();
 	MWindow *mwindow;
 	CWindowToolGUI *gui;
@@ -206,6 +218,26 @@ class CWindowMaskFocus : public BC_CheckBox
 public:
 	CWindowMaskFocus(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
 	~CWindowMaskFocus();
+	int handle_event();
+	MWindow *mwindow;
+	CWindowToolGUI *gui;
+};
+
+class CWindowMaskDrawMarkers : public BC_CheckBox
+{
+public:
+	CWindowMaskDrawMarkers(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
+	~CWindowMaskDrawMarkers();
+	int handle_event();
+	MWindow *mwindow;
+	CWindowToolGUI *gui;
+};
+
+class CWindowMaskDrawBoundary : public BC_CheckBox
+{
+public:
+	CWindowMaskDrawBoundary(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
+	~CWindowMaskDrawBoundary();
 	int handle_event();
 	MWindow *mwindow;
 	CWindowToolGUI *gui;
@@ -244,27 +276,19 @@ public:
 	char *get_caption() { return 0; }
 	MWindow *mwindow;
 	CWindowToolGUI *gui;
+	int stick;
+	float last_v;
+	Timer *timer;
 };
 
-class CWindowMaskClrMask : public BC_Button
+class CWindowMaskGangFeather : public BC_Toggle
 {
 public:
-	CWindowMaskClrMask(MWindow *mwindow, CWindowMaskGUI *gui, int x, int y);
-	~CWindowMaskClrMask();
-	static int calculate_w(MWindow *mwindow);
+	CWindowMaskGangFeather(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
+	~CWindowMaskGangFeather();
 	int handle_event();
 	MWindow *mwindow;
-	CWindowMaskGUI *gui;
-};
-
-class CWindowMaskClrFeather : public BC_Button
-{
-public:
-	CWindowMaskClrFeather(MWindow *mwindow, CWindowMaskGUI *gui, int x, int y);
-	~CWindowMaskClrFeather();
-	int handle_event();
-	MWindow *mwindow;
-	CWindowMaskGUI *gui;
+	CWindowToolGUI *gui;
 };
 
 class CWindowMaskBeforePlugins : public BC_CheckBox
@@ -297,19 +321,24 @@ public:
 	void update_preview();
 
 	CWindowMaskName *name;
-	CWindowMaskClrMask *clr_mask;
 	CWindowMaskDelMask *del_mask;
+	CWindowMaskClrMask *clr_mask;
 	CWindowMaskFade *fade;
 	CWindowMaskFadeSlider *fade_slider;
-	CWindowMaskMode *mode;
+	CWindowMaskGangFader *gang_fader;
 	CWindowMaskAffectedPoint *active_point;
 	CWindowMaskDelPoint *del_point;
 	CWindowCoord *x, *y;
 	CWindowMaskFocus *focus;
 	int focused;
+	CWindowMaskDrawMarkers *draw_markers;
+	int markers;
+	CWindowMaskDrawBoundary *draw_boundary;
+	int boundary;
 	CWindowCoord *focus_x, *focus_y;
 	CWindowMaskFeather *feather;
 	CWindowMaskFeatherSlider *feather_slider;
+	CWindowMaskGangFeather *gang_feather;
 	CWindowMaskBeforePlugins *apply_before_plugins;
 	CWindowDisableOpenGLMasking *disable_opengl_masking;
 };

@@ -332,7 +332,7 @@ void VirtualVNode::render_mask(VFrame *output_temp,
 		int submask_points = mask->points.total;
 		if(submask_points > 1) total_points += submask_points;
 	}
-
+/*
 //printf("VirtualVNode::render_mask 1 %d %d\n", total_points, keyframe->value);
 // Ignore certain masks
 	if(total_points <= 2 ||
@@ -347,7 +347,7 @@ void VirtualVNode::render_mask(VFrame *output_temp,
 		output_temp->clear_frame();
 		return;
 	}
-
+*/
 	if(use_opengl) {
 		if( !((VDeviceX11*)((VirtualVConsole*)vconsole)->get_vdriver())->can_mask(
 				start_position_project, keyframe_set) )

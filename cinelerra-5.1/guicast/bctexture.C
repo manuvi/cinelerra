@@ -100,8 +100,8 @@ void BC_Texture::create_texture(int w, int h, int colormodel)
 		BC_WindowBase::get_synchronous()->release_texture(
 			window_id,
 			texture_id);
-	    texture_id = -1;
-	    window_id = -1;
+		texture_id = -1;
+		window_id = -1;
 	}
 
 
@@ -124,13 +124,9 @@ void BC_Texture::create_texture(int w, int h, int colormodel)
 		glGenTextures(1, (GLuint*)&texture_id);
 		glBindTexture(GL_TEXTURE_2D, (GLuint)texture_id);
 		glEnable(GL_TEXTURE_2D);
-		if(texture_components == 4)
-			glTexImage2D(GL_TEXTURE_2D, 0, 4, texture_w, texture_h,
+		int internal_format = texture_components == 4 ? GL_RGBA8 : GL_RGB8 ;
+		glTexImage2D(GL_TEXTURE_2D, 0, internal_format, texture_w, texture_h,
 				0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-		else
-			glTexImage2D(GL_TEXTURE_2D, 0, 3, texture_w, texture_h,
-				0, GL_RGB, GL_UNSIGNED_BYTE, 0);
-
 		window_id = BC_WindowBase::get_synchronous()->current_window->get_id();
 		BC_WindowBase::get_synchronous()->put_texture(texture_id,
 			texture_w, texture_h, texture_components);
@@ -241,12 +237,12 @@ static void write_ppm(uint8_t *tp, int w, int h, const char *fmt, ...)
 }
 #endif
 
-void BC_Texture::write_tex(const char *fn)
+void BC_Texture::write_tex(const char *fn, int id)
 {
 #ifdef HAVE_GL
 	int prev_id = -1;
 	glGetIntegerv(GL_ACTIVE_TEXTURE, &prev_id);
-	glActiveTexture(GL_TEXTURE31);
+	glActiveTexture(GL_TEXTURE0+id);
 	glBindTexture(GL_TEXTURE_2D, texture_id);
 	glEnable(GL_TEXTURE_2D);
 	int w = get_texture_w(), h = get_texture_h();
@@ -258,4 +254,10 @@ void BC_Texture::write_tex(const char *fn)
 #endif
 }
 
+void BC_Texture::write_tex(const char *fn)
+{
+#ifdef HAVE_GL
+	write_tex(fn, 31);
+#endif
+}
 

@@ -1739,8 +1739,47 @@ int CWindowMaskFocus::handle_event()
 	return 1;
 }
 
+CWindowMaskDrawMarkers::CWindowMaskDrawMarkers(MWindow *mwindow, CWindowToolGUI *gui, int x, int y)
+ : BC_CheckBox(x, y, ((CWindowMaskGUI*)gui)->markers, _("Markers"))
+{
+	this->mwindow = mwindow;
+	this->gui = gui;
+}
+
+CWindowMaskDrawMarkers::~CWindowMaskDrawMarkers()
+{
+}
+
+int CWindowMaskDrawMarkers::handle_event()
+{
+	((CWindowMaskGUI*)gui)->markers = get_value();
+	gui->update();
+	gui->update_preview();
+	return 1;
+}
+
+CWindowMaskDrawBoundary::CWindowMaskDrawBoundary(MWindow *mwindow, CWindowToolGUI *gui, int x, int y)
+ : BC_CheckBox(x, y, ((CWindowMaskGUI*)gui)->boundary, _("Boundary"))
+{
+	this->mwindow = mwindow;
+	this->gui = gui;
+}
+
+CWindowMaskDrawBoundary::~CWindowMaskDrawBoundary()
+{
+}
+
+int CWindowMaskDrawBoundary::handle_event()
+{
+	((CWindowMaskGUI*)gui)->boundary = get_value();
+	gui->update();
+	gui->update_preview();
+	return 1;
+}
+
+
 CWindowMaskFeather::CWindowMaskFeather(MWindow *mwindow, CWindowToolGUI *gui, int x, int y)
- : BC_TumbleTextBox(gui, 0, 0, 0xff, x, y, 64, 2)
+ : BC_TumbleTextBox(gui, 0, -FEATHER_MAX, FEATHER_MAX, x, y, 64, 2)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
@@ -1775,16 +1814,23 @@ int CWindowMaskFeather::update_value(float v)
 	((CWindowMaskGUI*)gui)->get_keyframe(track, autos, keyframe,
 			mask, point, create_it);
 	if( track ) {
+		int gang = ((CWindowMaskGUI*)gui)->gang_feather->get_value();
 #ifdef USE_KEYFRAME_SPANNING
-// Create temp keyframe
 		MaskAuto temp_keyframe(mwindow->edl, autos);
 		temp_keyframe.copy_data(keyframe);
-// Update parameter
-		temp_keyframe.feather = v;
-// Commit change to span of keyframes
-		autos->update_parameter(&temp_keyframe);
-#else
-		keyframe->feather = v;
+		keyframe = &temp_keyframe;
+#endif
+		float change = v - mask->feather;
+		int k = mwindow->edl->session->cwindow_mask;
+		int n = gang ? keyframe->masks.size() : k+1;
+		for( int i=gang? 0 : k; i<n; ++i ) {
+			SubMask *sub_mask = keyframe->get_submask(i);
+			float feather = sub_mask->feather + change;
+			bclamp(feather, -FEATHER_MAX, FEATHER_MAX);
+			sub_mask->feather = feather;
+		}
+#ifdef USE_KEYFRAME_SPANNING
+		autos->update_parameter(keyframe);
 #endif
 		gui->update_preview();
 	}
@@ -1803,22 +1849,44 @@ int CWindowMaskFeather::handle_event()
 
 CWindowMaskFeatherSlider::CWindowMaskFeatherSlider(MWindow *mwindow,
 		CWindowToolGUI *gui, int x, int y, int w, float v)
- : BC_FSlider(x, y, 0, w, w, 0.f, 255.f, v)
+ : BC_FSlider(x, y, 0, w, w, -FEATHER_MAX, FEATHER_MAX, v)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
 	set_precision(0.01);
+	timer = new Timer();
+	stick = 0;
+	last_v = 0;
 }
 
 CWindowMaskFeatherSlider::~CWindowMaskFeatherSlider()
 {
+	delete timer;
 }
 
 int CWindowMaskFeatherSlider::handle_event()
 {
 	float v = get_value();
+	if( stick > 0 ) {
+		int64_t ms = timer->get_difference();
+		if( ms < 250 && --stick > 0 ) {
+			if( get_value() == 0 ) return 1;
+			update(v = 0);
+		}
+		else {
+			stick = 0;
+			last_v = v;
+		}
+	}
+	else if( (last_v>=0 && v<0) || (last_v<0 && v>=0) ) {
+		stick = 16;
+		v = 0;
+	}
+	else
+		last_v = v;
+	timer->update();
 	CWindowMaskGUI * mask_gui = (CWindowMaskGUI*)gui;
-	mask_gui->feather->update(v);
+	mask_gui->feather->BC_TumbleTextBox::update(v);
 	return mask_gui->feather->update_value(v);
 }
 
@@ -1863,18 +1931,24 @@ int CWindowMaskFade::update_value(float v)
 	((CWindowMaskGUI*)gui)->get_keyframe(track, autos, keyframe,
 			mask, point, create_it);
 	if( track ) {
+		int gang = ((CWindowMaskGUI*)gui)->gang_fader->get_value();
 #ifdef USE_KEYFRAME_SPANNING
-// Create temp keyframe
 		MaskAuto temp_keyframe(mwindow->edl, autos);
 		temp_keyframe.copy_data(keyframe);
-// Update parameter
-		temp_keyframe.value = v;
-// Commit change to span of keyframes
-		autos->update_parameter(&temp_keyframe);
-#else
-		keyframe->value = v;
+		keyframe = &temp_keyframe;
 #endif
-
+		float change = v - mask->fader;
+		int k = mwindow->edl->session->cwindow_mask;
+		int n = gang ? keyframe->masks.size() : k+1;
+		for( int i=gang? 0 : k; i<n; ++i ) {
+			SubMask *sub_mask = keyframe->get_submask(i);
+			float fader = sub_mask->fader + change;
+			bclamp(fader, -100.f, 100.f);
+			sub_mask->fader = fader;
+		}
+#ifdef USE_KEYFRAME_SPANNING
+		autos->update_parameter(keyframe);
+#endif
 		gui->update_preview();
 	}
 
@@ -1898,6 +1972,7 @@ CWindowMaskFadeSlider::CWindowMaskFadeSlider(MWindow *mwindow, CWindowToolGUI *g
 	this->gui = gui;
 	timer = new Timer();
 	stick = 0;
+	last_v = 0;
 }
 
 CWindowMaskFadeSlider::~CWindowMaskFadeSlider()
@@ -1908,18 +1983,23 @@ CWindowMaskFadeSlider::~CWindowMaskFadeSlider()
 int CWindowMaskFadeSlider::handle_event()
 {
 	float v = 100*get_value()/200;
-	if( !v && !stick )
-		stick = 16;
-	else if( stick > 0 ) {
+	if( stick > 0 ) {
 		int64_t ms = timer->get_difference();
-		if( ms < 1000 ) {
-			--stick;
+		if( ms < 250 && --stick > 0 ) {
 			if( get_value() == 0 ) return 1;
 			update(v = 0);
 		}
-		else
+		else {
 			stick = 0;
+			last_v = v;
+		}
 	}
+	else if( (last_v>=0 && v<0) || (last_v<0 && v>=0) ) {
+		stick = 16;
+		v = 0;
+	}
+	else
+		last_v = v;
 	timer->update();
 	CWindowMaskGUI *mask_gui = (CWindowMaskGUI*)gui;
 	mask_gui->fade->BC_TumbleTextBox::update(v);
@@ -1931,46 +2011,21 @@ int CWindowMaskFadeSlider::update(int64_t v)
 	return BC_ISlider::update(200*v/100);
 }
 
-CWindowMaskMode::CWindowMaskMode(MWindow *mwindow,
-	CWindowToolGUI *gui, int x, int y)
- : BC_Toggle(x, y, mwindow->theme->mask_mode_toggle, 0)
+CWindowMaskGangFader::CWindowMaskGangFader(MWindow *mwindow,
+		CWindowToolGUI *gui, int x, int y)
+ : BC_Toggle(x, y, mwindow->theme->get_image_set("gangpatch_data"), 0)
 {
-	this->mwindow = mwindow;
-	this->gui = gui;
-	set_tooltip(_("Subtract/Multiply Alpha"));
+        this->mwindow = mwindow;
+        this->gui = gui;
+        set_tooltip(_("Gang fader"));
 }
 
-CWindowMaskMode::~CWindowMaskMode()
+CWindowMaskGangFader::~CWindowMaskGangFader()
 {
 }
 
-int CWindowMaskMode::handle_event()
+int CWindowMaskGangFader::handle_event()
 {
-	MaskAutos *autos;
-	MaskAuto *keyframe;
-	Track *track;
-	MaskPoint *point;
-	SubMask *mask;
-// Get existing keyframe
-	((CWindowMaskGUI*)gui)->get_keyframe(track, autos, keyframe, mask, point, 0);
-	if( track ) {
-		mwindow->undo->update_undo_before(_("mask mode"), 0);
-#ifdef USE_KEYFRAME_SPANNING
-// Create temp keyframe
-		MaskAuto temp_keyframe(mwindow->edl, autos);
-		temp_keyframe.copy_data(keyframe);
-// Update parameter
-		temp_keyframe.mode = get_value();
-// Commit change to span of keyframes
-		autos->update_parameter(&temp_keyframe);
-#else
-		((MaskAuto*)autos->default_auto)->mode = get_value();
-#endif
-		mwindow->undo->update_undo_after(_("mask mode"), LOAD_AUTOMATION);
-	}
-
-//printf("CWindowMaskMode::handle_event 1\n");
-	gui->update_preview();
 	return 1;
 }
 
@@ -2080,27 +2135,23 @@ int CWindowMaskClrMask::handle_event()
 	return 1;
 }
 
-CWindowMaskClrFeather::CWindowMaskClrFeather(MWindow *mwindow,
-		CWindowMaskGUI *gui, int x, int y)
- : BC_Button(x, y, mwindow->theme->get_image_set("reset_button"))
+CWindowMaskGangFeather::CWindowMaskGangFeather(MWindow *mwindow,
+		CWindowToolGUI *gui, int x, int y)
+ : BC_Toggle(x, y, mwindow->theme->get_image_set("gangpatch_data"), 0)
 {
-	this->mwindow = mwindow;
-	this->gui = gui;
-	set_tooltip(_("Zero Feather"));
+        this->mwindow = mwindow;
+        this->gui = gui;
+        set_tooltip(_("Gang feather"));
 }
-CWindowMaskClrFeather::~CWindowMaskClrFeather()
+
+CWindowMaskGangFeather::~CWindowMaskGangFeather()
 {
 }
 
-int CWindowMaskClrFeather::handle_event()
+int CWindowMaskGangFeather::handle_event()
 {
-	float v = 0;
-	CWindowMaskGUI * mask_gui = (CWindowMaskGUI*)gui;
-	mask_gui->feather->update(v);
-	mask_gui->feather_slider->update(v);
-	return mask_gui->feather->update_value(v);
+	return 1;
 }
-
 
 CWindowMaskGUI::CWindowMaskGUI(MWindow *mwindow, CWindowTool *thread)
  : CWindowToolGUI(mwindow, thread,
@@ -2112,6 +2163,8 @@ CWindowMaskGUI::CWindowMaskGUI(MWindow *mwindow, CWindowTool *thread)
 	fade = 0;
 	feather = 0;
 	focused = 0;
+	markers = 1;
+	boundary = 1;
 }
 CWindowMaskGUI::~CWindowMaskGUI()
 {
@@ -2147,16 +2200,15 @@ void CWindowMaskGUI::create_objects()
 	int x2 = x1 + fade->get_w() + 2*margin;
 	int w2 = clr_x-2*margin - x2;
 	add_subwindow(fade_slider = new CWindowMaskFadeSlider(mwindow, this, x2, y, w2));
-	add_subwindow(mode = new CWindowMaskMode(mwindow, this, clr_x, y));
+	add_subwindow(gang_fader = new CWindowMaskGangFader(mwindow, this, clr_x, y));
 	y += fade->get_h() + margin;
 	add_subwindow(title = new BC_Title(x, y, _("Feather:")));
 	feather = new CWindowMaskFeather(mwindow, this, x1, y);
 	feather->create_objects();
-	x2 = x1 + feather->get_w() + margin;
 	w2 = clr_x - 2*margin - x2;
 	feather_slider = new CWindowMaskFeatherSlider(mwindow, this, x2, y, w2, 0);
 	add_subwindow(feather_slider);
-	add_subwindow(new CWindowMaskClrFeather(mwindow, this, clr_x, y));
+	add_subwindow(gang_feather = new CWindowMaskGangFeather(mwindow, this, clr_x, y));
 	y += feather->get_h() + 3*margin;
 
 	add_subwindow(title = new BC_Title(x, y, _("Point:")));
@@ -2167,10 +2219,12 @@ void CWindowMaskGUI::create_objects()
 	add_subwindow(title = new BC_Title(x, y, "X:"));
 	this->x = new CWindowCoord(this, x1, y, (float)0.0);
 	this->x->create_objects();
+	add_subwindow(draw_markers = new CWindowMaskDrawMarkers(mwindow, this, del_x, y));
 	y += this->x->get_h() + margin;
 	add_subwindow(title = new BC_Title(x, y, "Y:"));
 	this->y = new CWindowCoord(this, x1, y, (float)0.0);
 	this->y->create_objects();
+	add_subwindow(draw_boundary = new CWindowMaskDrawBoundary(mwindow, this, del_x, y));
 	y += this->y->get_h() + margin;
 	BC_Bar *bar;
 	add_subwindow(bar = new BC_Bar(x, y, get_w()-2*x));
@@ -2256,22 +2310,20 @@ void CWindowMaskGUI::update()
 	{
 		int64_t position_i = track->to_units(position, 0);
 
-		if(point)
-		{
+		if(point) {
 			x->update(point->x);
 			y->update(point->y);
 		}
 
-		if(mask)
-		{
-			feather->update(autos->get_feather(position_i, PLAY_FORWARD));
-			fade->update(autos->get_value(position_i, PLAY_FORWARD));
+		if(mask) {
+			int k = mwindow->edl->session->cwindow_mask;
+			feather->update(autos->get_feather(position_i, k, PLAY_FORWARD));
+			fade->update(autos->get_fader(position_i, k, PLAY_FORWARD));
 			apply_before_plugins->update(keyframe->apply_before_plugins);
 			disable_opengl_masking->update(keyframe->disable_opengl_masking);
 		}
 	}
 
-//printf("CWindowMaskGUI::update 1\n");
 	active_point->update((int64_t)mwindow->cwindow->gui->affected_point);
 	const char *text = "";
 	if( keyframe ) {
@@ -2281,16 +2333,6 @@ void CWindowMaskGUI::update()
 			text = keyframe->masks[k]->name;
 	}
 	name->update(text);
-
-//printf("CWindowMaskGUI::update 1\n");
-	if( track ) {
-#ifdef USE_KEYFRAME_SPANNING
-		mode->update(keyframe->mode);
-#else
-		mode->set_text(((MaskAuto*)autos->default_auto)->mode);
-#endif
-	}
-//printf("CWindowMaskGUI::update 2\n");
 }
 
 void CWindowMaskGUI::handle_event()

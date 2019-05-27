@@ -69,6 +69,8 @@ SubMask::SubMask(MaskAuto *keyframe, int no)
 	this->keyframe = keyframe;
 	memset(name, 0, sizeof(name));
 	sprintf(name, "%d", no);
+	this->fader = 100;
+	this->feather = 0;
 }
 
 SubMask::~SubMask()
@@ -78,17 +80,16 @@ SubMask::~SubMask()
 
 int SubMask::equivalent(SubMask& ptr)
 {
-	if(points.size() != ptr.points.size()) return 0;
-
-	for(int i = 0; i < points.size(); i++)
-	{
+	if( fader != ptr.fader ) return 0;
+	if( feather != ptr.feather ) return 0;
+	int n = points.size();
+	if( n != ptr.points.size() ) return 0;
+	for( int i=0; i<n; ++i ) {
 		if(!(*points.get(i) == *ptr.points.get(i)))
 			return 0;
 	}
-
 	return 1;
 }
-
 
 int SubMask::operator==(SubMask& ptr)
 {
@@ -99,6 +100,8 @@ void SubMask::copy_from(SubMask& ptr)
 {
 	memset(name, 0, sizeof(name));
 	strncpy(name, ptr.name, sizeof(name-1));
+	fader = ptr.fader;
+	feather = ptr.feather;
 	points.remove_all_objects();
 //printf("SubMask::copy_from 1 %p %d\n", this, ptr.points.total);
 	for(int i = 0; i < ptr.points.total; i++)
@@ -114,57 +117,20 @@ void SubMask::load(FileXML *file)
 	points.remove_all_objects();
 
 	int result = 0;
-	while(!result)
-	{
-		result = file->read_tag();
-
-		if(!result)
-		{
-			if(file->tag.title_is("/MASK"))
-			{
-				result = 1;
-			}
-			else
-			if(file->tag.title_is("POINT"))
-			{
-				XMLBuffer data;
-				file->read_text_until("/POINT", &data);
-
-				MaskPoint *point = new MaskPoint;
-				char *ptr = data.cstr();
-//printf("MaskAuto::load 1 %s\n", ptr);
-
-				point->x = atof(ptr);
-				ptr = strchr(ptr, ',');
-//printf("MaskAuto::load 2 %s\n", ptr + 1);
-				if(ptr)
-				{
-					point->y = atof(ptr + 1);
-					ptr = strchr(ptr + 1, ',');
-
-					if(ptr)
-					{
-//printf("MaskAuto::load 3 %s\n", ptr + 1);
-						point->control_x1 = atof(ptr + 1);
-						ptr = strchr(ptr + 1, ',');
-						if(ptr)
-						{
-//printf("MaskAuto::load 4 %s\n", ptr + 1);
-							point->control_y1 = atof(ptr + 1);
-							ptr = strchr(ptr + 1, ',');
-							if(ptr)
-							{
-//printf("MaskAuto::load 5 %s\n", ptr + 1);
-								point->control_x2 = atof(ptr + 1);
-								ptr = strchr(ptr + 1, ',');
-								if(ptr) point->control_y2 = atof(ptr + 1);
-							}
-						}
-					}
-
-				}
-				points.append(point);
-			}
+	while( !(result = file->read_tag()) ) {
+		if( file->tag.title_is("/MASK") ) break;
+		if( file->tag.title_is("POINT") ) {
+			XMLBuffer data;
+			file->read_text_until("/POINT", &data);
+			MaskPoint *point = new MaskPoint;
+			char *cp = data.cstr();
+			if( cp ) point->x = strtof(cp, &cp);
+			if( cp && *cp==',' ) point->y = strtof(cp+1, &cp);
+			if( cp && *cp==',' ) point->control_x1 = strtof(cp+1, &cp);
+			if( cp && *cp==',' ) point->control_y1 = strtof(cp+1, &cp);
+			if( cp && *cp==',' ) point->control_x2 = strtof(cp+1, &cp);
+			if( cp && *cp==',' ) point->control_y2 = strtof(cp+1, &cp);
+			points.append(point);
 		}
 	}
 }
@@ -176,6 +142,8 @@ void SubMask::copy(FileXML *file)
 		file->tag.set_title("MASK");
 		file->tag.set_property("NUMBER", keyframe->masks.number_of(this));
 		file->tag.set_property("NAME", name);
+		file->tag.set_property("FADER", fader);
+		file->tag.set_property("FEATHER", feather);
 		file->append_tag();
 		file->append_newline();
 
@@ -208,16 +176,13 @@ void SubMask::copy(FileXML *file)
 
 void SubMask::dump()
 {
-	for(int i = 0; i < points.total; i++)
-	{
+	for( int i=0; i<points.size(); ++i ) {
+		printf("	mask: %d, name: %s, fader: %f, feather %f\n", i,
+			name, fader, feather);
 		printf("	  point=%d x=%.2f y=%.2f in_x=%.2f in_y=%.2f out_x=%.2f out_y=%.2f\n",
-			i,
-			points.values[i]->x,
-			points.values[i]->y,
-			points.values[i]->control_x1,
-			points.values[i]->control_y1,
-			points.values[i]->control_x2,
-			points.values[i]->control_y2);
+			i, points.values[i]->x, points.values[i]->y,
+			points.values[i]->control_x1, points.values[i]->control_y1,
+			points.values[i]->control_x2, points.values[i]->control_y2);
 	}
 }
 
@@ -225,9 +190,6 @@ void SubMask::dump()
 MaskAuto::MaskAuto(EDL *edl, MaskAutos *autos)
  : Auto(edl, autos)
 {
-	mode = MASK_SUBTRACT_ALPHA;
-	feather = 0;
-	value = 100;
 	apply_before_plugins = 0;
 	disable_opengl_masking = 0;
 
@@ -258,34 +220,25 @@ int MaskAuto::operator==(MaskAuto &that)
 
 int MaskAuto::identical(MaskAuto *src)
 {
-	if(value != src->value ||
-		mode != src->mode ||
-		feather != src->feather ||
-		masks.size() != src->masks.size() ||
-		apply_before_plugins != src->apply_before_plugins ||
-		disable_opengl_masking != src->disable_opengl_masking) return 0;
+	if( masks.size() != src->masks.size() ||
+	    apply_before_plugins != src->apply_before_plugins ||
+	    disable_opengl_masking != src->disable_opengl_masking ) return 0;
 
-	for(int i = 0; i < masks.size(); i++)
+	for( int i=0; i<masks.size(); ++i ) {
 		if(!(*masks.values[i] == *src->masks.values[i])) return 0;
-
+	}
 	return 1;
 }
 
 void MaskAuto::update_parameter(MaskAuto *ref, MaskAuto *src)
 {
-	if(src->value != ref->value)
-		this->value = src->value;
-	if(src->mode != ref->mode)
-		this->mode = src->mode;
-	if(src->apply_before_plugins != ref->apply_before_plugins)
+	if( src->apply_before_plugins != ref->apply_before_plugins )
 		this->apply_before_plugins = src->apply_before_plugins;
-	if(src->disable_opengl_masking != ref->disable_opengl_masking)
+	if( src->disable_opengl_masking != ref->disable_opengl_masking )
 		this->disable_opengl_masking = src->disable_opengl_masking;
-	if(!EQUIV(src->feather, ref->feather))
-		this->feather = src->feather;
 
 	for( int i=0; i<masks.size(); ++i ) {
-		if(!src->get_submask(i)->equivalent(*ref->get_submask(i)))
+		if( !src->get_submask(i)->equivalent(*ref->get_submask(i)) )
 			this->get_submask(i)->copy_from(*src->get_submask(i));
 	}
 }
@@ -303,9 +256,6 @@ void MaskAuto::copy_from(MaskAuto *src)
 
 void MaskAuto::copy_data(MaskAuto *src)
 {
-	mode = src->mode;
-	feather = src->feather;
-	value = src->value;
 	apply_before_plugins = src->apply_before_plugins;
 	disable_opengl_masking = src->disable_opengl_masking;
 
@@ -328,34 +278,28 @@ int MaskAuto::interpolate_from(Auto *a1, Auto *a2, int64_t position, Auto *templ
 	{
 		return Auto::interpolate_from(a1, a2, position, templ);
 	}
-	this->mode = mask_auto1->mode;
-	this->feather = mask_auto1->feather;
-	this->value = mask_auto1->value;
 	this->apply_before_plugins = mask_auto1->apply_before_plugins;
 	this->disable_opengl_masking = mask_auto1->disable_opengl_masking;
 	this->position = position;
 	masks.remove_all_objects();
 
-	for(int i = 0;
-		i < mask_auto1->masks.total;
-		i++)
-	{
+	for( int i=0; i<mask_auto1->masks.total; ++i ) {
 		SubMask *new_submask = new SubMask(this, i);
 		masks.append(new_submask);
 		SubMask *mask1 = mask_auto1->masks.values[i];
 		SubMask *mask2 = mask_auto2->masks.values[i];
+		double len = mask_auto2->position - mask_auto1->position;
+		double weight = !len ? 0 : (position - mask_auto1->position) / len;
+		new_submask->fader = mask1->fader*(1-weight) + mask2->fader*weight + 0.5;
+		new_submask->feather = mask1->feather*(1-weight) + mask2->feather*weight + 0.5;
 
 		// just in case, should never happen
 		int total_points = MIN(mask1->points.total, mask2->points.total);
-		for(int j = 0; j < total_points; j++)
-		{
+		for( int j=0; j<total_points; ++j ) {
 			MaskPoint *point = new MaskPoint;
 			MaskAutos::avg_points(point,
-				mask1->points.values[j],
-				mask2->points.values[j],
-				position,
-				mask_auto1->position,
-				mask_auto2->position);
+				mask1->points.values[j], mask2->points.values[j],
+				position, mask_auto1->position, mask_auto2->position);
 			new_submask->points.append(point);
 		}
 	}
@@ -400,13 +344,13 @@ void MaskAuto::set_points(ArrayList<MaskPoint*> *points,
 
 void MaskAuto::load(FileXML *file)
 {
-	mode = file->tag.get_property("MODE", mode);
-	feather = file->tag.get_property("FEATHER", feather);
-	value = file->tag.get_property("VALUE", value);
+// legacy, moved to SubMask
+	int old_mode = file->tag.get_property("MODE", MASK_MULTIPLY_ALPHA);
+	int old_feather = file->tag.get_property("FEATHER", 0);
+	int old_value = file->tag.get_property("VALUE", 100);
 	apply_before_plugins = file->tag.get_property("APPLY_BEFORE_PLUGINS", apply_before_plugins);
 	disable_opengl_masking = file->tag.get_property("DISABLE_OPENGL_MASKING", disable_opengl_masking);
-	for(int i = 0; i < masks.size(); i++)
-	{
+	for( int i=0; i<masks.size(); ++i ) {
 		delete masks.values[i];
 		masks.values[i] = new SubMask(this, i);
 	}
@@ -422,6 +366,10 @@ void MaskAuto::load(FileXML *file)
 			SubMask *mask = masks.values[no];
 			memset(mask->name, 0, sizeof(mask->name));
 			strncpy(mask->name, name, sizeof(mask->name));
+			mask->feather = file->tag.get_property("FEATHER", old_feather);
+			mask->fader = file->tag.get_property("FADER", old_value);
+			if( old_mode == MASK_SUBTRACT_ALPHA )
+				mask->fader = -mask->fader;
 			mask->load(file);
 		}
 	}
@@ -431,25 +379,14 @@ void MaskAuto::load(FileXML *file)
 void MaskAuto::copy(int64_t start, int64_t end, FileXML *file, int default_auto)
 {
 	file->tag.set_title("AUTO");
-	file->tag.set_property("MODE", mode);
-	file->tag.set_property("VALUE", value);
-	file->tag.set_property("FEATHER", feather);
 	file->tag.set_property("APPLY_BEFORE_PLUGINS", apply_before_plugins);
 	file->tag.set_property("DISABLE_OPENGL_MASKING", disable_opengl_masking);
-
-	if(default_auto)
-		file->tag.set_property("POSITION", 0);
-	else
-		file->tag.set_property("POSITION", position - start);
+	file->tag.set_property("POSITION", default_auto ? 0 : position - start);
 	file->append_tag();
 	file->append_newline();
 
-	for(int i = 0; i < masks.size(); i++)
-	{
-//printf("MaskAuto::copy 1 %p %d %p\n", this, i, masks.values[i]);
+	for( int i=0; i<masks.size(); ++i )
 		masks.values[i]->copy(file);
-//printf("MaskAuto::copy 10\n");
-	}
 
 	file->tag.set_title("/AUTO");
 	file->append_tag();
@@ -458,9 +395,7 @@ void MaskAuto::copy(int64_t start, int64_t end, FileXML *file, int default_auto)
 
 void MaskAuto::dump()
 {
-	printf("	 mode=%d value=%d\n", mode, value);
-	for(int i = 0; i < masks.size(); i++)
-	{
+	for( int i=0; i<masks.size(); ++i ) {
 		printf("	 submask %d\n", i);
 		masks.values[i]->dump();
 	}
@@ -468,11 +403,9 @@ void MaskAuto::dump()
 
 void MaskAuto::translate_submasks(float translate_x, float translate_y)
 {
-	for(int i = 0; i < masks.size(); i++)
-	{
+	for( int i=0; i<masks.size(); ++i ) {
 		SubMask *mask = get_submask(i);
-		for (int j = 0; j < mask->points.total; j++)
-		{
+		for( int j=0; j<mask->points.total; ++j ) {
 			mask->points.values[j]->x += translate_x;
 			mask->points.values[j]->y += translate_y;
 		}
@@ -481,11 +414,9 @@ void MaskAuto::translate_submasks(float translate_x, float translate_y)
 
 void MaskAuto::scale_submasks(int orig_scale, int new_scale)
 {
-	for(int i = 0; i < masks.size(); i++)
-	{
+	for( int i=0; i<masks.size(); ++i ) {
 		SubMask *mask = get_submask(i);
-		for (int j = 0; j < mask->points.total; j++)
-		{
+		for( int j=0; j<mask->points.total; ++j ) {
 			float orig_x = mask->points.values[j]->x * orig_scale;
 			float orig_y = mask->points.values[j]->y * orig_scale;
 			mask->points.values[j]->x = orig_x / new_scale;

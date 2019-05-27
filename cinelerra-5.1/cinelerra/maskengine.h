@@ -30,6 +30,7 @@
 #include "mutex.inc"
 #include "vframe.inc"
 
+typedef uint16_t temp_t; // temp is A16
 
 class MaskEngine;
 
@@ -37,10 +38,10 @@ class MaskEngine;
 enum
 {
 	DO_MASK,
-	DO_X_FEATHER,
-	DO_Y_FEATHER,
+	DO_FEATHER,
 	DO_APPLY
 };
+
 
 class MaskPackage : public LoadPackage
 {
@@ -57,29 +58,24 @@ public:
 	MaskUnit(MaskEngine *engine);
 	~MaskUnit();
 
+	void draw_line(int v, int x1, int y1, int x2, int y2);
+	void draw_fill(int v);
+	void draw_feather(int ix1,int iy1, int ix2,int iy2);
+	void draw_spot(int ix, int iy);
 	void process_package(LoadPackage *package);
-	void draw_line_clamped(VFrame *frame,
-		int x1, int y1, int x2, int y2, unsigned char value);
-	void do_feather(VFrame *output, VFrame *input,
-		double feather, int start_y, int end_y, int start_x, int end_x);
-	void blur_strip(double *val_p, double *val_m,
-		double *dst, double *src, int size, int max);
-
-	double n_p[5], n_m[5];
-	double d_p[5], d_m[5];
-	double bd_p[5], bd_m[5];
 
 	MaskEngine *engine;
-	VFrame *temp;
+	int start_y, end_y;
+	int mask_model;
+	float v, r;
+	temp_t *spot;
 };
-
 
 class MaskEngine : public LoadServer
 {
 public:
 	MaskEngine(int cpus);
 	~MaskEngine();
-
 
 	void do_mask(VFrame *output,
 // Position relative to project, compensated for playback direction
@@ -94,18 +90,17 @@ public:
 	void init_packages();
 	LoadClient* new_client();
 	LoadPackage* new_package();
+	void draw_edge(MaskEdge &edge, MaskPointSet &points);
 
 	VFrame *output;
-// State of last mask
-	VFrame *mask;
-// Temporary for feathering
-	VFrame *temp_mask;
-	ArrayList<ArrayList<MaskPoint*>*> point_sets;
-	int mode;
-	int step;
-	double feather;
+	VFrame *mask, *temp;
+	MaskEdges edges;
+	MaskPointSets point_sets;
+	ArrayList<float> faders;
+	ArrayList<float> feathers;
+	int step, total_submasks;
 	int recalculate;
-	int value;
+	temp_t fade[SUBMASKS+1];
 };
 
 

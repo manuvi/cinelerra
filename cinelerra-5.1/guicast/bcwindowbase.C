@@ -149,7 +149,11 @@ BC_WindowBase::~BC_WindowBase()
 //printf("delete glx=%08x, win=%08x %s\n", (unsigned)glx_win, (unsigned)win, title);
 #ifdef HAVE_GL
 	if( get_resources()->get_synchronous() && glx_win != 0 ) {
+		if( window_type == MAIN_WINDOW )
+			unlock_window();
 		get_resources()->get_synchronous()->delete_window(this);
+		if( window_type == MAIN_WINDOW )
+			lock_window("BC_WindowBase::delete_window");
 	}
 #endif
 	XDestroyWindow(top_level->display, win);

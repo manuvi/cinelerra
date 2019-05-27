@@ -161,37 +161,35 @@ void MaskAutos::get_points(ArrayList<MaskPoint*> *points,
 }
 
 
-float MaskAutos::get_feather(int64_t position, int direction)
+float MaskAutos::get_feather(int64_t position, int i, int direction)
 {
 	Auto *begin = 0, *end = 0;
 	position = (direction == PLAY_FORWARD) ? position : (position - 1);
+	MaskAuto*prev = (MaskAuto*)get_prev_auto(position, PLAY_FORWARD, begin, 1);
+	MaskAuto*next = (MaskAuto*)get_next_auto(position, PLAY_FORWARD, end, 1);
+	SubMask *prev_mask = prev->get_submask(i), *next_mask = next->get_submask(i);
 
-	get_prev_auto(position, PLAY_FORWARD, begin, 1);
-	get_next_auto(position, PLAY_FORWARD, end, 1);
+	double weight = end->position == begin->position ? 0.0 :
+		(double)(position - begin->position) / (end->position - begin->position);
 
-	double weight = 0.0;
-	if(end->position != begin->position)
-		weight = (double)(position - begin->position) / (end->position - begin->position);
-
-	return ((MaskAuto*)begin)->feather * (1.0 - weight) + ((MaskAuto*)end)->feather * weight;
+	int result = prev_mask->feather * (1-weight) + next_mask->feather*weight + 0.5;
+	return result;
 }
 
-int MaskAutos::get_value(int64_t position, int direction)
+int MaskAutos::get_fader(int64_t position, int i, int direction)
 {
 	Auto *begin = 0, *end = 0;
 	position = (direction == PLAY_FORWARD) ? position : (position - 1);
+	MaskAuto*prev = (MaskAuto*)get_prev_auto(position, PLAY_FORWARD, begin, 1);
+	MaskAuto*next = (MaskAuto*)get_next_auto(position, PLAY_FORWARD, end, 1);
+	SubMask *prev_mask = prev->get_submask(i), *next_mask = next->get_submask(i);
 
-	get_prev_auto(position, PLAY_FORWARD, begin, 1);
-	get_next_auto(position, PLAY_FORWARD, end, 1);
+	double weight = end->position == begin->position ? 0.0 :
+		(double)(position - begin->position) / (end->position - begin->position);
 
-	double weight = 0.0;
-	if(end->position != begin->position)
-		weight = (double)(position - begin->position) / (end->position - begin->position);
-
-	int result = (int)((double)((MaskAuto*)begin)->value * (1.0 - weight) +
-		(double)((MaskAuto*)end)->value * weight + 0.5);
-// printf("MaskAutos::get_value %d %d %f %d %f %d\n", __LINE__,
-// ((MaskAuto*)begin)->value, 1.0 - weight, ((MaskAuto*)end)->value, weight, result);
+	int result = prev_mask->fader * (1-weight) + next_mask->fader*weight + 0.5;
+// printf("MaskAutos::get_fader %d %d %d %f %d %f %d\n", __LINE__, i,
+// ((MaskAuto*)begin)->fader, 1.0 - weight, ((MaskAuto*)end)->fader, weight, result);
 	return result;
 }
 

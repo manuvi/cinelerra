@@ -237,10 +237,9 @@ public:
 	void disable_opengl();
 	void flip_opengl();
 
-// Calls the BC_Synchronous version of the function with the window_id.
-// Not run in OpenGL thread because it has its own lock.
-	unsigned int get_shader(char *title, int *got_it);
-	void put_shader(unsigned int handle, char *title);
+// Calls the BC_Synchronous version of the function
+	int get_shader(unsigned int *handle, const char *vert, const char *frag);
+	void put_shader(unsigned int handle, const char *vert, const char *frag);
 	int get_opengl_server_version();
 
 	int flash(int x, int y, int w, int h, int flush = 1);

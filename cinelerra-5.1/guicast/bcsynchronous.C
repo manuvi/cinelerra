@@ -46,16 +46,21 @@ TextureID::TextureID(int window_id, int id, int w, int h, int components)
 	in_use = 1;
 }
 
-ShaderID::ShaderID(int window_id, unsigned int handle, char *source)
+ShaderID::ShaderID(int window_id, unsigned int handle,
+		const char *vert, const char *frag)
 {
 	this->window_id = window_id;
 	this->handle = handle;
-	this->source = strdup(source);
+	if( !vert ) vert = "";
+	if( !frag ) frag = "";
+	this->vert = cstrdup(vert);
+	this->frag = cstrdup(frag);
 }
 
 ShaderID::~ShaderID()
 {
-	free(source);
+	delete [] vert;
+	delete [] frag;
 }
 
 #ifdef HAVE_GL
@@ -240,37 +245,24 @@ void BC_Synchronous::handle_command(BC_SynchronousCommand *command)
 
 void BC_Synchronous::put_texture(int id, int w, int h, int components)
 {
-	if(id >= 0)
-	{
+	if( id >= 0 ) {
 		table_lock->lock("BC_Resources::put_texture");
 // Search for duplicate
-		for(int i = 0; i < texture_ids.total; i++)
-		{
+		for( int i = 0; i < texture_ids.total; i++ ) {
 			TextureID *ptr = texture_ids.values[i];
-			if(ptr->window_id == current_window->get_id() &&
-				ptr->id == id)
-			{
+			if( ptr->window_id == current_window->get_id() && ptr->id == id ) {
 				printf("BC_Synchronous::push_texture: texture exists\n"
 					"exists: window=%d id=%d w=%d h=%d\n"
 					"new:    window=%d id=%d w=%d h=%d\n",
-					ptr->window_id,
-					ptr->id,
-					ptr->w,
-					ptr->h,
-					current_window->get_id(),
-					id,
-					w,
-					h);
+					ptr->window_id, ptr->id, ptr->w, ptr->h,
+					current_window->get_id(), id, w, h);
 				table_lock->unlock();
 				return;
 			}
 		}
 
 		TextureID *new_id = new TextureID(current_window->get_id(),
-			id,
-			w,
-			h,
-			components);
+			id, w, h, components);
 		texture_ids.append(new_id);
 		table_lock->unlock();
 	}
@@ -317,30 +309,31 @@ void BC_Synchronous::release_texture(int window_id, int id)
 
 
 
-unsigned int BC_Synchronous::get_shader(char *source, int *got_it)
+int BC_Synchronous::get_shader(unsigned int *handle,
+		const char *vert, const char *frag)
 {
+	unsigned int shader = 0, ret = 0;
+	if( !vert ) vert = "";
+	if( !frag ) frag = "";
 	table_lock->lock("BC_Resources::get_shader");
-	for(int i = 0; i < shader_ids.total; i++)
-	{
-		if(shader_ids.values[i]->window_id == current_window->get_id() &&
-			!strcmp(shader_ids.values[i]->source, source))
-		{
-			unsigned int result = shader_ids.values[i]->handle;
-			table_lock->unlock();
-			*got_it = 1;
-			return result;
+	for( int i=0; !ret && i<shader_ids.size(); ++i ) {
+		ShaderID &sp = *shader_ids[i];
+		if( sp.window_id == current_window->get_id() &&
+		    !strcmp(sp.vert, vert) && !strcmp(sp.frag, frag) ) {
+			shader = shader_ids.values[i]->handle;
+			ret = 1;
 		}
 	}
 	table_lock->unlock();
-	*got_it = 0;
-	return 0;
+	*handle = shader;
+	return ret;
 }
 
 void BC_Synchronous::put_shader(unsigned int handle,
-	char *source)
+		const char *vert, const char *frag)
 {
 	table_lock->lock("BC_Resources::put_shader");
-	shader_ids.append(new ShaderID(current_window->get_id(), handle, source));
+	shader_ids.append(new ShaderID(current_window->get_id(), handle, vert, frag));
 	table_lock->unlock();
 }
 
@@ -348,18 +341,18 @@ void BC_Synchronous::dump_shader(unsigned int handle)
 {
 	int got_it = 0;
 	table_lock->lock("BC_Resources::dump_shader");
-	for(int i = 0; i < shader_ids.total; i++)
-	{
-		if(shader_ids.values[i]->handle == handle)
-		{
+	for( int i=0; i<shader_ids.size(); ++i ) {
+		if( shader_ids.values[i]->handle == handle ) {
 			printf("BC_Synchronous::dump_shader\n"
-				"%s", shader_ids.values[i]->source);
+				"vert: %s\nfrag: %s\n",
+				 shader_ids[i]->vert, shader_ids[i]->frag);
 			got_it = 1;
 			break;
 		}
 	}
 	table_lock->unlock();
-	if(!got_it) printf("BC_Synchronous::dump_shader couldn't find %d\n", handle);
+	if( !got_it )
+		printf("BC_Synchronous::dump_shader couldn't find %d\n", handle);
 }
 
 void BC_Synchronous::delete_window(BC_WindowBase *window)

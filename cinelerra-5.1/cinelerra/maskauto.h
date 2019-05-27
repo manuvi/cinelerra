@@ -44,13 +44,14 @@ public:
 	float control_x2, control_y2;
 };
 
+#define FEATHER_MAX 100
+
 class SubMask
 {
 public:
 	SubMask(MaskAuto *keyframe, int no);
 	~SubMask();
 
-// Don't use ==
 	int operator==(SubMask& ptr);
 	int equivalent(SubMask& ptr);
 	void copy_from(SubMask& ptr);
@@ -59,6 +60,8 @@ public:
 	void dump();
 
 	char name[BCSTRLEN];
+	float fader; // 0 - 100
+	float feather; // 0 - 100
 	ArrayList<MaskPoint*> points;
 	MaskAuto *keyframe;
 };
@@ -98,15 +101,56 @@ public:
 
 	ArrayList<SubMask*> masks;
 // These are constant for the entire track
-	int mode;
-	float feather;
-// 0 - 100
-	int value;
 	int apply_before_plugins;
 	int disable_opengl_masking;
 };
 
+class MaskCoord { public: double x, y, z; };
 
+class MaskEdge : public ArrayList<MaskCoord>
+{
+public:
+	MaskCoord &append() { return ArrayList<MaskCoord>::append(); }
+	MaskCoord &append(double x, double y, double z=0) {
+		MaskCoord &c = append();
+		c.x = x;  c.y = y;  c.z = z;
+		return c;
+	}
+};
 
+// shader buffer unsized array vec only seems to work for dvec (05/2019)
+class MaskSpot { public: double x, y; };
+
+class MaskSpots : public ArrayList<MaskSpot>
+{
+public:
+	MaskSpot &append() { return ArrayList<MaskSpot>::append(); }
+	MaskSpot &append(double x, double y) {
+		MaskSpot &s = append();
+		s.x = x;  s.y = y;
+		return s;
+	}
+};
+
+class MaskEdges : public ArrayList<MaskEdge*> {
+public:
+	MaskEdges() {}
+	~MaskEdges() { remove_all_objects(); }
+};
+
+class MaskPointSet : public ArrayList<MaskPoint*>
+{
+public:
+	void clear() { remove_all_objects(); }
+	MaskPointSet() {}
+	~MaskPointSet() { clear(); }
+};
+class MaskPointSets : public ArrayList<MaskPointSet*>
+{
+public:
+	void clear() { remove_all_objects(); }
+	MaskPointSets() {}
+	~MaskPointSets() { clear(); }
+};
 
 #endif
