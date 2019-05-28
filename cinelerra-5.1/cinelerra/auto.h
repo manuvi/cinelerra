@@ -46,6 +46,8 @@ public:
 	virtual int operator==(Auto &that);
 	virtual void copy_from(Auto *that);
 	virtual bool is_floatauto() { return false; }
+	virtual bool is_intauto() { return false; }
+	virtual bool is_maskauto() { return false; }
 	/* create an interpolation using a1 and a2, (defaulting to previous and next)  */
 	/* if not possible, just fill from a1 (or from template if given) and return 0  */
 	virtual int interpolate_from(Auto *a1, Auto *a2, int64_t new_position, Auto *templ=0);

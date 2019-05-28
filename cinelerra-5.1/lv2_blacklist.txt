@@ -43,6 +43,13 @@ http://plugin.org.uk/swh-plugins/bwxover_iir
 http://plugin.org.uk/swh-plugins/highpass_iir
 http://plugin.org.uk/swh-plugins/lowpass_iir
 #
+# Problematic 4 tested by Olivier Humbert
+#
+file:///usr/lib/lv2/MonoEffect.ingen/MonoEffect.ttl
+file:///usr/lib/lv2/MonoInstrument.ingen/MonoInstrument.ttl
+file:///usr/lib/lv2/StereoEffect.ingen/StereoEffect.ttl
+file:///usr/lib/lv2/StereoInstrument.ingen/StereoInstrument.ttl
+#
 # Rakarrack takes special handling to get these lv2 plugins to work;
 # the library needs to be linked using  -Bsymbolic-functions ;
 # and there are places where there exist uninitialized data objects.

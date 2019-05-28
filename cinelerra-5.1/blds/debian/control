@@ -4,15 +4,15 @@ Priority: optional
 Standards-Version: 5.1.20190430
 Maintainer: mailing list <cin@lists.cinelerra-gg.org>
 Homepage: https://www.cinelerra-gg.org/
-Build-Depends: nasm, yasm, g++, gdb, build-essential, e2fsprogs,
- libz-dev, liblzma-dev, libbz2-dev, exuberant-ctags,
- libxft-dev, libxinerama-dev, libxv-dev, linux-firmware,
- freeglut3-dev, libxv-dev, libasound2-dev,
- libncurses5-dev, libxinerama-dev, libfreetype6-dev, libxft-dev,
- ttf-bitstream-vera, xfonts-75dpi, xfonts-100dpi, fonts-dejavu,
- libflac-dev, inkscape, texinfo, libpng-dev, libvdpau-dev, libva-dev,
- cmake, udftools, libxml2-utils, git, gettext, libtool,
- autoconf, automake
+Build-Depends:
+ autoconf, automake, build-essential, cmake, e2fsprogs,
+ exuberant-ctags, fonts-dejavu, freeglut3-dev, g++, gdb,
+ gettext, git, inkscape, libasound2-dev, libbz2-dev,
+ libflac-dev, libfreetype6-dev, liblzma-dev, libncurses5-dev,
+ libpng-dev, libtool, libusb-1.0-0-dev, libva-dev, libvdpau-dev,
+ libxft-dev, libxinerama-dev, libxml2-utils, libxv-dev, libxv-dev,
+ libz-dev, linux-firmware, nasm, texinfo, ttf-bitstream-vera,
+ udftools, xfonts-100dpi, xfonts-75dpi, yasm
 
 Package: cin
 Depends: ${misc:Depends}

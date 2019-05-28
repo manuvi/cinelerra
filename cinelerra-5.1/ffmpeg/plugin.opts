@@ -100,8 +100,10 @@ dctdnoiz 4.5
 deband
 #decimate
 deflate
+#deinterlace_vaapi ###Operation not permitted
 dejudder
 delogo x=10:y=10:w=10:h=10:show=1
+#denoise_vaapi ###Operation not permitted
 deshake
 #detelecine
 dilation
@@ -205,6 +207,7 @@ pp
 pp7
 #premultiply ###Operation not permitted
 prewitt
+#procamp_vaapi ###Operation not permitted
 #psnr PSNR=10*log10(MAX^2/MSE) ###Input/output error
 #pullup
 #qp     ###not part of frame data
@@ -222,6 +225,7 @@ rgbtestsrc
 rotate
 sab
 scale 200:100
+#scale_vaapi ###Operation not permitted
 #scale2ref ###Input/output error
 #select ###Operation not permitted
 #selectivecolor greens=.5 0 -.33 0:blues=0 .27
@@ -232,6 +236,7 @@ separatefields
 #setpts   ###not part of frame data
 #setsar   ###will not work because Format already set
 #settb
+#sharpness_vaapi ###Operation not permitted
 #showcqt ###Input/output error
 #showfreqs ###Input/output error
 #showinfo ###not part of frame data

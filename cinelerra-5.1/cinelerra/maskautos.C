@@ -161,7 +161,7 @@ void MaskAutos::get_points(ArrayList<MaskPoint*> *points,
 }
 
 
-float MaskAutos::get_feather(int64_t position, int i, int direction)
+double MaskAutos::get_feather(int64_t position, int i, int direction)
 {
 	Auto *begin = 0, *end = 0;
 	position = (direction == PLAY_FORWARD) ? position : (position - 1);
@@ -172,11 +172,11 @@ float MaskAutos::get_feather(int64_t position, int i, int direction)
 	double weight = end->position == begin->position ? 0.0 :
 		(double)(position - begin->position) / (end->position - begin->position);
 
-	int result = prev_mask->feather * (1-weight) + next_mask->feather*weight + 0.5;
+	double result = prev_mask->feather * (1-weight) + next_mask->feather*weight;
 	return result;
 }
 
-int MaskAutos::get_fader(int64_t position, int i, int direction)
+double MaskAutos::get_fader(int64_t position, int i, int direction)
 {
 	Auto *begin = 0, *end = 0;
 	position = (direction == PLAY_FORWARD) ? position : (position - 1);
@@ -187,7 +187,7 @@ int MaskAutos::get_fader(int64_t position, int i, int direction)
 	double weight = end->position == begin->position ? 0.0 :
 		(double)(position - begin->position) / (end->position - begin->position);
 
-	int result = prev_mask->fader * (1-weight) + next_mask->fader*weight + 0.5;
+	double result = prev_mask->fader * (1-weight) + next_mask->fader*weight;
 // printf("MaskAutos::get_fader %d %d %d %f %d %f %d\n", __LINE__, i,
 // ((MaskAuto*)begin)->fader, 1.0 - weight, ((MaskAuto*)end)->fader, weight, result);
 	return result;
@@ -219,19 +219,18 @@ Auto* MaskAutos::new_auto()
 	return new MaskAuto(edl, this);
 }
 
-void MaskAutos::dump()
+void MaskAutos::dump(FILE *fp)
 {
-	printf("	MaskAutos::dump %p\n", this);
-	printf("	Default: position %jd submasks %d\n",
+	fprintf(fp, "	MaskAutos::dump %p\n", this);
+	fprintf(fp, "	Default: position %jd submasks %d\n",
 		default_auto->position,
 		((MaskAuto*)default_auto)->masks.total);
-	((MaskAuto*)default_auto)->dump();
-	for(Auto* current = first; current; current = NEXT)
-	{
-		printf("	position %jd masks %d\n",
+	((MaskAuto*)default_auto)->dump(fp);
+	for( Auto* current = first; current; current=NEXT ) {
+		fprintf(fp, "	position %jd masks %d\n",
 			current->position,
 			((MaskAuto*)current)->masks.total);
-		((MaskAuto*)current)->dump();
+		((MaskAuto*)current)->dump(fp);
 	}
 }
 
@@ -242,10 +241,7 @@ int MaskAutos::mask_exists(int64_t position, int direction)
 
 	MaskAuto* keyframe = (MaskAuto*)get_prev_auto(position, direction, current);
 
-
-
-	for(int i = 0; i < keyframe->masks.total; i++)
-	{
+	for( int i = 0; i < keyframe->masks.total; i++ ) {
 		SubMask *mask = keyframe->get_submask(i);
 		if(mask->points.total > 1)
 			return 1;
@@ -256,12 +252,8 @@ int MaskAutos::mask_exists(int64_t position, int direction)
 int MaskAutos::total_submasks(int64_t position, int direction)
 {
 	position = (direction == PLAY_FORWARD) ? position : (position - 1);
-	for(MaskAuto* current = (MaskAuto*)last;
-		current;
-		current = (MaskAuto*)PREVIOUS)
-	{
-		if(current->position <= position)
-		{
+	for( MaskAuto* current=(MaskAuto*)last; current; current=(MaskAuto*)PREVIOUS ) {
+		if( current->position <= position ) {
 			return current->masks.total;
 		}
 	}
@@ -273,10 +265,7 @@ int MaskAutos::total_submasks(int64_t position, int direction)
 void MaskAutos::translate_masks(float translate_x, float translate_y)
 {
 	((MaskAuto *)default_auto)->translate_submasks(translate_x, translate_y);
-	for(MaskAuto* current = (MaskAuto*)first;
-		current;
-		current = (MaskAuto*)NEXT)
-	{
+	for( MaskAuto* current=(MaskAuto*)first; current; current=(MaskAuto*)NEXT ) {
 		current->translate_submasks(translate_x, translate_y);
 	}
 }

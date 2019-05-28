@@ -156,6 +156,7 @@ DIRS = $(OPENCV_OBJS) \
 	theme_pinklady \
 	theme_suv \
 	theme_unflat \
+	theme_cakewalk \
 
 # too costly
 #	findobject \

@@ -59,8 +59,8 @@ FileAC3::FileAC3(Asset *asset, File *file)
 
 FileAC3::~FileAC3()
 {
-	if( mpg_file ) delete mpg_file;
 	close_file();
+	delete mpg_file;
 }
 
 int FileAC3::reset_parameters_derived()

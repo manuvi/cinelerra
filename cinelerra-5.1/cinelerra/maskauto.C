@@ -174,12 +174,12 @@ void SubMask::copy(FileXML *file)
 	}
 }
 
-void SubMask::dump()
+void SubMask::dump(FILE *fp)
 {
 	for( int i=0; i<points.size(); ++i ) {
-		printf("	mask: %d, name: %s, fader: %f, feather %f\n", i,
+		fprintf(fp, "	mask: %d, name: %s, fader: %f, feather %f\n", i,
 			name, fader, feather);
-		printf("	  point=%d x=%.2f y=%.2f in_x=%.2f in_y=%.2f out_x=%.2f out_y=%.2f\n",
+		fprintf(fp, "	  point=%d x=%.2f y=%.2f in_x=%.2f in_y=%.2f out_x=%.2f out_y=%.2f\n",
 			i, points.values[i]->x, points.values[i]->y,
 			points.values[i]->control_x1, points.values[i]->control_y1,
 			points.values[i]->control_x2, points.values[i]->control_y2);
@@ -345,9 +345,9 @@ void MaskAuto::set_points(ArrayList<MaskPoint*> *points,
 void MaskAuto::load(FileXML *file)
 {
 // legacy, moved to SubMask
-	int old_mode = file->tag.get_property("MODE", MASK_MULTIPLY_ALPHA);
-	int old_feather = file->tag.get_property("FEATHER", 0);
+	int old_mode = file->tag.get_property("MODE", -1);
 	int old_value = file->tag.get_property("VALUE", 100);
+	float old_feather = file->tag.get_property("FEATHER", 0);
 	apply_before_plugins = file->tag.get_property("APPLY_BEFORE_PLUGINS", apply_before_plugins);
 	disable_opengl_masking = file->tag.get_property("DISABLE_OPENGL_MASKING", disable_opengl_masking);
 	for( int i=0; i<masks.size(); ++i ) {
@@ -368,12 +368,11 @@ void MaskAuto::load(FileXML *file)
 			strncpy(mask->name, name, sizeof(mask->name));
 			mask->feather = file->tag.get_property("FEATHER", old_feather);
 			mask->fader = file->tag.get_property("FADER", old_value);
-			if( old_mode == MASK_SUBTRACT_ALPHA )
+			if( old_mode == MASK_MULTIPLY_ALPHA )
 				mask->fader = -mask->fader;
 			mask->load(file);
 		}
 	}
-//	dump();
 }
 
 void MaskAuto::copy(int64_t start, int64_t end, FileXML *file, int default_auto)
@@ -393,11 +392,13 @@ void MaskAuto::copy(int64_t start, int64_t end, FileXML *file, int default_auto)
 	file->append_newline();
 }
 
-void MaskAuto::dump()
+void MaskAuto::dump(FILE *fp)
 {
+	fprintf(fp,"mask_auto:  apply_before_plugins %d, disable_opengl_masking %d\n",
+		apply_before_plugins, disable_opengl_masking);
 	for( int i=0; i<masks.size(); ++i ) {
-		printf("	 submask %d\n", i);
-		masks.values[i]->dump();
+		fprintf(fp,"    submask %d:\n", i);
+		masks.values[i]->dump(fp);
 	}
 }
 

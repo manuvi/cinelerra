@@ -1709,7 +1709,7 @@ int CWindowMaskAffectedPoint::handle_event()
 	int active_point = affected_point;
 	if( affected_point >= total_points )
 		affected_point = total_points - 1;
-	else if( affected_point < 0 )
+	if( affected_point < 0 )
 		affected_point = 0;
 	if( active_point != affected_point )
 		update((int64_t)affected_point);
@@ -1725,6 +1725,7 @@ CWindowMaskFocus::CWindowMaskFocus(MWindow *mwindow, CWindowToolGUI *gui, int x,
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
+	set_tooltip("Center for rotate/scale");
 }
 
 CWindowMaskFocus::~CWindowMaskFocus()
@@ -1744,6 +1745,7 @@ CWindowMaskDrawMarkers::CWindowMaskDrawMarkers(MWindow *mwindow, CWindowToolGUI 
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
+	set_tooltip("Display points");
 }
 
 CWindowMaskDrawMarkers::~CWindowMaskDrawMarkers()
@@ -1763,6 +1765,7 @@ CWindowMaskDrawBoundary::CWindowMaskDrawBoundary(MWindow *mwindow, CWindowToolGU
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
+	set_tooltip("Display mask outline");
 }
 
 CWindowMaskDrawBoundary::~CWindowMaskDrawBoundary()

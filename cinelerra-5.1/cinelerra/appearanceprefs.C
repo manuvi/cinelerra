@@ -93,7 +93,7 @@ void AppearancePrefs::create_objects()
 	thumbnail_size = new ViewThumbnailSize(pwindow, this, x2, y);
 	thumbnail_size->create_objects();
 	y += thumbnail_size->get_h() + 5;
-	add_subwindow(new BC_Title(x1, y, _("Vicon memory size:")));
+	add_subwindow(new BC_Title(x1, y, _("Vicon quality:")));
 	vicon_size = new ViewViconSize(pwindow, this, x2, y);
 	vicon_size->create_objects();
 	y += vicon_size->get_h() + 5;

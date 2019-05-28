@@ -57,7 +57,7 @@ public:
 	void copy_from(SubMask& ptr);
 	void load(FileXML *file);
 	void copy(FileXML *file);
-	void dump();
+	void dump(FILE *fp);
 
 	char name[BCSTRLEN];
 	float fader; // 0 - 100
@@ -74,6 +74,7 @@ public:
 
 	int operator==(Auto &that);
 	int operator==(MaskAuto &that);
+	bool is_maskauto() { return true; }
 	int identical(MaskAuto *src);
 	void load(FileXML *file);
 	void copy(int64_t start, int64_t end, FileXML *file, int default_auto);
@@ -90,7 +91,7 @@ public:
 // Copy parameters to this which differ between ref & src
 	void update_parameter(MaskAuto *ref, MaskAuto *src);
 
-	void dump();
+	void dump(FILE *fp);
 // Retrieve submask with clamping
 	SubMask* get_submask(int number);
 // Translates all submasks
@@ -98,9 +99,7 @@ public:
 // scale all submasks
 	void scale_submasks(int orig_scale, int new_scale);
 
-
 	ArrayList<SubMask*> masks;
-// These are constant for the entire track
 	int apply_before_plugins;
 	int disable_opengl_masking;
 };

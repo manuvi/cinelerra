@@ -23,7 +23,7 @@
 #define MWINDOW_INC
 
 #define PROGRAM_NAME "Cinelerra"
-#define DEFAULT_THEME "UnFlat"
+#define DEFAULT_THEME "Cakewalk"
 #define DEFAULT_PICON "cinfinity"
 #define CONFIG_FILE "Cinelerra_rc"
 // user presets

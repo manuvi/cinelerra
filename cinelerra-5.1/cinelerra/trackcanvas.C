@@ -3663,16 +3663,20 @@ int TrackCanvas::draw_hairline(Auto *auto_keyframe, int color, int show)
 	set_color(color);
 	draw_line(ax, 0, ax, get_h());
 
+	char text[BCSTRLEN];
 	if( show ) {
-		char text[BCSTRLEN];
 		if( auto_keyframe->is_floatauto() ) {
 			FloatAuto *float_auto = (FloatAuto *)auto_keyframe;
 			sprintf(text, "%0.2f", float_auto->get_value());
 		}
-		else {
+		else if( auto_keyframe->is_intauto() ) {
 			IntAuto *int_auto = (IntAuto *)auto_keyframe;
 			sprintf(text, "%d", int_auto->value);
 		}
+		else
+			show = 0;
+	}
+	if( show ) {
 		int font = MEDIUMFONT;
 		int tw = get_text_width(font, text)  + TOOLTIP_MARGIN * 2;
 		int th = get_text_height(font, text) + TOOLTIP_MARGIN * 2;

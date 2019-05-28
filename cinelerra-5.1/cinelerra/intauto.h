@@ -36,6 +36,7 @@ public:
 
 	void copy_from(Auto *that);
 	void copy_from(IntAuto *that);
+	bool is_intauto() { return true; }
 	int operator==(Auto &that);
 	int operator==(IntAuto &that);
 

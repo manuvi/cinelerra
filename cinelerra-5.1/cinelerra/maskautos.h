@@ -35,9 +35,7 @@ public:
 	~MaskAutos();
 
 	Auto* new_auto();
-
-
-	void dump();
+	void dump(FILE *fp);
 
 	static void avg_points(MaskPoint *output,
 		MaskPoint *input1,
@@ -55,8 +53,8 @@ public:
 	int mask_exists(int64_t position, int direction);
 // Perform interpolation
 	void get_points(ArrayList<MaskPoint*> *points, int submask, int64_t position, int direction);
-	float get_feather(int64_t position, int i, int direction);
-	int get_fader(int64_t position, int i, int direction);
+	double get_feather(int64_t position, int i, int direction);
+	double get_fader(int64_t position, int i, int direction);
 	int total_submasks(int64_t position, int direction);
 // Translates all mask points
 	void translate_masks(float translate_x, float translate_y);

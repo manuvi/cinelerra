@@ -45,7 +45,7 @@ cd "$cin_dir"
 for d in guicast cinelerra plugins/*; do
   if [ ! -d "$d" ]; then continue; fi
   ls -1 $d/*.[Ch] $d/*.inc 2> /dev/null
-done | xgettext --no-wrap -L C++ -k_ -kN_ -kD_ -f - -o -
+done | xgettext --from-code utf-8 --no-wrap -L C++ -k_ -kN_ -kD_ -f - -o -
 
 echo 1>&2 "done"
 
