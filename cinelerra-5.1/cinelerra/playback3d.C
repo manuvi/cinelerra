@@ -419,10 +419,6 @@ void Playback3D::handle_command(BC_SynchronousCommand *command)
 			write_buffer_sync((Playback3DCommand*)command);
 			break;
 
-		case Playback3DCommand::FINISH_OUTPUT:
-			finish_output_sync((Playback3DCommand*)command);
-			break;
-
 		case Playback3DCommand::CLEAR_OUTPUT:
 			clear_output_sync((Playback3DCommand*)command);
 			break;
@@ -490,6 +486,7 @@ void Playback3D::copy_from_sync(Playback3DCommand *command)
 		command->canvas->lock_canvas("Playback3D::copy_from_sync");
 	if( window ) {
 		window->enable_opengl();
+		glFinish();
 		int w = command->input->get_w();
 		int h = command->input->get_h();
 
@@ -664,7 +661,8 @@ void Playback3D::write_buffer_sync(Playback3DCommand *command)
 		window->enable_opengl();
 
 //printf("Playback3D::write_buffer_sync 1 %d\n", window->get_id());
-		int flip_y = 0, frame_state = command->frame->get_opengl_state();
+		int flip_y = 0;
+		int frame_state = command->frame->get_opengl_state();
 		switch( frame_state ) {
 // Upload texture and composite to screen
 			case VFrame::RAM:
@@ -674,13 +672,6 @@ void Playback3D::write_buffer_sync(Playback3DCommand *command)
 				window->enable_opengl();
 // Composite texture to screen and swap buffer
 			case VFrame::TEXTURE:
-				if( !flip_y ) {
-					int fh1 = command->frame->get_h()-1;
-					float in_y1 = fh1 - command->in_y1;
-					float in_y2 = fh1 - command->in_y2;
-					command->in_y1 = in_y2;
-					command->in_y2 = in_y1;
-				}
 				draw_output(command, flip_y);
 				break;
 			default:
@@ -775,28 +766,6 @@ void Playback3D::init_frame(Playback3DCommand *command, int is_yuv)
 	float gbuv = is_yuv ? 0.5 : 0.0;
 	glClearColor(0.0, gbuv, gbuv, 0.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-#endif
-}
-
-
-void Playback3D::finish_output(Canvas *canvas)
-{
-	Playback3DCommand command;
-	command.canvas = canvas;
-	command.command = Playback3DCommand::FINISH_OUTPUT;
-	send_command(&command);
-}
-
-void Playback3D::finish_output_sync(Playback3DCommand *command)
-{
-#ifdef HAVE_GL
-	BC_WindowBase *window =
-		command->canvas->lock_canvas("Playback3D::finish_output_sync");
-	if( window ) {
-		command->canvas->get_canvas()->enable_opengl();
-		glFinish();
-	}
-	command->canvas->unlock_canvas();
 #endif
 }
 

@@ -53,7 +53,7 @@ public:
 // and the commands are run in the right sequence to
 // initialize it to our preferred specifications.
 // The texture unit initialization requires the texture to be bound.
-	void bind(int texture_unit = -1);
+	void bind(int texture_unit, int nearest=0);
 
 // Calculate the power of 2 size for allocating textures
 	static int calculate_texture_size(int w, int *max = 0);

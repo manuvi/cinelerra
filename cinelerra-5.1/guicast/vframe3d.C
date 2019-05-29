@@ -179,7 +179,6 @@ void VFrame::screen_to_texture(int x, int y, int w, int h)
 // Create texture
 	BC_Texture::new_texture(&texture,
 		get_w(), get_h(), get_color_model());
-
 	if(pbuffer) {
 		glEnable(GL_TEXTURE_2D);
 
@@ -237,18 +236,13 @@ void VFrame::draw_texture(int flip_y)
 }
 
 
-void VFrame::bind_texture(int texture_unit)
+void VFrame::bind_texture(int texture_unit, int nearest)
 {
 // Bind the texture
-	if(texture)
-	{
-		texture->bind(texture_unit);
+	if(texture) {
+		texture->bind(texture_unit, nearest);
 	}
 }
-
-
-
-
 
 
 void VFrame::init_screen(int w, int h)
@@ -266,7 +260,7 @@ void VFrame::init_screen(int w, int h)
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 // Shift down and right so 0,0 is the top left corner
-	glTranslatef(-(w-1)/2.f, (h-1)/2.f, 0.0);
+	glTranslatef(-w/2.f, h/2.f, 0.f);
 	glTranslatef(0.0, 0.0, -(far + near) / 2);
 
 	glDisable(GL_DEPTH_TEST);

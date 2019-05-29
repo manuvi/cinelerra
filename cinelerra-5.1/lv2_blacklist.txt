@@ -43,12 +43,17 @@ http://plugin.org.uk/swh-plugins/bwxover_iir
 http://plugin.org.uk/swh-plugins/highpass_iir
 http://plugin.org.uk/swh-plugins/lowpass_iir
 #
-# Problematic 4 tested by Olivier Humbert
+# Problematic 9 tested by Olivier Humbert (https://librazik.tuxfamily.org/)
 #
 file:///usr/lib/lv2/MonoEffect.ingen/MonoEffect.ttl
 file:///usr/lib/lv2/MonoInstrument.ingen/MonoInstrument.ttl
 file:///usr/lib/lv2/StereoEffect.ingen/StereoEffect.ttl
 file:///usr/lib/lv2/StereoInstrument.ingen/StereoInstrument.ttl
+http://example.org/raffo
+http://www.wodgod.com/newtonator/1.0
+https://sami.boukortt.com/plugins/intersect#Intersect
+https://sami.boukortt.com/plugins/intersect#SymmetricDifference
+https://sami.boukortt.com/plugins/intersect#Upmix
 #
 # Rakarrack takes special handling to get these lv2 plugins to work;
 # the library needs to be linked using  -Bsymbolic-functions ;

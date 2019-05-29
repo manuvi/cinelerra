@@ -196,7 +196,7 @@ void BC_Texture::draw_texture(
 #endif
 }
 
-void BC_Texture::bind(int texture_unit)
+void BC_Texture::bind(int texture_unit, int nearest)
 {
 #ifdef HAVE_GL
 // Bind the texture
@@ -205,10 +205,10 @@ void BC_Texture::bind(int texture_unit)
 		if(texture_unit >= 0) glActiveTexture(GL_TEXTURE0 + texture_unit);
 		glBindTexture(GL_TEXTURE_2D, texture_id);
 		glEnable(GL_TEXTURE_2D);
-		if(texture_unit >= 0)
-		{
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		if(texture_unit >= 0) {
+			int filter = nearest ? GL_NEAREST : GL_LINEAR;
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
 
 // GL_REPEAT in this case causes the upper left corners of the masks
 // to blur.

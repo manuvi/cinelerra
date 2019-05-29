@@ -283,12 +283,7 @@ public:
 	BC_PBuffer* get_pbuffer();
 
 // Bind the frame's texture to GL_TEXTURE_2D and enable it.
-// If a texture_unit is supplied, the texture unit is made active
-// and the commands are run in the right sequence to
-// initialize it to our preferred specifications.
-	void bind_texture(int texture_unit = -1);
-
-
+	void bind_texture(int texture_unit, int nearest=0);
 
 // Create a frustum with 0,0 in the upper left and w,-h in the bottom right.
 // Set preferred opengl settings.

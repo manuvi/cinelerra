@@ -1129,14 +1129,6 @@ void CWindowCanvas::draw_refresh(int flush)
 	BC_WindowBase *window = get_canvas();
 	if( window && !window->get_video_on() ) {
 		clear(0);
-		if( mwindow->uses_opengl() ) {
-// this code is to idle rendering before drawing overlays on refresh frame
-// if this is not done, occationally opengl finishs late, and overwrites
-// the x11 refresh frame and the overlay is not visible.  Rarely happens.
-			unlock_canvas();
-			mwindow->playback_3d->finish_output(this);
-			lock_canvas("CWindowCanvas::draw_refresh");
-		}
 		if( refresh_frame && refresh_frame->get_w()>0 && refresh_frame->get_h()>0 ) {
 			float in_x1, in_y1, in_x2, in_y2;
 			float out_x1, out_y1, out_x2, out_y2;
