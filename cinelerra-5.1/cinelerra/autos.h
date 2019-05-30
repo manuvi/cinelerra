@@ -116,7 +116,7 @@ public:
 
 
 
-	int clear_all();
+	void clear_all();
 	int insert(int64_t start, int64_t end);
 	int paste_silence(int64_t start, int64_t end);
 // Copy for keyframe clipboard & drag & drop

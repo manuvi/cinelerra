@@ -1,8 +1,13 @@
 #include "bcwindowbase.h"
 #include "bcdisplayinfo.h"
 #include "bcdialog.h"
+#include "awindow.h"
+#include "awindowgui.h"
+#include "cstrdup.h"
+#include "indexable.h"
 #include "language.h"
 #include "mainerror.h"
+#include "mainsession.h"
 #include "mwindow.h"
 #include "shbtnprefs.h"
 #include "preferences.h"
@@ -14,12 +19,21 @@
 ShBtnRun::ShBtnRun(const char *nm, const char *cmds, int warn)
  : Thread(0, 0, 1)
 {
+	argv.set_array_delete();
 	strncpy(name, nm, sizeof(name)-1);
 	name[sizeof(name)-1] = 0;
 	strncpy(commands, cmds, sizeof(commands)-1);
 	commands[sizeof(commands)-1] = 0;
 	this->warn = warn;
-	start();
+}
+ShBtnRun::~ShBtnRun()
+{
+	argv.remove_all_objects();
+}
+
+void ShBtnRun::add_arg(const char *v)
+{
+	argv.append(cstrdup(v));
 }
 
 void ShBtnRun::run()
@@ -38,24 +52,44 @@ void ShBtnRun::run()
 		}
 		return;
 	}
-	char *const argv[4] = { (char*) "/bin/bash", (char*) "-c", commands, 0 };
+	argv.append(0);
 	execvp(argv[0], &argv[0]);
 }
 
-ShBtnPref::ShBtnPref(const char *nm, const char *cmds, int warn)
+ShBtnPref::ShBtnPref(const char *nm, const char *cmds, int warn, int run_script)
 {
 	strncpy(name, nm, sizeof(name));
 	strncpy(commands, cmds, sizeof(commands));
 	this->warn = warn;
+	this->run_script = run_script;
 }
 
 ShBtnPref::~ShBtnPref()
 {
 }
 
+void ShBtnPref::execute(ArrayList<Indexable*> &args)
+{
+// thread async+autodelete, no explicit delete
+	ShBtnRun *job = new ShBtnRun(name, commands, warn);
+	job->add_arg("/bin/bash");
+	job->add_arg(commands);
+	int n = args.size();
+	for( int i=0; i<n; ++i ) {
+		Indexable *idxbl = args[i];
+		if( !idxbl->is_asset ) continue;
+		job->add_arg(idxbl->path);
+	}
+	job->start();
+}
+
 void ShBtnPref::execute()
 {
-	new ShBtnRun(name, commands, warn);
+	ShBtnRun *job = new ShBtnRun(name, commands, warn);
+	job->add_arg("/bin/bash");
+	job->add_arg("-c");
+	job->add_arg(commands);
+	job->start();
 }
 
 ShBtnEditDialog::ShBtnEditDialog(PreferencesWindow *pwindow)
@@ -122,7 +156,7 @@ int ShBtnAddButton::handle_event()
 {
 
 	Preferences *preferences = sb_window->shbtn_edit->pwindow->thread->preferences;
-	ShBtnPref *pref = new ShBtnPref(_("new"), "", 0);
+	ShBtnPref *pref = new ShBtnPref(_("new"), "", 0, 0);
 	preferences->shbtn_prefs.append(pref);
 	sb_window->list_update();
 	return sb_window->start_edit(pref);
@@ -182,6 +216,7 @@ ShBtnTextWindow::ShBtnTextWindow(ShBtnEditWindow *sb_window, int x, int y)
 {
         this->sb_window = sb_window;
 	warn = sb_window->sb_dialog->pref->warn;
+	run_script = sb_window->sb_dialog->pref->run_script;
 }
 
 ShBtnTextWindow::~ShBtnTextWindow()
@@ -195,6 +230,16 @@ ShBtnErrWarn::ShBtnErrWarn(ShBtnTextWindow *st_window, int x, int y)
 }
 
 ShBtnErrWarn::~ShBtnErrWarn()
+{
+}
+
+ShBtnRunScript::ShBtnRunScript(ShBtnTextWindow *st_window, int x, int y)
+ : BC_CheckBox(x, y, &st_window->run_script, _("run /path/script.sh + argvs"))
+{
+        this->st_window = st_window;
+}
+
+ShBtnRunScript::~ShBtnRunScript()
 {
 }
 
@@ -215,6 +260,8 @@ void ShBtnTextWindow::create_objects()
 	cmd_text->create_objects();
 	y += cmd_text->get_h() + 16;
         add_subwindow(st_err_warn = new ShBtnErrWarn(this, x1, y));
+	x1 += st_err_warn->get_w() + 20;
+        add_subwindow(st_run_script = new ShBtnRunScript(this, x1, y));
         y = get_h() - ShBtnTextOK::calculate_h() - 10;
         add_subwindow(new ShBtnTextOK(this, x, y));
         show_window();
@@ -237,6 +284,7 @@ int ShBtnTextOK::handle_event()
 	strcpy(pref->name, st_window->cmd_name->get_text());
 	strcpy(pref->commands, st_window->cmd_text->get_text());
 	pref->warn = st_window->warn;
+	pref->run_script = st_window->run_script;
 	return BC_OKButton::handle_event();
 }
 
@@ -331,7 +379,16 @@ MainShBtnItem::MainShBtnItem(MainShBtns *shbtns, ShBtnPref *pref)
 
 int MainShBtnItem::handle_event()
 {
-	pref->execute();
+	MWindow *mwindow = shbtns->mwindow;
+	if( pref->run_script ) {
+		AWindowGUI *agui = mwindow->awindow->gui;
+		agui->lock_window("MainShBtnItem::handle_event");
+		mwindow->awindow->gui->collect_assets();
+		pref->execute(*mwindow->session->drag_assets);
+		agui->unlock_window();
+	}
+	else
+		pref->execute();
 	return 1;
 }
 

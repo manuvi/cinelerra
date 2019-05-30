@@ -405,10 +405,10 @@ int Preferences::load_defaults(BC_Hash *defaults)
 	shbtn_prefs.remove_all_objects();
 	int shbtns_total = defaults->get("SHBTNS_TOTAL", -1);
 	if( shbtns_total < 0 ) {
-		shbtn_prefs.append(new ShBtnPref(_("Current Manual"), "$CIN_BROWSER https://cinelerra-gg.org/download/CinelerraGG_manual.pdf", 0));
-		shbtn_prefs.append(new ShBtnPref(_("Setting Shell Commands"), "$CIN_BROWSER file://$CIN_DAT/doc/ShellCmds.html", 0));
-		shbtn_prefs.append(new ShBtnPref(_("Shortcuts"), "$CIN_BROWSER file://$CIN_DAT/doc/shortcuts.html", 0));
-		shbtn_prefs.append(new ShBtnPref(_("RenderMux"), "$CIN_DAT/doc/RenderMux.sh",0));
+		shbtn_prefs.append(new ShBtnPref(_("Current Manual"), "$CIN_BROWSER https://cinelerra-gg.org/download/CinelerraGG_manual.pdf"));
+		shbtn_prefs.append(new ShBtnPref(_("Setting Shell Commands"), "$CIN_BROWSER file://$CIN_DAT/doc/ShellCmds.html"));
+		shbtn_prefs.append(new ShBtnPref(_("Shortcuts"), "$CIN_BROWSER file://$CIN_DAT/doc/shortcuts.html"));
+		shbtn_prefs.append(new ShBtnPref(_("RenderMux"), "$CIN_DAT/doc/RenderMux.sh"));
 		shbtns_total = 0;
 	}
 	for( int i=0; i<shbtns_total; ++i ) {
@@ -419,7 +419,9 @@ int Preferences::load_defaults(BC_Hash *defaults)
 		defaults->get(string, commands);
 		sprintf(string, "SHBTN%d_WARN", i);
 		int warn = defaults->get(string, 0);
-		shbtn_prefs.append(new ShBtnPref(name, commands, warn));
+		sprintf(string, "SHBTN%d_RUN_SCRIPT", i);
+		int run_script = defaults->get(string, 0);
+		shbtn_prefs.append(new ShBtnPref(name, commands, warn, run_script));
 	}
 
 	file_probes.remove_all_objects();
@@ -536,6 +538,8 @@ int Preferences::save_defaults(BC_Hash *defaults)
 		defaults->update(string, pref->commands);
 		sprintf(string, "SHBTN%d_WARN", i);
 		defaults->update(string, pref->warn);
+		sprintf(string, "SHBTN%d_RUN_SCRIPT", i);
+		defaults->update(string, pref->run_script);
 	}
 	defaults->update("FILE_PROBE_TOTAL", file_probes.size());
 	for( int i=0; i<file_probes.size(); ++i ) {

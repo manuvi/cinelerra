@@ -1,6 +1,7 @@
 #ifndef __SHBTNPREFS_H__
 #define __SHBTNPREFS_H__
 
+#include "arraylist.h"
 #include "bcwindowbase.h"
 #include "bcbutton.h"
 #include "bcdialog.h"
@@ -18,8 +19,11 @@ public:
 	int warn;
 	char name[BCSTRLEN];
 	char commands[BCTEXTLEN];
+	ArrayList<char *> argv;
+	void add_arg(const char *v);
 
-	ShBtnRun(const char *name, const char *cmds, int warn=0);
+	ShBtnRun(const char *name, const char *cmds, int warn);
+	~ShBtnRun();
 	void run();
 };
 
@@ -28,10 +32,11 @@ class ShBtnPref
 public:
 	char name[BCSTRLEN];
 	char commands[BCTEXTLEN];
-	int warn;
+	int warn, run_script;
 	void execute();
+	void execute(ArrayList<Indexable*> &args);
 
-	ShBtnPref(const char *nm, const char *cmds, int warn);
+	ShBtnPref(const char *nm, const char *cmds, int warn=0, int run_script=0);
 	~ShBtnPref();
 };
 
@@ -111,6 +116,15 @@ public:
 	ShBtnTextWindow *st_window;
 };
 
+class ShBtnRunScript : public BC_CheckBox
+{
+public:
+	ShBtnRunScript(ShBtnTextWindow *st_window, int x, int y);
+	~ShBtnRunScript();
+
+	ShBtnTextWindow *st_window;
+};
+
 class ShBtnTextWindow : public BC_Window
 {
 public:
@@ -118,7 +132,9 @@ public:
 	BC_ScrollTextBox *cmd_text;
 	ShBtnEditWindow *sb_window;
 	ShBtnErrWarn *st_err_warn;
+	ShBtnRunScript *st_run_script;
 	int warn;
+	int run_script;
 
 	void create_objects();
 

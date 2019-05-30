@@ -397,17 +397,11 @@ Auto* Autos::insert_auto(int64_t position, Auto *templ)
 	return result;
 }
 
-int Autos::clear_all()
+void Autos::clear_all()
 {
-	Auto *current_, *current;
-
-	for(current = first; current; current = current_)
-	{
-		current_ = NEXT;
-		remove(current);
-	}
-	append_auto();
-	return 0;
+	while( last ) delete last;
+	delete default_auto;
+	create_objects();
 }
 
 int Autos::insert(int64_t start, int64_t end)

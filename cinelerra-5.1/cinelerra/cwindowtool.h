@@ -359,6 +359,7 @@ public:
 	void create_objects();
 	void update();
 	void set_focused(int v, float cx, float cy);
+	void update_buttons(MaskAuto *keyframe, int k);
 	void handle_event();
 	void get_keyframe(Track* &track, MaskAutos* &autos, MaskAuto* &keyframe,
 		SubMask* &mask, MaskPoint* &point, int create_it);

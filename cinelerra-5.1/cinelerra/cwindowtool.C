@@ -1527,9 +1527,6 @@ int CWindowMaskName::handle_event()
 				(MaskAuto*)autos->first : (MaskAuto*)NEXT;
 		}
 #endif
-		int total_buttons = sizeof(gui->mask_buttons)/sizeof(gui->mask_buttons[0]);
-		for( int i=0; i<total_buttons; ++i )
-			gui->mask_buttons[i]->update(i==k ? 1 : 0);
 	        gui->update();
 		gui->update_preview();
 	}
@@ -1565,10 +1562,8 @@ CWindowMaskButton::~CWindowMaskButton()
 int CWindowMaskButton::handle_event()
 {
 	mwindow->edl->session->cwindow_mask = no;
-	int total_buttons = sizeof(gui->mask_buttons)/sizeof(gui->mask_buttons[0]);
-	for( int i=0; i<total_buttons; ++i )
-		gui->mask_buttons[i]->update(i==no ? 1 : 0);
 	gui->name->update(gui->name->mask_items[no]->get_text());
+	gui->update();
 	gui->update_preview();
 	return 1;
 }
@@ -1601,10 +1596,8 @@ int CWindowMaskThumbler::do_event(int dir)
 	if( (k+=dir) >= SUBMASKS ) k = 0;
 	else if( k < 0 ) k = SUBMASKS-1;
 	mwindow->edl->session->cwindow_mask = k;
-	int total_buttons = sizeof(gui->mask_buttons)/sizeof(gui->mask_buttons[0]);
-	for( int i=0; i<total_buttons; ++i )
-		gui->mask_buttons[i]->update(i==k ? 1 : 0);
 	gui->name->update(gui->name->mask_items[k]->get_text());
+	gui->update();
 	gui->update_preview();
 	return 1;
 }
@@ -2406,6 +2399,7 @@ void CWindowMaskGUI::update()
 
 		if(mask) {
 			int k = mwindow->edl->session->cwindow_mask;
+			update_buttons(keyframe, k);
 			feather->update(autos->get_feather(position_i, k, PLAY_FORWARD));
 			fade->update(autos->get_fader(position_i, k, PLAY_FORWARD));
 			apply_before_plugins->update(keyframe->apply_before_plugins);
@@ -2483,12 +2477,24 @@ void CWindowMaskGUI::set_focused(int v, float cx, float cy)
 	focus->update(focused = v);
 }
 
+void CWindowMaskGUI::update_buttons(MaskAuto *keyframe, int k)
+{
+	int text_color = get_resources()->default_text_color;
+	int high_color = get_resources()->button_highlighted;
+	for( int i=0; i<SUBMASKS; ++i ) {
+		int color = text_color;
+		if( keyframe ) {
+			SubMask *submask = keyframe->get_submask(i);
+			if( submask && submask->points.size() )
+				color = high_color;
+		}
+		mask_blabels[i]->set_color(color);
+		mask_buttons[i]->update(i==k ? 1 : 0);
+	}
+}
+
 CWindowRulerGUI::CWindowRulerGUI(MWindow *mwindow, CWindowTool *thread)
- : CWindowToolGUI(mwindow,
- 	thread,
-	_(PROGRAM_NAME ": Ruler"),
-	320,
-	240)
+ : CWindowToolGUI(mwindow, thread, _(PROGRAM_NAME ": Ruler"), 320, 240)
 {
 }
 

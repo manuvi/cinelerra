@@ -1749,8 +1749,7 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 						if( draw_boundary ) {
 							char mask_label[BCSTRLEN];
 							int k = mwindow->edl->session->cwindow_mask;
-							if( !prev_mask || prev_mask->is_default ||
-							    k < 0 || k >= prev_mask->masks.size() )
+							if( !prev_mask || k < 0 || k >= prev_mask->masks.size() )
 								sprintf(mask_label, "%d", k);
 							else
 								sprintf(mask_label, "%s", prev_mask->masks[k]->name);
