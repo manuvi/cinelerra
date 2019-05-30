@@ -1482,8 +1482,8 @@ int CWindowProjectorBottom::handle_event()
 }
 
 
-CWindowMaskName::CWindowMaskName(MWindow *mwindow,
-	CWindowToolGUI *gui, int x, int y, const char *text)
+CWindowMaskName::CWindowMaskName(MWindow *mwindow, CWindowMaskGUI *gui,
+		int x, int y, const char *text)
  : BC_PopupTextBox(gui, 0, text, x, y, 100, 160)
 {
 	this->mwindow = mwindow;
@@ -1502,7 +1502,7 @@ int CWindowMaskName::handle_event()
 	SubMask *mask;
 	MaskPoint *point;
 //printf("CWindowMaskGUI::update 1\n");
-	((CWindowMaskGUI*)gui)->get_keyframe(track, autos, keyframe, mask, point, 0);
+	gui->get_keyframe(track, autos, keyframe, mask, point, 0);
 	if( track ) {
 		int k = get_number();
 		if( k < 0 ) k = mwindow->edl->session->cwindow_mask;
@@ -1527,6 +1527,9 @@ int CWindowMaskName::handle_event()
 				(MaskAuto*)autos->first : (MaskAuto*)NEXT;
 		}
 #endif
+		int total_buttons = sizeof(gui->mask_buttons)/sizeof(gui->mask_buttons[0]);
+		for( int i=0; i<total_buttons; ++i )
+			gui->mask_buttons[i]->update(i==k ? 1 : 0);
 	        gui->update();
 		gui->update_preview();
 	}
@@ -1543,6 +1546,67 @@ void CWindowMaskName::update_items(MaskAuto *keyframe)
 		mask_items.append(new BC_ListBoxItem(text));
 	}
 	update_list(&mask_items);
+}
+
+
+CWindowMaskButton::CWindowMaskButton(MWindow *mwindow, CWindowMaskGUI *gui,
+		 int x, int y, int no, int v)
+ : BC_CheckBox(x, y, v)
+{
+	this->mwindow = mwindow;
+	this->gui = gui;
+	this->no = no;
+}
+
+CWindowMaskButton::~CWindowMaskButton()
+{
+}
+
+int CWindowMaskButton::handle_event()
+{
+	mwindow->edl->session->cwindow_mask = no;
+	int total_buttons = sizeof(gui->mask_buttons)/sizeof(gui->mask_buttons[0]);
+	for( int i=0; i<total_buttons; ++i )
+		gui->mask_buttons[i]->update(i==no ? 1 : 0);
+	gui->name->update(gui->name->mask_items[no]->get_text());
+	gui->update_preview();
+	return 1;
+}
+
+CWindowMaskThumbler::CWindowMaskThumbler(MWindow *mwindow, CWindowMaskGUI *gui,
+		int x, int y)
+ : BC_Tumbler(x, y)
+{
+	this->mwindow = mwindow;
+	this->gui = gui;
+}
+
+CWindowMaskThumbler::~CWindowMaskThumbler()
+{
+}
+
+int CWindowMaskThumbler::handle_up_event()
+{
+	return do_event(1);
+}
+
+int CWindowMaskThumbler::handle_down_event()
+{
+	return do_event(-1);
+}
+
+int CWindowMaskThumbler::do_event(int dir)
+{
+	int k = mwindow->edl->session->cwindow_mask;
+	if( (k+=dir) >= SUBMASKS ) k = 0;
+	else if( k < 0 ) k = SUBMASKS-1;
+	mwindow->edl->session->cwindow_mask = k;
+	int total_buttons = sizeof(gui->mask_buttons)/sizeof(gui->mask_buttons[0]);
+	for( int i=0; i<total_buttons; ++i )
+		gui->mask_buttons[i]->update(i==k ? 1 : 0);
+	gui->name->update(gui->name->mask_items[k]->get_text());
+	gui->update_preview();
+	return 1;
 }
 
 
@@ -2158,7 +2222,7 @@ int CWindowMaskGangFeather::handle_event()
 
 CWindowMaskGUI::CWindowMaskGUI(MWindow *mwindow, CWindowTool *thread)
  : CWindowToolGUI(mwindow, thread,
-	_(PROGRAM_NAME ": Mask"), 360, 440)
+	_(PROGRAM_NAME ": Mask"), 360, 500)
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
@@ -2197,10 +2261,32 @@ void CWindowMaskGUI::create_objects()
 	add_subwindow(clr_mask = new CWindowMaskClrMask(mwindow, this, clr_x, y));
 	add_subwindow(del_mask = new CWindowMaskDelMask(mwindow, this, del_x, y));
 	y += name->get_h() + margin;
+
+	int bw = 0, bh = 0;
+	BC_CheckBox::calculate_extents(this, &bw, &bh);
+	int bdx = bw + margin;
+	int x2 = x;
+	for( int i=0; i<SUBMASKS; x2+=bdx, ++i ) {
+		int v = i == mwindow->edl->session->cwindow_mask ? 1 : 0;
+		mask_buttons[i] = new CWindowMaskButton(mwindow, this, x2, y, i, v);
+		add_subwindow(mask_buttons[i]);
+	}
+	x2 += margin;
+	add_subwindow(mask_thumbler = new CWindowMaskThumbler(mwindow, this, x2, y));
+	y += bh + margin;
+	x2 = x;
+	for( int i=0; i<SUBMASKS; x2+=bdx, ++i ) {
+		char text[BCSTRLEN];  sprintf(text, "%d", i);
+		int tx = (bw - get_text_width(MEDIUMFONT, text)) / 2;
+		mask_blabels[i] = new BC_Title(x2+tx, y, text);
+		add_subwindow(mask_blabels[i]);
+	}
+	y += bh + 2*margin;
+
 	add_subwindow(title = new BC_Title(x, y, _("Fade:")));
 	fade = new CWindowMaskFade(mwindow, this, x1, y);
 	fade->create_objects();
-	int x2 = x1 + fade->get_w() + 2*margin;
+	x2 = x1 + fade->get_w() + 2*margin;
 	int w2 = clr_x-2*margin - x2;
 	add_subwindow(fade_slider = new CWindowMaskFadeSlider(mwindow, this, x2, y, w2));
 	add_subwindow(gang_fader = new CWindowMaskGangFader(mwindow, this, clr_x, y));

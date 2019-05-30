@@ -24,14 +24,16 @@
 
 class CWindowTool;
 class CWindowToolGUI;
-class CWindowCoord;
 class CWindowCurveToggle;
+class CWindowCoord;
 class CWindowCropOK;
 class CWindowCropGUI;
 class CWindowMaskItems;
 class CWindowMaskName;
 class CWindowMaskDelMask;
 class CWindowMaskClrMask;
+class CWindowMaskButton;
+class CWindowMaskThumbler;
 class CWindowMaskFade;
 class CWindowMaskFadeSlider;
 class CWindowMaskGangFader;

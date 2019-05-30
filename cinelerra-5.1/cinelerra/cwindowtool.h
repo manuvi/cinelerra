@@ -93,8 +93,10 @@ public:
 class CWindowCoord : public BC_TumbleTextBox
 {
 public:
-	CWindowCoord(CWindowToolGUI *gui, int x, int y, float value, int logincrement);
-	CWindowCoord(CWindowToolGUI *gui, int x, int y, int value);
+	CWindowCoord(CWindowToolGUI *gui, int x, int y,
+			float value, int logincrement);
+	CWindowCoord(CWindowToolGUI *gui, int x, int y,
+			int value);
 
 // Calls the window's handle_event
 	int handle_event();
@@ -105,7 +107,8 @@ public:
 class CWindowCropOK : public BC_GenericButton
 {
 public:
-	CWindowCropOK(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
+	CWindowCropOK(MWindow *mwindow, CWindowToolGUI *gui,
+			int x, int y);
 // Perform the cropping operation
 	int handle_event();
 	int keypress_event();
@@ -135,10 +138,11 @@ public:
 class CWindowMaskName : public BC_PopupTextBox
 {
 public:
-	CWindowMaskName(MWindow *mwindow, CWindowToolGUI *gui, int x, int y, const char *text);
+	CWindowMaskName(MWindow *mwindow, CWindowMaskGUI *gui,
+			int x, int y, const char *text);
 	~CWindowMaskName();
 	MWindow *mwindow;
-	CWindowToolGUI *gui;
+	CWindowMaskGUI *gui;
 	CWindowMaskItems mask_items;
 
 	int handle_event();
@@ -148,7 +152,8 @@ public:
 class CWindowMaskDelMask : public BC_GenericButton
 {
 public:
-	CWindowMaskDelMask(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
+	CWindowMaskDelMask(MWindow *mwindow, CWindowToolGUI *gui,
+			int x, int y);
 	int handle_event();
 	MWindow *mwindow;
 	CWindowToolGUI *gui;
@@ -157,7 +162,8 @@ public:
 class CWindowMaskClrMask : public BC_Button
 {
 public:
-	CWindowMaskClrMask(MWindow *mwindow, CWindowMaskGUI *gui, int x, int y);
+	CWindowMaskClrMask(MWindow *mwindow, CWindowMaskGUI *gui,
+			int x, int y);
 	~CWindowMaskClrMask();
 	static int calculate_w(MWindow *mwindow);
 	int handle_event();
@@ -165,10 +171,38 @@ public:
 	CWindowMaskGUI *gui;
 };
 
+class CWindowMaskButton : public BC_CheckBox
+{
+public:
+	CWindowMaskButton(MWindow *mwindow, CWindowMaskGUI *gui,
+			 int x, int y, int no, int v);
+	~CWindowMaskButton();
+
+	int handle_event();
+	MWindow *mwindow;
+	CWindowMaskGUI *gui;
+	int no;
+};
+
+class CWindowMaskThumbler : public BC_Tumbler
+{
+public:
+	CWindowMaskThumbler(MWindow *mwindow, CWindowMaskGUI *gui,
+			int x, int y);
+	~CWindowMaskThumbler();
+	int handle_up_event();
+	int handle_down_event();
+	int do_event(int dir);
+
+	MWindow *mwindow;
+	CWindowMaskGUI *gui;
+};
+
 class CWindowMaskFade : public BC_TumbleTextBox
 {
 public:
-	CWindowMaskFade(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
+	CWindowMaskFade(MWindow *mwindow, CWindowToolGUI *gui,
+			int x, int y);
 	~CWindowMaskFade();
 	int update(float v);
 	int update_value(float v);
@@ -196,7 +230,8 @@ public:
 class CWindowMaskGangFader : public BC_Toggle
 {
 public:
-	CWindowMaskGangFader(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
+	CWindowMaskGangFader(MWindow *mwindow, CWindowToolGUI *gui,
+			int x, int y);
 	~CWindowMaskGangFader();
 	int handle_event();
 	MWindow *mwindow;
@@ -206,7 +241,8 @@ public:
 class CWindowMaskAffectedPoint : public BC_TumbleTextBox
 {
 public:
-	CWindowMaskAffectedPoint(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
+	CWindowMaskAffectedPoint(MWindow *mwindow, CWindowToolGUI *gui,
+			int x, int y);
 	~CWindowMaskAffectedPoint();
 	int handle_event();
 	MWindow *mwindow;
@@ -216,7 +252,8 @@ public:
 class CWindowMaskFocus : public BC_CheckBox
 {
 public:
-	CWindowMaskFocus(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
+	CWindowMaskFocus(MWindow *mwindow, CWindowToolGUI *gui,
+			int x, int y);
 	~CWindowMaskFocus();
 	int handle_event();
 	MWindow *mwindow;
@@ -226,7 +263,8 @@ public:
 class CWindowMaskDrawMarkers : public BC_CheckBox
 {
 public:
-	CWindowMaskDrawMarkers(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
+	CWindowMaskDrawMarkers(MWindow *mwindow, CWindowToolGUI *gui,
+			int x, int y);
 	~CWindowMaskDrawMarkers();
 	int handle_event();
 	MWindow *mwindow;
@@ -236,7 +274,8 @@ public:
 class CWindowMaskDrawBoundary : public BC_CheckBox
 {
 public:
-	CWindowMaskDrawBoundary(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
+	CWindowMaskDrawBoundary(MWindow *mwindow, CWindowToolGUI *gui,
+			int x, int y);
 	~CWindowMaskDrawBoundary();
 	int handle_event();
 	MWindow *mwindow;
@@ -246,7 +285,8 @@ public:
 class CWindowMaskDelPoint : public BC_GenericButton
 {
 public:
-	CWindowMaskDelPoint(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
+	CWindowMaskDelPoint(MWindow *mwindow, CWindowToolGUI *gui,
+			int x, int y);
 	int handle_event();
 	int keypress_event();
 	MWindow *mwindow;
@@ -256,7 +296,8 @@ public:
 class CWindowMaskFeather : public BC_TumbleTextBox
 {
 public:
-	CWindowMaskFeather(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
+	CWindowMaskFeather(MWindow *mwindow, CWindowToolGUI *gui,
+			int x, int y);
 	~CWindowMaskFeather();
 	int update(float v);
 	int update_value(float v);
@@ -284,7 +325,8 @@ public:
 class CWindowMaskGangFeather : public BC_Toggle
 {
 public:
-	CWindowMaskGangFeather(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
+	CWindowMaskGangFeather(MWindow *mwindow, CWindowToolGUI *gui,
+			int x, int y);
 	~CWindowMaskGangFeather();
 	int handle_event();
 	MWindow *mwindow;
@@ -294,7 +336,8 @@ public:
 class CWindowMaskBeforePlugins : public BC_CheckBox
 {
 public:
-	CWindowMaskBeforePlugins(CWindowToolGUI *gui, int x, int y);
+	CWindowMaskBeforePlugins(CWindowToolGUI *gui,
+			int x, int y);
 	int handle_event();
 	CWindowToolGUI *gui;
 };
@@ -302,7 +345,8 @@ public:
 class CWindowDisableOpenGLMasking : public BC_CheckBox
 {
 public:
-	CWindowDisableOpenGLMasking(CWindowToolGUI *gui, int x, int y);
+	CWindowDisableOpenGLMasking(CWindowToolGUI *gui,
+			int x, int y);
 	int handle_event();
 	CWindowToolGUI *gui;
 };
@@ -321,6 +365,9 @@ public:
 	void update_preview();
 
 	CWindowMaskName *name;
+	CWindowMaskButton *mask_buttons[SUBMASKS];
+	CWindowMaskThumbler *mask_thumbler;
+	BC_Title *mask_blabels[SUBMASKS];
 	CWindowMaskDelMask *del_mask;
 	CWindowMaskClrMask *clr_mask;
 	CWindowMaskFade *fade;
@@ -399,7 +446,8 @@ private:
 class CWindowCameraLeft : public BC_Button
 {
 public:
-	CWindowCameraLeft(MWindow *mwindow, CWindowCameraGUI *gui, int x, int y);
+	CWindowCameraLeft(MWindow *mwindow, CWindowCameraGUI *gui,
+			int x, int y);
 	int handle_event();
 	MWindow *mwindow;
 	CWindowCameraGUI *gui;
@@ -408,7 +456,8 @@ public:
 class CWindowCameraCenter : public BC_Button
 {
 public:
-	CWindowCameraCenter(MWindow *mwindow, CWindowCameraGUI *gui, int x, int y);
+	CWindowCameraCenter(MWindow *mwindow, CWindowCameraGUI *gui,
+			int x, int y);
 	int handle_event();
 	MWindow *mwindow;
 	CWindowCameraGUI *gui;
@@ -417,7 +466,8 @@ public:
 class CWindowCameraRight : public BC_Button
 {
 public:
-	CWindowCameraRight(MWindow *mwindow, CWindowCameraGUI *gui, int x, int y);
+	CWindowCameraRight(MWindow *mwindow, CWindowCameraGUI *gui,
+			int x, int y);
 	int handle_event();
 	MWindow *mwindow;
 	CWindowCameraGUI *gui;
@@ -426,7 +476,8 @@ public:
 class CWindowCameraTop : public BC_Button
 {
 public:
-	CWindowCameraTop(MWindow *mwindow, CWindowCameraGUI *gui, int x, int y);
+	CWindowCameraTop(MWindow *mwindow, CWindowCameraGUI *gui,
+			int x, int y);
 	int handle_event();
 	MWindow *mwindow;
 	CWindowCameraGUI *gui;
@@ -435,7 +486,8 @@ public:
 class CWindowCameraMiddle : public BC_Button
 {
 public:
-	CWindowCameraMiddle(MWindow *mwindow, CWindowCameraGUI *gui, int x, int y);
+	CWindowCameraMiddle(MWindow *mwindow, CWindowCameraGUI *gui,
+			int x, int y);
 	int handle_event();
 	MWindow *mwindow;
 	CWindowCameraGUI *gui;
@@ -444,7 +496,8 @@ public:
 class CWindowCameraBottom : public BC_Button
 {
 public:
-	CWindowCameraBottom(MWindow *mwindow, CWindowCameraGUI *gui, int x, int y);
+	CWindowCameraBottom(MWindow *mwindow, CWindowCameraGUI *gui,
+			int x, int y);
 	int handle_event();
 	MWindow *mwindow;
 	CWindowCameraGUI *gui;
@@ -469,7 +522,8 @@ private:
 class CWindowProjectorLeft : public BC_Button
 {
 public:
-	CWindowProjectorLeft(MWindow *mwindow, CWindowProjectorGUI *gui, int x, int y);
+	CWindowProjectorLeft(MWindow *mwindow, CWindowProjectorGUI *gui,
+			int x, int y);
 	int handle_event();
 	MWindow *mwindow;
 	CWindowProjectorGUI *gui;
@@ -478,7 +532,8 @@ public:
 class CWindowProjectorCenter : public BC_Button
 {
 public:
-	CWindowProjectorCenter(MWindow *mwindow, CWindowProjectorGUI *gui, int x, int y);
+	CWindowProjectorCenter(MWindow *mwindow, CWindowProjectorGUI *gui,
+			int x, int y);
 	int handle_event();
 	MWindow *mwindow;
 	CWindowProjectorGUI *gui;
@@ -487,7 +542,8 @@ public:
 class CWindowProjectorRight : public BC_Button
 {
 public:
-	CWindowProjectorRight(MWindow *mwindow, CWindowProjectorGUI *gui, int x, int y);
+	CWindowProjectorRight(MWindow *mwindow, CWindowProjectorGUI *gui,
+			int x, int y);
 	int handle_event();
 	MWindow *mwindow;
 	CWindowProjectorGUI *gui;
@@ -496,7 +552,8 @@ public:
 class CWindowProjectorTop : public BC_Button
 {
 public:
-	CWindowProjectorTop(MWindow *mwindow, CWindowProjectorGUI *gui, int x, int y);
+	CWindowProjectorTop(MWindow *mwindow, CWindowProjectorGUI *gui,
+			int x, int y);
 	int handle_event();
 	MWindow *mwindow;
 	CWindowProjectorGUI *gui;
@@ -505,7 +562,8 @@ public:
 class CWindowProjectorMiddle : public BC_Button
 {
 public:
-	CWindowProjectorMiddle(MWindow *mwindow, CWindowProjectorGUI *gui, int x, int y);
+	CWindowProjectorMiddle(MWindow *mwindow, CWindowProjectorGUI *gui,
+			int x, int y);
 	int handle_event();
 	MWindow *mwindow;
 	CWindowProjectorGUI *gui;
@@ -514,7 +572,8 @@ public:
 class CWindowProjectorBottom : public BC_Button
 {
 public:
-	CWindowProjectorBottom(MWindow *mwindow, CWindowProjectorGUI *gui, int x, int y);
+	CWindowProjectorBottom(MWindow *mwindow, CWindowProjectorGUI *gui,
+			int x, int y);
 	int handle_event();
 	MWindow *mwindow;
 	CWindowProjectorGUI *gui;
