@@ -13,6 +13,7 @@ Video Effects
 		Hue saturation
 		Interpolate Bayer
 		Invert Video
+		RGBShift
 		RGB - 601
 		Reroute
 		Sketcher

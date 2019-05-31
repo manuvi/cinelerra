@@ -1,4 +1,4 @@
-%define ver 20190430
+%define ver 20190531
 %define cin cinelerra
 Summary: Multimedia Editing and construction
 

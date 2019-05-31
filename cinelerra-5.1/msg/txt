@@ -5,9 +5,15 @@ For usage help, refer to the following:
   http://g-raffa.eu/Cinelerra/HOWTO/basics.html
 Cinfinity icons selected in Preferences Sam (CC BY 3.0,
   https://creativecommons.org/licenses/by/3.0/)
-Neophyte theme selected in Preferences by Olaf Wolff (CC BY 4.0,
+Cakewalk and Neophyte themes by Olaf Wolff (CC BY 4.0,
   https://creativecommons.org/licenses/by/4.0/)
 .
+May 2019 New Features of note:
+  Masking enhancements added to include Rotate and Scale.
+  Some encode hardware acceleration for vaapi graphics boards.
+  More decode options for vdpau/vaapi hardware acceleration.
+  French and German improved program translations.
+  Additional args capability for Shell Commands setup.
 April 2019 New Features of note:
   GPU usage for MPEG/H.264 formats with vdpau/vaapi for decode.
   New Tracer plugin to outline objects available.
