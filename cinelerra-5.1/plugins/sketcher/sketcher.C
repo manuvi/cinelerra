@@ -27,6 +27,7 @@
 #include "bccmodels.h"
 #include "bccolors.h"
 #include "clip.h"
+#include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
 #include "overlayframe.h"
@@ -201,7 +202,7 @@ int Sketcher::new_point(int idx, int arc)
 	if( ci < 0 || ci >= config.curves.size() )
 		return -1;
 	SketcherCurve *cv = config.curves[ci];
-	EDLSession *session = get_edlsession();
+	EDLSession *session = get_edl()->session;
 	coord x = !session ? 0.f : session->output_w / 2.f;
 	coord y = !session ? 0.f : session->output_h / 2.f;
 	return new_point(cv, arc, x, y, idx);

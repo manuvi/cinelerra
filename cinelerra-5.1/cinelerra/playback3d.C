@@ -368,32 +368,11 @@ void Playback3DCommand::copy_from(BC_SynchronousCommand *command)
 	BC_SynchronousCommand::copy_from(command);
 }
 
-//#define GL_BUG 1
-#ifdef GL_BUG
-static void GLAPIENTRY glDebugCallback(GLenum source, GLenum type,
-	GLuint id, GLenum severity, GLsizei length, const GLchar* message,
-	const void* userParam)
-{
-  fprintf(stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
-	( type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : "" ),
-	type, severity, message );
-}
-#endif
-
 Playback3D::Playback3D(MWindow *mwindow)
  : BC_Synchronous()
 {
 	this->mwindow = mwindow;
 	temp_texture = 0;
-#ifdef GL_BUG
-	//Enabling OpenGL debug output
-	// this does not work
-	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
-	glEnable(GL_DEBUG_OUTPUT);
-	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-	glDebugMessageCallback(glDebugCallback, 0);
-	glEnable(GL_DEBUG_OUTPUT);
-#endif
 }
 
 Playback3D::~Playback3D()
@@ -655,29 +634,21 @@ void Playback3D::write_buffer_sync(Playback3DCommand *command)
 	BC_WindowBase *window =
 		command->canvas->lock_canvas("Playback3D::write_buffer_sync");
 	if( window ) {
+		window->enable_opengl();
 // Update hidden cursor
 		window->update_video_cursor();
-// Make sure OpenGL is enabled first.
-		window->enable_opengl();
-
+		command->frame->enable_opengl();
+		command->frame->init_screen();
 //printf("Playback3D::write_buffer_sync 1 %d\n", window->get_id());
-		int flip_y = 0;
 		int frame_state = command->frame->get_opengl_state();
-		switch( frame_state ) {
-// Upload texture and composite to screen
-			case VFrame::RAM:
-				flip_y = 1;
-			case VFrame::SCREEN:
-				command->frame->to_texture();
-				window->enable_opengl();
-// Composite texture to screen and swap buffer
-			case VFrame::TEXTURE:
-				draw_output(command, flip_y);
-				break;
-			default:
-				printf("Playback3D::write_buffer_sync unknown state\n");
-				break;
+		if( frame_state != VFrame::TEXTURE )
+			command->frame->to_texture();
+		if( frame_state != VFrame::RAM ) {
+			command->in_y1 = command->frame->get_h() - command->in_y1;
+			command->in_y2 = command->frame->get_h() - command->in_y2;
 		}
+		window->enable_opengl();
+		draw_output(command, 1);
 		command->frame->set_opengl_state(frame_state);
 	}
 	command->canvas->unlock_canvas();
@@ -742,14 +713,8 @@ void Playback3D::draw_output(Playback3DCommand *command, int flip_y)
 
 
 //printf("Playback3D::draw_output 2 %f,%f %f,%f -> %f,%f %f,%f\n",
-// command->in_x1,
-// command->in_y1,
-// command->in_x2,
-// command->in_y2,
-// command->out_x1,
-// command->out_y1,
-// command->out_x2,
-// command->out_y2);
+// command->in_x1, command->in_y1, command->in_x2, command->in_y2,
+// command->out_x1, command->out_y1, command->out_x2, command->out_y2);
 
 		glUseProgram(0);
 

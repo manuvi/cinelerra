@@ -41,7 +41,7 @@ int BC_DisplayInfo::bottom_border = -1;
 int BC_DisplayInfo::right_border = -1;
 int BC_DisplayInfo::auto_reposition_x = -1;
 int BC_DisplayInfo::auto_reposition_y = -1;
-
+char BC_DisplayInfo::gl_shader_version[64] = { 0, };
 
 BC_DisplayInfo::BC_DisplayInfo(const char *display_name, int show_error)
 {
@@ -130,12 +130,63 @@ static void get_top_coords(Display *display, Window win, int &px,int &py, int &t
 }
 
 
-void BC_DisplayInfo::test_window(int &x_out,
-	int &y_out,
-	int &x_out2,
-	int &y_out2,
-	int x_in,
-	int y_in)
+int BC_DisplayInfo::gl_probe(Display *dpy, Window win)
+{
+#ifdef HAVE_GL
+	int fbAttribSingle[] = {
+		GLX_RENDER_TYPE,   GLX_RGBA_BIT,
+		GLX_RED_SIZE,      1,
+		GLX_GREEN_SIZE,    1,
+		GLX_BLUE_SIZE,     1,
+		GLX_DOUBLEBUFFER,  False,
+		None };
+	int fbAttribDouble[] = {
+		GLX_RENDER_TYPE,   GLX_RGBA_BIT,
+		GLX_RED_SIZE,      1,
+		GLX_GREEN_SIZE,    1,
+		GLX_BLUE_SIZE,     1,
+		GLX_DOUBLEBUFFER,  True,
+		None };
+	int scrnum = DefaultScreen(dpy);
+	int n_fb_cfgs = 0;
+	GLXFBConfig *fb_cfgs = glXChooseFBConfig(dpy, scrnum, fbAttribSingle, &n_fb_cfgs);
+	if( !fb_cfgs )
+		fb_cfgs = glXChooseFBConfig(dpy, scrnum, fbAttribDouble, &n_fb_cfgs);
+	if( !fb_cfgs )
+		return 1;
+	XVisualInfo *vis_info = 0;
+	GLXFBConfig glx_fb_config = 0;
+	for( int i=0; !vis_info && i<n_fb_cfgs; ++i ) {
+		if( vis_info ) { XFree(vis_info);  vis_info = 0; }
+		glx_fb_config = fb_cfgs[i];
+		vis_info = glXGetVisualFromFBConfig(dpy, glx_fb_config);
+	}
+	if( !vis_info )
+		return 1;
+	XFree(vis_info);
+	GLXWindow glx_win = glXCreateWindow(dpy, glx_fb_config, win, 0);
+	if( !glx_win ) return 1;
+	GLXContext glx_ctxt = glXCreateNewContext(dpy, glx_fb_config, GLX_RGBA_TYPE, 0, True);
+	if( glx_ctxt ) {
+		if( glXMakeContextCurrent(dpy, glx_win, glx_win, glx_ctxt) ) {
+			const char *shader_version = (const char *)
+				glGetString(GL_SHADING_LANGUAGE_VERSION);
+			if( shader_version )
+				strncpy(gl_shader_version, shader_version, sizeof(gl_shader_version));
+			glXMakeContextCurrent(dpy, 0, 0, 0);
+		}
+		glXDestroyContext(dpy, glx_ctxt);
+	}
+	glXDestroyWindow(dpy, glx_win);
+	return 0;
+#else
+	return 1;
+#endif
+}
+
+
+void BC_DisplayInfo::test_window(int &x_out, int &y_out, int &x_out2, int &y_out2,
+		int x_in, int y_in)
 {
 #ifdef SINGLE_THREAD
 	BC_Display::lock_display("BC_DisplayInfo::test_window");
@@ -157,6 +208,7 @@ void BC_DisplayInfo::test_window(int &x_out,
 			x_in, y_in, TEST_SIZE, TEST_SIZE,
 			0, default_depth, InputOutput,
 			vis, mask, &attr);
+	gl_probe(display, win);
 	XSizeHints size_hints;
 	XGetNormalHints(display, win, &size_hints);
 	size_hints.flags = PPosition | PSize;
@@ -265,6 +317,12 @@ int BC_DisplayInfo::get_bottom_border()
 {
 	init_borders();
 	return bottom_border;
+}
+
+const char *BC_DisplayInfo::get_gl_shader_version()
+{
+	init_borders();
+	return gl_shader_version;
 }
 
 void BC_DisplayInfo::init_window(const char *display_name, int show_error)

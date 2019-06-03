@@ -30,10 +30,21 @@ DragCheckBox::~DragCheckBox()
 	drag_deactivate();
 }
 
+int DragCheckBox::get_track_w()
+{
+	Track *track = get_drag_track();
+	return track ? track->track_w : mwindow->edl->session->output_w;
+}
+int DragCheckBox::get_track_h()
+{
+	Track *track = get_drag_track();
+	return track ? track->track_h : mwindow->edl->session->output_h;
+}
+
 void DragCheckBox::create_objects()
 {
-	if( !drag_w ) drag_w = get_drag_track()->track_w;
-	if( !drag_h ) drag_h = get_drag_track()->track_h;
+	if( !drag_w ) drag_w = get_track_w();
+	if( !drag_h ) drag_h = get_track_h();
 	if( get_value() )
 		drag_activate();
 }
@@ -119,24 +130,24 @@ int DragCheckBox::grab_event(XEvent *event)
 		return check_pending();
 	}
 
-	Track *track = get_drag_track();
-	if( !track ) return 0;
-	if( !drag_w ) drag_w = track->track_w;
-	if( !drag_h ) drag_h = track->track_h;
+	int track_w = get_track_w(), track_h = get_track_h();
+	if( !drag_w ) drag_w = track_w;
+	if( !drag_h ) drag_h = track_h;
 
 	int64_t position = get_drag_position();
-
 	float cursor_x = cx, cursor_y = cy;
 	canvas->canvas_to_output(mwindow->edl, 0, cursor_x, cursor_y);
 	float projector_x, projector_y, projector_z;
-	int track_w = track->track_w, track_h = track->track_h;
-	track->automation->get_projector(
-		&projector_x, &projector_y, &projector_z,
-		position, PLAY_FORWARD);
-	projector_x += mwindow->edl->session->output_w / 2;
-	projector_y += mwindow->edl->session->output_h / 2;
-	cursor_x = (cursor_x - projector_x) / projector_z + track_w / 2;
-	cursor_y = (cursor_y - projector_y) / projector_z + track_h / 2;
+	Track *track = get_drag_track();
+	if( track ) {
+		track->automation->get_projector(
+			&projector_x, &projector_y, &projector_z,
+			position, PLAY_FORWARD);
+		projector_x += mwindow->edl->session->output_w / 2;
+		projector_y += mwindow->edl->session->output_h / 2;
+		cursor_x = (cursor_x - projector_x) / projector_z + track_w / 2;
+		cursor_y = (cursor_y - projector_y) / projector_z + track_h / 2;
+	}
 	float r = MIN(track_w, track_h)/100.f + 2;
 	float x0 = drag_x, x1 = drag_x+(drag_w+1)/2, x2 = drag_x+drag_w;
 	float y0 = drag_y, y1 = drag_y+(drag_h+1)/2, y2 = drag_y+drag_h;
@@ -236,8 +247,7 @@ int DragCheckBox::grab_event(XEvent *event)
 
 void DragCheckBox::bound()
 {
-	Track *track = get_drag_track();
-	int trk_w = track->track_w, trk_h = track->track_h;
+	int trk_w = get_track_w(), trk_h = get_track_h();
 	float x1 = drag_x, x2 = x1 + drag_w;
 	float y1 = drag_y, y2 = y1 + drag_h;
 	bclamp(x1, 0, trk_w);  bclamp(x2, 0, trk_w);

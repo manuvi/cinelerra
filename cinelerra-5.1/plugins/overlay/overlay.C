@@ -22,6 +22,7 @@
 #include "bcdisplayinfo.h"
 #include "clip.h"
 #include "bchash.h"
+#include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
 #include "guicast.h"
@@ -393,7 +394,7 @@ int Overlay::process_buffer(VFrame **frame,
 {
 	load_configuration();
 
-	EDLSession* session = get_edlsession();
+	EDLSession* session = get_edl()->session;
 	int interpolation_type = session ? session->interpolation_type : NEAREST_NEIGHBOR;
 
 	int step = config.direction == OverlayConfig::BOTTOM_FIRST ?  -1 : 1;

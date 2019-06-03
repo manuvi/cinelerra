@@ -128,7 +128,8 @@ void VAttachmentPoint::render(VFrame *output,
 // Need to copy PBuffer if OpenGL, regardless of use_opengl
 		int opengl_state = buffer_vector[buffer_number]->get_opengl_state();
 		if( opengl_state == VFrame::RAM ) {
-			output->copy_from(buffer_vector[buffer_number]);
+			output->transfer_from(buffer_vector[buffer_number],
+				0, 0,0, output->get_w(), output->get_h());
 			output->set_opengl_state(VFrame::RAM);
 		}
 		else if( opengl_state != VFrame::UNKNOWN &&

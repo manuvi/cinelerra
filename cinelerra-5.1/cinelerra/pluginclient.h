@@ -321,6 +321,9 @@ public:
 // get current camera and projector position
 	void get_camera(float *x, float *y, float *z, int64_t position);
 	void get_projector(float *x, float *y, float *z, int64_t position);
+
+	void output_to_track(float ox, float oy, float &tx, float &ty);
+	void track_to_output(float tx, float ty, float &ox, float &oy);
 // When this plugin is adjusted, propogate parameters back to EDL and virtual
 // console.  This gets a keyframe from the EDL, with the position set to the
 // EDL tracking position.
@@ -331,7 +334,6 @@ public:
 // Returns 1 if a GUI is open so OpenGL routines can determine if
 // they can run.
 	int gui_open();
-
 
 
 // Length of source.  For effects it's the plugin length.  For transitions
@@ -359,10 +361,8 @@ public:
 // the requested rate.
 	int64_t get_source_position();
 
-// Get the EDL Session.  May return 0 if the server has no edl.
-	EDLSession* get_edlsession();
-
-
+// Get server edl
+	EDL *get_edl();
 // Get the direction of the most recent process_buffer
 	int get_direction();
 

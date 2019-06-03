@@ -37,7 +37,7 @@ case "$dir" in
   ;;
 #"fedora30")
 #  dnf group install "Development Tools"
-#  ... lzma-sdk-devel ...
+#  ... lzma-sdk-devel libtool ...
 "fedora")
   dnf install groups "Development Tools"
   dnf -y --best --allowerasing \

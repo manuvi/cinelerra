@@ -436,4 +436,17 @@ void MaskAuto::scale_submasks(int orig_scale, int new_scale)
 	}
 }
 
+int MaskAuto::has_active_mask()
+{
+	int total_points = 0;
+	float min_fader = 100;
+	for( int i=0; i<masks.size(); ++i ) {
+		SubMask *mask = get_submask(i);
+		int submask_points = mask->points.size();
+		if( submask_points > 1 ) total_points += submask_points;
+		int fader = mask->fader;
+		if( fader < min_fader ) min_fader = fader;
+	}
+	return min_fader >= 0 && total_points < 2 ? 0 : 1;
+}
 

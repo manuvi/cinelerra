@@ -811,7 +811,7 @@ int VModule::render(VFrame *output,
        	MaskAuto *keyframe =
 		(MaskAuto*)keyframe_set->get_prev_auto(mask_position, direction, current);
 
-	if( keyframe->apply_before_plugins ) {
+	if( keyframe->apply_before_plugins && keyframe->has_active_mask() ) {
 		VDeviceX11 *x11_device = 0;
 		if( use_opengl && renderengine && renderengine->video ) {
 			x11_device = (VDeviceX11*)renderengine->video->get_output_base();

@@ -26,6 +26,7 @@
 #include "channeldb.h"
 #include "clip.h"
 #include "bchash.h"
+#include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
 #include "guicast.h"
@@ -212,7 +213,7 @@ void LiveVideoWindow::create_objects()
 {
 	int x = 10, y = 10;
 
-	EDLSession *session = plugin->PluginClient::get_edlsession();
+	EDLSession *session = plugin->get_edl()->session;
 	if(session)
 		VideoDevice::load_channeldb(plugin->channeldb, session->vconfig_in);
 	for(int i = 0; i < plugin->channeldb->size(); i++)
@@ -382,7 +383,7 @@ int LiveVideo::process_buffer(VFrame *frame,
 //printf("LiveVideo::process_buffer 10 start_position=%lld buffer_size=%d size=%d\n",
 //start_position, get_buffer_size(), size);
 
-	EDLSession *session = PluginClient::get_edlsession();
+	EDLSession *session = get_edl()->session;
 	if(!vdevice)
 	{
 		if(session)

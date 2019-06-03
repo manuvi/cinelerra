@@ -323,3 +323,16 @@ int PluginVClient::find_font_by_char(FT_ULong char_code, char *path_new, const F
 {
 	return BC_Resources::find_font_by_char(char_code, path_new, oldface);
 }
+
+int64_t PluginVClient::get_startproject()
+{
+	int64_t pos = server->get_startproject();
+	return  pos >= 0 ? pos : 0;
+}
+
+int64_t PluginVClient::get_endproject()
+{
+	int64_t pos = server->get_endproject();
+	return  pos >= 0 ? pos : get_edl()->get_video_frames();
+}
+

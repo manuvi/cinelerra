@@ -1319,7 +1319,8 @@ void MWindow::load_assets(ArrayList<Indexable*> *new_assets,
 		load_mode = LOADMODE_ASSETSONLY;
 const int debug = 0;
 if( debug ) printf("MWindow::load_assets %d\n", __LINE__);
-	if( position < 0 ) position = edl->local_session->get_selectionstart();
+	if( position < 0 )
+		position = edl->local_session->get_selectionstart();
 
 	ArrayList<EDL*> new_edls;
 	for( int i=0; i<new_assets->total; ++i ) {
@@ -1543,7 +1544,10 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls, int load_mode,
 		switch( load_mode ) {
 		case LOADMODE_REPLACE:
 			current_position = 0;
+			break;
 		case LOADMODE_NEW_TRACKS:
+			if( !overwrite )
+				current_position = 0;
 			break;
 
 		case LOADMODE_CONCATENATE:

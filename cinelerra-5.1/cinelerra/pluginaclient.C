@@ -225,7 +225,15 @@ int PluginAClient::get_samplerate()
 }
 
 
+int64_t PluginAClient::get_startproject()
+{
+	int64_t pos = server->get_startproject();
+	return  pos >= 0 ? pos : 0;
+}
 
-
-
+int64_t PluginAClient::get_endproject()
+{
+	int64_t pos = server->get_endproject();
+	return  pos >= 0 ? pos : get_edl()->get_audio_samples();
+}
 

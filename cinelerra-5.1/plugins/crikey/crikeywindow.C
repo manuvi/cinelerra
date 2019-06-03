@@ -216,13 +216,14 @@ int CriKeyWindow::do_grab_event(XEvent *event)
 	MWindow *mwindow = plugin->server->mwindow;
 	CWindowGUI *cwindow_gui = mwindow->cwindow->gui;
 	CWindowCanvas *canvas = cwindow_gui->canvas;
-	int cx, cy;  cwindow_gui->get_relative_cursor(cx, cy);
-	cx -= canvas->view_x;
-	cy -= canvas->view_y;
+	int cursor_x, cursor_y;
+	cwindow_gui->get_relative_cursor(cursor_x, cursor_y);
+	float output_x = cursor_x - canvas->view_x;
+	float output_y = cursor_y - canvas->view_y;
 
 	if( !dragging ) {
-		if( cx < 0 || cx >= canvas->view_w ||
-		    cy < 0 || cy >= canvas->view_h )
+		if( output_x < 0 || output_x >= canvas->view_w ||
+		    output_y < 0 || output_y >= canvas->view_h )
 			return 0;
 	}
 
@@ -244,21 +245,11 @@ int CriKeyWindow::do_grab_event(XEvent *event)
 		return 0;
 	}
 
-	float cursor_x = cx, cursor_y = cy;
-	canvas->canvas_to_output(mwindow->edl, 0, cursor_x, cursor_y);
-	int64_t position = plugin->get_source_position();
-	float projector_x, projector_y, projector_z;
-	Track *track = plugin->server->plugin->track;
-	int track_w = track->track_w, track_h = track->track_h;
-	track->automation->get_projector(
-		&projector_x, &projector_y, &projector_z,
-		position, PLAY_FORWARD);
-	projector_x += mwindow->edl->session->output_w / 2;
-	projector_y += mwindow->edl->session->output_h / 2;
-	float output_x = (cursor_x - projector_x) / projector_z + track_w / 2;
-	float output_y = (cursor_y - projector_y) / projector_z + track_h / 2;
-	point_x->update((int64_t)(output_x));
-	point_y->update((int64_t)(output_y));
+	float track_x, track_y;
+	canvas->canvas_to_output(mwindow->edl, 0, output_x, output_y);
+	plugin->output_to_track(output_x, output_y, track_x, track_y);
+	point_x->update((int64_t)track_x);
+	point_y->update((int64_t)track_y);
 	CriKeyPoints &points = plugin->config.points;
 
 	if( dragging > 0 ) {
@@ -269,30 +260,33 @@ int CriKeyWindow::do_grab_event(XEvent *event)
 			if( button_no == RIGHT_BUTTON ) {
 				hot_point = plugin->new_point();
 				CriKeyPoint *pt = points[hot_point];
-				pt->x = output_x;  pt->y = output_y;
+				pt->x = track_x;  pt->y = track_y;
 				point_list->update(hot_point);
 				break;
 			}
 			int sz = points.size();
 			if( hot_point < 0 && sz > 0 ) {
 				CriKeyPoint *pt = points[hot_point=0];
-				double dist = DISTANCE(output_x,output_y, pt->x,pt->y);
+				double dist = DISTANCE(track_x,track_y, pt->x,pt->y);
 				for( int i=1; i<sz; ++i ) {
 					pt = points[i];
-					double d = DISTANCE(output_x,output_y, pt->x,pt->y);
+					double d = DISTANCE(track_x,track_y, pt->x,pt->y);
 					if( d >= dist ) continue;
 					dist = d;  hot_point = i;
 				}
 				pt = points[hot_point];
-				float px = (pt->x - track_w / 2) * projector_z + projector_x;
-				float py = (pt->y - track_h / 2) * projector_z + projector_y;
-				dist = DISTANCE(px, py, cursor_x,cursor_y);
-				if( dist >= HANDLE_W ) hot_point = -1;
+				float cx, cy;
+				plugin->track_to_output(pt->x, pt->y, cx, cy);
+				canvas->output_to_canvas(mwindow->edl, 0, cx, cy);
+				cx += canvas->view_x;  cy += canvas->view_y;
+				dist = DISTANCE(cx,cy, cursor_x,cursor_y);
+				if( dist >= HANDLE_W )
+					hot_point = -1;
 			}
 			if( hot_point >= 0 && sz > 0 ) {
 				CriKeyPoint *pt = points[hot_point];
-				point_list->set_point(hot_point, PT_X, pt->x = output_x);
-				point_list->set_point(hot_point, PT_Y, pt->y = output_y);
+				point_list->set_point(hot_point, PT_X, pt->x = track_x);
+				point_list->set_point(hot_point, PT_Y, pt->y = track_y);
 				for( int i=0; i<sz; ++i ) {
 					pt = points[i];
 					pt->e = i==hot_point ? !pt->e : 0;
@@ -305,9 +299,9 @@ int CriKeyWindow::do_grab_event(XEvent *event)
 			int hot_point = point_list->get_selection_number(0, 0);
 			if( hot_point >= 0 && hot_point < points.size() ) {
 				CriKeyPoint *pt = points[hot_point];
-				if( pt->x == output_x && pt->y == output_y ) break;
-				point_list->set_point(hot_point, PT_X, pt->x = output_x);
-				point_list->set_point(hot_point, PT_Y, pt->y = output_y);
+				if( pt->x == track_x && pt->y == track_y ) break;
+				point_list->set_point(hot_point, PT_X, pt->x = track_x);
+				point_list->set_point(hot_point, PT_Y, pt->y = track_y);
 				point_x->update(pt->x);
 				point_y->update(pt->y);
 				point_list->update_list(hot_point);
@@ -318,7 +312,7 @@ int CriKeyWindow::do_grab_event(XEvent *event)
 	else {
 		switch( event->type ) {
 		case MotionNotify: {
-			float dx = output_x - last_x, dy = output_y - last_y;
+			float dx = track_x - last_x, dy = track_y - last_y;
 			int sz = points.size();
 			for( int i=0; i<sz; ++i ) {
 				CriKeyPoint *pt = points[i];
@@ -336,7 +330,7 @@ int CriKeyWindow::do_grab_event(XEvent *event)
 		}
 	}
 
-	last_x = output_x;  last_y = output_y;
+	last_x = track_x;  last_y = track_y;
 	pending_config = 1;
 	return 1;
 }

@@ -146,7 +146,7 @@ int TitleConfig::equivalent(TitleConfig &that)
 //		EQUIV(pixels_per_second, that.pixels_per_second) &&
 		wlen == that.wlen &&
 		!memcmp(wtext, that.wtext, wlen * sizeof(wchar_t)) &&
-//		title_x == that.title_x && title_y == that.title_y &&
+		title_x == that.title_x && title_y == that.title_y &&
 		title_w == that.title_w && title_h == that.title_h &&
 //		window_w == that.window_w && window_h == that.window_h &&
 		timecode == that.timecode &&
@@ -2148,7 +2148,7 @@ void TitleMain::draw_overlay()
 //printf("TitleMain::draw_overlay 1\n");
         fade = 1;
         if( !EQUIV(config.fade_in, 0) ) {
-		int64_t plugin_start = server->plugin->startproject;
+		int64_t plugin_start = get_startproject();
 		int64_t fade_len = lroundf(config.fade_in * PluginVClient::project_frame_rate);
 		int64_t fade_position = get_source_position() - plugin_start;
 
@@ -2157,7 +2157,7 @@ void TitleMain::draw_overlay()
 		}
 	}
         if( !EQUIV(config.fade_out, 0) ) {
-		int64_t plugin_end = server->plugin->startproject + server->plugin->length;
+		int64_t plugin_end = get_endproject();
 		int64_t fade_len = lroundf(config.fade_out * PluginVClient::project_frame_rate);
 		int64_t fade_position = plugin_end - get_source_position();
 
@@ -2459,15 +2459,14 @@ int TitleMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 
 void TitleMain::update_gui()
 {
-	if( thread ) {
-		int reconfigure = load_configuration();
-		if( reconfigure ) {
-			TitleWindow *window = (TitleWindow*)thread->window;
-			window->lock_window("TitleMain::update_gui");
-			window->update();
-			window->unlock_window();
-		}
+	if( !thread ) return;
+	thread->window->lock_window("TitleMain::update_gui");
+	TitleWindow *window = (TitleWindow*)thread->window;
+	if( load_configuration() ) {
+		window->update_gui();
+		window->flush();
 	}
+	window->unlock_window();
 }
 
 int TitleMain::load_configuration()

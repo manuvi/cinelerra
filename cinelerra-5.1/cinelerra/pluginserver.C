@@ -1301,7 +1301,14 @@ void PluginServer::sync_parameters()
 	}
 }
 
-
+int64_t PluginServer::get_startproject()
+{
+	return !plugin ? -1 : plugin->startproject;
+}
+int64_t PluginServer::get_endproject()
+{
+	return !plugin ? -1 : plugin->startproject + plugin->length;
+}
 
 void PluginServer::dump(FILE *fp)
 {

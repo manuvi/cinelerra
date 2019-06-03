@@ -20,6 +20,7 @@
 #include "c41.h"
 #include "bccolors.h"
 #include "clip.h"
+#include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
 #include "language.h"
@@ -187,13 +188,13 @@ int C41BoxButton::handle_event()
 
 C41Slider::C41Slider(C41Effect *plugin, int *output, int x, int y, int is_row)
  : BC_ISlider(x, y, 0, 200, 200, 0, is_row ?
-	plugin->get_edlsession()->output_h :
-	plugin->get_edlsession()->output_w , *output)
+	plugin->get_edl()->session->output_h :
+	plugin->get_edl()->session->output_w , *output)
 {
 	this->plugin = plugin;
 	this->output = output;
 	this->is_row = is_row;
-	EDLSession *session = plugin->get_edlsession();
+	EDLSession *session = plugin->get_edl()->session;
 	this->max = is_row ? session->output_h : session->output_w;
 }
 
@@ -206,7 +207,7 @@ int C41Slider::handle_event()
 
 int C41Slider::update(int v)
 {
-	EDLSession *session = plugin->get_edlsession();
+	EDLSession *session = plugin->get_edl()->session;
 	int max = is_row ? session->output_h : session->output_w;
 	bclamp(v, 0, max);
 	if( this->max != max ) return BC_ISlider::update(200, v, 0, this->max = max);
@@ -802,7 +803,7 @@ int C41Effect::process_realtime(VFrame *input, VFrame *output)
 	}
 
 	if( config.show_box ) {
-		EDLSession *session = get_edlsession();
+		EDLSession *session = get_edl()->session;
 		int line_w = bmax(session->output_w,session->output_h) / 600 + 1;
 		for( int k=0; k<line_w; ++k ) {
 			float **rows = (float **)frame->get_rows();

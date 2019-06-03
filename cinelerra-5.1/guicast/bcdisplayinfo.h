@@ -41,11 +41,13 @@ public:
 	int get_abs_cursor_x();
 	int get_abs_cursor_y();
 	static void parse_geometry(char *geom, int *x, int *y, int *width, int *height);
+	static int gl_probe(Display *dpy, Window win);
 // Get window border size created by window manager
 	static int get_top_border();
 	static int get_left_border();
 	static int get_right_border();
 	static int get_bottom_border();
+	static const char *get_gl_shader_version();
 	int get_screen_count();
 	void test_window(int &x_out, int &y_out, int &x_out2, int &y_out2, int x_in, int y_in);
 	static const char *host_display_name(const char *name);
@@ -66,6 +68,7 @@ private:
 	static int right_border;
 	static int auto_reposition_x;
 	static int auto_reposition_y;
+	static char gl_shader_version[64];
 	int default_depth;
 	char *display_name;
 	XineramaScreenInfo *xinerama_info;

@@ -90,7 +90,7 @@ public:
 	void update_color();
 	void update_justification();
 	void update_stats();
-	void update();
+	void update_gui();
 	void previous_font();
 	void next_font();
 	void check_style(const char *font_name, int update);

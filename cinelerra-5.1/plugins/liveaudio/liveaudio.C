@@ -25,6 +25,7 @@
 #include "bcsignals.h"
 #include "clip.h"
 #include "bchash.h"
+#include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
 #include "guicast.h"
@@ -224,7 +225,7 @@ int LiveAudio::process_buffer(int64_t size,
 
 	if(!adevice)
 	{
-		EDLSession *session = PluginClient::get_edlsession();
+		EDLSession *session = get_edl()->session;
 		if(session)
 		{
 			fragment_size = session->record_fragment_size;

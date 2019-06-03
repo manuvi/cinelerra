@@ -1337,7 +1337,7 @@ ZWindow *MWindow::create_mixer(Indexable *indexable, double position)
 	ArrayList<Indexable*> new_assets;
 	new_assets.append(indexable);
 	Track *track = edl->tracks->last;
-	load_assets(&new_assets, position, LOADMODE_NEW_TRACKS, 0, 0, 0, 0, 0, 0);
+	load_assets(&new_assets, position, LOADMODE_NEW_TRACKS, 0, 0, 0, 0, 0, 1);
 	track = !track ? edl->tracks->first : track->next;
 	Mixer *mixer = 0;
 	ZWindow *zwindow = get_mixer(mixer);

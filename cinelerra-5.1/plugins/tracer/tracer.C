@@ -28,6 +28,7 @@
 #include "bccmodels.h"
 #include "bccolors.h"
 #include "clip.h"
+#include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
 #include "tracer.h"
@@ -160,7 +161,7 @@ LOAD_CONFIGURATION_MACRO(Tracer, TracerConfig);
 
 int Tracer::new_point()
 {
-	EDLSession *session = get_edlsession();
+	EDLSession *session = get_edl()->session;
 	float x = !session ? 0.f : session->output_w / 2.f;
 	float y = !session ? 0.f : session->output_h / 2.f;
 	return config.add_point(x, y);

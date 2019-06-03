@@ -688,6 +688,7 @@ double PluginClient::get_project_framerate()
 
 const char *PluginClient::get_source_path()
 {
+	if( server->plugin ) return 0;
 	int64_t source_position = server->plugin->startproject;
 	Edit *edit = server->plugin->track->edits->editof(source_position,PLAY_FORWARD,0);
 	Indexable *indexable = edit ? edit->get_source() : 0;
@@ -733,24 +734,24 @@ int PluginClient::get_interpolation_type()
 
 float PluginClient::get_red()
 {
-	EDL *edl = server->mwindow ? server->mwindow->edl : server->edl;
-	return !edl ? 0 : edl->local_session->use_max ?
+	EDL *edl = get_edl();
+	return edl->local_session->use_max ?
 		edl->local_session->red_max :
 		edl->local_session->red;
 }
 
 float PluginClient::get_green()
 {
-	EDL *edl = server->mwindow ? server->mwindow->edl : server->edl;
-	return !edl ? 0 : edl->local_session->use_max ?
+	EDL *edl = get_edl();
+	return edl->local_session->use_max ?
 		edl->local_session->green_max :
 		edl->local_session->green;
 }
 
 float PluginClient::get_blue()
 {
-	EDL *edl = server->mwindow ? server->mwindow->edl : server->edl;
-	return !edl ? 0 : edl->local_session->use_max ?
+	EDL *edl = get_edl();
+	return edl->local_session->use_max ?
 		edl->local_session->blue_max :
 		edl->local_session->blue;
 }
@@ -864,14 +865,44 @@ void PluginClient::get_projector(float *x, float *y, float *z, int64_t position)
 }
 
 
-EDLSession* PluginClient::get_edlsession()
+void PluginClient::output_to_track(float ox, float oy, float &tx, float &ty)
 {
-	if(server->edl)
-		return server->edl->session;
-	return 0;
+	float projector_x, projector_y, projector_z;
+	int64_t position = get_source_position();
+	get_projector(&projector_x, &projector_y, &projector_z, position);
+	EDL *edl = get_edl();
+	projector_x += edl->session->output_w / 2;
+	projector_y += edl->session->output_h / 2;
+	Track *track = server->plugin ? server->plugin->track : 0;
+	int track_w = track ? track->track_w : edl->session->output_w;
+	int track_h = track ? track->track_h : edl->session->output_h;
+	tx = (ox - projector_x) / projector_z + track_w / 2;
+	ty = (oy - projector_y) / projector_z + track_h / 2;
+}
+
+void PluginClient::track_to_output(float tx, float ty, float &ox, float &oy)
+{
+	float projector_x, projector_y, projector_z;
+	int64_t position = get_source_position();
+	get_projector(&projector_x, &projector_y, &projector_z, position);
+	EDL *edl = get_edl();
+	projector_x += edl->session->output_w / 2;
+	projector_y += edl->session->output_h / 2;
+	Track *track = server->plugin ? server->plugin->track : 0;
+	int track_w = track ? track->track_w : edl->session->output_w;
+	int track_h = track ? track->track_h : edl->session->output_h;
+	ox = (tx - track_w / 2) * projector_z + projector_x;
+	oy = (ty - track_h / 2) * projector_z + projector_y;
+}
+
+
+EDL *PluginClient::get_edl()
+{
+	return server->mwindow ? server->mwindow->edl : server->edl;
 }
 
 int PluginClient::gui_open()
 {
 	return server->gui_open();
 }
+

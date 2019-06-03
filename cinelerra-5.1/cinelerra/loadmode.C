@@ -34,7 +34,7 @@ static const char *mode_text[] =
 	N_("Replace current project and concatenate tracks"),
 	N_("Append in new tracks"),
 	N_("Concatenate to existing tracks"),
-	N_("Paste at insertion point"),
+	N_("Paste over selection"),
 	N_("Create new resources only"),
 	N_("Nest sequence")
 };

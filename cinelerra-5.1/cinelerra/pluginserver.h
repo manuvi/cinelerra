@@ -150,6 +150,9 @@ public:
 			int64_t position, int direction);
 // Get interpolation used by EDL
 	int get_interpolation_type();
+// plugin position or -1 if no plugin
+	int64_t get_startproject();
+	int64_t get_endproject();
 // Get or create keyframe for writing, depending on whether auto keyframes
 // is enabled.  Called by PluginClient::send_configure_change
 	KeyFrame* get_keyframe();

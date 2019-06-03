@@ -533,7 +533,8 @@ int FindObjDragScene::handle_event()
 }
 Track *FindObjDragScene::get_drag_track()
 {
-	return plugin->server->plugin->track;
+	return !plugin->server->plugin ? 0 :
+		plugin->server->plugin->track;
 }
 int64_t FindObjDragScene::get_drag_position()
 {
@@ -543,7 +544,8 @@ void FindObjDragScene::update_gui()
 {
 	bound();
 	Track *track = get_drag_track();
-	int trk_w = track->track_w, trk_h = track->track_h;
+	int trk_w = track ? track->track_w : plugin->get_edl()->session->output_w;
+	int trk_h = track ? track->track_h : plugin->get_edl()->session->output_h;
 	float ctr_x = drag_x + drag_w/2, ctr_y = drag_y + drag_h/2;
 	gui->scene_x->update( plugin->config.scene_x = 100. * ctr_x / trk_w );
 	gui->scene_y->update( plugin->config.scene_y = 100. * ctr_y / trk_h );
@@ -573,7 +575,8 @@ int FindObjDragObject::handle_event()
 }
 Track *FindObjDragObject::get_drag_track()
 {
-	return plugin->server->plugin->track;
+	return !plugin->server->plugin ? 0 :
+		plugin->server->plugin->track;
 }
 int64_t FindObjDragObject::get_drag_position()
 {
@@ -583,7 +586,8 @@ void FindObjDragObject::update_gui()
 {
 	bound();
 	Track *track = get_drag_track();
-	int trk_w = track->track_w, trk_h = track->track_h;
+	int trk_w = track ? track->track_w : plugin->get_edl()->session->output_w;
+	int trk_h = track ? track->track_h : plugin->get_edl()->session->output_h;
 	float ctr_x = drag_x + drag_w/2, ctr_y = drag_y + drag_h/2;
 	gui->object_x->update( plugin->config.object_x = 100. * ctr_x / trk_w );
 	gui->object_y->update( plugin->config.object_y = 100. * ctr_y / trk_h );
@@ -613,7 +617,8 @@ int FindObjDragReplace::handle_event()
 }
 Track *FindObjDragReplace::get_drag_track()
 {
-	return plugin->server->plugin->track;
+	return !plugin->server->plugin ? 0 :
+		plugin->server->plugin->track;
 }
 int64_t FindObjDragReplace::get_drag_position()
 {
@@ -623,7 +628,8 @@ void FindObjDragReplace::update_gui()
 {
 	bound();
 	Track *track = get_drag_track();
-	int trk_w = track->track_w, trk_h = track->track_h;
+	int trk_w = track ? track->track_w : plugin->get_edl()->session->output_w;
+	int trk_h = track ? track->track_h : plugin->get_edl()->session->output_h;
 	float ctr_x = drag_x + drag_w/2, ctr_y = drag_y + drag_h/2;
 	gui->replace_x->update( plugin->config.replace_x = 100. * ctr_x / trk_w );
 	gui->replace_y->update( plugin->config.replace_y = 100. * ctr_y / trk_h );

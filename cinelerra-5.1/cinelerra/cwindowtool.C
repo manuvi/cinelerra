@@ -1536,10 +1536,15 @@ int CWindowMaskName::handle_event()
 void CWindowMaskName::update_items(MaskAuto *keyframe)
 {
 	mask_items.remove_all_objects();
-	int sz = keyframe->masks.size();
-	for( int i=0; i<sz; ++i ) {
-		SubMask *sub_mask = keyframe->masks.get(i);
-		char *text = sub_mask->name;
+	int sz = !keyframe ? 0 : keyframe->masks.size();
+	for( int i=0; i<SUBMASKS; ++i ) {
+		char text[BCSTRLEN];
+		if( i < sz ) {
+			SubMask *sub_mask = keyframe->masks.get(i);
+			strncpy(text, sub_mask->name, sizeof(text));
+		}
+		else
+			sprintf(text, "%d", i);
 		mask_items.append(new BC_ListBoxItem(text));
 	}
 	update_list(&mask_items);
@@ -2386,36 +2391,29 @@ void CWindowMaskGUI::update()
 //printf("CWindowMaskGUI::update 1\n");
 	get_keyframe(track, autos, keyframe, mask, point, 0);
 
-	double position = mwindow->edl->local_session->get_selectionstart(1);
-	position = mwindow->edl->align_to_frame(position, 0);
-	if(track)
-	{
-		int64_t position_i = track->to_units(position, 0);
-
-		if(point) {
-			x->update(point->x);
-			y->update(point->y);
-		}
-
-		if(mask) {
-			int k = mwindow->edl->session->cwindow_mask;
-			update_buttons(keyframe, k);
-			feather->update(autos->get_feather(position_i, k, PLAY_FORWARD));
-			fade->update(autos->get_fader(position_i, k, PLAY_FORWARD));
-			apply_before_plugins->update(keyframe->apply_before_plugins);
-			disable_opengl_masking->update(keyframe->disable_opengl_masking);
-		}
-	}
-
-	active_point->update((int64_t)mwindow->cwindow->gui->affected_point);
+	name->update_items(keyframe);
 	const char *text = "";
-	if( keyframe ) {
-		name->update_items(keyframe);
-		int k = mwindow->edl->session->cwindow_mask;
-		if( k >= 0 && k < keyframe->masks.size() )
-			text = keyframe->masks[k]->name;
-	}
+	int sz = !keyframe ? 0 : keyframe->masks.size();
+	int k = mwindow->edl->session->cwindow_mask;
+	if( k >= 0 && k < sz )
+		text = keyframe->masks[k]->name;
 	name->update(text);
+	update_buttons(keyframe, k);
+	if( point ) {
+		x->update(point->x);
+		y->update(point->y);
+	}
+	if( track ) {
+		double position = mwindow->edl->local_session->get_selectionstart(1);
+		int64_t position_i = track->to_units(position, 0);
+		feather->update(autos->get_feather(position_i, k, PLAY_FORWARD));
+		fade->update(autos->get_fader(position_i, k, PLAY_FORWARD));
+	}
+	if( keyframe ) {
+		apply_before_plugins->update(keyframe->apply_before_plugins);
+		disable_opengl_masking->update(keyframe->disable_opengl_masking);
+	}
+	active_point->update((int64_t)mwindow->cwindow->gui->affected_point);
 }
 
 void CWindowMaskGUI::handle_event()

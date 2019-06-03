@@ -1170,7 +1170,8 @@ int VFrame::transfer_from(VFrame *that, int bg_color, int in_x, int in_y, int in
 	timestamp = that->timestamp;
 	copy_params(that);
 
-	if( this->get_color_model() == that->get_color_model() &&
+	if( in_x == 0 && in_y == 0 && in_w == that->get_w() && in_h == that->get_h() &&
+	    bg_color == 0 && this->get_color_model() == that->get_color_model() &&
 	    this->get_w() == that->get_w() && this->get_h() == that->get_h() &&
 	    this->get_bytes_per_line() == that->get_bytes_per_line() )
 		return this->copy_from(that);

@@ -60,8 +60,8 @@ public:
 	void dump(FILE *fp);
 
 	char name[BCSTRLEN];
-	float fader; // 0 - 100
-	float feather; // 0 - 100
+	float fader; // -100 - 100
+	float feather; // -100 - 100
 	ArrayList<MaskPoint*> points;
 	MaskAuto *keyframe;
 };
@@ -98,6 +98,7 @@ public:
 	void translate_submasks(float translate_x, float translate_y);
 // scale all submasks
 	void scale_submasks(int orig_scale, int new_scale);
+	int has_active_mask();
 
 	ArrayList<SubMask*> masks;
 	int apply_before_plugins;

@@ -280,8 +280,8 @@ SketcherWindow::SketcherWindow(Sketcher *plugin)
 
 	position = -1;
 	track_w = track_h -1;
-	cursor_x = cursor_y = -1;
 	output_x = output_y = -1;
+	track_x = track_y = -1;
 	last_x = last_y = -1;
 	projector_x = projector_y = projector_z = -1;
 	state = 0;  dragging = 0;
@@ -508,13 +508,13 @@ int SketcherWindow::do_grab_event(XEvent *event)
 	MWindow *mwindow = plugin->server->mwindow;
 	CWindowGUI *cwindow_gui = mwindow->cwindow->gui;
 	CWindowCanvas *canvas = cwindow_gui->canvas;
-	int cx, cy;  cwindow_gui->get_relative_cursor(cx, cy);
-	cx -= canvas->view_x;
-	cy -= canvas->view_y;
+	cwindow_gui->get_relative_cursor(cursor_x, cursor_y);
+	output_x = cursor_x - canvas->view_x;
+	output_y = cursor_y - canvas->view_y;
 
 	if( !dragging ) {
-		if( cx < 0 || cx >= canvas->view_w ||
-		    cy < 0 || cy >= canvas->view_h )
+		if( output_x < 0 || output_x >= canvas->view_w ||
+		    output_y < 0 || output_y >= canvas->view_h )
 			return 0;
 	}
 
@@ -533,19 +533,8 @@ int SketcherWindow::do_grab_event(XEvent *event)
 		return 0;
 	}
 
-	cursor_x = cx, cursor_y = cy;
-	canvas->canvas_to_output(mwindow->edl, 0, cursor_x, cursor_y);
-	position = plugin->get_source_position();
-	Track *track = plugin->server->plugin->track;
-	track_w = track->track_w;
-	track_h = track->track_h;
-	track->automation->get_projector(
-		&projector_x, &projector_y, &projector_z,
-		position, PLAY_FORWARD);
-	projector_x += mwindow->edl->session->output_w / 2;
-	projector_y += mwindow->edl->session->output_h / 2;
-	output_x = (cursor_x - projector_x) / projector_z + track_w / 2;
-	output_y = (cursor_y - projector_y) / projector_z + track_h / 2;
+	canvas->canvas_to_output(mwindow->edl, 0, output_x, output_y);
+	plugin->output_to_track(output_x, output_y, track_x, track_y);
 	state = event->xmotion.state;
 
 	if( event->type == MotionNotify ) {
@@ -574,6 +563,10 @@ int SketcherWindow::grab_button_press(XEvent *event)
 	int ci = config.cv_selected;
 	if( ci < 0 || ci >= plugin->config.curves.size() )
 		return 0;
+        MWindow *mwindow = plugin->server->mwindow;
+        CWindowGUI *cwindow_gui = mwindow->cwindow->gui;
+        CWindowCanvas *canvas = cwindow_gui->canvas;
+
 	SketcherCurves &curves = config.curves;
 	SketcherCurve *cv = curves[ci];
 	SketcherPoints &points = cv->points;
@@ -586,20 +579,22 @@ int SketcherWindow::grab_button_press(XEvent *event)
 			++new_points;
 			pi = plugin->new_point(cv,
 				!(state & ControlMask) ? ARC_LINE : ARC_FILL,
-				output_x, output_y, pi+1);
+				track_x, track_y, pi+1);
 			point_list->update(pi);
 			break;
 		}
 		SketcherPoint *pt = 0; // select point
-		double dist = cv->nearest_point(pi, output_x,output_y);
+		double dist = cv->nearest_point(pi, track_x,track_y);
 		if( dist >= 0 ) {
 			pt = points[pi];
-			Track *track = plugin->server->plugin->track;
-			int track_w = track->track_w, track_h = track->track_h;
-			float px = (pt->x - track_w / 2) * projector_z + projector_x;
-			float py = (pt->y - track_h / 2) * projector_z + projector_y;
-			float pix = DISTANCE(px, py, cursor_x,cursor_y);
-			if( (state & ControlMask) && pix >= HANDLE_W ) { pi = -1;  pt = 0; }
+			float cx, cy;
+			plugin->track_to_output(pt->x, pt->y, cx, cy);
+			canvas->output_to_canvas(mwindow->edl, 0, cx, cy);
+			cx += canvas->view_x;  cy += canvas->view_y;
+			dist = DISTANCE(cx,cy, cursor_x,cursor_y);
+			if( (state & ControlMask) && dist >= HANDLE_W ) {
+				pi = -1;  pt = 0;
+			}
 		}
 		point_list->set_selected(pi);
 		break; }
@@ -608,7 +603,7 @@ int SketcherWindow::grab_button_press(XEvent *event)
 			++new_points;
 			pi = plugin->new_point(cv,
 				!(state & ControlMask) ? ARC_CURVE : ARC_OFF,
-				output_x, output_y, pi+1);
+				track_x, track_y, pi+1);
 			point_list->update(pi);
 			break;
 		}
@@ -619,15 +614,17 @@ int SketcherWindow::grab_button_press(XEvent *event)
 			break;
 		}
 		SketcherPoint *pt = 0;
-		double dist = config.nearest_point(ci, pi, output_x,output_y);
+		double dist = config.nearest_point(ci, pi, track_x,track_y);
 		if( dist >= 0 ) {
 			pt = curves[ci]->points[pi];
-			Track *track = plugin->server->plugin->track;
-			int track_w = track->track_w, track_h = track->track_h;
-			float px = (pt->x - track_w / 2) * projector_z + projector_x;
-			float py = (pt->y - track_h / 2) * projector_z + projector_y;
-			float pix = DISTANCE(px, py, cursor_x,cursor_y);
-			if( (state & ControlMask) && pix >= HANDLE_W ) { ci = pi = -1;  pt = 0; }
+			float cx, cy;
+			plugin->track_to_output(pt->x, pt->y, cx, cy);
+			canvas->output_to_canvas(mwindow->edl, 0, cx, cy);
+			cx += canvas->view_x;  cy += canvas->view_y;
+			dist = DISTANCE(cx,cy, cursor_x,cursor_y);
+			if( (state & ControlMask) && dist >= HANDLE_W ) {
+				ci = pi = -1;  pt = 0;
+			}
 		}
 		if( pt ) {
 			curve_list->update(ci);
@@ -656,12 +653,12 @@ int SketcherWindow::grab_cursor_motion()
 		if( (state & (Button1Mask|Button3Mask)) ) {
 			SketcherPoint *pt = pi >= 0 && pi < points.size() ? points[pi] : 0;
 			if( pt ) {
-				float dist = DISTANCE(pt->x, pt->y, output_x, output_y);
+				float dist = DISTANCE(pt->x, pt->y, track_x, track_y);
 				if( dist < get_w()*0.1 ) return 0; // tolerance w/10
 			}
 			++new_points;
 			int arc = (state & Button1Mask) ? ARC_LINE : ARC_CURVE;
-			pi = plugin->new_point(cv, arc, output_x, output_y, pi+1);
+			pi = plugin->new_point(cv, arc, track_x, track_y, pi+1);
 			point_list->update(pi);
 		}
 		return 1;
@@ -670,8 +667,8 @@ int SketcherWindow::grab_cursor_motion()
 		if( (state & ControlMask) && !(state & AltMask) ) { // drag selected point
 			SketcherPoint *pt = pi >= 0 && pi < points.size() ? points[pi] : 0;
 			if( pt ) {
-				point_list->set_point(pi, PT_X, pt->x = output_x);
-				point_list->set_point(pi, PT_Y, pt->y = output_y);
+				point_list->set_point(pi, PT_X, pt->x = track_x);
+				point_list->set_point(pi, PT_Y, pt->y = track_y);
 				point_list->update_list(pi);
 				point_x->update(pt->x);
 				point_y->update(pt->y);
@@ -679,8 +676,8 @@ int SketcherWindow::grab_cursor_motion()
 			return 1;
 		}
 		if( (state & ControlMask) && (state & AltMask) ) { // drag all curves
-			int dx = round(output_x - last_x);
-			int dy = round(output_y - last_y);
+			int dx = round(track_x - last_x);
+			int dy = round(track_y - last_y);
 			for( int i=0; i<curves.size(); ++i ) {
 				SketcherCurve *crv = plugin->config.curves[i];
 				int pts = crv->points.size();
@@ -697,15 +694,15 @@ int SketcherWindow::grab_cursor_motion()
 			point_list->update(pi);
 			return 1;
 		}
-		double dist = cv->nearest_point(pi, output_x,output_y);
+		double dist = cv->nearest_point(pi, track_x,track_y);
 		if( dist >= 0 )
 			point_list->set_selected(pi);
 		return 1;
 	}
 	if( (state & Button3Mask) ) {
 		if( (state & (ControlMask | AltMask)) ) { // drag selected curve(s)
-			int dx = round(output_x - last_x);
-			int dy = round(output_y - last_y);
+			int dx = round(track_x - last_x);
+			int dy = round(track_y - last_y);
 			for( int i=0; i<points.size(); ++i ) {
 				SketcherPoint *pt = points[i];
 				pt->x += dx;  pt->y += dy;
@@ -718,7 +715,7 @@ int SketcherWindow::grab_cursor_motion()
 			point_list->update(pi);
 			return 1;
 		}
-		double dist = config.nearest_point(ci, pi, output_x,output_y);
+		double dist = config.nearest_point(ci, pi, track_x,track_y);
 		if( dist >= 0 ) {
 			curve_list->update(ci);
 			point_list->update(pi);

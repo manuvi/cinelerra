@@ -196,13 +196,14 @@ int TracerWindow::do_grab_event(XEvent *event)
 	MWindow *mwindow = plugin->server->mwindow;
 	CWindowGUI *cwindow_gui = mwindow->cwindow->gui;
 	CWindowCanvas *canvas = cwindow_gui->canvas;
-	int cx, cy;  cwindow_gui->get_relative_cursor(cx, cy);
-	cx -= canvas->view_x;
-	cy -= canvas->view_y;
+	int cursor_x, cursor_y;
+	cwindow_gui->get_relative_cursor(cursor_x, cursor_y);
+	cursor_x -= canvas->view_x;
+	cursor_y -= canvas->view_y;
 
 	if( !button_no ) {
-		if( cx < 0 || cx >= canvas->view_w ||
-		    cy < 0 || cy >= canvas->view_h )
+		if( cursor_x < 0 || cursor_x >= canvas->view_w ||
+		    cursor_y < 0 || cursor_y >= canvas->view_h )
 			return 0;
 	}
 
@@ -222,21 +223,11 @@ int TracerWindow::do_grab_event(XEvent *event)
 		return 0;
 	}
 
-	float cursor_x = cx, cursor_y = cy;
-	canvas->canvas_to_output(mwindow->edl, 0, cursor_x, cursor_y);
-	int64_t position = plugin->get_source_position();
-	float projector_x, projector_y, projector_z;
-	Track *track = plugin->server->plugin->track;
-	int track_w = track->track_w, track_h = track->track_h;
-	track->automation->get_projector(
-		&projector_x, &projector_y, &projector_z,
-		position, PLAY_FORWARD);
-	projector_x += mwindow->edl->session->output_w / 2;
-	projector_y += mwindow->edl->session->output_h / 2;
-	float output_x = (cursor_x - projector_x) / projector_z + track_w / 2;
-	float output_y = (cursor_y - projector_y) / projector_z + track_h / 2;
-	point_x->update((int64_t)(output_x));
-	point_y->update((int64_t)(output_y));
+	float output_x = cursor_x, output_y = cursor_y, track_x, track_y;
+	canvas->canvas_to_output(mwindow->edl, 0, output_x, output_y);
+	plugin->output_to_track(output_x, output_y, track_x, track_y);
+	point_x->update((int64_t)track_x);
+	point_y->update((int64_t)track_y);
 	TracerPoints &points = plugin->config.points;
 
 	switch( event->type ) {
@@ -254,11 +245,11 @@ int TracerWindow::do_grab_event(XEvent *event)
 			int sz = points.size();
 			for( int i=0; i<sz; ++i ) {
 				TracerPoint *pt = points[i];
-				float px = pt->x - output_x, py = pt->y - output_y;
+				float px = pt->x - track_x, py = pt->y - track_y;
 				float nx = shift_down ? px*s : px*ct + py*st;
 				float ny = shift_down ? py*s : py*ct - px*st;
-				point_list->set_point(i, PT_X, pt->x = nx + output_x);
-				point_list->set_point(i, PT_Y, pt->y = ny + output_y);
+				point_list->set_point(i, PT_X, pt->x = nx + track_x);
+				point_list->set_point(i, PT_Y, pt->y = ny + track_y);
 			}
 			point_list->update(-1);
 			button_no = 0;
@@ -269,7 +260,7 @@ int TracerWindow::do_grab_event(XEvent *event)
 			int k = !shift_down ? -1 : points.size()-1;
 			float mx = FLT_MAX;
 			for( int i=0; i<sz; ++i ) {
-				// pt on line pt[i+0]..pt[i+1] nearest cx,cy
+				// pt on line pt[i+0]..pt[i+1] nearest cursor_x,cursor_y
 				TracerPoint *pt0 = points[i+0];
 				TracerPoint *pt1 = i+1<sz ? points[i+1] : points[0];
 				float x0 = pt0->x, y0 = pt0->y;
@@ -277,11 +268,11 @@ int TracerWindow::do_grab_event(XEvent *event)
 				float dx = x1-x0, dy = y1-y0;
 				float rr = dx*dx + dy*dy;
 				if( !rr ) continue;
-				float u = ((x1-output_x)*dx + (y1-output_y)*dy) / rr;
+				float u = ((x1-track_x)*dx + (y1-track_y)*dy) / rr;
 				if( u < 0 || u > 1 ) continue;  // past endpts
 				float x = x0*u + x1*(1-u);
 				float y = y0*u + y1*(1-u);
-				dx = output_x-x;  dy = output_y-y;
+				dx = track_x-x;  dy = track_y-y;
 				float dd = dx*dx + dy*dy;	// d**2 closest approach
 				if( mx > dd ) { mx = dd;  k = i; }
 			}
@@ -289,30 +280,31 @@ int TracerWindow::do_grab_event(XEvent *event)
 			int hot_point = k+1;
 			for( int i=sz; i>hot_point; --i ) points[i] = points[i-1];
 			points[hot_point] = pt;
-			pt->x = output_x;  pt->y = output_y;
+			pt->x = track_x;  pt->y = track_y;
 			point_list->update(hot_point);
 			break; }
 		case LEFT_BUTTON: {
 			int hot_point = -1, sz = points.size();
 			if( sz > 0 ) {
 				TracerPoint *pt = points[hot_point=0];
-				double dist = DISTANCE(output_x,output_y, pt->x,pt->y);
+				double dist = DISTANCE(track_x,track_y, pt->x,pt->y);
 				for( int i=1; i<sz; ++i ) {
 					pt = points[i];
-					double d = DISTANCE(output_x,output_y, pt->x,pt->y);
+					double d = DISTANCE(track_x,track_y, pt->x,pt->y);
 					if( d >= dist ) continue;
 					dist = d;  hot_point = i;
 				}
 				pt = points[hot_point];
-				float px = (pt->x - track_w / 2) * projector_z + projector_x;
-				float py = (pt->y - track_h / 2) * projector_z + projector_y;
-				dist = DISTANCE(px, py, cursor_x,cursor_y);
+				float cx, cy;
+				plugin->track_to_output(pt->x, pt->y, cx, cy);
+				canvas->output_to_canvas(mwindow->edl, 0, cx, cy);
+				dist = DISTANCE(cursor_x, cursor_y, cx,cy);
 				if( dist >= HANDLE_W ) hot_point = -1;
 			}
 			if( hot_point >= 0 && sz > 0 ) {
 				TracerPoint *pt = points[hot_point];
-				point_list->set_point(hot_point, PT_X, pt->x = output_x);
-				point_list->set_point(hot_point, PT_Y, pt->y = output_y);
+				point_list->set_point(hot_point, PT_X, pt->x = track_x);
+				point_list->set_point(hot_point, PT_Y, pt->y = track_y);
 				point_list->update_list(hot_point);
 			}
 			break; }
@@ -324,16 +316,16 @@ int TracerWindow::do_grab_event(XEvent *event)
 			int hot_point = point_list->get_selection_number(0, 0);
 			if( hot_point >= 0 && hot_point < points.size() ) {
 				TracerPoint *pt = points[hot_point];
-				if( pt->x == output_x && pt->y == output_y ) break;
-				point_list->set_point(hot_point, PT_X, pt->x = output_x);
-				point_list->set_point(hot_point, PT_Y, pt->y = output_y);
+				if( pt->x == track_x && pt->y == track_y ) break;
+				point_list->set_point(hot_point, PT_X, pt->x = track_x);
+				point_list->set_point(hot_point, PT_Y, pt->y = track_y);
 				point_x->update(pt->x);
 				point_y->update(pt->y);
 				point_list->update_list(hot_point);
 			}
 			break; }
 		case MIDDLE_BUTTON: {
-			float dx = output_x - last_x, dy = output_y - last_y;
+			float dx = track_x - last_x, dy = track_y - last_y;
 			int sz = points.size();
 			for( int i=0; i<sz; ++i ) {
 				TracerPoint *pt = points[i];
@@ -352,7 +344,7 @@ int TracerWindow::do_grab_event(XEvent *event)
 		break; }
 	}
 
-	last_x = output_x;  last_y = output_y;
+	last_x = track_x;  last_y = track_y;
 	pending_config = 1;
 	return 1;
 }

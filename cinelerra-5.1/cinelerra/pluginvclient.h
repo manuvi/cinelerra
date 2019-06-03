@@ -148,6 +148,8 @@ public:
 
 	int64_t local_to_edl(int64_t position);
 	int64_t edl_to_local(int64_t position);
+	int64_t get_startproject();
+	int64_t get_endproject();
 
 // ======================== Non realtime buffer pointers =======================
 // Channels of arrays of frames that the client uses.

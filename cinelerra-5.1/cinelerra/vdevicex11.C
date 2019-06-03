@@ -23,6 +23,7 @@
 #include "autos.h"
 #include "bccapture.h"
 #include "bccmodels.h"
+#include "bcdisplayinfo.h"
 #include "bcsignals.h"
 #include "canvas.h"
 #include "edl.h"
@@ -580,6 +581,8 @@ void VDeviceX11::do_fade(VFrame *output_temp, float fade)
 
 bool VDeviceX11::can_mask(int64_t start_position_project, MaskAutos *keyframe_set)
 {
+	if( strncmp(BC_DisplayInfo::get_gl_shader_version(), "4.3", 3) < 0 )
+		return 0;
 	Auto *current = 0;
 	MaskAuto *keyframe = (MaskAuto*)keyframe_set->
 		get_prev_auto(start_position_project, PLAY_FORWARD, current);

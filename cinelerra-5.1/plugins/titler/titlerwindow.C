@@ -411,7 +411,7 @@ void TitleWindow::create_objects()
 	png_popup = new TitlePngPopup(client, this);
 
 	show_window(1);
-	update();
+	update_gui();
 }
 
 int TitleWindow::resize_event(int w, int h)
@@ -562,7 +562,7 @@ void TitleWindow::update_stats()
 	text_chars->update(client->config.wlen);
 }
 
-void TitleWindow::update()
+void TitleWindow::update_gui()
 {
 	title_x->update((int64_t)client->config.title_x);
 	title_y->update((int64_t)client->config.title_y);
@@ -1232,7 +1232,8 @@ TitleDrag::TitleDrag(TitleMain *client, TitleWindow *window, int x, int y)
 
 Track *TitleDrag::get_drag_track()
 {
-	return client->server->plugin->track;
+	return !client->server->plugin ? 0 :
+		client->server->plugin->track;
 }
 int64_t TitleDrag::get_drag_position()
 {

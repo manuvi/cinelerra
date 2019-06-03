@@ -324,23 +324,8 @@ void VirtualVNode::render_mask(VFrame *output_temp,
 	MaskAuto *keyframe = (MaskAuto*)keyframe_set->
 		get_prev_auto(start_position_project, PLAY_FORWARD, current);
 	if( keyframe->apply_before_plugins ) return;
-
-	int total_points = 0;
-	for(int i = 0; i < keyframe->masks.total; i++)
-	{
-		SubMask *mask = keyframe->get_submask(i);
-		int submask_points = mask->points.total;
-		if(submask_points > 1) total_points += submask_points;
-	}
+	if( !keyframe->has_active_mask() ) return;
 /*
-//printf("VirtualVNode::render_mask 1 %d %d\n", total_points, keyframe->value);
-// Ignore certain masks
-	if(total_points <= 2 ||
-		(keyframe->value == 0 && keyframe->mode == MASK_SUBTRACT_ALPHA))
-	{
-		return;
-	}
-
 // Fake certain masks
 	if(keyframe->value == 0 && keyframe->mode == MASK_MULTIPLY_ALPHA)
 	{

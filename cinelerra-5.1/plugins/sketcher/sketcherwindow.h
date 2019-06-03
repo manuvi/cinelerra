@@ -395,8 +395,9 @@ public:
 	float projector_x, projector_y, projector_z;
 	int track_w, track_h;
 	int new_points;
-	float cursor_x, cursor_y;
+	int cursor_x, cursor_y;
 	float output_x, output_y;
+	float track_x, track_y;
 	int state, dragging;
 	int pending_motion, pending_config;
 	XEvent motion_event;
