@@ -485,20 +485,12 @@ int Overlay::handle_opengl()
 #undef TWO
 #define TWO 2.0
 
-static const char *blend_NORMAL_frag =
-	"	vec4 result = mix(src_color, src_color, src_color.a);\n";
-
-static const char *blend_ADDITION_frag =
-	"	vec4 result = dst_color + src_color;\n"
-	"	result = clamp(result, 0.0, 1.0);\n";
-
-static const char *blend_SUBTRACT_frag =
-	"	vec4 result = dst_color - src_color;\n"
-	"	result = clamp(result, 0.0, 1.0);\n";
-
 static const char *blend_REPLACE_frag =
 	"	vec4 result = src_color;\n";
 
+GL_VEC_FRAG(NORMAL);
+GL_VEC_FRAG(ADDITION);
+GL_VEC_FRAG(SUBTRACT);
 GL_STD_FRAG(MULTIPLY);
 GL_VEC_FRAG(DIVIDE);
 GL_VEC_FRAG(MAX);
@@ -570,21 +562,6 @@ static const char * const overlay_shaders[TRANSFER_TYPES] = {
         	src->to_texture();
 	       	dst->enable_opengl();
 		dst->init_screen();
-		src->draw_texture();
-		break;
-	case TRANSFER_NORMAL:
-// Move destination to screen
-		if( dst->get_opengl_state() != VFrame::SCREEN ) {
-			dst->to_texture();
-        		dst->enable_opengl();
-		        dst->init_screen();
-			dst->draw_texture();
-		}
-        	src->to_texture();
-	       	dst->enable_opengl();
-		dst->init_screen();
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		src->draw_texture();
 		break;
 	default:

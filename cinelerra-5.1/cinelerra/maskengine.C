@@ -332,9 +332,7 @@ void MaskEngine::draw_edge(MaskEdge &edge, MaskPointSet &points)
 		MaskPoint *ap = points[i];
 		MaskPoint *bp = (i>=points.size()-1) ?
 				points[0] : points[i+1];
-		int dx = ap->x - bp->x, dy = ap->y - bp->y;
-		int segments = (int)(sqrt(dx*dx + dy*dy));
-		if( !segments ) continue;
+		int segments = 0;
 		if( ap->control_x2 == 0 && ap->control_y2 == 0 &&
 		    bp->control_x1 == 0 && bp->control_y1 == 0 )
 			segments = 1;
@@ -345,22 +343,30 @@ void MaskEngine::draw_edge(MaskEdge &edge, MaskPointSet &points)
 		float y2 = bp->y + bp->control_y1;
 		float x3 = bp->x, y3 = bp->y;
 
+// from Playback3D::do_mask_sync
+		float cx3 = -  x0 + 3*x1 - 3*x2 + x3;
+		float cx2 =  3*x0 - 6*x1 + 3*x2;
+		float cx1 = -3*x0 + 3*x1;
+		float cx0 =    x0;
+
+		float cy3 = -  y0 + 3*y1 - 3*y2 + y3;
+		float cy2 =  3*y0 - 6*y1 + 3*y2;
+		float cy1 = -3*y0 + 3*y1;
+		float cy0 =    y0;
+
+		if( segments == 0 ) {
+			float maxaccel1 = fabs(2*cy2) + fabs(6*cy3);
+			float maxaccel2 = fabs(2*cx2) + fabs(6*cx3);
+			float maxaccel = maxaccel1 > maxaccel2 ? maxaccel1 : maxaccel2;
+			float h = 1.0;
+			if( maxaccel > 8.0 ) h = sqrt((8.0) / maxaccel);
+			segments = int(1/h);
+		}
+
 		for( int j = 0; j <= segments; ++j ) {
 			float t = (float)j / segments;
-			float tpow2 = t * t;
-			float tpow3 = t * t * t;
-			float invt = 1 - t;
-			float invtpow2 = invt * invt;
-			float invtpow3 = invt * invt * invt;
-
-			int x = (invtpow3 * x0
-				+ 3 * t     * invtpow2 * x1
-				+ 3 * tpow2 * invt     * x2
-				+     tpow3	    * x3);
-			int y = (invtpow3 * y0
-				+ 3 * t     * invtpow2 * y1
-				+ 3 * tpow2 * invt     * y2
-				+     tpow3	    * y3);
+			float x = cx0 + t*(cx1 + t*(cx2 + t*cx3));
+			float y = cy0 + t*(cy1 + t*(cy2 + t*cy3));
 			edge.append(x, y);
 		}
 	}

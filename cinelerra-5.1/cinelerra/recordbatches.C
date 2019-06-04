@@ -355,7 +355,8 @@ RecordBatchesGUI::Dir::
 int RecordBatchesGUI::Dir::
 handle_event()
 {
-	char *path = FileSystem::basepath(directory);
+	char *path = FileSystem::basepath(get_text());
+	strcpy(directory, path);
 	load_dirs(path);
 	calculate_suggestions(dir_entries);
 	delete [] path;

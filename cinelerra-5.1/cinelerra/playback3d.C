@@ -295,14 +295,35 @@ static const char *feather_frag =
 	"	}\n"
 	"}\n";
 
-static const char *alpha_frag =
+static const char *multiply_mask4_frag =
 	"uniform sampler2D tex;\n"
-	"uniform sampler2D tex2;\n"
-	"uniform vec2 tex2_dimensions;\n"
-	"void main() {\n" \
+	"uniform sampler2D tex1;\n"
+	"void main()\n"
+	"{\n"
 	"	gl_FragColor = texture2D(tex, gl_TexCoord[0].st);\n"
-	"	vec4 canvas = texture2D(tex2, gl_FragCoord.xy / tex2_dimensions);\n"
-	"	gl_FragColor.a = canvas.a;\n"
+	"	gl_FragColor.a *= texture2D(tex1, gl_TexCoord[0].st).r;\n"
+	"}\n";
+
+static const char *multiply_mask3_frag =
+	"uniform sampler2D tex;\n"
+	"uniform sampler2D tex1;\n"
+	"void main()\n"
+	"{\n"
+	"	gl_FragColor = texture2D(tex, gl_TexCoord[0].st);\n"
+	"	float a = texture2D(tex1, gl_TexCoord[0].st).r;\n"
+	"	gl_FragColor.rgb *= vec3(a, a, a);\n"
+	"}\n";
+
+static const char *multiply_yuvmask3_frag =
+	"uniform sampler2D tex;\n"
+	"uniform sampler2D tex1;\n"
+	"void main()\n"
+	"{\n"
+	"	gl_FragColor = texture2D(tex, gl_TexCoord[0].st);\n"
+	"	float a = texture2D(tex1, gl_TexCoord[0].st).r;\n"
+	"	gl_FragColor.gb -= vec2(0.5, 0.5);\n"
+	"	gl_FragColor.rgb *= vec3(a, a, a);\n"
+	"	gl_FragColor.gb += vec2(0.5, 0.5);\n"
 	"}\n";
 
 static const char *fade_rgba_frag =
@@ -1429,20 +1450,18 @@ void Playback3D::do_mask_sync(Playback3DCommand *command)
 		glDrawBuffers(0, 0);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-		unsigned int shader = VFrame::make_shader(0, alpha_frag, 0);
+		const char *alpha_shader = BC_CModels::has_alpha(color_model) ?
+				multiply_mask4_frag :
+			!BC_CModels::is_yuv(color_model) ?
+				multiply_mask3_frag :
+				multiply_yuvmask3_frag;
+		unsigned int shader = VFrame::make_shader(0, alpha_shader, 0);
 		glUseProgram(shader);
 		if( shader > 0 ) {
 			command->frame->bind_texture(0);
 			in->BC_Texture::bind(1);
 			glUniform1i(glGetUniformLocation(shader, "tex"), 0);
-			glUniform1i(glGetUniformLocation(shader, "tex2"), 1);
-			glUniform2f(glGetUniformLocation(shader, "tex2_dimensions"),
-					(float)in->get_texture_w(),
-					(float)in->get_texture_h());
-//			if( BC_CModels::components(color_model ) == 4) {
-//				glEnable(GL_BLEND);
-//				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-//			}
+			glUniform1i(glGetUniformLocation(shader, "tex1"), 1);
 		}
 		command->frame->draw_texture();
 		command->frame->set_opengl_state(VFrame::SCREEN);
