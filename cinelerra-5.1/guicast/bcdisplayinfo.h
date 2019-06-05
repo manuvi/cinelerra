@@ -27,6 +27,11 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/Xinerama.h>
 
+#ifdef HAVE_GL
+#define GL_GLEXT_PROTOTYPES
+#include <GL/glx.h>
+#endif
+
 class BC_DisplayInfo
 {
 public:
@@ -41,7 +46,6 @@ public:
 	int get_abs_cursor_x();
 	int get_abs_cursor_y();
 	static void parse_geometry(char *geom, int *x, int *y, int *width, int *height);
-	static int gl_probe(Display *dpy, Window win);
 // Get window border size created by window manager
 	static int get_top_border();
 	static int get_left_border();
@@ -52,16 +56,19 @@ public:
 	void test_window(int &x_out, int &y_out, int &x_out2, int &y_out2, int x_in, int y_in);
 	static const char *host_display_name(const char *name);
 	void init_window(const char *display_name, int show_error=0);
-	int get_screen() { return screen; }
+	int get_screen() { return scrnum; }
 	int get_xinerama_screens();
 	int xinerama_geometry(int screen, int &x, int &y, int &w, int &h);
+#ifdef HAVE_GL
+	int gl_probe();
+#endif
 
 private:
 	static void init_borders();
 	Display* display;
 	Window rootwin;
 	Visual *vis;
-	int screen;
+	int scrnum;
 	static int top_border;
 	static int left_border;
 	static int bottom_border;
@@ -69,7 +76,7 @@ private:
 	static int auto_reposition_x;
 	static int auto_reposition_y;
 	static char gl_shader_version[64];
-	int default_depth;
+	int depth;
 	char *display_name;
 	XineramaScreenInfo *xinerama_info;
 	int xinerama_screens;

@@ -45,7 +45,9 @@ char BC_DisplayInfo::gl_shader_version[64] = { 0, };
 
 BC_DisplayInfo::BC_DisplayInfo(const char *display_name, int show_error)
 {
-	screen = -1;
+	vis = 0;
+	depth = 0;
+	scrnum = -1;
 	xinerama_screens = -1;
 	xinerama_info = 0;
 	init_window(display_name, show_error);
@@ -130,59 +132,95 @@ static void get_top_coords(Display *display, Window win, int &px,int &py, int &t
 }
 
 
-int BC_DisplayInfo::gl_probe(Display *dpy, Window win)
-{
 #ifdef HAVE_GL
-	int fbAttribSingle[] = {
-		GLX_RENDER_TYPE,   GLX_RGBA_BIT,
-		GLX_RED_SIZE,      1,
-		GLX_GREEN_SIZE,    1,
-		GLX_BLUE_SIZE,     1,
-		GLX_DOUBLEBUFFER,  False,
-		None };
-	int fbAttribDouble[] = {
-		GLX_RENDER_TYPE,   GLX_RGBA_BIT,
-		GLX_RED_SIZE,      1,
-		GLX_GREEN_SIZE,    1,
-		GLX_BLUE_SIZE,     1,
-		GLX_DOUBLEBUFFER,  True,
-		None };
-	int scrnum = DefaultScreen(dpy);
-	int n_fb_cfgs = 0;
-	GLXFBConfig *fb_cfgs = glXChooseFBConfig(dpy, scrnum, fbAttribSingle, &n_fb_cfgs);
-	if( !fb_cfgs )
-		fb_cfgs = glXChooseFBConfig(dpy, scrnum, fbAttribDouble, &n_fb_cfgs);
-	if( !fb_cfgs )
-		return 1;
+int BC_DisplayInfo::gl_probe()
+{
+	int ncfgs = 0;
 	XVisualInfo *vis_info = 0;
-	GLXFBConfig glx_fb_config = 0;
-	for( int i=0; !vis_info && i<n_fb_cfgs; ++i ) {
+	GLXFBConfig *fb_cfgs = 0, cfg = 0;
+#if 0
+// find prefered config via glxinfo: mesa_hack
+	static int attribs[] = {
+		GLX_RGBA,
+		GLX_RED_SIZE, 1,
+		GLX_GREEN_SIZE, 1,
+		GLX_BLUE_SIZE, 1,
+		GLX_DEPTH_SIZE, 1,
+		GLX_STENCIL_SIZE, 1,
+		GLX_ACCUM_RED_SIZE, 1,
+		GLX_ACCUM_GREEN_SIZE, 1,
+		GLX_ACCUM_BLUE_SIZE, 1,
+		GLX_ACCUM_ALPHA_SIZE, 1,
+		GLX_DOUBLEBUFFER,
+		None
+	};
+	vis_info = glXChooseVisual(display, scrnum, attribs);
+	VisualID vis_id = vis_info ? vis_info->visualid : 0;
+	fb_cfgs = glXGetFBConfigs(display, scrnum, &ncfgs);
+	int n = !fb_cfgs ? 0 : ncfgs;
+	for( int i=0; --n>=0; ++i ) {
 		if( vis_info ) { XFree(vis_info);  vis_info = 0; }
-		glx_fb_config = fb_cfgs[i];
-		vis_info = glXGetVisualFromFBConfig(dpy, glx_fb_config);
+		vis_info = glXGetVisualFromFBConfig(display, cfg=fb_cfgs[i]);
+		if( vis_info && vis_info->visualid == vis_id ) break;
 	}
-	if( !vis_info )
-		return 1;
-	XFree(vis_info);
-	GLXWindow glx_win = glXCreateWindow(dpy, glx_fb_config, win, 0);
-	if( !glx_win ) return 1;
-	GLXContext glx_ctxt = glXCreateNewContext(dpy, glx_fb_config, GLX_RGBA_TYPE, 0, True);
-	if( glx_ctxt ) {
-		if( glXMakeContextCurrent(dpy, glx_win, glx_win, glx_ctxt) ) {
-			const char *shader_version = (const char *)
-				glGetString(GL_SHADING_LANGUAGE_VERSION);
-			if( shader_version )
-				strncpy(gl_shader_version, shader_version, sizeof(gl_shader_version));
-			glXMakeContextCurrent(dpy, 0, 0, 0);
-		}
-		glXDestroyContext(dpy, glx_ctxt);
+	if( n < 0 ) {
+		cfg = 0;
+		if( fb_cfgs ) { XFree(fb_cfgs);  fb_cfgs = 0; }
+		if( vis_info ) { XFree(vis_info);  vis_info = 0; }
 	}
-	glXDestroyWindow(dpy, glx_win);
-	return 0;
-#else
-	return 1;
 #endif
+	if( !fb_cfgs ) do {
+		int fb_attrs[] = {
+			GLX_CONFIG_CAVEAT,	GLX_SLOW_CONFIG,
+			GLX_DRAWABLE_TYPE,	GLX_WINDOW_BIT | GLX_PBUFFER_BIT | GLX_PIXMAP_BIT,
+			GLX_DOUBLEBUFFER,	1,
+			GLX_RENDER_TYPE,	GLX_RGBA_BIT,
+			GLX_ACCUM_RED_SIZE,	1,
+			GLX_ACCUM_GREEN_SIZE,	1,
+			GLX_ACCUM_BLUE_SIZE,	1,
+			GLX_ACCUM_ALPHA_SIZE,	1,
+			GLX_RED_SIZE,		8,
+			GLX_GREEN_SIZE,		8,
+			GLX_BLUE_SIZE,		8,
+			GLX_ALPHA_SIZE,		8,
+			None
+		};
+		fb_cfgs = glXChooseFBConfig(display, scrnum, fb_attrs+2, &ncfgs);
+		if( fb_cfgs && ncfgs ) break;
+		fb_cfgs = glXChooseFBConfig(display, scrnum, fb_attrs+0, &ncfgs);
+		if( fb_cfgs && ncfgs ) break;
+		fb_attrs[5] = 0;
+		fb_cfgs = glXChooseFBConfig(display, scrnum, fb_attrs+2, &ncfgs);
+		if( fb_cfgs && ncfgs ) break;
+		fb_cfgs = glXChooseFBConfig(display, scrnum, fb_attrs+0, &ncfgs);
+	} while(0);
+	if( fb_cfgs && ncfgs ) {
+		for( int i=0; !vis_info && i<ncfgs; ++i )
+			vis_info = glXGetVisualFromFBConfig(display, cfg=fb_cfgs[i]);
+	}
+	if( vis_info ) {
+		vis = vis_info->visual;
+		depth = vis_info->depth;
+	}
+	else {
+		printf("%s\n", "BC_DisplayInfo::gl_fb_config failed");
+		cfg = 0;
+	}
+	GLXContext glx_ctx = !cfg ? 0 :
+		glXCreateNewContext(display, cfg, GLX_RGBA_TYPE, 0, True);
+	if( glx_ctx && glXMakeContextCurrent(display, None, None, glx_ctx) ) {
+		const char *shader_version = (const char *)
+			glGetString(GL_SHADING_LANGUAGE_VERSION);
+		if( shader_version )
+			strncpy(gl_shader_version, shader_version, sizeof(gl_shader_version));
+	}
+	glXMakeContextCurrent(display, None, None, 0);
+	if( glx_ctx ) glXDestroyContext(display, glx_ctx);
+	if( fb_cfgs ) XFree(fb_cfgs);
+	if( vis_info ) XFree(vis_info);
+	return 0;
 }
+#endif
 
 
 void BC_DisplayInfo::test_window(int &x_out, int &y_out, int &x_out2, int &y_out2,
@@ -191,11 +229,10 @@ void BC_DisplayInfo::test_window(int &x_out, int &y_out, int &x_out2, int &y_out
 #ifdef SINGLE_THREAD
 	BC_Display::lock_display("BC_DisplayInfo::test_window");
 #endif
-
 	x_out = 0;
 	y_out = 0;
-        int x_out1 = 0;
-        int y_out1 = 0;
+	int x_out1 = 0;
+	int y_out1 = 0;
 	x_out2 = 0;
 	y_out2 = 0;
 
@@ -203,12 +240,11 @@ void BC_DisplayInfo::test_window(int &x_out, int &y_out, int &x_out2, int &y_out
 	XSetWindowAttributes attr;
 	attr.event_mask = StructureNotifyMask;
 	attr.win_gravity = SouthEastGravity;
-	attr.background_pixel = BlackPixel(display,screen);
+	attr.background_pixel = BlackPixel(display, scrnum);
 	Window win = XCreateWindow(display, rootwin,
 			x_in, y_in, TEST_SIZE, TEST_SIZE,
-			0, default_depth, InputOutput,
+			0, depth, InputOutput,
 			vis, mask, &attr);
-	gl_probe(display, win);
 	XSizeHints size_hints;
 	XGetNormalHints(display, win, &size_hints);
 	size_hints.flags = PPosition | PSize;
@@ -221,7 +257,6 @@ void BC_DisplayInfo::test_window(int &x_out, int &y_out, int &x_out2, int &y_out
 	XClearWindow(display, win);
 	XMapWindow(display, win);
 	XFlush(display);  XSync(display, 0);  usleep(100000);
-
 	XEvent event;
 	int state = 0;
 
@@ -275,6 +310,9 @@ void BC_DisplayInfo::test_window(int &x_out, int &y_out, int &x_out2, int &y_out
 	x_out = MAX(0, MIN(x_out, 48));
 	y_out = MAX(0, MIN(y_out, 48));
 
+#ifdef HAVE_GL
+	gl_probe();
+#endif
 #ifdef SINGLE_THREAD
 	BC_Display::unlock_display();
 #endif
@@ -343,7 +381,7 @@ void BC_DisplayInfo::init_window(const char *display_name, int show_error)
 		fprintf(stderr,_("BC_DisplayInfo::init_window: cannot open display \"%s\".\n"),
 			display_name ? display_name : "");
 		if(getenv("DISPLAY") == NULL)
-    			fprintf(stderr, _("'DISPLAY' environment variable not set.\n"));
+			fprintf(stderr, _("'DISPLAY' environment variable not set.\n"));
 		if((display = XOpenDisplay(0)) == NULL) {
 			fprintf(stderr,_("BC_DisplayInfo::init_window: cannot connect to X server.\n"));
 			exit(1);
@@ -354,10 +392,10 @@ void BC_DisplayInfo::init_window(const char *display_name, int show_error)
 #ifdef SINGLE_THREAD
 	BC_Display::lock_display("BC_DisplayInfo::init_window");
 #endif
-	screen = DefaultScreen(display);
-	rootwin = RootWindow(display, screen);
-	vis = DefaultVisual(display, screen);
-	default_depth = DefaultDepth(display, screen);
+	scrnum = DefaultScreen(display);
+	rootwin = RootWindow(display, scrnum);
+	vis = DefaultVisual(display, scrnum);
+	depth = DefaultDepth(display, scrnum);
 #ifdef SINGLE_THREAD
 	BC_Display::unlock_display();
 #endif // SINGLE_THREAD
@@ -399,15 +437,8 @@ int BC_DisplayInfo::get_abs_cursor_x()
 #ifdef SINGLE_THREAD
 	BC_Display::lock_display("BC_DisplayInfo::get_abs_cursor_x");
 #endif
-	XQueryPointer(display,
-	   rootwin,
-	   &temp_win,
-	   &temp_win,
-       &abs_x,
-	   &abs_y,
-	   &win_x,
-	   &win_y,
-	   &temp_mask);
+	XQueryPointer(display, rootwin, &temp_win, &temp_win,
+			&abs_x, &abs_y, &win_x, &win_y, &temp_mask);
 #ifdef SINGLE_THREAD
 	BC_Display::unlock_display();
 #endif
@@ -423,15 +454,8 @@ int BC_DisplayInfo::get_abs_cursor_y()
 #ifdef SINGLE_THREAD
 	BC_Display::lock_display("BC_DisplayInfo::get_abs_cursor_y");
 #endif
-	XQueryPointer(display,
-	   rootwin,
-	   &temp_win,
-	   &temp_win,
-       &abs_x,
-	   &abs_y,
-	   &win_x,
-	   &win_y,
-	   &temp_mask);
+	XQueryPointer(display, rootwin, &temp_win, &temp_win,
+			&abs_x, &abs_y, &win_x, &win_y, &temp_mask);
 #ifdef SINGLE_THREAD
 	BC_Display::unlock_display();
 #endif
