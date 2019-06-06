@@ -153,7 +153,7 @@ public:
 // align to frame boundary
 	int64_t frame_align(int64_t position, int round);
 
-	virtual int copy_settings(Track *track);
+	virtual int copy_settings(Track *track, int do_title=1);
 	void shift_keyframes(int64_t position, int64_t length);
 	void shift_effects(int64_t position, int64_t length, int edit_autos, Edits *trim_edits);
 	void change_plugins(SharedLocation &old_location, SharedLocation &new_location, int do_swap);

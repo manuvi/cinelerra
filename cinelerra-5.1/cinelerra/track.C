@@ -80,9 +80,10 @@ void Track::create_objects()
 {
 }
 
-
-int Track::copy_settings(Track *track)
+int Track::copy_settings(Track *track, int do_title)
 {
+	if( do_title )
+		strcpy(this->title, track->title);
 	this->expand_view = track->expand_view;
 	this->draw = track->draw;
 	this->gang = track->gang;
@@ -92,7 +93,6 @@ int Track::copy_settings(Track *track)
 	this->play = track->play;
 	this->track_w = track->track_w;
 	this->track_h = track->track_h;
-	strcpy(this->title, track->title);
 	return 0;
 }
 
@@ -441,7 +441,8 @@ void Track::insert_track(Track *track,
 //printf("Track::insert_track %d %s %jd\n", __LINE__, title, min_length);
 
 // Decide whether to copy settings based on load_mode
-	if(replace_default) copy_settings(track);
+	if( replace_default )
+		copy_settings(track, 0);
 
 	edits->insert_edits(track->edits,
 		to_units(position, 0),

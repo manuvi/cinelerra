@@ -267,6 +267,9 @@ public:
 	VFrame *gradient;
 	VFrame *input, *output;
 	GradientServer *engine;
+	float gradient_size;
+	uint8_t *table;
+	int table_size;
 };
 
 class GradientPackage : public LoadPackage

@@ -51,6 +51,12 @@ BC_DisplayInfo::BC_DisplayInfo(const char *display_name, int show_error)
 	xinerama_screens = -1;
 	xinerama_info = 0;
 	init_window(display_name, show_error);
+#ifdef HAVE_GL
+	ncfgs = 0;
+	fb_cfgs = 0;
+	cfg = 0;
+	vis_info = 0;
+#endif
 }
 
 BC_DisplayInfo::~BC_DisplayInfo()
@@ -133,11 +139,8 @@ static void get_top_coords(Display *display, Window win, int &px,int &py, int &t
 
 
 #ifdef HAVE_GL
-int BC_DisplayInfo::gl_probe()
+int BC_DisplayInfo::gl_fb_config()
 {
-	int ncfgs = 0;
-	XVisualInfo *vis_info = 0;
-	GLXFBConfig *fb_cfgs = 0, cfg = 0;
 #if 0
 // find prefered config via glxinfo: mesa_hack
 	static int attribs[] = {
@@ -206,9 +209,17 @@ int BC_DisplayInfo::gl_probe()
 		printf("%s\n", "BC_DisplayInfo::gl_fb_config failed");
 		cfg = 0;
 	}
+	return 0;
+}
+
+int BC_DisplayInfo::gl_probe(Window win)
+{
 	GLXContext glx_ctx = !cfg ? 0 :
 		glXCreateNewContext(display, cfg, GLX_RGBA_TYPE, 0, True);
-	if( glx_ctx && glXMakeContextCurrent(display, None, None, glx_ctx) ) {
+	GLXWindow glx_win = !cfg ? 0 :
+		glXCreateWindow(display, cfg, win, 0);
+	if( glx_ctx && glx_win &&
+	    glXMakeContextCurrent(display, glx_win, glx_win, glx_ctx) ) {
 		const char *shader_version = (const char *)
 			glGetString(GL_SHADING_LANGUAGE_VERSION);
 		if( shader_version )
@@ -216,6 +227,7 @@ int BC_DisplayInfo::gl_probe()
 	}
 	glXMakeContextCurrent(display, None, None, 0);
 	if( glx_ctx ) glXDestroyContext(display, glx_ctx);
+	if( glx_win ) glXDestroyWindow(display, glx_win);
 	if( fb_cfgs ) XFree(fb_cfgs);
 	if( vis_info ) XFree(vis_info);
 	return 0;
@@ -229,6 +241,9 @@ void BC_DisplayInfo::test_window(int &x_out, int &y_out, int &x_out2, int &y_out
 #ifdef SINGLE_THREAD
 	BC_Display::lock_display("BC_DisplayInfo::test_window");
 #endif
+#ifdef HAVE_GL
+	gl_fb_config();
+#endif
 	x_out = 0;
 	y_out = 0;
 	int x_out1 = 0;
@@ -236,11 +251,12 @@ void BC_DisplayInfo::test_window(int &x_out, int &y_out, int &x_out2, int &y_out
 	x_out2 = 0;
 	y_out2 = 0;
 
-	unsigned long mask = CWEventMask | CWWinGravity | CWBackPixel;
+	unsigned long mask = CWEventMask | CWWinGravity | CWBackPixel | CWColormap;
 	XSetWindowAttributes attr;
 	attr.event_mask = StructureNotifyMask;
 	attr.win_gravity = SouthEastGravity;
 	attr.background_pixel = BlackPixel(display, scrnum);
+	attr.colormap = XCreateColormap(display, rootwin, vis, AllocNone);
 	Window win = XCreateWindow(display, rootwin,
 			x_in, y_in, TEST_SIZE, TEST_SIZE,
 			0, depth, InputOutput,
@@ -303,6 +319,9 @@ void BC_DisplayInfo::test_window(int &x_out, int &y_out, int &x_out2, int &y_out
 //  x_out,y_out, x_out1,y_out1, x_out2,y_out2);
 //printf("\nx_in,y_in=%d,%d\n", x_in,y_in);
 
+#ifdef HAVE_GL
+	gl_probe(win);
+#endif
 	XDestroyWindow(display, win);
 	XFlush(display);
 	XSync(display, 0);
@@ -310,9 +329,6 @@ void BC_DisplayInfo::test_window(int &x_out, int &y_out, int &x_out2, int &y_out
 	x_out = MAX(0, MIN(x_out, 48));
 	y_out = MAX(0, MIN(y_out, 48));
 
-#ifdef HAVE_GL
-	gl_probe();
-#endif
 #ifdef SINGLE_THREAD
 	BC_Display::unlock_display();
 #endif

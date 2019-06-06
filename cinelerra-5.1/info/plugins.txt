@@ -15,7 +15,7 @@ AgingTV:	Use to achieve an "old" movie or TV show
 		effect by adding moving lines and snow.
 Auto Scale:	Automatically scale to a specified size.
 Blue Banana:	Used for color transformation or remapping as
-		well as chroma-key filtering. Features5 37.8 usage:
+		well as chroma-key filtering. See Manual 10.9 usage:
 		. Select a specifc target color.
 		. Create a selection region by expanding color.
 		. Optionally reduce or expand the alpha plane.

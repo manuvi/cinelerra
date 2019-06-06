@@ -1,7 +1,7 @@
 webm libvpx-vp9
 # YOUTUBE - High Definition video
 # More VP9 options if choose format of webm
-# Refer to section 3.4 in Features5.pdf
+# Refer to Appendix C.3 in Cinelerra_GG manual
 # 1920x1080 (24, 25 or 30 frames per second)
 bitrate=1800k
 minrate=900k

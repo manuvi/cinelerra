@@ -60,7 +60,11 @@ public:
 	int get_xinerama_screens();
 	int xinerama_geometry(int screen, int &x, int &y, int &w, int &h);
 #ifdef HAVE_GL
-	int gl_probe();
+	int gl_fb_config();
+	int gl_probe(Window win);
+	int ncfgs;
+	GLXFBConfig *fb_cfgs, cfg;
+	XVisualInfo *vis_info;
 #endif
 
 private:
