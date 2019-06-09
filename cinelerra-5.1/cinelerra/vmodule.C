@@ -815,8 +815,14 @@ int VModule::render(VFrame *output,
 		VDeviceX11 *x11_device = 0;
 		if( use_opengl && renderengine && renderengine->video ) {
 			x11_device = (VDeviceX11*)renderengine->video->get_output_base();
-			if( !x11_device->can_mask(mask_position, keyframe_set) )
+			if( !x11_device->can_mask(mask_position, keyframe_set) ) {
+				if( output->get_opengl_state() != VFrame::RAM ) {
+					int w = output->get_w(), h = output->get_h();
+					x11_device->do_camera(output, output,
+						0,0,w,h, 0,0,w,h); // copy to ram
+				}
 				use_opengl = 0;
+			}
 		}
 		if( use_opengl && x11_device ) {
 			x11_device->do_mask(output, mask_position, keyframe_set,

@@ -2018,13 +2018,21 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 		SubMask *mask = gui->mask_keyframe->get_submask(mwindow->edl->session->cwindow_mask);
 		ArrayList<MaskPoint*> &mask_points = mask->points;
 #endif
-		MaskPoint *point = mask_points.values[gui->affected_point];
-		gui->center_x = point->x;
-		gui->center_y = point->y;
-		gui->control_in_x = point->control_x1;
-		gui->control_in_y = point->control_y1;
-		gui->control_out_x = point->control_x2;
-		gui->control_out_y = point->control_y2;
+		int k = gui->affected_point;
+		if( k >= 0 && k < mask_points.size() ) {
+			MaskPoint *point = mask_points.values[k];
+			gui->center_x = point->x;
+			gui->center_y = point->y;
+			gui->control_in_x = point->control_x1;
+			gui->control_in_y = point->control_y1;
+			gui->control_out_x = point->control_x2;
+			gui->control_out_y = point->control_y2;
+		}
+		else {
+			gui->center_x = gui->center_y = 0;
+			gui->control_in_x = gui->control_in_y = 0;
+			gui->control_out_x = gui->control_out_y = 0;
+		}
 		gui->tool_panel->raise_window();
 	}
 

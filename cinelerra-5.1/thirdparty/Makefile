@@ -53,6 +53,7 @@ unpack_xz=tar -xJf $(1)
 bld_depends=$(if $(ver_$(1)),$(call pkg-built,$(1)))
 bld_path=$(ver_$(1))/$(2)
 if_pkg=$(if $(ver_$(1)),$(2))
+if_npkg=$(if $(ver_$(1)),,$(2))
 inc_path=$(call if_pkg,$(1),$(inc_$(1)))
 ld_path=$(call if_pkg,$(1),-L$(call bld_path,$(1),$(2)) $(lib_$(1)))
 
@@ -214,7 +215,7 @@ opencv.cfg_params?= -DBUILD_SHARED_LIBS:BOOL=OFF
 openexr.cfg_vars?=LD_LIBRARY_PATH=$(call bld_path,ilmbase,usr/lib)
 openexr.cfg_params?=--enable-shared=no --with-ilmbase-prefix=$(call bld_path,ilmbase,usr)
 speech_tools.mak_params?=-j1
-tiff.cfg_params+= --enable-shared=no --disable-zstd
+tiff.cfg_params+= --enable-shared=no --disable-zstd $(call if_npkg,libwebp,--without-webp)
 twolame.cfg_params?=--enable-shared=no
 x264.cfg_params?= --enable-static --enable-pic
 x265.cfg_vars?=$(call cmake_config,source)
