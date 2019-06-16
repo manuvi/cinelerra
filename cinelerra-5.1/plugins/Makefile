@@ -11,6 +11,9 @@ include $(TOPDIR)/opencv_build
 OPENCV_OBJS := findobj flowobj gaborobj moveobj stylizeobj puzzleobj
 $(OPENCV_OBJS): opencv
 endif
+ifneq ($(WANT_CUDA), no)
+CUDA_OBJS := mandelcuda nbodycuda
+endif
 
 # burn must come before any other effecttv plugin
 # colors must come before any plugin
@@ -18,6 +21,7 @@ endif
 # motion must come before perspective
 
 DIRS = $(OPENCV_OBJS) \
+	$(CUDA_OBJS) \
 	1080to480 \
 	1080to540 \
 	720to480 \

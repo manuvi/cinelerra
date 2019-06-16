@@ -113,6 +113,7 @@ ffmpeg.cfg_params= \
 	--enable-pthreads --enable-gpl --disable-ffplay \
 	$(if $(WANT_VAAPI),--enable-vaapi,--disable-vaapi) \
 	$(if $(WANT_VDPAU),--enable-vdpau,--disable-vdpau) \
+	$(if $(WANT_NV), --enable-nvenc --enable-nvdec) \
 	$(call if_pkg,twolame,--enable-libtwolame) \
 	$(call if_pkg,openjpeg,--enable-libopenjpeg) \
 	$(call if_pkg,lame,--enable-libmp3lame) \
@@ -125,6 +126,7 @@ ffmpeg.cfg_params= \
 	$(call if_pkg,x264,--enable-libx264) \
 	$(call if_pkg,x265,--enable-libx265) \
 	--extra-cflags="\
+		$(if $(WANT_NV), $(inc_ffnvcodec)) \
 		$(call inc_path,twolame,libtwolame) \
 		$(call inc_path,lame,include) \
 		$(call inc_path,libaom,usr/local/include) \
@@ -289,7 +291,9 @@ $(call rules,$(call std-build,djbfft))
 $(call rules,$(call std-build,audiofile))
 $(call rules,$(call std-build,encore))
 $(call rules,$(call std-build,esound,audiofile))
-$(call rules,$(call std-build,ffmpeg, twolame lame openjpeg opus libtheora x264 x265 libvpx libaom libwebp))
+$(call rules,$(call std-build,ffmpeg, twolame lame openjpeg opus \
+	libtheora x264 x265 libvpx libaom libwebp \
+	$(if $(WANT_NV), ffnvcodec)))
 $(call rules,$(call std-build,fftw))
 $(call rules,$(call std-build,flac,libogg))
 $(call rules,$(call std-build,giflib))
@@ -325,6 +329,7 @@ $(call rules,$(call std-build,sord, serd))
 $(call rules,$(call std-build,sratom, serd sord lv2))
 $(call rules,$(call std-build,lilv, lv2 sratom serd sord))
 $(call rules,$(call std-build,suil, lv2))
+$(call rules,$(call std-build,ffnvcodec))
 
 # specialize festival, multiple tarballs
 festival:

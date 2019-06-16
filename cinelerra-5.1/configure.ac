@@ -58,6 +58,8 @@ CHECK_WITH([thirdparty],[use thirdparty build],[CIN_3RDPARTY],[yes])
 CHECK_WITH([shuttle],[shuttle device],[SHUTTLE],[yes])
 CHECK_WITH([vaapi],[video acceleration api],[VAAPI],[yes])
 CHECK_WITH([vdpau],[video decode+presentation api for unix],[VDPAU],[yes])
+CHECK_WITH([nv],[video acceleration api],[NV],[yes])
+CHECK_WITH([cuda],[video decode+presentation api for unix],[CUDA],[auto])
 
 if test "x$WANT_LV2" != "xno"; then
   GTK2_LIBS=`pkg-config --libs gtk+-2.0`
@@ -414,6 +416,11 @@ PKG_3RD([libwebp],[auto],
   [ usr/local/lib*/libwebp*.a ],
   [ usr/local/include ])
 
+PKG_3RD([ffnvcodec],[auto],
+  [ffnvcodec],
+  [ ],
+  [ . ])
+
 AC_SUBST(STATIC_PKGS)
 
 AC_DEFUN([CHECK_ENABLE], [
@@ -589,6 +596,7 @@ if test "x$WANT_VAAPI" != "xno" -a "x$HAVE_VAAPI" = "xyes"; then
   CHECK_HEADERS([vaapi_drm], [va drm headers], [va/va_drm.h])
   CHECK_LIB([vaapi_drm], [va-drm], [vaGetDisplayDRM])
 fi
+#CHECK_LIB([NVENC], [nvidia-encode], [NvEncodeAPICreateInstance])
 
 #if test "x$HAVE_mjpegtools" = "xyes"; then
 #CFG_CFLAGS+=" -I/usr/include/mjpegtools -I/usr/local/include/mjpegtools"
@@ -606,7 +614,6 @@ AC_ARG_WITH(m4_tolower([$1]),
   if test "x$WANT_$1" = "xyes" ; then
     AC_MSG_ERROR([required for $1 support.])
   fi
-  echo "=== want $1 Failed."
   WANT_$1=no
  elif test "x$WANT_$1" = "xauto" ; then
   WANT_$1=yes
@@ -682,6 +689,9 @@ CHECK_WANT([LV2], [auto], [use lv2], [
  CFLAGS="-I/usr/include/suil-0 -I/usr/local/include/suil-0"
  CHECK_HEADERS([lv2], [suil headers], [suil/suil.h])
  CFLAGS="$saved_CFLAGS"])
+
+CHECK_WANT([CUDA], [auto], [build cuda plugins], [
+  CHECK_HEADERS([CUDA], [cuda sdk], [/usr/local/cuda/include/cuda.h])])
 
 CHECK_WANT([DL], [auto], [system has libdl], [
  CHECK_LIB([DL], [dl], [dlopen])])
@@ -832,6 +842,7 @@ PKG_PROVIDE([sratom], [$WANT_LV2])
 PKG_PROVIDE([serd], [$WANT_LV2])
 PKG_PROVIDE([sord], [$WANT_LV2])
 PKG_PROVIDE([suil], [$WANT_LV2])
+PKG_PROVIDE([ffnvcodec], [$WANT_NV])
 
 if test "x$WANT_LV2" = "xyes"; then
   if test "x$HAVE_lv2" = "xyes" -a "x$BUILD_lilv" = "x0"; then
@@ -884,6 +895,8 @@ echo "  using: with-libzmpeg = $WANT_LIBZMPEG"
 echo "  using: with-commerical = $WANT_COMMERCIAL"
 echo "  using: with-vaapi = $WANT_VAAPI"
 echo "  using: with-vdpau = $WANT_VDPAU"
+echo "  using: with-nv = $WANT_NV"
+echo "  using: with-cuda = $WANT_CUDA"
 echo ""
 echo "  using: thirdparty build = $WANT_CIN_3RDPARTY"
 echo "  using: single-user  = $WANT_CINBIN_BUILD"
@@ -919,6 +932,10 @@ fi
 if test "x$WANT_VDPAU" != "xno" -a "x$HAVE_VDPAU" = "xyes"; then
   WANT_VDPAU="yes"
   CFG_WANTS+=" VDPAU"
+fi
+if test "x$WANT_NV" != "xno"; then
+  WANT_NV="yes"
+  CFG_WANTS+=" NV"
 fi
 
 if test "x$HAVE_DL" = "xyes"; then

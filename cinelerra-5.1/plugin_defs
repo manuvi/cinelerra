@@ -15,6 +15,7 @@ themes := \
 	theme_suv \
 	theme_neophyte \
 	theme_unflat \
+	theme_cakewalk \
 
 plugin_dirs += video
 video := \
@@ -76,6 +77,8 @@ video := \
 	motionblur \
 	motion-cv \
 	motion-hv \
+	mandelcuda \
+	nbodycuda \
 	oil \
 	overlay \
 	perspective \
