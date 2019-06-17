@@ -1486,6 +1486,9 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls, int load_mode,
 				default:
 					continue;
 				}
+// re-label only if not already labeled
+				if( new_edl->local_session->asset2edl )
+					strcpy(current->title, edl->tracks->last->title);
 				destination_tracks.append(edl->tracks->last);
 			}
 

@@ -74,6 +74,8 @@ public:
 // Number of samples if pasted from a clipboard.
 // If 0 use longest track
 	double clipboard_length;
+// edl created by asset_to_edl
+	int asset2edl;
 // Title if clip
 	char clip_title[BCTEXTLEN];
 	char clip_notes[BCTEXTLEN];

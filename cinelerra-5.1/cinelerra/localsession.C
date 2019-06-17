@@ -64,6 +64,7 @@ LocalSession::LocalSession(EDL *edl)
 	strcpy(clip_notes, _("Hello world"));
 	strcpy(clip_icon, "");
 	clipboard_length = 0;
+	asset2edl = 0;
 	loop_playback = 0;
 	loop_start = loop_end = 0;
 	playback_start = -1;

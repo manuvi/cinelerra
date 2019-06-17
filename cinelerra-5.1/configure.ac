@@ -58,8 +58,8 @@ CHECK_WITH([thirdparty],[use thirdparty build],[CIN_3RDPARTY],[yes])
 CHECK_WITH([shuttle],[shuttle device],[SHUTTLE],[yes])
 CHECK_WITH([vaapi],[video acceleration api],[VAAPI],[yes])
 CHECK_WITH([vdpau],[video decode+presentation api for unix],[VDPAU],[yes])
-CHECK_WITH([nv],[video acceleration api],[NV],[yes])
-CHECK_WITH([cuda],[video decode+presentation api for unix],[CUDA],[auto])
+CHECK_WITH([nv],[nvenc/nvdec ffnvcodec api],[NV],[yes])
+CHECK_WITH([cuda],[nv cuda plugins],[CUDA],[auto])
 
 if test "x$WANT_LV2" != "xno"; then
   GTK2_LIBS=`pkg-config --libs gtk+-2.0`

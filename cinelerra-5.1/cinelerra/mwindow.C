@@ -3602,6 +3602,7 @@ if(debug) printf("MWindow::asset_to_edl %d\n", __LINE__);
 //printf("MWindow::asset_to_edl 4 %s\n", string);
 if(debug) printf("MWindow::asset_to_edl %d\n", __LINE__);
 
+	new_edl->local_session->asset2edl = 1;
 	return 0;
 }
 
