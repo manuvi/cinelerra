@@ -9,6 +9,7 @@ class ShBtnDelButton;
 class ShBtnEditButton;
 class ShBtnTextDialog;
 class ShBtnTextOK;
+class ShBtnErrWarnItem;
 class ShBtnErrWarn;
 class ShBtnTextWindow;
 class ShBtnPrefItem;

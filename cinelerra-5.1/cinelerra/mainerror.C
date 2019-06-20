@@ -40,7 +40,7 @@ MainError* MainError::main_error = 0;
 
 
 MainErrorGUI::MainErrorGUI(MWindow *mwindow, MainError *thread, int x, int y)
- : BC_Window(_(PROGRAM_NAME ": Errors"),
+ : BC_Window(_(PROGRAM_NAME ": Messages"),
         x,
         y,
         mwindow->session->ewindow_w,
@@ -68,7 +68,7 @@ void MainErrorGUI::create_objects()
 	BC_Button *button;
 	add_subwindow(button = new BC_OKButton(this));
 	int x = 10, y = 10;
-	add_subwindow(title = new BC_Title(x, y, _("The following errors occurred:")));
+	add_subwindow(title = new BC_Title(x, y, _("Message log:")));
 	y += title->get_h() + 5;
 	add_subwindow(list = new BC_ListBox(x, y,
                 get_w() - 20, button->get_y() - y - 5,

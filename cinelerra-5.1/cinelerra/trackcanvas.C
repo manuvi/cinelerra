@@ -1888,6 +1888,8 @@ void TrackCanvas::refresh_plugintoggles()
 
 void TrackCanvas::draw_hard_edges()
 {
+	if( !mwindow->edl->session->auto_conf->hard_edges )
+		return;
 	int64_t x, y, w, h;
 
 	for(Track *track = mwindow->edl->tracks->first; track; track = track->next) {

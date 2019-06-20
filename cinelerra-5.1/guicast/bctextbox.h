@@ -358,6 +358,7 @@ public:
 	int get_h();
 	int get_show_query();
 	void set_show_query(int v);
+	void set_tooltip(const char *text);
 
 	void update(const char *text);
 	void update_list(ArrayList<BC_ListBoxItem*> *data);

@@ -332,10 +332,19 @@ PrefsUseHWDev::PrefsUseHWDev(PreferencesWindow *pwindow,
 void PrefsUseHWDev::create_objects()
 {
 	BC_PopupTextBox::create_objects();
+	set_tooltip(_("vdpau - Nvidia, Nouveau, Amdgpu\n"
+		"vaapi - Broadcom, Intel HD graphics, Radeon\n"
+		"cuda  - Nvidia + Cuda SDK"));
 	hw_dev_names.append(new BC_ListBoxItem(_("none")));
+#ifdef HAVE_VAAPI
 	hw_dev_names.append(new BC_ListBoxItem("vaapi"));
+#endif
+#ifdef HAVE_VDPAU
 	hw_dev_names.append(new BC_ListBoxItem("vdpau"));
-	hw_dev_names.append(new BC_ListBoxItem(""));
+#endif
+#ifdef HAVE_NV
+	hw_dev_names.append(new BC_ListBoxItem("cuda"));
+#endif
 	update_list(&hw_dev_names);
 	update(&pwindow->thread->preferences->use_hw_dev[0]);
 }

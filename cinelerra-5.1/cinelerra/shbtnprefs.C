@@ -43,17 +43,22 @@ void ShBtnRun::run()
 		perror("fork");
 		return;
 	}
-	if( pid > 0 ) {
-		int stat;  waitpid(pid, &stat, 0);
-		if( warn && stat ) {
-			char msg[BCTEXTLEN];
-			sprintf(msg, "%s: error exit status %d", name, stat);
-			MainError::show_error(msg);
-		}
+	char msg[BCTEXTLEN];
+	if( !pid ) {
+		argv.append(0);
+		execvp(argv[0], &argv[0]);
 		return;
 	}
-	argv.append(0);
-	execvp(argv[0], &argv[0]);
+	// warn <0:always, =0:never, >0:on err
+	if( !warn ) return;
+	int stat;  waitpid(pid, &stat, 0);
+	if( !stat ) {
+		if( warn > 0 ) return;
+		sprintf(msg, "%s: completed", name);
+	}
+	else
+		sprintf(msg, "%s: error exit status %d", name, stat);
+	MainError::show_error(msg);
 }
 
 ShBtnPref::ShBtnPref(const char *nm, const char *cmds, int warn, int run_script)
@@ -223,15 +228,43 @@ ShBtnTextWindow::~ShBtnTextWindow()
 {
 }
 
+
+ShBtnErrWarnItem::ShBtnErrWarnItem(ShBtnErrWarn *popup,
+                const char *text, int warn)
+ : BC_MenuItem(text)
+{
+        this->popup = popup;
+        this->warn = warn;
+}
+
+int ShBtnErrWarnItem::handle_event()
+{
+        popup->set_text(get_text());
+	popup->st_window->warn = warn;
+        return 1;
+}
+
 ShBtnErrWarn::ShBtnErrWarn(ShBtnTextWindow *st_window, int x, int y)
- : BC_CheckBox(x, y, &st_window->warn, _("Warn on err exit"))
+ : BC_PopupMenu(x, y, 120, st_window->warn < 0 ? _("Always"):
+	!st_window->warn ? _("Never") : _("On Error"))
 {
         this->st_window = st_window;
 }
-
 ShBtnErrWarn::~ShBtnErrWarn()
 {
 }
+int ShBtnErrWarn::handle_event()
+{
+        return 0;
+}
+
+void ShBtnErrWarn::create_objects()
+{
+	add_item(new ShBtnErrWarnItem(this,_("Always"), -1));
+	add_item(new ShBtnErrWarnItem(this,_("Never"), 0));
+	add_item(new ShBtnErrWarnItem(this,_("On Error"), 1));
+}
+
 
 ShBtnRunScript::ShBtnRunScript(ShBtnTextWindow *st_window, int x, int y)
  : BC_CheckBox(x, y, &st_window->run_script, _("run /path/script.sh + argvs"))
@@ -259,7 +292,10 @@ void ShBtnTextWindow::create_objects()
         cmd_text = new BC_ScrollTextBox(this, x1, y, get_w()-x1-20, 4, pref->commands);
 	cmd_text->create_objects();
 	y += cmd_text->get_h() + 16;
+        add_subwindow(title = new BC_Title(x1,y, _("OnExit Notify:")));
+	x1 += title->get_w() + 10;
         add_subwindow(st_err_warn = new ShBtnErrWarn(this, x1, y));
+	st_err_warn->create_objects();
 	x1 += st_err_warn->get_w() + 20;
         add_subwindow(st_run_script = new ShBtnRunScript(this, x1, y));
         y = get_h() - ShBtnTextOK::calculate_h() - 10;

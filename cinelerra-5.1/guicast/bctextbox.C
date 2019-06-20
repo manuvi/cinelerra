@@ -2626,6 +2626,11 @@ void BC_PopupTextBox::reposition_window(int x, int y)
 //	if(flush) parent_window->flush();
 }
 
+void BC_PopupTextBox::set_tooltip(const char *text)
+{
+	listbox->set_tooltip(text);
+}
+
 
 
 BC_TumbleTextBoxText::BC_TumbleTextBoxText(BC_TumbleTextBox *popup,

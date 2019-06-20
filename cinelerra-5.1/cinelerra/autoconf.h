@@ -51,6 +51,7 @@ public:
 // Other viewable things
 	int transitions;
 	int plugins;
+	int hard_edges;
 };
 
 #endif

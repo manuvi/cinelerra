@@ -63,6 +63,7 @@ const char *GWindowGUI::non_auto_text[NON_AUTOMATION_TOTAL] =
 	N_("Titles"),
 	N_("Transitions"),
 	N_("Plugin Keyframes"),
+	N_("Hard Edges"),
 };
 
 const char *GWindowGUI::auto_text[AUTOMATION_TOTAL] =
@@ -138,6 +139,7 @@ static toggleinfo toggle_order[] =
 	{1, AUTOMATION_MODE},
 	{1, AUTOMATION_PAN},
 	{1, AUTOMATION_MASK},
+	{-1, NON_AUTOMATION_HARD_EDGES},
 	{0, -1}, // bar
 	{1, AUTOMATION_CAMERA_X},
 	{1, AUTOMATION_CAMERA_Y},
@@ -154,7 +156,14 @@ const char *GWindowGUI::toggle_text(toggleinfo *tp)
 {
 	if( tp->isauto > 0 ) return _(auto_text[tp->ref]);
 	if( !tp->isauto ) return _(non_auto_text[tp->ref]);
-	return _("XYZ");
+	switch( tp->ref ) {
+	case NONAUTOTOGGLES_CAMERA_XYZ:
+	case NONAUTOTOGGLES_PROJECTOR_XYZ:
+		return _("XYZ");
+	case NON_AUTOMATION_HARD_EDGES:
+		return _("Hard Edges");
+	}
+	return "()";
 }
 
 void GWindowGUI::calculate_extents(BC_WindowBase *gui, int *w, int *h)
@@ -263,7 +272,7 @@ void GWindowGUI::create_objects()
 			else
 				draw_vframe(vframe, get_w()-vframe->get_w()-10, y);
 		}
-		else if( tp->isauto < 0 ) {
+		else {
 			const char *accel = 0;
 			switch( ref ) {
 			case NONAUTOTOGGLES_CAMERA_XYZ:
@@ -273,6 +282,11 @@ void GWindowGUI::create_objects()
 			case NONAUTOTOGGLES_PROJECTOR_XYZ:
 				projector_xyz = toggle;
 				accel = _("Shift-F2");
+				break;
+			case NON_AUTOMATION_HARD_EDGES:
+				VFrame *vframe = mwindow->theme->hardedge_data;
+				draw_vframe(vframe, get_w()-vframe->get_w()-10, y);
+				hard_edges = toggle;
 				break;
 			}
 			 if( accel ) {
@@ -412,13 +426,12 @@ int* GWindowGUI::get_main_value(toggleinfo *info)
 {
 	if( info->isauto > 0 )
 		return &mwindow->edl->session->auto_conf->autos[info->ref];
-	if( !info->isauto ) {
-		switch( info->ref ) {
-		case NON_AUTOMATION_ASSETS: return &mwindow->edl->session->show_assets;
-		case NON_AUTOMATION_TITLES: return &mwindow->edl->session->show_titles;
-		case NON_AUTOMATION_TRANSITIONS: return &mwindow->edl->session->auto_conf->transitions;
-		case NON_AUTOMATION_PLUGIN_AUTOS: return &mwindow->edl->session->auto_conf->plugins;
-		}
+	switch( info->ref ) {
+	case NON_AUTOMATION_ASSETS: return &mwindow->edl->session->show_assets;
+	case NON_AUTOMATION_TITLES: return &mwindow->edl->session->show_titles;
+	case NON_AUTOMATION_TRANSITIONS: return &mwindow->edl->session->auto_conf->transitions;
+	case NON_AUTOMATION_PLUGIN_AUTOS: return &mwindow->edl->session->auto_conf->plugins;
+	case NON_AUTOMATION_HARD_EDGES: return &mwindow->edl->session->auto_conf->hard_edges;
 	}
 	return 0;
 }
@@ -477,6 +490,7 @@ int GWindowToggle::handle_event()
 		switch( info->ref ) {
 		case NONAUTOTOGGLES_CAMERA_XYZ:     group = AUTOMATION_CAMERA_X;     break;
 		case NONAUTOTOGGLES_PROJECTOR_XYZ:  group = AUTOMATION_PROJECTOR_X;  break;
+		case NON_AUTOMATION_HARD_EDGES: *gui->get_main_value(info) = value;  break;
 		}
 		if( group >= 0 ) {
 			gui->xyz_check(group, value);

@@ -107,11 +107,25 @@ public:
 	~ShBtnTextOK();
 };
 
-class ShBtnErrWarn : public BC_CheckBox
+class ShBtnErrWarnItem : public BC_MenuItem
+{
+public:
+	ShBtnErrWarnItem(ShBtnErrWarn *popup, const char *text, int warn);
+	ShBtnErrWarnItem();
+	int handle_event();
+
+	ShBtnErrWarn *popup;
+	int warn;
+};
+
+class ShBtnErrWarn : public BC_PopupMenu
 {
 public:
 	ShBtnErrWarn(ShBtnTextWindow *st_window, int x, int y);
 	~ShBtnErrWarn();
+
+	void create_objects();
+	int handle_event();
 
 	ShBtnTextWindow *st_window;
 };

@@ -140,6 +140,7 @@ Theme::Theme()
 	lift_data = 0;
 	maskkeyframe_data = 0;
 	modekeyframe_data = 0;
+	hardedge_data = 0;
 	movedn_data = 0;
 	moveup_data = 0;
 	newbin_data = 0;

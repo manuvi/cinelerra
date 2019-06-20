@@ -331,6 +331,7 @@ public:
 	VFrame **lift_data;
 	VFrame *maskkeyframe_data;
 	VFrame *modekeyframe_data;
+	VFrame *hardedge_data;
 	VFrame **movedn_data;
 	VFrame **moveup_data;
 	VFrame **newbin_data;

@@ -223,9 +223,7 @@ Edit* Edits::insert_new_edit(int64_t position)
 
 //printf("Edits::insert_new_edit 1\n");
 	Edit *new_edit = create_edit();
-	if( current ) new_edit->hard_right = current->hard_left;
 	if( current ) current = PREVIOUS;
-	if( current ) new_edit->hard_left = current->hard_right;
 //printf("Edits::insert_new_edit 1\n");
 	insert_after(current, new_edit);
 	new_edit->startproject = position;
@@ -247,6 +245,14 @@ Edit* Edits::split_edit(int64_t position)
 	new_edit->copy_from(edit);
 	new_edit->length = new_edit->startproject + new_edit->length - position;
 	edit->length = position - edit->startproject;
+	if( !new_edit->length ) 
+		new_edit->hard_left = new_edit->hard_right = 0;
+	else if( !edit->length )
+		edit->hard_left = edit->hard_right = 0;
+	else {
+		new_edit->hard_right = edit->hard_right;
+		new_edit->hard_left = edit->hard_right = 0;
+	}
 	new_edit->startproject = position;
 	new_edit->startsource += edit->length;
 
@@ -367,12 +373,18 @@ int Edits::optimize()
 
 // delete 0 length edits
 		for( current = first; !result && current; ) {
-			Edit* next = current->next;
+			Edit* prev = current->previous, *next = current->next;
 			if( current->length == 0 ) {
 				if( next && current->transition && !next->transition) {
 					next->transition = current->transition;
 					next->transition->edit = next;
 					current->transition = 0;
+				}
+				if( !current->silence() ) {
+					if( current->hard_left && next && !next->silence() )
+						next->hard_left = 1;
+					if( current->hard_right && prev && !prev->silence())
+						prev->hard_right = 1;
 				}
 				delete current;
 				result = 1;
@@ -394,7 +406,8 @@ int Edits::optimize()
 			Edit *next_edit = 0;
 			for( ; current && (next_edit=current->next); current=NEXT ) {
 // both edges are not hard edges
-				if( current->hard_right || next_edit->hard_left ) continue;
+				if( current->hard_right || next_edit->hard_left )
+					continue;
 // next edit is a glitch
 				if( is_glitch(next_edit) )
 					break;

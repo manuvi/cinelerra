@@ -34,6 +34,7 @@ enum {
 	NONAUTOTOGGLES_TITLES,
 	NONAUTOTOGGLES_TRANSITIONS,
 	NONAUTOTOGGLES_PLUGIN_AUTOS,
+	NONAUTOTOGGLES_HARD_EDGES,
 	NONAUTOTOGGLES_CAMERA_XYZ,
 	NONAUTOTOGGLES_PROJECTOR_XYZ,
 	NONAUTOTOGGLES_BAR1,
@@ -77,7 +78,7 @@ public:
 
 	MWindow *mwindow;
 	GWindowToggle *toggles[NONAUTOTOGGLES_COUNT + AUTOMATION_TOTAL];
-	GWindowToggle *camera_xyz, *projector_xyz;
+	GWindowToggle *camera_xyz, *projector_xyz, *hard_edges;
 };
 
 class GWindowToggle : public BC_CheckBox

@@ -97,6 +97,7 @@ BlueDotTheme::~BlueDotTheme()
 	delete keyframe_data;
 	delete maskkeyframe_data;
 	delete modekeyframe_data;
+	delete hardedge_data;
 	delete pankeyframe_data;
 	delete projectorkeyframe_data;
 }
@@ -876,6 +877,7 @@ void BlueDotTheme::build_overlays()
 	camerakeyframe_data = new VFramePng(get_image_data("camerakeyframe.png"));
 	maskkeyframe_data = new VFramePng(get_image_data("maskkeyframe.png"));
 	modekeyframe_data = new VFramePng(get_image_data("modekeyframe.png"));
+	hardedge_data = new VFramePng(get_image_data("hardedge.png"));
 	pankeyframe_data = new VFramePng(get_image_data("pankeyframe.png"));
 	projectorkeyframe_data = new VFramePng(get_image_data("projectorkeyframe.png"));
 }

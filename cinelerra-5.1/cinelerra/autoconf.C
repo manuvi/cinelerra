@@ -64,6 +64,7 @@ int AutoConf::load_defaults(BC_Hash* defaults)
 	}
 	transitions = defaults->get("SHOW_TRANSITIONS", 1);
 	plugins = defaults->get("SHOW_PLUGINS", 1);
+	hard_edges = defaults->get("SHOW_HARD_EDGES", 1);
 	return 0;
 }
 
@@ -75,6 +76,7 @@ void AutoConf::load_xml(FileXML *file)
 	}
 	transitions = file->tag.get_property("SHOW_TRANSITIONS", 1);
 	plugins = file->tag.get_property("SHOW_PLUGINS", 1);
+	hard_edges = file->tag.get_property("SHOW_HARD_EDGES", 1);
 }
 
 int AutoConf::save_defaults(BC_Hash* defaults)
@@ -85,27 +87,28 @@ int AutoConf::save_defaults(BC_Hash* defaults)
 	}
 	defaults->update("SHOW_TRANSITIONS", transitions);
 	defaults->update("SHOW_PLUGINS", plugins);
+	defaults->update("SHOW_HARD_EDGES", hard_edges);
 	return 0;
 }
 
 void AutoConf::save_xml(FileXML *file)
 {
-	for(int i = 0; i < AUTOMATION_TOTAL; i++)
-	{
+	for(int i = 0; i < AUTOMATION_TOTAL; i++) {
 		file->tag.set_property(xml_titles[i], autos[i]);
 	}
 	file->tag.set_property("SHOW_TRANSITIONS", transitions);
 	file->tag.set_property("SHOW_PLUGINS", plugins);
+	file->tag.set_property("SHOW_HARD_EDGES", hard_edges);
 }
 
 int AutoConf::set_all(int value)
 {
-	for(int i = 0; i < AUTOMATION_TOTAL; i++)
-	{
+	for(int i = 0; i < AUTOMATION_TOTAL; i++) {
 		autos[i] = value;
 	}
 	transitions = value;
 	plugins = value;
+	hard_edges = value;
 	return 0;
 }
 
@@ -117,12 +120,12 @@ AutoConf& AutoConf::operator=(AutoConf &that)
 
 void AutoConf::copy_from(AutoConf *src)
 {
-	for(int i = 0; i < AUTOMATION_TOTAL; i++)
-	{
+	for(int i = 0; i < AUTOMATION_TOTAL; i++) {
 		autos[i] = src->autos[i];
 	}
 	transitions = src->transitions;
 	plugins = src->plugins;
+	hard_edges = src->hard_edges;
 }
 
 
