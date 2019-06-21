@@ -2487,7 +2487,7 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 			vid->height = asset->height;
 			vid->frame_rate = asset->frame_rate;
 
-			AVPixelFormat pix_fmt = AV_PIX_FMT_NONE;
+			AVPixelFormat pix_fmt = av_get_pix_fmt(asset->ff_pixel_format);
 			if( opt_hw_dev != 0 ) {
 				AVHWDeviceType hw_type = vid->encode_hw_activate(opt_hw_dev);
 				switch( hw_type ) {
@@ -2495,9 +2495,7 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 					pix_fmt = AV_PIX_FMT_VAAPI;
 					break;
 				case AV_HWDEVICE_TYPE_NONE:
-				default:
-					pix_fmt = av_get_pix_fmt(asset->ff_pixel_format);
-					break;
+				default: break;
 				}
 			}
 			if( pix_fmt == AV_PIX_FMT_NONE )
