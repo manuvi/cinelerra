@@ -128,6 +128,16 @@ public:
 	CWindowCoord *x1, *y1, *width, *height;
 };
 
+class CWindowMaskTrack : public BC_Title
+{
+public:
+	CWindowMaskTrack(MWindow *mwindow, CWindowMaskGUI *gui,
+			int x, int y, const char *text);
+	~CWindowMaskTrack();
+	MWindow *mwindow;
+	CWindowMaskGUI *gui;
+};
+
 class CWindowMaskItems : public ArrayList<BC_ListBoxItem*>
 {
 public:
@@ -260,6 +270,17 @@ public:
 	CWindowToolGUI *gui;
 };
 
+class CWindowMaskDrawCenter : public BC_CheckBox
+{
+public:
+	CWindowMaskDrawCenter(MWindow *mwindow, CWindowToolGUI *gui,
+			int x, int y);
+	~CWindowMaskDrawCenter();
+	int handle_event();
+	MWindow *mwindow;
+	CWindowToolGUI *gui;
+};
+
 class CWindowMaskDrawMarkers : public BC_CheckBox
 {
 public:
@@ -365,6 +386,7 @@ public:
 		SubMask* &mask, MaskPoint* &point, int create_it);
 	void update_preview();
 
+	CWindowMaskTrack *mask_track;
 	CWindowMaskName *name;
 	CWindowMaskButton *mask_buttons[SUBMASKS];
 	CWindowMaskThumbler *mask_thumbler;
@@ -379,6 +401,8 @@ public:
 	CWindowCoord *x, *y;
 	CWindowMaskFocus *focus;
 	int focused;
+	CWindowMaskDrawCenter *draw_center;
+	int center_mark;
 	CWindowMaskDrawMarkers *draw_markers;
 	int markers;
 	CWindowMaskDrawBoundary *draw_boundary;

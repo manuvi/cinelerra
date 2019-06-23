@@ -802,6 +802,11 @@ int EDL::clear(double start, double end,
 	return 0;
 }
 
+int EDL::clear_hard_edges(double start, double end)
+{
+	return tracks->clear_hard_edges(start, end);
+}
+
 static int dead_edit_cmp(Edit**ap, Edit**bp)
 {
 	Edit *a = *ap, *b = *bp;

@@ -101,6 +101,7 @@ public:
 	CTimeBar *timebar;
 	BC_Pixmap *active;
 	BC_Pixmap *inactive;
+	VFrame *focus_frame;
 //	MainClock *clock;
 
 

@@ -403,7 +403,34 @@ void MWindow::clear_labels()
 
 int MWindow::clear_labels(double start, double end)
 {
+	if( start == end ) {
+		start = 0;
+		end = edl->tracks->total_length();
+	}
 	edl->labels->clear(start, end, 0);
+	return 0;
+}
+
+void MWindow::clear_hard_edges()
+{
+	undo_before();
+	clear_hard_edges(edl->local_session->get_selectionstart(),
+		edl->local_session->get_selectionend());
+	edl->optimize();
+	save_backup();
+	undo_after(_("clear hard edges"), LOAD_EDITS);
+	restart_brender();
+	gui->update(1, NORMAL_DRAW, 0, 0, 1, 0, 0);
+	cwindow->refresh_frame(CHANGE_EDL);
+}
+
+int MWindow::clear_hard_edges(double start, double end)
+{
+	if( start == end ) {
+		start = 0;
+		end = edl->tracks->total_length();
+	}
+	edl->clear_hard_edges(start, end);
 	return 0;
 }
 

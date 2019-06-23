@@ -91,6 +91,7 @@ public:
 	MenuVEffectItem *veffect[TOTAL_EFFECTS];
 	Quit *quit_program;              // affected by save
 	MainDumpsMenu *dump_menu;
+	EditClearMenu *clear_menu;
 	Undo *undo;
 	Redo *redo;
 	int total_aeffects;
@@ -237,6 +238,26 @@ public:
 	MWindow *mwindow;
 };
 
+class EditClearSubMenu : public BC_SubMenu
+{
+public:
+	EditClearSubMenu(BC_MenuItem *menu_item);
+	~EditClearSubMenu();
+
+	BC_MenuItem *menu_item;
+};
+
+class EditClearMenu : public BC_MenuItem
+{
+public:
+	EditClearMenu(MWindow *mwindow);
+	~EditClearMenu();
+	void create_objects();
+
+	MWindow *mwindow;
+	EditClearSubMenu *clear_sub_menu;
+};
+
 class Clear : public BC_MenuItem
 {
 public:
@@ -373,6 +394,14 @@ class SelectAll : public BC_MenuItem
 {
 public:
 	SelectAll(MWindow *mwindow);
+	int handle_event();
+	MWindow *mwindow;
+};
+
+class ClearHardEdges : public BC_MenuItem
+{
+public:
+	ClearHardEdges(MWindow *mwindow);
 	int handle_event();
 	MWindow *mwindow;
 };

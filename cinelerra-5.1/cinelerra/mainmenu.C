@@ -148,9 +148,9 @@ void MainMenu::create_objects()
 	editmenu->add_item(new Cut(mwindow));
 	editmenu->add_item(new Copy(mwindow));
 	editmenu->add_item(new Paste(mwindow));
-	editmenu->add_item(new Clear(mwindow));
 	editmenu->add_item(new PasteSilence(mwindow));
-	editmenu->add_item(new MuteSelection(mwindow));
+	editmenu->add_item(clear_menu = new EditClearMenu(mwindow));
+	clear_menu->create_objects();
 	editmenu->add_item(new TrimSelection(mwindow));
 	editmenu->add_item(new SelectAll(mwindow));
 	editmenu->add_item(new BC_MenuItem("-"));
@@ -161,7 +161,6 @@ void MainMenu::create_objects()
 	editmenu->add_item(new MenuTransitionLength(mwindow));
 	editmenu->add_item(new DetachTransitions(mwindow));
 	editmenu->add_item(new BC_MenuItem("-"));
-	editmenu->add_item(new ClearLabels(mwindow));
 	editmenu->add_item(new CutCommercials(mwindow));
 	editmenu->add_item(new PasteSubttl(mwindow));
 
@@ -956,6 +955,34 @@ int Paste::handle_event()
 	return 1;
 }
 
+EditClearSubMenu::EditClearSubMenu(BC_MenuItem *menu_item)
+ : BC_SubMenu()
+{
+	this->menu_item = menu_item;
+}
+EditClearSubMenu::~EditClearSubMenu()
+{
+}
+
+EditClearMenu::EditClearMenu(MWindow *mwindow)
+ : BC_MenuItem(_("Clear..."))
+{
+	this->mwindow = mwindow;
+	this->clear_sub_menu = 0;
+}
+EditClearMenu::~EditClearMenu()
+{
+}
+
+void EditClearMenu::create_objects()
+{
+	add_submenu(clear_sub_menu = new EditClearSubMenu(this));
+	clear_sub_menu->add_item(new Clear(mwindow));
+	clear_sub_menu->add_item(new MuteSelection(mwindow));
+	clear_sub_menu->add_item(new ClearHardEdges(mwindow));
+	clear_sub_menu->add_item(new ClearLabels(mwindow));
+};
+
 Clear::Clear(MWindow *mwindow)
  : BC_MenuItem(_("Clear"), _("Del"), DELETE)
 {
@@ -996,6 +1023,17 @@ int SelectAll::handle_event()
 {
 	if( mwindow->session->current_operation == NO_OPERATION )
 		mwindow->select_all();
+	return 1;
+}
+
+ClearHardEdges::ClearHardEdges(MWindow *mwindow) : BC_MenuItem(_("Clear Hard Edges"))
+{
+	this->mwindow = mwindow;
+}
+
+int ClearHardEdges::handle_event()
+{
+	mwindow->clear_hard_edges();
 	return 1;
 }
 

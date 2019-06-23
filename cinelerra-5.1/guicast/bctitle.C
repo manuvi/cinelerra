@@ -21,7 +21,8 @@
 
 #include "bcresources.h"
 #include "bctitle.h"
-#include "bcresources.h"
+#include "bcpixmap.h"
+#include "vframe.h"
 #include <string.h>
 #include <unistd.h>
 
@@ -112,8 +113,6 @@ char* BC_Title::get_text()
 
 int BC_Title::draw(int flush)
 {
-	int i, j, x, y;
-
 // Fix background for block fonts.
 // This should eventually be included in a BC_WindowBase::is_blocked_font()
 
@@ -130,30 +129,21 @@ int BC_Title::draw(int flush)
 
 	set_font(font);
 	BC_WindowBase::set_color(color);
-	int text_len = strlen(text);
-	j = 0;  x = 0;  y = get_text_ascent(font);
-	for(i = 0; i <= text_len; i++)
-	{
-		if(text[i] == '\n' || text[i] == 0)
-		{
-			if(centered)
-			{
-				draw_center_text(get_w() / 2,
-					y,
-					&text[j],
-					i - j);
-				j = i + 1;
-			}
-			else
-			{
-				draw_text(x,
-					y,
-					&text[j],
-					i - j);
-				j = i + 1;
-			}
-			y += get_text_height(font);
-		}
+	return draw(flush, 0, 0);
+}
+
+int BC_Title::draw(int flush, int x, int y)
+{
+	y += get_text_ascent(font);
+	int len = strlen(text);
+	for( int i=0,j=0; i<=len; ++i ) {
+		if( text[i] && text[i] != '\n' ) continue;
+		if( centered )
+			draw_center_text(get_w()/2, y, &text[j], i - j);
+		else
+			draw_text(x, y, &text[j], i - j);
+		j = i + 1;
+		y += get_text_height(font);
 	}
 	set_font(MEDIUMFONT);    // reset
 	flash(flush);
@@ -206,3 +196,53 @@ void BC_Title::get_size(BC_WindowBase *gui, int font, const char *text, int fixe
 	w += 5;
 	if(fixed_w > 0) w = fixed_w;
 }
+
+
+BC_TitleBar::BC_TitleBar(int x, int y, int w, int offset, int margin,
+		const char *text, int font, int color, VFrame *data)
+: BC_Title(x, y, text, font, color, 0, w)
+{
+	this->offset = offset;
+	this->margin = margin;
+	this->data = data;
+	image = 0;
+}
+
+BC_TitleBar::~BC_TitleBar()
+{
+	delete image;
+}
+
+void BC_TitleBar::set_image(VFrame *data)
+{
+	delete image;
+	image = new BC_Pixmap(get_parent_window(), data, PIXMAP_ALPHA);
+}
+
+int BC_TitleBar::initialize()
+{
+	if(data)
+		set_image(data);
+	else
+		set_image(get_resources()->bar_data);
+	BC_Title::initialize();
+	draw(0);
+	return 0;
+}
+
+int BC_TitleBar::draw(int flush)
+{
+	int w = get_w(), h = get_h(), h2 = h/2;
+	draw_top_background(get_parent_window(), 0, 0,w, h);
+	draw_3segmenth(0,h2, offset, 0, offset, image);
+	int tx = offset + margin, tw, th;
+	set_font(font);
+	BC_WindowBase::set_color(color);
+	BC_Title::draw(flush, tx, 0);
+	get_size(get_parent_window(), font, text, 0, tw, th);
+	tx += tw + margin;
+	draw_3segmenth(tx,h2, w-tx, tx,w-tx, image);
+	flash(flush);
+	return 0;
+}
+

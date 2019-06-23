@@ -471,6 +471,7 @@ void BlondCVTheme::initialize()
 	cbuttons_left = new_image("cbuttons_left.png");
 	cbuttons_right = new_image("cbuttons_right.png");
 	cmeter_bg = new_image("cmeter_bg.png");
+	new_image("cwindow_focus", "cwindow_focus.png");
 
 	ctimebar_x = ccanvas_x;
 	ctimebar_y = ccanvas_y + ccanvas_h;

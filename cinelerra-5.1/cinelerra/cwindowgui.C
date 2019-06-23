@@ -129,6 +129,7 @@ CWindowGUI::~CWindowGUI()
  	delete zoom_panel;
 	delete active;
 	delete inactive;
+	delete focus_frame;
 	delete orig_mask_keyframe;
 }
 
@@ -139,6 +140,7 @@ void CWindowGUI::create_objects()
 
 	active = new BC_Pixmap(this, mwindow->theme->get_image("cwindow_active"));
 	inactive = new BC_Pixmap(this, mwindow->theme->get_image("cwindow_inactive"));
+	focus_frame = new VFramePng(mwindow->theme->get_image_data("cwindow_focus.png"));
 
 	mwindow->theme->get_cwindow_sizes(this, mwindow->session->cwindow_controls);
 	mwindow->theme->draw_cwindow_bg(this);
@@ -1798,10 +1800,37 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 			output_to_canvas(mwindow->edl, 0, fx, fy);
 			float r = bmax(cvs_win->get_w(), cvs_win->get_h());
 			float d = 0.005*r;
+#if 1
+			int fw = 2*d+3, fh = fw;
+			VFrame focus(fw,fh, BC_RGBA8888);
+			focus.transfer_from(gui->focus_frame);
+			fx -= fw/2.f;  fy -= fh/2.f;
+			BC_Pixmap focus_pixmap(cvs_win, &focus, PIXMAP_ALPHA);
+			cvs_win->draw_pixmap(&focus_pixmap,fx,fy);
+#else
 			cvs_win->set_line_width((int)(0.0025*r) + 1);
 			cvs_win->set_color(BLUE);
 			cvs_win->draw_line(fx-d,fy-d, fx+d, fy+d);
 			cvs_win->draw_line(fx-d,fy+d, fx+d, fy-d);
+			cvs_win->set_line_width(0);
+			cvs_win->set_color(WHITE);
+#endif
+		}
+		if( draw && mask_gui && mask_gui->center_mark && points.size() ) {
+			float cx = 0, cy = 0;
+			int n = points.size();
+			for( int i=0; i<n; ++i ) {
+				MaskPoint *point = points.get(i);
+				cx += point->x;  cy += point->y;
+			}
+			cx /= n;  cy /= n;
+			output_to_canvas(mwindow->edl, 0, cx, cy);
+			float r = bmax(cvs_win->get_w(), cvs_win->get_h());
+			float d = 0.003*r;
+			cvs_win->set_line_width((int)(0.002*r) + 1);
+			cvs_win->set_color(ORANGE);
+			cvs_win->draw_line(cx-d,cy, cx+d, cy);
+			cvs_win->draw_line(cx,cy-d, cx, cy+d);
 			cvs_win->set_line_width(0);
 			cvs_win->set_color(WHITE);
 		}
@@ -2122,6 +2151,8 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 					point->control_x2 = !rotate ? px*scale : px*ct + py*st;
 					point->control_y2 = !rotate ? py*scale : py*ct - px*st;
 				}
+				rerender = 1;
+				redraw = 1;
 				break; }
 			}
 

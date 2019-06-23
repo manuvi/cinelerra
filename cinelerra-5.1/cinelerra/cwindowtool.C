@@ -1482,6 +1482,18 @@ int CWindowProjectorBottom::handle_event()
 }
 
 
+CWindowMaskTrack::CWindowMaskTrack(MWindow *mwindow, CWindowMaskGUI *gui,
+		int x, int y, const char *text)
+ : BC_Title(x, y, text, MEDIUMFONT, get_resources()->button_highlighted)
+{
+	this->mwindow = mwindow;
+	this->gui = gui;
+}
+
+CWindowMaskTrack::~CWindowMaskTrack()
+{
+}
+
 CWindowMaskName::CWindowMaskName(MWindow *mwindow, CWindowMaskGUI *gui,
 		int x, int y, const char *text)
  : BC_PopupTextBox(gui, 0, text, x, y, 100, 160)
@@ -1787,7 +1799,7 @@ CWindowMaskFocus::CWindowMaskFocus(MWindow *mwindow, CWindowToolGUI *gui, int x,
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip("Center for rotate/scale");
+	set_tooltip(_("Center for rotate/scale"));
 }
 
 CWindowMaskFocus::~CWindowMaskFocus()
@@ -1797,6 +1809,26 @@ CWindowMaskFocus::~CWindowMaskFocus()
 int CWindowMaskFocus::handle_event()
 {
  	((CWindowMaskGUI*)gui)->focused = get_value();
+	gui->update();
+	gui->update_preview();
+	return 1;
+}
+
+CWindowMaskDrawCenter::CWindowMaskDrawCenter(MWindow *mwindow, CWindowToolGUI *gui, int x, int y)
+ : BC_CheckBox(x, y, ((CWindowMaskGUI*)gui)->center_mark, _("Center Mark"))
+{
+	this->mwindow = mwindow;
+	this->gui = gui;
+	set_tooltip(_("show center of mask points"));
+}
+
+CWindowMaskDrawCenter::~CWindowMaskDrawCenter()
+{
+}
+
+int CWindowMaskDrawCenter::handle_event()
+{
+	((CWindowMaskGUI*)gui)->center_mark = get_value();
 	gui->update();
 	gui->update_preview();
 	return 1;
@@ -2220,7 +2252,7 @@ int CWindowMaskGangFeather::handle_event()
 
 CWindowMaskGUI::CWindowMaskGUI(MWindow *mwindow, CWindowTool *thread)
  : CWindowToolGUI(mwindow, thread,
-	_(PROGRAM_NAME ": Mask"), 360, 500)
+	_(PROGRAM_NAME ": Mask"), 360, 620)
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
@@ -2228,6 +2260,7 @@ CWindowMaskGUI::CWindowMaskGUI(MWindow *mwindow, CWindowTool *thread)
 	fade = 0;
 	feather = 0;
 	focused = 0;
+	center_mark = 0;
 	markers = 1;
 	boundary = 1;
 }
@@ -2251,9 +2284,16 @@ void CWindowMaskGUI::create_objects()
 	//	keyframe = (MaskAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->autos[AUTOMATION_MASK], 0);
 
 	lock_window("CWindowMaskGUI::create_objects");
+	BC_TitleBar *title_bar;
+	add_subwindow(title_bar = new BC_TitleBar(x, y, get_w()-2*x, 20, 10, _("Masks on Track")));
+	y += title_bar->get_h() + margin;
+	int x1 = x + 70;
+	add_subwindow(mask_track = new CWindowMaskTrack(mwindow, this, x1, y, ""));
+	y += mask_track->get_h() + margin;
+	add_subwindow(title_bar = new BC_TitleBar(x, y, get_w()-2*x, 20, 10, _("Masks")));
+	y += title_bar->get_h() + margin;
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x, y, _("Mask:")));
-	int x1 = x + 70;
 	name = new CWindowMaskName(mwindow, this, x1, y, "");
 	name->create_objects();
 	add_subwindow(clr_mask = new CWindowMaskClrMask(mwindow, this, clr_x, y));
@@ -2279,7 +2319,9 @@ void CWindowMaskGUI::create_objects()
 		mask_blabels[i] = new BC_Title(x2+tx, y, text);
 		add_subwindow(mask_blabels[i]);
 	}
-	y += bh + 2*margin;
+	y += mask_blabels[0]->get_h() + 2*margin;
+	add_subwindow(title_bar = new BC_TitleBar(x, y, get_w()-2*x, 20, 10, _("Fade & Feather")));
+	y += title_bar->get_h() + margin;
 
 	add_subwindow(title = new BC_Title(x, y, _("Fade:")));
 	fade = new CWindowMaskFade(mwindow, this, x1, y);
@@ -2296,7 +2338,9 @@ void CWindowMaskGUI::create_objects()
 	feather_slider = new CWindowMaskFeatherSlider(mwindow, this, x2, y, w2, 0);
 	add_subwindow(feather_slider);
 	add_subwindow(gang_feather = new CWindowMaskGangFeather(mwindow, this, clr_x, y));
-	y += feather->get_h() + 3*margin;
+	y += feather->get_h() + 2*margin;
+	add_subwindow(title_bar = new BC_TitleBar(x, y, get_w()-2*x, 20, 10, _("Mask Points")));
+	y += title_bar->get_h() + margin;
 
 	add_subwindow(title = new BC_Title(x, y, _("Point:")));
 	active_point = new CWindowMaskAffectedPoint(mwindow, this, x1, y);
@@ -2312,10 +2356,9 @@ void CWindowMaskGUI::create_objects()
 	this->y = new CWindowCoord(this, x1, y, (float)0.0);
 	this->y->create_objects();
 	add_subwindow(draw_boundary = new CWindowMaskDrawBoundary(mwindow, this, del_x, y));
-	y += this->y->get_h() + margin;
-	BC_Bar *bar;
-	add_subwindow(bar = new BC_Bar(x, y, get_w()-2*x));
-	y += bar->get_h() + margin;
+	y += this->y->get_h() + 2*margin;
+	add_subwindow(title_bar = new BC_TitleBar(x, y, get_w()-2*x, 20, 10, _("Pivot Point")));
+	y += title_bar->get_h() + margin;
 
 	add_subwindow(title = new BC_Title(x, y, "X:"));
 	focus_x = new CWindowCoord(this, x1, y, (float)0.0);
@@ -2325,7 +2368,11 @@ void CWindowMaskGUI::create_objects()
 	add_subwindow(title = new BC_Title(x, y, "Y:"));
 	focus_y = new CWindowCoord(this, x1, y, (float)0.0);
 	focus_y->create_objects();
-	y += focus_x->get_h() + margin;
+	add_subwindow(draw_center = new CWindowMaskDrawCenter(mwindow, this, del_x, y));
+	y += focus_x->get_h() + 2*margin;
+	BC_Bar *bar;
+	add_subwindow(bar = new BC_Bar(x, y, get_w()-2*x));
+	y += bar->get_h() + margin;
 	add_subwindow(this->apply_before_plugins = new CWindowMaskBeforePlugins(this, 10, y));
 	y += this->apply_before_plugins->get_h();
 	add_subwindow(this->disable_opengl_masking = new CWindowDisableOpenGLMasking(this, 10, y));
@@ -2391,6 +2438,7 @@ void CWindowMaskGUI::update()
 //printf("CWindowMaskGUI::update 1\n");
 	get_keyframe(track, autos, keyframe, mask, point, 0);
 
+	mask_track->update(!track ? "" : track->title);
 	name->update_items(keyframe);
 	const char *text = "";
 	int sz = !keyframe ? 0 : keyframe->masks.size();

@@ -1224,10 +1224,12 @@ static void combineData(GLdouble coords[3],
 	vertex[1] = coords[1];
 	vertex[2] = coords[2];
 	for( int i=3; i<6; ++i ) {
-		vertex[i] = weight[0] * vertex_data[0][i] +
-			weight[1] * vertex_data[1][i] +
-			weight[2] * vertex_data[2][i] +
-			weight[3] * vertex_data[3][i];
+		GLdouble v = 0;
+		for( int k=0; k<4; ++k ) {
+			if( !weight[k] || !vertex_data[k] ) continue;
+			v += weight[k] * vertex_data[k][i];
+		}
+		vertex[i] = v;
 	}
 	*outData = vertex;
 }

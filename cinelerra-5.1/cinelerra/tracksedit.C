@@ -120,6 +120,24 @@ void Tracks::clear_transitions(double start, double end)
 	}
 }
 
+int Tracks::clear_hard_edges(double start, double end)
+{
+	for( Track *track=first; track; track=track->next ) {
+		if( !track->record ) continue;
+		int64_t start_units = track->to_units(start, 0);
+		int64_t end_units = track->to_units(end, 0);
+
+		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
+			if( edit->startproject < start_units ) continue;
+			if( edit->startproject >= end_units ) continue;
+			edit->hard_left = 0;
+			if( !edit->previous ) continue;
+			edit->previous->hard_right = 0;
+		}
+	}
+	return 0;
+}
+
 void Tracks::shuffle_edits(double start, double end)
 {
 // This doesn't affect automation or effects

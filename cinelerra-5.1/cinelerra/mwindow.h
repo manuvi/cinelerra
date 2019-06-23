@@ -348,6 +348,8 @@ public:
 	void clear(int clear_handle);
 	void clear_labels();
 	int clear_labels(double start, double end);
+	void clear_hard_edges();
+	int clear_hard_edges(double start, double end);
 	void concatenate_tracks();
 	int copy_flags(int copy_flags=COPY_CLIPBOARD);
 	void copy();

@@ -26,8 +26,11 @@
 #include "bccolors.h"
 #include "fonts.h"
 
+class BC_TitleBar;
+
 class BC_Title : public BC_SubWindow
 {
+	friend class BC_TitleBar;
 public:
 	BC_Title(int x,
 		int y,
@@ -49,8 +52,10 @@ public:
 	char* get_text();
 
 private:
-	int draw(int flush);
+	int draw(int flush, int x, int y);
+	virtual int draw(int flush);
 	static void get_size(BC_WindowBase *gui, int font, const char *text, int fixed_w, int &w, int &h);
+	BC_WindowBase *get_parent_window() { return parent_window; }
 
 	char text[BCTEXTLEN];
 	int color;
@@ -58,6 +63,24 @@ private:
 	int centered;
 // Width if fixed
 	int fixed_w;
+};
+
+class BC_TitleBar : public BC_Title
+{
+public:
+	BC_TitleBar(int x, int y, int w, int offset, int margin,
+		const char *text, int font = MEDIUMFONT,
+		int color = -1, VFrame *data = 0);
+	virtual ~BC_TitleBar();
+
+	int initialize();
+	void set_image(VFrame *data);
+
+	int w, offset, margin;
+	VFrame *data;
+	BC_Pixmap *image;
+private:
+	int draw(int flush);
 };
 
 #endif

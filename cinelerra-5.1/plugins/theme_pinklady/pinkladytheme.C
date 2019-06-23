@@ -499,6 +499,7 @@ void PINKLADY::initialize()
 	new_image("cbuttons_left", "cbuttons_left.png");
 	new_image("cbuttons_right", "cbuttons_right.png");
 	new_image("cmeter_bg", "cmeter_bg.png");
+	new_image("cwindow_focus", "cwindow_focus.png");
 
 // VWindow
 	new_image("vbuttons_left", "vbuttons_left.png");
