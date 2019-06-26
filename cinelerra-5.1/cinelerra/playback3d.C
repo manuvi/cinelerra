@@ -38,6 +38,7 @@
 #include "pluginclient.h"
 #include "pluginvclient.h"
 #include "edlsession.h"
+#include "track.h"
 #include "transportque.inc"
 #include "vframe.h"
 
@@ -1294,9 +1295,11 @@ void Playback3D::do_mask_sync(Playback3DCommand *command)
 		glClearColor(bg, bg, bg, bg);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		int show_mask = command->keyframe_set->track->masks;
 		for(int k = 0; k < total_submasks; k++) {
 			MaskPointSet &points = point_set[k];
 			MaskEdge &edge = *edges.append(new MaskEdge());
+			if( !((show_mask>>k) & 1) ) continue;
 			int first_point = 0;
 // Need to tabulate every vertex in persistent memory because
 // gluTessVertex doesn't copy them.

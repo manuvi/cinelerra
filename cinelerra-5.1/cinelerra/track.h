@@ -179,6 +179,8 @@ public:
 	char title[BCTEXTLEN];
 	int play;
 	int record;
+// mask enable bit flags
+	int masks;
 // Nudge in track units.  Positive shifts track earlier in time.  This way
 // the position variables only need to add the nudge.
 	int64_t nudge;

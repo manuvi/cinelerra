@@ -26,6 +26,7 @@
 #include "maskautos.h"
 #include "maskengine.h"
 #include "mutex.h"
+#include "track.h"
 #include "transportque.inc"
 #include "vframe.h"
 
@@ -444,6 +445,7 @@ SET_TRACE
 		feathers.remove_all();
 		fade[0] = 0;
 
+		int show_mask = keyframe_set->track->masks;
 		for( int i=0; i<total_submasks; ++i ) {
 			float fader = keyframe_set->get_fader(start_position_project, i, PLAY_FORWARD);
 			float v = fader / 100;
@@ -459,7 +461,9 @@ SET_TRACE
 			MaskPointSet *new_points = new MaskPointSet();
 			keyframe_set->get_points(new_points, i, start_position_project, PLAY_FORWARD);
 			point_sets.append(new_points);
-			draw_edge(*edges.append(new MaskEdge()), *new_points);
+			MaskEdge *edge = edges.append(new MaskEdge());
+			if( !((show_mask>>i) & 1) ) continue;
+			draw_edge(*edge, *new_points);
 		}
 // draw mask
 		if( !mask ) mask = new VFrame(mask_w, mask_h, mask_model, 0);

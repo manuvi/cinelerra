@@ -104,7 +104,8 @@ public:
 	void select_all(int type,
 		int value);
 	void translate_projector(float offset_x, float offset_y);
-		int total_of(int type);
+	int total_of(int type);
+	Track* get_track_by_id(int id);
 // add a track
 	Track* add_audio_track(int above, Track *dst_track);
 	Track* add_video_track(int above, Track *dst_track);

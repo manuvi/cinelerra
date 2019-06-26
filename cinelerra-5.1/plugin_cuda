@@ -1,11 +1,11 @@
 #cuda compile
 
-CUDA_PATH ?= /usr/local/cuda-10.1
+CUDA_PATH ?= /usr/local/cuda
 TARGET_SIZE := 64 # 32
 HOST_COMPILER ?= g++
 NVCC := $(CUDA_PATH)/bin/nvcc -ccbin $(HOST_COMPILER)
 NVCCFLAGS := -m${TARGET_SIZE} -Xcompiler -fPIC -Xcompiler -fno-omit-frame-pointer -g
-LDFLAGS = -lcuda -L /usr/local/cuda/targets/x86_64-linux/lib -lcudart
+LDFLAGS = -lcuda -L $(CUDA_PATH)/targets/x86_64-linux/lib -lcudart
 
 SMS ?= 30 35 37 50 52 60 61 70 75
 $(foreach sm,$(SMS),$(eval GENCODE_FLAGS += -gencode arch=compute_$(sm),code=sm_$(sm)))
@@ -15,14 +15,14 @@ GENCODE_FLAGS += -gencode arch=compute_$(HIGHEST_SM),code=compute_$(HIGHEST_SM)
 # samples source access BEWARE!
 # contains includes which conflict: search /usr/include first
 CFLAGS += -I/usr/include -I/usr/local/cuda/samples
-CFLAGS += -I/usr/local/cuda/samples/common/inc
-CFLAGS += -I/usr/local/cuda/targets/x86_64-linux/include
+CFLAGS += -I$(CUDA_PATH)/samples/common/inc
+CFLAGS += -I$(CUDA_PATH)/targets/x86_64-linux/include
 CFLAGS += -Wno-unused-function
 
 INCLUDES += -I$(TOPDIR)/cinelerra -I$(TOPDIR)/guicast
-INCLUDES += -I/usr/local/cuda/samples
-INCLUDES += -I/usr/local/cuda/samples/common/inc
-INCLUDES += -I/usr/local/cuda/targets/x86_64-linux/include
+INCLUDES += -I$(CUDA_PATH)/samples
+INCLUDES += -I$(CUDA_PATH)/samples/common/inc
+INCLUDES += -I$(CUDA_PATH)/targets/x86_64-linux/include
 
 CUFLAGS := $(INCLUDES) $(NVCCFLAGS) $(GENCODE_FLAGS)
 $(shell mkdir -p $(OBJDIR))

@@ -24,23 +24,26 @@
 
 class CWindowTool;
 class CWindowToolGUI;
-class CWindowCurveToggle;
 class CWindowCoord;
 class CWindowCropOK;
 class CWindowCropGUI;
-class CWindowMaskTrack;
+class CWindowMaskItem;
 class CWindowMaskItems;
+class CWindowMaskOnTrack;
+class CWindowMaskTrackTumbler;
 class CWindowMaskName;
+class CWindowMaskUnclear;
+class CWindowMaskSoloTrack;
 class CWindowMaskDelMask;
 class CWindowMaskClrMask;
 class CWindowMaskButton;
 class CWindowMaskThumbler;
+class CWindowMaskEnable;
 class CWindowMaskFade;
 class CWindowMaskFadeSlider;
 class CWindowMaskGangFader;
 class CWindowMaskAffectedPoint;
 class CWindowMaskFocus;
-class CWindowMaskDrawCenter;
 class CWindowMaskDrawMarkers;
 class CWindowMaskDrawBoundary;
 class CWindowMaskDelPoint;
@@ -68,4 +71,5 @@ class CWindowProjectorMiddle;
 class CWindowProjectorBottom;
 class CWindowRulerGUI;
 
+class CWindowCurveToggle;
 #endif

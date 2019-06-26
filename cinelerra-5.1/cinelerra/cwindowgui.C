@@ -78,14 +78,10 @@ static int total_zooms = sizeof(my_zoom_table) / sizeof(double);
 CWindowGUI::CWindowGUI(MWindow *mwindow, CWindow *cwindow)
  : BC_Window(_(PROGRAM_NAME ": Compositor"),
  	mwindow->session->cwindow_x,
-    mwindow->session->cwindow_y,
-    mwindow->session->cwindow_w,
-    mwindow->session->cwindow_h,
-    100,
-    100,
-    1,
-    1,
-    1,
+	mwindow->session->cwindow_y,
+	mwindow->session->cwindow_w,
+	mwindow->session->cwindow_h,
+	100, 100, 1, 1, 1,
 	BC_WindowBase::get_resources()->bg_color,
 	mwindow->get_cwindow_display())
 {
@@ -211,12 +207,6 @@ void CWindowGUI::create_objects()
 	zoom_panel->zoom_text->add_item(new BC_MenuItem(auto_zoom = _(AUTO_ZOOM)));
 	if( !mwindow->edl->session->cwindow_scrollbars )
 		zoom_panel->set_text(auto_zoom);
-
-// 	destination = new CWindowDestination(mwindow,
-// 		this,
-// 		mwindow->theme->cdest_x,
-// 		mwindow->theme->cdest_y);
-// 	destination->create_objects();
 
 // Must create after meter panel
 	tool_panel = new CWindowTool(mwindow, this);
@@ -1003,44 +993,12 @@ int CWindowSlider::decrease_value()
 	lock_window("CWindowSlider::decrease_value");
 	return 1;
 }
-
-
-// CWindowDestination::CWindowDestination(MWindow *mwindow, CWindowGUI *cwindow, int x, int y)
-//  : BC_PopupTextBox(cwindow,
-//  	&cwindow->destinations,
-// 	cwindow->destinations.values[cwindow->cwindow->destination]->get_text(),
-// 	x,
-// 	y,
-// 	70,
-// 	200)
-// {
-// 	this->mwindow = mwindow;
-// 	this->cwindow = cwindow;
-// }
-//
-// CWindowDestination::~CWindowDestination()
-// {
-// }
-//
-// int CWindowDestination::handle_event()
-// {
-// 	return 1;
-// }
 #endif // USE_SLIDER
 
 
-
-
-
-
 CWindowTransport::CWindowTransport(MWindow *mwindow,
-	CWindowGUI *gui,
-	int x,
-	int y)
- : PlayTransport(mwindow,
-	gui,
-	x,
-	y)
+	CWindowGUI *gui, int x, int y)
+ : PlayTransport(mwindow, gui, x, y)
 {
 	this->gui = gui;
 }
@@ -1480,7 +1438,7 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 {
 // Retrieve points from top recordable track
 //printf("CWindowCanvas::do_mask 1\n");
-	Track *track = gui->cwindow->calculate_affected_track();
+	Track *track = gui->cwindow->calculate_mask_track();
 //printf("CWindowCanvas::do_mask 2\n");
 
 	if(!track) return 0;
@@ -1816,7 +1774,7 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 			cvs_win->set_color(WHITE);
 #endif
 		}
-		if( draw && mask_gui && mask_gui->center_mark && points.size() ) {
+		if( draw && mask_gui && draw_markers && points.size() ) {
 			float cx = 0, cy = 0;
 			int n = points.size();
 			for( int i=0; i<n; ++i ) {
@@ -1826,7 +1784,7 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 			cx /= n;  cy /= n;
 			output_to_canvas(mwindow->edl, 0, cx, cy);
 			float r = bmax(cvs_win->get_w(), cvs_win->get_h());
-			float d = 0.003*r;
+			float d = 0.007*r;
 			cvs_win->set_line_width((int)(0.002*r) + 1);
 			cvs_win->set_color(ORANGE);
 			cvs_win->draw_line(cx-d,cy, cx+d, cy);
@@ -1838,12 +1796,12 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 	}
 
 	if(button_press && !result) {
-		gui->affected_track = gui->cwindow->calculate_affected_track();
+		gui->affected_track = gui->cwindow->calculate_mask_track();
 
 // Get keyframe outside the EDL to edit.  This must be rendered
 // instead of the EDL keyframes when it exists.  Then it must be
 // applied to the EDL keyframes on buttonrelease.
-		if(gui->affected_track) {
+		if( gui->affected_track ) {
 #ifdef USE_KEYFRAME_SPANNING
 // Make copy of current parameters in local keyframe
 			gui->mask_keyframe =
@@ -2130,12 +2088,21 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 				double scale = button_no == WHEEL_UP ? 1.02 : 0.98;
 				double theta = button_no == WHEEL_UP ? M_PI/360. : -M_PI/360.;
 				float st = sin(theta), ct = cos(theta);
-				gui->x_origin = mask_cursor_x;
-				gui->y_origin = mask_cursor_y;
+				float cx = 0, cy = 0;
+				int n = mask_points.size();
 				if( mask_gui && mask_gui->focused ) {
-					gui->x_origin = atof(mask_gui->focus_x->get_text());
-					gui->y_origin = atof(mask_gui->focus_y->get_text());
+					cx = atof(mask_gui->focus_x->get_text());
+					cy = atof(mask_gui->focus_y->get_text());
 				}
+				else if( n > 0 ) {
+					for( int i=0; i<n; ++i ) {
+						MaskPoint *point = mask_points.values[i];
+						cx += point->x;  cy += point->y;
+					}
+					cx /= n;  cy /= n;
+				}
+				gui->x_origin = cx;
+				gui->y_origin = cy;
 				for( int i=0; i<mask_points.size(); ++i ) {
 					MaskPoint *point = mask_points.values[i];
 					float px = point->x - gui->x_origin;
@@ -3016,7 +2983,7 @@ int CWindowCanvas::test_bezier(int button_press,
 
 // Get target keyframe
 			if( !gui->affected_x && !gui->affected_y && !gui->affected_z ) {
-				if(!gui->affected_track) return 0;
+				if( !gui->affected_track ) return 0;
 				FloatAutos *affected_x_autos, *affected_y_autos, *affected_z_autos;
 				FloatAutos** autos = (FloatAutos**) gui->affected_track->automation->autos;
 				if( mwindow->edl->session->cwindow_operation == CWINDOW_CAMERA ) {
@@ -3114,8 +3081,7 @@ int CWindowCanvas::test_bezier(int button_press,
 		gui->affected_track = gui->cwindow->calculate_affected_track();
 		gui->reset_affected();
 
-		if(gui->affected_track)
-		{
+		if( gui->affected_track ) {
 			if( do_camera )
 				mwindow->undo->update_undo_before(_("camera"), this);
 			else
@@ -3286,12 +3252,7 @@ int CWindowCanvas::cursor_motion_event()
 		case CWINDOW_MASK_CONTROL_IN:
 		case CWINDOW_MASK_CONTROL_OUT:
 		case CWINDOW_MASK_TRANSLATE:
-
-			result = do_mask(redraw,
-				rerender,
-				0,
-				1,
-				0);
+			result = do_mask(redraw, rerender, 0, 1, 0);
 			break;
 
 		case CWINDOW_EYEDROP:
@@ -3319,12 +3280,8 @@ int CWindowCanvas::cursor_motion_event()
 				result = do_ruler(0, 1, 0, 0);
 				break;
 			case CWINDOW_MASK:
-				result = do_mask(redraw,
-					rerender,
-					0,
-					1,
-					0);
-					break;
+				result = do_mask(redraw, rerender, 0, 1, 0);
+				break;
 		}
 	}
 
@@ -3392,8 +3349,7 @@ int CWindowCanvas::button_press_event()
 					break;
 				case MIDDLE_BUTTON: {  // && shift_down()
 					result = do_mask_focus();
-					redraw = 1;
-					redraw_canvas = 1;
+					redraw = redraw_canvas = 1;
 					break; }
 				case WHEEL_UP:
 				case WHEEL_DOWN:

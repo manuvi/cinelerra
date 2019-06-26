@@ -349,8 +349,9 @@ public:
 	virtual ~BC_PopupTextBox();
 	int create_objects();
 	virtual int handle_event();
-	const char* get_text();
-	const wchar_t* get_wtext();
+
+	const char *get_text();
+	const wchar_t *get_wtext();
 	int get_number();
 	int get_x();
 	int get_y();
@@ -358,6 +359,9 @@ public:
 	int get_h();
 	int get_show_query();
 	void set_show_query(int v);
+	int get_back_color();
+	void set_back_color(int v);
+
 	void set_tooltip(const char *text);
 
 	void update(const char *text);

@@ -170,6 +170,8 @@ void Tracks::copy_from(Tracks *tracks)
 	Track *new_track = 0;
 
 	delete_all_tracks();
+	int solo_track_id = tracks->edl->local_session->solo_track_id;
+
 	for(Track *current = tracks->first; current; current = NEXT)
 	{
 		switch(current->data_type)
@@ -187,6 +189,9 @@ void Tracks::copy_from(Tracks *tracks)
 			continue;
 		}
 		new_track->copy_from(current);
+
+		if( current->get_id() == solo_track_id )
+			edl->local_session->solo_track_id = new_track->get_id();
 	}
 }
 
@@ -625,6 +630,12 @@ Track* Tracks::number(int number)
 	return current;
 }
 
+Track* Tracks::get_track_by_id(int id)
+{
+	Track *track = edl->tracks->first;
+	while( track && track->get_id() != id ) track = track->next;
+	return track;
+}
 
 int Tracks::total_playable_vtracks()
 {

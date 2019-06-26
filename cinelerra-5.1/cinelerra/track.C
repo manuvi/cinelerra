@@ -33,6 +33,7 @@
 #include "keyframe.h"
 #include "labels.h"
 #include "localsession.h"
+#include "maskauto.h"
 #include "module.h"
 #include "patch.h"
 #include "patchbay.h"
@@ -67,6 +68,7 @@ Track::Track(EDL *edl, Tracks *tracks) : ListItem<Track>()
 	track_h = edl->session->output_h;
 	id = EDL::next_id();
 	mixer_id = -1;
+	masks = (1<<SUBMASKS)-1;
 }
 
 Track::~Track()
@@ -92,6 +94,7 @@ int Track::copy_settings(Track *track)
 	this->play = track->play;
 	this->track_w = track->track_w;
 	this->track_h = track->track_h;
+	this->masks = track->masks;
 	strcpy(this->title, track->title);
 	return 0;
 }
@@ -334,6 +337,7 @@ int Track::load(FileXML *file, int track_offset, uint32_t load_flags)
 	expand_view = file->tag.get_property("EXPAND", expand_view);
 	track_w = file->tag.get_property("TRACK_W", track_w);
 	track_h = file->tag.get_property("TRACK_H", track_h);
+	masks = file->tag.get_property("MASKS", masks);
 
 	load_header(file, load_flags);
 
@@ -852,8 +856,8 @@ void Track::synchronize_params(Track *track)
 
 int Track::dump(FILE *fp)
 {
-	fprintf(fp,"   Data type %d, draw %d, gang %d, play %d, record %d, nudge %jd\n",
-		data_type, draw, gang, play, record, nudge);
+	fprintf(fp,"   Data type %d, draw %d, gang %d, play %d, record %d, nudge %jd, masks 0x%04x\n",
+		data_type, draw, gang, play, record, nudge, masks);
 	fprintf(fp,"   Title %s\n", title);
 	fprintf(fp,"   Edits:\n");
 	for(Edit* current = edits->first; current; current = NEXT)
@@ -1056,6 +1060,7 @@ int Track::copy(int copy_flags, double start, double end,
 	file->tag.set_property("EXPAND", expand_view);
 	file->tag.set_property("TRACK_W", track_w);
 	file->tag.set_property("TRACK_H", track_h);
+	file->tag.set_property("MASKS", masks);
 	save_header(file);
 	file->append_tag();
 	file->append_newline();

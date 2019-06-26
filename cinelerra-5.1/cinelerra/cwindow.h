@@ -49,6 +49,7 @@ public:
 		int timebar = 0);
 	void run();
 	Track* calculate_affected_track();
+	Track* calculate_mask_track();
 // Get keyframe for editing in the CWindow.
 // create - if 0 forces automatic creation to be off
 //          if 1 uses automatic creation option to create
@@ -71,6 +72,7 @@ public:
 	void refresh_frame(int change_type, EDL *edl, int dir=1);
 
 	int destination;
+	int mask_track_id;
 	MWindow *mwindow;
 	CWindowGUI *gui;
 

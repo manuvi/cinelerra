@@ -109,6 +109,7 @@ LocalSession::LocalSession(EDL *edl)
 	red = green = blue = 0;
 	red_max = green_max = blue_max = 0;
 	use_max = 0;
+	solo_track_id = -1;
 }
 
 LocalSession::~LocalSession()
@@ -148,6 +149,7 @@ void LocalSession::copy_from(LocalSession *that)
 	green_max = that->green_max;
 	blue_max = that->blue_max;
 	use_max = that->use_max;
+	solo_track_id = that->solo_track_id;
 
 	for (int i = 0; i < AUTOGROUPTYPE_COUNT; i++) {
 		automation_mins[i] = that->automation_mins[i];
@@ -238,6 +240,8 @@ void LocalSession::synchronize_params(LocalSession *that)
 	red_max = that->red_max;
 	green_max = that->green_max;
 	blue_max = that->blue_max;
+	if( solo_track_id < 0 || that->solo_track_id < 0 )
+		solo_track_id = that->solo_track_id;
 }
 
 

@@ -61,6 +61,7 @@ CWindow::CWindow(MWindow *mwindow)
 	this->mwindow = mwindow;
 	this->playback_engine = 0;
 	this->playback_cursor = 0;
+	this->mask_track_id = -1;
 	this->gui = 0;
 }
 
@@ -78,26 +79,14 @@ CWindow::~CWindow()
 
 void CWindow::create_objects()
 {
-	destination = mwindow->defaults->get("CWINDOW_DESTINATION", 0);
-
-
 	gui = new CWindowGUI(mwindow, this);
-
 	gui->create_objects();
-
-
 	playback_engine = new CPlayback(mwindow, this, gui->canvas);
-
-
 // Start command loop
 	playback_engine->create_objects();
-
 	gui->transport->set_engine(playback_engine);
-
 	playback_cursor = new CTracking(mwindow, this);
-
 	playback_cursor->create_objects();
-
 }
 
 
@@ -132,20 +121,24 @@ void CWindow::hide_window()
 
 Track* CWindow::calculate_affected_track()
 {
-	Track* affected_track = 0;
-	for(Track *track = mwindow->edl->tracks->first;
-		track;
-		track = track->next)
-	{
-		if(track->data_type == TRACK_VIDEO &&
-			track->record)
-		{
-			affected_track = track;
-			break;
-		}
+	Track *track = mwindow->edl->tracks->first;
+	for( ; track; track=track->next ) {
+		if( track->data_type != TRACK_VIDEO ) continue;
+		if( track->record ) break;
 	}
-	return affected_track;
+	return track;
 }
+
+Track* CWindow::calculate_mask_track()
+{
+	Track *track = mwindow->edl->tracks->first;
+	for( ; track; track=track->next ) {
+		if( track->data_type != TRACK_VIDEO ) continue;
+		if( track->record && track->get_id() == mask_track_id ) break;
+	}
+	return track;
+}
+
 
 Auto* CWindow::calculate_affected_auto(Autos *autos,
 		int create, int *created, int redraw)

@@ -2718,7 +2718,9 @@ void MWindow::create_objects(int want_gui,
 	gui->show_window();
 	gui->raise_window();
 	gui->unlock_window();
-
+	cwindow->gui->lock_window("MWindow::create_objects 1");
+	cwindow->gui->tool_panel->raise_tool();
+	cwindow->gui->unlock_window();
 	if(debug) PRINT_TRACE
 
 	if(preferences->use_tipwindow)
@@ -3673,6 +3675,7 @@ void MWindow::update_project(int load_mode)
 	if(debug) PRINT_TRACE
 	cwindow->gui->lock_window("MWindow::update_project 2");
 	cwindow->gui->timebar->update(0);
+	cwindow->gui->tool_panel->raise_tool();
 	cwindow->gui->unlock_window();
 
 	if(debug) PRINT_TRACE

@@ -539,9 +539,9 @@ int PlaybackEngine::transport_command(int command, int change_type, EDL *new_edl
 // Just change the EDL if the change requires it because renderengine
 // structures won't point to the new EDL otherwise and because copying the
 // EDL for every cursor movement is slow.
-		if( change_type & CHANGE_EDL )
+		if( change_type == CHANGE_EDL || change_type == CHANGE_ALL )
 			next_command->get_edl()->copy_all(new_edl);
-		else if( change_type & CHANGE_PARAMS )
+		else if( change_type == CHANGE_PARAMS )
 			next_command->get_edl()->synchronize_params(new_edl);
 		next_command->set_playback_range(new_edl, use_inout,
 				preferences->forward_render_displacement);

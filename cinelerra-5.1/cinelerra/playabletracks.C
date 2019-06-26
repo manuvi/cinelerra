@@ -22,6 +22,7 @@
 #include "automation.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "localsession.h"
 #include "mwindow.h"
 #include "patchbay.h"
 #include "playabletracks.h"
@@ -79,21 +80,32 @@ int PlayableTracks::is_playable(Track *current_track,
 	if(current_track->data_type != data_type) result = 0;
 
 // Track is off screen and not bounced to other modules
-	if(result)
-	{
-		if(!current_track->plugin_used(position, direction) &&
-			!current_track->is_playable(position, direction))
+	if( result &&
+		!current_track->plugin_used(position, direction) &&
+		!current_track->is_playable(position, direction) )
 			result = 0;
-	}
-
 // Test play patch
-	if(!current_track->play)
-	{
-		result = 0;
+	if( result &&
+		!current_track->play )
+			result = 0;
+	if( result ) {
+		EDL *edl = current_track->edl;
+		int solo_track_id = edl->local_session->solo_track_id;
+		if( solo_track_id >= 0 ) {
+			int visible = 0;
+			int current_id = current_track->get_id();
+			Track *track = edl->tracks->first;
+			while( track ) {
+				int id = track->get_id();
+				if( id == solo_track_id ) { visible = 1;  break; }
+				if( id == current_id ) { visible = 0; break; }
+ 				track = track->next;
+			}
+			if( !track ) visible = 1;
+			result = visible;
+		}
 	}
-
-	if(result)
-	{
+	if( result ) {
 // Test for playable edit
 		if(!current_track->playable_edit(position, direction))
 		{

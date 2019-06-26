@@ -689,6 +689,7 @@ void BC_FileBox::create_objects()
 
 	refresh();
 	show_window();
+	raise_window();
 	unlock_window();
 }
 

@@ -2561,55 +2561,26 @@ void BC_PopupTextBox::update_list(ArrayList<BC_ListBoxItem*> *data)
 	listbox->update(data, 0, 0, 1);
 }
 
-
-const char* BC_PopupTextBox::get_text()
-{
-	return textbox->get_text();
-}
-
-const wchar_t* BC_PopupTextBox::get_wtext()
-{
-	return textbox->get_wtext();
-}
-
-int BC_PopupTextBox::get_number()
-{
-	return listbox->get_selection_number(0, 0);
-}
-
-int BC_PopupTextBox::get_x()
-{
-	return x;
-}
-
-int BC_PopupTextBox::get_y()
-{
-	return y;
-}
-
-int BC_PopupTextBox::get_w()
-{
-	return textbox->get_w() + listbox->get_w();
-}
-
-int BC_PopupTextBox::get_h()
-{
-	return textbox->get_h();
-}
-
-int BC_PopupTextBox::get_show_query()
-{
-	return listbox->get_show_query();
-}
-
-void BC_PopupTextBox::set_show_query(int v)
-{
-	listbox->set_show_query(v);
-}
-
 int BC_PopupTextBox::handle_event()
 {
 	return 1;
+}
+
+const char *BC_PopupTextBox::get_text() { return textbox->get_text(); }
+const wchar_t *BC_PopupTextBox::get_wtext() { return textbox->get_wtext(); }
+int BC_PopupTextBox::get_number() { return listbox->get_selection_number(0, 0); }
+int BC_PopupTextBox::get_x() { return x; }
+int BC_PopupTextBox::get_y() { return y; }
+int BC_PopupTextBox::get_w() { return textbox->get_w() + listbox->get_w(); }
+int BC_PopupTextBox::get_h() { return textbox->get_h(); }
+int BC_PopupTextBox::get_show_query() { return listbox->get_show_query(); }
+void BC_PopupTextBox::set_show_query(int v) { listbox->set_show_query(v); }
+int BC_PopupTextBox::get_back_color() { return textbox->get_back_color(); }
+void BC_PopupTextBox::set_back_color(int v) { textbox->set_back_color(v); }
+
+void BC_PopupTextBox::set_tooltip(const char *text)
+{
+	listbox->set_tooltip(text);
 }
 
 void BC_PopupTextBox::reposition_window(int x, int y)
@@ -2625,12 +2596,6 @@ void BC_PopupTextBox::reposition_window(int x, int y)
 	listbox->reposition_window(x1, y1, -1, -1, 0);
 //	if(flush) parent_window->flush();
 }
-
-void BC_PopupTextBox::set_tooltip(const char *text)
-{
-	listbox->set_tooltip(text);
-}
-
 
 
 BC_TumbleTextBoxText::BC_TumbleTextBoxText(BC_TumbleTextBox *popup,
