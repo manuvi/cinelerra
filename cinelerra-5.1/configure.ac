@@ -691,7 +691,7 @@ CHECK_WANT([LV2], [auto], [use lv2], [
  CFLAGS="$saved_CFLAGS"])
 
 CHECK_WANT([CUDA], [auto], [build cuda plugins], [
-  CHECK_HEADERS([CUDA], [cuda sdk], [/usr/local/cuda/include/cuda.h])])
+  CHECK_HEADERS([CUDA], [cuda sdk], [${CUDA_PATH:-/usr/local/cuda}/include/cuda.h])])
 
 CHECK_WANT([DL], [auto], [system has libdl], [
  CHECK_LIB([DL], [dl], [dlopen])])

@@ -14,7 +14,7 @@ GENCODE_FLAGS += -gencode arch=compute_$(HIGHEST_SM),code=compute_$(HIGHEST_SM)
 
 # samples source access BEWARE!
 # contains includes which conflict: search /usr/include first
-CFLAGS += -I/usr/include -I/usr/local/cuda/samples
+CFLAGS += -I/usr/include -I$(CUDA_PATH)/samples
 CFLAGS += -I$(CUDA_PATH)/samples/common/inc
 CFLAGS += -I$(CUDA_PATH)/targets/x86_64-linux/include
 CFLAGS += -Wno-unused-function
