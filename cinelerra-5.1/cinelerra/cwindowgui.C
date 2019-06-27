@@ -2203,10 +2203,9 @@ int CWindowCanvas::do_mask_focus()
 	CWindowMaskGUI *mask_gui = (CWindowMaskGUI*) gui->tool_panel->tool_gui;
 	float cx = get_cursor_x(), cy = get_cursor_y();
 	canvas_to_output(mwindow->edl, 0, cx, cy);
-	int v = mask_gui->focused ? 0 : 1;
 	get_canvas()->unlock_window();
 	mask_gui->lock_window("CWindowCanvas::do_mask_focus");
-	mask_gui->set_focused(v, cx, cy);
+	mask_gui->set_focused(1, cx, cy);
 	mask_gui->unlock_window();
 	get_canvas()->lock_window("CWindowCanvas::do_mask_focus");
 	return 1;

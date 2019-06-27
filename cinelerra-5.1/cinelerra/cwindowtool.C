@@ -2517,12 +2517,14 @@ void CWindowMaskGUI::create_objects()
 	y += title_bar->get_h() + margin;
 
 	add_subwindow(title = new BC_Title(x, y, "X:"));
-	focus_x = new CWindowCoord(this, x1, y, (float)0.0);
+	float cx = mwindow->edl->session->output_w / 2.f;
+	focus_x = new CWindowCoord(this, x1, y, cx);
 	focus_x->create_objects();
 	add_subwindow(focus = new CWindowMaskFocus(mwindow, this, del_x, y));
 	y += focus_x->get_h() + margin;
 	add_subwindow(title = new BC_Title(x, y, "Y:"));
-	focus_y = new CWindowCoord(this, x1, y, (float)0.0);
+	float cy = mwindow->edl->session->output_h / 2.f;
+	focus_y = new CWindowCoord(this, x1, y, cy);
 	focus_y->create_objects();
 	y += focus_x->get_h() + 2*margin;
 	BC_Bar *bar;
@@ -2556,6 +2558,7 @@ int CWindowMaskGUI::close_event()
 
 void CWindowMaskGUI::done_event()
 {
+	if( mwindow->in_destructor ) return;
 	int &solo_track_id = mwindow->edl->local_session->solo_track_id;
 	if( solo_track_id >= 0 ) {
 		solo_track_id = -1;
