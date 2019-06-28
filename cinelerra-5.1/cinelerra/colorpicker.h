@@ -365,6 +365,7 @@ public:
 	virtual void handle_done_event(int result);
 
 	void close_picker();
+	void update_gui(int color, int alpha);
 	void update_gui(int color);
 	int handle_event();
 
@@ -382,9 +383,11 @@ class ColorButtonPicker : public ColorPicker
 public:
 	ColorButtonPicker(ColorButton *color_button);
 	~ColorButtonPicker();
+	void update(int color, int alpha);
 	int handle_new_color(int color, int alpha);
 	void handle_done_event(int result);
 	void update_gui();
+	void update_gui(int color, int alpha);
 
 	ColorButton *color_button;
 };

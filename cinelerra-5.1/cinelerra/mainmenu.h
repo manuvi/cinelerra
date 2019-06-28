@@ -414,6 +414,14 @@ public:
 	MWindow *mwindow;
 };
 
+class ClearSelect : public BC_MenuItem
+{
+public:
+	ClearSelect(MWindow *mwindow);
+	int handle_event();
+	MWindow *mwindow;
+};
+
 class CutCommercials : public BC_MenuItem
 {
 public:

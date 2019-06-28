@@ -41,7 +41,6 @@
 #include "keyframe.h"
 #include "keyframes.h"
 #include "indexstate.h"
-#include "interlacemodes.h"
 #include "labels.h"
 #include "localsession.h"
 #include "maskautos.h"
@@ -1437,14 +1436,7 @@ if( debug ) printf("EDL::get_use_vconsole %d\n", __LINE__);
 	    asset->height != session->output_h )
 		return 1;
 
-
 if( debug ) printf("EDL::get_use_vconsole %d\n", __LINE__);
-// Asset and output device must have same resulting de-interlacing method
-	if( ilaceautofixmethod2(session->interlace_mode,
-	    asset->interlace_autofixoption, asset->interlace_mode,
-	    asset->interlace_fixmethod) != ILACE_FIXMETHOD_NONE )
-		return 1;
-
 // If we get here the frame is going to be directly copied.  Whether it is
 // decompressed in hardware depends on the colormodel.
 	return 0;

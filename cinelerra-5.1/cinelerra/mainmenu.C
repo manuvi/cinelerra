@@ -979,8 +979,9 @@ void EditClearMenu::create_objects()
 	add_submenu(clear_sub_menu = new EditClearSubMenu(this));
 	clear_sub_menu->add_item(new Clear(mwindow));
 	clear_sub_menu->add_item(new MuteSelection(mwindow));
-	clear_sub_menu->add_item(new ClearHardEdges(mwindow));
+	clear_sub_menu->add_item(new ClearSelect(mwindow));
 	clear_sub_menu->add_item(new ClearLabels(mwindow));
+	clear_sub_menu->add_item(new ClearHardEdges(mwindow));
 };
 
 Clear::Clear(MWindow *mwindow)
@@ -1045,6 +1046,19 @@ ClearLabels::ClearLabels(MWindow *mwindow) : BC_MenuItem(_("Clear labels"))
 int ClearLabels::handle_event()
 {
 	mwindow->clear_labels();
+	return 1;
+}
+
+ClearSelect::ClearSelect(MWindow *mwindow) : BC_MenuItem(_("Clear Select"),"Ctrl-Shift-A",'A')
+{
+	set_ctrl(1);
+	set_shift(1);
+	this->mwindow = mwindow;
+}
+
+int ClearSelect::handle_event()
+{
+	mwindow->clear_select();
 	return 1;
 }
 

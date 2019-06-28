@@ -388,30 +388,4 @@ private:
   	char string[BCTEXTLEN];
 };
 
-class InterlacefixmethodItem : public BC_ListBoxItem
-{
-public:
-	InterlacefixmethodItem(const char *text, int value);
-	int value;
-};
-
-class InterlacefixmethodPulldown : public BC_ListBox
-{
-public:
-	InterlacefixmethodPulldown(MWindow *mwindow,
-				   BC_TextBox *output_text,
-				   int *output_value,
-				   ArrayList<BC_ListBoxItem*> *data,
-				   int x,
-				   int y);
-	int handle_event();
-	const char* interlacefixmethod_to_text();
-	MWindow *mwindow;
-	BC_TextBox *output_text;
-	int *output_value;
-private:
-  	char string[BCTEXTLEN];
-};
-
-
 #endif

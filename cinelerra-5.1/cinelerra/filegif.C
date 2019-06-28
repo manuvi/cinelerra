@@ -25,7 +25,6 @@
 #include "filegif.h"
 #include "gif_lib.h"
 #include "mainerror.h"
-#include "interlacemodes.h"
 #include "vframe.h"
 
 #include <stdlib.h>

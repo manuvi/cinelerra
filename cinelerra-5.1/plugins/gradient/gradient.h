@@ -152,23 +152,34 @@ public:
 	GradientMain *plugin;
 };
 
-class GradientInColorButton : public BC_GenericButton
+class GradientInColorButton : public ColorBoxButton
 {
 public:
-	GradientInColorButton(GradientMain *plugin, GradientWindow *window, int x, int y);
-	int handle_event();
+	GradientInColorButton(GradientMain *plugin, GradientWindow *gui,
+		int x, int y, int color, int alpha);
+	~GradientInColorButton();
+
+	int handle_new_color(int color, int alpha);
+	void handle_done_event(int result);
+
 	GradientMain *plugin;
-	GradientWindow *window;
+	GradientWindow *gui;
+	VFrame *vframes[3];
 };
 
-
-class GradientOutColorButton : public BC_GenericButton
+class GradientOutColorButton : public ColorBoxButton
 {
 public:
-	GradientOutColorButton(GradientMain *plugin, GradientWindow *window, int x, int y);
-	int handle_event();
+	GradientOutColorButton(GradientMain *plugin, GradientWindow *gui,
+		int x, int y, int color, int alpha);
+	~GradientOutColorButton();
+
+	int handle_new_color(int color, int alpha);
+	void handle_done_event(int result);
+
 	GradientMain *plugin;
-	GradientWindow *window;
+	GradientWindow *gui;
+	VFrame *vframes[3];
 };
 
 class GradientReset : public BC_GenericButton
@@ -181,27 +192,6 @@ public:
 };
 
 
-class GradientInColorThread : public ColorPicker
-{
-public:
-	GradientInColorThread(GradientMain *plugin, GradientWindow *window);
-	virtual int handle_new_color(int output, int alpha);
-	GradientMain *plugin;
-	GradientWindow *window;
-};
-
-
-class GradientOutColorThread : public ColorPicker
-{
-public:
-	GradientOutColorThread(GradientMain *plugin, GradientWindow *window);
-	virtual int handle_new_color(int output, int alpha);
-	GradientMain *plugin;
-	GradientWindow *window;
-};
-
-
-
 class GradientWindow : public PluginClientWindow
 {
 public:
@@ -209,8 +199,6 @@ public:
 	~GradientWindow();
 
 	void create_objects();
-	void update_in_color();
-	void update_out_color();
 	void update_gui();
 	void update_shape();
 	void done_event(int result);
@@ -223,8 +211,6 @@ public:
 	GradientInColorButton *in_color;
 	GradientOutColorButton *out_color;
 	GradientReset *reset;
-	GradientInColorThread *in_color_thread;
-	GradientOutColorThread *out_color_thread;
 	GradientShape *shape;
 	BC_Title *shape_title;
 	GradientCenterX *center_x;
@@ -232,15 +218,8 @@ public:
 	BC_Title *center_y_title;
 	GradientCenterY *center_y;
 	GradientRate *rate;
-	int in_color_x, in_color_y;
-	int out_color_x, out_color_y;
 	int shape_x, shape_y;
 };
-
-
-
-
-
 
 
 class GradientMain : public PluginVClient

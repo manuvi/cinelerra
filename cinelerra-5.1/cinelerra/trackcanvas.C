@@ -4801,7 +4801,7 @@ int TrackCanvas::do_edit_handles(int cursor_x, int cursor_y, int button_press,
 			update_overlay = 1;
 		}
 	}
-	else if( result < 0 ) {
+	else if( result < 0 && !edit_result->silence() ) {
 		mwindow->undo->update_undo_before();
 		if( !shift_down() ) {
 			if( handle_result == 0 )

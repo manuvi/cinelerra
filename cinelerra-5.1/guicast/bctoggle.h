@@ -146,7 +146,7 @@ public:
 	static int calculate_h(BC_WindowBase *gui, int font=MEDIUMFONT);
 
 	static void calculate_extents(BC_WindowBase *gui, int *w, int *h,
-		const char *caption="", int font=MEDIUMFONT);
+		const char *caption=0, int font=MEDIUMFONT);
 	int *value;
 };
 

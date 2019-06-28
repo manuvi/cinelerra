@@ -23,6 +23,5 @@
 #define ASSET_INC
 
 class Asset;
-class InterlacefixmethodItem;
 
 #endif

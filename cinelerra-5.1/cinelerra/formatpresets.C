@@ -26,7 +26,6 @@
 #include "mwindow.h"
 #include "new.h"
 #include "setformat.h"
-#include "interlacemodes.h"
 
 
 FormatPresets::FormatPresets(MWindow *mwindow,

@@ -21,13 +21,6 @@
 
 #define ILACE_UNKNOWN_T      N_("Error!")
 
-//Interlace Automatic fixing options
-#define ILACE_AUTOFIXOPTION_MANUAL  	0
-#define ILACE_AUTOFIXOPTION_MANUAL_T	N_("Manual compensation using selection")
-#define ILACE_AUTOFIXOPTION_AUTO    	1
-#define ILACE_AUTOFIXOPTION_AUTO_T  	N_("Automatic compensation using modes")
-//Note: Do not change what the numbers mean as this will make backward-compatability have erroraneous settings.
-
 //Interlace Modes
 #define ILACE_MODE_UNDETECTED         0
 #define ILACE_MODE_UNDETECTED_XMLT    "UNKNOWN"
@@ -68,22 +61,10 @@
 #define ILACE_Y4M_BOTTOM_FIRST_T   N_("interlaced, bottom-field first")
 #define ILACE_Y4M_MIXED_T          N_("mixed, \"refer to frame header\"")
 
-void ilaceautofixoption_to_text(char *string, int autofixoption);
-int  ilaceautofixoption_from_text(const char *text, int thedefault);
-
 void ilacemode_to_text(char *string, int ilacemode);
 int  ilacemode_from_text(const char *text, int thedefault);
 void ilacemode_to_xmltext(char *string, int ilacemode);
 int  ilacemode_from_xmltext(const char *text, int thedefault);
-
-void ilacefixmethod_to_text(char *string, int fixmethod);
-int  ilacefixmethod_from_text(const char *text, int thedefault);
-void ilacefixmethod_to_xmltext(char *string, int fixmethod);
-int  ilacefixmethod_from_xmltext(const char *text, int thedefault);
-
-
-int  ilaceautofixmethod(int projectilacemode, int assetilacemode);
-int  ilaceautofixmethod2(int projectilacemode, int assetautofixoption, int assetilacemode, int assetfixmethod);
 
 int ilace_bc_to_yuv4mpeg(int ilacemode);
 int ilace_yuv4mpeg_to_bc(int ilacemode);

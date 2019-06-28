@@ -361,7 +361,6 @@ MWindow::~MWindow()
 	colormodels.remove_all_objects();
 	interlace_project_modes.remove_all_objects();
 	interlace_asset_modes.remove_all_objects();
-	interlace_asset_fixmethods.remove_all_objects();
 	sighandler->terminate();
 	delete sighandler;
 	delete run_lock;
@@ -1531,9 +1530,6 @@ void MWindow::init_menus()
 #define ILACEASSETMODELISTADD(x) ilacemode_to_text(string, x); \
                            interlace_asset_modes.append(new InterlacemodeItem(string, x));
 
-#define ILACEFIXMETHODLISTADD(x) ilacefixmethod_to_text(string, x); \
-                           interlace_asset_fixmethods.append(new InterlacefixmethodItem(string, x));
-
 	// Interlacing Modes
 	ILACEASSETMODELISTADD(ILACE_MODE_UNDETECTED); // Not included in the list for the project options.
 
@@ -1545,11 +1541,6 @@ void MWindow::init_menus()
 
 	ILACEASSETMODELISTADD(ILACE_MODE_NOTINTERLACED);
 	ILACEPROJECTMODELISTADD(ILACE_MODE_NOTINTERLACED);
-
-	// Interlacing Fixing Methods
-	ILACEFIXMETHODLISTADD(ILACE_FIXMETHOD_NONE);
-	ILACEFIXMETHODLISTADD(ILACE_FIXMETHOD_UPONE);
-	ILACEFIXMETHODLISTADD(ILACE_FIXMETHOD_DOWNONE);
 
 	mixers_align = new MixersAlign(this);
 }

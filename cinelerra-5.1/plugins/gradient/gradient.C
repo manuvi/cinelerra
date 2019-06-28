@@ -141,13 +141,9 @@ GradientWindow::GradientWindow(GradientMain *plugin)
 	center_y = 0;
 	center_x_title = 0;
 	center_y_title = 0;
-	in_color_thread = 0;
-	out_color_thread = 0;
 }
 GradientWindow::~GradientWindow()
 {
-	delete in_color_thread;
-	delete out_color_thread;
 }
 
 
@@ -170,7 +166,7 @@ void GradientWindow::create_objects()
 	add_subwindow(rate = new GradientRate(plugin,
 			x + title->get_w() + margin, y));
 	rate->create_objects();
-	y += rate->get_h() + margin;
+	y += rate->get_h() + 3*margin;
 
 	int x1 = x, y1 = y;
 	BC_Title *title1;
@@ -179,40 +175,33 @@ void GradientWindow::create_objects()
 	BC_Title *title2;
 	add_subwindow(title2 = new BC_Title(x, y, _("Outer radius:")));
 
-	add_subwindow(reset = new GradientReset(plugin, this, x, y+100));
-
 	y = y1;
 	x += MAX(title1->get_w(), title2->get_w()) + margin;
 	add_subwindow(in_radius = new GradientInRadius(plugin, x, y));
 	y += in_radius->get_h() + margin;
 	add_subwindow(out_radius = new GradientOutRadius(plugin, x, y));
-	y += out_radius->get_h() + margin;
+	y += out_radius->get_h() + 3*margin;
 
 	x = x1;
-	y1 = y;
-	add_subwindow(in_color = new GradientInColorButton(plugin, this, x, y));
-	y += COLOR_H + margin;
+	add_subwindow(title1 = new BC_Title(x, y, _("Inner Color:")));
+	y1 = y + COLOR_H+4 + 2*margin;
+	add_subwindow(title2 = new BC_Title(x, y1, _("Outer Color:")));
+	int x2 = x + MAX(title1->get_w(), title2->get_w()) + margin;
+	int in_rgb = plugin->config.get_in_color();
+	int in_a = plugin->config.in_a;
+	add_subwindow(in_color = new GradientInColorButton(plugin, this, x2+2, y+2, in_rgb, in_a));
+	draw_3d_border(x2,y, COLOR_W+4,COLOR_H+4, 1);
+	in_color->create_objects();
 
-	add_subwindow(out_color = new GradientOutColorButton(plugin, this, x, y));
-	x += MAX(in_color->get_w(), out_color->get_w()) + margin;
-	y = y1;
+	int out_rgb = plugin->config.get_out_color();
+	int out_a = plugin->config.out_a;
+	add_subwindow(out_color = new GradientOutColorButton(plugin, this, x2+2, y1+2, out_rgb, out_a));
+	draw_3d_border(x2,y1, COLOR_W+4,COLOR_H+4, 1);
+	out_color->create_objects();
+	y = y1 + COLOR_H+4 + 3*margin;
 
-	in_color_x = x;
-	in_color_y = y;
-	y += COLOR_H + margin;
-	out_color_x = x;
-	out_color_y = y;
-	in_color_thread = new GradientInColorThread(plugin, this);
-	out_color_thread = new GradientOutColorThread(plugin, this);
-	update_in_color();
-	update_out_color();
+	add_subwindow(reset = new GradientReset(plugin, this, x, y));
 	update_shape();
-
-	draw_3d_border(in_color_x - 2, in_color_y - 2,
-		COLOR_W + 4, COLOR_H + 4, 1);
-
-	draw_3d_border(out_color_x - 2, out_color_y - 2,
-		COLOR_W + 4, COLOR_H + 4, 1);
 	show_window();
 }
 
@@ -246,26 +235,10 @@ void GradientWindow::update_shape()
 	show_window();
 }
 
-void GradientWindow::update_in_color()
-{
-//printf("GradientWindow::update_in_color 1 %08x\n", plugin->config.get_in_color());
-	set_color(plugin->config.get_in_color());
-	draw_box(in_color_x, in_color_y, COLOR_W, COLOR_H);
-	flash(in_color_x, in_color_y, COLOR_W, COLOR_H);
-}
-
-void GradientWindow::update_out_color()
-{
-//printf("GradientWindow::update_out_color 1 %08x\n", plugin->config.get_in_color());
-	set_color(plugin->config.get_out_color());
-	draw_box(out_color_x, out_color_y, COLOR_W, COLOR_H);
-	flash(out_color_x, out_color_y, COLOR_W, COLOR_H);
-}
-
 void GradientWindow::done_event(int result)
 {
-	in_color_thread->close_window();
-	out_color_thread->close_window();
+	in_color->close_picker();
+	out_color->close_picker();
 }
 
 GradientShape::GradientShape(GradientMain *plugin, GradientWindow *gui, int x, int y)
@@ -406,36 +379,83 @@ int GradientOutRadius::handle_event()
 	return 1;
 }
 
-GradientInColorButton::GradientInColorButton(GradientMain *plugin, GradientWindow *window, int x, int y)
- : BC_GenericButton(x, y, _("Inner color:"))
+
+GradientInColorButton::GradientInColorButton(GradientMain *plugin, GradientWindow *gui,
+		int x, int y, int color, int alpha)
+ : ColorBoxButton(_("Inner color:"), x, y, COLOR_W, COLOR_H, color, alpha, 1)
 {
 	this->plugin = plugin;
-	this->window = window;
+	this->gui = gui;
+	for( int i=0; i<3; ++i ) {
+		vframes[i] = new VFrame(COLOR_W, COLOR_H, BC_RGB888);
+		vframes[i]->clear_frame();
+	}
 }
 
-int GradientInColorButton::handle_event()
+GradientInColorButton::~GradientInColorButton()
 {
-	window->in_color_thread->start_window(
-		plugin->config.get_in_color(),
-		plugin->config.in_a);
+	for( int i=0; i<3; ++i )
+		delete vframes[i];
+}
+
+void GradientInColorButton::handle_done_event(int result)
+{
+	if( result ) {
+		gui->lock_window("GradientInColorButton::handle_done_event");
+		update_gui(orig_color, orig_alpha);
+		gui->unlock_window();
+		handle_new_color(orig_color, orig_alpha);
+	}
+}
+
+int GradientInColorButton::handle_new_color(int color, int alpha)
+{
+	plugin->config.in_r = (color & 0xff0000) >> 16;
+	plugin->config.in_g = (color & 0xff00) >> 8;
+	plugin->config.in_b = (color & 0xff);
+	plugin->config.in_a = alpha;
+	plugin->send_configure_change();
 	return 1;
 }
 
-
-GradientOutColorButton::GradientOutColorButton(GradientMain *plugin, GradientWindow *window, int x, int y)
- : BC_GenericButton(x, y, _("Outer color:"))
+GradientOutColorButton::GradientOutColorButton(GradientMain *plugin, GradientWindow *gui,
+		int x, int y, int color, int alpha)
+ : ColorBoxButton(_("Outer color:"), x, y, COLOR_W, COLOR_H, color, alpha, 1)
 {
 	this->plugin = plugin;
-	this->window = window;
+	this->gui = gui;
+	for( int i=0; i<3; ++i ) {
+		vframes[i] = new VFrame(COLOR_W, COLOR_H, BC_RGB888);
+		vframes[i]->clear_frame();
+	}
 }
 
-int GradientOutColorButton::handle_event()
+GradientOutColorButton::~GradientOutColorButton()
 {
-	window->out_color_thread->start_window(
-		plugin->config.get_out_color(),
-		plugin->config.out_a);
+	for( int i=0; i<3; ++i )
+		delete vframes[i];
+}
+
+void GradientOutColorButton::handle_done_event(int result)
+{
+	if( result ) {
+		gui->lock_window("GradientInColorButton::handle_done_event");
+		update_gui(orig_color, orig_alpha);
+		gui->unlock_window();
+		handle_new_color(orig_color, orig_alpha);
+	}
+}
+
+int GradientOutColorButton::handle_new_color(int color, int alpha)
+{
+	plugin->config.out_r = (color & 0xff0000) >> 16;
+	plugin->config.out_g = (color & 0xff00) >> 8;
+	plugin->config.out_b = (color & 0xff);
+	plugin->config.out_a = alpha;
+	plugin->send_configure_change();
 	return 1;
 }
+
 
 GradientReset::GradientReset(GradientMain *plugin, GradientWindow *window, int x, int y)
  : BC_GenericButton(x, y, _("Reset"))
@@ -449,58 +469,6 @@ int GradientReset::handle_event()
 	plugin->config.reset();
 	window->update_gui();
 	plugin->send_configure_change();
-	return 1;
-}
-
-GradientInColorThread::GradientInColorThread(GradientMain *plugin,
-	GradientWindow *window)
- : ColorPicker(1, _("Inner color"))
-{
-	this->plugin = plugin;
-	this->window = window;
-}
-
-int GradientInColorThread::handle_new_color(int output, int alpha)
-{
-	plugin->config.in_r = (output & 0xff0000) >> 16;
-	plugin->config.in_g = (output & 0xff00) >> 8;
-	plugin->config.in_b = (output & 0xff);
-	plugin->config.in_a = alpha;
-
-	window->lock_window("GradientInColorThread::handle_new_color");
-	window->update_in_color();
-	window->flush();
-	window->unlock_window();
-	plugin->send_configure_change();
-//printf("GradientInColorThread::handle_event 1 %d %d %d %d %d %d %d %d\n",
-// plugin->config.in_r, plugin->config.in_g, plugin->config.in_b, plugin->config.in_a,
-// plugin->config.out_r, plugin->config.out_g, plugin->config.out_b, plugin->config.out_a);
-	return 1;
-}
-
-
-GradientOutColorThread::GradientOutColorThread(GradientMain *plugin,
-	GradientWindow *window)
- : ColorPicker(1, _("Outer color"))
-{
-	this->plugin = plugin;
-	this->window = window;
-}
-
-int GradientOutColorThread::handle_new_color(int output, int alpha)
-{
-	plugin->config.out_r = (output & 0xff0000) >> 16;
-	plugin->config.out_g = (output & 0xff00) >> 8;
-	plugin->config.out_b = (output & 0xff);
-	plugin->config.out_a = alpha;
-	window->lock_window("GradientOutColorThread::handle_new_color");
-	window->update_out_color();
-	window->flush();
-	window->unlock_window();
-	plugin->send_configure_change();
-//printf("GradientOutColorThread::handle_event 1 %d %d %d %d %d %d %d %d\n",
-// plugin->config.in_r, plugin->config.in_g, plugin->config.in_b, plugin->config.in_a,
-// plugin->config.out_r, plugin->config.out_g, plugin->config.out_b, plugin->config.out_a);
 	return 1;
 }
 
@@ -606,10 +574,13 @@ void GradientMain::update_gui()
 {
 	if( !thread ) return;
 	if( !load_configuration() ) return;
-	((GradientWindow*)thread->window)->lock_window("GradientMain::update_gui");
-	GradientWindow *window = (GradientWindow *)thread->window;
-	window->update_gui();
-	window->unlock_window();
+	thread->window->lock_window("GradientMain::update_gui");
+	if( load_configuration() ) {
+		GradientWindow *window = (GradientWindow *)thread->window;
+		window->update_gui();
+		window->flush();
+	}
+	thread->window->unlock_window();
 }
 
 void GradientWindow::update_gui()
@@ -622,13 +593,9 @@ void GradientWindow::update_gui()
 	if( angle ) angle->update(config.angle);
 	if( center_x ) center_x->update(config.center_x);
 	if( center_y ) center_y->update(config.center_y);
-	update_in_color();
-	update_out_color();
 	update_shape();
-	unlock_window();
-	in_color_thread->update_gui(config.get_in_color(), config.in_a);
-	out_color_thread->update_gui(config.get_out_color(), config.out_a);
-	lock_window("GradientWindow::update_gui");
+	in_color->update_gui(config.get_in_color(), config.in_a);
+	out_color->update_gui(config.get_out_color(), config.out_a);
 }
 
 

@@ -97,8 +97,7 @@ EditPopupClearSelect::EditPopupClearSelect(MWindow *mwindow, EditPopup *popup)
 
 int EditPopupClearSelect::handle_event()
 {
-	mwindow->edl->tracks->clear_selected_edits();
-	popup->gui->draw_overlays(1);
+	mwindow->clear_select();
 	return 1;
 }
 

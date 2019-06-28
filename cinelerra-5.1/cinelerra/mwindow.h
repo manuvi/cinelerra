@@ -350,6 +350,7 @@ public:
 	int clear_labels(double start, double end);
 	void clear_hard_edges();
 	int clear_hard_edges(double start, double end);
+	void clear_select();
 	void concatenate_tracks();
 	int copy_flags(int copy_flags=COPY_CLIPBOARD);
 	void copy();
@@ -582,7 +583,6 @@ public:
 	ArrayList<ColormodelItem*> colormodels;
 	ArrayList<InterlacemodeItem*>          interlace_project_modes;
 	ArrayList<InterlacemodeItem*>          interlace_asset_modes;
-	ArrayList<InterlacefixmethodItem*>     interlace_asset_fixmethods;
 
 	int reset_meters();
 	void resync_guis();

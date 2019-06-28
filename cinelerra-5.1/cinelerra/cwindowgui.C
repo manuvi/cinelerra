@@ -1791,6 +1791,8 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 			cvs_win->draw_line(cx,cy-d, cx, cy+d);
 			cvs_win->set_line_width(0);
 			cvs_win->set_color(WHITE);
+			if( !mask_gui->focused )
+				mask_gui->set_focused(0, cx, cy);
 		}
 //printf("CWindowCanvas::do_mask 1\n");
 	}
@@ -2084,25 +2086,25 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 			case CWINDOW_MASK_ROTATE:
 				rotate = 1;
 			case CWINDOW_MASK_SCALE: {
-				int button_no = get_buttonpress();
-				double scale = button_no == WHEEL_UP ? 1.02 : 0.98;
-				double theta = button_no == WHEEL_UP ? M_PI/360. : -M_PI/360.;
-				float st = sin(theta), ct = cos(theta);
-				float cx = 0, cy = 0;
-				int n = mask_points.size();
-				if( mask_gui && mask_gui->focused ) {
-					cx = atof(mask_gui->focus_x->get_text());
-					cy = atof(mask_gui->focus_y->get_text());
+				if( !mask_gui || !mask_points.size() ) break;
+				if( mask_gui->focused ) {
+					gui->x_origin = atof(mask_gui->focus_x->get_text());
+					gui->y_origin = atof(mask_gui->focus_y->get_text());
 				}
-				else if( n > 0 ) {
+				else {
+					float cx = 0, cy = 0;
+					int n = mask_points.size();
 					for( int i=0; i<n; ++i ) {
 						MaskPoint *point = mask_points.values[i];
 						cx += point->x;  cy += point->y;
 					}
 					cx /= n;  cy /= n;
+					mask_gui->set_focused(0, cx, cy);
 				}
-				gui->x_origin = cx;
-				gui->y_origin = cy;
+				int button_no = get_buttonpress();
+				double scale = button_no == WHEEL_UP ? 1.02 : 0.98;
+				double theta = button_no == WHEEL_UP ? M_PI/360. : -M_PI/360.;
+				float st = sin(theta), ct = cos(theta);
 				for( int i=0; i<mask_points.size(); ++i ) {
 					MaskPoint *point = mask_points.values[i];
 					float px = point->x - gui->x_origin;
@@ -2203,11 +2205,7 @@ int CWindowCanvas::do_mask_focus()
 	CWindowMaskGUI *mask_gui = (CWindowMaskGUI*) gui->tool_panel->tool_gui;
 	float cx = get_cursor_x(), cy = get_cursor_y();
 	canvas_to_output(mwindow->edl, 0, cx, cy);
-	get_canvas()->unlock_window();
-	mask_gui->lock_window("CWindowCanvas::do_mask_focus");
 	mask_gui->set_focused(1, cx, cy);
-	mask_gui->unlock_window();
-	get_canvas()->lock_window("CWindowCanvas::do_mask_focus");
 	return 1;
 }
 

@@ -434,6 +434,12 @@ int MWindow::clear_hard_edges(double start, double end)
 	return 0;
 }
 
+void MWindow::clear_select()
+{
+	edl->tracks->clear_selected_edits();
+	gui->draw_overlays(1);
+}
+
 void MWindow::concatenate_tracks()
 {
 	undo_before();

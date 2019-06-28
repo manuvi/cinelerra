@@ -18,6 +18,7 @@
 #include "fileffmpeg.h"
 #include "filesystem.h"
 #include "indexfile.h"
+#include "interlacemodes.h"
 #include "language.h"
 #include "mainerror.h"
 #include "mainprogress.h"

@@ -1739,7 +1739,7 @@ CWindowMaskUnclear::CWindowMaskUnclear(MWindow *mwindow,
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip(_("Show mask"));
+	set_tooltip(_("Show/Hide mask"));
 }
 
 int CWindowMaskUnclear::handle_event()
@@ -2362,11 +2362,11 @@ int CWindowMaskClrMask::handle_event()
 	if( track ) {
 		mwindow->undo->update_undo_before(_("del masks"), 0);
 		((MaskAutos*)track->automation->autos[AUTOMATION_MASK])->clear_all();
-		gui->update();
-		gui->update_preview();
 		mwindow->undo->update_undo_after(_("del masks"), LOAD_AUTOMATION);
 	}
 
+	gui->update();
+	gui->update_preview(1);
 	return 1;
 }
 
@@ -2390,7 +2390,7 @@ int CWindowMaskGangFeather::handle_event()
 
 CWindowMaskGUI::CWindowMaskGUI(MWindow *mwindow, CWindowTool *thread)
  : CWindowToolGUI(mwindow, thread,
-	_(PROGRAM_NAME ": Mask"), 400, 660)
+	_(PROGRAM_NAME ": Mask"), 420, 680)
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
@@ -2451,7 +2451,7 @@ void CWindowMaskGUI::create_objects()
 	add_subwindow(title = new BC_Title(x, y, _("Select:")));
 	int bw = 0, bh = 0;
 	BC_CheckBox::calculate_extents(this, &bw, &bh);
-	int bdx = bw + margin;
+	int bdx = bw + 2*margin;
 	x2 = x1;
 	for( int i=0; i<SUBMASKS; x2+=bdx, ++i ) {
 		int v = i == mwindow->edl->session->cwindow_mask ? 1 : 0;
@@ -2605,6 +2605,7 @@ void CWindowMaskGUI::update()
 	MaskPoint *point;
 //printf("CWindowMaskGUI::update 1\n");
 	get_keyframe(track, autos, keyframe, mask, point, 0);
+	mwindow->cwindow->mask_track_id = track ? track->get_id() : -1;
 	mask_on_track->set_back_color(!track || track->record ?
 		get_resources()->text_background :
 		get_resources()->text_background_disarmed);
@@ -2684,9 +2685,15 @@ void CWindowMaskGUI::handle_event()
 
 void CWindowMaskGUI::set_focused(int v, float cx, float cy)
 {
+	CWindowGUI *cgui = mwindow->cwindow->gui;
+	cgui->unlock_window();
+	lock_window("CWindowMaskGUI::set_focused");
+	if( focused != v )
+		focus->update(focused = v);
 	focus_x->update(cx);
 	focus_y->update(cy);
-	focus->update(focused = v);
+	unlock_window();
+	cgui->lock_window("CWindowCanvas::set_focused");
 }
 
 void CWindowMaskGUI::update_buttons(MaskAuto *keyframe, int k)

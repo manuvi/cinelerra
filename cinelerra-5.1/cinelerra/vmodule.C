@@ -56,7 +56,6 @@
 #include "vplugin.h"
 #include "vtrack.h"
 #include <string.h>
-#include "interlacemodes.h"
 #include "maskengine.h"
 #include "automation.h"
 
@@ -368,38 +367,6 @@ int VModule::import_frame(VFrame *output, VEdit *current_edit,
 
 // printf("VModule::import_frame %d %f %d %f %d\n",
 // __LINE__, in_w, asset_w, in_h, asset_h);
-//
-//			printf("VModule::import_frame 1 [ilace] Project: mode (%d) Asset: autofixoption (%d), mode (%d), method (%d)\n",
-//			get_edl()->session->interlace_mode,
-//			current_edit->asset->interlace_autofixoption,
-//			current_edit->asset->interlace_mode,
-//			current_edit->asset->interlace_fixmethod);
-
-			// Determine the interlacing method to use.
-			int interlace_fixmethod = !current_edit->asset ? ILACE_FIXMETHOD_NONE :
-				 ilaceautofixmethod2(get_edl()->session->interlace_mode,
-					current_edit->asset->interlace_autofixoption,
-					current_edit->asset->interlace_mode,
-					current_edit->asset->interlace_fixmethod);
-//
-//			char string[BCTEXTLEN];
-//			ilacefixmethod_to_text(string,interlace_fixmethod);
-//			printf("VModule::import_frame 1 [ilace] Compensating by using: '%s'\n",string);
-
-			// Compensate for the said interlacing...
-			switch( interlace_fixmethod ) {
-				case ILACE_FIXMETHOD_NONE:
-
-				break;
-				case ILACE_FIXMETHOD_UPONE:
-					out_y--;
-				break;
-				case ILACE_FIXMETHOD_DOWNONE:
-					out_y++;
-				break;
-				default:
-					printf("vmodule::importframe WARNING - unknown fix method for interlacing, no compensation in effect\n");
-			}
 
 // file -> temp -> output
 			if( !EQUIV(in_x, 0) ||

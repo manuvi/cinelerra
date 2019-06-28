@@ -245,7 +245,7 @@ Edit* Edits::split_edit(int64_t position)
 	new_edit->copy_from(edit);
 	new_edit->length = new_edit->startproject + new_edit->length - position;
 	edit->length = position - edit->startproject;
-	if( !new_edit->length ) 
+	if( !new_edit->length || edit->silence() )
 		new_edit->hard_left = new_edit->hard_right = 0;
 	else if( !edit->length )
 		edit->hard_left = edit->hard_right = 0;

@@ -95,9 +95,7 @@ int Asset::init_values()
 
 	jpeg_quality = 80;
 	aspect_ratio = -1;
-	interlace_autofixoption = ILACE_AUTOFIXOPTION_AUTO;
 	interlace_mode = ILACE_MODE_UNDETECTED;
-	interlace_fixmethod = ILACE_FIXMETHOD_NONE;
 
 	mp3_bitrate = 224;
 	ampeg_bitrate = 256;
@@ -198,9 +196,7 @@ void Asset::copy_format(Asset *asset, int do_index)
 	mp3_bitrate = asset->mp3_bitrate;
 	use_header = asset->use_header;
 	aspect_ratio = asset->aspect_ratio;
-	interlace_autofixoption = asset->interlace_autofixoption;
 	interlace_mode = asset->interlace_mode;
-	interlace_fixmethod = asset->interlace_fixmethod;
 
 	video_data = asset->video_data;
 	layers = asset->layers;
@@ -342,9 +338,7 @@ int Asset::equivalent(Asset &asset, int test_audio, int test_video, EDL *edl)
 		result = (layers == asset.layers &&
 			program == asset.program &&
 			frame_rate == asset.frame_rate &&
-			asset.interlace_autofixoption == interlace_autofixoption &&
 			asset.interlace_mode    == interlace_mode &&
-			interlace_fixmethod     == asset.interlace_fixmethod &&
 			width == asset.width &&
 			height == asset.height &&
 			!strcmp(vcodec, asset.vcodec) &&
@@ -497,14 +491,8 @@ int Asset::read_video(FileXML *file)
 	mov_sphere = file->tag.get_property("MOV_SPHERE", 0);
 	jpeg_sphere = file->tag.get_property("JPEG_SPHERE", 0);
 	single_frame = file->tag.get_property("SINGLE_FRAME", (int64_t)0);
-
-	interlace_autofixoption = file->tag.get_property("INTERLACE_AUTOFIX",0);
-
 	ilacemode_to_xmltext(string, ILACE_MODE_NOTINTERLACED);
 	interlace_mode = ilacemode_from_xmltext(file->tag.get_property("INTERLACE_MODE",string), ILACE_MODE_NOTINTERLACED);
-
-	ilacefixmethod_to_xmltext(string, ILACE_FIXMETHOD_NONE);
-	interlace_fixmethod = ilacefixmethod_from_xmltext(file->tag.get_property("INTERLACE_FIXMETHOD",string), ILACE_FIXMETHOD_NONE);
 
 	return 0;
 }
@@ -649,13 +637,8 @@ int Asset::write_video(FileXML *file)
 	file->tag.set_property("JPEG_SPHERE", jpeg_sphere);
 	file->tag.set_property("SINGLE_FRAME", single_frame);
 
-	file->tag.set_property("INTERLACE_AUTOFIX", interlace_autofixoption);
-
 	ilacemode_to_xmltext(string, interlace_mode);
 	file->tag.set_property("INTERLACE_MODE", string);
-
-	ilacefixmethod_to_xmltext(string, interlace_fixmethod);
-	file->tag.set_property("INTERLACE_FIXMETHOD", string);
 
 	file->append_tag();
 	if(video_data)
@@ -767,10 +750,7 @@ void Asset::load_defaults(BC_Hash *defaults,
 
 	jpeg_quality = GET_DEFAULT("JPEG_QUALITY", jpeg_quality);
 	aspect_ratio = GET_DEFAULT("ASPECT_RATIO", aspect_ratio);
-
-	interlace_autofixoption	= ILACE_AUTOFIXOPTION_AUTO;
 	interlace_mode         	= ILACE_MODE_UNDETECTED;
-	interlace_fixmethod    	= ILACE_FIXMETHOD_UPONE;
 
 // MPEG format information
 	vmpeg_iframe_distance = GET_DEFAULT("VMPEG_IFRAME_DISTANCE", vmpeg_iframe_distance);

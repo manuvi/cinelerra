@@ -1237,6 +1237,13 @@ void ColorButton::close_picker()
 	delete color_picker;  color_picker = 0;
 }
 
+void ColorButton::update_gui(int color, int alpha)
+{
+	if( color_picker )
+		color_picker->update_gui(color, alpha);
+	update_gui(color | (~alpha<<24));
+}
+
 void ColorButton::update_gui(int color)
 {
 	set_color(color);
@@ -1259,10 +1266,16 @@ void ColorButtonPicker::handle_done_event(int result)
 	color_button->handle_done_event(result);
 }
 
-int ColorButtonPicker::handle_new_color(int color, int alpha)
+void ColorButtonPicker::update(int color, int alpha)
 {
 	color_button->color = color;
+	color_button->alpha = alpha;
 	color_button->color_thread->update_lock->unlock();
+}
+
+int ColorButtonPicker::handle_new_color(int color, int alpha)
+{
+	update(color, alpha);
 	color_button->handle_new_color(color, alpha);
 	return 1;
 }
@@ -1270,8 +1283,13 @@ int ColorButtonPicker::handle_new_color(int color, int alpha)
 void ColorButtonPicker::update_gui()
 {
 	color_button->lock_window("ColorButtonPicker::update_gui");
-	color_button->update_gui(color_button->color);
+	color_button->update_gui(color_button->color, color_button->alpha);
 	color_button->unlock_window();
+}
+
+void ColorButtonPicker::update_gui(int color, int alpha)
+{
+	ColorPicker::update_gui(color, alpha);
 }
 
 ColorButtonThread::ColorButtonThread(ColorButton *color_button)
@@ -1337,7 +1355,7 @@ void ColorBoxButton::handle_done_event(int result)
 }
 void ColorBoxButton::create_objects()
 {
-	update_gui(color);
+	update_gui(color, alpha);
 }
 
 void ColorBoxButton::set_color(int color)
@@ -1399,7 +1417,7 @@ void ColorCircleButton::handle_done_event(int result)
 }
 void ColorCircleButton::create_objects()
 {
-	update_gui(color);
+	update_gui(color, alpha);
 }
 
 void ColorCircleButton::set_color(int color)

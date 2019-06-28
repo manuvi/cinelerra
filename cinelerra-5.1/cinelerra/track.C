@@ -1142,7 +1142,7 @@ int Track::blade(double position)
 {
 	int64_t start = to_units(position, 0);
 	Edit *edit = edits->split_edit(start);
-	if( !edit ) return 1;
+	if( !edit || edit->silence() ) return 1;
 	edit->hard_left = 1;
 	if( edit->previous ) edit->previous->hard_right = 1;
 	return 0;

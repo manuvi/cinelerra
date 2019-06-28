@@ -167,9 +167,7 @@ public:
 	double aspect_ratio;
 
 // for the interlace mode
-	int interlace_autofixoption;
 	int interlace_mode;
-	int interlace_fixmethod;
 // for jpeg compression
 	int jpeg_quality;
 
