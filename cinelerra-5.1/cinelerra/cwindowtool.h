@@ -334,6 +334,17 @@ public:
 	CWindowMaskGUI *gui;
 };
 
+class CWindowMaskHelp : public BC_CheckBox
+{
+public:
+	CWindowMaskHelp(MWindow *mwindow, CWindowMaskGUI *gui,
+			int x, int y);
+	~CWindowMaskHelp();
+	int handle_event();
+	MWindow *mwindow;
+	CWindowMaskGUI *gui;
+};
+
 class CWindowMaskDrawMarkers : public BC_CheckBox
 {
 public:
@@ -459,6 +470,8 @@ public:
 	CWindowCoord *x, *y;
 	CWindowMaskFocus *focus;
 	int focused;
+	CWindowMaskHelp *help;
+	int helped, help_y, help_h;
 	CWindowMaskDrawMarkers *draw_markers;
 	int markers;
 	CWindowMaskDrawBoundary *draw_boundary;

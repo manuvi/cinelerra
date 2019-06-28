@@ -1782,6 +1782,8 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 				cx += point->x;  cy += point->y;
 			}
 			cx /= n;  cy /= n;
+			if( !mask_gui->focused )
+				mask_gui->set_focused(0, cx, cy);
 			output_to_canvas(mwindow->edl, 0, cx, cy);
 			float r = bmax(cvs_win->get_w(), cvs_win->get_h());
 			float d = 0.007*r;
@@ -1791,8 +1793,6 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 			cvs_win->draw_line(cx,cy-d, cx, cy+d);
 			cvs_win->set_line_width(0);
 			cvs_win->set_color(WHITE);
-			if( !mask_gui->focused )
-				mask_gui->set_focused(0, cx, cy);
 		}
 //printf("CWindowCanvas::do_mask 1\n");
 	}
@@ -2087,12 +2087,13 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 				rotate = 1;
 			case CWINDOW_MASK_SCALE: {
 				if( !mask_gui || !mask_points.size() ) break;
+				float cx = gui->x_origin, cy = gui->y_origin;
 				if( mask_gui->focused ) {
-					gui->x_origin = atof(mask_gui->focus_x->get_text());
-					gui->y_origin = atof(mask_gui->focus_y->get_text());
+					cx = atof(mask_gui->focus_x->get_text());
+					cy = atof(mask_gui->focus_y->get_text());
 				}
-				else {
-					float cx = 0, cy = 0;
+				else if( !gui->alt_down() ) {
+					cx = cy = 0;
 					int n = mask_points.size();
 					for( int i=0; i<n; ++i ) {
 						MaskPoint *point = mask_points.values[i];
@@ -2101,6 +2102,8 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 					cx /= n;  cy /= n;
 					mask_gui->set_focused(0, cx, cy);
 				}
+				gui->x_origin = cx;
+				gui->y_origin = cy;
 				int button_no = get_buttonpress();
 				double scale = button_no == WHEEL_UP ? 1.02 : 0.98;
 				double theta = button_no == WHEEL_UP ? M_PI/360. : -M_PI/360.;

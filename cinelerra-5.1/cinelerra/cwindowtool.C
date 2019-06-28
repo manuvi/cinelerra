@@ -1499,18 +1499,25 @@ CWindowMaskOnTrack::~CWindowMaskOnTrack()
 
 int CWindowMaskOnTrack::handle_event()
 {
-	int k = get_number();
+	CWindowMaskItem *track_item = 0;
+	int k = get_number(), track_id = -1;
 //printf("selected %d = %s\n", k, k<0 ? "()" : track_items[k]->get_text());
-	CWindowMaskItem *track_item = k >= 0 ? (CWindowMaskItem *)track_items[k] : 0;
-	Track *track = track_item ? mwindow->edl->tracks->get_track_by_id(track_item->id) : 0;
-	int track_id = track_item && track && track->record ? track_item->id : -1;
+	if( k >= 0 ) {
+		track_item = (CWindowMaskItem *)track_items[k];
+		Track *track = track_item ? mwindow->edl->tracks->get_track_by_id(track_item->id) : 0;
+		if( track && track->record ) track_id = track->get_id();
+	}
+	else
+		track_id = mwindow->cwindow->mask_track_id;
 	set_back_color(track_id >= 0 ?
 		gui->get_resources()->text_background :
 		gui->get_resources()->text_background_disarmed);
-	gui->mask_on_track->update(track_item ? track_item->get_text() : "");
+	if( mwindow->cwindow->mask_track_id != track_id )
+		gui->mask_on_track->update(track_item ? track_item->get_text() : "");
 	mwindow->cwindow->mask_track_id = track_id;
 	mwindow->edl->local_session->solo_track_id = -1;
 	gui->mask_solo_track->update(0);
+	gui->update();
 	gui->update_preview(1);
 	return 1;
 }
@@ -1573,6 +1580,7 @@ int CWindowMaskTrackTumbler::do_event(int dir)
 	mwindow->cwindow->mask_track_id = track_item ? track_item->id : -1;
 	mwindow->edl->local_session->solo_track_id = -1;
 	gui->mask_solo_track->update(0);
+	gui->update();
 	gui->update_preview(1);
 	return 1;
 }
@@ -1975,6 +1983,27 @@ int CWindowMaskFocus::handle_event()
  	gui->focused = get_value();
 	gui->update();
 	gui->update_preview();
+	return 1;
+}
+
+CWindowMaskHelp::CWindowMaskHelp(MWindow *mwindow, CWindowMaskGUI *gui, int x, int y)
+ : BC_CheckBox(x, y, 0, _("Help"))
+{
+	this->mwindow = mwindow;
+	this->gui = gui;
+	set_tooltip(_("Show help text"));
+}
+
+CWindowMaskHelp::~CWindowMaskHelp()
+{
+}
+
+int CWindowMaskHelp::handle_event()
+{
+	gui->helped = get_value();
+	gui->resize_window(gui->get_w(),
+		gui->helped ? gui->help_h : gui->help_y);
+	gui->update();
 	return 1;
 }
 
@@ -2390,7 +2419,7 @@ int CWindowMaskGangFeather::handle_event()
 
 CWindowMaskGUI::CWindowMaskGUI(MWindow *mwindow, CWindowTool *thread)
  : CWindowToolGUI(mwindow, thread,
-	_(PROGRAM_NAME ": Mask"), 420, 680)
+	_(PROGRAM_NAME ": Mask"), 430, 680)
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
@@ -2533,20 +2562,23 @@ void CWindowMaskGUI::create_objects()
 	add_subwindow(this->apply_before_plugins = new CWindowMaskBeforePlugins(this, 10, y));
 	y += this->apply_before_plugins->get_h();
 	add_subwindow(this->disable_opengl_masking = new CWindowDisableOpenGLMasking(this, 10, y));
-	y += this->disable_opengl_masking->get_h() + margin;
-	add_subwindow(bar = new BC_Bar(x, y, get_w()-2*x));
-	y += bar->get_h() + margin;
-
-	y += margin;
-	add_subwindow(title = new BC_Title(x, y, _(
+	add_subwindow(help = new CWindowMaskHelp(mwindow, this, del_x, y));
+	y += this->disable_opengl_masking->get_h() + 2*margin;
+	help_y = y;
+	add_subwindow(new BC_Bar(x, y, get_w()-2*x));
+	y += bar->get_h() + 2*margin;
+	add_subwindow(new BC_Title(x, y, _(
 		"Shift+LMB: move an end point\n"
 		"Ctrl+LMB: move a control point\n"
 		"Alt+LMB: to drag translate the mask\n"
 		"Shift+Key Delete to delete the point\n"
-		"Wheel Up/Dn: rotate around pointer\n"
-		"Shift+Wheel Up/Dn: scale around pointer\n"
+		"Wheel Up/Dn: rotate around focal point\n"
+		"Shift+Wheel Up/Dn: scale around focal point\n"
+		"Alt/Shift+Wheel: rotate/scale around pointer\n"
 		"Shift+MMB: Toggle focus center at pointer")));
+	help_h = get_h();
 	update();
+	resize_window(get_w(), help_y);
 	unlock_window();
 }
 
