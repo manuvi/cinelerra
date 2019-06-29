@@ -4060,6 +4060,11 @@ int BC_WindowBase::resize_window(int w, int h)
 		size_hints.max_width = w;
 		size_hints.min_height = h;
 		size_hints.max_height = h;
+		if( this->x > -BC_INFINITY && this->x < BC_INFINITY ) {
+			size_hints.flags |= PPosition;
+			size_hints.x = this->x;
+			size_hints.y = this->y;
+		}
 		XSetNormalHints(top_level->display, win, &size_hints);
 	}
 	XResizeWindow(top_level->display, win, w, h);

@@ -2038,8 +2038,9 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 //printf("CWindowCanvas::do_mask %d %d\n", __LINE__, gui->affected_point);
 
 		SubMask *mask = gui->mask_keyframe->get_submask(mwindow->edl->session->cwindow_mask);
-		if( gui->affected_point >= 0 && gui->affected_point < mask->points.size() &&
-			gui->current_operation != CWINDOW_NONE) {
+		if( mask && gui->affected_point >= 0 &&
+		    gui->affected_point < mask->points.size() &&
+		    gui->current_operation != CWINDOW_NONE ) {
 //			mwindow->undo->update_undo_before(_("mask point"), this);
 #ifdef USE_KEYFRAME_SPANNING
 			ArrayList<MaskPoint*> &mask_points = points;
@@ -2075,14 +2076,31 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 				point->control_y2 = mask_cursor_y - gui->y_origin + gui->control_out_y;
 				break;
 
-			case CWINDOW_MASK_TRANSLATE:
-				for(int i = 0; i < mask_points.size(); i++) {
-					mask_points.values[i]->x += mask_cursor_x - gui->x_origin;
-					mask_points.values[i]->y += mask_cursor_y - gui->y_origin;
+			case CWINDOW_MASK_TRANSLATE: {
+				if( !mask_gui ) break;
+			        MaskAuto *keyframe = gui->mask_keyframe;
+				int gang = mask_gui->gang_focus->get_value();
+				float dx = mask_cursor_x - gui->x_origin;
+				float dy = mask_cursor_y - gui->y_origin;
+				if( !dx && !dy ) break;
+				int k = mwindow->edl->session->cwindow_mask;
+				int n = gang ? keyframe->masks.size() : k+1;
+				for( int j=gang? 0 : k; j<n; ++j ) {
+					SubMask *sub_mask = keyframe->get_submask(j);
+					if( !sub_mask ) continue;
+					ArrayList<MaskPoint*> &points = sub_mask->points;
+					for( int i=0; i<points.size(); ++i ) {
+						MaskPoint *point = points[i];
+						point->x += dx;
+						point->y += dy;
+					}
 				}
 				gui->x_origin = mask_cursor_x;
 				gui->y_origin = mask_cursor_y;
-				break;
+				rerender = 1;
+				redraw = 1;
+				track = 0;
+				break; }
 			case CWINDOW_MASK_ROTATE:
 				rotate = 1;
 			case CWINDOW_MASK_SCALE: {
@@ -2092,7 +2110,7 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 					cx = atof(mask_gui->focus_x->get_text());
 					cy = atof(mask_gui->focus_y->get_text());
 				}
-				else if( !gui->alt_down() ) {
+				else if( !gui->ctrl_down() ) {
 					cx = cy = 0;
 					int n = mask_points.size();
 					for( int i=0; i<n; ++i ) {
@@ -2104,36 +2122,52 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 				}
 				gui->x_origin = cx;
 				gui->y_origin = cy;
+				double accel =
+					gui->get_triple_click() ? 8. :
+					gui->get_double_click() ? 4. :
+					1.;
 				int button_no = get_buttonpress();
-				double scale = button_no == WHEEL_UP ? 1.02 : 0.98;
-				double theta = button_no == WHEEL_UP ? M_PI/360. : -M_PI/360.;
+				double ds = accel/64., dt = accel*M_PI/360.;
+				double scale = button_no == WHEEL_UP ? 1.+ds : 1.-ds;
+				double theta = button_no == WHEEL_UP ? dt : -dt;
+				if( rotate ? theta==0 : scale==1 ) break;
 				float st = sin(theta), ct = cos(theta);
-				for( int i=0; i<mask_points.size(); ++i ) {
-					MaskPoint *point = mask_points.values[i];
-					float px = point->x - gui->x_origin;
-					float py = point->y - gui->y_origin;
-					float nx = !rotate ? px*scale : px*ct + py*st;
-					float ny = !rotate ? py*scale : py*ct - px*st;
-					point->x = nx + gui->x_origin;
-					point->y = ny + gui->y_origin;
-					px = point->control_x1;  py = point->control_y1;
-					point->control_x1 = !rotate ? px*scale : px*ct + py*st;
-					point->control_y1 = !rotate ? py*scale : py*ct - px*st;
-					px = point->control_x2;  py = point->control_y2;
-					point->control_x2 = !rotate ? px*scale : px*ct + py*st;
-					point->control_y2 = !rotate ? py*scale : py*ct - px*st;
+			        MaskAuto *keyframe = gui->mask_keyframe;
+				int gang = mask_gui->gang_focus->get_value();
+				int k = mwindow->edl->session->cwindow_mask;
+				int n = gang ? keyframe->masks.size() : k+1;
+				for( int j=gang? 0 : k; j<n; ++j ) {
+					SubMask *sub_mask = keyframe->get_submask(j);
+					ArrayList<MaskPoint*> &points = sub_mask->points;
+					if( !sub_mask ) continue;
+					for( int i=0; i<points.size(); ++i ) {
+						MaskPoint *point = points[i];
+						float px = point->x - gui->x_origin;
+						float py = point->y - gui->y_origin;
+						float nx = !rotate ? px*scale : px*ct + py*st;
+						float ny = !rotate ? py*scale : py*ct - px*st;
+						point->x = nx + gui->x_origin;
+						point->y = ny + gui->y_origin;
+						px = point->control_x1;  py = point->control_y1;
+						point->control_x1 = !rotate ? px*scale : px*ct + py*st;
+						point->control_y1 = !rotate ? py*scale : py*ct - px*st;
+						px = point->control_x2;  py = point->control_y2;
+						point->control_x2 = !rotate ? px*scale : px*ct + py*st;
+						point->control_y2 = !rotate ? py*scale : py*ct - px*st;
+					}
 				}
 				rerender = 1;
 				redraw = 1;
+				track = 0;
 				break; }
 			}
 
-			if( !EQUIV(last_x, point->x) ||
+			if( !(rerender && redraw) && (!EQUIV(last_x, point->x) ||
 				!EQUIV(last_y, point->y) ||
 				!EQUIV(last_control_x1, point->control_x1) ||
 				!EQUIV(last_control_y1, point->control_y1) ||
 				!EQUIV(last_control_x2, point->control_x2) ||
-				!EQUIV(last_control_y2, point->control_y2)) {
+				!EQUIV(last_control_y2, point->control_y2)) ) {
 				rerender = 1;
 				redraw = 1;
 			}

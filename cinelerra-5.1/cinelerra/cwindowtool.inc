@@ -42,6 +42,7 @@ class CWindowMaskEnable;
 class CWindowMaskFade;
 class CWindowMaskFadeSlider;
 class CWindowMaskGangFader;
+class CWindowMaskGangFocus;
 class CWindowMaskAffectedPoint;
 class CWindowMaskFocus;
 class CWindowMaskDrawMarkers;

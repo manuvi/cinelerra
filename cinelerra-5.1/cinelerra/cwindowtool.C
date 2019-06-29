@@ -1525,9 +1525,14 @@ int CWindowMaskOnTrack::handle_event()
 void CWindowMaskOnTrack::update_items()
 {
 	track_items.remove_all_objects();
+	int high_color = gui->get_resources()->button_highlighted;
 	for( Track *track=mwindow->edl->tracks->first; track; track=track->next ) {
 		if( track->data_type != TRACK_VIDEO ) continue;
-		int color = track->record ? -1 : RED;
+		MaskAutos *mask_autos = (MaskAutos*)track->automation->autos[AUTOMATION_MASK];
+		int color = !track->record ? RED : mask_autos->first ?  high_color : -1;
+		MaskAuto *mask_auto = (MaskAuto*)mask_autos->default_auto;
+		for( int i=0; color<0 && i<mask_auto->masks.size(); ++i )
+			if( mask_auto->masks[i]->points.size() > 0 ) color = high_color;
 		track_items.append(new CWindowMaskItem(track->title, track->get_id(), color));
 	}
 	update_list(&track_items);
@@ -2293,6 +2298,24 @@ int CWindowMaskGangFader::handle_event()
 	return 1;
 }
 
+CWindowMaskGangFocus::CWindowMaskGangFocus(MWindow *mwindow,
+		CWindowMaskGUI *gui, int x, int y)
+ : BC_Toggle(x, y, mwindow->theme->get_image_set("gangpatch_data"), 0)
+{
+        this->mwindow = mwindow;
+        this->gui = gui;
+        set_tooltip(_("Gang rotate/scale/translate"));
+}
+
+CWindowMaskGangFocus::~CWindowMaskGangFocus()
+{
+}
+
+int CWindowMaskGangFocus::handle_event()
+{
+	return 1;
+}
+
 CWindowMaskBeforePlugins::CWindowMaskBeforePlugins(CWindowMaskGUI *gui, int x, int y)
  : BC_CheckBox(x,
  	y,
@@ -2550,6 +2573,7 @@ void CWindowMaskGUI::create_objects()
 	focus_x = new CWindowCoord(this, x1, y, cx);
 	focus_x->create_objects();
 	add_subwindow(focus = new CWindowMaskFocus(mwindow, this, del_x, y));
+	add_subwindow(gang_focus = new CWindowMaskGangFocus(mwindow, this, clr_x, y));
 	y += focus_x->get_h() + margin;
 	add_subwindow(title = new BC_Title(x, y, "Y:"));
 	float cy = mwindow->edl->session->output_h / 2.f;
@@ -2567,16 +2591,16 @@ void CWindowMaskGUI::create_objects()
 	help_y = y;
 	add_subwindow(new BC_Bar(x, y, get_w()-2*x));
 	y += bar->get_h() + 2*margin;
-	add_subwindow(new BC_Title(x, y, _(
+	add_subwindow(title = new BC_Title(x, y, _(
 		"Shift+LMB: move an end point\n"
 		"Ctrl+LMB: move a control point\n"
 		"Alt+LMB: to drag translate the mask\n"
 		"Shift+Key Delete to delete the point\n"
-		"Wheel Up/Dn: rotate around focal point\n"
-		"Shift+Wheel Up/Dn: scale around focal point\n"
-		"Alt/Shift+Wheel: rotate/scale around pointer\n"
-		"Shift+MMB: Toggle focus center at pointer")));
-	help_h = get_h();
+		"Shift+MMB: Set Pivot Point at pointer\n"
+		"Wheel: rotate around Pivot Point\n"
+		"Shift+Wheel: scale around Pivot Point\n"
+		"Ctrl Wheel: rotate/scale around pointer")));
+	help_h = y + title->get_h() + 2*margin;
 	update();
 	resize_window(get_w(), help_y);
 	unlock_window();

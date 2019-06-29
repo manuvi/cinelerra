@@ -312,6 +312,17 @@ public:
 	CWindowMaskGUI *gui;
 };
 
+class CWindowMaskGangFocus : public BC_Toggle
+{
+public:
+	CWindowMaskGangFocus(MWindow *mwindow, CWindowMaskGUI *gui,
+			int x, int y);
+	~CWindowMaskGangFocus();
+	int handle_event();
+	MWindow *mwindow;
+	CWindowMaskGUI *gui;
+};
+
 class CWindowMaskAffectedPoint : public BC_TumbleTextBox
 {
 public:
@@ -470,6 +481,7 @@ public:
 	CWindowCoord *x, *y;
 	CWindowMaskFocus *focus;
 	int focused;
+	CWindowMaskGangFocus *gang_focus;
 	CWindowMaskHelp *help;
 	int helped, help_y, help_h;
 	CWindowMaskDrawMarkers *draw_markers;
