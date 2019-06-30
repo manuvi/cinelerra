@@ -22,6 +22,8 @@
 #include "bcdisplayinfo.h"
 #include "clip.h"
 #include "dragcheckbox.h"
+#include "edl.h"
+#include "edlsession.h"
 #include "language.h"
 #include "findobj.h"
 #include "findobjwindow.h"

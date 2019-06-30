@@ -1276,7 +1276,6 @@ void ColorButtonPicker::update(int color, int alpha)
 int ColorButtonPicker::handle_new_color(int color, int alpha)
 {
 	update(color, alpha);
-	color_button->handle_new_color(color, alpha);
 	return 1;
 }
 
@@ -1290,6 +1289,7 @@ void ColorButtonPicker::update_gui()
 void ColorButtonPicker::update_gui(int color, int alpha)
 {
 	ColorPicker::update_gui(color, alpha);
+	color_button->handle_new_color(color, alpha);
 }
 
 ColorButtonThread::ColorButtonThread(ColorButton *color_button)

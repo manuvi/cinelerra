@@ -8,6 +8,12 @@ Cinfinity icons selected in Preferences Sam (CC BY 3.0,
 Cakewalk and Neophyte themes by Olaf Wolff (CC BY 4.0,
   https://creativecommons.org/licenses/by/4.0/)
 .
+June 2019 New Features of note:
+  Hardware acceleration Nvenc for Nvidia boards rendering in.
+  More masking improvements to include tracks, solo, & gangs.
+  Cuda capability optional if do your own builds.
+  Gradient plugin improved for OpenGL + color picker.
+  Blade cute/Hard edges is now less intrusive.
 May 2019 New Features of note:
   Masking enhancements added to include Rotate and Scale.
   Some encode hardware acceleration for vaapi graphics boards.
