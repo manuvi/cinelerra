@@ -398,13 +398,16 @@ unsigned int VFrame::make_shader(const char **segments, ...)
 	unsigned int program = 0;
 #ifdef HAVE_GL
 // Construct single source file out of arguments
-	int nb_segs = 1;
-	if( !segments ) {
+	int nb_segs = 0;
+	if( !segments ) {  // arg list
 		va_list list;  va_start(list, segments);
 		while( va_arg(list, char*) != 0 ) ++nb_segs;
 		va_end(list);
 	}
-	const char *segs[nb_segs];
+	else { // segment list
+		while( segments[nb_segs] ) ++nb_segs;
+	}
+	const char *segs[++nb_segs];
 	if( !segments ) {
 		va_list list;  va_start(list, segments);
 		for( int i=0; i<nb_segs; ++i )

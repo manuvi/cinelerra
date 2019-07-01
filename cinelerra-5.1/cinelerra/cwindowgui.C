@@ -1455,7 +1455,7 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 	mask_autos->get_prev_auto(position, PLAY_FORWARD, (Auto *&)prev_auto, 1);
 	MaskAuto *prev_mask = (MaskAuto *)prev_auto;
 	ArrayList<MaskPoint*> points;
-
+	int update_points = 1;
 // Determine the points based on whether
 // new keyframes will be generated or drawing is performed.
 // If keyframe generation occurs, use the interpolated mask.
@@ -2099,7 +2099,7 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 				gui->y_origin = mask_cursor_y;
 				rerender = 1;
 				redraw = 1;
-				track = 0;
+				update_points = 0;
 				break; }
 			case CWINDOW_MASK_ROTATE:
 				rotate = 1;
@@ -2158,7 +2158,7 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 				}
 				rerender = 1;
 				redraw = 1;
-				track = 0;
+				update_points = 0;
 				break; }
 			}
 
@@ -2226,7 +2226,8 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 		MaskAuto temp_keyframe(mwindow->edl, mask_autos);
 		temp_keyframe.copy_data(gui->mask_keyframe);
 // Apply interpolated points back to keyframe
-		temp_keyframe.set_points(&points, mwindow->edl->session->cwindow_mask);
+		if( update_points )
+			temp_keyframe.set_points(&points, mwindow->edl->session->cwindow_mask);
 		gui->mask_keyframe->copy_data(gui->orig_mask_keyframe);
 		mask_autos->update_parameter(&temp_keyframe);
 	}
