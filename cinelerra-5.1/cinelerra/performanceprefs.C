@@ -332,8 +332,8 @@ PrefsUseHWDev::PrefsUseHWDev(PreferencesWindow *pwindow,
 void PrefsUseHWDev::create_objects()
 {
 	BC_PopupTextBox::create_objects();
-	set_tooltip(_("vdpau - Nvidia, Nouveau, Amdgpu\n"
-		"vaapi - Broadcom, Intel HD graphics, Radeon\n"
+	set_tooltip(_("vdpau - Nvidia, Nouveau\n"
+		"vaapi - Broadcom, Intel HD graphics, Amdgup, Radeon\n"
 		"cuda  - Nvidia + Cuda SDK"));
 	hw_dev_names.append(new BC_ListBoxItem(_("none")));
 #ifdef HAVE_VAAPI
