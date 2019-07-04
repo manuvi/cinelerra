@@ -545,6 +545,7 @@ usage(char *av0)
    fprintf(stderr,"  -1  usr only cpu timer intervals (sigvtalrm)\n");
    fprintf(stderr,"  -2  real time timer intervals (sigalrm)\n");
    fprintf(stderr,"  -u  profile timer interval in usecs\n");
+   fprintf(stderr," use: kill -USR1 <pid> to report, rescan and restart\n");
 }
 
 long run_to_breakpoint(pid_t ppid, int init_syscall)
@@ -746,6 +747,7 @@ int main(int ac, char **av)
       exit(1);
    }
 
+   printf("prof pid = %d\n", pid);
    execve = sizeof(sysreq_name)/sizeof(sysreq_name[0]);
    while( --execve >= 0 && strcmp("execve",sysreq_name[execve]) );
    if( execve < 0 ) {

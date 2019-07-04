@@ -526,7 +526,7 @@ static int readNmMaps(unsigned long fwa)
          }
       }
       dprintf(stderr,", %d symbols\n",tsym->n - n);
-      if( mod < 0 ) {
+      if( mod < 0 && strncmp("linux-vdso.so.",nm,14) ) {
          fprintf(stderr,"profile - Cannot map module - %s\n",nm);
 //         exit(1);
 //         return -1;
@@ -708,6 +708,14 @@ void profileStart(void)
    dprintf(stderr,"starting profile.\n");
 }
 
+static void sigusr1(int n)
+{
+   profileStop();
+   profileShow();
+   delAllTbls();
+   profileStart();
+}
+
 int profileMain(int ac,char **av,char **ev)
 {
    int (*fmain)(int ac,char **av,char **ev);
@@ -718,6 +726,7 @@ int profileMain(int ac,char **av,char **ev)
      exit(1);
    }
    atexit(profileExit);
+   signal(SIGUSR1, sigusr1);
    fmain = (int (*)(int,char **,char **))adr;
    dprintf(stderr,"starting \"main\" at: %p\n",fmain);
    int ret = fmain(ac,av,ev);
