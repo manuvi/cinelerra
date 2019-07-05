@@ -209,7 +209,6 @@ GWindowColorButton::~GWindowColorButton()
 int GWindowColorButton::handle_new_color(int color, int alpha)
 {
 	this->color = color;
-	color_thread->update_lock->unlock();
 	return 1;
 }
 

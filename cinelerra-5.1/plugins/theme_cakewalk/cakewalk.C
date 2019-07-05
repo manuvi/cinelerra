@@ -267,12 +267,11 @@ void CAKEWALKTHEME::initialize()
   "new_bigbutton_hi.png",
   "new_bigbutton_dn.png",
   "new_ok_images");
-        new_button(
-  "reset.png",
-                "reset_up.png",
-                "reset_dn.png",
-                "reset_hi.png",
-                "reset_button");
+ new_button( "reset.png",
+  "reset_up.png",
+  "reset_dn.png",
+  "reset_hi.png",
+  "reset_button");
  resources->cancel_images = new_button(
   "cancel.png",
   "filebox_bigbutton_up.png",
@@ -285,6 +284,36 @@ void CAKEWALKTHEME::initialize()
   "new_bigbutton_hi.png",
   "new_bigbutton_dn.png",
   "new_cancel_images");
+ new_button("mask_pnt_linear.png",
+  "mask_button_up.png",
+  "mask_button_hi.png",
+  "mask_button_dn.png",
+  "mask_pnt_linear_images");
+ new_button("mask_crv_linear.png",
+  "mask_button_up.png",
+  "mask_button_hi.png",
+  "mask_button_dn.png",
+  "mask_crv_linear_images");
+ new_button("mask_all_linear.png",
+  "mask_button_up.png",
+  "mask_button_hi.png",
+  "mask_button_dn.png",
+  "mask_all_linear_images");
+ new_button("mask_pnt_smooth.png",
+  "mask_button_up.png",
+  "mask_button_hi.png",
+  "mask_button_dn.png",
+  "mask_pnt_smooth_images");
+ new_button("mask_crv_smooth.png",
+  "mask_button_up.png",
+  "mask_button_hi.png",
+  "mask_button_dn.png",
+  "mask_crv_smooth_images");
+ new_button("mask_all_smooth.png",
+  "mask_button_up.png",
+  "mask_button_hi.png",
+  "mask_button_dn.png",
+  "mask_all_smooth_images");
  resources->bar_data = new_image("bar", "bar.png");
  resources->check = new_image("check", "check.png");
  resources->min_menu_w = 96;

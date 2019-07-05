@@ -311,7 +311,9 @@ void ColorWindow::update_display()
 
 int ColorWindow::handle_event()
 {
+	unlock_window();
 	thread->handle_new_color(rgb888(), alpha8());
+	lock_window("ColorWindow::handle_event");
 	return 1;
 }
 

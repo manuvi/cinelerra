@@ -2317,37 +2317,24 @@ int CWindowMaskGangFocus::handle_event()
 }
 
 
-CWindowMaskSmooth::CWindowMaskSmooth(MWindow *mwindow,
-		CWindowMaskGUI *gui, int x, int y)
- : BC_GenericButton(x, y, _("Smooth"))
+CWindowMaskSmoothButton::CWindowMaskSmoothButton(MWindow *mwindow, CWindowMaskGUI *gui,
+		const char *tip, int type, int on, int x, int y, const char *images)
+ : BC_Button(x, y, mwindow->theme->get_image_set(images))
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip(_("Smooth boundary"));
-}
-int CWindowMaskSmooth::handle_event()
-{
-	return gui->smooth_mask(0);
+	this->type = type;
+	this->on = on;
+	set_tooltip(tip);
 }
 
-CWindowMaskGangSmooth::CWindowMaskGangSmooth(MWindow *mwindow,
-		CWindowMaskGUI *gui, int x, int y)
- : BC_Button(x, y, mwindow->theme->get_image_set("gangpatch_data"))
+int CWindowMaskSmoothButton::handle_event()
 {
-	this->mwindow = mwindow;
-	this->gui = gui;
-	set_tooltip(_("Smooth All"));
-}
-int CWindowMaskGangSmooth::handle_event()
-{
-	return gui->smooth_mask(1);
+	return gui->smooth_mask(type, on);
 }
 
 CWindowMaskBeforePlugins::CWindowMaskBeforePlugins(CWindowMaskGUI *gui, int x, int y)
- : BC_CheckBox(x,
- 	y,
-	1,
-	_("Apply mask before plugins"))
+ : BC_CheckBox(x, y, 1, _("Apply mask before plugins"))
 {
 	this->gui = gui;
 }
@@ -2577,19 +2564,37 @@ void CWindowMaskGUI::create_objects()
 	add_subwindow(title_bar = new BC_TitleBar(x, y, get_w()-2*x, 20, 10, _("Mask Points")));
 	y += title_bar->get_h() + margin;
 
+	x1 = x + 60;
 	add_subwindow(title = new BC_Title(x, y, _("Point:")));
 	active_point = new CWindowMaskAffectedPoint(mwindow, this, x1, y);
 	active_point->create_objects();
+	int x3  = x1 + active_point->get_w() + 4*margin;
+// typ=0, this mask, this point
+	add_subwindow(mask_pnt_linear = new CWindowMaskSmoothButton(mwindow, this,
+		_("sharp point"), 0, 0, x3, y, "mask_pnt_linear_images"));
+	int x4  = x3 + mask_pnt_linear->get_w() + 2*margin;
+	add_subwindow(mask_pnt_smooth = new CWindowMaskSmoothButton(mwindow, this,
+		_("smooth point"), 0, 1, x4, y, "mask_pnt_smooth_images"));
 	add_subwindow(del_point = new CWindowMaskDelPoint(mwindow, this, del_x, y));
 	y += active_point->get_h() + margin;
 	add_subwindow(title = new BC_Title(x, y, "X:"));
 	this->x = new CWindowCoord(this, x1, y, (float)0.0);
 	this->x->create_objects();
+// typ>0, this mask, all points
+	add_subwindow(mask_crv_linear = new CWindowMaskSmoothButton(mwindow, this,
+		_("sharp curve"), 1, 0, x3, y, "mask_crv_linear_images"));
+	add_subwindow(mask_crv_smooth = new CWindowMaskSmoothButton(mwindow, this,
+		_("smooth curve"), 1, 1, x4, y, "mask_crv_smooth_images"));
 	add_subwindow(draw_markers = new CWindowMaskDrawMarkers(mwindow, this, del_x, y));
 	y += this->x->get_h() + margin;
 	add_subwindow(title = new BC_Title(x, y, "Y:"));
 	this->y = new CWindowCoord(this, x1, y, (float)0.0);
 	this->y->create_objects();
+// typ<0, all masks, all points
+	add_subwindow(mask_all_linear = new CWindowMaskSmoothButton(mwindow, this,
+		_("sharp all"), -1, 0, x3, y, "mask_all_linear_images"));
+	add_subwindow(mask_all_smooth = new CWindowMaskSmoothButton(mwindow, this,
+		_("smooth all"), -1, 1, x4, y, "mask_all_smooth_images"));
 	add_subwindow(draw_boundary = new CWindowMaskDrawBoundary(mwindow, this, del_x, y));
 	y += this->y->get_h() + 2*margin;
 	add_subwindow(title_bar = new BC_TitleBar(x, y, get_w()-2*x, 20, 10, _("Pivot Point")));
@@ -2606,8 +2611,6 @@ void CWindowMaskGUI::create_objects()
 	float cy = mwindow->edl->session->output_h / 2.f;
 	focus_y = new CWindowCoord(this, x1, y, cy);
 	focus_y->create_objects();
-	add_subwindow(smooth = new CWindowMaskSmooth(mwindow, this, del_x, y));
-	add_subwindow(gang_smooth = new CWindowMaskGangSmooth(mwindow, this, clr_x, y));
 	y += focus_x->get_h() + 2*margin;
 	BC_Bar *bar;
 	add_subwindow(bar = new BC_Bar(x, y, get_w()-2*x));
@@ -2797,7 +2800,11 @@ void CWindowMaskGUI::update_buttons(MaskAuto *keyframe, int k)
 	}
 }
 
-int CWindowMaskGUI::smooth_mask(int gang)
+// typ=0, this mask, this point
+// typ>0, this mask, all points
+// typ<0, all masks, all points
+// dxy= on? pt[+1]-pt[-1] : dxy=0
+int CWindowMaskGUI::smooth_mask(int typ, int on)
 {
 	MaskAutos *autos;
 	MaskAuto *keyframe;
@@ -2822,20 +2829,23 @@ int CWindowMaskGUI::smooth_mask(int gang)
 		keyframe = &temp_keyframe;
 #endif
 		int k = mwindow->edl->session->cwindow_mask;
-		int n = gang ? keyframe->masks.size() : k+1;
-		for( int j=gang? 0 : k; j<n; ++j ) {
+		int n = typ>=0 ? k+1 : keyframe->masks.size();
+		for( int j=typ<0? 0 : k; j<n; ++j ) {
 			SubMask *sub_mask = keyframe->get_submask(j);
 			ArrayList<MaskPoint*> &points = sub_mask->points;
 			int psz = points.size();
 			if( psz < 3 ) continue;
-			for( int i=0; i<psz; ++i ) {
+			int l = mwindow->cwindow->gui->affected_point;
+			int m = typ ? psz : l+1;
+			for( int i=typ<0? 0 : l; i<m; ++i ) {
 				int i0 = i-1, i1 = i+1;
 				if( i0 < 0 ) i0 = psz-1;
 				if( i1 >= psz ) i1 = 0;
 				MaskPoint *p0 = points[i0];
 				MaskPoint *p  = points[i];
 				MaskPoint *p1 = points[i1];
-				float dx = p1->x - p0->x, dy = p1->y - p0->y;
+				float dx = !on ? 0 : p1->x - p0->x;
+				float dy = !on ? 0 : p1->y - p0->y;
 				p->control_x1 = -dx/4;  p->control_y1 = -dy/4;
 				p->control_x2 =  dx/4;  p->control_y2 =  dy/4;
 			}

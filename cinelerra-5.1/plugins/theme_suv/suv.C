@@ -291,6 +291,38 @@ void SUV::initialize()
 		"new_bigbutton_dn.png",
 		"new_cancel_images");
 
+	new_button("mask_pnt_linear.png",
+		"mask_button_up.png",
+		"mask_button_hi.png",
+		"mask_button_dn.png",
+		"mask_pnt_linear_images");
+	new_button("mask_crv_linear.png",
+		"mask_button_up.png",
+		"mask_button_hi.png",
+		"mask_button_dn.png",
+		"mask_crv_linear_images");
+	new_button("mask_all_linear.png",
+		"mask_button_up.png",
+		"mask_button_hi.png",
+		"mask_button_dn.png",
+		"mask_all_linear_images");
+
+	new_button("mask_pnt_smooth.png",
+		"mask_button_up.png",
+		"mask_button_hi.png",
+		"mask_button_dn.png",
+		"mask_pnt_smooth_images");
+	new_button("mask_crv_smooth.png",
+		"mask_button_up.png",
+		"mask_button_hi.png",
+		"mask_button_dn.png",
+		"mask_crv_smooth_images");
+	new_button("mask_all_smooth.png",
+		"mask_button_up.png",
+		"mask_button_hi.png",
+		"mask_button_dn.png",
+		"mask_all_smooth_images");
+
 	resources->medium_7segment = new_image_set(TOTAL_7SEGMENT,
 		"0.png",
 		"1.png",
