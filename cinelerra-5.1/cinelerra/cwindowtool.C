@@ -2316,6 +2316,33 @@ int CWindowMaskGangFocus::handle_event()
 	return 1;
 }
 
+
+CWindowMaskSmooth::CWindowMaskSmooth(MWindow *mwindow,
+		CWindowMaskGUI *gui, int x, int y)
+ : BC_GenericButton(x, y, _("Smooth"))
+{
+	this->mwindow = mwindow;
+	this->gui = gui;
+	set_tooltip(_("Smooth boundary"));
+}
+int CWindowMaskSmooth::handle_event()
+{
+	return gui->smooth_mask(0);
+}
+
+CWindowMaskGangSmooth::CWindowMaskGangSmooth(MWindow *mwindow,
+		CWindowMaskGUI *gui, int x, int y)
+ : BC_Button(x, y, mwindow->theme->get_image_set("gangpatch_data"))
+{
+	this->mwindow = mwindow;
+	this->gui = gui;
+	set_tooltip(_("Smooth All"));
+}
+int CWindowMaskGangSmooth::handle_event()
+{
+	return gui->smooth_mask(1);
+}
+
 CWindowMaskBeforePlugins::CWindowMaskBeforePlugins(CWindowMaskGUI *gui, int x, int y)
  : BC_CheckBox(x,
  	y,
@@ -2579,6 +2606,8 @@ void CWindowMaskGUI::create_objects()
 	float cy = mwindow->edl->session->output_h / 2.f;
 	focus_y = new CWindowCoord(this, x1, y, cy);
 	focus_y->create_objects();
+	add_subwindow(smooth = new CWindowMaskSmooth(mwindow, this, del_x, y));
+	add_subwindow(gang_smooth = new CWindowMaskGangSmooth(mwindow, this, clr_x, y));
 	y += focus_x->get_h() + 2*margin;
 	BC_Bar *bar;
 	add_subwindow(bar = new BC_Bar(x, y, get_w()-2*x));
@@ -2595,11 +2624,11 @@ void CWindowMaskGUI::create_objects()
 		"Shift+LMB: move an end point\n"
 		"Ctrl+LMB: move a control point\n"
 		"Alt+LMB: to drag translate the mask\n"
-		"Shift+Key Delete to delete the point\n"
+		"Shift+Key Delete: to delete the point\n"
 		"Shift+MMB: Set Pivot Point at pointer\n"
 		"Wheel: rotate around Pivot Point\n"
 		"Shift+Wheel: scale around Pivot Point\n"
-		"Ctrl Wheel: rotate/scale around pointer")));
+		"Ctrl+Wheel: rotate/scale around pointer")));
 	help_h = y + title->get_h() + 2*margin;
 	update();
 	resize_window(get_w(), help_y);
@@ -2766,6 +2795,59 @@ void CWindowMaskGUI::update_buttons(MaskAuto *keyframe, int k)
 		mask_blabels[i]->set_color(color);
 		mask_buttons[i]->update(i==k ? 1 : 0);
 	}
+}
+
+int CWindowMaskGUI::smooth_mask(int gang)
+{
+	MaskAutos *autos;
+	MaskAuto *keyframe;
+	Track *track;
+	MaskPoint *point;
+	SubMask *mask;
+#ifdef USE_KEYFRAME_SPANNING
+	int create_it = 0;
+#else
+	int create_it = 1;
+#endif
+
+	mwindow->undo->update_undo_before(_("mask smooth"), this);
+
+// Get existing keyframe
+	get_keyframe(track, autos, keyframe,
+			mask, point, create_it);
+	if( track ) {
+#ifdef USE_KEYFRAME_SPANNING
+		MaskAuto temp_keyframe(mwindow->edl, autos);
+		temp_keyframe.copy_data(keyframe);
+		keyframe = &temp_keyframe;
+#endif
+		int k = mwindow->edl->session->cwindow_mask;
+		int n = gang ? keyframe->masks.size() : k+1;
+		for( int j=gang? 0 : k; j<n; ++j ) {
+			SubMask *sub_mask = keyframe->get_submask(j);
+			ArrayList<MaskPoint*> &points = sub_mask->points;
+			int psz = points.size();
+			if( psz < 3 ) continue;
+			for( int i=0; i<psz; ++i ) {
+				int i0 = i-1, i1 = i+1;
+				if( i0 < 0 ) i0 = psz-1;
+				if( i1 >= psz ) i1 = 0;
+				MaskPoint *p0 = points[i0];
+				MaskPoint *p  = points[i];
+				MaskPoint *p1 = points[i1];
+				float dx = p1->x - p0->x, dy = p1->y - p0->y;
+				p->control_x1 = -dx/4;  p->control_y1 = -dy/4;
+				p->control_x2 =  dx/4;  p->control_y2 =  dy/4;
+			}
+		}
+#ifdef USE_KEYFRAME_SPANNING
+		autos->update_parameter(keyframe);
+#endif
+		update_preview();
+	}
+
+	mwindow->undo->update_undo_after(_("mask smooth"), LOAD_AUTOMATION);
+	return 1;
 }
 
 CWindowRulerGUI::CWindowRulerGUI(MWindow *mwindow, CWindowTool *thread)

@@ -323,6 +323,26 @@ public:
 	CWindowMaskGUI *gui;
 };
 
+class CWindowMaskSmooth : public BC_GenericButton
+{
+public:
+	CWindowMaskSmooth(MWindow *mwindow, CWindowMaskGUI *gui,
+			int x, int y);
+	int handle_event();
+	MWindow *mwindow;
+	CWindowMaskGUI *gui;
+};
+
+class CWindowMaskGangSmooth : public BC_Button
+{
+public:
+	CWindowMaskGangSmooth(MWindow *mwindow, CWindowMaskGUI *gui,
+			int x, int y);
+	int handle_event();
+	MWindow *mwindow;
+	CWindowMaskGUI *gui;
+};
+
 class CWindowMaskAffectedPoint : public BC_TumbleTextBox
 {
 public:
@@ -456,9 +476,10 @@ public:
 	void update();
 	int close_event();
 	void done_event();
+	void handle_event();
 	void set_focused(int v, float cx, float cy);
 	void update_buttons(MaskAuto *keyframe, int k);
-	void handle_event();
+	int smooth_mask(int gang);
 	void get_keyframe(Track* &track, MaskAutos* &autos, MaskAuto* &keyframe,
 		SubMask* &mask, MaskPoint* &point, int create_it);
 
@@ -482,6 +503,8 @@ public:
 	CWindowMaskFocus *focus;
 	int focused;
 	CWindowMaskGangFocus *gang_focus;
+	CWindowMaskSmooth *smooth;
+	CWindowMaskGangSmooth *gang_smooth;
 	CWindowMaskHelp *help;
 	int helped, help_y, help_h;
 	CWindowMaskDrawMarkers *draw_markers;
