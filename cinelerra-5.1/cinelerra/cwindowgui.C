@@ -2086,6 +2086,7 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 				int k = mwindow->edl->session->cwindow_mask;
 				int n = gang ? keyframe->masks.size() : k+1;
 				for( int j=gang? 0 : k; j<n; ++j ) {
+					if( !mask_gui->mask_enables[j]->get_value() ) continue;
 					SubMask *sub_mask = keyframe->get_submask(j);
 					if( !sub_mask ) continue;
 					ArrayList<MaskPoint*> &points = sub_mask->points;
@@ -2137,9 +2138,10 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 				int k = mwindow->edl->session->cwindow_mask;
 				int n = gang ? keyframe->masks.size() : k+1;
 				for( int j=gang? 0 : k; j<n; ++j ) {
+					if( !mask_gui->mask_enables[j]->get_value() ) continue;
 					SubMask *sub_mask = keyframe->get_submask(j);
-					ArrayList<MaskPoint*> &points = sub_mask->points;
 					if( !sub_mask ) continue;
+					ArrayList<MaskPoint*> &points = sub_mask->points;
 					for( int i=0; i<points.size(); ++i ) {
 						MaskPoint *point = points[i];
 						float px = point->x - gui->x_origin;

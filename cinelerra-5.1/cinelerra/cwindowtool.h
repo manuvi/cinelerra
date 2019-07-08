@@ -449,6 +449,118 @@ public:
 	CWindowMaskGUI *gui;
 };
 
+class CWindowMaskLoad : public BC_GenericButton
+{
+public:
+	CWindowMaskLoad(MWindow *mwindow, CWindowMaskGUI *gui,
+			int x, int y, int w);
+	int handle_event();
+
+	MWindow *mwindow;
+	CWindowMaskGUI *gui;
+};
+
+class CWindowMaskSave : public BC_GenericButton
+{
+public:
+	CWindowMaskSave(MWindow *mwindow, CWindowMaskGUI *gui,
+			int x, int y, int w);
+	~CWindowMaskSave();
+	int handle_event();
+
+	MWindow *mwindow;
+	CWindowMaskGUI *gui;
+	CWindowMaskPresetDialog *preset_dialog;
+};
+
+class CWindowMaskPresetDialog : public BC_DialogThread
+{
+public:
+	CWindowMaskPresetDialog(MWindow *mwindow, CWindowMaskGUI *gui);
+	~CWindowMaskPresetDialog();
+	void handle_close_event(int result);
+	void handle_done_event(int result);
+	BC_Window* new_gui();
+	void start_dialog(int sx, int sy, MaskAuto *keyframe);
+
+	MWindow *mwindow;
+	CWindowMaskGUI *gui;
+	CWindowMaskPresetGUI *pgui;
+	int sx, sy;
+	MaskAuto *keyframe;
+};
+
+class CWindowMaskPresetGUI : public BC_Window
+{
+public:
+	CWindowMaskPresetGUI(CWindowMaskPresetDialog *preset_dialog,
+			int x, int y, const char *title);
+	void create_objects();
+
+	CWindowMaskPresetDialog *preset_dialog;
+	CWindowMaskPresetText *preset_text;
+};
+
+class CWindowMaskPresetText : public BC_PopupTextBox
+{
+public:
+	CWindowMaskPresetText(CWindowMaskPresetGUI *pgui,
+		int x, int y, int w, int h, const char *text);
+	int handle_event();
+	void update_items();
+
+	CWindowMaskPresetGUI *pgui;
+	CWindowMaskItems mask_items;
+};
+
+class CWindowMaskDelete : public BC_GenericButton
+{
+public:
+	CWindowMaskDelete(MWindow *mwindow, CWindowMaskGUI *gui,
+			int x, int y, int w);
+	int handle_event();
+
+	MWindow *mwindow;
+	CWindowMaskGUI *gui;
+};
+
+class CWindowMaskCenter : public BC_GenericButton
+{
+public:
+	CWindowMaskCenter(MWindow *mwindow, CWindowMaskGUI *gui,
+			int x, int y, int w);
+	int handle_event();
+
+	MWindow *mwindow;
+	CWindowMaskGUI *gui;
+};
+
+class CWindowMaskNormal : public BC_GenericButton
+{
+public:
+	CWindowMaskNormal(MWindow *mwindow, CWindowMaskGUI *gui,
+			int x, int y, int w);
+	int handle_event();
+
+	MWindow *mwindow;
+	CWindowMaskGUI *gui;
+};
+
+class CWindowMaskShape : public BC_ListBox
+{
+public:
+	CWindowMaskShape(MWindow *mwindow, CWindowMaskGUI *gui);
+	~CWindowMaskShape();
+	void create_objects();
+	void builtin_shape(int i, SubMask *sub_mask);
+	void load_shape(int i, SubMask *sub_mask);
+	int handle_event();
+
+	MWindow *mwindow;
+	CWindowMaskGUI *gui;
+	CWindowMaskItems shape_items;
+};
+
 class CWindowDisableOpenGLMasking : public BC_CheckBox
 {
 public:
@@ -470,9 +582,15 @@ public:
 	void handle_event();
 	void set_focused(int v, float cx, float cy);
 	void update_buttons(MaskAuto *keyframe, int k);
-	int smooth_mask(int typ, int on);
 	void get_keyframe(Track* &track, MaskAutos* &autos, MaskAuto* &keyframe,
 		SubMask* &mask, MaskPoint* &point, int create_it);
+	void load_masks(ArrayList<SubMask *> &masks);
+	void save_masks(ArrayList<SubMask *> &masks);
+	int smooth_mask(int typ, int on);
+	int save_mask(const char *nm);
+	int del_mask(const char *nm);
+	int center_mask();
+	int normal_mask();
 
 	CWindowMaskOnTrack *mask_on_track;
 	CWindowMaskTrackTumbler *mask_track_tumbler;
@@ -482,9 +600,16 @@ public:
 	BC_Title *mask_blabels[SUBMASKS];
 	CWindowMaskEnable *mask_enables[SUBMASKS];
 	CWindowMaskSoloTrack *mask_solo_track;
-	CWindowMaskDelMask *del_mask;
-	CWindowMaskUnclear *unclr_mask;
-	CWindowMaskClrMask *clr_mask;
+	CWindowMaskDelMask *mask_del;
+	CWindowMaskUnclear *mask_unclr;
+	CWindowMaskClrMask *mask_clr;
+	CWindowMaskShape *mask_shape;
+	CWindowMaskSave *mask_save;
+	CWindowMaskLoad *mask_load;
+	CWindowMaskDelete *mask_delete;
+	CWindowMaskPresetDialog *preset_dialog;
+	CWindowMaskCenter *mask_center;
+	CWindowMaskNormal *mask_normal;
 	CWindowMaskFade *fade;
 	CWindowMaskFadeSlider *fade_slider;
 	CWindowMaskGangFader *gang_fader;

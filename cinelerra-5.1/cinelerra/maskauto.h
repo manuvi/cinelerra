@@ -54,7 +54,7 @@ public:
 
 	int operator==(SubMask& ptr);
 	int equivalent(SubMask& ptr);
-	void copy_from(SubMask& ptr);
+	void copy_from(SubMask& ptr, int do_name=1);
 	void load(FileXML *file);
 	void copy(FileXML *file);
 	void dump(FILE *fp);

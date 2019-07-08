@@ -96,10 +96,12 @@ int SubMask::operator==(SubMask& ptr)
 	return equivalent(ptr);
 }
 
-void SubMask::copy_from(SubMask& ptr)
+void SubMask::copy_from(SubMask& ptr, int do_name)
 {
-	memset(name, 0, sizeof(name));
-	strncpy(name, ptr.name, sizeof(name-1));
+	if( do_name ) {
+		memset(name, 0, sizeof(name));
+		strncpy(name, ptr.name, sizeof(name-1));
+	}
 	fader = ptr.fader;
 	feather = ptr.feather;
 	points.remove_all_objects();
@@ -140,7 +142,8 @@ void SubMask::copy(FileXML *file)
 	if(points.total)
 	{
 		file->tag.set_title("MASK");
-		file->tag.set_property("NUMBER", keyframe->masks.number_of(this));
+		file->tag.set_property("NUMBER",
+			!keyframe ? -1 : keyframe->masks.number_of(this));
 		file->tag.set_property("NAME", name);
 		file->tag.set_property("FADER", fader);
 		file->tag.set_property("FEATHER", feather);

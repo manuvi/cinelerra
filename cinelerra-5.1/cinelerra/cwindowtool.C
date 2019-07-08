@@ -33,6 +33,8 @@
 #include "cwindowtool.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "file.h"
+#include "filexml.h"
 #include "floatauto.h"
 #include "floatautos.h"
 #include "keys.h"
@@ -707,10 +709,10 @@ void CWindowCurveToggle::check_toggle_state(FloatAuto *x, FloatAuto *y, FloatAut
 // three automation lines have the same curve mode.
 // For mixed states the toggle stays off.
 	set_value( x->curve_mode == this->cfg.mode &&
-	           y->curve_mode == this->cfg.mode &&
-	           z->curve_mode == this->cfg.mode
-	         ,true // redraw to show new state
-	         );
+		   y->curve_mode == this->cfg.mode &&
+		   z->curve_mode == this->cfg.mode
+		   ,true // redraw to show new state
+		);
 }
 
 int CWindowCurveToggle::handle_event()
@@ -1636,7 +1638,7 @@ int CWindowMaskName::handle_event()
 				(MaskAuto*)autos->first : (MaskAuto*)NEXT;
 		}
 #endif
-	        gui->update();
+		gui->update();
 		gui->update_preview();
 	}
 	return 1;
@@ -1833,7 +1835,7 @@ int CWindowMaskDelMask::handle_event()
 #else
 		for(MaskAuto *current = (MaskAuto*)autos->default_auto; current; ) {
 			SubMask *submask = current->get_submask(mwindow->edl->session->cwindow_mask);
-			submask->points.clear();
+			submask->points.remove_all_objects();
 			current = current == (MaskAuto*)autos->default_auto ?
 				(MaskAuto*)autos->first : (MaskAuto*)NEXT;
 		}
@@ -1892,11 +1894,12 @@ int CWindowMaskDelPoint::handle_event()
 // Commit change to span of keyframes
 		((MaskAutos*)track->automation->autos[AUTOMATION_MASK])->update_parameter(&temp_keyframe);
 #else
+		total_points = 0;
 		MaskAuto *current = (MaskAuto*)autos->default_auto;
 		while( current ) {
 			SubMask *submask = current->get_submask(mwindow->edl->session->cwindow_mask);
 			int i = mwindow->cwindow->gui->affected_point;
-			for( ; i<submask->points.total-1; ++i ) {
+			for( ; i<submask->points.total-1; ++i )
 				*submask->points.values[i] = *submask->points.values[i+1];
 			if( submask->points.total > 0 ) {
 				point = submask->points.values[submask->points.total-1];
@@ -1913,7 +1916,7 @@ int CWindowMaskDelPoint::handle_event()
 
 		gui->update();
 		gui->update_preview();
-		mwindow->undo->update_undo_after(_("mask delete"), LOAD_AUTOMATION);
+		mwindow->undo->update_undo_after(_("point delete"), LOAD_AUTOMATION);
 	}
 
 	return 1;
@@ -2098,6 +2101,7 @@ int CWindowMaskFeather::update_value(float v)
 		int k = mwindow->edl->session->cwindow_mask;
 		int n = gang ? keyframe->masks.size() : k+1;
 		for( int i=gang? 0 : k; i<n; ++i ) {
+			if( !gui->mask_enables[i]->get_value() ) continue;
 			SubMask *sub_mask = keyframe->get_submask(i);
 			float feather = sub_mask->feather + change;
 			bclamp(feather, -FEATHER_MAX, FEATHER_MAX);
@@ -2212,6 +2216,7 @@ int CWindowMaskFade::update_value(float v)
 		int k = mwindow->edl->session->cwindow_mask;
 		int n = gang ? keyframe->masks.size() : k+1;
 		for( int i=gang? 0 : k; i<n; ++i ) {
+			if( !gui->mask_enables[i]->get_value() ) continue;
 			SubMask *sub_mask = keyframe->get_submask(i);
 			float fader = sub_mask->fader + change;
 			bclamp(fader, -100.f, 100.f);
@@ -2284,9 +2289,9 @@ CWindowMaskGangFader::CWindowMaskGangFader(MWindow *mwindow,
 		CWindowMaskGUI *gui, int x, int y)
  : BC_Toggle(x, y, mwindow->theme->get_image_set("gangpatch_data"), 0)
 {
-        this->mwindow = mwindow;
-        this->gui = gui;
-        set_tooltip(_("Gang fader"));
+	this->mwindow = mwindow;
+	this->gui = gui;
+	set_tooltip(_("Gang fader"));
 }
 
 CWindowMaskGangFader::~CWindowMaskGangFader()
@@ -2302,9 +2307,9 @@ CWindowMaskGangFocus::CWindowMaskGangFocus(MWindow *mwindow,
 		CWindowMaskGUI *gui, int x, int y)
  : BC_Toggle(x, y, mwindow->theme->get_image_set("gangpatch_data"), 0)
 {
-        this->mwindow = mwindow;
-        this->gui = gui;
-        set_tooltip(_("Gang rotate/scale/translate"));
+	this->mwindow = mwindow;
+	this->gui = gui;
+	set_tooltip(_("Gang rotate/scale/translate"));
 }
 
 CWindowMaskGangFocus::~CWindowMaskGangFocus()
@@ -2440,9 +2445,9 @@ CWindowMaskGangFeather::CWindowMaskGangFeather(MWindow *mwindow,
 		CWindowMaskGUI *gui, int x, int y)
  : BC_Toggle(x, y, mwindow->theme->get_image_set("gangpatch_data"), 0)
 {
-        this->mwindow = mwindow;
-        this->gui = gui;
-        set_tooltip(_("Gang feather"));
+	this->mwindow = mwindow;
+	this->gui = gui;
+	set_tooltip(_("Gang feather"));
 }
 
 CWindowMaskGangFeather::~CWindowMaskGangFeather()
@@ -2456,7 +2461,7 @@ int CWindowMaskGangFeather::handle_event()
 
 CWindowMaskGUI::CWindowMaskGUI(MWindow *mwindow, CWindowTool *thread)
  : CWindowToolGUI(mwindow, thread,
-	_(PROGRAM_NAME ": Mask"), 430, 680)
+	_(PROGRAM_NAME ": Mask"), 430, 700)
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
@@ -2466,6 +2471,7 @@ CWindowMaskGUI::CWindowMaskGUI(MWindow *mwindow, CWindowTool *thread)
 	focused = 0;
 	markers = 1;
 	boundary = 1;
+	preset_dialog = 0;
 }
 CWindowMaskGUI::~CWindowMaskGUI()
 {
@@ -2475,6 +2481,7 @@ CWindowMaskGUI::~CWindowMaskGUI()
 	delete fade;
 	delete feather;
 	unlock_window();
+	delete preset_dialog;
 }
 
 void CWindowMaskGUI::create_objects()
@@ -2510,9 +2517,21 @@ void CWindowMaskGUI::create_objects()
 	mask_name = new CWindowMaskName(mwindow, this, x1, y, "");
 	mask_name->create_objects();
 	mask_name->set_tooltip(_("Mask name"));
-	add_subwindow(clr_mask = new CWindowMaskClrMask(mwindow, this, clr_x, y));
-	add_subwindow(del_mask = new CWindowMaskDelMask(mwindow, this, del_x, y));
+	add_subwindow(mask_clr = new CWindowMaskClrMask(mwindow, this, clr_x, y));
+	add_subwindow(mask_del = new CWindowMaskDelMask(mwindow, this, del_x, y));
 	y += mask_name->get_h() + 2*margin;
+	add_subwindow(title = new BC_Title(x, y, _("Presets:")));
+	add_subwindow(mask_shape = new CWindowMaskShape(mwindow, this));
+	mask_shape->create_objects();
+	add_subwindow(mask_load = new CWindowMaskLoad(mwindow, this, x2=x1, y, 80));
+	x2 += mask_load->get_w() + 2*margin;
+	add_subwindow(mask_save = new CWindowMaskSave(mwindow, this, x2, y, 80));
+	x2 += mask_save->get_w() + 2*margin;
+	add_subwindow(mask_delete = new CWindowMaskDelete(mwindow, this, x2, y, 80));
+	y += mask_load->get_h() + 2*margin;
+	BC_Bar *bar;
+	add_subwindow(bar = new BC_Bar(x, y, get_w()-2*x));
+	y += bar->get_h() + 2*margin;
 
 	add_subwindow(title = new BC_Title(x, y, _("Select:")));
 	int bw = 0, bh = 0;
@@ -2535,7 +2554,7 @@ void CWindowMaskGUI::create_objects()
 		add_subwindow(mask_blabels[i]);
 	}
 	y += mask_blabels[0]->get_h() + margin;
-	add_subwindow(unclr_mask = new CWindowMaskUnclear(mwindow, this, x, y, x1-x-2*margin));
+	add_subwindow(mask_unclr = new CWindowMaskUnclear(mwindow, this, x, y, x1-x-2*margin));
 	x2 = x1;
 	for( int i=0; i<SUBMASKS; x2+=bdx, ++i ) {
 		mask_enables[i] = new CWindowMaskEnable(mwindow, this, x2, y, i, 1);
@@ -2571,7 +2590,7 @@ void CWindowMaskGUI::create_objects()
 	int x3  = x1 + active_point->get_w() + 4*margin;
 // typ=0, this mask, this point
 	add_subwindow(mask_pnt_linear = new CWindowMaskSmoothButton(mwindow, this,
-		_("sharp point"), 0, 0, x3, y, "mask_pnt_linear_images"));
+		_("linear point"), 0, 0, x3, y, "mask_pnt_linear_images"));
 	int x4  = x3 + mask_pnt_linear->get_w() + 2*margin;
 	add_subwindow(mask_pnt_smooth = new CWindowMaskSmoothButton(mwindow, this,
 		_("smooth point"), 0, 1, x4, y, "mask_pnt_smooth_images"));
@@ -2582,7 +2601,7 @@ void CWindowMaskGUI::create_objects()
 	this->x->create_objects();
 // typ>0, this mask, all points
 	add_subwindow(mask_crv_linear = new CWindowMaskSmoothButton(mwindow, this,
-		_("sharp curve"), 1, 0, x3, y, "mask_crv_linear_images"));
+		_("linear curve"), 1, 0, x3, y, "mask_crv_linear_images"));
 	add_subwindow(mask_crv_smooth = new CWindowMaskSmoothButton(mwindow, this,
 		_("smooth curve"), 1, 1, x4, y, "mask_crv_smooth_images"));
 	add_subwindow(draw_markers = new CWindowMaskDrawMarkers(mwindow, this, del_x, y));
@@ -2592,7 +2611,7 @@ void CWindowMaskGUI::create_objects()
 	this->y->create_objects();
 // typ<0, all masks, all points
 	add_subwindow(mask_all_linear = new CWindowMaskSmoothButton(mwindow, this,
-		_("sharp all"), -1, 0, x3, y, "mask_all_linear_images"));
+		_("linear all"), -1, 0, x3, y, "mask_all_linear_images"));
 	add_subwindow(mask_all_smooth = new CWindowMaskSmoothButton(mwindow, this,
 		_("smooth all"), -1, 1, x4, y, "mask_all_smooth_images"));
 	add_subwindow(draw_boundary = new CWindowMaskDrawBoundary(mwindow, this, del_x, y));
@@ -2611,8 +2630,10 @@ void CWindowMaskGUI::create_objects()
 	float cy = mwindow->edl->session->output_h / 2.f;
 	focus_y = new CWindowCoord(this, x1, y, cy);
 	focus_y->create_objects();
+	add_subwindow(mask_center = new CWindowMaskCenter(mwindow, this, x2=x4, y, 80));
+	x2 += mask_center->get_w() + 2*margin;
+	add_subwindow(mask_normal = new CWindowMaskNormal(mwindow, this, x2, y, 80));
 	y += focus_x->get_h() + 2*margin;
-	BC_Bar *bar;
 	add_subwindow(bar = new BC_Bar(x, y, get_w()-2*x));
 	y += bar->get_h() + margin;
 	add_subwindow(this->apply_before_plugins = new CWindowMaskBeforePlugins(this, 10, y));
@@ -2621,7 +2642,7 @@ void CWindowMaskGUI::create_objects()
 	add_subwindow(help = new CWindowMaskHelp(mwindow, this, del_x, y));
 	y += this->disable_opengl_masking->get_h() + 2*margin;
 	help_y = y;
-	add_subwindow(new BC_Bar(x, y, get_w()-2*x));
+	add_subwindow(bar = new BC_Bar(x, y, get_w()-2*x));
 	y += bar->get_h() + 2*margin;
 	add_subwindow(title = new BC_Title(x, y, _(
 		"Shift+LMB: move an end point\n"
@@ -2831,13 +2852,15 @@ int CWindowMaskGUI::smooth_mask(int typ, int on)
 		int k = mwindow->edl->session->cwindow_mask;
 		int n = typ>=0 ? k+1 : keyframe->masks.size();
 		for( int j=typ<0? 0 : k; j<n; ++j ) {
+			if( !mask_enables[j]->get_value() ) continue;
 			SubMask *sub_mask = keyframe->get_submask(j);
 			ArrayList<MaskPoint*> &points = sub_mask->points;
 			int psz = points.size();
 			if( psz < 3 ) continue;
 			int l = mwindow->cwindow->gui->affected_point;
+			if( l > psz ) l = psz;
 			int m = typ ? psz : l+1;
-			for( int i=typ<0? 0 : l; i<m; ++i ) {
+			for( int i=typ ? 0 : l; i<m; ++i ) {
 				int i0 = i-1, i1 = i+1;
 				if( i0 < 0 ) i0 = psz-1;
 				if( i1 >= psz ) i1 = 0;
@@ -2859,6 +2882,552 @@ int CWindowMaskGUI::smooth_mask(int typ, int on)
 	mwindow->undo->update_undo_after(_("mask smooth"), LOAD_AUTOMATION);
 	return 1;
 }
+
+int CWindowMaskGUI::save_mask(const char *nm)
+{
+	int k = mwindow->edl->session->cwindow_mask;
+	MaskAutos *autos;
+	MaskAuto *keyframe;
+	Track *track;
+	MaskPoint *point;
+	SubMask *mask;
+	get_keyframe(track, autos, keyframe, mask, point, 0);
+	if( !track ) return 0;
+	SubMask *sub_mask = keyframe->get_submask(k);
+	ArrayList<SubMask *> masks;
+	load_masks(masks);
+	int i = masks.size();
+	while( --i >= 0 ) {
+		if( strcmp(masks[i]->name, nm) ) continue;
+		masks.remove_object_number(i);
+	}
+	mask = new SubMask(0, -1);
+	strncpy(mask->name, nm, sizeof(mask->name)-1);
+	mask->copy_from(*sub_mask, 0);
+	masks.append(mask);
+	save_masks(masks);
+	masks.remove_all_objects();
+	return 1;
+}
+
+int CWindowMaskGUI::del_mask(const char *nm)
+{
+	ArrayList<SubMask *> masks;
+	load_masks(masks);
+	int i = masks.size();
+	while( --i >= 0 ) {
+		if( strcmp(masks[i]->name, nm) ) continue;
+		masks.remove_object_number(i);
+	}
+	save_masks(masks);
+	masks.remove_all_objects();
+	return 1;
+}
+
+int CWindowMaskGUI::center_mask()
+{
+	int k = mwindow->edl->session->cwindow_mask;
+	MaskAutos *autos;
+	MaskAuto *keyframe;
+	Track *track;
+	MaskPoint *point;
+	SubMask *mask;
+#ifdef USE_KEYFRAME_SPANNING
+	int create_it = 0;
+#else
+	int create_it = 1;
+#endif
+	get_keyframe(track, autos, keyframe,
+			mask, point, create_it);
+	if( !track ) return 0;
+	mwindow->undo->update_undo_before(_("mask center"), this);
+
+// Get existing keyframe
+#ifdef USE_KEYFRAME_SPANNING
+	MaskAuto temp_keyframe(mwindow->edl, autos);
+	temp_keyframe.copy_data(keyframe);
+	keyframe = &temp_keyframe;
+#endif
+	SubMask *sub_mask = keyframe->get_submask(k);
+	ArrayList<MaskPoint*> &points = sub_mask->points;
+	int psz = points.size();
+	if( psz > 0 ) {
+		float cx = 0, cy = 0;
+		for( int i=0; i<psz; ++i ) {
+			MaskPoint *p  = points[i];
+			cx += p->x;  cy += p->y;
+		}
+		cx /= psz;  cy /= psz;
+		cx -= mwindow->edl->session->output_w / 2.f;
+		cy -= mwindow->edl->session->output_h / 2.f;
+		for( int i=0; i<psz; ++i ) {
+			MaskPoint *p  = points[i];
+			p->x -= cx;  p->y -= cy;
+		}
+	}
+#ifdef USE_KEYFRAME_SPANNING
+	autos->update_parameter(keyframe);
+#endif
+	update_preview();
+	mwindow->undo->update_undo_after(_("mask center"), LOAD_AUTOMATION);
+	return 1;
+}
+
+int CWindowMaskGUI::normal_mask()
+{
+	int k = mwindow->edl->session->cwindow_mask;
+	MaskAutos *autos;
+	MaskAuto *keyframe;
+	Track *track;
+	MaskPoint *point;
+	SubMask *mask;
+#ifdef USE_KEYFRAME_SPANNING
+	int create_it = 0;
+#else
+	int create_it = 1;
+#endif
+// Get existing keyframe
+	get_keyframe(track, autos, keyframe,
+			mask, point, create_it);
+	if( !track ) return 0;
+	mwindow->undo->update_undo_before(_("mask normal"), this);
+
+#ifdef USE_KEYFRAME_SPANNING
+	MaskAuto temp_keyframe(mwindow->edl, autos);
+	temp_keyframe.copy_data(keyframe);
+	keyframe = &temp_keyframe;
+#endif
+	SubMask *sub_mask = keyframe->get_submask(k);
+	ArrayList<MaskPoint*> &points = sub_mask->points;
+	int psz = points.size();
+	float cx = 0, cy = 0;
+	double dr = 0;
+	if( psz > 0 ) {
+		for( int i=0; i<psz; ++i ) {
+			MaskPoint *p  = points[i];
+			cx += p->x;  cy += p->y;
+		}
+		cx /= psz;  cy /= psz;
+		for( int i=0; i<psz; ++i ) {
+			MaskPoint *p  = points[i];
+			float dx = fabsf(p->x-cx), dy = fabsf(p->y-cy);
+			double d = sqrt(dx*dx + dy*dy);
+			if( dr < d ) dr = d;
+		}
+	}
+	if( dr > 0 ) {
+		float out_w = mwindow->edl->session->output_w;
+		float out_h = mwindow->edl->session->output_h;
+		float r = bmax(out_w, out_h);
+		float s = r / (4 * dr * sqrt(2.));
+		for( int i=0; i<psz; ++i ) {
+			MaskPoint *p  = points[i];
+			float x = p->x, y = p->y;
+			p->x = (x-cx) * s + cx;
+			p->y = (y-cy) * s + cy;
+			p->control_x1 *= s;  p->control_y1 *= s;
+			p->control_x2 *= s;  p->control_y2 *= s;
+		}
+	}
+#ifdef USE_KEYFRAME_SPANNING
+	autos->update_parameter(keyframe);
+#endif
+	update_preview();
+
+	mwindow->undo->update_undo_after(_("mask normal"), LOAD_AUTOMATION);
+	return 1;
+}
+
+
+CWindowMaskLoad::CWindowMaskLoad(MWindow *mwindow,
+	CWindowMaskGUI *gui, int x, int y, int w)
+ : BC_GenericButton(x, y, w, _("Load"))
+{
+	this->mwindow = mwindow;
+	this->gui = gui;
+	set_tooltip(_("Load preset"));
+}
+
+int CWindowMaskLoad::handle_event()
+{
+	gui->mask_shape->create_objects();
+	int px, py;
+	get_abs_cursor(px, py);
+	return gui->mask_shape->activate(px, py, 120,160);
+}
+
+
+CWindowMaskSave::CWindowMaskSave(MWindow *mwindow,
+	CWindowMaskGUI *gui, int x, int y, int w)
+ : BC_GenericButton(x, y, w, _("Save"))
+{
+	this->mwindow = mwindow;
+	this->gui = gui;
+	set_tooltip(_("Save preset"));
+}
+
+CWindowMaskSave::~CWindowMaskSave()
+{
+}
+
+int CWindowMaskSave::handle_event()
+{
+	Track *track;
+	MaskAutos *autos;
+	MaskAuto *keyframe;
+	SubMask *mask;
+	MaskPoint *point;
+	gui->get_keyframe(track, autos, keyframe, mask, point, 0);
+	if( track ) {
+		int sx = 0, sy = 0;
+		gui->get_abs_cursor(sx, sy);
+		if( !gui->preset_dialog )
+			gui->preset_dialog = new CWindowMaskPresetDialog(mwindow, gui);
+		gui->preset_dialog->start_dialog(sx, sy, keyframe);
+	}
+	return 1;
+}
+
+CWindowMaskPresetDialog::CWindowMaskPresetDialog(MWindow *mwindow, CWindowMaskGUI *gui)
+ : BC_DialogThread()
+{
+	this->mwindow = mwindow;
+	this->gui = gui;
+	pgui = 0;
+}
+
+CWindowMaskPresetDialog::~CWindowMaskPresetDialog()
+{
+	close_window();
+}
+
+void CWindowMaskPresetDialog::handle_close_event(int result)
+{
+	pgui = 0;
+}
+
+void CWindowMaskPresetDialog::handle_done_event(int result)
+{
+	if( result ) return;
+	const char *nm = pgui->preset_text->get_text();
+	if( keyframe )
+		gui->save_mask(nm);
+	else
+		gui->del_mask(nm);
+}
+
+BC_Window* CWindowMaskPresetDialog::new_gui()
+{
+	pgui = new CWindowMaskPresetGUI(this, sx, sy,
+		keyframe ? _(PROGRAM_NAME ": Save Mask") :
+			   _(PROGRAM_NAME ": Delete Mask"));
+	pgui->create_objects();
+	return pgui;
+}
+
+void CWindowMaskPresetDialog::start_dialog(int sx, int sy, MaskAuto *keyframe)
+{
+	close_window();
+	this->sx = sx;  this->sy = sy;
+	this->keyframe = keyframe;
+	start();
+}
+
+CWindowMaskPresetGUI::CWindowMaskPresetGUI(CWindowMaskPresetDialog *preset_dialog,
+			int x, int y, const char *title)
+ : BC_Window(title, x, y, 320, 100, 320, 100, 0, 0, 1)
+{
+	this->preset_dialog = preset_dialog;
+}
+
+void CWindowMaskPresetGUI::create_objects()
+{
+	int x = 10, y = 10, pad = 8;
+	lock_window("CWindowMaskPresetGUI::create_objects");
+	BC_Title *title;
+	add_subwindow(title = new BC_Title(x, y,
+		preset_dialog->keyframe ? _("Save mask:") : _("Delete mask:")));
+	int x1 = x + title->get_w() + pad;
+	int x2 = get_w() - x - pad - x1 -
+		BC_WindowBase::get_resources()->listbox_button[0]->get_w();
+	CWindowMaskGUI *gui = preset_dialog->gui;
+	preset_text = new CWindowMaskPresetText(this,
+		x1, y, x2, 120, gui->mask_name->get_text());
+	preset_text->create_objects();
+	preset_text->set_tooltip(_("Mask name"));
+	preset_text->update_items();
+	add_subwindow(new BC_OKButton(this));
+	add_subwindow(new BC_CancelButton(this));
+	show_window();
+	raise_window();
+	unlock_window();
+}
+
+CWindowMaskPresetText::CWindowMaskPresetText(CWindowMaskPresetGUI *pgui,
+		int x, int y, int w, int h, const char *text)
+ : BC_PopupTextBox(pgui, 0, text, x, y, w, h)
+{
+	this->pgui = pgui;
+}
+
+int CWindowMaskPresetText::handle_event()
+{
+	int k = get_number();
+	if( k >= 0 && k<mask_items.size() )
+		update(mask_items[k]->get_text());
+	return 1;
+}
+
+void CWindowMaskPresetText::update_items()
+{
+	mask_items.remove_all_objects();
+	ArrayList<SubMask *> masks;
+	pgui->preset_dialog->gui->load_masks(masks);
+	for( int i=0; i<masks.size(); ++i ) {
+		char text[BCSTRLEN];  memset(text, 0, sizeof(text));
+		strncpy(text, masks[i]->name, sizeof(text-1));
+		mask_items.append(new CWindowMaskItem(text));
+	}
+	masks.remove_all_objects();
+	update_list(&mask_items);
+}
+
+
+CWindowMaskDelete::CWindowMaskDelete(MWindow *mwindow,
+	CWindowMaskGUI *gui, int x, int y, int w)
+ : BC_GenericButton(x, y, w, _("Del"))
+{
+	this->mwindow = mwindow;
+	this->gui = gui;
+	set_tooltip(_("delete preset"));
+}
+
+int CWindowMaskDelete::handle_event()
+{
+	int sx = 0, sy = 0;
+	gui->get_abs_cursor(sx, sy);
+	if( !gui->preset_dialog )
+		gui->preset_dialog = new CWindowMaskPresetDialog(mwindow, gui);
+	gui->preset_dialog->start_dialog(sx, sy, 0);
+	return 1;
+}
+
+
+CWindowMaskCenter::CWindowMaskCenter(MWindow *mwindow,
+	CWindowMaskGUI *gui, int x, int y, int w)
+ : BC_GenericButton(x, y, w, _("Center"))
+{
+	this->mwindow = mwindow;
+	this->gui = gui;
+	set_tooltip(_("center mask"));
+}
+
+int CWindowMaskCenter::handle_event()
+{
+	return gui->center_mask();
+}
+
+
+CWindowMaskNormal::CWindowMaskNormal(MWindow *mwindow,
+	CWindowMaskGUI *gui, int x, int y, int w)
+ : BC_GenericButton(x, y, w, _("Normal"))
+{
+	this->mwindow = mwindow;
+	this->gui = gui;
+	set_tooltip(_("normalize mask"));
+}
+
+int CWindowMaskNormal::handle_event()
+{
+	return gui->normal_mask();
+}
+
+
+CWindowMaskShape::CWindowMaskShape(MWindow *mwindow, CWindowMaskGUI *gui)
+ : BC_ListBox(-1, -1, 1, 1, LISTBOX_TEXT, 0, 0, 0, 1, 0, 1)
+{
+	this->mwindow = mwindow;
+	this->gui = gui;
+	set_use_button(0);
+}
+
+CWindowMaskShape::~CWindowMaskShape()
+{
+}
+
+void CWindowMaskShape::builtin_shape(int i, SubMask *sub_mask)
+{
+	int out_w = mwindow->edl->session->output_w;
+	int out_h = mwindow->edl->session->output_h;
+	float cx = out_w/2.f, cy = out_h/2.f;
+	float r = bmax(cx, cy) / 4.f;
+	double c = 4*(sqrt(2.)-1)/3; // bezier aprox circle
+	float r2 = r / 2.f, rc = r*c, r4 = r / 4.f;
+	MaskPoint *pt = 0;
+	ArrayList<MaskPoint*> &points = sub_mask->points;
+	points.remove_all_objects();
+	switch( i ) {
+	case 0: // square
+		points.append(pt = new MaskPoint());
+		pt->x = cx - r;  pt->y = cy - r;
+		points.append(pt = new MaskPoint());
+		pt->x = cx + r;  pt->y = cy - r;
+		points.append(pt = new MaskPoint());
+		pt->x = cx + r;  pt->y = cy + r;
+		points.append(pt = new MaskPoint());
+		pt->x = cx - r;  pt->y = cy + r;
+		break;
+	case 1: // circle
+		points.append(pt = new MaskPoint());
+		pt->x = cx - r;  pt->y = cy - r;
+		pt->control_x1 = -rc;  pt->control_y1 =  rc;
+		pt->control_x2 =  rc;  pt->control_y2 = -rc;
+		points.append(pt = new MaskPoint());
+		pt->x = cx + r;  pt->y = cy - r;
+		pt->control_x1 = -rc;  pt->control_y1 = -rc;
+		pt->control_x2 =  rc;  pt->control_y2 =  rc;
+		points.append(pt = new MaskPoint());
+		pt->x = cx + r;  pt->y = cy + r;
+		pt->control_x1 =  rc;  pt->control_y1 = -rc;
+		pt->control_x2 = -rc;  pt->control_y2 =  rc;
+		points.append(pt = new MaskPoint());
+		pt->x = cx - r;  pt->y = cy + r;
+		pt->control_x1 =  rc;  pt->control_y1 =  rc;
+		pt->control_x2 = -rc;  pt->control_y2 = -rc;
+		break;
+	case 2: // triangle
+		points.append(pt = new MaskPoint());
+		pt->x = cx + 0;  pt->y = cy - r*(sqrt(3.)-1.);
+		points.append(pt = new MaskPoint());
+		pt->x = cx + r;  pt->y = cy + r;
+		points.append(pt = new MaskPoint());
+		pt->x = cx - r;  pt->y = cy + r;
+		break;
+	case 3: // oval
+		points.append(pt = new MaskPoint());
+		pt->x = cx - r;  pt->y = cy - r2;
+		pt->control_x1 = -r2;  pt->control_y1 =  r4;
+		pt->control_x2 =  r2;  pt->control_y2 = -r4;
+		points.append(pt = new MaskPoint());
+		pt->x = cx + r;  pt->y = cy - r2;
+		pt->control_x1 = -r2;  pt->control_y1 = -r4;
+		pt->control_x2 =  r2;  pt->control_y2 =  r4;
+		points.append(pt = new MaskPoint());
+		pt->x = cx + r;  pt->y = cy + r2;
+		pt->control_x1 =  r2;  pt->control_y1 = -r4;
+		pt->control_x2 = -r2;  pt->control_y2 =  r4;
+		points.append(pt = new MaskPoint());
+		pt->x = cx - r;  pt->y = cy + r2;
+		pt->control_x1 =  r2;  pt->control_y1 =  r4;
+		pt->control_x2 = -r2;  pt->control_y2 = -r4;
+		break;
+	}
+}
+
+void CWindowMaskShape::load_shape(int i, SubMask *sub_mask)
+{
+	ArrayList<SubMask *> masks;
+	gui->load_masks(masks);
+	sub_mask->copy_from(*masks[i], 0);
+	masks.remove_all_objects();
+}
+
+int CWindowMaskShape::handle_event()
+{
+	MaskAutos *autos;
+	MaskAuto *keyframe;
+	Track *track;
+	MaskPoint *point;
+	SubMask *mask;
+#ifdef USE_KEYFRAME_SPANNING
+	int create_it = 0;
+#else
+	int create_it = 1;
+#endif
+
+	mwindow->undo->update_undo_before(_("mask shape"), this);
+
+// Get existing keyframe
+	gui->get_keyframe(track, autos, keyframe,
+			mask, point, create_it);
+	int k = get_selection_number(0, 0);
+	if( track && k >= 0 ) {
+#ifdef USE_KEYFRAME_SPANNING
+		MaskAuto temp_keyframe(mwindow->edl, autos);
+		temp_keyframe.copy_data(keyframe);
+		keyframe = &temp_keyframe;
+		mask = temp_keyframe.get_submask(mwindow->edl->session->cwindow_mask);
+#endif
+		if( mask ) {
+			if( k < 4 )
+				builtin_shape(k, mask);
+			else
+				load_shape(k-4, mask);
+#ifdef USE_KEYFRAME_SPANNING
+			autos->update_parameter(keyframe);
+#endif
+			gui->update();
+			gui->update_preview(1);
+		}
+	}
+	mwindow->undo->update_undo_after(_("mask shape"), LOAD_AUTOMATION);
+	return 1;
+}
+
+void CWindowMaskShape::create_objects()
+{
+	shape_items.remove_all_objects();
+	shape_items.append(new BC_ListBoxItem(_("square")));
+	shape_items.append(new BC_ListBoxItem(_("circle")));
+	shape_items.append(new BC_ListBoxItem(_("triangle")));
+	shape_items.append(new BC_ListBoxItem(_("oval")));
+	ArrayList<SubMask *> masks;
+	gui->load_masks(masks);
+	for( int i=0; i<masks.size(); ++i )
+		shape_items.append(new BC_ListBoxItem(masks[i]->name));
+	masks.remove_all_objects();
+	update(&shape_items, 0, 0, 1);
+}
+
+void CWindowMaskGUI::load_masks(ArrayList<SubMask *> &masks)
+{
+        char path[BCTEXTLEN];
+        sprintf(path, "%s/%s", File::get_config_path(), MASKS_FILE);
+        FileSystem fs;
+        fs.complete_path(path);
+	FileXML file;
+	file.read_from_file(path, 1);
+
+	masks.remove_all_objects();
+	int result;
+	while( !(result = file.read_tag()) ) {
+		if( file.tag.title_is("MASK") ) {
+			SubMask *sub_mask = new SubMask(0, -1);
+			char name[BCTEXTLEN];  name[0] = 0;
+			file.tag.get_property("NAME", name);
+			strncpy(sub_mask->name, name, sizeof(sub_mask->name));
+			sub_mask->load(&file);
+			masks.append(sub_mask);
+		}
+	}
+}
+
+void CWindowMaskGUI::save_masks(ArrayList<SubMask *> &masks)
+{
+	FileXML file;
+	for( int i=0; i<masks.size(); ++i ) {
+		SubMask *sub_mask = masks[i];
+		sub_mask->copy(&file);
+	}
+	file.terminate_string();
+
+        char path[BCTEXTLEN];
+        sprintf(path, "%s/%s", File::get_config_path(), MASKS_FILE);
+        FileSystem fs;
+        fs.complete_path(path);
+	file.write_to_file(path);
+}
+
 
 CWindowRulerGUI::CWindowRulerGUI(MWindow *mwindow, CWindowTool *thread)
  : CWindowToolGUI(mwindow, thread, _(PROGRAM_NAME ": Ruler"), 320, 240)

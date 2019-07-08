@@ -30,6 +30,7 @@
 #define PRESETS_FILE "Cinelerra_presets"
 #define EXPANDERS_FILE "expanders.txt"
 #define PERPETUAL_FILE "perpetual.dat"
+#define MASKS_FILE "masks_rc"
 // factory presets
 #define FACTORY_FILE "Cinelerra_factory"
 #define PICTURE_FILE "Cinelerra_picture"
