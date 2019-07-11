@@ -83,14 +83,13 @@ public:
 		MaskAutos *keyframe_set,
 		MaskAuto *keyframe,
 		MaskAuto *default_auto);
-	int points_equivalent(ArrayList<MaskPoint*> *new_points,
-		ArrayList<MaskPoint*> *points);
+	int points_equivalent(MaskPoints *new_points,
+		MaskPoints *points);
 
 	void delete_packages();
 	void init_packages();
 	LoadClient* new_client();
 	LoadPackage* new_package();
-	void draw_edge(MaskEdge &edge, MaskPointSet &points);
 
 	VFrame *output;
 	VFrame *mask, *temp;

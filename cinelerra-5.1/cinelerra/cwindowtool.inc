@@ -46,6 +46,7 @@ class CWindowMaskGangFocus;
 class CWindowMaskSmoothButton;
 class CWindowMaskAffectedPoint;
 class CWindowMaskFocus;
+class CWindowMaskScaleXY;
 class CWindowMaskHelp;
 class CWindowMaskDrawMarkers;
 class CWindowMaskDrawBoundary;

@@ -23,10 +23,16 @@
 #define MASKAUTO_INC
 
 
-
-class MaskAuto;
 class MaskPoint;
 class SubMask;
+class MaskAuto;
+class MaskCoord;
+class MaskEdge;
+class MaskSpot;
+class MaskSpots;
+class MaskEdges;
+class MaskPoints;
+class MaskPointSets;
 
 enum {  // no longer used, legacy value
 	MASK_MULTIPLY_ALPHA,
@@ -34,7 +40,5 @@ enum {  // no longer used, legacy value
 };
 
 #define SUBMASKS 8
-
-
 
 #endif

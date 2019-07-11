@@ -354,6 +354,20 @@ public:
 	int handle_event();
 	MWindow *mwindow;
 	CWindowMaskGUI *gui;
+	static int calculate_w(CWindowMaskGUI *gui);
+};
+
+class CWindowMaskScaleXY : public BC_Toggle
+{
+public:
+	CWindowMaskScaleXY(MWindow *mwindow, CWindowMaskGUI *gui,
+			int x, int y, VFrame **data, int v,
+			int id, const char *tip);
+	~CWindowMaskScaleXY();
+	int handle_event();
+	MWindow *mwindow;
+	CWindowMaskGUI *gui;
+	int id;
 };
 
 class CWindowMaskHelp : public BC_CheckBox
@@ -549,6 +563,9 @@ public:
 class CWindowMaskShape : public BC_ListBox
 {
 public:
+	enum { MASK_SHAPE_SQUARE, MASK_SHAPE_CIRCLE,
+		MASK_SHAPE_TRIANGLE, MASK_SHAPE_OVAL,
+		MASK_SHAPE_BUILTIN };
 	CWindowMaskShape(MWindow *mwindow, CWindowMaskGUI *gui);
 	~CWindowMaskShape();
 	void create_objects();
@@ -619,6 +636,8 @@ public:
 	CWindowMaskSmoothButton *mask_crv_linear, *mask_crv_smooth;
 	CWindowMaskSmoothButton *mask_all_linear, *mask_all_smooth;
 	CWindowCoord *x, *y;
+	CWindowMaskScaleXY *mask_scale_x, *mask_scale_y, *mask_scale_xy;
+	int scale_mode;
 	CWindowMaskFocus *focus;
 	int focused;
 	CWindowMaskGangFocus *gang_focus;

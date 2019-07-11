@@ -312,8 +312,8 @@ MaskEngine::~MaskEngine()
 	point_sets.remove_all_objects();
 }
 
-int MaskEngine::points_equivalent(ArrayList<MaskPoint*> *new_points,
-	ArrayList<MaskPoint*> *points)
+int MaskEngine::points_equivalent(MaskPoints *new_points,
+	MaskPoints *points)
 {
 //printf("MaskEngine::points_equivalent %d %d\n", new_points->total, points->total);
 	if( new_points->total != points->total ) return 0;
@@ -323,54 +323,6 @@ int MaskEngine::points_equivalent(ArrayList<MaskPoint*> *new_points,
 	}
 
 	return 1;
-}
-
-void MaskEngine::draw_edge(MaskEdge &edge, MaskPointSet &points)
-{
-	if( points.size() < 2 ) return;
-	edge.remove_all();
-	for( int i=0; i<points.size(); ++i ) {
-		MaskPoint *ap = points[i];
-		MaskPoint *bp = (i>=points.size()-1) ?
-				points[0] : points[i+1];
-		int segments = 0;
-		if( ap->control_x2 == 0 && ap->control_y2 == 0 &&
-		    bp->control_x1 == 0 && bp->control_y1 == 0 )
-			segments = 1;
-		float x0 = ap->x, y0 = ap->y;
-		float x1 = ap->x + ap->control_x2;
-		float y1 = ap->y + ap->control_y2;
-		float x2 = bp->x + bp->control_x1;
-		float y2 = bp->y + bp->control_y1;
-		float x3 = bp->x, y3 = bp->y;
-
-// from Playback3D::do_mask_sync
-		float cx3 = -  x0 + 3*x1 - 3*x2 + x3;
-		float cx2 =  3*x0 - 6*x1 + 3*x2;
-		float cx1 = -3*x0 + 3*x1;
-		float cx0 =    x0;
-
-		float cy3 = -  y0 + 3*y1 - 3*y2 + y3;
-		float cy2 =  3*y0 - 6*y1 + 3*y2;
-		float cy1 = -3*y0 + 3*y1;
-		float cy0 =    y0;
-
-		if( segments == 0 ) {
-			float maxaccel1 = fabs(2*cy2) + fabs(6*cy3);
-			float maxaccel2 = fabs(2*cx2) + fabs(6*cx3);
-			float maxaccel = maxaccel1 > maxaccel2 ? maxaccel1 : maxaccel2;
-			float h = 1.0;
-			if( maxaccel > 8.0 ) h = sqrt((8.0) / maxaccel);
-			segments = int(1/h);
-		}
-
-		for( int j = 0; j <= segments; ++j ) {
-			float t = (float)j / segments;
-			float x = cx0 + t*(cx1 + t*(cx2 + t*cx3));
-			float y = cy0 + t*(cy1 + t*(cy2 + t*cy3));
-			edge.append(x, y);
-		}
-	}
 }
 
 void MaskEngine::do_mask(VFrame *output,
@@ -426,17 +378,16 @@ SET_TRACE
 		if( new_fader != faders[i] ) { recalculate = 1;  break; }
 		float new_feather = keyframe_set->get_feather(start_position_project, i, PLAY_FORWARD);
 		if( new_feather != feathers[i] ) { recalculate = 1;  break; }
-		ArrayList<MaskPoint*> new_points;
+		MaskPoints new_points;
 		keyframe_set->get_points(&new_points, i,
 				start_position_project, PLAY_FORWARD);
 		if( !points_equivalent(&new_points, point_sets[i]) )
 			recalculate = 1;
-		new_points.remove_all_objects();
 	}
 
 	if( recalculate ) {
 		for( int i = 0; i < point_sets.total; i++ ) {
-			ArrayList<MaskPoint*> *points = point_sets[i];
+			MaskPoints *points = point_sets[i];
 			points->remove_all_objects();
 		}
 		point_sets.remove_all_objects();
@@ -458,12 +409,12 @@ SET_TRACE
 			fade[i+1] = t;
 			float feather = keyframe_set->get_feather(start_position_project, i, PLAY_FORWARD);
 			feathers.append(feather);
-			MaskPointSet *new_points = new MaskPointSet();
+			MaskPoints *new_points = new MaskPoints();
 			keyframe_set->get_points(new_points, i, start_position_project, PLAY_FORWARD);
 			point_sets.append(new_points);
 			MaskEdge *edge = edges.append(new MaskEdge());
 			if( !((show_mask>>i) & 1) ) continue;
-			draw_edge(*edge, *new_points);
+			edge->load(*new_points, 0);
 		}
 // draw mask
 		if( !mask ) mask = new VFrame(mask_w, mask_h, mask_model, 0);

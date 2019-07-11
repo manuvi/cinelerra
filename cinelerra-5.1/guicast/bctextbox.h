@@ -373,7 +373,7 @@ public:
 
 private:
 	int x, y, text_w, list_h;
-	int list_format;
+	int list_format, list_item;
 	const char *default_text;
 	const wchar_t *default_wtext;
 	ArrayList<BC_ListBoxItem*> *list_items;

@@ -125,7 +125,7 @@ ffmpeg.cfg_params= \
 	$(call if_pkg,libvpx,--enable-libvpx) \
 	$(call if_pkg,x264,--enable-libx264) \
 	$(call if_pkg,x265,--enable-libx265) \
-	--extra-cflags="\
+	--extra-cflags="-Wno-attributes \
 		$(if $(WANT_NV), $(inc_ffnvcodec)) \
 		$(call inc_path,twolame,libtwolame) \
 		$(call inc_path,lame,include) \

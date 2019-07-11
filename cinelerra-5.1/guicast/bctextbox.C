@@ -2487,6 +2487,7 @@ BC_PopupTextBoxText::~BC_PopupTextBoxText()
 
 int BC_PopupTextBoxText::handle_event()
 {
+	popup->list_item = -1;
 	popup->handle_event();
 	return 1;
 }
@@ -2500,10 +2501,10 @@ BC_PopupTextBoxList::BC_PopupTextBoxList(BC_PopupTextBox *popup, int x, int y)
 }
 int BC_PopupTextBoxList::handle_event()
 {
-	BC_ListBoxItem *item = get_selection(0, 0);
-	if(item)
-	{
-		popup->textbox->update(item->get_text());
+	int k = get_selection_number(0, 0);
+	popup->list_item = k;
+	if( k >= 0 && k < popup->list_items->size() ) {
+		popup->textbox->update(popup->list_items->get(k)->get_text());
 		popup->textbox->set_text_row(0);
 		popup->handle_event();
 	}
@@ -2558,6 +2559,7 @@ void BC_PopupTextBox::update(const char *text)
 
 void BC_PopupTextBox::update_list(ArrayList<BC_ListBoxItem*> *data)
 {
+	list_items = data;
 	listbox->update(data, 0, 0, 1);
 }
 
@@ -2568,7 +2570,7 @@ int BC_PopupTextBox::handle_event()
 
 const char *BC_PopupTextBox::get_text() { return textbox->get_text(); }
 const wchar_t *BC_PopupTextBox::get_wtext() { return textbox->get_wtext(); }
-int BC_PopupTextBox::get_number() { return listbox->get_selection_number(0, 0); }
+int BC_PopupTextBox::get_number() { return list_item; }
 int BC_PopupTextBox::get_x() { return x; }
 int BC_PopupTextBox::get_y() { return y; }
 int BC_PopupTextBox::get_w() { return textbox->get_w() + listbox->get_w(); }

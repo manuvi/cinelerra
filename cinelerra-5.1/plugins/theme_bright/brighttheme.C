@@ -877,6 +877,15 @@ void BrightTheme::initialize()
 	new_toggle("tan_smooth.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "tan_smooth");
 	new_toggle("tan_linear.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "tan_linear");
 
+	new_toggle("mask_scale_x.png",   "mask_scale_xup.png",    "mask_scale_xuphi.png",
+		"mask_scale_xchkd.png",  "mask_scale_xdown.png",  "mask_scale_xchkdhi.png",
+		"mask_scale_x");
+	new_toggle("mask_scale_y.png",   "mask_scale_yup.png",    "mask_scale_yuphi.png",
+		"mask_scale_ychkd.png",  "mask_scale_ydown.png",  "mask_scale_ychkdhi.png",
+		"mask_scale_y");
+	new_toggle("mask_scale_xy.png",  "mask_scale_xyup.png",   "mask_scale_xyuphi.png",
+		"mask_scale_xychkd.png", "mask_scale_xydown.png", "mask_scale_xychkdhi.png",
+		"mask_scale_xy");
 
 	flush_images();
 

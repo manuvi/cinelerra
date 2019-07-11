@@ -44,6 +44,42 @@ public:
 	float control_x2, control_y2;
 };
 
+class MaskCoord { public: double x, y, z; };
+
+class MaskEdge : public ArrayList<MaskCoord>
+{
+public:
+	MaskCoord &append() { return ArrayList<MaskCoord>::append(); }
+	MaskCoord &append(double x, double y, double z=0) {
+		MaskCoord &c = append();
+		c.x = x;  c.y = y;  c.z = z;
+		return c;
+	}
+	void load(MaskPoints &points, float ofs);
+};
+
+class MaskEdges : public ArrayList<MaskEdge*> {
+public:
+	MaskEdges() {}
+	~MaskEdges() { remove_all_objects(); }
+};
+
+class MaskPoints : public ArrayList<MaskPoint *>
+{
+public:
+	void clear() { remove_all_objects(); }
+	MaskPoints() {}
+	~MaskPoints() { clear(); }
+};
+
+class MaskPointSets : public ArrayList<MaskPoints*>
+{
+public:
+	void clear() { remove_all_objects(); }
+	MaskPointSets() {}
+	~MaskPointSets() { clear(); }
+};
+
 #define FEATHER_MAX 100
 
 class SubMask
@@ -62,7 +98,7 @@ public:
 	char name[BCSTRLEN];
 	float fader; // -100 - 100
 	float feather; // -100 - 100
-	ArrayList<MaskPoint*> points;
+	MaskPoints points;
 	MaskAuto *keyframe;
 };
 
@@ -83,9 +119,9 @@ public:
 	void copy_from(MaskAuto *src);
 // Copy data but not position
 	void copy_data(MaskAuto *src);
-	void get_points(ArrayList<MaskPoint*> *points,
+	void get_points(MaskPoints *points,
 		int submask);
-	void set_points(ArrayList<MaskPoint*> *points,
+	void set_points(MaskPoints *points,
 		int submask);
 
 // Copy parameters to this which differ between ref & src
@@ -105,19 +141,6 @@ public:
 	int disable_opengl_masking;
 };
 
-class MaskCoord { public: double x, y, z; };
-
-class MaskEdge : public ArrayList<MaskCoord>
-{
-public:
-	MaskCoord &append() { return ArrayList<MaskCoord>::append(); }
-	MaskCoord &append(double x, double y, double z=0) {
-		MaskCoord &c = append();
-		c.x = x;  c.y = y;  c.z = z;
-		return c;
-	}
-};
-
 // shader buffer unsized array vec only seems to work for dvec (05/2019)
 class MaskSpot { public: double x, y; };
 
@@ -130,27 +153,6 @@ public:
 		s.x = x;  s.y = y;
 		return s;
 	}
-};
-
-class MaskEdges : public ArrayList<MaskEdge*> {
-public:
-	MaskEdges() {}
-	~MaskEdges() { remove_all_objects(); }
-};
-
-class MaskPointSet : public ArrayList<MaskPoint*>
-{
-public:
-	void clear() { remove_all_objects(); }
-	MaskPointSet() {}
-	~MaskPointSet() { clear(); }
-};
-class MaskPointSets : public ArrayList<MaskPointSet*>
-{
-public:
-	void clear() { remove_all_objects(); }
-	MaskPointSets() {}
-	~MaskPointSets() { clear(); }
 };
 
 #endif

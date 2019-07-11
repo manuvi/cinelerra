@@ -607,7 +607,7 @@ int DeScratchModeItem::handle_event()
 }
 
 DeScratchMode::DeScratchMode(DeScratchWindow *win, int x, int y, int *value)
- : BC_PopupMenu(x, y, 64, "", 1)
+ : BC_PopupMenu(x, y, 100, "", 1)
 {
 	this->win = win;
 	this->value = value;

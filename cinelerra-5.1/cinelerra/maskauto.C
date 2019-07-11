@@ -318,7 +318,7 @@ SubMask* MaskAuto::get_submask(int number)
 	return masks.values[number];
 }
 
-void MaskAuto::get_points(ArrayList<MaskPoint*> *points,
+void MaskAuto::get_points(MaskPoints *points,
 	int submask)
 {
 	points->remove_all_objects();
@@ -331,7 +331,7 @@ void MaskAuto::get_points(ArrayList<MaskPoint*> *points,
 	}
 }
 
-void MaskAuto::set_points(ArrayList<MaskPoint*> *points,
+void MaskAuto::set_points(MaskPoints *points,
 	int submask)
 {
 	SubMask *submask_ptr = get_submask(submask);
@@ -451,5 +451,85 @@ int MaskAuto::has_active_mask()
 		if( fader < min_fader ) min_fader = fader;
 	}
 	return min_fader >= 0 && total_points < 2 ? 0 : 1;
+}
+
+static inline double line_dist(float cx,float cy, float tx,float ty)
+{
+	double dx = tx-cx, dy = ty-cy;
+	return sqrt(dx*dx + dy*dy);
+}
+
+void MaskEdge::load(MaskPoints &points, float ofs)
+{
+	remove_all();
+	int first_point = 1;
+// Need to tabulate every vertex in persistent memory because
+// gluTessVertex doesn't copy them.
+	for( int i=0; i<points.total; ++i ) {
+		MaskPoint *point1 = points.values[i];
+		MaskPoint *point2 = (i >= points.total-1) ?
+			points.values[0] : points.values[i+1];
+
+		int segments = 0;
+		if( !point1->control_x2 && !point1->control_y2 &&
+		    !point2->control_x1 && !point2->control_y1 )
+			segments = 1;
+
+		float x0 = point1->x, y0 = point1->y;
+		float x1 = point1->x + point1->control_x2;
+		float y1 = point1->y + point1->control_y2;
+		float x2 = point2->x + point2->control_x1;
+		float y2 = point2->y + point2->control_y1;
+		float x3 = point2->x, y3 = point2->y;
+
+		// forward differencing bezier curves implementation taken from GPL code at
+		// http://cvs.sourceforge.net/viewcvs.py/guliverkli/guliverkli/src/subtitles/Rasterizer.cpp?rev=1.3
+
+		float cx3, cx2, cx1, cx0;
+		float cy3, cy2, cy1, cy0;
+
+		// [-1 +3 -3 +1]
+		// [+3 -6 +3  0]
+		// [-3 +3  0  0]
+		// [+1  0  0  0]
+
+		cx3 = -  x0 + 3*x1 - 3*x2 + x3;
+		cx2 =  3*x0 - 6*x1 + 3*x2;
+		cx1 = -3*x0 + 3*x1;
+		cx0 =    x0;
+
+		cy3 = -  y0 + 3*y1 - 3*y2 + y3;
+		cy2 =  3*y0 - 6*y1 + 3*y2;
+		cy1 = -3*y0 + 3*y1;
+		cy0 =    y0;
+
+		// This equation is from Graphics Gems I.
+		//
+		// The idea is that since we're approximating a cubic curve with lines,
+		// any error we incur is due to the curvature of the line, which we can
+		// estimate by calculating the maximum acceleration of the curve.  For
+		// a cubic, the acceleration (second derivative) is a line, meaning that
+		// the absolute maximum acceleration must occur at either the beginning
+		// (|c2|) or the end (|c2+c3|).  Our bounds here are a little more
+		// conservative than that, but that's okay.
+		if( !segments ) {
+			float maxaccel1 = fabs(2*cy2) + fabs(6*cy3);
+			float maxaccel2 = fabs(2*cx2) + fabs(6*cx3);
+			float maxaccel = maxaccel1 > maxaccel2 ? maxaccel1 : maxaccel2;
+			segments =  maxaccel > 1.0 ? sqrt(maxaccel) :
+				1 + line_dist(point1->x,point1->y, point2->x,point2->y);
+		}
+
+		for( int j=0; j<=segments; ++j ) {
+			float t = (float)j / segments;
+			float x = cx0 + t*(cx1 + t*(cx2 + t*cx3));
+			float y = cy0 + t*(cy1 + t*(cy2 + t*cy3));
+
+			if( j > 0 || first_point ) {
+				append(x, y-ofs);
+				first_point = 0;
+			}
+		}
+	}
 }
 

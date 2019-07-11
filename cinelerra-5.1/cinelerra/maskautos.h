@@ -52,7 +52,7 @@ public:
 
 	int mask_exists(int64_t position, int direction);
 // Perform interpolation
-	void get_points(ArrayList<MaskPoint*> *points, int submask, int64_t position, int direction);
+	void get_points(MaskPoints *points, int submask, int64_t position, int direction);
 	double get_feather(int64_t position, int i, int direction);
 	double get_fader(int64_t position, int i, int direction);
 	int total_submasks(int64_t position, int direction);

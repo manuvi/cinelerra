@@ -88,7 +88,7 @@ void MaskAutos::update_parameter(MaskAuto *src)
 
 
 
-void MaskAutos::get_points(ArrayList<MaskPoint*> *points,
+void MaskAutos::get_points(MaskPoints *points,
 	int submask,
 	int64_t position,
 	int direction)
