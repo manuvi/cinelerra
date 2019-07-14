@@ -100,6 +100,7 @@ Preferences::Preferences()
 	yuv_color_range = BC_COLORS_JPEG;
 	autocolor_assets = 0;
 	ctrl_toggle = 0;
+	rectify_audio = 0;
 
 // Default brender asset
 	brender_asset = new Asset;
@@ -220,6 +221,7 @@ void Preferences::copy_from(Preferences *that)
 	yuv_color_range = that->yuv_color_range;
 	autocolor_assets = that->autocolor_assets;
 	ctrl_toggle = that->ctrl_toggle;
+	rectify_audio = that->rectify_audio;
 	renderfarm_nodes.remove_all_objects();
 	renderfarm_ports.remove_all();
 	renderfarm_enabled.remove_all();
@@ -363,6 +365,7 @@ int Preferences::load_defaults(BC_Hash *defaults)
 	yuv_color_range = defaults->get("YUV_COLOR_RANGE", yuv_color_range);
 	autocolor_assets = defaults->get("AUTOCOLOR_ASSETS", autocolor_assets);
 	ctrl_toggle = defaults->get("CTRL_TOGGLE", ctrl_toggle);
+	rectify_audio = defaults->get("RECTIFY_AUDIO", rectify_audio);
 	use_brender = defaults->get("USE_BRENDER", use_brender);
 	brender_fragment = defaults->get("BRENDER_FRAGMENT", brender_fragment);
 	cache_size = defaults->get("CACHE_SIZE", cache_size);
@@ -505,6 +508,7 @@ int Preferences::save_defaults(BC_Hash *defaults)
 	defaults->update("YUV_COLOR_RANGE", yuv_color_range);
 	defaults->update("AUTOCOLOR_ASSETS", autocolor_assets);
 	defaults->update("CTRL_TOGGLE", ctrl_toggle);
+	defaults->update("RECTIFY_AUDIO", rectify_audio);
 	brender_asset->save_defaults(defaults, "BRENDER_", 1, 1, 1, 0, 0);
 	defaults->update("USE_BRENDER", use_brender);
 	defaults->update("BRENDER_FRAGMENT", brender_fragment);

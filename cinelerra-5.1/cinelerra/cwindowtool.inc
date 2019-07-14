@@ -55,6 +55,7 @@ class CWindowMaskFeather;
 class CWindowMaskFeatherSlider;
 class CWindowMaskGangFeather;
 class CWindowMaskBeforePlugins;
+class CWindowMaskLoadList;
 class CWindowMaskLoad;
 class CWindowMaskSave;
 class CWindowMaskPresetDialog;

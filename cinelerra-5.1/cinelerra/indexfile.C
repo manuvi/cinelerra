@@ -689,7 +689,10 @@ SET_TRACE
 // Start and length of fragment to read from file in bytes.
 	float *buffer = 0;
 	int buffer_shared = 0;
-	int center_pixel = mwindow->edl->local_session->zoom_track / 2;
+	int rect_audio = mwindow->preferences->rectify_audio;;
+	int center_pixel = !rect_audio ?
+		mwindow->edl->local_session->zoom_track / 2 :
+		mwindow->edl->local_session->zoom_track;
 	if( edit->track->show_titles() )
 		center_pixel += mwindow->theme->get_image("title_bg_data")->get_h();
 
@@ -726,8 +729,10 @@ SET_TRACE
 	int prev_y1 = center_pixel;
 	int prev_y2 = center_pixel;
 	int first_frame = 1;
-	int zoom_y = mwindow->edl->local_session->zoom_y, zoom_y2 = zoom_y / 2;
-	int max_y = center_pixel + zoom_y2 - 1;
+	int zoom_y = !rect_audio ?
+		mwindow->edl->local_session->zoom_y / 2 :
+		mwindow->edl->local_session->zoom_y;
+	int max_y = center_pixel + zoom_y - 1;
 	edit_position = (x + pixmap->pixmap_x - virtual_edit_x) * project_zoom;
 	int64_t speed_position = edit->startsource;
 	speed_position += !speed_autos ? edit_position :
@@ -739,8 +744,8 @@ SET_TRACE
 SET_TRACE
 
 	for( int64_t x1=0; x1<w && i < length_index; ++x1 ) {
-		float highsample = buffer[i];  ++i;
-		float lowsample = buffer[i];   ++i;
+		float highsample = !rect_audio ? buffer[i] : fabsf(buffer[i]);  ++i;
+		float lowsample  = !rect_audio ? buffer[i] : fabsf(buffer[i]);  ++i;
 		int x2 = x1 + x + 1;
 		edit_position = (x2 + pixmap->pixmap_x - virtual_edit_x) * project_zoom;
 		int64_t speed_position = edit->startsource;
@@ -751,12 +756,14 @@ SET_TRACE
 		int64_t k = 2 * index_position - start_index;
 		CLAMP(k, 0, length_index);
 		while( i < k ) {
-			highsample = MAX(highsample, buffer[i]); ++i;
-			lowsample = MIN(lowsample, buffer[i]);   ++i;
+			float high = !rect_audio ? buffer[i] : fabsf(buffer[i]);
+			highsample = MAX(highsample, high); ++i;
+			float low  = !rect_audio ? buffer[i] : fabsf(buffer[i]);
+			lowsample = MIN(lowsample, low);   ++i;
 		}
 
-		int y1 = (int)(center_pixel - highsample * zoom_y2);
-		int y2 = (int)(center_pixel - lowsample * zoom_y2);
+		int y1 = (int)(center_pixel - highsample * zoom_y);
+		int y2 = (int)(center_pixel - lowsample * zoom_y);
 		CLAMP(y1, 0, max_y);  int next_y1 = y1;
 		CLAMP(y2, 0, max_y);  int next_y2 = y2;
 //printf("draw_line (%f,%f) = %d,%d,  %d,%d\n", lowsample, highsample, x2, y1, x2, y2);

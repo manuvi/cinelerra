@@ -215,9 +215,9 @@ void InterfacePrefs::create_objects()
 		_("Index Path"), _("Select the directory for index files"), 1));
 
 	y += 30;
-	add_subwindow(new BC_Title(x, y + 5, _("Size of index file:"),
+	add_subwindow(new BC_Title(x, y + 5, _("Size of index file in KB:"),
 		MEDIUMFONT, resources->text_default));
-	sprintf(string, "%jd", pwindow->thread->preferences->index_size);
+	sprintf(string, "%jd", pwindow->thread->preferences->index_size/1024);
 	add_subwindow(isize = new IndexSize(x + 230, y, pwindow, string));
 	add_subwindow(new ScanCommercials(pwindow, 400,y));
 
@@ -274,8 +274,8 @@ int IndexSize::handle_event()
 {
 	long result;
 
-	result = atol(get_text());
-	if(result < 64000) result = 64000;
+	result = atol(get_text()) * 1024;
+	if( result < 65536 ) result = 65536;
 	//if(result < 500000) result = 500000;
 	pwindow->thread->preferences->index_size = result;
 	return 0;

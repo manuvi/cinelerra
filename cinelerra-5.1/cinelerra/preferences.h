@@ -137,6 +137,8 @@ public:
 	int autocolor_assets;
 // ctrl_toggle && !ctrl_down() clears selection before toggle
 	int ctrl_toggle;
+// rectify timeline audio waveform
+	int rectify_audio;
 // Default positions for channels
 	int channel_positions[MAXCHANNELS][MAXCHANNELS];
 

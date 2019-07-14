@@ -74,7 +74,7 @@ case "$dir" in
 #debian 32bit: export ac_cv_header_xmmintrin_h=no
 "debian")
   apt-get -f -y install apt-file sox nasm yasm g++ build-essential zlib1g-dev \
-    texinfo libpng12-dev freeglut3-dev libxv-dev libasound2-dev libbz2-dev \
+    texinfo libpng-dev freeglut3-dev libxv-dev libasound2-dev libbz2-dev \
     libncurses5-dev libxinerama-dev libfreetype6-dev libxft-dev libgif-dev \
     libtiff5-dev exuberant-ctags ttf-bitstream-vera xfonts-75dpi xfonts-100dpi \
     fonts-dejavu libopenexr-dev festival libfftw3-dev gdb libusb-1.0-0-dev \

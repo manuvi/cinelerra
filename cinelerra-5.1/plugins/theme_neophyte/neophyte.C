@@ -406,28 +406,59 @@ void NEOPHYTETHEME::initialize()
 		"mask_button_dn.png",
 		"mask_all_smooth_images");
 
+	new_button("mask_prst_sqr.png",
+		"mask_button_up.png",
+		"mask_button_hi.png",
+		"mask_button_dn.png",
+		"mask_prst_sqr_images");
+	new_button("mask_prst_crc.png",
+		"mask_button_up.png",
+		"mask_button_hi.png",
+		"mask_button_dn.png",
+		"mask_prst_crc_images");
+	new_button("mask_prst_tri.png",
+		"mask_button_up.png",
+		"mask_button_hi.png",
+		"mask_button_dn.png",
+		"mask_prst_tri_images");
+	new_button("mask_prst_ovl.png",
+		"mask_button_up.png",
+		"mask_button_hi.png",
+		"mask_button_dn.png",
+		"mask_prst_ovl_images");
+
+	new_button("mask_prst_load.png",
+		"mask_button_up.png",
+		"mask_button_hi.png",
+		"mask_button_dn.png",
+		"mask_prst_load_images");
+	new_button("mask_prst_save.png",
+		"mask_button_up.png",
+		"mask_button_hi.png",
+		"mask_button_dn.png",
+		"mask_prst_save_images");
+	new_button("mask_prst_trsh.png",
+		"mask_button_up.png",
+		"mask_button_hi.png",
+		"mask_button_dn.png",
+		"mask_prst_trsh_images");
+
+	new_button("mask_pstn_cen.png",
+		"mask_button_up.png",
+		"mask_button_hi.png",
+		"mask_button_dn.png",
+		"mask_pstn_cen_images");
+	new_button("mask_pstn_nrm.png",
+		"mask_button_up.png",
+		"mask_button_hi.png",
+		"mask_button_dn.png",
+		"mask_pstn_nrm_images");
+
 	// Clock - is not used (AFAIK). See also clock color.
 	// resources->medium_7segment = new_image_set(TOTAL_7SEGMENT,
-	// 	"0.png",
-	// 	"1.png",
-	// 	"2.png",
-	// 	"3.png",
-	// 	"4.png",
-	// 	"5.png",
-	// 	"6.png",
-	// 	"7.png",
-	// 	"8.png",
-	// 	"9.png",
-	// 	"colon.png",
-	// 	"period.png",
-	// 	"a.png",
-	// 	"b.png",
-	// 	"c.png",
-	// 	"d.png",
-	// 	"e.png",
-	// 	"f.png",
-	// 	"space.png",
-	// 	"dash.png");
+	// 	"0.png", "1.png", "2.png", "3.png", "4.png", "5.png", "6.png", "7.png",
+	// 	"8.png", "9.png", "colon.png", "period.png", "a.png", "b.png", "c.png",
+	// 	"d.png", "e.png", "f.png", "space.png", "dash.png");
 
 	resources->bar_data = new_image("bar", "bar.png");
 	resources->check = new_image("check", "check.png");
@@ -1112,14 +1143,14 @@ void NEOPHYTETHEME::initialize()
 			   editpanel_dn, editpanel_checkedhi,
 			   "tan_linear");
 
-	new_toggle("mask_scale_x.png",   "mask_scale_xup.png",    "mask_scale_xuphi.png",
-		"mask_scale_xchkd.png",  "mask_scale_xdown.png",  "mask_scale_xchkdhi.png",
+	new_toggle("mask_scale_x.png",   "mask_scale_up.png",    "mask_scale_uphi.png",
+		"mask_scale_chkd.png",  "mask_scale_xdown.png",  "mask_scale_chkdhi.png",
 		"mask_scale_x");
-	new_toggle("mask_scale_y.png",   "mask_scale_yup.png",    "mask_scale_yuphi.png",
-		"mask_scale_ychkd.png",  "mask_scale_ydown.png",  "mask_scale_ychkdhi.png",
+	new_toggle("mask_scale_y.png",   "mask_scale_up.png",    "mask_scale_uphi.png",
+		"mask_scale_chkd.png",  "mask_scale_ydown.png",  "mask_scale_chkdhi.png",
 		"mask_scale_y");
-	new_toggle("mask_scale_xy.png",  "mask_scale_xyup.png",   "mask_scale_xyuphi.png",
-		"mask_scale_xychkd.png", "mask_scale_xydown.png", "mask_scale_xychkdhi.png",
+	new_toggle("mask_scale_xy.png",  "mask_scale_up.png",   "mask_scale_uphi.png",
+		"mask_scale_chkd.png", "mask_scale_xydown.png", "mask_scale_chkdhi.png",
 		"mask_scale_xy");
 
 	flush_images();

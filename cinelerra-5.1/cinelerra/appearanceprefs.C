@@ -219,6 +219,9 @@ void AppearancePrefs::create_objects()
 	CtrlToggle *ctrl_toggle = new CtrlToggle(x1, y1, pwindow);
 	add_subwindow(ctrl_toggle);
 	y1 += ctrl_toggle->get_h() + 5;
+	RectifyAudioToggle *rect_toggle = new RectifyAudioToggle(x1, y1, pwindow);
+	add_subwindow(rect_toggle);
+	y1 += rect_toggle->get_h() + 5;
 	if( y < y1 ) y = y1;
 }
 
@@ -774,6 +777,19 @@ CtrlToggle::CtrlToggle(int x, int y, PreferencesWindow *pwindow)
 int CtrlToggle::handle_event()
 {
 	pwindow->thread->preferences->ctrl_toggle = get_value();
+	return 1;
+}
+
+RectifyAudioToggle::RectifyAudioToggle(int x, int y, PreferencesWindow *pwindow)
+ : BC_CheckBox(x, y,
+	pwindow->thread->preferences->rectify_audio, _("Timeline Rectify Audio"))
+{
+	this->pwindow = pwindow;
+}
+
+int RectifyAudioToggle::handle_event()
+{
+	pwindow->thread->preferences->rectify_audio = get_value();
 	return 1;
 }
 

@@ -385,10 +385,15 @@ void ResourcePixmap::draw_audio_source(TrackCanvas *canvas, Edit *edit, int x, i
 {
 	w++;
 	Indexable *indexable = edit->get_source();
-	int center_pixel = mwindow->edl->local_session->zoom_track / 2;
+	int rect_audio = mwindow->preferences->rectify_audio;
+	int center_pixel = !rect_audio ?
+		mwindow->edl->local_session->zoom_track / 2 :
+		mwindow->edl->local_session->zoom_track ;
 	if( edit->track->show_titles() )
 		center_pixel += mwindow->theme->get_image("title_bg_data")->get_h();
-	int64_t scale_y = mwindow->edl->local_session->zoom_y;
+	int64_t scale_y = !rect_audio ?
+		mwindow->edl->local_session->zoom_y :
+		mwindow->edl->local_session->zoom_y * 2;
 	int y_max = center_pixel + scale_y / 2 - 1;
 
 	double project_zoom = mwindow->edl->local_session->zoom_sample;
@@ -469,7 +474,8 @@ void ResourcePixmap::draw_audio_source(TrackCanvas *canvas, Edit *edit, int x, i
 
 		if( !result ) {
 			double *samples = buffer->get_data();
-			int y1 = center_pixel - samples[0] * scale_y / 2;
+			double sample = !rect_audio ? samples[0] : fabs(samples[0]);
+			int y1 = center_pixel - sample * scale_y / 2;
 			int y2 = CLIP(y1, 0, y_max);
 
 			for( int x0=0; x0<w; ++x0 ) {
@@ -482,7 +488,8 @@ void ResourcePixmap::draw_audio_source(TrackCanvas *canvas, Edit *edit, int x, i
 				int j = speed_position * asset_over_session - start_position;
 				CLAMP(j, 0, sample_size);
 				int y0 = y2;
-				y1 = center_pixel - samples[j] * scale_y / 2;
+				sample = !rect_audio ? samples[j] : fabs(samples[j]);
+				y1 = center_pixel - sample * scale_y / 2;
 				y2 = CLIP(y1, 0, y_max);
 //printf("ResourcePixmap::draw_audio_source %d %d %d\n", __LINE__, y1, y2);
 				canvas->draw_line(x0, y0, x2, y2, this);
@@ -517,10 +524,12 @@ void ResourcePixmap::draw_audio_source(TrackCanvas *canvas, Edit *edit, int x, i
 			WaveCacheItem *item = mwindow->wave_cache->get_wave(indexable->id,
 					edit->channel, prev_position, next_position);
 			if( item ) {
+				double item_low = !rect_audio ? item->low : fabs(item->low);
 //printf("ResourcePixmap::draw_audio_source %d\n", __LINE__);
-				int y_lo = (int)(center_pixel - item->low * scale_y / 2);
+				int y_lo = (int)(center_pixel - item_low * scale_y / 2);
 				int y1 = CLIP(y_lo, 0, y_max);
-				int y_hi = (int)(center_pixel - item->high * scale_y / 2);
+				double item_high = !rect_audio ? item->high : fabs(item->high);
+				int y_hi = (int)(center_pixel - item_high * scale_y / 2);
 				int y2 = CLIP(y_hi, 0, y_max);
 				if( !first_pixel ) {
 					y_lo = MIN(y1,prev_y2);
@@ -551,15 +560,19 @@ void ResourcePixmap::draw_audio_source(TrackCanvas *canvas, Edit *edit, int x, i
 void ResourcePixmap::draw_wave(TrackCanvas *canvas,
 	int x, double high, double low)
 {
-	int top_pixel = 0;
-	if( mwindow->edl->session->show_titles )
-		top_pixel += mwindow->theme->get_image("title_bg_data")->get_h();
-	int center_pixel = mwindow->edl->local_session->zoom_track / 2 + top_pixel;
+	int rect_audio = mwindow->preferences->rectify_audio;
+	if( rect_audio ) { low = fabs(low);  high = fabs(high); }
+	int top_pixel =  mwindow->edl->session->show_titles ? 0 :
+		mwindow->theme->get_image("title_bg_data")->get_h();
+	int center_pixel = !rect_audio ?
+		mwindow->edl->local_session->zoom_track / 2 + top_pixel :
+		mwindow->edl->local_session->zoom_track + top_pixel ;
+	int scale_y = !rect_audio ?
+		mwindow->edl->local_session->zoom_y / 2 :
+		mwindow->edl->local_session->zoom_y ;
 	int bottom_pixel = top_pixel + mwindow->edl->local_session->zoom_track;
-	int y1 = (int)(center_pixel -
-		low * mwindow->edl->local_session->zoom_y / 2);
-	int y2 = (int)(center_pixel -
-		high * mwindow->edl->local_session->zoom_y / 2);
+	int y1 = (int)(center_pixel - low * scale_y);
+	int y2 = (int)(center_pixel - high * scale_y);
 	CLAMP(y1, top_pixel, bottom_pixel);
 	CLAMP(y2, top_pixel, bottom_pixel);
 	canvas->set_color(mwindow->theme->audio_color);

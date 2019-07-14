@@ -31,6 +31,12 @@
 #include "maskautos.inc"
 #include "mwindow.inc"
 
+enum {
+	MASK_SHAPE_SQUARE,
+	MASK_SHAPE_CIRCLE,
+	MASK_SHAPE_TRIANGLE,
+	MASK_SHAPE_OVAL,
+};
 
 // This common thread supports all the tool GUI's.
 class CWindowTool : public Thread
@@ -463,7 +469,20 @@ public:
 	CWindowMaskGUI *gui;
 };
 
-class CWindowMaskLoad : public BC_GenericButton
+class CWindowMaskLoadList : public BC_ListBox
+{
+public:
+	CWindowMaskLoadList(MWindow *mwindow, CWindowMaskGUI *gui);
+	~CWindowMaskLoadList();
+	void create_objects();
+	int handle_event();
+
+	MWindow *mwindow;
+	CWindowMaskGUI *gui;
+	CWindowMaskItems shape_items;
+};
+
+class CWindowMaskLoad : public BC_Button
 {
 public:
 	CWindowMaskLoad(MWindow *mwindow, CWindowMaskGUI *gui,
@@ -474,7 +493,7 @@ public:
 	CWindowMaskGUI *gui;
 };
 
-class CWindowMaskSave : public BC_GenericButton
+class CWindowMaskSave : public BC_Button
 {
 public:
 	CWindowMaskSave(MWindow *mwindow, CWindowMaskGUI *gui,
@@ -527,7 +546,7 @@ public:
 	CWindowMaskItems mask_items;
 };
 
-class CWindowMaskDelete : public BC_GenericButton
+class CWindowMaskDelete : public BC_Button
 {
 public:
 	CWindowMaskDelete(MWindow *mwindow, CWindowMaskGUI *gui,
@@ -538,7 +557,7 @@ public:
 	CWindowMaskGUI *gui;
 };
 
-class CWindowMaskCenter : public BC_GenericButton
+class CWindowMaskCenter : public BC_Button
 {
 public:
 	CWindowMaskCenter(MWindow *mwindow, CWindowMaskGUI *gui,
@@ -549,7 +568,7 @@ public:
 	CWindowMaskGUI *gui;
 };
 
-class CWindowMaskNormal : public BC_GenericButton
+class CWindowMaskNormal : public BC_Button
 {
 public:
 	CWindowMaskNormal(MWindow *mwindow, CWindowMaskGUI *gui,
@@ -560,21 +579,18 @@ public:
 	CWindowMaskGUI *gui;
 };
 
-class CWindowMaskShape : public BC_ListBox
+class CWindowMaskShape : public BC_Button
 {
 public:
-	enum { MASK_SHAPE_SQUARE, MASK_SHAPE_CIRCLE,
-		MASK_SHAPE_TRIANGLE, MASK_SHAPE_OVAL,
-		MASK_SHAPE_BUILTIN };
-	CWindowMaskShape(MWindow *mwindow, CWindowMaskGUI *gui);
+	CWindowMaskShape(MWindow *mwindow, CWindowMaskGUI *gui,
+		const char *images, int shape, int x, int y, const char *tip);
 	~CWindowMaskShape();
-	void create_objects();
 	void builtin_shape(int i, SubMask *sub_mask);
-	void load_shape(int i, SubMask *sub_mask);
 	int handle_event();
 
 	MWindow *mwindow;
 	CWindowMaskGUI *gui;
+	int shape;
 	CWindowMaskItems shape_items;
 };
 
@@ -620,9 +636,13 @@ public:
 	CWindowMaskDelMask *mask_del;
 	CWindowMaskUnclear *mask_unclr;
 	CWindowMaskClrMask *mask_clr;
-	CWindowMaskShape *mask_shape;
-	CWindowMaskSave *mask_save;
+	CWindowMaskShape *mask_shape_sqr;
+	CWindowMaskShape *mask_shape_crc;
+	CWindowMaskShape *mask_shape_tri;
+	CWindowMaskShape *mask_shape_ovl;
+	CWindowMaskLoadList *mask_load_list;
 	CWindowMaskLoad *mask_load;
+	CWindowMaskSave *mask_save;
 	CWindowMaskDelete *mask_delete;
 	CWindowMaskPresetDialog *preset_dialog;
 	CWindowMaskCenter *mask_center;

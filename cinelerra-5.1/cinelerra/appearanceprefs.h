@@ -366,4 +366,12 @@ public:
 	PreferencesWindow *pwindow;
 };
 
+class RectifyAudioToggle : public BC_CheckBox
+{
+public:
+	RectifyAudioToggle(int x, int y, PreferencesWindow *pwindow);
+	int handle_event();
+	PreferencesWindow *pwindow;
+};
+
 #endif

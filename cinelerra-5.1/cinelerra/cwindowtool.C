@@ -2491,7 +2491,7 @@ int CWindowMaskGangFeather::handle_event()
 
 CWindowMaskGUI::CWindowMaskGUI(MWindow *mwindow, CWindowTool *thread)
  : CWindowToolGUI(mwindow, thread,
-	_(PROGRAM_NAME ": Mask"), 460, 700)
+	_(PROGRAM_NAME ": Mask"), 440, 700)
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
@@ -2552,15 +2552,6 @@ void CWindowMaskGUI::create_objects()
 	add_subwindow(mask_clr = new CWindowMaskClrMask(mwindow, this, clr_x, y));
 	add_subwindow(mask_del = new CWindowMaskDelMask(mwindow, this, del_x, y));
 	y += mask_name->get_h() + 2*margin;
-	add_subwindow(title = new BC_Title(x, y, _("Presets:")));
-	add_subwindow(mask_shape = new CWindowMaskShape(mwindow, this));
-	mask_shape->create_objects();
-	add_subwindow(mask_load = new CWindowMaskLoad(mwindow, this, x2=x1, y, 80));
-	x2 += mask_load->get_w() + 2*margin;
-	add_subwindow(mask_save = new CWindowMaskSave(mwindow, this, x2, y, 80));
-	x2 += mask_save->get_w() + 2*margin;
-	add_subwindow(mask_delete = new CWindowMaskDelete(mwindow, this, x2, y, 80));
-	y += mask_load->get_h() + 2*margin;
 	BC_Bar *bar;
 //	add_subwindow(bar = new BC_Bar(x, y, get_w()-2*x));
 //	y += bar->get_h() + 2*margin;
@@ -2585,8 +2576,6 @@ void CWindowMaskGUI::create_objects()
 		mask_blabels[i] = new BC_Title(x2+tx, y, text);
 		add_subwindow(mask_blabels[i]);
 	}
-	x2 += margin;
-	add_subwindow(mask_center = new CWindowMaskCenter(mwindow, this, x2, y, 80));
 	y += mask_blabels[0]->get_h() + margin;
 	add_subwindow(mask_unclr = new CWindowMaskUnclear(mwindow, this, x, y, x1-x-2*margin));
 	x2 = x1;
@@ -2594,11 +2583,46 @@ void CWindowMaskGUI::create_objects()
 		mask_enables[i] = new CWindowMaskEnable(mwindow, this, x2, y, i, 1);
 		add_subwindow(mask_enables[i]);
 	}
-	x2 += margin;
-	add_subwindow(mask_normal = new CWindowMaskNormal(mwindow, this, x2, y, 80));
 	y += mask_enables[0]->get_h() + 2*margin;
-	add_subwindow(title_bar = new BC_TitleBar(x, y, get_w()-2*x, 20, 10, _("Fade & Feather")));
+	add_subwindow(title_bar = new BC_TitleBar(x, y, get_w()-2*x, 20, 10, _("Presets shapes")));
 	y += title_bar->get_h() + margin;
+	int x3 = get_w()/5+1, x4 = (5*get_w())/8 + 1;
+	add_subwindow(mask_shape_sqr = new CWindowMaskShape(mwindow, this,
+		"mask_prst_sqr_images", MASK_SHAPE_SQUARE, x2=x3, y, _("Square")));
+	x2 += mask_shape_sqr->get_w() + 2*margin;
+	add_subwindow(mask_shape_crc = new CWindowMaskShape(mwindow, this,
+		"mask_prst_crc_images", MASK_SHAPE_CIRCLE, x2, y, _("Circle")));
+	x2 += mask_shape_crc->get_w() + 2*margin;
+	add_subwindow(mask_shape_tri = new CWindowMaskShape(mwindow, this,
+		"mask_prst_tri_images", MASK_SHAPE_TRIANGLE, x2, y, _("Triangle")));
+	x2 += mask_shape_tri->get_w() + 2*margin;
+	add_subwindow(mask_shape_ovl = new CWindowMaskShape(mwindow, this,
+		"mask_prst_ovl_images", MASK_SHAPE_OVAL, x2, y, _("Oval")));
+	x2 += mask_shape_ovl->get_w() + 2*margin;
+	add_subwindow(mask_load_list = new CWindowMaskLoadList(mwindow, this));
+	add_subwindow(mask_load = new CWindowMaskLoad(mwindow, this, x2=x4, y, 80));
+	x2 += mask_load->get_w() + 2*margin;
+	add_subwindow(mask_save = new CWindowMaskSave(mwindow, this, x2, y, 80));
+	x2 += mask_save->get_w() + 2*margin;
+	add_subwindow(mask_delete = new CWindowMaskDelete(mwindow, this, x2, y, 80));
+	y += mask_load->get_h() + 2*margin;
+	add_subwindow(title_bar = new BC_TitleBar(x, y, get_w()-2*x, 20, 10, _("Position & Scale")));
+	y += title_bar->get_h() + 2*margin;
+	add_subwindow(mask_center = new CWindowMaskCenter(mwindow, this, x2=x3, y, 80));
+	x2 += mask_center->get_w() + 2*margin;
+	add_subwindow(mask_normal = new CWindowMaskNormal(mwindow, this, x2, y, 80));
+
+	add_subwindow(mask_scale_x = new CWindowMaskScaleXY(mwindow, this,
+		x2=x4, y, theme->get_image_set("mask_scale_x"), 0, 0, _("scale x")));
+	x2 += mask_scale_x->get_w() + 2*margin;
+	add_subwindow(mask_scale_y = new CWindowMaskScaleXY(mwindow, this,
+		x2, y, theme->get_image_set("mask_scale_y"), 0, 1, _("scale y")));
+	x2 += mask_scale_y->get_w() + 2*margin;
+	add_subwindow(mask_scale_xy = new CWindowMaskScaleXY(mwindow, this,
+		x2, y, theme->get_image_set("mask_scale_xy"), 1, 2, _("scale xy")));
+	y += mask_center->get_h() + 2*margin;
+	add_subwindow(title_bar = new BC_TitleBar(x, y, get_w()-2*x, 20, 10, _("Fade & Feather")));
+	y += title_bar->get_h() + 2*margin;
 
 	add_subwindow(title = new BC_Title(x, y, _("Fade:")));
 	fade = new CWindowMaskFade(mwindow, this, x1, y);
@@ -2623,11 +2647,11 @@ void CWindowMaskGUI::create_objects()
 	add_subwindow(title = new BC_Title(x, y, _("Point:")));
 	active_point = new CWindowMaskAffectedPoint(mwindow, this, x1, y);
 	active_point->create_objects();
-	int x3  = x1 + active_point->get_w() + 4*margin;
+	x3  = x1 + active_point->get_w() + 4*margin;
 // typ=0, this mask, this point
 	add_subwindow(mask_pnt_linear = new CWindowMaskSmoothButton(mwindow, this,
 		_("linear point"), 0, 0, x3, y, "mask_pnt_linear_images"));
-	int x4  = x3 + mask_pnt_linear->get_w() + 2*margin;
+	x4  = x3 + mask_pnt_linear->get_w() + 2*margin;
 	add_subwindow(mask_pnt_smooth = new CWindowMaskSmoothButton(mwindow, this,
 		_("smooth point"), 0, 1, x4, y, "mask_pnt_smooth_images"));
 	add_subwindow(del_point = new CWindowMaskDelPoint(mwindow, this, del_x, y));
@@ -2659,8 +2683,6 @@ void CWindowMaskGUI::create_objects()
 	float cx = mwindow->edl->session->output_w / 2.f;
 	focus_x = new CWindowCoord(this, x1, y, cx);
 	focus_x->create_objects();
-	x2 = x1 + focus_x->get_w() + 3*margin;
-	add_subwindow(title = new BC_Title(x2, y, _("Scaling Mode:")));
 	x2 = clr_x - 2*margin - CWindowMaskFocus::calculate_w(this);
 	add_subwindow(focus = new CWindowMaskFocus(mwindow, this, x2, y));
 	add_subwindow(gang_focus = new CWindowMaskGangFocus(mwindow, this, clr_x, y));
@@ -2669,16 +2691,7 @@ void CWindowMaskGUI::create_objects()
 	float cy = mwindow->edl->session->output_h / 2.f;
 	focus_y = new CWindowCoord(this, x1, y, cy);
 	focus_y->create_objects();
-	x2 = x1 + focus_y->get_w() + 3*margin;
-	add_subwindow(mask_scale_x = new CWindowMaskScaleXY(mwindow, this,
-		x2, y, theme->get_image_set("mask_scale_x"), 0, 0, _("scale x")));
-	x2 += mask_scale_x->get_w() + margin;
-	add_subwindow(mask_scale_y = new CWindowMaskScaleXY(mwindow, this,
-		x2, y, theme->get_image_set("mask_scale_y"), 0, 1, _("scale y")));
-	x2 += mask_scale_y->get_w() + margin;
-	add_subwindow(mask_scale_xy = new CWindowMaskScaleXY(mwindow, this,
-		x2, y, theme->get_image_set("mask_scale_xy"), 1, 2, _("scale xy")));
-	y += focus_x->get_h() + 2*margin;
+	y += focus_y->get_h() + 2*margin;
 	add_subwindow(bar = new BC_Bar(x, y, get_w()-2*x));
 	y += bar->get_h() + margin;
 	add_subwindow(this->apply_before_plugins = new CWindowMaskBeforePlugins(this, 10, y));
@@ -3084,9 +3097,73 @@ int CWindowMaskGUI::normal_mask()
 }
 
 
+CWindowMaskLoadList::CWindowMaskLoadList(MWindow *mwindow, CWindowMaskGUI *gui)
+ : BC_ListBox(-1, -1, 1, 1, LISTBOX_TEXT, 0, 0, 0, 1, 0, 1)
+{
+	this->mwindow = mwindow;
+	this->gui = gui;
+	set_use_button(0);
+}
+
+CWindowMaskLoadList::~CWindowMaskLoadList()
+{
+}
+
+
+int CWindowMaskLoadList::handle_event()
+{
+	MaskAutos *autos;
+	MaskAuto *keyframe;
+	Track *track;
+	MaskPoint *point;
+	SubMask *mask;
+#ifdef USE_KEYFRAME_SPANNING
+	int create_it = 0;
+#else
+	int create_it = 1;
+#endif
+
+	mwindow->undo->update_undo_before(_("mask shape"), this);
+
+// Get existing keyframe
+	gui->get_keyframe(track, autos, keyframe,
+			mask, point, create_it);
+	CWindowMaskItem *item = (CWindowMaskItem *) get_selection(0, 0);
+	if( track && item ) {
+#ifdef USE_KEYFRAME_SPANNING
+		MaskAuto temp_keyframe(mwindow->edl, autos);
+		temp_keyframe.copy_data(keyframe);
+		keyframe = &temp_keyframe;
+		mask = temp_keyframe.get_submask(mwindow->edl->session->cwindow_mask);
+#endif
+		ArrayList<SubMask *> masks;
+		gui->load_masks(masks);
+		mask->copy_from(*masks[item->id], 0);
+		masks.remove_all_objects();
+#ifdef USE_KEYFRAME_SPANNING
+		autos->update_parameter(keyframe);
+#endif
+		gui->update();
+		gui->update_preview(1);
+	}
+	mwindow->undo->update_undo_after(_("mask shape"), LOAD_AUTOMATION);
+	return 1;
+}
+
+void CWindowMaskLoadList::create_objects()
+{
+	shape_items.remove_all_objects();
+	ArrayList<SubMask *> masks;
+	gui->load_masks(masks);
+	for( int i=0; i<masks.size(); ++i )
+		shape_items.append(new CWindowMaskItem(masks[i]->name, i));
+	masks.remove_all_objects();
+	update(&shape_items, 0, 0, 1);
+}
+
 CWindowMaskLoad::CWindowMaskLoad(MWindow *mwindow,
 	CWindowMaskGUI *gui, int x, int y, int w)
- : BC_GenericButton(x, y, w, _("Load"))
+ : BC_Button(x, y, mwindow->theme->get_image_set("mask_prst_load_images"))
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
@@ -3095,16 +3172,16 @@ CWindowMaskLoad::CWindowMaskLoad(MWindow *mwindow,
 
 int CWindowMaskLoad::handle_event()
 {
-	gui->mask_shape->create_objects();
+	gui->mask_load_list->create_objects();
 	int px, py;
 	get_abs_cursor(px, py);
-	return gui->mask_shape->activate(px, py, 120,160);
+	return gui->mask_load_list->activate(px, py, 120,160);
 }
 
 
 CWindowMaskSave::CWindowMaskSave(MWindow *mwindow,
 	CWindowMaskGUI *gui, int x, int y, int w)
- : BC_GenericButton(x, y, w, _("Save"))
+ : BC_Button(x, y, mwindow->theme->get_image_set("mask_prst_save_images"))
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
@@ -3240,7 +3317,7 @@ void CWindowMaskPresetText::update_items()
 
 CWindowMaskDelete::CWindowMaskDelete(MWindow *mwindow,
 	CWindowMaskGUI *gui, int x, int y, int w)
- : BC_GenericButton(x, y, w, _("Del"))
+ : BC_Button(x, y, mwindow->theme->get_image_set("mask_prst_trsh_images"))
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
@@ -3260,7 +3337,7 @@ int CWindowMaskDelete::handle_event()
 
 CWindowMaskCenter::CWindowMaskCenter(MWindow *mwindow,
 	CWindowMaskGUI *gui, int x, int y, int w)
- : BC_GenericButton(x, y, w, _("Center"))
+ : BC_Button(x, y, mwindow->theme->get_image_set("mask_pstn_cen_images"))
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
@@ -3275,7 +3352,7 @@ int CWindowMaskCenter::handle_event()
 
 CWindowMaskNormal::CWindowMaskNormal(MWindow *mwindow,
 	CWindowMaskGUI *gui, int x, int y, int w)
- : BC_GenericButton(x, y, w, _("Normal"))
+ : BC_Button(x, y, mwindow->theme->get_image_set("mask_pstn_nrm_images"))
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
@@ -3288,12 +3365,14 @@ int CWindowMaskNormal::handle_event()
 }
 
 
-CWindowMaskShape::CWindowMaskShape(MWindow *mwindow, CWindowMaskGUI *gui)
- : BC_ListBox(-1, -1, 1, 1, LISTBOX_TEXT, 0, 0, 0, 1, 0, 1)
+CWindowMaskShape::CWindowMaskShape(MWindow *mwindow, CWindowMaskGUI *gui,
+		const char *images, int shape, int x, int y, const char *tip)
+ : BC_Button(x, y, mwindow->theme->get_image_set(images))
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_use_button(0);
+	this->shape = shape;
+	set_tooltip(tip);
 }
 
 CWindowMaskShape::~CWindowMaskShape()
@@ -3369,14 +3448,6 @@ void CWindowMaskShape::builtin_shape(int i, SubMask *sub_mask)
 	}
 }
 
-void CWindowMaskShape::load_shape(int i, SubMask *sub_mask)
-{
-	ArrayList<SubMask *> masks;
-	gui->load_masks(masks);
-	sub_mask->copy_from(*masks[i], 0);
-	masks.remove_all_objects();
-}
-
 int CWindowMaskShape::handle_event()
 {
 	MaskAutos *autos;
@@ -3395,20 +3466,15 @@ int CWindowMaskShape::handle_event()
 // Get existing keyframe
 	gui->get_keyframe(track, autos, keyframe,
 			mask, point, create_it);
-	CWindowMaskItem *item = (CWindowMaskItem *) get_selection(0, 0);
-	if( track && item ) {
+	if( track ) {
 #ifdef USE_KEYFRAME_SPANNING
 		MaskAuto temp_keyframe(mwindow->edl, autos);
 		temp_keyframe.copy_data(keyframe);
 		keyframe = &temp_keyframe;
 		mask = temp_keyframe.get_submask(mwindow->edl->session->cwindow_mask);
 #endif
-		int k = item->id;
 		if( mask ) {
-			if( k < MASK_SHAPE_BUILTIN )
-				builtin_shape(k, mask);
-			else
-				load_shape(k-MASK_SHAPE_BUILTIN, mask);
+			builtin_shape(shape, mask);
 #ifdef USE_KEYFRAME_SPANNING
 			autos->update_parameter(keyframe);
 #endif
@@ -3418,22 +3484,6 @@ int CWindowMaskShape::handle_event()
 	}
 	mwindow->undo->update_undo_after(_("mask shape"), LOAD_AUTOMATION);
 	return 1;
-}
-
-void CWindowMaskShape::create_objects()
-{
-	shape_items.remove_all_objects();
-	shape_items.append(new CWindowMaskItem(_("square"), MASK_SHAPE_SQUARE));
-	shape_items.append(new CWindowMaskItem(_("circle"), MASK_SHAPE_CIRCLE));
-	shape_items.append(new CWindowMaskItem(_("triangle"), MASK_SHAPE_TRIANGLE));
-	shape_items.append(new CWindowMaskItem(_("oval"), MASK_SHAPE_OVAL));
-	ArrayList<SubMask *> masks;
-	gui->load_masks(masks);
-	int id = MASK_SHAPE_BUILTIN;
-	for( int i=0; i<masks.size(); ++i )
-		shape_items.append(new CWindowMaskItem(masks[i]->name, id++));
-	masks.remove_all_objects();
-	update(&shape_items, 0, 0, 1);
 }
 
 void CWindowMaskGUI::load_masks(ArrayList<SubMask *> &masks)
