@@ -353,14 +353,14 @@ void CWindowToolGUI::draw_preview(int changed_edl)
 
 
 CWindowCoord::CWindowCoord(CWindowToolGUI *gui, int x, int y, float value, int log_increment = 0)
- : BC_TumbleTextBox(gui, (float)value, (float)-65536, (float)65536, x, y, 100, 3)
+ : BC_TumbleTextBox(gui, (float)value, (float)-65536, (float)65536, x, y, 70, 3)
 {
 	this->gui = gui;
 	set_log_floatincrement(log_increment);
 }
 
 CWindowCoord::CWindowCoord(CWindowToolGUI *gui, int x, int y, int value)
- : BC_TumbleTextBox(gui, (int64_t)value, (int64_t)-65536, (int64_t)65536, x, y, 100, 3)
+ : BC_TumbleTextBox(gui, (int64_t)value, (int64_t)-65536, (int64_t)65536, x, y, 70, 3)
 {
 	this->gui = gui;
 }
@@ -1749,8 +1749,8 @@ int CWindowMaskEnable::handle_event()
 }
 
 CWindowMaskUnclear::CWindowMaskUnclear(MWindow *mwindow,
-	CWindowMaskGUI *gui, int x, int y, int w)
- : BC_GenericButton(x, y, w, _("Enable"))
+	CWindowMaskGUI *gui, int x, int y)
+ : BC_Button(x, y, mwindow->theme->get_image_set("reset_button"))
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
@@ -1937,7 +1937,7 @@ CWindowMaskAffectedPoint::CWindowMaskAffectedPoint(MWindow *mwindow,
 	CWindowMaskGUI *gui, int x, int y)
  : BC_TumbleTextBox(gui,
 		(int64_t)mwindow->cwindow->gui->affected_point,
-		(int64_t)0, INT64_MAX, x, y, 100)
+		(int64_t)0, INT64_MAX, x, y, 70)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
@@ -2518,11 +2518,9 @@ CWindowMaskGUI::~CWindowMaskGUI()
 void CWindowMaskGUI::create_objects()
 {
 	Theme *theme = mwindow->theme;
-	int x = 10, y = 10, margin = theme->widget_border;
+	int x = 10, y = 10, margin = theme->widget_border, t[SUBMASKS];
 	int clr_w = CWindowMaskClrMask::calculate_w(mwindow);
 	int clr_x = get_w()-x - clr_w;
-	int del_w = CWindowMaskDelMask::calculate_w(this,_("Delete"));
-	int del_x = clr_x-2*margin - del_w;
 
 	lock_window("CWindowMaskGUI::create_objects");
 	BC_TitleBar *title_bar;
@@ -2530,7 +2528,9 @@ void CWindowMaskGUI::create_objects()
 	y += title_bar->get_h() + margin;
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x,y, _("Track:")));
-	int x1 = x + 90;
+	int x1 = x + 90, ww = clr_x-2*margin - x1;
+	for( int i=0,n=sizeof(t)/sizeof(t[0]); i<n; ++i ) t[i] = x1+(i*ww)/n;
+	int del_x = t[5];
 	Track *track = mwindow->cwindow->calculate_affected_track();
 	const char *text = track ? track->title : "";
 	mwindow->cwindow->mask_track_id = track ? track->get_id() : -1;
@@ -2540,8 +2540,7 @@ void CWindowMaskGUI::create_objects()
 	int x2 = x1 + mask_on_track->get_w();
 	add_subwindow(mask_track_tumbler = new CWindowMaskTrackTumbler(mwindow, this, x2, y));
 	mwindow->edl->local_session->solo_track_id = -1;
-	x2 = del_x + (del_w - CWindowMaskSoloTrack::calculate_w(this)) / 2;
-	add_subwindow(mask_solo_track = new CWindowMaskSoloTrack(mwindow, this, x2, y, 0));
+	add_subwindow(mask_solo_track = new CWindowMaskSoloTrack(mwindow, this, del_x, y, 0));
 	y += mask_on_track->get_h() + margin;
 	add_subwindow(title_bar = new BC_TitleBar(x, y, get_w()-2*x, 20, 10, _("Masks")));
 	y += title_bar->get_h() + margin;
@@ -2559,67 +2558,53 @@ void CWindowMaskGUI::create_objects()
 	add_subwindow(title = new BC_Title(x, y, _("Select:")));
 	int bw = 0, bh = 0;
 	BC_CheckBox::calculate_extents(this, &bw, &bh);
-	int bdx = bw + 2*margin;
-	x2 = x1;
-	for( int i=0; i<SUBMASKS; x2+=bdx, ++i ) {
+	for( int i=0; i<SUBMASKS; ++i ) {
 		int v = i == mwindow->edl->session->cwindow_mask ? 1 : 0;
-		mask_buttons[i] = new CWindowMaskButton(mwindow, this, x2, y, i, v);
+		mask_buttons[i] = new CWindowMaskButton(mwindow, this, t[i], y, i, v);
 		add_subwindow(mask_buttons[i]);
 	}
-	x2 += margin;
-	add_subwindow(mask_thumbler = new CWindowMaskThumbler(mwindow, this, x2, y));
+	add_subwindow(mask_thumbler = new CWindowMaskThumbler(mwindow, this, clr_x, y));
 	y += bh + margin;
-	x2 = x1;
-	for( int i=0; i<SUBMASKS; x2+=bdx, ++i ) {
+	for( int i=0; i<SUBMASKS; ++i ) {
 		char text[BCSTRLEN];  sprintf(text, "%d", i);
 		int tx = (bw - get_text_width(MEDIUMFONT, text)) / 2;
-		mask_blabels[i] = new BC_Title(x2+tx, y, text);
+		mask_blabels[i] = new BC_Title(t[i]+tx, y, text);
 		add_subwindow(mask_blabels[i]);
 	}
 	y += mask_blabels[0]->get_h() + margin;
-	add_subwindow(mask_unclr = new CWindowMaskUnclear(mwindow, this, x, y, x1-x-2*margin));
-	x2 = x1;
-	for( int i=0; i<SUBMASKS; x2+=bdx, ++i ) {
-		mask_enables[i] = new CWindowMaskEnable(mwindow, this, x2, y, i, 1);
+	add_subwindow(title = new BC_Title(x, y, _("Enable:")));
+	for( int i=0; i<SUBMASKS; ++i ) {
+		mask_enables[i] = new CWindowMaskEnable(mwindow, this, t[i], y, i, 1);
 		add_subwindow(mask_enables[i]);
 	}
+	add_subwindow(mask_unclr = new CWindowMaskUnclear(mwindow, this, clr_x, y));
 	y += mask_enables[0]->get_h() + 2*margin;
 	add_subwindow(title_bar = new BC_TitleBar(x, y, get_w()-2*x, 20, 10, _("Presets shapes")));
 	y += title_bar->get_h() + margin;
-	int x3 = get_w()/5+1, x4 = (5*get_w())/8 + 1;
 	add_subwindow(mask_shape_sqr = new CWindowMaskShape(mwindow, this,
-		"mask_prst_sqr_images", MASK_SHAPE_SQUARE, x2=x3, y, _("Square")));
-	x2 += mask_shape_sqr->get_w() + 2*margin;
+		"mask_prst_sqr_images", MASK_SHAPE_SQUARE, t[0], y, _("Square")));
 	add_subwindow(mask_shape_crc = new CWindowMaskShape(mwindow, this,
-		"mask_prst_crc_images", MASK_SHAPE_CIRCLE, x2, y, _("Circle")));
-	x2 += mask_shape_crc->get_w() + 2*margin;
+		"mask_prst_crc_images", MASK_SHAPE_CIRCLE, t[1], y, _("Circle")));
 	add_subwindow(mask_shape_tri = new CWindowMaskShape(mwindow, this,
-		"mask_prst_tri_images", MASK_SHAPE_TRIANGLE, x2, y, _("Triangle")));
-	x2 += mask_shape_tri->get_w() + 2*margin;
+		"mask_prst_tri_images", MASK_SHAPE_TRIANGLE, t[2], y, _("Triangle")));
 	add_subwindow(mask_shape_ovl = new CWindowMaskShape(mwindow, this,
-		"mask_prst_ovl_images", MASK_SHAPE_OVAL, x2, y, _("Oval")));
-	x2 += mask_shape_ovl->get_w() + 2*margin;
+		"mask_prst_ovl_images", MASK_SHAPE_OVAL, t[3], y, _("Oval")));
 	add_subwindow(mask_load_list = new CWindowMaskLoadList(mwindow, this));
-	add_subwindow(mask_load = new CWindowMaskLoad(mwindow, this, x2=x4, y, 80));
-	x2 += mask_load->get_w() + 2*margin;
-	add_subwindow(mask_save = new CWindowMaskSave(mwindow, this, x2, y, 80));
-	x2 += mask_save->get_w() + 2*margin;
-	add_subwindow(mask_delete = new CWindowMaskDelete(mwindow, this, x2, y, 80));
+	add_subwindow(mask_load = new CWindowMaskLoad(mwindow, this, t[5], y, 80));
+	add_subwindow(mask_save = new CWindowMaskSave(mwindow, this, t[6], y, 80));
+	add_subwindow(mask_delete = new CWindowMaskDelete(mwindow, this, t[7], y, 80));
 	y += mask_load->get_h() + 2*margin;
 	add_subwindow(title_bar = new BC_TitleBar(x, y, get_w()-2*x, 20, 10, _("Position & Scale")));
 	y += title_bar->get_h() + 2*margin;
-	add_subwindow(mask_center = new CWindowMaskCenter(mwindow, this, x2=x3, y, 80));
-	x2 += mask_center->get_w() + 2*margin;
-	add_subwindow(mask_normal = new CWindowMaskNormal(mwindow, this, x2, y, 80));
+	add_subwindow(mask_center = new CWindowMaskCenter(mwindow, this, t[0], y, 80));
+	add_subwindow(mask_normal = new CWindowMaskNormal(mwindow, this, t[1], y, 80));
 
 	add_subwindow(mask_scale_x = new CWindowMaskScaleXY(mwindow, this,
-		x2=x4, y, theme->get_image_set("mask_scale_x"), 0, 0, _("scale x")));
-	x2 += mask_scale_x->get_w() + 2*margin;
+		t[5], y, theme->get_image_set("mask_scale_x"), 0, 0, _("scale x")));
 	add_subwindow(mask_scale_y = new CWindowMaskScaleXY(mwindow, this,
-		x2, y, theme->get_image_set("mask_scale_y"), 0, 1, _("scale y")));
-	x2 += mask_scale_y->get_w() + 2*margin;
+		t[6], y, theme->get_image_set("mask_scale_y"), 0, 1, _("scale y")));
 	add_subwindow(mask_scale_xy = new CWindowMaskScaleXY(mwindow, this,
-		x2, y, theme->get_image_set("mask_scale_xy"), 1, 2, _("scale xy")));
+		t[7], y, theme->get_image_set("mask_scale_xy"), 1, 2, _("scale xy")));
 	y += mask_center->get_h() + 2*margin;
 	add_subwindow(title_bar = new BC_TitleBar(x, y, get_w()-2*x, 20, 10, _("Fade & Feather")));
 	y += title_bar->get_h() + 2*margin;
@@ -2643,27 +2628,24 @@ void CWindowMaskGUI::create_objects()
 	add_subwindow(title_bar = new BC_TitleBar(x, y, get_w()-2*x, 20, 10, _("Mask Points")));
 	y += title_bar->get_h() + margin;
 
-	x1 = x + 60;
 	add_subwindow(title = new BC_Title(x, y, _("Point:")));
-	active_point = new CWindowMaskAffectedPoint(mwindow, this, x1, y);
+	active_point = new CWindowMaskAffectedPoint(mwindow, this, t[0], y);
 	active_point->create_objects();
-	x3  = x1 + active_point->get_w() + 4*margin;
 // typ=0, this mask, this point
 	add_subwindow(mask_pnt_linear = new CWindowMaskSmoothButton(mwindow, this,
-		_("linear point"), 0, 0, x3, y, "mask_pnt_linear_images"));
-	x4  = x3 + mask_pnt_linear->get_w() + 2*margin;
+		_("linear point"), 0, 0, t[3], y, "mask_pnt_linear_images"));
 	add_subwindow(mask_pnt_smooth = new CWindowMaskSmoothButton(mwindow, this,
-		_("smooth point"), 0, 1, x4, y, "mask_pnt_smooth_images"));
+		_("smooth point"), 0, 1, t[4], y, "mask_pnt_smooth_images"));
 	add_subwindow(del_point = new CWindowMaskDelPoint(mwindow, this, del_x, y));
 	y += active_point->get_h() + margin;
 	add_subwindow(title = new BC_Title(x, y, "X:"));
-	this->x = new CWindowCoord(this, x1, y, (float)0.0);
+	this->x = new CWindowCoord(this, t[0], y, (float)0.0);
 	this->x->create_objects();
 // typ>0, this mask, all points
 	add_subwindow(mask_crv_linear = new CWindowMaskSmoothButton(mwindow, this,
-		_("linear curve"), 1, 0, x3, y, "mask_crv_linear_images"));
+		_("linear curve"), 1, 0, t[3], y, "mask_crv_linear_images"));
 	add_subwindow(mask_crv_smooth = new CWindowMaskSmoothButton(mwindow, this,
-		_("smooth curve"), 1, 1, x4, y, "mask_crv_smooth_images"));
+		_("smooth curve"), 1, 1, t[4], y, "mask_crv_smooth_images"));
 	add_subwindow(draw_markers = new CWindowMaskDrawMarkers(mwindow, this, del_x, y));
 	y += this->x->get_h() + margin;
 	add_subwindow(title = new BC_Title(x, y, "Y:"));
@@ -2671,9 +2653,9 @@ void CWindowMaskGUI::create_objects()
 	this->y->create_objects();
 // typ<0, all masks, all points
 	add_subwindow(mask_all_linear = new CWindowMaskSmoothButton(mwindow, this,
-		_("linear all"), -1, 0, x3, y, "mask_all_linear_images"));
+		_("linear all"), -1, 0, t[3], y, "mask_all_linear_images"));
 	add_subwindow(mask_all_smooth = new CWindowMaskSmoothButton(mwindow, this,
-		_("smooth all"), -1, 1, x4, y, "mask_all_smooth_images"));
+		_("smooth all"), -1, 1, t[4], y, "mask_all_smooth_images"));
 	add_subwindow(draw_boundary = new CWindowMaskDrawBoundary(mwindow, this, del_x, y));
 	y += this->y->get_h() + 2*margin;
 	add_subwindow(title_bar = new BC_TitleBar(x, y, get_w()-2*x, 20, 10, _("Pivot Point")));
@@ -2683,8 +2665,7 @@ void CWindowMaskGUI::create_objects()
 	float cx = mwindow->edl->session->output_w / 2.f;
 	focus_x = new CWindowCoord(this, x1, y, cx);
 	focus_x->create_objects();
-	x2 = clr_x - 2*margin - CWindowMaskFocus::calculate_w(this);
-	add_subwindow(focus = new CWindowMaskFocus(mwindow, this, x2, y));
+	add_subwindow(focus = new CWindowMaskFocus(mwindow, this, del_x, y));
 	add_subwindow(gang_focus = new CWindowMaskGangFocus(mwindow, this, clr_x, y));
 	y += focus_x->get_h() + margin;
 	add_subwindow(title = new BC_Title(x, y, "Y:"));

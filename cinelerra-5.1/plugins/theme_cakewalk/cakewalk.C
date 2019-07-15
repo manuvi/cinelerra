@@ -269,8 +269,8 @@ void CAKEWALKTHEME::initialize()
   "new_ok_images");
  new_button( "reset.png",
   "reset_up.png",
-  "reset_dn.png",
   "reset_hi.png",
+  "reset_dn.png",
   "reset_button");
  resources->cancel_images = new_button(
   "cancel.png",

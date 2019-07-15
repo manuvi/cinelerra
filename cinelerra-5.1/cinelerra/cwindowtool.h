@@ -195,11 +195,11 @@ public:
 	void update_items(MaskAuto *keyframe);
 };
 
-class CWindowMaskUnclear : public BC_GenericButton
+class CWindowMaskUnclear : public BC_Button
 {
 public:
 	CWindowMaskUnclear(MWindow *mwindow, CWindowMaskGUI *gui,
-			int x, int y, int w);
+			int x, int y);
 	int handle_event();
 	MWindow *mwindow;
 	CWindowMaskGUI *gui;
