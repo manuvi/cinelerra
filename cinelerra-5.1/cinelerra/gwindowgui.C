@@ -251,7 +251,9 @@ void GWindowGUI::create_objects()
 			continue;
 		}
 		const char *label = toggle_text(tp);
-		int color = tp->isauto > 0 ? auto_colors[tp->ref] : WHITE;
+		int color = tp->isauto > 0 ?
+			auto_colors[tp->ref] :
+			get_resources()->text_default ;
 		GWindowToggle *toggle = new GWindowToggle(this, x, y, label, color, tp);
 		add_tool(toggles[i] = toggle);
 		if( tp->isauto > 0 ) {

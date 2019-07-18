@@ -922,6 +922,7 @@ void BlueDotTheme::initialize()
 
 	new_toggle("arrow.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "arrow");
 	new_toggle("autokeyframe.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "autokeyframe");
+	new_toggle("spankeyframe.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "spankeyframe");
 	new_toggle("ibeam.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "ibeam");
 	new_toggle("show_meters.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "meters");
 	new_toggle("blank30x30.png",
@@ -1404,7 +1405,7 @@ void BlueDotTheme::draw_mwindow_bg(MWindowGUI *gui)
 		mbuttons_y - 1);
 
 	gui->draw_vframe(get_image("panel_divider"),
-		mbuttons_x + 290 + 11 +  30 * 2 + 11 + 30 * 2 + 5,
+		mbuttons_x + 290 + 11 +  30 * 2 + 11 + 30 * 3 + 5,
 		mbuttons_y - 1);
 
 

@@ -476,6 +476,7 @@ public:
 	void set_automation_mode(int mode);
 	void set_keyframe_type(int mode);
 	void set_auto_keyframes(int value);
+	void set_span_keyframes(int value);
 	void set_auto_visibility(Autos *autos, int value);
 	void set_labels_follow_edits(int value);
 

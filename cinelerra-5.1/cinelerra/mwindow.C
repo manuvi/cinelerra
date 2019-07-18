@@ -2989,6 +2989,17 @@ void MWindow::set_auto_keyframes(int value)
 	cwindow->gui->unlock_window();
 }
 
+void MWindow::set_span_keyframes(int value)
+{
+	edl->session->span_keyframes = value;
+	gui->mbuttons->edit_panel->span_keyframe->update(value);
+	gui->flush();
+	cwindow->gui->lock_window("MWindow::set_span_keyframes");
+	cwindow->gui->edit_panel->span_keyframe->update(value);
+	cwindow->gui->flush();
+	cwindow->gui->unlock_window();
+}
+
 void MWindow::set_auto_visibility(Autos *autos, int value)
 {
 	if( autos->type == Autos::AUTOMATION_TYPE_PLUGIN )

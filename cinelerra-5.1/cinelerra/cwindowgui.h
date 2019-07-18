@@ -187,6 +187,7 @@ public:
 	void panel_fit_autos(int all);
 	void panel_set_editing_mode(int mode);
 	void panel_set_auto_keyframes(int v);
+	void panel_set_span_keyframes(int v);
 	void panel_set_labels_follow_edits(int v);
 
 	MWindow *mwindow;

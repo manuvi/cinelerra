@@ -857,6 +857,7 @@ void SUV::initialize()
 
 	new_toggle("arrow.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "arrow");
 	new_toggle("autokeyframe.png", transport_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "autokeyframe");
+	new_toggle("spankeyframe.png", transport_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "spankeyframe");
 	new_toggle("ibeam.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "ibeam");
 	new_toggle("show_meters.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "meters");
 	new_toggle("blank30x30.png",
@@ -1027,7 +1028,7 @@ void SUV::draw_mwindow_bg(MWindowGUI *gui)
 	gui->draw_vframe(get_image("panel_divider"),
 		x - toggle_margin / 2 - pdw / 2 + 2,
 		mbuttons_y - 1);
-	x += 2 * get_image("autokeyframe")->get_w() + toggle_margin;    // the state toggle buttons
+	x += 3 * get_image("autokeyframe")->get_w() + toggle_margin;    // the state toggle buttons
 
 	gui->draw_vframe(get_image("panel_divider"),
 		x - toggle_margin / 2 - pdw / 2 + 2,

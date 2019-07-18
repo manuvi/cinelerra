@@ -878,6 +878,7 @@ void panel_btn(fit_selection,(), fit_selection())
 void panel_btn(fit_autos,(int all), fit_autos(all))
 void panel_btn(set_editing_mode,(int mode), set_editing_mode(mode))
 void panel_btn(set_auto_keyframes,(int v), set_auto_keyframes(v))
+void panel_btn(set_span_keyframes,(int v), set_span_keyframes(v))
 void panel_btn(set_labels_follow_edits,(int v), set_labels_follow_edits(v))
 
 

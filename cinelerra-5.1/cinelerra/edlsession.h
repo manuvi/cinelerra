@@ -80,6 +80,8 @@ public:
  	int autos_follow_edits;
 // Generate keyframes for every tweek
 	int auto_keyframes;
+// use spanning parameter update
+	int span_keyframes;
 // Where to do background rendering
 	double brender_start;
 	double brender_end;

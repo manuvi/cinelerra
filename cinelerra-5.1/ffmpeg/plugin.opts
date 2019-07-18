@@ -111,7 +111,7 @@ dilation
 drawbox
 drawgraph
 drawgrid
-dynaudnorm
+#dynaudnorm ###Invalid argument
 earwax
 #ebur128 ###Operation not permitted
 edgedetect
@@ -166,7 +166,7 @@ inflate
 kerndeint
 lenscorrection
 life ratio=2/3:s=200x200
-loudnorm
+#loudnorm ###Invalid argument
 lowpass
 lut
 #lut2 ###Input/output error

@@ -53,6 +53,7 @@ EDLSession::EDLSession(EDL *edl)
 	audio_tracks = 2;
 	autos_follow_edits = 1; // this is needed for predictability
 	auto_keyframes = 0;
+	span_keyframes = 0;
 	brender_start = brender_end = 0.0;
 	clipboard_length = 0; // unused
 	color_model = BC_RGBA8888;
@@ -274,6 +275,7 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	single_standalone = defaults->get("SINGLE_STANDALONE", 1);
 	playback_preload = defaults->get("PLAYBACK_PRELOAD", 0);
 	auto_keyframes = defaults->get("AUTO_KEYFRAMES", 0);
+	span_keyframes = defaults->get("SPAN_KEYFRAMES", 0);
 	meter_format = defaults->get("METER_FORMAT", METER_DB);
 	min_meter_db = defaults->get("MIN_METER_DB", -85);
 	max_meter_db = defaults->get("MAX_METER_DB", 6);
@@ -419,6 +421,7 @@ int EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->update("SINGLE_STANDALONE", single_standalone);
 	defaults->update("PLAYBACK_PRELOAD", playback_preload);
 	defaults->update("AUTO_KEYFRAMES", auto_keyframes);
+	defaults->update("SPAN_KEYFRAMES", span_keyframes);
 	defaults->update("METER_FORMAT", meter_format);
 	defaults->update("MIN_METER_DB", min_meter_db);
 	defaults->update("MAX_METER_DB", max_meter_db);
@@ -597,6 +600,7 @@ int EDLSession::load_xml(FileXML *file,
 		}
 		auto_conf->load_xml(file);
 		auto_keyframes = file->tag.get_property("AUTO_KEYFRAMES", auto_keyframes);
+		span_keyframes = file->tag.get_property("SPAN_KEYFRAMES", span_keyframes);
 		autos_follow_edits = file->tag.get_property("AUTOS_FOLLOW_EDITS", autos_follow_edits);
 		brender_start = file->tag.get_property("BRENDER_START", brender_start);
 		brender_end = file->tag.get_property("BRENDER_END", brender_end);
@@ -663,6 +667,7 @@ int EDLSession::save_xml(FileXML *file)
 	}
 	auto_conf->save_xml(file);
 	file->tag.set_property("AUTO_KEYFRAMES", auto_keyframes);
+	file->tag.set_property("SPAN_KEYFRAMES", span_keyframes);
 	file->tag.set_property("AUTOS_FOLLOW_EDITS", autos_follow_edits);
 	file->tag.set_property("BRENDER_START", brender_start);
 	file->tag.set_property("BRENDER_END", brender_end);
@@ -841,6 +846,7 @@ int EDLSession::copy(EDLSession *session)
 	plugins_follow_edits = session->plugins_follow_edits;
 	single_standalone = session->single_standalone;
 	auto_keyframes = session->auto_keyframes;
+	span_keyframes = session->span_keyframes;
 //	last_playback_position = session->last_playback_position;
 	meter_format = session->meter_format;
 	min_meter_db = session->min_meter_db;

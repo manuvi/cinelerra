@@ -322,6 +322,15 @@ public:
 	EditPanel *panel;
 };
 
+class SpanKeyFrameButton : public BC_Toggle
+{
+public:
+	SpanKeyFrameButton(MWindow *mwindow, EditPanel *panel, int x, int y);
+	int handle_event();
+	MWindow *mwindow;
+	EditPanel *panel;
+};
+
 class LockLabelsButton : public BC_Toggle
 {
 public:
@@ -389,6 +398,7 @@ public:
 	virtual void panel_fit_autos(int all) = 0;
 	virtual void panel_set_editing_mode(int mode) = 0;
 	virtual void panel_set_auto_keyframes(int v) = 0;
+	virtual void panel_set_span_keyframes(int v) = 0;
 	virtual void panel_set_labels_follow_edits(int v) = 0;
 
 	MWindow *mwindow;
@@ -441,6 +451,7 @@ public:
 	ArrowButton *arrow;
 	IBeamButton *ibeam;
 	KeyFrameButton *keyframe;
+	SpanKeyFrameButton *span_keyframe;
 	LockLabelsButton *locklabels;
 
 	int is_mwindow() { return window_id == MWINDOW_ID; }

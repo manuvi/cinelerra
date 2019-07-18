@@ -33,6 +33,7 @@
 #include "mwindowgui.h"
 #include "patchbay.h"
 #include "tracking.h"
+#include "tracks.h"
 #include "playbackengine.h"
 #include "playtransport.h"
 #include "preferences.h"
@@ -411,8 +412,11 @@ void PlaybackEngine::run()
 // Start tracking after arming so the tracking position doesn't change.
 // The tracking for a single frame command occurs during PAUSE
 			init_tracking();
-			if( !command->single_frame() )
-				clear_output();
+			if( !command->single_frame() ) {
+				EDL *edl = command->get_edl();
+				if( edl && edl->tracks->playable_video_tracks() )
+					clear_output();
+			}
 // Dispatch the command
 			start_render_engine();
 			break;

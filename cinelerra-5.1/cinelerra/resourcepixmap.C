@@ -478,8 +478,8 @@ void ResourcePixmap::draw_audio_source(TrackCanvas *canvas, Edit *edit, int x, i
 			int y1 = center_pixel - sample * scale_y / 2;
 			int y2 = CLIP(y1, 0, y_max);
 
-			for( int x0=0; x0<w; ++x0 ) {
-				int x1 = x0 + x, x2 = x1 + 1;
+			for( int x1=x; x1<w; ++x1 ) {
+				int x2 = x1 + 1;
 				edit_position = (x1 + pixmap_x - edit_x) * project_zoom;
 				int64_t speed_position = edit->startsource;
 				speed_position += !speed_autos ? edit_position :
@@ -492,7 +492,10 @@ void ResourcePixmap::draw_audio_source(TrackCanvas *canvas, Edit *edit, int x, i
 				y1 = center_pixel - sample * scale_y / 2;
 				y2 = CLIP(y1, 0, y_max);
 //printf("ResourcePixmap::draw_audio_source %d %d %d\n", __LINE__, y1, y2);
-				canvas->draw_line(x0, y0, x2, y2, this);
+				if( !rect_audio )
+					canvas->draw_line(x1, y0, x2, y2, this);
+				else
+					canvas->draw_line(x2, center_pixel, x2, y2, this);
 			}
 		}
 
@@ -540,7 +543,7 @@ void ResourcePixmap::draw_audio_source(TrackCanvas *canvas, Edit *edit, int x, i
 					y_lo = y1;  y_hi = y2;
 				}
 				prev_y1 = y1;  prev_y2 = y2;
-				canvas->draw_line(x, y_lo, x, y_hi, this);
+				canvas->draw_line(x, !rect_audio ? y_lo : center_pixel, x, y_hi, this);
 //printf("ResourcePixmap::draw_audio_source %d %d %d %d\n", __LINE__, x, y1, y2);
 				mwindow->wave_cache->unlock();
 			}
@@ -576,7 +579,7 @@ void ResourcePixmap::draw_wave(TrackCanvas *canvas,
 	CLAMP(y1, top_pixel, bottom_pixel);
 	CLAMP(y2, top_pixel, bottom_pixel);
 	canvas->set_color(mwindow->theme->audio_color);
-	canvas->draw_line(x, y1, x, y2, this);
+	canvas->draw_line(x, !rect_audio ? y1 : bottom_pixel, x, y2, this);
 }
 
 

@@ -22,6 +22,7 @@
 #include "automation.inc"
 #include "clip.h"
 #include "edl.h"
+#include "edlsession.h"
 #include "localsession.h"
 #include "maskauto.h"
 #include "maskautos.h"
@@ -50,7 +51,8 @@ void MaskAutos::update_parameter(MaskAuto *src)
 // Selection is always aligned to frame for masks
 
 // Create new keyframe if auto keyframes or replace entire keyframe.
-	if(selection_start == selection_end)
+	if( !edl->session->span_keyframes ||
+	    EQUIV(selection_start, selection_end) )
 	{
 // Search for keyframe to write to
 		MaskAuto *dst = (MaskAuto*)get_auto_for_editing();

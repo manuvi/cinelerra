@@ -275,6 +275,11 @@ void MainEditing::panel_set_auto_keyframes(int v)
 	mwindow->set_auto_keyframes(v);
 }
 
+void MainEditing::panel_set_span_keyframes(int v)
+{
+	mwindow->set_span_keyframes(v);
+}
+
 void MainEditing::panel_set_labels_follow_edits(int v)
 {
         mwindow->set_labels_follow_edits(v);

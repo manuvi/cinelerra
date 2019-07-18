@@ -701,6 +701,7 @@ void VWindowEditing::panel_fit_selection() {}
 void VWindowEditing::panel_fit_autos(int all) {}
 void VWindowEditing::panel_set_editing_mode(int mode) {}
 void VWindowEditing::panel_set_auto_keyframes(int v) {}
+void VWindowEditing::panel_set_span_keyframes(int v) {}
 void VWindowEditing::panel_set_labels_follow_edits(int v) {}
 
 

@@ -936,6 +936,10 @@ void CAKEWALKTHEME::initialize()
       transport_up, editpanel_hi, editpanel_checked,
       editpanel_dn, editpanel_checkedhi,
       "autokeyframe");
+new_toggle("spankeyframe.png",
+      transport_up, editpanel_hi, editpanel_checked,
+      editpanel_dn, editpanel_checkedhi,
+      "spankeyframe");
  new_toggle("ibeam.png",
       editpanel_up, editpanel_hi, editpanel_checked,
       editpanel_dn, editpanel_checkedhi,
@@ -1110,7 +1114,7 @@ void CAKEWALKTHEME::draw_mwindow_bg(MWindowGUI *gui)
  gui->draw_vframe(get_image("panel_divider"),
       x - toggle_margin / 2 - pdw / 2 + 2,
       mbuttons_y - 1);
- x += 2 * get_image("autokeyframe")->get_w() + toggle_margin;
+ x += 3 * get_image("autokeyframe")->get_w() + toggle_margin;
  gui->draw_vframe(get_image("panel_divider"),
       x - toggle_margin / 2 - pdw / 2 + 2,
       mbuttons_y - 1);

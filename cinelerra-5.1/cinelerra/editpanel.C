@@ -118,6 +118,7 @@ EditPanel::EditPanel(MWindow *mwindow,
 	this->arrow = 0;
 	this->ibeam = 0;
 	this->keyframe = 0;
+	this->span_keyframe = 0;
 	this->mangoto = 0;
 	this->click2play = 0;
 	locklabels = 0;
@@ -139,6 +140,7 @@ void EditPanel::update()
 	if( arrow ) arrow->update(new_editing_mode == EDITING_ARROW);
 	if( ibeam ) ibeam->update(new_editing_mode == EDITING_IBEAM);
 	if( keyframe ) keyframe->update(mwindow->edl->session->auto_keyframes);
+	if( span_keyframe ) span_keyframe->update(mwindow->edl->session->span_keyframes);
 	if( locklabels ) locklabels->set_value(mwindow->edl->session->labels_follow_edits);
 	if( click2play ) {
 		int value = !is_vwindow() ?
@@ -193,6 +195,9 @@ void EditPanel::create_buttons()
 		keyframe = new KeyFrameButton(mwindow, this, x1, y1);
 		subwindow->add_subwindow(keyframe);
 		x1 += keyframe->get_w();
+		span_keyframe = new SpanKeyFrameButton(mwindow, this, x1, y1);
+		subwindow->add_subwindow(span_keyframe);
+		x1 += span_keyframe->get_w();
 	}
 
 	if( use_locklabels ) {
@@ -334,6 +339,8 @@ void EditPanel::reposition_buttons(int x, int y)
 	if( use_keyframe ) {
 		keyframe->reposition_window(x1, y1);
 		x1 += keyframe->get_w();
+		span_keyframe->reposition_window(x1, y1);
+		x1 += span_keyframe->get_w();
 	}
 
 	if( use_locklabels ) {
@@ -939,6 +946,24 @@ int KeyFrameButton::keypress_event()
 		return 1;
 	}
 	return 0;
+}
+
+//set_span_keyframes
+SpanKeyFrameButton::SpanKeyFrameButton(MWindow *mwindow, EditPanel *panel, int x, int y)
+ : BC_Toggle(x, y,
+	mwindow->theme->get_image_set("spankeyframe"),
+	mwindow->edl->session->span_keyframes,
+	"", 0, 0, 0)
+{
+	this->mwindow = mwindow;
+	this->panel = panel;
+	set_tooltip(_("Allow keyframe spanning"));
+}
+
+int SpanKeyFrameButton::handle_event()
+{
+	panel->panel_set_span_keyframes(get_value());
+	return 1;
 }
 
 //set_labels_follow_edits
