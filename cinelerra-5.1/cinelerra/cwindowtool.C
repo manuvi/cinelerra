@@ -2600,11 +2600,11 @@ void CWindowMaskGUI::create_objects()
 	add_subwindow(mask_normal = new CWindowMaskNormal(mwindow, this, t[1], y, 80));
 
 	add_subwindow(mask_scale_x = new CWindowMaskScaleXY(mwindow, this,
-		t[5], y, theme->get_image_set("mask_scale_x"), 0, 0, _("scale x")));
+		t[5], y, theme->get_image_set("mask_scale_x"), 0, 0, _("xlate/scale x")));
 	add_subwindow(mask_scale_y = new CWindowMaskScaleXY(mwindow, this,
-		t[6], y, theme->get_image_set("mask_scale_y"), 0, 1, _("scale y")));
+		t[6], y, theme->get_image_set("mask_scale_y"), 0, 1, _("xlate/scale y")));
 	add_subwindow(mask_scale_xy = new CWindowMaskScaleXY(mwindow, this,
-		t[7], y, theme->get_image_set("mask_scale_xy"), 1, 2, _("scale xy")));
+		t[7], y, theme->get_image_set("mask_scale_xy"), 1, 2, _("xlate/scale xy")));
 	y += mask_center->get_h() + 2*margin;
 	add_subwindow(title_bar = new BC_TitleBar(x, y, get_w()-2*x, 20, 10, _("Fade & Feather")));
 	y += title_bar->get_h() + 2*margin;

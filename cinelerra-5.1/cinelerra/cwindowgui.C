@@ -2079,6 +2079,7 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 
 			case CWINDOW_MASK_TRANSLATE: {
 				if( !mask_gui ) break;
+				int mode = mask_gui->scale_mode;
 			        MaskAuto *keyframe = gui->mask_keyframe;
 				int gang = mask_gui->gang_focus->get_value();
 				float dx = mask_cursor_x - gui->x_origin;
@@ -2093,8 +2094,8 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 					MaskPoints &points = sub_mask->points;
 					for( int i=0; i<points.size(); ++i ) {
 						MaskPoint *point = points[i];
-						point->x += dx;
-						point->y += dy;
+						if( mode == 0 || mode == 2) point->x += dx;
+						if( mode == 1 || mode == 2) point->y += dy;
 					}
 				}
 				gui->x_origin = mask_cursor_x;
