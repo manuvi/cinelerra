@@ -1235,6 +1235,7 @@ int MWindowGUI::keypress_event()
 		break;
 	case 'M':
 		collapse = 1;
+	case BACKSPACE:
 	case 'm':
 		mwindow->cut_selected_edits(0, collapse);
 		result = 1;

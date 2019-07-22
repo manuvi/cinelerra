@@ -272,6 +272,11 @@ void CAKEWALKTHEME::initialize()
   "reset_hi.png",
   "reset_dn.png",
   "reset_button");
+ new_button("unclear.png",
+  "unclear_up.png",
+  "unclear_hi.png",
+  "unclear_dn.png",
+  "unclear_button");
  resources->cancel_images = new_button(
   "cancel.png",
   "filebox_bigbutton_up.png",

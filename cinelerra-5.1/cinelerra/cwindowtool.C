@@ -1750,7 +1750,7 @@ int CWindowMaskEnable::handle_event()
 
 CWindowMaskUnclear::CWindowMaskUnclear(MWindow *mwindow,
 	CWindowMaskGUI *gui, int x, int y)
- : BC_Button(x, y, mwindow->theme->get_image_set("reset_button"))
+ : BC_Button(x, y, mwindow->theme->get_image_set("unclear_button"))
 {
 	this->mwindow = mwindow;
 	this->gui = gui;

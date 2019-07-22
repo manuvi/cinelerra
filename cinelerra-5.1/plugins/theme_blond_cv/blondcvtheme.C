@@ -335,6 +335,12 @@ void BlondCVTheme::initialize()
 		"reset_dn.png",
 		"reset_button");
 
+	new_button("unclear.png",
+		"unclear_up.png",
+		"unclear_hi.png",
+		"unclear_dn.png",
+		"unclear_button");
+
 	resources->cancel_images = new_button("cancel.png",
 		"generic_up.png",
 		"generic_hi.png",
