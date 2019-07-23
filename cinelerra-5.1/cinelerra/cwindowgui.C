@@ -435,7 +435,9 @@ void CWindowGUI::set_operation(int value)
 	}
 
 	edit_panel->update();
+	unlock_window();
 	tool_panel->start_tool(value);
+	lock_window("CWindowGUI::set_operation");
 	canvas->refresh(0);
 }
 
@@ -1785,6 +1787,8 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 			cx /= n;  cy /= n;
 			if( !mask_gui->focused )
 				mask_gui->set_focused(0, cx, cy);
+			cx = (cx - half_track_w) * projector_z + projector_x;
+			cy = (cy - half_track_h) * projector_z + projector_y;
 			output_to_canvas(mwindow->edl, 0, cx, cy);
 			float r = bmax(cvs_win->get_w(), cvs_win->get_h());
 			float d = 0.007*r;
@@ -2094,8 +2098,8 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 					MaskPoints &points = sub_mask->points;
 					for( int i=0; i<points.size(); ++i ) {
 						MaskPoint *point = points[i];
-						if( mode == 0 || mode == 2) point->x += dx;
-						if( mode == 1 || mode == 2) point->y += dy;
+						if( mode == MASK_SCALE_X || mode == MASK_SCALE_XY ) point->x += dx;
+						if( mode == MASK_SCALE_Y || mode == MASK_SCALE_XY ) point->y += dy;
 					}
 				}
 				gui->x_origin = mask_cursor_x;
@@ -2133,8 +2137,10 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 				double ds = accel/64., dt = accel*M_PI/360.;
 				double scale = button_no == WHEEL_UP ? 1.+ds : 1.-ds;
 				int mode = mask_gui->scale_mode;
-				double xscale = !rotate && (mode == 0 || mode == 2 ) ? scale : 1.;
-				double yscale = !rotate && (mode == 1 || mode == 2 ) ? scale : 1.;
+				double xscale = !rotate && (mode == MASK_SCALE_X ||
+					mode == MASK_SCALE_XY ) ? scale : 1.;
+				double yscale = !rotate && (mode == MASK_SCALE_Y ||
+					mode == MASK_SCALE_XY ) ? scale : 1.;
 				double theta = button_no == WHEEL_UP ? dt : -dt;
 				if( rotate ? theta==0 : scale==1 ) break;
 				float st = sin(theta), ct = cos(theta);

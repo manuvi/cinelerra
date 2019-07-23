@@ -2018,9 +2018,9 @@ CWindowMaskScaleXY::~CWindowMaskScaleXY()
 int CWindowMaskScaleXY::handle_event()
 {
 	gui->scale_mode = id;
-	gui->mask_scale_x->update(id == 0);
-	gui->mask_scale_y->update(id == 1);
-	gui->mask_scale_xy->update(id == 2);
+	gui->mask_scale_x->update(id == MASK_SCALE_X);
+	gui->mask_scale_y->update(id == MASK_SCALE_Y);
+	gui->mask_scale_xy->update(id == MASK_SCALE_XY);
 	return 1;
 }
 
@@ -2351,6 +2351,24 @@ int CWindowMaskGangFocus::handle_event()
 	return 1;
 }
 
+CWindowMaskGangPoint::CWindowMaskGangPoint(MWindow *mwindow,
+		CWindowMaskGUI *gui, int x, int y)
+ : BC_Toggle(x, y, mwindow->theme->get_image_set("gangpatch_data"), 0)
+{
+	this->mwindow = mwindow;
+	this->gui = gui;
+	set_tooltip(_("Gang points"));
+}
+
+CWindowMaskGangPoint::~CWindowMaskGangPoint()
+{
+}
+
+int CWindowMaskGangPoint::handle_event()
+{
+	return 1;
+}
+
 
 CWindowMaskSmoothButton::CWindowMaskSmoothButton(MWindow *mwindow, CWindowMaskGUI *gui,
 		const char *tip, int type, int on, int x, int y, const char *images)
@@ -2600,11 +2618,11 @@ void CWindowMaskGUI::create_objects()
 	add_subwindow(mask_normal = new CWindowMaskNormal(mwindow, this, t[1], y, 80));
 
 	add_subwindow(mask_scale_x = new CWindowMaskScaleXY(mwindow, this,
-		t[5], y, theme->get_image_set("mask_scale_x"), 0, 0, _("xlate/scale x")));
+		t[5], y, theme->get_image_set("mask_scale_x"), 0, MASK_SCALE_X, _("xlate/scale x")));
 	add_subwindow(mask_scale_y = new CWindowMaskScaleXY(mwindow, this,
-		t[6], y, theme->get_image_set("mask_scale_y"), 0, 1, _("xlate/scale y")));
+		t[6], y, theme->get_image_set("mask_scale_y"), 0, MASK_SCALE_Y, _("xlate/scale y")));
 	add_subwindow(mask_scale_xy = new CWindowMaskScaleXY(mwindow, this,
-		t[7], y, theme->get_image_set("mask_scale_xy"), 1, 2, _("xlate/scale xy")));
+		t[7], y, theme->get_image_set("mask_scale_xy"), 1, MASK_SCALE_XY, _("xlate/scale xy")));
 	y += mask_center->get_h() + 2*margin;
 	add_subwindow(title_bar = new BC_TitleBar(x, y, get_w()-2*x, 20, 10, _("Fade & Feather")));
 	y += title_bar->get_h() + 2*margin;
@@ -2637,6 +2655,7 @@ void CWindowMaskGUI::create_objects()
 	add_subwindow(mask_pnt_smooth = new CWindowMaskSmoothButton(mwindow, this,
 		_("smooth point"), 0, 1, t[4], y, "mask_pnt_smooth_images"));
 	add_subwindow(del_point = new CWindowMaskDelPoint(mwindow, this, del_x, y));
+	add_subwindow(gang_point = new CWindowMaskGangPoint(mwindow, this, clr_x, y));
 	y += active_point->get_h() + margin;
 	add_subwindow(title = new BC_Title(x, y, "X:"));
 	this->x = new CWindowCoord(this, t[0], y, (float)0.0);
@@ -2791,6 +2810,8 @@ void CWindowMaskGUI::update()
 
 void CWindowMaskGUI::handle_event()
 {
+	if( event_caller != this->x &&
+	    event_caller != this->y ) return;
 	Track *track;
 	MaskAuto *keyframe;
 	MaskAutos *autos;
@@ -2800,30 +2821,31 @@ void CWindowMaskGUI::handle_event()
 
 	mwindow->undo->update_undo_before(_("mask point"), this);
 
-	if(point)
-	{
+	if( point ) {
+		float px = atof(x->get_text());
+		float py = atof(y->get_text());
+		float dx = px - point->x, dy = py - point->y;
 #ifdef USE_KEYFRAME_SPANNING
 // Create temp keyframe
 		MaskAuto temp_keyframe(mwindow->edl, autos);
 		temp_keyframe.copy_data(keyframe);
 // Get affected point in temp keyframe
 		mask = temp_keyframe.get_submask(mwindow->edl->session->cwindow_mask);
-		if(mwindow->cwindow->gui->affected_point < mask->points.total &&
-			mwindow->cwindow->gui->affected_point >= 0)
-		{
-			point = mask->points.values[mwindow->cwindow->gui->affected_point];
+#endif
+		
+		MaskPoints &points = mask->points;
+		int gang = gang_point->get_value();
+		int k = mwindow->cwindow->gui->affected_point;
+		int n = gang ? points.size() : k+1;
+		for( int i=gang? 0 : k; i<n; ++i ) {
+			if( i < 0 || i >= points.size() ) continue;
+			MaskPoint *point = points[i];
+			point->x += dx;  point->y += dy;
 		}
 
-		if(point)
-		{
-			point->x = atof(x->get_text());
-			point->y = atof(y->get_text());
+#ifdef USE_KEYFRAME_SPANNING
 // Commit to spanned keyframes
-			autos->update_parameter(&temp_keyframe);
-		}
-#else
-		point->x = atof(x->get_text());
-		point->y = atof(y->get_text());
+		autos->update_parameter(&temp_keyframe);
 #endif
 	}
 

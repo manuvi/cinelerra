@@ -37,6 +37,11 @@ enum {
 	MASK_SHAPE_TRIANGLE,
 	MASK_SHAPE_OVAL,
 };
+enum {
+	MASK_SCALE_X,
+	MASK_SCALE_Y,
+	MASK_SCALE_XY,
+};
 
 // This common thread supports all the tool GUI's.
 class CWindowTool : public Thread
@@ -324,6 +329,17 @@ public:
 	CWindowMaskGangFocus(MWindow *mwindow, CWindowMaskGUI *gui,
 			int x, int y);
 	~CWindowMaskGangFocus();
+	int handle_event();
+	MWindow *mwindow;
+	CWindowMaskGUI *gui;
+};
+
+class CWindowMaskGangPoint : public BC_Toggle
+{
+public:
+	CWindowMaskGangPoint(MWindow *mwindow, CWindowMaskGUI *gui,
+			int x, int y);
+	~CWindowMaskGangPoint();
 	int handle_event();
 	MWindow *mwindow;
 	CWindowMaskGUI *gui;
@@ -652,6 +668,7 @@ public:
 	CWindowMaskGangFader *gang_fader;
 	CWindowMaskAffectedPoint *active_point;
 	CWindowMaskDelPoint *del_point;
+	CWindowMaskGangPoint *gang_point;
 	CWindowMaskSmoothButton *mask_pnt_linear, *mask_pnt_smooth;
 	CWindowMaskSmoothButton *mask_crv_linear, *mask_crv_smooth;
 	CWindowMaskSmoothButton *mask_all_linear, *mask_all_smooth;

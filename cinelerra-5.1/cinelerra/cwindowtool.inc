@@ -43,6 +43,7 @@ class CWindowMaskFade;
 class CWindowMaskFadeSlider;
 class CWindowMaskGangFader;
 class CWindowMaskGangFocus;
+class CWindowMaskGangPoint;
 class CWindowMaskSmoothButton;
 class CWindowMaskAffectedPoint;
 class CWindowMaskFocus;
