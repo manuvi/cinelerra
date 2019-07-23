@@ -435,9 +435,7 @@ void CWindowGUI::set_operation(int value)
 	}
 
 	edit_panel->update();
-	unlock_window();
 	tool_panel->start_tool(value);
-	lock_window("CWindowGUI::set_operation");
 	canvas->refresh(0);
 }
 
