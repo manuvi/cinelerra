@@ -2810,47 +2810,53 @@ void CWindowMaskGUI::update()
 
 void CWindowMaskGUI::handle_event()
 {
-	if( event_caller != this->x &&
-	    event_caller != this->y ) return;
-	Track *track;
-	MaskAuto *keyframe;
-	MaskAutos *autos;
-	SubMask *mask;
-	MaskPoint *point;
-	get_keyframe(track, autos, keyframe, mask, point, 0);
+	int redraw = 0;
+	if( event_caller == this->focus_x ||
+	    event_caller == this->focus_y ) {
+		redraw = 1;
+	}
+	else if( event_caller == this->x ||
+		 event_caller == this->y ) {
+		Track *track;
+		MaskAuto *keyframe;
+		MaskAutos *autos;
+		SubMask *mask;
+		MaskPoint *point;
+		get_keyframe(track, autos, keyframe, mask, point, 0);
 
-	mwindow->undo->update_undo_before(_("mask point"), this);
+		mwindow->undo->update_undo_before(_("mask point"), this);
 
-	if( point ) {
-		float px = atof(x->get_text());
-		float py = atof(y->get_text());
-		float dx = px - point->x, dy = py - point->y;
+		if( point ) {
+			float px = atof(x->get_text());
+			float py = atof(y->get_text());
+			float dx = px - point->x, dy = py - point->y;
 #ifdef USE_KEYFRAME_SPANNING
 // Create temp keyframe
-		MaskAuto temp_keyframe(mwindow->edl, autos);
-		temp_keyframe.copy_data(keyframe);
+			MaskAuto temp_keyframe(mwindow->edl, autos);
+			temp_keyframe.copy_data(keyframe);
 // Get affected point in temp keyframe
-		mask = temp_keyframe.get_submask(mwindow->edl->session->cwindow_mask);
+			mask = temp_keyframe.get_submask(mwindow->edl->session->cwindow_mask);
 #endif
-		
-		MaskPoints &points = mask->points;
-		int gang = gang_point->get_value();
-		int k = mwindow->cwindow->gui->affected_point;
-		int n = gang ? points.size() : k+1;
-		for( int i=gang? 0 : k; i<n; ++i ) {
-			if( i < 0 || i >= points.size() ) continue;
-			MaskPoint *point = points[i];
-			point->x += dx;  point->y += dy;
-		}
-
+			MaskPoints &points = mask->points;
+			int gang = gang_point->get_value();
+			int k = mwindow->cwindow->gui->affected_point;
+			int n = gang ? points.size() : k+1;
+			for( int i=gang? 0 : k; i<n; ++i ) {
+				if( i < 0 || i >= points.size() ) continue;
+				MaskPoint *point = points[i];
+				point->x += dx;  point->y += dy;
+			}
 #ifdef USE_KEYFRAME_SPANNING
 // Commit to spanned keyframes
-		autos->update_parameter(&temp_keyframe);
+			autos->update_parameter(&temp_keyframe);
 #endif
+		}
+		mwindow->undo->update_undo_after(_("mask point"), LOAD_AUTOMATION);
+		redraw = 1;
 	}
 
-	update_preview();
-	mwindow->undo->update_undo_after(_("mask point"), LOAD_AUTOMATION);
+	if( redraw )
+		update_preview();
 }
 
 void CWindowMaskGUI::set_focused(int v, float cx, float cy)

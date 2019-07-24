@@ -1756,6 +1756,8 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 		if( draw && mask_gui && mask_gui->focused ) {
 			float fx = atof(mask_gui->focus_x->get_text());
 			float fy = atof(mask_gui->focus_y->get_text());
+			fx = (fx - half_track_w) * projector_z + projector_x;
+			fy = (fy - half_track_h) * projector_z + projector_y;
 			output_to_canvas(mwindow->edl, 0, fx, fy);
 			float r = bmax(cvs_win->get_w(), cvs_win->get_h());
 			float d = 0.005*r;
@@ -2275,9 +2277,23 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 
 int CWindowCanvas::do_mask_focus()
 {
-	CWindowMaskGUI *mask_gui = (CWindowMaskGUI*) gui->tool_panel->tool_gui;
+	Track *track = gui->cwindow->calculate_affected_track();
+	int64_t position = track->to_units(
+		mwindow->edl->local_session->get_selectionstart(1),
+		0);
+	float projector_x, projector_y, projector_z;
+	track->automation->get_projector(
+		&projector_x, &projector_y, &projector_z,
+		position, PLAY_FORWARD);
 	float cx = get_cursor_x(), cy = get_cursor_y();
 	canvas_to_output(mwindow->edl, 0, cx, cy);
+	projector_x += mwindow->edl->session->output_w / 2;
+	projector_y += mwindow->edl->session->output_h / 2;
+	float half_track_w = (float)track->track_w / 2;
+	float half_track_h = (float)track->track_h / 2;
+	cx = (cx - projector_x) / projector_z + half_track_w;
+	cy = (cy - projector_y) / projector_z + half_track_h;
+	CWindowMaskGUI *mask_gui = (CWindowMaskGUI*) gui->tool_panel->tool_gui;
 	mask_gui->set_focused(1, cx, cy);
 	return 1;
 }
