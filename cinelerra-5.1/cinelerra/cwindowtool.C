@@ -1922,16 +1922,6 @@ int CWindowMaskDelPoint::handle_event()
 	return 1;
 }
 
-int CWindowMaskDelPoint::keypress_event()
-{
-	if( get_keypress() == BACKSPACE ||
-	    get_keypress() == DELETE )
-		return handle_event();
-	return 0;
-}
-
-
-
 
 CWindowMaskAffectedPoint::CWindowMaskAffectedPoint(MWindow *mwindow,
 	CWindowMaskGUI *gui, int x, int y)
@@ -2597,7 +2587,7 @@ void CWindowMaskGUI::create_objects()
 	}
 	add_subwindow(mask_unclr = new CWindowMaskUnclear(mwindow, this, clr_x, y));
 	y += mask_enables[0]->get_h() + 2*margin;
-	add_subwindow(title_bar = new BC_TitleBar(x, y, get_w()-2*x, 20, 10, _("Presets shapes")));
+	add_subwindow(title_bar = new BC_TitleBar(x, y, get_w()-2*x, 20, 10, _("Preset Shapes")));
 	y += title_bar->get_h() + margin;
 	add_subwindow(mask_shape_sqr = new CWindowMaskShape(mwindow, this,
 		"mask_prst_sqr_images", MASK_SHAPE_SQUARE, t[0], y, _("Square")));
@@ -2706,7 +2696,6 @@ void CWindowMaskGUI::create_objects()
 		"Shift+LMB: move an end point\n"
 		"Ctrl+LMB: move a control point\n"
 		"Alt+LMB: to drag translate the mask\n"
-		"Shift+Key Delete: to delete the point\n"
 		"Shift+MMB: Set Pivot Point at pointer\n"
 		"Wheel: rotate around Pivot Point\n"
 		"Shift+Wheel: scale around Pivot Point\n"
@@ -3330,7 +3319,7 @@ CWindowMaskDelete::CWindowMaskDelete(MWindow *mwindow,
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip(_("delete preset"));
+	set_tooltip(_("Delete preset"));
 }
 
 int CWindowMaskDelete::handle_event()

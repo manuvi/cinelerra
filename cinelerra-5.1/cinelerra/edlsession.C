@@ -73,6 +73,8 @@ EDLSession::EDLSession(EDL *edl)
 	cwindow_xscroll = cwindow_yscroll = 0;
 	cwindow_zoom = 1.0;
 	cwindow_click2play = 0;
+	cwindow_clear_color = BLACK;
+	cwindow_clear_alpha = 0;
 	strcpy(default_atransition, INIT_ATRANSITION);
 	strcpy(default_vtransition, INIT_VTRANSITION);
 	default_transition_length = 1.0;
@@ -178,7 +180,9 @@ int EDLSession::need_rerender(EDLSession *ptr)
 		(white_balance_raw != ptr->white_balance_raw) ||
 		(proxy_disabled_scale != ptr->proxy_disabled_scale) ||
 		(proxy_scale != ptr->proxy_scale) ||
-	    	(proxy_use_scaler != ptr->proxy_use_scaler));
+	 	(proxy_use_scaler != ptr->proxy_use_scaler) ||
+		(cwindow_clear_color != ptr->cwindow_clear_color) ||
+		(cwindow_clear_alpha != ptr->cwindow_clear_alpha));
 }
 
 void EDLSession::equivalent_output(EDLSession *session, double *result)
@@ -254,6 +258,8 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	cwindow_yscroll = defaults->get("CWINDOW_YSCROLL", 0);
 	cwindow_zoom = defaults->get("CWINDOW_ZOOM", (float)1);
 	cwindow_click2play = defaults->get("CWINDOW_CLICK2PLAY", 0);
+	cwindow_clear_color = defaults->get("CWINDOW_CLEAR_COLOR", BLACK);
+	cwindow_clear_alpha = defaults->get("CWINDOW_CLEAR_ALPHA", 0);
 	sprintf(default_atransition, INIT_ATRANSITION);
 	defaults->get("DEFAULT_ATRANSITION", default_atransition);
 	sprintf(default_vtransition, INIT_VTRANSITION);
@@ -401,6 +407,8 @@ int EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->update("CWINDOW_YSCROLL", cwindow_yscroll);
 	defaults->update("CWINDOW_ZOOM", cwindow_zoom);
 	defaults->update("CWINDOW_CLICK2PLAY", cwindow_click2play);
+	defaults->update("CWINDOW_CLEAR_COLOR", cwindow_clear_color);
+	defaults->update("CWINDOW_CLEAR_ALPHA", cwindow_clear_alpha);
 	defaults->update("DEFAULT_ATRANSITION", default_atransition);
 	defaults->update("DEFAULT_VTRANSITION", default_vtransition);
 	defaults->update("DEFAULT_TRANSITION_LENGTH", default_transition_length);
@@ -625,6 +633,8 @@ int EDLSession::load_xml(FileXML *file,
 		cwindow_yscroll = file->tag.get_property("CWINDOW_YSCROLL", cwindow_yscroll);
 		cwindow_zoom = file->tag.get_property("CWINDOW_ZOOM", cwindow_zoom);
 		cwindow_click2play = file->tag.get_property("CWINDOW_CLICK2PLAY", cwindow_click2play);
+		cwindow_clear_color = file->tag.get_property("CWINDOW_CLEAR_COLOR", cwindow_clear_color);
+		cwindow_clear_alpha = file->tag.get_property("CWINDOW_CLEAR_ALPHA", cwindow_clear_alpha);
 		editing_mode = file->tag.get_property("EDITING_MODE", editing_mode);
 		folderlist_format = file->tag.get_property("FOLDERLIST_FORMAT", folderlist_format);
 		highlighted_track = file->tag.get_property("HIGHLIGHTED_TRACK", 0);
@@ -692,6 +702,8 @@ int EDLSession::save_xml(FileXML *file)
 	file->tag.set_property("CWINDOW_YSCROLL", cwindow_yscroll);
 	file->tag.set_property("CWINDOW_ZOOM", cwindow_zoom);
 	file->tag.set_property("CWINDOW_CLICK2PLAY", cwindow_click2play);
+	file->tag.set_property("CWINDOW_CLEAR_COLOR", cwindow_clear_color);
+	file->tag.set_property("CWINDOW_CLEAR_ALPHA", cwindow_clear_alpha);
 	file->tag.set_property("EDITING_MODE", editing_mode);
 	file->tag.set_property("FOLDERLIST_FORMAT", folderlist_format);
 	file->tag.set_property("HIGHLIGHTED_TRACK", highlighted_track);
@@ -827,6 +839,8 @@ int EDLSession::copy(EDLSession *session)
 	cwindow_yscroll = session->cwindow_yscroll;
 	cwindow_zoom = session->cwindow_zoom;
 	cwindow_click2play = session->cwindow_click2play;
+	cwindow_clear_color = session->cwindow_clear_color;
+	cwindow_clear_alpha = session->cwindow_clear_alpha;
 	strcpy(default_atransition, session->default_atransition);
 	strcpy(default_vtransition, session->default_vtransition);
 	default_transition_length = session->default_transition_length;

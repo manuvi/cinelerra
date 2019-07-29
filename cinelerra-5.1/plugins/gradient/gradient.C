@@ -386,16 +386,10 @@ GradientInColorButton::GradientInColorButton(GradientMain *plugin, GradientWindo
 {
 	this->plugin = plugin;
 	this->gui = gui;
-	for( int i=0; i<3; ++i ) {
-		vframes[i] = new VFrame(COLOR_W, COLOR_H, BC_RGB888);
-		vframes[i]->clear_frame();
-	}
 }
 
 GradientInColorButton::~GradientInColorButton()
 {
-	for( int i=0; i<3; ++i )
-		delete vframes[i];
 }
 
 void GradientInColorButton::handle_done_event(int result)
@@ -424,22 +418,16 @@ GradientOutColorButton::GradientOutColorButton(GradientMain *plugin, GradientWin
 {
 	this->plugin = plugin;
 	this->gui = gui;
-	for( int i=0; i<3; ++i ) {
-		vframes[i] = new VFrame(COLOR_W, COLOR_H, BC_RGB888);
-		vframes[i]->clear_frame();
-	}
 }
 
 GradientOutColorButton::~GradientOutColorButton()
 {
-	for( int i=0; i<3; ++i )
-		delete vframes[i];
 }
 
 void GradientOutColorButton::handle_done_event(int result)
 {
 	if( result ) {
-		gui->lock_window("GradientInColorButton::handle_done_event");
+		gui->lock_window("GradientOutColorButton::handle_done_event");
 		update_gui(orig_color, orig_alpha);
 		gui->unlock_window();
 		handle_new_color(orig_color, orig_alpha);

@@ -55,5 +55,6 @@ class YuvColorSpaceItem;
 class YuvColorRange;
 class YuvColorRangeItem;
 class PerpetualSession;
+class Composer_BG_Color;
 
 #endif

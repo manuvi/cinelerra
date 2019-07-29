@@ -431,7 +431,6 @@ public:
 	CWindowMaskDelPoint(MWindow *mwindow, CWindowMaskGUI *gui,
 			int x, int y);
 	int handle_event();
-	int keypress_event();
 	MWindow *mwindow;
 	CWindowMaskGUI *gui;
 };

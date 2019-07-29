@@ -29,7 +29,6 @@
 #include "bctexture.inc"
 #include "bcwindowbase.inc"
 #include "bccmodels.h"
-#include "bccmodels.h"
 #include "vframe.inc"
 
 // Maximum number of prev or next effects to be pushed onto the stacks.
@@ -140,7 +139,8 @@ public:
 		return transfer_from(frame, bg_color, 0,0, frame->get_w(),frame->get_h());
 	}
 // Required for YUV
-	int clear_frame();
+	void black_frame();
+	void clear_frame();
 	int allocate_compressed_data(long bytes);
 
 // Sequence number. -1 means invalid.  Passing frames to the encoder is
@@ -291,6 +291,11 @@ public:
 // Calls init_screen with the current frame's dimensions.
 	void init_screen();
 
+// color used by clear_frame, default -1 (unset) which clears to BLACK
+	void set_clear_color(int color, int alpha);
+	int get_clear_color();
+	int get_clear_alpha();
+
 // Compiles and links the shaders into a program.
 // Adds the program with put_shader.
 // Returns the program handle.
@@ -432,6 +437,8 @@ private:
 	unsigned char *a;
 // Dimensions of frame
 	int w, h;
+// color used by clear_frame
+	int clear_color, clear_alpha;
 // Info for reading png images
 	const unsigned char *image;
 	long image_offset;

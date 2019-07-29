@@ -282,6 +282,8 @@ int VFrame::reset_parameters(int do_opengl)
 	pixel_rgb = 0x000000; // BLACK
 	pixel_yuv = 0x008080;
 	stipple = 0;
+	clear_color = 0x000000;
+	clear_alpha = 0x00;
 
 	if(do_opengl)
 	{
@@ -913,10 +915,10 @@ void VFrame::write_ppm(VFrame *vfrm, const char *fmt, ...)
 	} \
 }
 
-int VFrame::clear_frame()
+void VFrame::black_frame()
 {
 	int sz = w * h;
-//printf("VFrame::clear_frame %d\n", __LINE__);
+//printf("VFrame::black_frame %d\n", __LINE__);
 	switch(color_model) {
 	case BC_COMPRESSED:
 		break;
@@ -984,7 +986,24 @@ int VFrame::clear_frame()
 		bzero(data, calculate_data_size(w, h, bytes_per_line, color_model));
 		break;
 	}
-	return 0;
+}
+
+void VFrame::set_clear_color(int color, int alpha)
+{
+	clear_color = color;
+	clear_alpha = alpha;
+}
+int VFrame::get_clear_color() { return clear_color; }
+int VFrame::get_clear_alpha() { return clear_alpha; }
+
+void VFrame::clear_frame()
+{
+	if( clear_color >= 0 ) {
+		BC_CModels::init_color(clear_color, clear_alpha, get_rows(), get_color_model(),
+			get_y(), get_u(), get_v(), 0,0, get_w(),get_h(), get_bytes_per_line());
+	}
+	else
+		black_frame();
 }
 
 void VFrame::rotate90()

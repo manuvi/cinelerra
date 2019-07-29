@@ -24,6 +24,7 @@
 
 #include "appearanceprefs.inc"
 #include "browsebutton.h"
+#include "colorpicker.h"
 #include "deleteallindexes.inc"
 #include "mwindow.inc"
 #include "preferencesthread.h"
@@ -52,6 +53,7 @@ public:
 	ViewViconColorMode *vicon_color_mode;
 	YuvColorSpace *yuv_color_space;
 	YuvColorRange *yuv_color_range;
+        Composer_BG_Color *cwdw_bg_color;
 };
 
 
@@ -371,6 +373,18 @@ class RectifyAudioToggle : public BC_CheckBox
 public:
 	RectifyAudioToggle(int x, int y, PreferencesWindow *pwindow);
 	int handle_event();
+	PreferencesWindow *pwindow;
+};
+
+class Composer_BG_Color : public ColorBoxButton
+{
+public:
+	Composer_BG_Color(PreferencesWindow *pwindow,
+		int x, int y, int w, int h, int color, int alpha);
+	~Composer_BG_Color();
+	void handle_done_event(int result);
+	int handle_new_color(int color, int alpha);
+
 	PreferencesWindow *pwindow;
 };
 

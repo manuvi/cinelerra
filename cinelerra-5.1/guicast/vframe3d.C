@@ -445,8 +445,14 @@ void VFrame::dump_shader(int shader_id)
 void VFrame::clear_pbuffer()
 {
 #ifdef HAVE_GL
-	float gbuv = BC_CModels::is_yuv(get_color_model()) ? 0.5 : 0;
-	glClearColor(0.0, gbuv, gbuv, 0.0);
+	int rgb = clear_color>=0 ? clear_color : 0;
+	int a = clear_color>=0 ? clear_alpha : 0;
+	int r = (rgb>>16) & 0xff;
+	int g = (rgb>> 8) & 0xff;
+	int b = (rgb>> 0) & 0xff;
+	if( BC_CModels::is_yuv(get_color_model()) )
+		YUV::yuv.rgb_to_yuv_8(r, g, b);
+	glClearColor(r/255.f, g/255.f, b/255.f, a/255.f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
 }

@@ -4,10 +4,10 @@ void BC_Xfer::init(
 		uint8_t *out_yp, uint8_t *out_up, uint8_t *out_vp, uint8_t *out_ap, int out_rowspan,
 	uint8_t **input_rows, int in_colormodel, int in_x, int in_y, int in_w, int in_h,
 		uint8_t *in_yp, uint8_t *in_up, uint8_t *in_vp, uint8_t *in_ap, int in_rowspan,
-	int bg_color)
+	int bg_color, int bg_alpha)
 {
-	this->bg_color = bg_color;
 	if( bg_color >= 0 ) {
+		this->bg_a = bg_alpha; // only used with init_color
 		this->bg_r = (bg_color>>16) & 0xff;
 		this->bg_g = (bg_color>>8) & 0xff;
 		this->bg_b = (bg_color>>0) & 0xff;
@@ -20,9 +20,26 @@ void BC_Xfer::init(
 		case BC_YUVA16161616:	in_colormodel = BC_YUVX16161616;	break;
 		case BC_RGBA_FLOAT:	in_colormodel = BC_RGBX_FLOAT;		break;
 		}
+		this->bg_r = this->bg_g = this->bg_b = this->bg_a = 0;
 	}
-	// prevent bounds errors on poorly dimensioned macro pixel formats
+	int pmx = BC_CModels::calculate_max(out_colormodel);
 	switch( in_colormodel ) {
+	case BC_TRANSPARENCY:
+		if( BC_CModels::is_yuv(out_colormodel) ) {
+			int ry = this->bg_r, gu = this->bg_g, bv = this->bg_b;
+			YUV::yuv.rgb_to_yuv_8(ry, gu, bv);
+			this->bg_r = ry, this->bg_g = gu, this->bg_b = bv;
+		}
+		if( pmx > 0xff ) {
+			this->bg_r <<= 8;
+			this->bg_g <<= 8;
+			this->bg_b <<= 8;
+			this->bg_a <<= 8;
+		}
+		else
+			pmx = 0xff;
+		break;
+	// prevent bounds errors on poorly dimensioned macro pixel formats
 	case BC_UVY422:
 	case BC_YUV422:   in_w &= ~1;               break;  // 2x1
 	case BC_YUV420P:
@@ -84,32 +101,43 @@ void BC_Xfer::init(
 	this->total_out_w = out_rowspan;
 	this->in_pixelsize = BC_CModels::calculate_pixelsize(in_colormodel);
 	this->out_pixelsize = BC_CModels::calculate_pixelsize(out_colormodel);
-	this->scale = (out_w != in_w) || (in_x != 0);
-
+	if( in_w ) {
+		this->scale = (out_w != in_w) || (in_x != 0);
 /* + 1 so we don't overflow when calculating in advance */
-	column_table = new int[out_w+1];
-        double hscale = (double)in_w/out_w;
-	for( int i=0; i<out_w; ++i ) {
+		column_table = new int[out_w+1];
+		double hscale = (double)in_w/out_w;
+		for( int i=0; i<out_w; ++i ) {
 			column_table[i] = ((int)(hscale * i) + in_x) * in_pixelsize;
 			if( in_colormodel == BC_YUV422 || in_colormodel == BC_UVY422 )
 				column_table[i] &= ~3;
+		}
+		double vscale = (double)in_h/out_h;
+		row_table = new int[out_h];
+		for( int i=0; i<out_h; ++i )
+			row_table[i] = (int)(vscale * i) + in_y;
 	}
-        double vscale = (double)in_h/out_h;
-	row_table = new int[out_h];
-        for( int i=0; i<out_h; ++i )
-                row_table[i] = (int)(vscale * i) + in_y;
+	else {
+		this->scale = 0;
+		column_table = 0;
+		row_table = 0;
+	}
+	this->bg_fa = (float)this->bg_a / pmx;
+	this->bg_fr = (float)this->bg_r / pmx;
+	this->bg_fg = (float)this->bg_g / pmx;
+	this->bg_fb = (float)this->bg_b / pmx;
 }
 
 BC_Xfer::BC_Xfer(uint8_t **output_rows, uint8_t **input_rows,
 	uint8_t *out_yp, uint8_t *out_up, uint8_t *out_vp,
 	uint8_t *in_yp, uint8_t *in_up, uint8_t *in_vp,
 	int in_x, int in_y, int in_w, int in_h, int out_x, int out_y, int out_w, int out_h,
-	int in_colormodel, int out_colormodel, int bg_color, int in_rowspan, int out_rowspan)
+	int in_colormodel, int out_colormodel, int bg_color, int bg_alpha,
+	int in_rowspan, int out_rowspan)
 {
 	init(output_rows, out_colormodel, out_x, out_y, out_w, out_h,
 		out_yp, out_up, out_vp, 0, out_rowspan,
 	     input_rows, in_colormodel, in_x, in_y, in_w, in_h,
-		in_yp, in_up, in_vp, 0, in_rowspan,  bg_color);
+		in_yp, in_up, in_vp, 0, in_rowspan, bg_color, bg_alpha);
 }
 
 BC_Xfer::BC_Xfer(
@@ -117,7 +145,7 @@ BC_Xfer::BC_Xfer(
 		int out_x, int out_y, int out_w, int out_h, int out_rowspan,
 	uint8_t **input_ptrs, int in_colormodel,
 		int in_x, int in_y, int in_w, int in_h, int in_rowspan,
-	int bg_color)
+	int bg_color, int bg_alpha)
 {
 	uint8_t *out_yp = 0, *out_up = 0, *out_vp = 0, *out_ap = 0;
 	uint8_t *in_yp = 0,  *in_up = 0,  *in_vp = 0,  *in_ap = 0;
@@ -132,7 +160,7 @@ BC_Xfer::BC_Xfer(
 	init(output_ptrs, out_colormodel, out_x, out_y, out_w, out_h,
 		 out_yp, out_up, out_vp, out_ap, out_rowspan,
 	     input_ptrs, in_colormodel, in_x, in_y, in_w, in_h,
-		 in_yp, in_up, in_vp, in_ap, in_rowspan,  bg_color);
+		 in_yp, in_up, in_vp, in_ap, in_rowspan,  bg_color, bg_alpha);
 }
 
 BC_Xfer::~BC_Xfer()
@@ -142,15 +170,16 @@ BC_Xfer::~BC_Xfer()
 }
 
 void BC_CModels::transfer(unsigned char **output_rows, unsigned char **input_rows,
-        unsigned char *out_yp, unsigned char *out_up, unsigned char *out_vp,
-        unsigned char *in_yp, unsigned char *in_up, unsigned char *in_vp,
-        int in_x, int in_y, int in_w, int in_h, int out_x, int out_y, int out_w, int out_h,
-        int in_colormodel, int out_colormodel, int bg_color, int in_rowspan, int out_rowspan)
+	unsigned char *out_yp, unsigned char *out_up, unsigned char *out_vp,
+	unsigned char *in_yp, unsigned char *in_up, unsigned char *in_vp,
+	int in_x, int in_y, int in_w, int in_h, int out_x, int out_y, int out_w, int out_h,
+	int in_colormodel, int out_colormodel, int bg_color,
+	int in_rowspan, int out_rowspan)
 {
 	BC_Xfer xfer(output_rows, input_rows,
 		out_yp, out_up, out_vp, in_yp, in_up, in_vp,
 		in_x, in_y, in_w, in_h, out_x, out_y, out_w, out_h,
-		in_colormodel, out_colormodel, bg_color, in_rowspan, out_rowspan);
+		in_colormodel, out_colormodel, bg_color,0xff, in_rowspan, out_rowspan);
 	xfer.xfer();
 }
 
@@ -158,11 +187,25 @@ void BC_CModels::transfer(
 	uint8_t **output_ptrs, int out_colormodel,
 		int out_x, int out_y, int out_w, int out_h, int out_rowspan,
 	uint8_t **input_ptrs, int in_colormodel,
-		int in_x, int in_y, int in_w, int in_h, int in_rowspan,  int bg_color)
+		int in_x, int in_y, int in_w, int in_h, int in_rowspan,
+	int bg_color)
 {
 	BC_Xfer xfer(
 		output_ptrs, out_colormodel, out_x, out_y, out_w, out_h, out_rowspan,
-		input_ptrs, in_colormodel, in_x, in_y, in_w, in_h, in_rowspan,  bg_color);
+		input_ptrs, in_colormodel, in_x, in_y, in_w, in_h, in_rowspan,
+		bg_color,0xff);
+	xfer.xfer();
+}
+
+// color is rgb
+void BC_CModels::init_color(int color, int alpha,
+		unsigned char **output_rows, int out_colormodel,
+		unsigned char *out_yp, unsigned char *out_up, unsigned char *out_vp,
+		int out_x, int out_y, int out_w, int out_h, int out_rowspan)
+{
+	BC_Xfer xfer(output_rows, 0, out_yp,out_up,out_vp, 0,0,0,
+		0,0,0,0, out_x,out_y,out_w,out_h, BC_TRANSPARENCY,
+		out_colormodel, color,alpha, 0, out_rowspan);
 	xfer.xfer();
 }
 

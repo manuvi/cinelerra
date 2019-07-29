@@ -153,8 +153,12 @@ int VirtualVConsole::process_buffer(int64_t input_position,
 		if(!output_temp)
 		{
 // Texture is created on demand
+			EDL *edl = renderengine->get_edl();
 			output_temp = new VFrame( track->track_w, track->track_h,
-				renderengine->get_edl()->session->color_model);
+				edl->session->color_model);
+			int clr_color = edl->session->cwindow_clear_color;
+			int clr_alpha = edl->session->cwindow_clear_alpha;
+			output_temp->set_clear_color(clr_color, clr_alpha);
 		}
 
 // Reset OpenGL state

@@ -321,7 +321,8 @@ public:
 
 private:
 // Called by write_buffer and clear_frame to initialize OpenGL flags
-	void init_frame(Playback3DCommand *command, int is_yuv=0);
+	void color_frame(Playback3DCommand *command,
+		float r, float g, float b, float a);
 	void write_buffer_sync(Playback3DCommand *command);
 	void draw_output(Playback3DCommand *command, int flip_y);
 	void clear_output_sync(Playback3DCommand *command);

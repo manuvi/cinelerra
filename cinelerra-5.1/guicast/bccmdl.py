@@ -4,6 +4,11 @@
 from __future__ import print_function
 
 base = {
+  "clear": {
+    "i8":  { "r": " uint32_t r = bg_r, g = bg_g, b = bg_b;", },
+    "i16": { "r": " uint32_t r = bg_r, g = bg_g, b = bg_b;", },
+    "fp":  { "r": " float r = bg_fr, g = bg_fg, b = bg_fb;", },
+  },
   "rgb8": {
     "i8": {
       "r": " uint32_t in = *inp; int r = ((in>>6)&3)*0x55u, g = ((in>>3)&7)*0x24u, b = (in&7)*0x24u;",
@@ -507,7 +512,7 @@ def specialize(fr_cmdl, to_cmdl, fn):
   global special
   special[(fr_cmdl, to_cmdl)] = fn
 
-add_cmodel( 0, "bc_transparency")
+add_cmodel( 0, "bc_transparency", "clr", "clear")
 add_cmodel( 1, "bc_compressed")
 
 add_cmodel( 2, "bc_rgb8", "i8", "rgb8")
@@ -561,6 +566,7 @@ add_cmodel(43, "bc_rgbx_float", "fp", "rgbfloat", "xfp")
 specialize("bc_rgba8888", "bc_transparency", "XFER_rgba8888_to_transparency")
 
 ctype = {
+  "clr": None,
   "i8": "uint8_t",
   "i16": "uint16_t",
   "fp": "float",
@@ -570,6 +576,11 @@ adata = {
   "i8": " z_int a=0xff;",
   "i16": " z_int a=0xffff;",
   "fp": " z_float fa=1;",
+}
+cdata = {
+  "i8": " z_int a = bg_a;",
+  "i16": " z_int a = bg_a;",
+  "fp": " z_float fa = bg_fa;",
 }
 
 def has_alpha(nm):
@@ -592,7 +603,8 @@ def is_rgb(nm):
     "bc_argb8888", "bc_abgr8888", "bc_rgb", "bc_rgb161616", \
     "bc_rgba16161616", "bc_rgb_float", "bc_rgba_float", \
     "bc_rgb_floatp", "bc_rgba_floatp", "bc_gbrp", \
-    "bc_rgbx8888", "bc_rgbx16161616", "bc_rgbx_float", ]
+    "bc_rgbx8888", "bc_rgbx16161616", "bc_rgbx_float", \
+    "bc_transparency"]
 
 def is_yuv(nm):
   return nm in [ "bc_yuv888", "bc_yuva8888", "bc_yuv161616", \
@@ -612,14 +624,17 @@ def is_float(nm):
 def gen_xfer_proto(fd, pfx, cls, fr_cmdl, to_cmdl):
   global dtype, ctype
   print("%svoid %sxfer_%s_to_%s" % (pfx, cls, fr_cmdl[3:], to_cmdl[3:]), end=' ', file=fd)
-  ityp = dtype[fr_cmdl];  fr_typ = ctype[ityp];
-  otyp = dtype[to_cmdl];  to_typ = ctype[otyp];
+  ityp = dtype[fr_cmdl];
+  otyp = dtype[to_cmdl];
   print("(unsigned y0, unsigned y1)", end=' ', file=fd)
 
 def gen_xfer_fn(fd, fr_cmdl, to_cmdl):
-  global layout, dtype, adata
+  global layout, dtype, adata, cdata
   ityp = dtype[fr_cmdl];  otyp = dtype[to_cmdl]
   if( ityp is None or otyp is None ): return
+  fr_typ = ctype[ityp];
+  to_typ = ctype[otyp];
+  if( to_typ is None ): return
   # xfr fn header
   gen_xfer_proto(fd, "", class_qual, fr_cmdl, to_cmdl);
   # xfr fn body
@@ -631,8 +646,12 @@ def gen_xfer_fn(fd, fr_cmdl, to_cmdl):
   out_xfer = "flat" if not is_planar(to_cmdl) else \
     to_cmdl[3:] if is_yuv(to_cmdl) else \
     "rgbp" if not has_alpha(to_cmdl) else "rgbap"
-  print(" xfer_%s_row_out(%s) xfer_%s_row_in(%s)" % (out_xfer, ctype[otyp], in_xfer, ctype[ityp]), file=fd)
-
+  print(" xfer_%s_row_out(%s)" % (out_xfer, to_typ), end=' ', file=fd)
+  if( fr_typ is None ):
+    print(" xfer_clear()", end=' ', file=fd)
+  else:
+    print(" xfer_%s_row_in(%s)" % (in_xfer, fr_typ), end=' ', file=fd)
+  print("", file=fd)
   # load inp
   if( is_float(to_cmdl) and is_yuv(fr_cmdl) ):
     for ic in layout[fr_cmdl]: print("%s" % (base[ic][ityp]['r']), end=' ', file=fd)
@@ -650,11 +669,14 @@ def gen_xfer_fn(fd, fr_cmdl, to_cmdl):
   else:
     for ic in layout[fr_cmdl]: print("%s" % (base[ic][otyp]['r']), end=' ', file=fd)
     if( has_alpha(to_cmdl) and not has_alpha(fr_cmdl) ):
-      print("%s" % (adata[otyp]), end=' ', file=fd)
+      alfa = cdata if fr_typ is None else adata
+      print("%s" % (alfa[otyp]), end=' ', file=fd)
   print("", file=fd)
   # xfer
   if( is_rgb(fr_cmdl) and is_yuv(to_cmdl) ):
-    if( otyp == "i8" ):
+    if( ityp == "clr" ):
+        print(" int32_t y = r, u = g, v = b;", file=fd)
+    elif( otyp == "i8" ):
       print(" int32_t y, u, v;  YUV::yuv.rgb_to_yuv_8(r, g, b, y, u, v);", file=fd)
     elif( otyp == "i16" ):
       print(" int32_t y, u, v;  YUV::yuv.rgb_to_yuv_16(r, g, b, y, u, v);", file=fd)
@@ -698,7 +720,7 @@ for fr_cmdl in cmodels:
     if( is_specialized(fr_cmdl, to_cmdl) ):
       print("  void %s(unsigned y0, unsigned y1);" % (special[(fr_cmdl, to_cmdl)]), file=fd)
       continue
-    if( ityp is None or otyp is None ): continue
+    if( ityp is None or otyp is None or ctype[otyp] is None ): continue
     gen_xfer_proto(fd, "  ", "", fr_cmdl, to_cmdl);
     print(";", file=fd)
 # end of class definition
@@ -734,7 +756,7 @@ for fr_no in range(mx_no):
     to_cmdl = bcmodels.get(to_no)
     otyp = dtype[to_cmdl]
     xfn = special[(fr_cmdl, to_cmdl)] if( is_specialized(fr_cmdl, to_cmdl) ) else \
-      "xfer_%s_to_%s" % (fr_cmdl[3:], to_cmdl[3:]) if ( ityp and otyp ) else None
+      "xfer_%s_to_%s" % (fr_cmdl[3:], to_cmdl[3:]) if ( ityp and otyp and ctype[otyp] ) else None
     if( n > 72 ): print("", file=fd); n = 0
     if( n == 0 ): print("   ", end=' ', file=fd); n += 4
     fn = "&%s%s" % (class_qual, xfn) if( xfn ) else "0"

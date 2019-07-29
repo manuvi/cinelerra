@@ -32,6 +32,9 @@ ZTYP(float);
     for( unsigned j=0; j<out_w; ++j ) { \
       ity_t *inp = (ity_t *)(inp_row + column_table[j]); \
 
+#define xfer_clear(s) \
+    for( unsigned j=0; j<out_w; ++j ) { \
+
 #define xfer_end } }
 
 // yuv420p  2x2
@@ -216,15 +219,16 @@ class BC_Xfer {
   BC_Xfer(const BC_Xfer&) {}
 public:
   BC_Xfer(uint8_t **output_rows, uint8_t **input_rows,
-    uint8_t *out_yp, uint8_t *out_up, uint8_t *out_vp,
-    uint8_t *in_yp, uint8_t *in_up, uint8_t *in_vp,
-    int in_x, int in_y, int in_w, int in_h, int out_x, int out_y, int out_w, int out_h,
-    int in_colormodel, int out_colormodel, int bg_color, int in_rowspan, int out_rowspan);
+  uint8_t *out_yp, uint8_t *out_up, uint8_t *out_vp,
+  uint8_t *in_yp, uint8_t *in_up, uint8_t *in_vp,
+  int in_x, int in_y, int in_w, int in_h, int out_x, int out_y, int out_w, int out_h,
+  int in_colormodel, int out_colormodel, int bg_color, int bg_alpha,
+  int in_rowspan, int out_rowspan);
   BC_Xfer(uint8_t **output_ptrs, int out_colormodel,
       int out_x, int out_y, int out_w, int out_h, int out_rowspan,
     uint8_t **input_ptrs, int in_colormodel,
       int in_x, int in_y, int in_w, int in_h, int in_rowspan,
-    int bg_color);
+    int bg_color, int bg_alpha);
   ~BC_Xfer();
 
   uint8_t **output_rows, **input_rows;
@@ -233,11 +237,12 @@ public:
   int in_x, in_y; unsigned in_w, in_h;
   int out_x, out_y; unsigned out_w, out_h;
   int in_colormodel, out_colormodel;
-  uint32_t bg_color, total_in_w, total_out_w;
+  uint32_t total_in_w, total_out_w;
   int scale;
   int out_pixelsize, in_pixelsize;
   int *row_table, *column_table;
-  uint32_t bg_r, bg_g, bg_b;
+  uint32_t bg_r, bg_g, bg_b, bg_a;
+  float bg_fr, bg_fg, bg_fb, bg_fa;
 
   void xfer();
   void xfer_slices(int slices);
@@ -270,6 +275,6 @@ public:
       uint8_t *out_yp, uint8_t *out_up, uint8_t *out_vp, uint8_t *out_ap, int out_rowspan,
     uint8_t **input_rows, int in_colormodel, int in_x, int in_y, int in_w, int in_h,
       uint8_t *in_yp, uint8_t *in_up, uint8_t *in_vp, uint8_t *in_ap, int in_rowspan,
-    int bg_color);
+    int bg_color, int bg_alpha);
 
 // generated code concatentated here

@@ -705,7 +705,7 @@ void Playback3D::draw_output(Playback3DCommand *command, int flip_y)
 		if(!command->is_cleared)
 		{
 // If we get here, the virtual console was not used.
-			init_frame(command, 0);
+			color_frame(command, 0,0,0,0);
 		}
 
 // Texture
@@ -747,11 +747,11 @@ void Playback3D::draw_output(Playback3DCommand *command, int flip_y)
 }
 
 
-void Playback3D::init_frame(Playback3DCommand *command, int is_yuv)
+void Playback3D::color_frame(Playback3DCommand *command,
+		float r, float g, float b, float a)
 {
 #ifdef HAVE_GL
-	float gbuv = is_yuv ? 0.5 : 0.0;
-	glClearColor(0.0, gbuv, gbuv, 0.0);
+	glClearColor(r, g, b, a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
 }
@@ -775,14 +775,21 @@ void Playback3D::clear_output_sync(Playback3DCommand *command)
 // If we get here, the virtual console is being used.
 		command->canvas->get_canvas()->enable_opengl();
 		int is_yuv = 0;
+		int color = BLACK, alpha = 0;
 // Using pbuffer for refresh frame.
 		if( command->frame ) {
 			command->frame->enable_opengl();
+			color = command->frame->get_clear_color();
+			alpha = command->frame->get_clear_alpha();
 			int color_model = command->canvas->mwindow->edl->session->color_model;
 			is_yuv = BC_CModels::is_yuv(color_model);
 		}
-
-		init_frame(command, is_yuv);
+		int a = alpha;
+		int r = (color>>16) & 0xff;
+		int g = (color>>8) & 0xff;
+		int b = (color>>0) & 0xff;
+		if( is_yuv ) YUV::yuv.rgb_to_yuv_8(r, g, b);
+		color_frame(command, r/255.f, g/255.f, b/255.f, a/255.f);
 	}
 	command->canvas->unlock_canvas();
 #endif

@@ -102,16 +102,10 @@ SketcherCurveColor::SketcherCurveColor(SketcherWindow *gui,
 {
 	this->gui = gui;
 	this->color = CV_COLOR;
-	for( int i=0; i<3; ++i ) {
-		vframes[i] = new VFrame(w, h, BC_RGB888);
-		vframes[i]->clear_frame();
-	}
 }
 
 SketcherCurveColor::~SketcherCurveColor()
 {
-	for( int i=0; i<3; ++i )
-		delete vframes[i];
 }
 
 void SketcherCurveColor::handle_done_event(int result)

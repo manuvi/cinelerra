@@ -66,7 +66,7 @@ enum BC_CModel {
 	BC_AYUV16161616 = 35,
 	BC_GREY8        = 36,
 	BC_GREY16       = 37,
-//only used for chroma only xfers (transfer with bg_color < 0)
+//only used for chroma only xfers (transfer with bg_color = -1)
 	BC_RGBX8888	= 39,
 	BC_RGBX16161616	= 40,
 	BC_YUVX8888	= 41,
@@ -134,6 +134,11 @@ public:
 		unsigned char **input_ptrs, int in_colormodel,
 			int in_x, int in_y, int in_w, int in_h, int in_rowspan,
 		int bg_color);
+// paint buffer solid color
+	static void init_color(int color, int alpha,
+		unsigned char **output_rows, int out_colormodel,
+		unsigned char *out_yp, unsigned char *out_up, unsigned char *out_vp,
+		int out_x, int out_y, int out_w, int out_h, int out_rowspan);
 
 	static int bc_to_x(int color_model);
 	static void bcxfer_stop_slicers();
