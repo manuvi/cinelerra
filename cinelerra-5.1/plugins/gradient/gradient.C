@@ -1045,9 +1045,9 @@ void GradientUnit::process_package(LoadPackage *package)
 		int out1, out2, out3, out4;
 		YUV::yuv.rgb_to_yuv_8(in_r,in_g,in_b, in1,in2,in3);
 		in4 = plugin->config.in_a;
-		int out_r = plugin->config.in_r;
-		int out_g = plugin->config.in_g;
-		int out_b = plugin->config.in_b;
+		int out_r = plugin->config.out_r;
+		int out_g = plugin->config.out_g;
+		int out_b = plugin->config.out_b;
 		YUV::yuv.rgb_to_yuv_8(out_r,out_g,out_b, out1,out2,out3);
 		out4 = plugin->config.out_a;
 		CREATE_GRADIENT(unsigned char, int, 3, 0xff)
@@ -1061,9 +1061,9 @@ void GradientUnit::process_package(LoadPackage *package)
 		int out1, out2, out3, out4;
 		YUV::yuv.rgb_to_yuv_8(in_r,in_g,in_b, in1,in2,in3);
 		in4 = plugin->config.in_a;
-		int out_r = plugin->config.in_r;
-		int out_g = plugin->config.in_g;
-		int out_b = plugin->config.in_b;
+		int out_r = plugin->config.out_r;
+		int out_g = plugin->config.out_g;
+		int out_b = plugin->config.out_b;
 		YUV::yuv.rgb_to_yuv_8(out_r,out_g,out_b, out1,out2,out3);
 		out4 = plugin->config.out_a;
 		CREATE_GRADIENT(unsigned char, int, 4, 0xff)

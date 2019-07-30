@@ -472,7 +472,7 @@ int SketcherWindow::grab_event(XEvent *event)
 		if( grab_cursor_motion() )
 			pending_config = 1;
 		if( pending_config ) {
-			last_x = output_x;  last_y = output_y;
+			last_x = track_x;  last_y = track_y;
 			send_configure_change();
 		}
 	}
