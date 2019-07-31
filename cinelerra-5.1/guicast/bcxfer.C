@@ -180,7 +180,8 @@ void BC_CModels::transfer(unsigned char **output_rows, unsigned char **input_row
 		out_yp, out_up, out_vp, in_yp, in_up, in_vp,
 		in_x, in_y, in_w, in_h, out_x, out_y, out_w, out_h,
 		in_colormodel, out_colormodel, bg_color,0xff, in_rowspan, out_rowspan);
-	xfer.xfer();
+	if( xfer.xfer() )
+		printf("BC_CModels::transfer failed: %d to %d\n", in_colormodel, out_colormodel);
 }
 
 void BC_CModels::transfer(
@@ -194,11 +195,12 @@ void BC_CModels::transfer(
 		output_ptrs, out_colormodel, out_x, out_y, out_w, out_h, out_rowspan,
 		input_ptrs, in_colormodel, in_x, in_y, in_w, in_h, in_rowspan,
 		bg_color,0xff);
-	xfer.xfer();
+	if( xfer.xfer() )
+		printf("BC_CModels::transfer failed: %d to %d\n", in_colormodel, out_colormodel);
 }
 
 // color is rgb
-void BC_CModels::init_color(int color, int alpha,
+int BC_CModels::init_color(int color, int alpha,
 		unsigned char **output_rows, int out_colormodel,
 		unsigned char *out_yp, unsigned char *out_up, unsigned char *out_vp,
 		int out_x, int out_y, int out_w, int out_h, int out_rowspan)
@@ -206,7 +208,7 @@ void BC_CModels::init_color(int color, int alpha,
 	BC_Xfer xfer(output_rows, 0, out_yp,out_up,out_vp, 0,0,0,
 		0,0,0,0, out_x,out_y,out_w,out_h, BC_TRANSPARENCY,
 		out_colormodel, color,alpha, 0, out_rowspan);
-	xfer.xfer();
+	return xfer.xfer();
 }
 
 // specialized functions
@@ -262,9 +264,9 @@ BC_Xfer::Slicer *BC_Xfer::SlicerList::get_slicer(BC_Xfer *xp)
   return slicer;
 }
 
-void BC_Xfer::xfer_slices(int slices)
+int BC_Xfer::xfer_slices(int slices)
 {
-  if( !xfn ) return;
+  if( !xfn ) return 1;
   int max_slices = BC_Resources::machine_cpus/2;
   if( slices > max_slices ) slices = max_slices;
   if( slices < 1 ) slices = 1;
@@ -291,6 +293,7 @@ void BC_Xfer::xfer_slices(int slices)
       slicers.append(active[i]);
     slicers.unlock();
   }
+  return 0;
 }
 
 BC_Xfer::Slicer::Slicer(BC_Xfer *xp)

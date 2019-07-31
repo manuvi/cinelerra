@@ -998,12 +998,12 @@ int VFrame::get_clear_alpha() { return clear_alpha; }
 
 void VFrame::clear_frame()
 {
-	if( clear_color >= 0 ) {
-		BC_CModels::init_color(clear_color, clear_alpha, get_rows(), get_color_model(),
-			get_y(), get_u(), get_v(), 0,0, get_w(),get_h(), get_bytes_per_line());
-	}
-	else
-		black_frame();
+	if( clear_color >= 0 &&
+	    !BC_CModels::init_color(clear_color, clear_alpha,
+			get_rows(), get_color_model(), get_y(), get_u(), get_v(),
+			0,0, get_w(),get_h(), get_bytes_per_line()) )
+		return;
+	black_frame();
 }
 
 void VFrame::rotate90()

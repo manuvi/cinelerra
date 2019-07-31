@@ -244,8 +244,8 @@ public:
   uint32_t bg_r, bg_g, bg_b, bg_a;
   float bg_fr, bg_fg, bg_fb, bg_fa;
 
-  void xfer();
-  void xfer_slices(int slices);
+  int xfer();
+  int xfer_slices(int slices);
   typedef void (BC_Xfer::*xfer_fn)(unsigned y0, unsigned y1);
   xfer_fn xfn;
 

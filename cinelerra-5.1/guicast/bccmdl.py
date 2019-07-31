@@ -743,7 +743,7 @@ fd = open(xfn + ".C", "w")
 # transfer switch
 print("#include \"xfer.h\"", file=fd)
 print("", file=fd)
-print("void %sxfer()" % class_qual, file=fd)
+print("int %sxfer()" % class_qual, file=fd)
 print("{", file=fd)
 mx_no = mx_bcmdl + 1
 print("  static xfer_fn xfns[%d][%d] = {" % (mx_no, mx_no), file=fd)
@@ -765,7 +765,7 @@ for fr_no in range(mx_no):
   print("}, ", file=fd)
 print("  }; ", file=fd)
 print("  xfn = xfns[in_colormodel][out_colormodel];", file=fd)
-print("  xfer_slices(out_w*out_h/0x80000+1);", file=fd)
+print("  return xfer_slices(out_w*out_h/0x80000+1);", file=fd)
 print("}", file=fd)
 print("", file=fd)
 print("#include \"bcxfer.C\"", file=fd)

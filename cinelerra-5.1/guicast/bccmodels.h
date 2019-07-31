@@ -135,7 +135,7 @@ public:
 			int in_x, int in_y, int in_w, int in_h, int in_rowspan,
 		int bg_color);
 // paint buffer solid color
-	static void init_color(int color, int alpha,
+	static int init_color(int color, int alpha,
 		unsigned char **output_rows, int out_colormodel,
 		unsigned char *out_yp, unsigned char *out_up, unsigned char *out_vp,
 		int out_x, int out_y, int out_w, int out_h, int out_rowspan);

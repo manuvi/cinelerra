@@ -8,6 +8,11 @@ Cinfinity icons selected in Preferences Sam (CC BY 3.0,
 Cakewalk and Neophyte themes by Olaf Wolff (CC BY 4.0,
   https://creativecommons.org/licenses/by/4.0/)
 .
+July 2019 New Features of note:
+  Completion of Masking improvements with Preset Shapes, Center
+    and Normalize buttons, plus x/y scaling in 1 direction only.
+  Provision for usage of Rectified Audio waveforms was added.
+  Spanning Keyframes is now isolated to avoid interference.
 June 2019 New Features of note:
   Hardware acceleration Nvenc for Nvidia boards rendering in.
   More masking improvements to include tracks, solo, & gangs.
