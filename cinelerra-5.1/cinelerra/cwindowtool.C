@@ -2077,7 +2077,7 @@ int CWindowMaskDrawBoundary::handle_event()
 
 
 CWindowMaskFeather::CWindowMaskFeather(MWindow *mwindow, CWindowMaskGUI *gui, int x, int y)
- : BC_TumbleTextBox(gui, 0, -FEATHER_MAX, FEATHER_MAX, x, y, 64, 2)
+ : BC_TumbleTextBox(gui, 0, INT_MIN, INT_MAX, x, y, 64, 2)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
@@ -2124,7 +2124,6 @@ int CWindowMaskFeather::update_value(float v)
 			if( !gui->mask_enables[i]->get_value() ) continue;
 			SubMask *sub_mask = keyframe->get_submask(i);
 			float feather = sub_mask->feather + change;
-			bclamp(feather, -FEATHER_MAX, FEATHER_MAX);
 			sub_mask->feather = feather;
 		}
 #ifdef USE_KEYFRAME_SPANNING
@@ -2146,7 +2145,7 @@ int CWindowMaskFeather::handle_event()
 
 CWindowMaskFeatherSlider::CWindowMaskFeatherSlider(MWindow *mwindow,
 		CWindowMaskGUI *gui, int x, int y, int w, float v)
- : BC_FSlider(x, y, 0, w, w, -FEATHER_MAX, FEATHER_MAX, v)
+ : BC_FSlider(x, y, 0, w, w, -FEATHER_MAX-5, FEATHER_MAX+5, v)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
@@ -2154,6 +2153,7 @@ CWindowMaskFeatherSlider::CWindowMaskFeatherSlider(MWindow *mwindow,
 	timer = new Timer();
 	stick = 0;
 	last_v = 0;
+	max = FEATHER_MAX;
 }
 
 CWindowMaskFeatherSlider::~CWindowMaskFeatherSlider()
@@ -2163,32 +2163,41 @@ CWindowMaskFeatherSlider::~CWindowMaskFeatherSlider()
 
 int CWindowMaskFeatherSlider::handle_event()
 {
+	int sticky = 0;
 	float v = get_value();
-	if( stick > 0 ) {
-		int64_t ms = timer->get_difference();
-		if( ms < 250 && --stick > 0 ) {
-			if( get_value() == 0 ) return 1;
-			update(v = 0);
+	if( stick && timer->get_difference() >= 250 )
+		stick = 0; // no events for .25 sec
+	if( stick && (last_v * (v-last_v)) < 0 )
+		stick = 0; // dv changed direction
+	if( stick ) {
+		if( --stick > 0 ) {
+			timer->update();
+			update(last_v);
+			return 1;
 		}
-		else {
-			stick = 0;
-			last_v = v;
+		if( last_v ) {
+			max *= 1.25;
+			update(get_w(), v=last_v, -max-5, max+5);
+			button_release_event();
 		}
 	}
-	else if( (last_v>=0 && v<0) || (last_v<0 && v>=0) ) {
-		stick = 16;
-		v = 0;
-	}
-	else
-		last_v = v;
-	timer->update();
+	else if( v > max ) { v = max;  sticky = 24; }
+	else if( v < -max ) { v = -max; sticky = 24; }
+	else if( v>=0 ? last_v<0 : last_v>=0 ) { v = 0;  sticky = 16; }
+	if( sticky ) { update(v);  stick = sticky;  timer->update(); }
+	last_v = v;
 	gui->feather->BC_TumbleTextBox::update(v);
 	return gui->feather->update_value(v);
 }
 
 int CWindowMaskFeatherSlider::update(float v)
 {
-	return BC_FSlider::update(v);
+	while( max < v ) max *= 1.25;
+	return update(get_w(), v, -max-5, max+5);
+}
+int CWindowMaskFeatherSlider::update(int r, float v, float mn, float mx)
+{
+	return BC_FSlider::update(r, v, mn, mx);
 }
 
 CWindowMaskFade::CWindowMaskFade(MWindow *mwindow, CWindowMaskGUI *gui, int x, int y)

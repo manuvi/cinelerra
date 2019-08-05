@@ -320,6 +320,7 @@ public:
 	void calculate_origin();
 	void toggle_controls();
 	int get_cwindow_controls();
+	int get_clear_color();
 
 	MWindow *mwindow;
 	CWindowGUI *gui;

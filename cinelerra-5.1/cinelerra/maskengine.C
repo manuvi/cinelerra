@@ -220,10 +220,12 @@ void MaskUnit::process_package(LoadPackage *package)
 			int fg = 0xffff * (rv >= 0 ? vv : 0);
 			int bg = 0xffff * (rv >= 0 ? 0 : vv);
 			int rr = r*r;  double dr = 1./rr;
+			// gausian, rr is x**2, limit 1/255
+			double sig2 = -log(255.0);
 			temp_t psf[rr+1];  spot = psf;
 			for( int i=0; i<=rr; ++i ) {
-				double d = i*dr;
-				psf[i] = (1-d)*fg + d*bg;
+				double d = exp(i*dr * sig2);
+				psf[i] = d*fg + (1-d)*bg;
 			}
 			int n = edge.size();
 			for( int i=0; i<n; ++i ) {

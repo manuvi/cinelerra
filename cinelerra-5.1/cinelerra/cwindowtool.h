@@ -456,11 +456,13 @@ public:
 	~CWindowMaskFeatherSlider();
 	int handle_event();
 	int update(float v);
+	int update(int r, float v, float mn, float mx);
 	char *get_caption() { return 0; }
 	MWindow *mwindow;
 	CWindowMaskGUI *gui;
 	int stick;
 	float last_v;
+	float max;
 	Timer *timer;
 };
 

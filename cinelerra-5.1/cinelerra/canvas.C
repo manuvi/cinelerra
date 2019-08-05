@@ -905,17 +905,14 @@ void Canvas::clear(int flash)
 {
 	BC_WindowBase *cwdw = get_canvas();
 	if( !cwdw )  return;
-	cwdw->set_bg_color(BLACK);
+	cwdw->set_bg_color(get_clear_color());
 	cwdw->clear_box(0,0, cwdw->get_w(), cwdw->get_h());
 	if( flash ) cwdw->flash();
 }
 
 
 CanvasOutput::CanvasOutput(Canvas *canvas,
-    int x,
-    int y,
-    int w,
-    int h)
+    int x, int y, int w, int h)
  : BC_SubWindow(x, y, w, h, BLACK)
 {
 	this->canvas = canvas;
