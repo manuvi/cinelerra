@@ -2192,7 +2192,8 @@ int CWindowMaskFeatherSlider::handle_event()
 
 int CWindowMaskFeatherSlider::update(float v)
 {
-	while( max < v ) max *= 1.25;
+	float vv = fabsf(v);
+	while( max < vv ) max *= 1.25;
 	return update(get_w(), v, -max-5, max+5);
 }
 int CWindowMaskFeatherSlider::update(int r, float v, float mn, float mx)

@@ -125,8 +125,9 @@ SET_TRACE
 int CICache::check_in(Asset *asset)
 {
 	total_lock->lock("CICache::check_in");
+	CICacheItem *current = 0;
 	if( !check_outs ) {
-		CICacheItem *current = first;
+		current = first;
 		while(current && strcmp(current->asset->path, asset->path) != 0)
 			current = NEXT;
 		if(current && current->checked_out) {

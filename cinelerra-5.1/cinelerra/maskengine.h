@@ -38,8 +38,10 @@ class MaskEngine;
 enum
 {
 	DO_MASK,
-	DO_FEATHER,
-	DO_APPLY
+	DO_FEATHER_X,
+	DO_FEATHER_Y,
+	DO_MASK_BLEND,
+	DO_APPLY,
 };
 
 
@@ -49,7 +51,8 @@ public:
 	MaskPackage();
 	~MaskPackage();
 
-	int start_x, end_x, start_y, end_y;
+	int start_x, end_x;
+	int start_y, end_y;
 };
 
 class MaskUnit : public LoadClient
@@ -58,17 +61,25 @@ public:
 	MaskUnit(MaskEngine *engine);
 	~MaskUnit();
 
-	void draw_line(int v, int x1, int y1, int x2, int y2);
-	void draw_fill(int v);
+	void clear_mask(VFrame *msk, int a);
+	void draw_line(int x1, int y1, int x2, int y2);
+	void draw_fill();
 	void draw_feather(int ix1,int iy1, int ix2,int iy2);
-	void draw_spot(int ix, int iy);
+	void draw_edge(int ix, int iy);
+	void draw_filled_polygon(MaskEdge &edge);
+	void feather_x(VFrame *in, VFrame *out);
+	void feather_y(VFrame *in, VFrame *out);
+	void mask_blend(VFrame *in, VFrame *mask, float r, float v);
+	void apply_mask_alpha(VFrame *output, VFrame *mask);
+
 	void process_package(LoadPackage *package);
 
 	MaskEngine *engine;
-	int start_y, end_y;
+	MaskPackage *pkg;
 	int mask_model;
-	float v, r;
-	temp_t *spot;
+	int bc, fc;
+	int start_x, end_x;
+	int start_y, end_y;
 };
 
 class MaskEngine : public LoadServer
@@ -85,6 +96,8 @@ public:
 		MaskAuto *default_auto);
 	int points_equivalent(MaskPoints *new_points,
 		MaskPoints *points);
+	void clear_mask(VFrame *msk, int a);
+	void draw_point_spot(float r);
 
 	void delete_packages();
 	void init_packages();
@@ -92,14 +105,17 @@ public:
 	LoadPackage* new_package();
 
 	VFrame *output;
-	VFrame *mask, *temp;
+	VFrame *mask, *in, *out;
 	MaskEdges edges;
 	MaskPointSets point_sets;
 	ArrayList<float> faders;
 	ArrayList<float> feathers;
 	int step, total_submasks;
 	int recalculate;
-	temp_t fade[SUBMASKS+1];
+	MaskEdge *edge;
+	float r, v;
+	float *psf;
+	int psz;
 };
 
 

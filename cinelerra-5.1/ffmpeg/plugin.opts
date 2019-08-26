@@ -137,6 +137,7 @@ format pix_fmts=yuv420p|yuv444p|yuv410p
 #framepack ###Input/output error
 framerate
 framestep step=30
+#freezedetect
 fspp
 gblur
 #geq ###Invalid argument
@@ -241,6 +242,7 @@ separatefields
 #showfreqs ###Input/output error
 #showinfo ###not part of frame data
 showpalette s=30
+#showspatial
 #showspectrum s=1280x480:scale=log ###Input/output error
 #showspectrumpic ###Input/output error
 #showvolume r=30 ###Input/output error
@@ -277,6 +279,7 @@ testsrc duration=5.3:size=qcif:rate=10
 testsrc2 duration=5.3:size=qcif:rate=10
 #threshold ###Input/output error
 #thumbnail n=50
+#thumbnail_cuda
 tile layout=3x2:nb_frames=5:padding=7:margin=2
 tinterlace
 transpose
@@ -297,6 +300,7 @@ w3fdif
 waveform
 weave
 xbr
+#xmedian
 yadif
 yuvtestsrc
 zoompan
@@ -306,6 +310,7 @@ bitplanenoise
 ciescope
 crossfeed
 deflicker
+#derain
 despill
 doubleweave
 floodfill

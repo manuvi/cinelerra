@@ -455,7 +455,7 @@ int FFStream::decode(AVFrame *frame)
 			AVPacket *pkt = ret > 0 ? (AVPacket*)ipkt : 0;
 			if( pkt ) {
 				if( pkt->stream_index != st->index ) continue;
-				if( !pkt->data | !pkt->size ) continue;
+				if( !pkt->data || !pkt->size ) continue;
 			}
 			if( (ret=avcodec_send_packet(avctx, pkt)) < 0 ) {
 				ff_err(ret, "FFStream::decode: avcodec_send_packet failed.\nfile:%s\n",
@@ -835,7 +835,8 @@ int FFAudioStream::decode_frame(AVFrame *frame)
 	frame->best_effort_timestamp = AV_NOPTS_VALUE;
 	int ret = avcodec_receive_frame(avctx, frame);
 	if( ret < 0 ) {
-		if( first_frame || ret == AVERROR(EAGAIN) ) return 0;
+		if( first_frame ) return 0;
+		if( ret == AVERROR(EAGAIN) ) return 0;
 		if( ret == AVERROR_EOF ) { st_eof(1); return 0; }
 		ff_err(ret, "FFAudioStream::decode_frame: Could not read audio frame.\nfile:%s\n",
 				ffmpeg->fmt_ctx->url);
@@ -1135,7 +1136,7 @@ int FFVideoStream::decode_frame(AVFrame *frame)
 	int first_frame = seeked;  seeked = 0;
 	int ret = avcodec_receive_frame(avctx, frame);
 	if( ret < 0 ) {
-		if( first_frame || ret == AVERROR(EAGAIN) ) return 0;
+		if( first_frame ) return 0;
 		if( ret == AVERROR(EAGAIN) ) return 0;
 		if( ret == AVERROR_EOF ) { st_eof(1); return 0; }
 		ff_err(ret, "FFVideoStream::decode_frame: Could not read video frame.\nfile:%s\n,",

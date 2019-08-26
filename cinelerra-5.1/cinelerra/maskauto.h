@@ -49,9 +49,8 @@ class MaskCoord { public: double x, y, z; };
 class MaskEdge : public ArrayList<MaskCoord>
 {
 public:
-	MaskCoord &append() { return ArrayList<MaskCoord>::append(); }
 	MaskCoord &append(double x, double y, double z=0) {
-		MaskCoord &c = append();
+		MaskCoord &c = ArrayList<MaskCoord>::append();
 		c.x = x;  c.y = y;  c.z = z;
 		return c;
 	}

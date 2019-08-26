@@ -271,31 +271,50 @@ static const char *feather_frag =
 	"#version 430\n"
 	"layout(location=0) out vec4 color;\n"
 	"uniform sampler2D tex;\n"
-// apparently, only doubles index properly in shared buffers
-	"buffer buf { dvec2 points[]; };\n"
+	"const int MAX = 1024;\n"
+	"uniform float psf[MAX];\n"
+	"uniform int n;\n"
+	"uniform vec2 dxy;\n"
+	"uniform vec2 twh;\n"
+	"\n"
+	"void main() {\n"
+	"	vec2 tc = gl_FragCoord.xy/textureSize(tex,0);\n"
+	"	color = texture(tex, tc);\n"
+	"	float c = color.r, f = c*psf[0];\n"
+	"	for( int i=1; i<n; ++i ) {\n"
+	"		vec2 dd = float(i)*dxy;\n"
+	"		vec2 a = tc+dd, ac = min(max(vec2(0.),a), twh);\n"
+	"		vec2 b = tc-dd, bc = min(max(vec2(0.),b), twh);\n"
+	"		float fa = texture2D(tex, ac).r * psf[i];\n"
+	"		float fb = texture2D(tex, bc).r * psf[i];\n"
+	"		float m = max(fa, fb);\n"
+	"		if( f < m ) f = m;\n"
+	"	}\n"
+	"	if( c < f ) color = vec4(f);\n"
+	"}\n";
+
+static const char *max_frag =
+	"#version 430\n"
+	"layout(location=0) out vec4 color;\n"
+	"uniform sampler2D tex;\n"
+	"uniform sampler2D tex1;\n"
 	"uniform float r;\n"
 	"uniform float v;\n"
+	"\n"
 	"void main() {\n"
-	"	vec2 tex_st = gl_FragCoord.xy/textureSize(tex,0);\n"
-	"	color = texture(tex, tex_st);\n"
-	"	if( r==0. ) return;\n"
-	"	float rv = r*v>0. ? 1 : -1;\n"
-	"	float rr = r*r, dr = 1./rr;\n"
-	"	float vv = v>=0 ? 1.-v : 1.+v;\n"
-	"	float fg = rv>=0 ? vv : 1.;\n"
-	"	float bg = rv>=0 ? 1. : vv;\n"
-	"	int len = points.length();\n"
-	"	float sig2 = -log(255.0);\n"
-	"	for( int i=0; i<len; ++i ) {\n"
-	"		float dx = float(points[i].x) - gl_FragCoord.x;\n"
-	"		float dy = float(points[i].y) - gl_FragCoord.y;\n"
-	"		float dd = dx*dx + dy*dy;\n"
-	"		if( dd >= rr ) continue;\n"
-	"		float ss = dd / rr;\n"
-	"		float d = exp(ss * sig2);\n"
-	"		float a = d*fg + (1.-d)*bg;\n"
-	"		if( rv*(color.a-a) > 0 ) color = vec4(a);\n"
-	"	}\n"
+	"	vec2 tc = gl_FragCoord.xy/textureSize(tex,0);\n"
+	"	color = texture2D(tex1, tc);\n"
+	"	float c = texture2D(tex, tc).r;\n"
+	"	float b = r<0 ? 1. : 0.;\n"
+	"	if( c == b ) return;\n"
+	"	float iv = v>=0. ? 1. : -1.;\n"
+	"	float rr = r!=0. ? r : 1.;\n"
+	"	float rv = rr*v>=0. ? 1. : -1.;\n"
+	"	float vv = v>=0. ? 1.-v : 1.+v;\n"
+	"	float fg = rv>0. ? vv : 1.;\n"
+	"	float bg = rv>0. ? 1. : vv;\n"
+	"	float a = c*fg + (1.-c)*bg;\n"
+	"	if( iv*(color.a-a) > 0. ) color = vec4(a);\n"
 	"}\n";
 
 static const char *multiply_mask4_frag =
@@ -1174,6 +1193,7 @@ public:
 	void bind(int texture_unit);
 	void read_screen(int x, int y, int w, int h);
 	void set_output_texture();
+	void unset_output_texture();
 	GLuint fb, rb;
 };
 
@@ -1206,6 +1226,7 @@ void fb_texture::bind(int texture_unit)
 
 void fb_texture::read_screen(int x, int y, int w, int h)
 {
+	bind(1);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glReadBuffer(GL_BACK);
 	glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0,0, x,y, w,h);
@@ -1213,8 +1234,9 @@ void fb_texture::read_screen(int x, int y, int w, int h)
 
 void fb_texture::set_output_texture()
 {
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, get_texture_id(), 0);
-	GLenum dbo[1] = { GL_COLOR_ATTACHMENT0, }; // bind layout(location=0) out vec4 color;
+	GLenum at = GL_COLOR_ATTACHMENT0;
+	glFramebufferTexture(GL_FRAMEBUFFER, at, get_texture_id(), 0);
+	GLenum dbo[1] = { at, }; // bind layout(location=0) out vec4 color;
 	glDrawBuffers(1, dbo);
 	int ret = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if( ret != GL_FRAMEBUFFER_COMPLETE ) {
@@ -1222,12 +1244,28 @@ void fb_texture::set_output_texture()
 		return;
 	}
 }
+void fb_texture::unset_output_texture()
+{
+	glDrawBuffers(0, 0);
+	int at = GL_COLOR_ATTACHMENT0;
+	glFramebufferTexture(GL_FRAMEBUFFER, at, 0, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glDisable(GL_TEXTURE_2D);
+}
+
+
+class zglTessData : public ArrayList<double *>
+{
+public:
+	zglTessData() { set_array_delete(); }
+	~zglTessData() { remove_all_objects(); }
+};
 
 static void combineData(GLdouble coords[3],
 		GLdouble *vertex_data[4], GLfloat weight[4],
 		GLdouble **outData, void *data)
 {
-	ArrayList<double *> *invented = (ArrayList<double *> *)data;
+	zglTessData *invented = (zglTessData *)data;
 	GLdouble *vertex = new double[6];
 	invented->append(vertex);
 	vertex[0] = coords[0];
@@ -1247,7 +1285,7 @@ static void combineData(GLdouble coords[3],
 // dbug
 static void zglBegin(GLenum mode) { glBegin(mode); }
 static void zglEnd() { glEnd(); }
-static void zglVertex3dv(const GLdouble *v) { glVertex3dv(v); }
+static void zglVertex(const GLdouble *v) { glVertex3dv(v); }
 
 #endif
 
@@ -1280,11 +1318,12 @@ void Playback3D::do_mask_sync(Playback3DCommand *command)
 		int w = command->frame->get_w();
 		int h = command->frame->get_h();
 		MaskEdges edges;
-		float faders[SUBMASKS], feathers[SUBMASKS], bg = 1;
+		float faders[SUBMASKS], feathers[SUBMASKS], cc = 1;
 		MaskPoints point_set[SUBMASKS];
 // Draw every submask as a new polygon
 		int total_submasks = command->keyframe_set->total_submasks(
 			command->start_position_project, PLAY_FORWARD);
+		int show_mask = command->keyframe_set->track->masks;
 
 		for(int k = 0; k < total_submasks; k++) {
 			MaskPoints &points = point_set[k];
@@ -1294,103 +1333,127 @@ void Playback3D::do_mask_sync(Playback3DCommand *command)
 				command->start_position_project, k, PLAY_FORWARD);
 			float v = fader/100.;
 			faders[k] = v;
-			if( v < 0 && (v+=1) < bg ) bg = v;
 			float feather = command->keyframe_set->get_feather(
 				command->start_position_project, k, PLAY_FORWARD);
 			feathers[k] = feather;
-		}
-// clear screen
-		glDisable(GL_TEXTURE_2D);
-		glClearColor(bg, bg, bg, bg);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		int show_mask = command->keyframe_set->track->masks;
-		for(int k = 0; k < total_submasks; k++) {
 			MaskEdge &edge = *edges.append(new MaskEdge());
-			if( !((show_mask>>k) & 1) ) continue;
+			if( !v || !((show_mask>>k) & 1) || !points.size() ) continue;
 			edge.load(point_set[k], h);
-			if( edge.size() > 0 ) {
-// draw polygon
-				float fader = faders[k];
-				float v = fader < 0 ? 1 : 1-fader;
-				glColor4f(v, v, v, v);
-				int display_list = glGenLists(1);
-				glNewList(display_list, GL_COMPILE);
-#if 0
+			if( v >= 0 ) continue;
+			float vv = 1 + v;
+			if( cc > vv ) cc = vv;
+		}
+
+		fb_texture *mask = new fb_texture(w, h, color_model);
+		mask->set_output_texture();
+		glClearColor(cc, cc, cc, cc);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		mask->unset_output_texture();
+
+		unsigned int feather_shader =
+			VFrame::make_shader(0, in_vertex_frag, feather_frag, 0);
+		unsigned int max_shader =
+			VFrame::make_shader(0, in_vertex_frag, max_frag, 0);
+		if( feather_shader && max_shader ) {
+			fb_texture *in = new fb_texture(w, h, color_model);
+			fb_texture *out = new fb_texture(w, h, color_model);
+			float tw = 1./out->get_texture_w(), th = 1./out->get_texture_h();
+			float tw1 = (w-1)*tw, th1 = (h-1)*th;
+			for(int k = 0; k < total_submasks; k++) {
+				MaskEdge &edge = *edges[k];
+				if( edge.size() < 3 ) continue;
+				float r = feathers[k], v = faders[k];
+				glBindFramebuffer(GL_FRAMEBUFFER, 0);
+				glActiveTexture(GL_TEXTURE0);
+				glDisable(GL_TEXTURE_2D);
+				float b = r>=0 ? 0. : 1.;
+				float f = r>=0 ? 1. : 0.;
+				glClearColor(b, b, b, b);
+				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+				glColor4f(f, f, f, f);
 				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+				int display_list = glGenLists(1);
+#if 0
+				glNewList(display_list, GL_COMPILE);
 				glBegin(GL_POLYGON);
 				MaskCoord *c = &edge[0];
 				for( int i=edge.size(); --i>=0; ++c )
 					glVertex2f(c->x, c->y);
 				glEnd();
+				glEndList();
+				glCallList(display_list);
 #else
+				{ zglTessData invented;
 				GLUtesselator *tess = gluNewTess();
-				gluTessCallback(tess, GLU_TESS_VERTEX,(GLvoid (*)()) &zglVertex3dv);
+				gluTessProperty(tess, GLU_TESS_TOLERANCE, 0.5);
+				gluTessCallback(tess, GLU_TESS_VERTEX,(GLvoid (*)()) &zglVertex);
 				gluTessCallback(tess, GLU_TESS_BEGIN,(GLvoid (*)()) &zglBegin);
 				gluTessCallback(tess, GLU_TESS_END,(GLvoid (*)()) &zglEnd);
 				gluTessCallback(tess, GLU_TESS_COMBINE_DATA,(GLvoid (*)()) &combineData);
-				ArrayList<double *> invented;
-				invented.set_array_delete();
-
-	                        gluTessBeginPolygon(tess, &invented);
+				glNewList(display_list, GL_COMPILE);
+				gluTessBeginPolygon(tess, &invented);
 				gluTessBeginContour(tess);
 				MaskCoord *c = &edge[0];
 				for( int i=edge.size(); --i>=0; ++c )
 					gluTessVertex(tess, (GLdouble *)c, c);
 				gluTessEndContour(tess);
-	                        gluTessEndPolygon(tess);
-				gluDeleteTess(tess);
-				invented.remove_all_objects();
-#endif
+				gluTessEndPolygon(tess);
 				glEndList();
 				glCallList(display_list);
+				gluDeleteTess(tess); }
+#endif
 				glDeleteLists(1, display_list);
-			}
-		}
-
-// in/out textures
-		fb_texture *in = new fb_texture(w, h, color_model);
-		in->bind(0);
-		in->read_screen(0,0, w,h);
-		fb_texture *out = new fb_texture(w, h, color_model);
-
-		unsigned int frag_shader =
-			VFrame::make_shader(0, in_vertex_frag, feather_frag, 0);
-		if( frag_shader > 0 ) {
-			GLuint points[1];
-			glGenBuffers(1, points);
-			for(int k = 0; k < total_submasks; k++) {
-				MaskEdge &edge = *edges[k];
-				if( !edge.size() ) continue;
-				if( !faders[k] ) continue;
-				if( !feathers[k] ) continue;
-				MaskSpots spots;
-				for( int i=0; i<edge.size(); ++i ) {
-					MaskCoord &a = edge[i];
-					MaskCoord &b = i<edge.size()-1 ? edge[i+1] : edge[0];
-					draw_spots(spots, a.x,a.y+h, b.x,b.y+h);
+				in->read_screen(0,0, w,h);
+//in->write_tex("/tmp/in0.ppm");
+				if( r ) {
+					double sig2 = -log(255.0)/(r*r);
+					int n = abs((int)r) + 1;
+					if( n > 1024 ) n = 1024; // MAX
+					float psf[n];  // point spot fn
+					for( int i=0; i<n; ++i )
+						psf[i] = exp(i*i * sig2);
+					glUseProgram(feather_shader);
+					glUniform1fv(glGetUniformLocation(feather_shader, "psf"), n, psf);
+					glUniform1i(glGetUniformLocation(feather_shader, "n"), n);
+					glUniform2f(glGetUniformLocation(feather_shader, "dxy"), tw, 0.);
+					glUniform2f(glGetUniformLocation(feather_shader, "twh"), tw1, th1);
+					glUniform1i(glGetUniformLocation(feather_shader, "tex"), 0);
+					in->bind(0);
+					out->set_output_texture();
+					out->draw_texture(0,0, w,h, 0,0, w,h);
+					out->unset_output_texture();
+//out->write_tex("/tmp/out1.ppm");
+					fb_texture *t = in;  in = out;  out = t;
+					glUniform2f(glGetUniformLocation(feather_shader, "dxy"), 0., th);
+					in->bind(0);
+					out->set_output_texture();
+					out->draw_texture(0,0, w,h, 0,0, w,h);
+					out->unset_output_texture();
+//out->write_tex("/tmp/out2.ppm");
+					glUseProgram(0);
+					t = in;  in = out;  out = t;
 				}
-				int sz = spots.size() * sizeof(MaskSpot);
-				glBindBufferRange(GL_SHADER_STORAGE_BUFFER, 0, points[0], 0, sz);
-				glBufferData(GL_SHADER_STORAGE_BUFFER, sz, &spots[0], GL_DYNAMIC_COPY);
-				glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-				glUseProgram(frag_shader);
-				float r = feathers[k], v = faders[k];
-				glUniform1f(glGetUniformLocation(frag_shader, "r"), r);
-				glUniform1f(glGetUniformLocation(frag_shader, "v"), v);
-				in->bind(0);
-				glUniform1i(glGetUniformLocation(frag_shader, "tex"), 0);
-				out->set_output_texture();
-				glViewport(0,0, w,h);
-				out->draw_texture(0,0, w,h, 0,0, w,h);
-				glUseProgram(0);
-				fb_texture *t = in;  in = out;  out = t;
-			}
-			glDeleteBuffers(1, points);
-		}
 
-		glDrawBuffers(0, 0);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+				glUseProgram(max_shader);
+				in->bind(0);
+//in->write_tex("/tmp/in1.ppm");
+//mask->write_tex("/tmp/mask1.ppm");
+				mask->bind(1);
+				glUniform1i(glGetUniformLocation(max_shader, "tex"), 0);
+				glUniform1i(glGetUniformLocation(max_shader, "tex1"), 1);
+				glUniform1f(glGetUniformLocation(max_shader, "r"), r);
+				glUniform1f(glGetUniformLocation(max_shader, "v"), v);
+				glViewport(0,0, w,h);
+				out->set_output_texture();
+				out->draw_texture(0,0, w,h, 0,0, w,h);
+				out->unset_output_texture();
+				glUseProgram(0);
+				fb_texture *t = mask;  mask = out;  out = t;
+//mask->write_tex("/tmp/mask2.ppm");
+			}
+			delete in;
+			delete out;
+		}
 
 		const char *alpha_shader = BC_CModels::has_alpha(color_model) ?
 				multiply_mask4_frag :
@@ -1401,19 +1464,17 @@ void Playback3D::do_mask_sync(Playback3DCommand *command)
 		glUseProgram(shader);
 		if( shader > 0 ) {
 			command->frame->bind_texture(0);
-			in->BC_Texture::bind(1);
+			mask->BC_Texture::bind(1);
 			glUniform1i(glGetUniformLocation(shader, "tex"), 0);
 			glUniform1i(glGetUniformLocation(shader, "tex1"), 1);
 		}
 		command->frame->draw_texture();
 		command->frame->set_opengl_state(VFrame::SCREEN);
 		glUseProgram(0);
-		delete in;
-		delete out;
-// Default drawable
-		glDisable(GL_TEXTURE_2D);
+		delete mask;
 		glColor4f(1, 1, 1, 1);
 		glActiveTexture(GL_TEXTURE0);
+		glDisable(GL_TEXTURE_2D);
 		window->enable_opengl();
 	}
 	command->canvas->unlock_canvas();
