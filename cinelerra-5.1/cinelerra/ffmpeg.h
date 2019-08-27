@@ -259,6 +259,22 @@ public:
 	int top_field_first;
 };
 
+class FFCodecRemap
+{
+public:
+	FFCodecRemap();
+	~FFCodecRemap();
+	const char *old_codec, *new_codec;
+};
+
+class FFCodecRemaps : public ArrayList<FFCodecRemap>
+{
+public:
+	FFCodecRemaps() {}
+	int add(const char *val);
+	int update(AVCodecID &codec_id, AVCodec *&decoder);
+};
+
 class FFMPEG : public Thread {
 public:
 	static Mutex fflock;
@@ -329,6 +345,10 @@ public:
 	char *opt_video_filter;
 	char *opt_audio_filter;
 	char *opt_hw_dev;
+	char *opt_video_decoder;
+	char *opt_audio_decoder;
+	FFCodecRemaps video_codec_remaps;
+	FFCodecRemaps audio_codec_remaps;
 	char file_format[BCTEXTLEN];
 	int fflags;
 

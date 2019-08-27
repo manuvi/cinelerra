@@ -411,6 +411,11 @@ PKG_3RD([libaom],[auto],
   [ usr/local/lib*/libaom*.a ],
   [ usr/local/include ])
 
+PKG_3RD([dav1d],[auto],
+  [dav1d-0.4.0],
+  [ usr/local/lib*/libdav1d*.a ],
+  [ usr/local/include ])
+
 PKG_3RD([libwebp],[auto],
   [libwebp-1.0.2],
   [ usr/local/lib*/libwebp*.a ],
@@ -579,6 +584,8 @@ CHECK_LIB([opus], [opus], [opus_multistream_decoder_create])
 CHECK_HEADERS([opus], [libopus headers], [opus/opus_multistream.h])
 CHECK_LIB([libaom], [aom], [aom_codec_version])
 CHECK_HEADERS([libaom], [libaom headers], [aom/aom.h])
+CHECK_LIB([dav1d], [dav1d], [dav1d_version])
+CHECK_HEADERS([dav1d], [libdav1d headers], [dav1d/dav1d.h])
 CHECK_LIB([libwebp], [webp], [WebPGetEncoderVersion])
 CHECK_HEADERS([libwebp], [libwebp headers], [webp/encode.h])
 CHECK_LIB([a52dec], [a52], [a52_init])
@@ -827,6 +834,7 @@ PKG_PROVIDE([libuuid])
 PKG_PROVIDE([libvorbis])
 PKG_PROVIDE([mjpegtools])
 PKG_PROVIDE([libaom])
+PKG_PROVIDE([dav1d])
 PKG_PROVIDE([libwebp])
 PKG_PROVIDE([openexr], [$WANT_OPENEXR])
 PKG_PROVIDE([openjpeg])

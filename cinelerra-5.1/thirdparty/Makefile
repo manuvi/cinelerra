@@ -118,6 +118,7 @@ ffmpeg.cfg_params= \
 	$(call if_pkg,openjpeg,--enable-libopenjpeg) \
 	$(call if_pkg,lame,--enable-libmp3lame) \
 	$(call if_pkg,libaom,--enable-libaom) \
+	$(call if_pkg,dav1d,--enable-libdav1d) \
 	$(call if_pkg,libwebp,--enable-libwebp) \
 	$(call if_pkg,opus,--enable-libopus) \
 	$(call if_pkg,libvorbis,--enable-libvorbis) \
@@ -130,6 +131,7 @@ ffmpeg.cfg_params= \
 		$(call inc_path,twolame,libtwolame) \
 		$(call inc_path,lame,include) \
 		$(call inc_path,libaom,usr/local/include) \
+		$(call inc_path,dav1d,usr/local/include) \
 		$(call inc_path,libwebp,usr/local/include) \
 		$(call inc_path,openjpeg,src/lib/openjp2) \
 		$(call inc_path,libogg,include) \
@@ -146,6 +148,7 @@ ffmpeg.cfg_params= \
 		$(call ld_path,twolame,libtwolame/.libs) \
 		$(call ld_path,lame,libmp3lame/.libs) \
 		$(call ld_path,libaom,usr/local/lib) \
+		$(call ld_path,dav1d,usr/local/lib) \
 		$(call ld_path,libwebp,usr/local/lib) \
 		$(call ld_path,openjpeg,bin) \
 		$(call ld_path,opus,.libs) \
@@ -182,6 +185,9 @@ libaom.cfg_vars?=$(call cmake_config,aom-master)
 libaom.cfg_params?= -DENABLE_SHARED=no -DCMAKE_INSTALL_LIBDIR=lib \
  -DCMAKE_INSTALL_PREFIX=$(call bld_path,libaom)/usr/local
 libaom.mak_params?= ; $(MAKE) -C libaom* install
+dav1d.cfg_vars?=echo "meson build --buildtype release --default-library=both" > configure; chmod +x ./configure;
+dav1d.mak_vars?=(echo "all:"; echo "	ninja -C build") > $(call bld_path,dav1d)/Makefile;
+dav1d.mak_params?=; cd "$(call bld_path,dav1d)"; DESTDIR="$(call bld_path,dav1d)" meson install -C build
 libwebp.cfg_vars?= mkdir build && cd build && $(call cmake_config,..)
 libwebp.mak_params?= -C build all install DESTDIR=$(call bld_path,libwebp)
 mjpegtools.cflags?="$(call inc_path,libjpeg) $(call ld_path,libjpeg,.libs)"
@@ -292,7 +298,7 @@ $(call rules,$(call std-build,audiofile))
 $(call rules,$(call std-build,encore))
 $(call rules,$(call std-build,esound,audiofile))
 $(call rules,$(call std-build,ffmpeg, twolame lame openjpeg opus \
-	libtheora x264 x265 libvpx libaom libwebp \
+	libtheora x264 x265 libvpx libaom dav1d libwebp \
 	$(if $(WANT_NV), ffnvcodec)))
 $(call rules,$(call std-build,fftw))
 $(call rules,$(call std-build,flac,libogg))
@@ -301,6 +307,7 @@ $(call rules,$(call std-build,ilmbase))
 $(call rules,$(call std-build,ladspa))
 $(call rules,$(call std-build,lame))
 $(call rules,$(call std-build,libaom))
+$(call rules,$(call std-build,dav1d))
 $(call rules,$(call std-build,libwebp))
 $(call rules,$(call std-build,libavc1394,libraw1394))
 $(call rules,$(call std-build,libdv))

@@ -52,6 +52,7 @@ BuildRequires: udftools
 BuildRequires: gtk2-devel
 BuildRequires: libva-devel
 BuildRequires: libvdpau-devel
+BuildRequires: meson
 %{?rhat:BuildRequires: alsa-lib-devel}
 %{?rhat:BuildRequires: bzip2-devel}
 %{?rhat:BuildRequires: xorg-x11-fonts-cyrillic}

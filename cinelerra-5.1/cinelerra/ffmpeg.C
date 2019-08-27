@@ -374,7 +374,21 @@ int FFStream::decode_activate()
 		}
 		while( ret >= 0 && st != 0 && !reading ) {
 			AVCodecID codec_id = st->codecpar->codec_id;
-			AVCodec *decoder = avcodec_find_decoder(codec_id);
+			AVCodec *decoder = 0;
+			if( is_video() ) {
+				if( ffmpeg->opt_video_decoder )
+					decoder = avcodec_find_decoder_by_name(ffmpeg->opt_video_decoder);
+				else
+					ffmpeg->video_codec_remaps.update(codec_id, decoder);
+			}
+			else if( is_audio() ) {
+				if( ffmpeg->opt_audio_decoder )
+					decoder = avcodec_find_decoder_by_name(ffmpeg->opt_audio_decoder);
+				else
+					ffmpeg->audio_codec_remaps.update(codec_id, decoder);
+			}
+			if( !decoder )
+				decoder = avcodec_find_decoder(codec_id);
 			avctx = avcodec_alloc_context3(decoder);
 			if( !avctx ) {
 				eprintf(_("cant allocate codec context\n"));
@@ -1547,6 +1561,8 @@ FFMPEG::FFMPEG(FileBase *file_base)
 	opt_video_filter = 0;
 	opt_audio_filter = 0;
 	opt_hw_dev = 0;
+	opt_video_decoder = 0;
+	opt_audio_decoder = 0;
 	fflags = 0;
 	char option_path[BCTEXTLEN];
 	set_option_path(option_path, "%s", "ffmpeg.opts");
@@ -1992,6 +2008,45 @@ int FFMPEG::scan_options(const char *options, AVDictionary *&opts, AVStream *st)
 	return ret;
 }
 
+FFCodecRemap::FFCodecRemap()
+{
+	old_codec = 0;
+	new_codec = 0;
+}
+FFCodecRemap::~FFCodecRemap()
+{
+	delete [] old_codec;
+	delete [] new_codec;
+}
+
+int FFCodecRemaps::add(const char *val)
+{
+	char old_codec[BCSTRLEN], new_codec[BCSTRLEN];
+	if( sscanf(val, " %63[a-zA-z0-9_-] = %63[a-z0-9_-]",
+		&old_codec[0], &new_codec[0]) != 2 ) return 1;
+	FFCodecRemap &remap = append();
+	remap.old_codec = cstrdup(old_codec);
+	remap.new_codec = cstrdup(new_codec);
+	return 0;
+}
+
+
+int FFCodecRemaps::update(AVCodecID &codec_id, AVCodec *&decoder)
+{
+	AVCodec *codec = avcodec_find_decoder(codec_id);
+	if( !codec ) return -1;
+	const char *name = codec->name;
+	FFCodecRemaps &map = *this;
+	int k = map.size();
+	while( --k >= 0 && strcmp(map[k].old_codec, name) );
+	if( k < 0 ) return 1;
+	const char *new_codec = map[k].new_codec;
+	codec = avcodec_find_decoder_by_name(new_codec);
+	if( !codec ) return -1;
+	decoder = codec;
+	return 0;
+}
+
 int FFMPEG::read_options(FILE *fp, const char *options, AVDictionary *&opts)
 {
 	int ret = 0, no = 0;
@@ -2008,6 +2063,14 @@ int FFMPEG::read_options(FILE *fp, const char *options, AVDictionary *&opts)
 		if( !ret ) {
 			if( !strcmp(key, "duration") )
 				opt_duration = strtod(val, 0);
+			else if( !strcmp(key, "video_decoder") )
+				opt_video_decoder = cstrdup(val);
+			else if( !strcmp(key, "audio_decoder") )
+				opt_audio_decoder = cstrdup(val);
+			else if( !strcmp(key, "remap_video_decoder") )
+				video_codec_remaps.add(val);
+			else if( !strcmp(key, "remap_audio_decoder") )
+				audio_codec_remaps.add(val);
 			else if( !strcmp(key, "video_filter") )
 				opt_video_filter = cstrdup(val);
 			else if( !strcmp(key, "audio_filter") )
