@@ -2139,6 +2139,8 @@ int CWindowMaskFeather::update_value(float v)
 int CWindowMaskFeather::handle_event()
 {
 	float v = atof(get_text());
+	if( fabsf(v) > MAX_FEATHER )
+		BC_TumbleTextBox::update((float)(v>=0 ? MAX_FEATHER : -MAX_FEATHER));
 	gui->feather_slider->update(v);
 	return gui->feather->update_value(v);
 }
@@ -2165,6 +2167,8 @@ int CWindowMaskFeatherSlider::handle_event()
 {
 	int sticky = 0;
 	float v = get_value();
+	if( fabsf(v) > MAX_FEATHER )
+		v = v>=0 ? MAX_FEATHER : -MAX_FEATHER;
 	if( stick && timer->get_difference() >= 250 )
 		stick = 0; // no events for .25 sec
 	if( stick && (last_v * (v-last_v)) < 0 )
@@ -2177,6 +2181,7 @@ int CWindowMaskFeatherSlider::handle_event()
 		}
 		if( last_v ) {
 			max *= 1.25;
+			if( max > MAX_FEATHER ) max = MAX_FEATHER;
 			update(get_w(), v=last_v, -max-5, max+5);
 			button_release_event();
 		}
@@ -2193,6 +2198,7 @@ int CWindowMaskFeatherSlider::handle_event()
 int CWindowMaskFeatherSlider::update(float v)
 {
 	float vv = fabsf(v);
+	if( vv > MAX_FEATHER ) vv = MAX_FEATHER;
 	while( max < vv ) max *= 1.25;
 	return update(get_w(), v, -max-5, max+5);
 }

@@ -271,7 +271,7 @@ static const char *feather_frag =
 	"#version 430\n"
 	"layout(location=0) out vec4 color;\n"
 	"uniform sampler2D tex;\n"
-	"const int MAX = 1024;\n"
+	"const int MAX = " SS(MAX_FEATHER) "+1;\n"
 	"uniform float psf[MAX];\n"
 	"uniform int n;\n"
 	"uniform vec2 dxy;\n"
@@ -1408,7 +1408,7 @@ void Playback3D::do_mask_sync(Playback3DCommand *command)
 				if( r ) {
 					double sig2 = -log(255.0)/(r*r);
 					int n = abs((int)r) + 1;
-					if( n > 1024 ) n = 1024; // MAX
+					if( n > MAX_FEATHER+1 ) n = MAX_FEATHER+1;
 					float psf[n];  // point spot fn
 					for( int i=0; i<n; ++i )
 						psf[i] = exp(i*i * sig2);

@@ -80,6 +80,8 @@ public:
 };
 
 #define FEATHER_MAX 100
+// GL reg limit 1024 incls shader param list
+#define MAX_FEATHER 1000
 
 class SubMask
 {
@@ -95,8 +97,8 @@ public:
 	void dump(FILE *fp);
 
 	char name[BCSTRLEN];
-	float fader; // -100 - 100
-	float feather; // -100 - 100
+	float fader;
+	float feather;
 	MaskPoints points;
 	MaskAuto *keyframe;
 };
