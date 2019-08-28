@@ -460,8 +460,10 @@ void Render::start_progress()
 		sprintf(string, _("Rendering %s..."), filename);
 
 // Don't bother with the filename since renderfarm defeats the meaning
+		mwindow->gui->lock_window("Render::start_progress");
 		progress = mwindow->mainprogress->start_progress(_("Rendering..."),
 			progress_max);
+		mwindow->gui->unlock_window();
 		render_progress = new RenderProgress(mwindow, this);
 		render_progress->start();
 	}
@@ -478,7 +480,7 @@ void Render::stop_progress()
 		delete progress;
 
 		sprintf(string2, _("Rendering took %s"), string);
-		mwindow->gui->lock_window("");
+		mwindow->gui->lock_window("Render::stop_progress");
 		mwindow->gui->show_message(string2);
 		mwindow->gui->update_default_message();
 		mwindow->gui->stop_hourglass();

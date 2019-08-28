@@ -84,7 +84,8 @@ void WWindowGUI::create_objects()
 	int x = 10, y = 10;
 	add_subwindow(new BC_TextBox(x, y, get_w()-50, 3, thread->warn_text));
 	y = get_h() - 30;
-	add_subwindow(new WDisable(this, x, y));
+	if( thread->do_warning )
+		add_subwindow(new WDisable(this, x, y));
 	y = get_h() - BC_CancelButton::calculate_h() - 10;
 	x = get_w() - BC_CancelButton::calculate_w() - 10;
 	add_subwindow(new BC_CancelButton(x, y));

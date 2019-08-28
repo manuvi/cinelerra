@@ -39,6 +39,7 @@
 #include "keys.h"
 #include "labels.h"
 #include "language.h"
+#include "localsession.h"
 #include "mainerror.h"
 #include "mainundo.h"
 #include "mainsession.h"
@@ -412,8 +413,10 @@ char* BatchRenderThread::get_current_edl()
 // Test EDL files for existence
 int BatchRenderThread::test_edl_files()
 {
-	int not_equiv = 0, ret = 0;
+	int ret = 0;
 	const char *path = 0;
+	BatchRenderWarnJobs not_equiv;
+	BatchRenderWarnJobs empty_jobs;
 
 	for( int i=0; !ret && i<jobs.size(); ++i ) {
 		if( !jobs.values[i]->enabled ) continue;
@@ -422,7 +425,7 @@ int BatchRenderThread::test_edl_files()
 		if( is_script ) ++path;
 		FILE *fp = fopen(path, "r");
 		if( fp ) {
-			if( warn && mwindow && !is_script ) {
+			if( mwindow && !is_script ) {
 				char *bfr = 0;  size_t sz = 0;
 				struct stat st;
 				if( !fstat(fileno(fp), &st) ) {
@@ -440,7 +443,10 @@ int BatchRenderThread::test_edl_files()
 					file.set_shared_input(&data);
 					edl->load_xml(&file, LOAD_ALL); }
 					double pos = edl->equivalent_output(mwindow->edl);
-					if( pos >= 0 ) ++not_equiv;
+					if( pos >= 0 ) not_equiv.add(i+1, path);
+					double length = edl->tracks->total_playable_length();
+					double start = edl->local_session->get_selectionstart(1);
+					if( start >= length ) empty_jobs.add(i+1, path);
 					edl->remove_user();
 				}
 				delete [] bfr;
@@ -467,11 +473,18 @@ int BatchRenderThread::test_edl_files()
 		}
 		is_rendering = 0;
 	}
-	else if( warn && mwindow && not_equiv > 0 ) {
-		fprintf(stderr, _("%d job EDLs do not match session edl\n"), not_equiv);
-		char string[BCTEXTLEN], *sp = string;
-		sp += sprintf(sp, _("%d job EDLs do not match session edl\n"),not_equiv);
-		sp += sprintf(sp, _("press cancel to abandon batch render"));
+
+	int mismatched = not_equiv.size();
+	if( is_rendering && warn && mwindow && mismatched > 0 ) {
+		fprintf(stderr, _("%d job EDLs do not match session edl\n"), mismatched);
+		char string[BCTEXTLEN], *sp = string, *ep = sp+sizeof(string)-1;
+		sp += snprintf(sp,ep-sp, _("%d job EDLs do not match session edl\n"),mismatched);
+		for( int i=0; i<mismatched; ++i ) {
+			int no = not_equiv[i].no;  const char *path = not_equiv[i].path;
+			fprintf(stderr, "%d: %s\n", no, path);
+			sp += snprintf(sp,ep-sp, "%d: %s\n", no, path);
+		}
+		sp += snprintf(sp,ep-sp, _("press cancel to abandon batch render"));
 		mwindow->show_warning(&warn, string);
 		if( mwindow->wait_warning() ) {
 			gui->button_enable();
@@ -479,6 +492,25 @@ int BatchRenderThread::test_edl_files()
 			ret = 1;
 		}
 		gui->warning->update(warn);
+	}
+
+	int empty = empty_jobs.size();
+	if( is_rendering && empty > 0 ) {
+		fprintf(stderr, _("%d job EDLs begin position beyond end of media\n"), empty);
+		char string[BCTEXTLEN], *sp = string, *ep = sp+sizeof(string)-1;
+		sp += snprintf(sp,ep-sp, _("%d job EDLs begin position beyond end of media\n"), empty);
+		for( int i=0; i<empty; ++i ) {
+			int no = empty_jobs[i].no;  const char *path = empty_jobs[i].path;
+			fprintf(stderr, "%d: %s\n", no, path);
+			sp += snprintf(sp,ep-sp, "%d: %s\n", no, path);
+		}
+		sp += snprintf(sp,ep-sp, _("press cancel to abandon batch render"));
+		mwindow->show_warning(0, string);
+		if( mwindow->wait_warning() ) {
+			gui->button_enable();
+			is_rendering = 0;
+			ret = 1;
+		}
 	}
 
 	return ret;

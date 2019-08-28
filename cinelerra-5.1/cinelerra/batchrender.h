@@ -81,11 +81,25 @@ public:
 };
 
 
+class BatchRenderWarnJob
+{
+public:
+	BatchRenderWarnJob() { no = 0; path = 0; }
+	~BatchRenderWarnJob() { delete [] path; }
+	int no;
+	const char *path;
+};
 
-
-
-
-
+class BatchRenderWarnJobs : public ArrayList<BatchRenderWarnJob>
+{
+public:
+	BatchRenderWarnJobs() {}
+	~BatchRenderWarnJobs() {}
+	void add(int no, const char *path) {
+		BatchRenderWarnJob &job = append();
+		job.no = no;  job.path = cstrdup(path);
+	}
+};
 
 class BatchRenderThread : public BC_DialogThread
 {
