@@ -185,14 +185,8 @@ libaom.cfg_vars?=$(call cmake_config,aom-master)
 libaom.cfg_params?= -DENABLE_SHARED=no -DCMAKE_INSTALL_LIBDIR=lib \
  -DCMAKE_INSTALL_PREFIX=$(call bld_path,libaom)/usr/local
 libaom.mak_params?= ; $(MAKE) -C libaom* install
-dav1d.cfg_vars?=\
- echo "meson setup . build" > configure; \
- echo "meson configure build -Denable_tools=false" >> configure; \
- echo "meson configure build --buildtype=release" >> configure; \
- echo "meson configure build --default-library=static" >> configure; \
- chmod +x ./configure;
-dav1d.mak_vars?=(echo "all:"; echo "	ninja -C build") > $(call bld_path,dav1d)/Makefile;
-dav1d.mak_params?=; cd "$(call bld_path,dav1d)"; DESTDIR="$(call bld_path,dav1d)" meson install -C build
+dav1d.cfg_vars?=echo "echo dav1d custom make" >> configure; chmod +x ./configure;
+dav1d.mak_params?=; $(MAKE) -C dav1d* install DESTDIR="$(call bld_path,dav1d)"
 libwebp.cfg_vars?= mkdir build && cd build && $(call cmake_config,..)
 libwebp.mak_params?= -C build all install DESTDIR=$(call bld_path,libwebp)
 mjpegtools.cflags?="$(call inc_path,libjpeg) $(call ld_path,libjpeg,.libs)"

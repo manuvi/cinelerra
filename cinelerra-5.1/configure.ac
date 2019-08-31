@@ -12,7 +12,7 @@ CFG_CFLAGS+=" -fno-omit-frame-pointer -fno-math-errno -fno-signed-zeros"
 CFG_CFLAGS+=" -pthread -Wall"
 # misguided pedantic warnings
 #  this is extra work, not a gain...
-CFG_CFLAGS+=" -Wno-unknown-warning"
+CFG_CFLAGS+=" -Wno-unknown-warning-option"
 CFG_CFLAGS+=" -Wno-attributes"
 CFG_CFLAGS+=" -Wno-unused-result"
 CFG_CFLAGS+=" -Wno-stringop-overflow"
@@ -372,7 +372,7 @@ PKG_3RD([x265],[auto],
   [ . source ])
 
 PKG_3RD([libvpx],[auto],
-  [libvpx-1.8.0],
+  [libvpx-1.8.1],
   [ libvpx.a ],
   [ . ])
 

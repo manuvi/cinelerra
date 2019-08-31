@@ -19,7 +19,7 @@ DEPENDS=( 'alsa-lib' 'atk' 'bzip2' 'cairo' 'expat' 'fftw' 'flac'
  'xorg-fonts-misc' 'ttf-dejavu' 'inkscape' 'dvdauthor' 'udftools' )
 
 makedepends=( 'autoconf' 'automake' 'yasm' 'nasm' 'cmake' 'libtool'
-	 'libxml2' 'perl-xml-libxml' 'perl-xml-parser' 'meson'
+	 'libxml2' 'perl-xml-libxml' 'perl-xml-parser'
 	 'xorg-mkfontdir' 'xorg-mkfontscale' )
 
 conflicts=()

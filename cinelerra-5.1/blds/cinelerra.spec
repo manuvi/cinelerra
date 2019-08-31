@@ -26,7 +26,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 %if 0%{?centos}
 %define rhat 1
 %define distro centos
-%define centos_cfg --disable-libaom --disable-libwebp
+%define centos_cfg --disable-libaom --disable-libwebp --disable-dav1d
 %endif
 
 BuildRequires: autoconf
@@ -52,7 +52,6 @@ BuildRequires: udftools
 BuildRequires: gtk2-devel
 BuildRequires: libva-devel
 BuildRequires: libvdpau-devel
-BuildRequires: meson
 %{?rhat:BuildRequires: alsa-lib-devel}
 %{?rhat:BuildRequires: bzip2-devel}
 %{?rhat:BuildRequires: xorg-x11-fonts-cyrillic}
