@@ -8,6 +8,11 @@ Cinfinity icons selected in Preferences Sam (CC BY 3.0,
 Cakewalk and Neophyte themes by Olaf Wolff (CC BY 4.0,
   https://creativecommons.org/licenses/by/4.0/)
 .
+August 2019 New Features of note:
+  FFmpeg in use with Cinelerra is now version 4.2.
+  Lipvpx has been upgraded to version 1.8.1.
+  Dav1d is now the default/faster decoder for AV1 media.
+  Performance improvements were added for Mask feathering.
 July 2019 New Features of note:
   Completion of Masking improvements with Preset Shapes, Center
     and Normalize buttons, plus x/y scaling in 1 direction only.

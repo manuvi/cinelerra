@@ -54,6 +54,8 @@ http://www.wodgod.com/newtonator/1.0
 https://sami.boukortt.com/plugins/intersect#Intersect
 https://sami.boukortt.com/plugins/intersect#SymmetricDifference
 https://sami.boukortt.com/plugins/intersect#Upmix
+http://drumkv1.sourceforge.net/lv2
+http://rakarrack.sourceforge.net/effects.html#awha
 #
 # Rakarrack takes special handling to get these lv2 plugins to work;
 # the library needs to be linked using  -Bsymbolic-functions ;

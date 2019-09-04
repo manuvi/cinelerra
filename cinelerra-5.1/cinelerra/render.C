@@ -49,6 +49,7 @@
 #include "language.h"
 #include "loadmode.h"
 #include "localsession.h"
+#include "mainerror.h"
 #include "mainprogress.h"
 #include "mainsession.h"
 #include "mainundo.h"
@@ -330,15 +331,24 @@ void Render::handle_close_event(int result)
 		err_msg = _("zero render range");
 		result = 1;
 	}
+	if( !result && !asset->audio_data && !asset->video_data ) {
+		err_msg = _("no audio or video in render asset format\n");
+		result = 1;
+	}
+	EDL *edl = mwindow->edl;
+	if( !result && use_labels && !edl->labels->first ) {
+		eprintf(_("render file per label and no labels\n"));
+		result = 1;
+	}
 	if( !result && asset->video_data ) {
-		double frame_rate = mwindow->edl->session->frame_rate;
+		double frame_rate = edl->session->frame_rate;
 		if( frame_rate > 0 && render_range+1e-3 < 1./frame_rate ) {
 			err_msg = _("Video data and range less than 1 frame");
 			result = 1;
 		}
 	}
 	if( !result && asset->audio_data ) {
-		double sample_rate = mwindow->edl->session->sample_rate;
+		double sample_rate = edl->session->sample_rate;
 		if( sample_rate > 0 && render_range+1e-6 < 1./sample_rate ) {
 			err_msg = _("Audio data and range less than 1 sample");
 			result = 1;
@@ -346,7 +356,7 @@ void Render::handle_close_event(int result)
 	}
 	if( !result && File::is_image_render(asset->format) ) {
 		if( asset->video_data ) {
-			double frames = render_range * mwindow->edl->session->frame_rate;
+			double frames = render_range * edl->session->frame_rate;
 			if( !EQUIV(frames, 1.) ) {
 				err_msg = _("Image format and not 1 frame");
 				result = 1;
@@ -357,6 +367,7 @@ void Render::handle_close_event(int result)
 			result = 1;
 		}
 	}
+
 	if( err_msg ) {
 		int cx, cy;
 		mwindow->gui->get_abs_cursor(cx, cy, 1);
@@ -721,6 +732,7 @@ void RenderThread::render_single(int test_overwrite, Asset *asset, EDL *edl,
 			render->result = 1;
 		}
 	}
+
 	render_frames = render->default_asset->frame_rate * total_length;
 
 // Generate packages
@@ -999,8 +1011,8 @@ void RenderWindow::create_objects()
 {
 	int x = 10, y = 10;
 	lock_window("RenderWindow::create_objects");
-	add_subwindow(new BC_Title(x, y,
-		(char*)(render->use_labels ?
+	add_subwindow(file_format = new BC_Title(x, y,
+		(render->use_labels ?
 			_("Select the first file to render to:") :
 			_("Select a file to render to:"))));
 	y += 25;
@@ -1178,7 +1190,6 @@ void RenderFormat::update_format()
 	FormatTools::update_format();
 	RenderWindow *render_window = (RenderWindow *)window;
 	if( render_window->is_hidden() ) return;
-
 	int is_image = File::is_image_render(asset->format);
 	if( is_image ) {
 		render_window->update_range_type(RANGE_1FRAME);
@@ -1186,6 +1197,15 @@ void RenderFormat::update_format()
 	}
 	else
 		render_window->enable_render_range(1);
+}
+int RenderFormat::handle_event()
+{
+	RenderWindow *render_window = (RenderWindow *)window;
+	render_window->file_format->update(
+		(render_window->render->use_labels ?
+			_("Select the first file to render to:") :
+			_("Select a file to render to:")));
+	return 1;
 }
 
 RenderBeepOnDone::RenderBeepOnDone(RenderWindow *rwindow, int x, int y)

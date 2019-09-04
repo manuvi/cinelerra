@@ -110,6 +110,7 @@ public:
 	BC_Window* new_gui();
 
 	int test_edl_files();
+	int test_errmsg(BatchRenderWarnJobs &err_jobs, const char *msg, int *warn);
 	void calculate_dest_paths(ArrayList<char*> *paths,
 		Preferences *preferences);
 	void reset(const char *path=0);

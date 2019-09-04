@@ -880,6 +880,14 @@ void TrackCanvas::draw_resources(int mode,
 
 			}
 		}
+		int64_t track_x, track_y, track_w, track_h;
+		track_dimensions(current,
+			track_x, track_y, track_w, track_h);
+		set_color((~get_resources()->get_bg_color()) & 0xffffff);
+		set_opaque();
+		int x1 = track_x, x2 = x1+track_w;
+		int y1 = track_y+track_h-1;
+		draw_line(x1,y1, x2,y1, background_pixmap);
 	}
 
 

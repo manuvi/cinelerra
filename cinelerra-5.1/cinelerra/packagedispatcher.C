@@ -25,6 +25,7 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "labels.h"
+#include "mainerror.h"
 #include "mutex.h"
 #include "mwindow.h"
 #include "packagedispatcher.h"
@@ -110,6 +111,11 @@ int PackageDispatcher::create_packages(MWindow *mwindow, EDL *edl,
 		label = edl->labels->first;
 		total_packages = 0;
 		packages = new RenderPackage*[edl->labels->total() + 2];
+		if( !label ) {
+			eprintf(_("Render file per label and no labels\n"));
+			result = 1;
+			break;
+		}
 
 		Render::get_starting_number(default_asset->path,
 			current_number, number_start, total_digits, 3);
@@ -197,8 +203,7 @@ void PackageDispatcher::get_package_paths(ArrayList<char*> *path_list)
 			packaging_engine->get_package_paths(path_list);
 		else {
 			for( int i=0; i<total_allocated; ++i )
-				path_list->append(strdup(packages[i]->path));
-			path_list->set_free();
+				path_list->append(cstrdup(packages[i]->path));
 		}
 
 }

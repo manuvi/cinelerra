@@ -409,6 +409,26 @@ char* BatchRenderThread::get_current_edl()
 	return get_current_job()->edl_path;
 }
 
+int BatchRenderThread::test_errmsg(BatchRenderWarnJobs &err_jobs, const char *msg, int *warn)
+{
+	int count = err_jobs.size();
+	if( !count ) return 0;
+	fprintf(stderr, msg, count);
+	char string[BCTEXTLEN], *sp = string, *ep = sp+sizeof(string)-1;
+	sp += snprintf(sp,ep-sp, msg,count);
+	for( int i=0; i<count; ++i ) {
+		int no = err_jobs[i].no;
+		const char *path = err_jobs[i].path;
+		fprintf(stderr, "%d: %s\n", no, path);
+		sp += snprintf(sp,ep-sp, "%d: %s\n", no, path);
+	}
+	sp += snprintf(sp,ep-sp, _("press cancel to abandon batch render"));
+	mwindow->show_warning(warn, string);
+	if( mwindow->wait_warning() ) {
+		gui->button_enable();
+	}
+	return 1;
+}
 
 // Test EDL files for existence
 int BatchRenderThread::test_edl_files()
@@ -417,10 +437,12 @@ int BatchRenderThread::test_edl_files()
 	const char *path = 0;
 	BatchRenderWarnJobs not_equiv;
 	BatchRenderWarnJobs empty_jobs;
+	BatchRenderWarnJobs no_labels;
+	BatchRenderWarnJobs no_rendering;
 
 	for( int i=0; !ret && i<jobs.size(); ++i ) {
 		if( !jobs.values[i]->enabled ) continue;
-		path = jobs.values[i]->edl_path;
+		path = jobs[i]->edl_path;
 		int is_script = *path == '@' ? 1 : 0;
 		if( is_script ) ++path;
 		FILE *fp = fopen(path, "r");
@@ -443,10 +465,17 @@ int BatchRenderThread::test_edl_files()
 					file.set_shared_input(&data);
 					edl->load_xml(&file, LOAD_ALL); }
 					double pos = edl->equivalent_output(mwindow->edl);
-					if( pos >= 0 ) not_equiv.add(i+1, path);
+					if( pos >= 0 )
+						not_equiv.add(i+1, path);
 					double length = edl->tracks->total_playable_length();
 					double start = edl->local_session->get_selectionstart(1);
-					if( start >= length ) empty_jobs.add(i+1, path);
+					if( start >= length )
+						empty_jobs.add(i+1, path);
+					if( jobs[i]->labeled && !edl->labels->first)
+						no_labels.add(i+1,path);
+					Asset *asset = jobs[i]->asset;
+					if( !asset->audio_data && !asset->video_data )
+						no_rendering.add(i+1,path);
 					edl->remove_user();
 				}
 				delete [] bfr;
@@ -472,47 +501,21 @@ int BatchRenderThread::test_edl_files()
 			fprintf(stderr, "%s", string);
 		}
 		is_rendering = 0;
+		ret = 1;
 	}
 
-	int mismatched = not_equiv.size();
-	if( is_rendering && warn && mwindow && mismatched > 0 ) {
-		fprintf(stderr, _("%d job EDLs do not match session edl\n"), mismatched);
-		char string[BCTEXTLEN], *sp = string, *ep = sp+sizeof(string)-1;
-		sp += snprintf(sp,ep-sp, _("%d job EDLs do not match session edl\n"),mismatched);
-		for( int i=0; i<mismatched; ++i ) {
-			int no = not_equiv[i].no;  const char *path = not_equiv[i].path;
-			fprintf(stderr, "%d: %s\n", no, path);
-			sp += snprintf(sp,ep-sp, "%d: %s\n", no, path);
-		}
-		sp += snprintf(sp,ep-sp, _("press cancel to abandon batch render"));
-		mwindow->show_warning(&warn, string);
-		if( mwindow->wait_warning() ) {
-			gui->button_enable();
-			is_rendering = 0;
-			ret = 1;
-		}
-		gui->warning->update(warn);
+	if( !ret && warn && mwindow ) {
+		ret = test_errmsg(not_equiv, _("%d job EDLs do not match session edl\n"), &warn);
+		if( !warn ) gui->warning->update(0);
 	}
-
-	int empty = empty_jobs.size();
-	if( is_rendering && empty > 0 ) {
-		fprintf(stderr, _("%d job EDLs begin position beyond end of media\n"), empty);
-		char string[BCTEXTLEN], *sp = string, *ep = sp+sizeof(string)-1;
-		sp += snprintf(sp,ep-sp, _("%d job EDLs begin position beyond end of media\n"), empty);
-		for( int i=0; i<empty; ++i ) {
-			int no = empty_jobs[i].no;  const char *path = empty_jobs[i].path;
-			fprintf(stderr, "%d: %s\n", no, path);
-			sp += snprintf(sp,ep-sp, "%d: %s\n", no, path);
-		}
-		sp += snprintf(sp,ep-sp, _("press cancel to abandon batch render"));
-		mwindow->show_warning(0, string);
-		if( mwindow->wait_warning() ) {
-			gui->button_enable();
-			is_rendering = 0;
-			ret = 1;
-		}
-	}
-
+	if( !ret && mwindow )
+		ret = test_errmsg(empty_jobs, _("%d job EDLs begin position beyond end of media\n"), 0);
+	if( !ret && mwindow )
+		ret = test_errmsg(no_rendering, _("%d job EDLs no audio or video in render asset format\n"), 0);
+	if( !ret && mwindow )
+		ret = test_errmsg(no_labels, _("%d job EDLs render file per label and no labels\n"), 0);
+	if( ret )
+		is_rendering = 0;
 	return ret;
 }
 
@@ -538,12 +541,13 @@ void BatchRenderThread::calculate_dest_paths(ArrayList<char*> *paths,
 			command->playback_range_adjust_inout();
 
 // Create test packages
-			packages->create_packages(mwindow, command->get_edl(),
+			int result = packages->create_packages(mwindow, command->get_edl(),
 				preferences, job->get_strategy(), job->asset,
 				command->start_position, command->end_position, 0);
+			if( !result )
+				packages->get_package_paths(paths);
 
 // Append output paths allocated to total
-			packages->get_package_paths(paths);
 
 // Delete package harness
 			delete packages;

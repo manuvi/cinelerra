@@ -285,6 +285,7 @@ public:
 	RenderFormat(MWindow *mwindow, BC_WindowBase *window, Asset *asset);
 	~RenderFormat();
 	void update_format();
+	int handle_event();
 };
 
 
@@ -322,6 +323,7 @@ public:
 	RenderProfile *renderprofile;
 
 	LoadMode *loadmode;
+	BC_Title *file_format;
 	RenderFormat *render_format;
 
 	MWindow *mwindow;
