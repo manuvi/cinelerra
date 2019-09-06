@@ -3,7 +3,7 @@ include ../../plugin_defs
 OBJS = 	$(OBJDIR)/crop.o  \
 	$(OBJDIR)/cropwin.o
 
-PLUGIN = crop
+PLUGIN = cropp
 
 include ../../plugin_config
 
