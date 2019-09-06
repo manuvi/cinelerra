@@ -1252,6 +1252,26 @@ int FFVideoStream::encode_frame(AVFrame *frame)
 		frame->interlaced_frame = interlaced;
 		frame->top_field_first = top_field_first;
 	}
+	if( frame && frame->format == AV_PIX_FMT_VAAPI ) { // ugly
+		int ret = avcodec_send_frame(avctx, frame);
+		for( int retry=MAX_RETRY; !ret && --retry>=0; ) {
+			FFPacket pkt;  av_init_packet(pkt);
+			pkt->data = NULL;  pkt->size = 0;
+			if( (ret=avcodec_receive_packet(avctx, pkt)) < 0 ) {
+				if( ret == AVERROR(EAGAIN) ) ret = 0; // weird
+				break;
+			}
+			ret = write_packet(pkt);
+			pkt->stream_index = 0;
+			av_packet_unref(pkt);
+		}
+		if( ret < 0 ) {
+			ff_err(ret, "FFStream::encode_frame: vaapi encode failed.\nfile: %s\n",
+				ffmpeg->fmt_ctx->url);
+			return -1;
+		}
+		return 0;
+	}
 	return FFStream::encode_frame(frame);
 }
 

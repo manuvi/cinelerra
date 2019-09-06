@@ -473,10 +473,6 @@ if test "x$I86$X86" != "x00" ; then
   rm -f conftest.asm conftest.o
   REQUIRE_PROG(YASM, [yasm])
 fi
-if test "x$X86" = "x0" ; then
-  # incompatible instruction set
-  PKG_dav1d=no
-fi
 
 ## end arch dep tests
 

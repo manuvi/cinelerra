@@ -58,6 +58,7 @@ CriKey:		Regionally based chroma key with interpolation;
 		.    Alpha - matching pixels replaced with see-thru.
 		.    Edge to just outline the edges of the region.
 		.    Mask - matching color pixels replaced by black.
+Crop & Position: Allows for cropping and positioning the input video.
 Decimate:	Drop frames from a track which are most similar
 		in order to reduce frame rate.
 Deinterlace:	Several selections of line replication to eliminate
@@ -110,6 +111,7 @@ Linear Blur:	Blur with parameters of length, angle, # of steps,
 Live Video:	Reads video directly from the capture card input and
 		replaces any video on the track.
 Loop video:	Loop video by specifying the length of the region to loop.
+Mandelbrot:	Render a Mandelbrot fractal using Cuda.
 Motion:		Tracks translation and rotation motion to stabilize
 		shaky video.
 Motion 2 Point:	Motion stabilization using 2 pass tracking.
@@ -135,6 +137,9 @@ MotionCV:	Motion tracking/stabilization from the community
 MotionHV:	Motion tracking/stabilization from the original
 		author of cinelerra.
 MoveObj:	Move and stabilize object using OpenCV 3rd party pkg.
+N_Body:		Simulation that numerically approximates the evolution of a
+		system of bodies in which each body continuously interacts
+		with every other body using Cuda.
 Oil Painting:	Makes video tracks appear as a painting.
 Overlay:	Combine tracks via an overlayer that puts images on
 		top of a bottom layer.
@@ -233,12 +238,13 @@ F_bwdif:	Deinterlaces the input image.
 F_chromahold:	Turns a certain color range into gray.
 F_chromakey:	Turns a certain color into
 		transparency.  Operates on YUV colors.
+F_chromashift:	Shift chroma.
 F_ciescope:	Video CIE scope.
 F_color:	Provide an uniformly colored input.
 F_colorbalance:	Adjusts the color balance.
 F_colorchannelmixer: Adjusts colors by mixing color channels.
-F_colorkey:	Turns a certain color into
-		transparency. Operates on RGB colors.
+F_colorhold:	Turns a certain color range into gray.  Operates on RGB.
+F_colorkey:	Turns a certain color into transparency. Operates on RGB.
 F_colorlevels:	Adjusts the color levels.
 F_colormatrix:	Converts color matrix.
 F_cover_rect:	Find and cover a user specified object.
@@ -249,6 +255,7 @@ F_datascope:	Video data analysis.
 F_dctdnoiz:	Denoise frames using 2D DCT.
 F_deband:	Debands video.
 F_deblock:	Deblock video.
+F_dedot:	Reduce cross-luminance and cross-color.
 F_deflate:	Applies deflate effect.
 F_deflicker:	Remove temporal frame luminance variations.
 F_dejudder:	Removes judder produced by pullup.
@@ -278,8 +285,8 @@ F_drawgrid:	Draws a colored grid on the input video.
 		thickness of the lines.
 F_edgedetect:	Detects and draws edge.
 F_elbg:		Apply posterize effect, using the ELBG algorithm.
-F_eq:		Adjusts brightness, contrast, gamma and saturation.
 F_entropy:	Measure video frames entropy.
+F_eq:		Adjusts brightness, contrast, gamma and saturation.
 F_erosion:	Applies erosion effect.
 F_fade:		Fade in/out input video.
 F_fftdnoiz:	Denoise frames using 3D FFT.
@@ -310,6 +317,7 @@ F_il:		Deinterleaves or interleaves fields.
 F_inflate:	Applies inflate effect.
 F_interlace:	Convert progressive video into interlaced.
 F_kerndeint:	Applies kernel deinterlacing to the input.
+F_lagfun:	Slowly update darker pixels.
 F_lenscorrection: Rectifies the image by correcting for lens distortion.
 F_life:		Generate a life pattern.
 F_limiter:	Limit pixels components to the specified range.
@@ -322,6 +330,7 @@ F_lut3d:	Apply a 3D LUT (look up table) to an input video.
 F_lutrgb:	Compute and apply a lookup table to the RGB input video.
 F_lutyuv:	Compute and apply a lookup table to the YUV input video.
 F_mandelbrot:	Render a Mandelbrot fractal.
+F_maskfun:	Create Mask.
 F_mcdeint:	Applies motion compensating deinterlacing.
 F_mestimate:	Generate motion vectors.
 F_metadata:	Manipulate video frame metadata.
@@ -335,10 +344,9 @@ F_noise:	Adds noise to the video.
 		select the variables of the noise
 		(strength, flag and seed).
 F_normalize:	Normalize RGB video.
-F_owdenoise:	Denoises using wavelets.
 F_oscilloscope:	2D video oscilloscope.  Useful to measure spatial impulse,
 		step responses, and chroma delays.
-F_owndenoise:	Denoises using wavelets.
+F_owdenoise:	Denoises using wavelets.
 F_pad:		Add paddings to the input image, and place the original
 		input at the provided x, y coordinates.
 F_pal100bars:	Generate PAL 100% color bars. This only works with RGB 8-bit.
@@ -352,7 +360,6 @@ F_pp:		Filters video using libpostproc.
 F_pp7:		Applies Postprocessing 7 filter.
 F_prewitt:	Apply prewitt operator.
 F_pseudocolor:	Make pseudocolored video frames.
-F_rgbtestsrc:	Generate RGB test pattern.
 F_readeia608:	Read EIA-608 Closed Caption codes from
 		input video and write them to frame metadata.
 F_readvitc:	Reads vertical interval
@@ -360,6 +367,8 @@ F_readvitc:	Reads vertical interval
 F_realtime:	Slows down filtering to match realtime.
 F_removegrain:	Removes grain.
 F_repeatfields:	Hard repeat fields based on MPEG repeat field flag.
+F_rgbashift:	Shift RGBA.
+F_rgbtestsrc:	Generate RGB test pattern.
 F_roberts:	Apply roberts cross operator which performs a simple/quick 2-D
 		spatial gradient measurement on the video (usually a grayscale
 		image).  It highlights regions of high spatial frequency which
@@ -367,6 +376,7 @@ F_roberts:	Apply roberts cross operator which performs a simple/quick 2-D
 F_rotate:	Rotates the input image.
 F_sab:		Applies shape adaptive blur.
 F_scale:	Scale the input video size and/or convert the image format.
+F_scale_cuda:	GPU accelerated video resizer.
 F_separatefields: Split input video frames into fields.
 F_setparams:	Force field, or color property for the output video frame.
 F_setrange:	Force color range for the output video frame.
@@ -388,6 +398,7 @@ F_super2xsai:	Scales the input by 2x using
 		the Super2xSal pixel art algorithm.
 F_swaprect:	Swaps 2 rectangular objects in video.
 F_swapuv:	Swaps U and V components.
+F_tpad:		Temporarily pad video frames.
 F_tblend:	Blend successive frames.
 F_testsrc:	Generate test pattern.
 F_testsrc2:	Generate another test pattern.
@@ -412,6 +423,7 @@ F_waveform:	Video waveform monitor.
 F_weave:	Weaves input video fields into frames.
 F_xbr:		Scales the input using xBR algorithm.
 F_yadif:	Deinterlaces the input image.
+F_yadif_cuda:	Deinterlace CUDA frames.
 F_yuvtestsrc:	Generate YUV test pattern.
 F_zoompan:	Applies Zoom & Pan effect.
 #
@@ -436,12 +448,15 @@ F_aintegral:	Compute integral of input audio.
 F_allpass:	Applies a two-pole all-pass filter.
 F_aloop:	Loops audio samples.
 F_ametadata:	Manipulate audio frame metadata.
+F_anlmdn:	Reduce broadband noise from stream using Non-Local Means.
 F_anoisesrc:	Generates a noise audio signal.
 F_aperms:	Set permissions for the output audio frame.
 F_aphaser:	Adds a phasing effect to the audio.
 F_arealtime:	Slows down filtering to match realtime.
 F_aresample:	Resamples audio data.
 F_asetrate:	Change the sample rate without altering the data.
+F_asoftclip:	Apply audio soft clipping - a type of distortion effect
+		where signal amplitude is saturated along a smooth curve.
 F_astats:	Shows time domain statistics about audio frames
 F_atempo:	Adjusts audio tempo.
 F_atrim:	Pick one continuous section from the input, drop the rest.
@@ -458,6 +473,7 @@ F_crossfeed:	Apply headphone crossfeed which blends the left and right
 		order to produce more speaker like sound.
 F_crystalizer:	Simple Expand Audio Dynamic Range filter.
 F_dcshift:	Applies a DC shift to the audio.
+F_deesser:	Apply de-essing to the audio.
 F_drmeter:	Measure audio dynamic range where setting window length in
 		seconds is used to split audio into segments of equal length.
 F_dyaudnorm:	Dynamic Audio Normalizer.  When using this plugin,
@@ -507,6 +523,7 @@ F_treble:	Boosts or cuts upper frequencies.
 F_tremolo:	Applies tremolo effect.
 F_vibrato:	Applies vibrato effect.
 F_volume:	Change input volume.
+F_volumedetect:	Detect audio volume.
 #
 # audio plugins
 #
