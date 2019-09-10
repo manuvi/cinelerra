@@ -97,7 +97,6 @@ void MainMenu::create_objects()
 {
 	BC_Menu *viewmenu, *windowmenu, *settingsmenu, *trackmenu;
 	PreferencesMenuitem *preferences;
-	total_loads = 0;
 
 	add_menu(filemenu = new BC_Menu(_("File")));
 	filemenu->add_item(new_project = new NewProject(mwindow));
@@ -106,6 +105,8 @@ void MainMenu::create_objects()
 // file loaders
 	filemenu->add_item(load_file = new Load(mwindow, this));
 	load_file->create_objects();
+	filemenu->add_item(load_recent = new LoadRecent(mwindow, this));
+	load_recent->create_objects();
 
 // new and load can be undone so no need to prompt save
 	Save *save;                   //  affected by saveas
@@ -383,22 +384,21 @@ int MainMenu::init_veffects(BC_Hash *defaults)
 
 void MainMenu::init_loads(BC_Hash *defaults)
 {
-	total_loads = defaults->get((char*)"TOTAL_LOADS", 0);
-	if( !total_loads ) return;
-	filemenu->add_item(new BC_MenuItem("-"));
+// total_loads for legacy xml
+	int total_loads = defaults->get((char*)"TOTAL_LOADS", 0);
+	int loads_total = defaults->get((char*)"LOADS_TOTAL", 0);
+	if( loads_total < total_loads ) loads_total = total_loads;
 
-	char string[BCTEXTLEN], path[BCTEXTLEN], filename[BCTEXTLEN];
+	char string[BCTEXTLEN], path[BCTEXTLEN];
 	FileSystem dir;
 //printf("MainMenu::init_loads 2\n");
 
-	for(int i = 0; i < total_loads; i++) {
+	for( int i=0; i<loads_total; ++i ) {
 		sprintf(string, "LOADPREVIOUS%d", i);
 //printf("MainMenu::init_loads 3\n");
 		defaults->get(string, path);
-		filemenu->add_item(load[i] = new LoadPrevious(mwindow, load_file));
-		dir.extract_name(filename, path, 0);
-		load[i]->set_text(filename);
-		load[i]->set_path(path);
+		if( load.size() < TOTAL_LOADS )
+			load.append(new LoadRecentItem(path));
 	}
 }
 
@@ -430,10 +430,13 @@ int MainMenu::save_veffects(BC_Hash *defaults)
 
 int MainMenu::save_loads(BC_Hash *defaults)
 {
+// legacy to prevent segv, older code cant tolerate total_loads>10
+	int loads_total = load.size();
+	int total_loads = MIN(10, loads_total);
+	defaults->update((char*)"LOADS_TOTAL", loads_total);
 	defaults->update((char*)"TOTAL_LOADS", total_loads);
 	char string[BCTEXTLEN];
-	for(int i = 0; i < total_loads; i++)
-	{
+	for( int i=0; i<loads_total; ++i ) {
 		sprintf(string, "LOADPREVIOUS%d", i);
 		defaults->update(string, load[i]->path);
 	}
@@ -528,59 +531,8 @@ int MainMenu::add_veffect(char *title)
 
 int MainMenu::add_load(char *path)
 {
-	if(total_loads == 0)
-{
-		filemenu->add_item(new BC_MenuItem("-"));
-	}
-
-// test for existing copy
-	FileSystem fs;
-	char text[BCTEXTLEN], new_path[BCTEXTLEN];      // get text and path
-	fs.extract_name(text, path);
-	strcpy(new_path, path);
-
-	for(int i = 0; i < total_loads; i++)
-	{
-		if(!strcmp(load[i]->get_text(), text))     // already exists
-		{                                // swap for top load
-			for(int j = i; j > 0; j--)   // move preceeding loads down
-			{
-				load[j]->set_text(load[j - 1]->get_text());
-				load[j]->set_path(load[j - 1]->path);
-	}
-			load[0]->set_text(text);
-			load[0]->set_path(new_path);
-
-			return 1;
-		}
-	}
-
-// add another load
-	if(total_loads < TOTAL_LOADS)
-	{
-		filemenu->add_item(load[total_loads] = new LoadPrevious(mwindow, load_file));
-		total_loads++;
-	}
-
-// cycle loads down
-	for(int i = total_loads - 1; i > 0; i--)
-	{
-	// set menu item text
-		load[i]->set_text(load[i - 1]->get_text());
-	// set filename
-		load[i]->set_path(load[i - 1]->path);
-	}
-
-// set up the new load
-	load[0]->set_text(text);
-	load[0]->set_path(new_path);
-	return 0;
+	return load.add_load(path);
 }
-
-
-
-
-
 
 
 
@@ -1936,5 +1888,120 @@ void LoadLayoutConfirm::create_objects()
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
 	unlock_window();
+}
+
+
+LoadRecentItem::LoadRecentItem(const char *path)
+{
+	this->path = cstrdup(path);
+}
+
+LoadRecentItem::~LoadRecentItem()
+{
+	delete [] path;
+}
+
+int LoadRecentItems::add_load(char *path)
+{
+// test for existing copy
+	FileSystem fs;
+	char name[BCTEXTLEN], text[BCTEXTLEN];
+	fs.extract_name(name, path);
+	int loads_total = size();
+	int ret = 0, k = loads_total;
+	LoadRecentItem *load_item = 0;
+
+	for( int i=0; !ret && i<loads_total; ++i ) {
+		load_item = get(i);
+		fs.extract_name(text, load_item->path);
+		if( strcmp(name, text) ) continue;
+		k = i;  ret = 1; // already exists, move to top
+	}
+	if( !ret ) { // adding a new one
+		while( loads_total >= TOTAL_LOADS )
+			remove_object_number(--loads_total);
+		insert(new LoadRecentItem(path), 0);
+	}
+	else if( k > 0 ) { // cycle loads
+		while( --k >= 0 ) set(k+1, get(k));
+		set(0, load_item);
+	}
+	return ret;
+}
+
+LoadRecentItems::LoadRecentItems()
+{
+}
+
+LoadRecentItems::~LoadRecentItems()
+{
+	remove_all_objects();
+}
+
+LoadRecent::LoadRecent(MWindow *mwindow, MainMenu *main_menu)
+ : BC_MenuItem(_("Load Recent..."))
+{
+	this->mwindow = mwindow;
+	this->main_menu = main_menu;
+	total_items = 0;
+}
+LoadRecent::~LoadRecent()
+{
+}
+
+void LoadRecent::create_objects()
+{
+	add_submenu(submenu = new LoadRecentSubMenu(this));
+}
+
+LoadPrevious *LoadRecent::get_next_item()
+{
+	int k = total_items++;
+	if( k < submenu->total_items() )
+		return (LoadPrevious *)submenu->get_item(k);
+	LoadPrevious *load_prev = new LoadPrevious(mwindow, main_menu->load_file);
+	submenu->add_item(load_prev);
+	return load_prev;
+}
+
+int LoadRecent::activate_submenu()
+{
+	total_items = 0;
+	scan_items(1);
+	if( total_items > 0 ) {
+		LoadPrevious *load_prev = get_next_item();
+		load_prev->set_text("-");
+		load_prev->set_path("");
+	}
+	scan_items(0);
+	while( total_items < submenu->total_items() )
+		submenu->del_item(0);
+	return BC_MenuItem::activate_submenu();
+}
+
+void LoadRecent::scan_items(int use_xml)
+{
+	FileSystem fs;
+	int loads_total = main_menu->load.size();
+	for( int i=0; i<loads_total; ++i ) {
+		LoadRecentItem *recent = main_menu->load[i];
+		char name[BCTEXTLEN];
+		fs.extract_name(name, recent->path);
+		const char *cp = strrchr(name, '.');
+		if( !cp || strcasecmp(cp+1,"xml") ? use_xml : !use_xml ) continue;
+		LoadPrevious *load_prev = get_next_item();
+		load_prev->set_text(name);
+		load_prev->set_path(recent->path);
+	}
+}
+
+LoadRecentSubMenu::LoadRecentSubMenu(LoadRecent *load_recent)
+ : BC_SubMenu()
+{
+	this->load_recent = load_recent;
+}
+
+LoadRecentSubMenu::~LoadRecentSubMenu()
+{
 }
 

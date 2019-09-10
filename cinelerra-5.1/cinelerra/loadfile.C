@@ -251,7 +251,7 @@ LocateFileWindow::~LocateFileWindow()
 
 
 LoadPrevious::LoadPrevious(MWindow *mwindow, Load *loadfile)
- : BC_MenuItem(""), Thread()
+ : BC_MenuItem("")
 {
 	this->mwindow = mwindow;
 	this->loadfile = loadfile;
@@ -259,6 +259,7 @@ LoadPrevious::LoadPrevious(MWindow *mwindow, Load *loadfile)
 
 int LoadPrevious::handle_event()
 {
+	if( !path[0] ) return 1;
 	ArrayList<char*> path_list;
 	path_list.set_array_delete();
 	char *out_path;
@@ -277,14 +278,7 @@ int LoadPrevious::handle_event()
 	return 1;
 }
 
-
-
-void LoadPrevious::run()
-{
-//	loadfile->mwindow->load(path, loadfile->append);
-}
-
-int LoadPrevious::set_path(char *path)
+int LoadPrevious::set_path(const char *path)
 {
 	strcpy(this->path, path);
 	return 0;

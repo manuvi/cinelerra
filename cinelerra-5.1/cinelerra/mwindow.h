@@ -88,7 +88,6 @@
 #include "thread.h"
 #include "threadloader.inc"
 #include "timebar.inc"
-#include "timebomb.h"
 #include "tipwindow.inc"
 #include "track.inc"
 #include "tracking.inc"

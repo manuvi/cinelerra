@@ -41,11 +41,53 @@
 #include "threadloader.inc"
 #include "viewmenu.inc"
 
-#define TOTAL_LOADS 10      // number of files to cache
+#define TOTAL_LOADS 20       // number of files to cache
 #define TOTAL_EFFECTS 10     // number of effects to cache
 
 #define LAYOUT_LOAD 0
 #define LAYOUT_SAVE 1
+
+class LoadRecentItem
+{
+public:
+	LoadRecentItem(const char *path);
+	~LoadRecentItem();
+	char *path;
+};
+
+class LoadRecentItems : public ArrayList<LoadRecentItem *>
+{
+public:
+	LoadRecentItems();
+	~LoadRecentItems();
+	int add_load(char *path);
+};
+
+class LoadRecentSubMenu : public BC_SubMenu
+{
+public:
+	LoadRecentSubMenu(LoadRecent *load_recent);
+	~LoadRecentSubMenu();
+
+	LoadRecent *load_recent;
+};
+
+class LoadRecent : public BC_MenuItem
+{
+public:
+	LoadRecent(MWindow *mwindow, MainMenu *main_menu);
+	~LoadRecent();
+	void create_objects();
+	LoadPrevious *get_next_item();
+	int activate_submenu();
+	void scan_items(int use_xml);
+
+	MWindow *mwindow;
+	MainMenu *main_menu;
+	LoadRecentSubMenu *submenu;
+	int total_items;
+};
+
 
 class MainMenu : public BC_MenuBar
 {
@@ -81,8 +123,8 @@ public:
 	MenuVEffects *veffects;
 
 	Load *load_file;
-	LoadPrevious *load[TOTAL_LOADS];
-	int total_loads;
+	LoadRecentItems load;
+	LoadRecent *load_recent;
 
 	RecordMenuItem *record_menu_item;
 	RenderItem *render;
@@ -94,9 +136,9 @@ public:
 	EditClearMenu *clear_menu;
 	Undo *undo;
 	Redo *redo;
-	int total_aeffects;
-	int total_veffects;
-	BC_Menu *filemenu, *audiomenu, *videomenu;      // needed by most recents
+	BC_Menu *filemenu;
+	BC_Menu *audiomenu, *videomenu;      // needed by most recents
+	int total_aeffects, total_veffects;
 
 	KeyframeCurveType *keyframe_curve_type;
 	LabelsFollowEdits *labels_follow_edits;

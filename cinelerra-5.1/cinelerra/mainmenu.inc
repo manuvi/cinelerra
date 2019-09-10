@@ -24,6 +24,10 @@
 
 #define MENUBARPIXELS 25
 
+class LoadRecentItem;
+class LoadRecentItems;
+class LoadRecentSubMenu;
+class LoadRecent;
 class MainMenu;
 class Undo;
 class MainDumpsSubMenu;
@@ -57,6 +61,7 @@ class PasteSilence;
 class SelectAll;
 class ClearHardEdges;
 class ClearLabels;
+class ClearSelect;
 class CutCommercials;
 class DetachTransitions;
 class MuteSelection;

@@ -92,14 +92,12 @@ public:
 	MWindow *mwindow;
 };
 
-class LoadPrevious : public BC_MenuItem, public Thread
+class LoadPrevious : public BC_MenuItem
 {
 public:
 	LoadPrevious(MWindow *mwindow, Load *loadfile);
 	int handle_event();
-	void run();
-
-	int set_path(char *path);
+	int set_path(const char *path);
 
 	MWindow *mwindow;
 	Load *loadfile;
