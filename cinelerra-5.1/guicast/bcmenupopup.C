@@ -406,11 +406,11 @@ int BC_MenuPopup::get_dimensions()
 		menu_items.values[i]->down = 0;
 		h += menu_items.values[i]->h;
 	}
-	w = widest_text + widest_key + 10;
+	w = widest_text + widest_key + 20;
 
 	w = MAX(w, top_level->get_resources()->min_menu_w);
 // pad for division
-	key_x = widest_text + 5;
+	key_x = widest_text + 16;
 // pad for border
 	h += 2;
 	return 0;
