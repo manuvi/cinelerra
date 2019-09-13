@@ -60,6 +60,7 @@ CHECK_WITH([vaapi],[video acceleration api],[VAAPI],[yes])
 CHECK_WITH([vdpau],[video decode+presentation api for unix],[VDPAU],[yes])
 CHECK_WITH([nv],[nvenc/nvdec ffnvcodec api],[NV],[yes])
 CHECK_WITH([cuda],[nv cuda plugins],[CUDA],[auto])
+CHECK_WITH([clang],[use clang instead of gcc/g++],[CLANG],[no])
 
 if test "x$WANT_LV2" != "xno"; then
   GTK2_LIBS=`pkg-config --libs gtk+-2.0`
@@ -907,6 +908,7 @@ echo "  using: with-vaapi = $WANT_VAAPI"
 echo "  using: with-vdpau = $WANT_VDPAU"
 echo "  using: with-nv = $WANT_NV"
 echo "  using: with-cuda = $WANT_CUDA"
+echo "  using: with-clang = $WANT_CLANG"
 echo ""
 echo "  using: thirdparty build = $WANT_CIN_3RDPARTY"
 echo "  using: single-user  = $WANT_CINBIN_BUILD"
@@ -915,6 +917,9 @@ echo "  using: ladspa-build = $WANT_LADSPA_BUILD"
 echo ""
 
 # build extras
+if test "x$WANT_CLANG" = "xyes" ; then
+  FFMPEG_EXTRA_CFG+=' --cc=clang --cxx=clang++'
+fi
 if test "x$HAVE_tiff" = "xyes"; then
   if test "x$HAVE_jbig" = "xyes"; then
     EXTRA_LIBS+=' -ljbig'
@@ -987,6 +992,11 @@ exec > global_config
 echo "SHELL := /bin/bash"
 echo "export SHELL"
 echo "WANT_JOBS := $WANT_JOBS"
+if test "x$WANT_CLANG" = "xyes" ; then
+  echo "CC = clang"
+  echo "CXX = clang++"
+  echo "export CC CXX"
+fi
 echo ""
 echo "OBJDIR := $OBJDIR"
 echo "BINDIR := \$(TOPDIR)/bin"

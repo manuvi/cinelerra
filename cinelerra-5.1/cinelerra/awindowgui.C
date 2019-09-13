@@ -912,17 +912,26 @@ void AssetPicon::create_objects()
 	int picon_h = mwindow->preferences->awindow_picon_h;
 	pixmap_h = picon_h * BC_WindowBase::get_resources()->icon_scale;
 
-	if( indexable ) {
+	Asset *asset = 0;
+	EDL *edl = 0;
+	int is_clip = 0;
+
+	if( this->indexable ) {
 		fs.extract_name(name, indexable->path);
 		set_text(name);
+		if( this->indexable->is_asset )
+			asset = (Asset *)indexable;
+		else
+			edl = (EDL *)indexable;
 	}
-	else if( edl ) {
+	else if( this->edl ) {
+		edl = this->edl;
 		set_text(strcpy(name, edl->local_session->clip_title));
 		set_text(name);
+		is_clip = 1;
 	}
 
-	if( indexable && indexable->is_asset ) {
-		Asset *asset = (Asset*)indexable;
+	if( asset ) {
 		if( asset->video_data ) {
 			if( mwindow->preferences->use_thumbnails ) {
 				gui->unlock_window();
@@ -1067,13 +1076,7 @@ void AssetPicon::create_objects()
 		comments_type = asset->format == FILE_FFMPEG ?
 				asset->vcodec : File::formattostr(asset->format);
 	}
-	else
-	if( indexable && !indexable->is_asset ) {
-		icon = gui->video_icon;
-		icon_vframe = gui->video_vframe;
-	}
-	else
-	if( edl ) {
+	else if( edl ) {
 		if( edl->tracks->playable_video_tracks() ) {
 			if( mwindow->preferences->use_thumbnails ) {
 				gui->unlock_window();
@@ -1081,7 +1084,7 @@ void AssetPicon::create_objects()
 				char clip_icon_path[BCTEXTLEN];
 				char *clip_icon = edl->local_session->clip_icon;
 				VFrame *vframe = 0;
-				if( clip_icon[0] ) {
+				if( is_clip && clip_icon[0] ) {
 					snprintf(clip_icon_path, sizeof(clip_icon_path),
 						"%s/%s", File::get_config_path(), clip_icon);
 					vframe = VFramePng::vframe_png(clip_icon_path);
@@ -1107,7 +1110,7 @@ void AssetPicon::create_objects()
 					close_render_engine();
 					vframe = new VFrame(avt->vw, avt->vh, BC_RGB888);
 					vframe->transfer_from(gui->temp_picon);
-					if( clip_icon[0] )
+					if( this->edl && clip_icon[0] )
 						vframe->write_png(clip_icon_path);
 				}
 				pixmap_w = pixmap_h * width / height;
@@ -1121,9 +1124,13 @@ void AssetPicon::create_objects()
 				icon->draw_vframe(icon_vframe,
 					0, 0, pixmap_w, pixmap_h, 0, 0);
 			}
-			else {
+			else if( is_clip ) {
 				icon = gui->clip_icon;
 				icon_vframe = gui->clip_vframe;
+			}
+			else {
+				icon = gui->video_icon;
+				icon_vframe = gui->video_vframe;
 			}
 		}
 		else
@@ -1132,7 +1139,7 @@ void AssetPicon::create_objects()
 				gui->unlock_window();
 				char clip_icon_path[BCTEXTLEN];
 				char *clip_icon = edl->local_session->clip_icon;
-				if( clip_icon[0] ) {
+				if( is_clip && clip_icon[0] ) {
 					snprintf(clip_icon_path, sizeof(clip_icon_path),
 						"%s/%s", File::get_config_path(), clip_icon);
 					icon_vframe = VFramePng::vframe_png(clip_icon_path);
@@ -1168,7 +1175,8 @@ void AssetPicon::create_objects()
 							base_colors[i], line_colors[i]);
 					}
 					for( int i=0; i<channels; ++i ) delete samples[i];
-					if( clip_icon[0] ) icon_vframe->write_png(clip_icon_path);
+					if( is_clip && clip_icon[0] )
+						icon_vframe->write_png(clip_icon_path);
 				}
 				else {
 					pixmap_w = icon_vframe->get_w();
@@ -1178,14 +1186,17 @@ void AssetPicon::create_objects()
 				icon->draw_vframe(icon_vframe,
 					0, 0, pixmap_w, pixmap_h, 0, 0);
 			}
-			else {
+			else if( !indexable ) {
 				icon = gui->clip_icon;
 				icon_vframe = gui->clip_vframe;
 			}
+			else {
+				icon = gui->audio_icon;
+				icon_vframe = gui->audio_vframe;
+			}
 		}
 	}
-	else
-	if( plugin ) {
+	else if( plugin ) {
 		strcpy(name, _(plugin->title));
 		set_text(name);
 		icon_vframe = plugin->get_picon();
@@ -1224,8 +1235,7 @@ void AssetPicon::create_objects()
 			}
 		}
 	}
-	else
-	if( label ) {
+	else if( label ) {
 		Units::totext(name,
 			      label->position,
 			      mwindow->edl->session->time_format,

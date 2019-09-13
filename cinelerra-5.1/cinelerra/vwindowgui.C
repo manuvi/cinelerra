@@ -31,6 +31,7 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "filesystem.h"
+#include "file.h"
 #include "filexml.h"
 #include "fonts.h"
 #include "keys.h"
@@ -241,8 +242,18 @@ void VWindowGUI::create_objects()
 	canvas = new VWindowCanvas(mwindow, this);
 	canvas->create_objects(mwindow->edl);
 	canvas->use_vwindow();
-
-
+	char vsplash_path[BCTEXTLEN];
+	int vsplash_len = sizeof(vsplash_path)-1;
+	snprintf(vsplash_path, vsplash_len, "%s/vsplash.png", File::get_cindat_path());
+	VFrame *vsplash = VFramePng::vframe_png(vsplash_path);
+	if( vsplash ) {
+		BC_WindowBase *vcanvas = canvas->get_canvas();
+		vcanvas->draw_vframe(vsplash,
+			0,0, vcanvas->get_w(), vcanvas->get_h(),
+			0,0, vsplash->get_w(), vsplash->get_h(), 0);
+		vcanvas->flash(1);
+		delete vsplash;
+	}
 //printf("VWindowGUI::create_objects 1\n");
 	add_subwindow(timebar = new VTimeBar(mwindow,
 		this,

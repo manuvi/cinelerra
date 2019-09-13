@@ -515,15 +515,16 @@ void AssetEditWindow::create_objects()
 			add_subwindow(title);
 			y += title->get_h() + 5;
 		}
-
-		add_subwindow(title = new BC_Title(x1, y, _("Asset's interlacing:")));
-		ilacemode_to_text(string, asset->interlace_mode);
-		AssetEditILacemode *edit_ilace_mode;
-		add_subwindow(edit_ilace_mode = new AssetEditILacemode(this, string, x2, y, 160));
-		add_subwindow(new AssetEditInterlacemodePulldown(mwindow, edit_ilace_mode,
+		if( asset ) {
+			add_subwindow(title = new BC_Title(x1, y, _("Asset's interlacing:")));
+			ilacemode_to_text(string, asset->interlace_mode);
+			AssetEditILacemode *edit_ilace_mode;
+			add_subwindow(edit_ilace_mode = new AssetEditILacemode(this, string, x2, y, 160));
+			add_subwindow(new AssetEditInterlacemodePulldown(mwindow, edit_ilace_mode,
 				&asset_edit->changed_params->interlace_mode,
 				(ArrayList<BC_ListBoxItem*>*)&mwindow->interlace_asset_modes,
 				x2 + edit_ilace_mode->get_w(), y));
+		}
 	}
 
 	add_subwindow(new BC_OKButton(this));
