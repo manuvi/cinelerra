@@ -3,7 +3,8 @@ include $(TOPDIR)/global_config
 
 ifneq ($(WANT_LIBZMPEG),no)
 
-CC = gcc
+# for mmx inlines
+#CC = gcc
 NASM = nasm
 USE_MMX ?= 0
 DYNAMIC_FONTS ?= 1

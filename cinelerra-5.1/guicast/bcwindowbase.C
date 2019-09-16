@@ -460,8 +460,16 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window, const char *title
 		vis = get_glx_visual(display);
 		if( !vis )
 #endif
+		{
+			int mask = VisualDepthMask | VisualClassMask;
+			static XVisualInfo vinfo = { .depth = 24, .c_class = DirectColor, };
+			int nitems = 0;
+			XVisualInfo *vis_info = XGetVisualInfo(display, mask, &vinfo, &nitems);
+			vis = vis_info && nitems>0 ? vis_info[0].visual : 0;
+			if( vis_info ) XFree(vis_info);
+		}
+		if( !vis )
 			vis = DefaultVisual(display, screen);
-
 		default_depth = DefaultDepth(display, screen);
 
 		client_byte_order = (*(const u_int32_t*)"a   ") & 0x00000001;

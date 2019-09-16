@@ -1,7 +1,9 @@
 #include "../libzmpeg3.h"
 
+#ifndef __clang__
 #ifdef __x86_64__
 #define USE_MMX
+#endif
 #endif
 #ifdef USE_MMX
 #include "mmx.h"
