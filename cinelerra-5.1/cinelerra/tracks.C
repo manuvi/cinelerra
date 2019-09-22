@@ -522,14 +522,62 @@ double Tracks::total_length_framealigned(double fps)
 	return 0;
 }
 
-void Tracks::translate_projector(float offset_x, float offset_y)
+void Tracks::translate_fauto_xy(int fauto, float dx, float dy, int all)
 {
-	for(Track *current = first; current; current = NEXT)
-	{
-		if(current->data_type == TRACK_VIDEO)
-		{
-			((VTrack*)current)->translate(offset_x, offset_y, 0);
-		}
+	Track *track = first;
+	for( ; track; track=track->next ) {
+		if( !all && !track->record ) continue;
+		if( track->data_type != TRACK_VIDEO ) continue;
+		((VTrack*)track)->translate(fauto, dx, dy, all);
+	}
+}
+
+void Tracks::translate_projector(float dx, float dy, int all)
+{
+	translate_fauto_xy(AUTOMATION_PROJECTOR_X, dx, dy, all);
+}
+
+void Tracks::translate_camera(float dx, float dy, int all)
+{
+	translate_fauto_xy(AUTOMATION_CAMERA_X, dx, dy, all);
+}
+
+void Tracks::crop_resize(float x, float y, float z)
+{
+	float ctr_x = edl->session->output_w / 2.;
+	float ctr_y = edl->session->output_h / 2.;
+	Track *track = first;
+	for( ; track; track=track->next ) {
+		if( !track->record ) continue;
+		if( track->data_type != TRACK_VIDEO ) continue;
+		float px, py, pz;
+		track->get_projector(px, py, pz);
+		float old_x = px + ctr_x;
+		float old_y = py + ctr_y;
+		float nx = (old_x - x) * z;
+		float ny = (old_y - y) * z;
+		track->set_projector(nx, ny, pz * z);
+	}
+}
+
+void Tracks::crop_shrink(float x, float y, float z)
+{
+	float ctr_x = edl->session->output_w / 2.;
+	float ctr_y = edl->session->output_h / 2.;
+	Track *track = first;
+	for( ; track; track=track->next ) {
+		if( !track->record ) continue;
+		if( track->data_type != TRACK_VIDEO ) continue;
+		float cx, cy, cz, px, py, pz;
+		track->get_camera(cx, cy, cz);
+		track->get_projector(px, py, pz);
+		float dx = x - (px + ctr_x);
+		float dy = y - (py + ctr_y);
+		cz *= pz;
+		cx += dx / cz;  cy += dy / cz;
+		track->set_camera(cx, cy, cz * z);
+		px += dx;  py += dy;
+		track->set_projector(px, py, 1 / z);
 	}
 }
 

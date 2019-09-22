@@ -21,6 +21,7 @@
 #     add $(call rules,$(call std-build,<name>,<dep>...))
 #     add deps to other call rules if they require the new library
 #     add config enables if other libraries use the new library
+#     add pc_<pkg>=<pkgcfg names> if needed for system build
 #
 
 TOPDIR ?= $(CURDIR)/..
@@ -52,10 +53,14 @@ unpack_bz2=tar -xjf $(1)
 unpack_xz=tar -xJf $(1)
 bld_depends=$(if $(ver_$(1)),$(call pkg-built,$(1)))
 bld_path=$(ver_$(1))/$(2)
-if_pkg=$(if $(ver_$(1)),$(2))
+if_pkg=$(if $(ver_$(1)),$(2),$(3))
 if_npkg=$(if $(ver_$(1)),,$(2))
-inc_path=$(call if_pkg,$(1),$(inc_$(1)))
+if_shr=$(if $(findstring $(1),$(shared_pkgs)),$(2),$(3))
+pkg_conf=$(call if_shr,$(1),$(foreach p,$(pc_$(1)), $(shell pkg-config 2> /dev/null $(2) $(p))))
+inc_path=$(call if_pkg,$(1),$(inc_$(1)), $(call pkg_conf,$(1),--cflags))
 ld_path=$(call if_pkg,$(1),-L$(call bld_path,$(1),$(2)) $(lib_$(1)))
+if_ena=$(if $(or $(ver_$(1)),$(findstring $(1),$(shared_pkgs))),$(2))
+if_want=$(if $(findstring x$(WANT_$(1)),xyes),$(2),$(3))
 
 #$(eval $(call std-build,pkg,deps...))
 #$(pkg.cflags) added as CFLAGS+=$(cflags) to pkg.vars
@@ -101,9 +106,20 @@ $(TARGETS):	$(BLD)
 $(BLD):
 	mkdir $(BLD)
 
+# pkg-config names
+pc_libaom=aom
+pc_dav1d=dav1d
+pc_libwebp=libwebp libwebpmux
+pc_opus=opus
+pc_openjpeg=libopenjp2
+pc_libvorbis=vorbis vorbisenc
+pc_libvpx=vpx
+pc_x264=x264
+pc_x265=x265
+
 # vars first
 encore.cfg_vars= true ||
-esound.cfg_vars:= AUDIOFILE_CFLAGS="$(call inc_path,audiofile,libaudiofile) -laudiofile"
+esound.cfg_vars:= AUDIOFILE_CFLAGS="$(call inc_path,audiofile) -laudiofile"
 esound.cfg_vars+= AUDIOFILE_LIBS="$(call ld_path,audiofile,libaudiofile/.libs)"
 esound.cfg_params= --enable-shared=no --with-pic
 esound.mak_vars+= CFLAGS="" 
@@ -111,37 +127,36 @@ esound.ldflags=" -lm -lstdc++"
 fftw.cfg_params= --disable-fortran --enable-shared=no
 ffmpeg.cfg_params= \
 	--enable-pthreads --enable-gpl --disable-ffplay \
-	$(if $(WANT_VAAPI),--enable-vaapi,--disable-vaapi) \
-	$(if $(WANT_VDPAU),--enable-vdpau,--disable-vdpau) \
-	$(if $(WANT_NV), --enable-nvenc --enable-nvdec) \
-	$(call if_pkg,twolame,--enable-libtwolame) \
-	$(call if_pkg,openjpeg,--enable-libopenjpeg) \
-	$(call if_pkg,lame,--enable-libmp3lame) \
-	$(call if_pkg,libaom,--enable-libaom) \
-	$(call if_pkg,dav1d,--enable-libdav1d) \
-	$(call if_pkg,libwebp,--enable-libwebp) \
-	$(call if_pkg,opus,--enable-libopus) \
-	$(call if_pkg,libvorbis,--enable-libvorbis) \
-	$(call if_pkg,libtheora,--enable-libtheora) \
-	$(call if_pkg,libvpx,--enable-libvpx) \
-	$(call if_pkg,x264,--enable-libx264) \
-	$(call if_pkg,x265,--enable-libx265) \
+	$(call if_want,VAAPI,--enable-vaapi,--disable-vaapi) \
+	$(call if_want,VDPAU,--enable-vdpau,--disable-vdpau) \
+	$(call if_want,NV, --enable-nvenc --enable-nvdec --enable-ffnvcodec) \
+	$(call if_ena,twolame,--enable-libtwolame) \
+	$(call if_ena,openjpeg,--enable-libopenjpeg) \
+	$(call if_ena,lame,--enable-libmp3lame) \
+	$(call if_ena,libaom,--enable-libaom) \
+	$(call if_ena,dav1d,--enable-libdav1d) \
+	$(call if_ena,libwebp,--enable-libwebp) \
+	$(call if_ena,opus,--enable-libopus) \
+	$(call if_ena,libvorbis,--enable-libvorbis) \
+	$(call if_ena,libtheora,--enable-libtheora) \
+	$(call if_ena,libvpx,--enable-libvpx) \
+	$(call if_ena,x264,--enable-libx264) \
+	$(call if_ena,x265,--enable-libx265) \
 	--extra-cflags="-Wno-attributes \
-		$(if $(WANT_NV), $(inc_ffnvcodec)) \
-		$(call inc_path,twolame,libtwolame) \
-		$(call inc_path,lame,include) \
-		$(call inc_path,libaom,usr/local/include) \
-		$(call inc_path,dav1d,usr/local/include) \
-		$(call inc_path,libwebp,usr/local/include) \
-		$(call inc_path,openjpeg,src/lib/openjp2) \
-		$(call inc_path,libogg,include) \
-		$(call inc_path,opus,include) \
-		$(call inc_path,libvorbis,include) \
-		$(call inc_path,libtheora,include) \
+		$(call if_want,NV,$(inc_ffnvcodec)) \
+		$(call inc_path,twolame) \
+		$(call inc_path,lame) \
+		$(call inc_path,libaom) \
+		$(call inc_path,dav1d) \
+		$(call inc_path,libwebp) \
+		$(call inc_path,openjpeg) \
+		$(call inc_path,libogg) \
+		$(call inc_path,opus) \
+		$(call inc_path,libvorbis) \
+		$(call inc_path,libtheora) \
 		$(call inc_path,libvpx) \
 		$(call inc_path,x264) \
-		$(call inc_path,x265) \
-		$(call inc_path,x265,source)" \
+		$(call inc_path,x265)" \
 	--extra-cxxflags="-D__STDC_CONSTANT_MACROS" \
 	--pkg-config=true \
 	--extra-libs="-Wl,--start-group \
@@ -158,6 +173,7 @@ ffmpeg.cfg_params= \
 		$(call ld_path,libvpx) \
 		$(call ld_path,x264) \
 		$(call ld_path,x265) \
+		$(shared_libs) \
 		-Wl,--end-group -lm -lstdc++ -pthread \
 		$(EXTRA_LIBS)" $(FFMPEG_EXTRA_CFG) \
 
@@ -173,7 +189,7 @@ djbfft.mak_params?=; cd $(call bld_path,djbfft); ln -sf djbfft.a libdjbfft.a
 audiofile.cfg_params?=--enable-shared=no
 audiofile.mak_params?=LIBS="-lm -lstdc++"
 flac.cfg_params?= --enable-shared=no
-flac.cflags?="$(call inc_path,libogg,include) $(call ld_path,libogg,src/.libs)"
+flac.cflags?="$(call inc_path,libogg) $(call ld_path,libogg,src/.libs)"
 giflib.cfg_params=echo "exec true" > ./configure; chmod +x ./configure;
 ilmbase.cfg_vars= CFLAGS+=" -Wno-narrowing" CXXFLAGS+=" -Wno-narrowing"
 ilmbase.cfg_params?=--prefix=$(call bld_path,ilmbase,usr)
@@ -209,7 +225,7 @@ libjpeg.cfg_params?= --enable-shared=no
 libogg.cfg_params?= --enable-shared=no
 libraw1394.cfg_params?=  --enable-shared=no; ln -sf src libraw1394
 libtheora.cfg_vars?=PKG_CONFIG_PATH=$(call bld_path,libogg):$(call bld_path,libvorbis)
-libtheora.cflags?="$(call inc_path,libogg,include) $(call inc_path,libogg,src) $(call inc_path,libvorbis,include)"
+libtheora.cflags?="$(call inc_path,libogg) $(call inc_path,libvorbis)"
 libtheora.ldflags?="$(call ld_path,libvorbis,lib/.libs) $(call ld_path,libogg,src/.libs)"
 libtheora.cfg_params?= --disable-examples --disable-spec --enable-shared=no
 libuuid.cfg_params?=--enable-shared=no
@@ -298,7 +314,7 @@ $(call rules,$(call std-build,encore))
 $(call rules,$(call std-build,esound,audiofile))
 $(call rules,$(call std-build,ffmpeg, twolame lame openjpeg opus \
 	libtheora x264 x265 libvpx libaom dav1d libwebp \
-	$(if $(WANT_NV), ffnvcodec)))
+	$(call if_want,NV, ffnvcodec)))
 $(call rules,$(call std-build,fftw))
 $(call rules,$(call std-build,flac,libogg))
 $(call rules,$(call std-build,giflib))

@@ -71,6 +71,13 @@ public:
 	void equivalent_output(Track *track, double *result);
 	int get_mixer_id();
 
+	void get_fauto_xyz(int fauto, float &x, float &y, float &z);
+	void set_fauto_xyz(int fauto, float x, float y, float z);
+	void get_projector(float &x, float &y, float &z);
+	void set_projector(float x, float y, float z);
+	void get_camera(float &x, float &y, float &z);
+	void set_camera(float x, float y, float z);
+
 	virtual void copy_from(Track *track);
 	Track& operator=(Track& track);
 	virtual PluginSet* new_plugins() { return 0; };

@@ -484,37 +484,48 @@ int VTrack::get_projection(float &in_x1, float &in_y1, float &in_x2, float &in_y
 
 
 
-inline void addto_value(FloatAuto *fauto, float offset)
+static inline void addto_value(FloatAuto *fauto, float offset)
 {
 	fauto->set_value(fauto->get_value() + offset);
 }
 
-
-void VTrack::translate(float offset_x, float offset_y, int do_camera)
+static inline void multiply_value(FloatAuto *fauto, float scale)
 {
-	int subscript;
-	if(do_camera)
-		subscript = AUTOMATION_CAMERA_X;
-	else
-		subscript = AUTOMATION_PROJECTOR_X;
+	fauto->set_value(fauto->get_value() * scale);
+}
 
-// Translate default keyframe
-	addto_value((FloatAuto*)automation->autos[subscript]->default_auto, offset_x);
-	addto_value((FloatAuto*)automation->autos[subscript + 1]->default_auto, offset_y);
 
-// Translate everyone else
-	for(Auto *current = automation->autos[subscript]->first;
-		current;
-		current = NEXT)
-	{
-		addto_value((FloatAuto*)current, offset_x);
+void VTrack::set_fauto_xy(int fauto, float x, float y)
+{
+// set default keyframe
+	FloatAuto *xdft = (FloatAuto *)automation->autos[fauto+0]->default_auto;
+	FloatAuto *ydft = (FloatAuto *)automation->autos[fauto+1]->default_auto;
+	xdft->set_value(x);
+	ydft->set_value(y);
+// set everyone else
+	FloatAuto *xauto = (FloatAuto *)automation->autos[fauto+0]->first;
+	FloatAuto *yauto = (FloatAuto *)automation->autos[fauto+1]->first;
+	for( ; xauto; xauto=(FloatAuto *)xauto->next ) xauto->set_value(x);
+	for( ; yauto; yauto=(FloatAuto *)yauto->next ) yauto->set_value(y);
+}
+
+void VTrack::translate(int fauto, float dx, float dy, int all)
+{
+	if( all ) {
+		addto_value((FloatAuto*)automation->autos[fauto+0]->default_auto, dx);
+		addto_value((FloatAuto*)automation->autos[fauto+1]->default_auto, dy);
+		FloatAutos **fautos = (FloatAutos **)&automation->autos;
+		FloatAuto *xauto = (FloatAuto *)fautos[fauto+0]->first;
+		FloatAuto *yauto = (FloatAuto *)fautos[fauto+1]->first;
+		for( ; xauto; xauto=(FloatAuto *)xauto->next ) addto_value(xauto, dx);
+		for( ; yauto; yauto=(FloatAuto *)yauto->next ) addto_value(yauto, dy);
 	}
-
-	for(Auto *current = automation->autos[subscript + 1]->first;
-		current;
-		current = NEXT)
-	{
-		addto_value((FloatAuto*)current, offset_y);
+	else {
+		FloatAutos **fautos = (FloatAutos **)&automation->autos;
+		FloatAuto *xauto = (FloatAuto *)fautos[fauto+0]->get_auto_for_editing(-1, 1);
+		FloatAuto *yauto = (FloatAuto *)fautos[fauto+1]->get_auto_for_editing(-1, 1);
+		addto_value(xauto, dx);
+		addto_value(yauto, dy);
 	}
 }
 

@@ -511,12 +511,10 @@ int MWindow::copy_default_keyframe()
 	return 0;
 }
 
-
 // Uses cropping coordinates in edl session to crop and translate video.
 // We modify the projector since camera automation depends on the track size.
-void MWindow::crop_video()
+void MWindow::crop_video(int mode)
 {
-
 	undo_before();
 // Clamp EDL crop region
 	if( edl->session->crop_x1 > edl->session->crop_x2 ) {
@@ -529,22 +527,54 @@ void MWindow::crop_video()
 		edl->session->crop_y2 ^= edl->session->crop_y1;
 		edl->session->crop_y1 ^= edl->session->crop_y2;
 	}
+	switch( mode ) {
+	case CROP_REFORMAT: {
+		float ctr_x = edl->session->output_w / 2.;
+		float ctr_y = edl->session->output_h / 2.;
+		float new_x = (edl->session->crop_x1 + edl->session->crop_x2) / 2.;
+		float new_y = (edl->session->crop_y1 + edl->session->crop_y2) / 2.;
+		float dx = -(new_x - ctr_x), dy = -(new_y - ctr_y);
+		edl->tracks->translate_projector(dx, dy, 1);
 
-	float old_projector_x = (float)edl->session->output_w / 2;
-	float old_projector_y = (float)edl->session->output_h / 2;
-	float new_projector_x = (float)(edl->session->crop_x1 + edl->session->crop_x2) / 2;
-	float new_projector_y = (float)(edl->session->crop_y1 + edl->session->crop_y2) / 2;
-	float projector_offset_x = -(new_projector_x - old_projector_x);
-	float projector_offset_y = -(new_projector_y - old_projector_y);
+		edl->session->output_w = edl->session->crop_x2 - edl->session->crop_x1;
+		edl->session->output_h = edl->session->crop_y2 - edl->session->crop_y1;
+		edl->session->crop_x1 = edl->session->crop_y1 = 0;
+		edl->session->crop_x2 = edl->session->output_w;
+		edl->session->crop_y2 = edl->session->output_h;
+		break; }
+	case CROP_RESIZE: {
+		float old_w = edl->session->output_w;
+		float old_h = edl->session->output_h;
+		float new_w = edl->session->crop_x2 - edl->session->crop_x1;
+		float new_h = edl->session->crop_y2 - edl->session->crop_y1;
+		if( !new_w ) new_w = 1;
+		if( !new_h ) new_h = 1;
+		float xzoom = old_w / new_w, yzoom = old_h / new_h;
+		float new_z = bmin(xzoom, yzoom);
+		float new_x = (edl->session->crop_x1 + edl->session->crop_x2) / 2.;
+		float new_y = (edl->session->crop_y1 + edl->session->crop_y2) / 2.;
+		edl->tracks->crop_resize(new_x, new_y, new_z);
 
-	edl->tracks->translate_projector(projector_offset_x, projector_offset_y);
+		edl->session->crop_x1 = 0;
+		edl->session->crop_y1 = 0;
+		edl->session->crop_x2 = edl->session->output_w;
+		edl->session->crop_y2 = edl->session->output_h;
+		break; }
+	case CROP_SHRINK: {
+		float old_w = edl->session->output_w;
+		float old_h = edl->session->output_h;
+		float new_w = edl->session->crop_x2 - edl->session->crop_x1;
+		float new_h = edl->session->crop_y2 - edl->session->crop_y1;
+		if( !new_w ) new_w = 1;
+		if( !new_h ) new_h = 1;
+		float xzoom = old_w / new_w, yzoom = old_h / new_h;
+		float new_z = bmin(xzoom, yzoom);
 
-	edl->session->output_w = edl->session->crop_x2 - edl->session->crop_x1;
-	edl->session->output_h = edl->session->crop_y2 - edl->session->crop_y1;
-	edl->session->crop_x1 = 0;
-	edl->session->crop_y1 = 0;
-	edl->session->crop_x2 = edl->session->output_w;
-	edl->session->crop_y2 = edl->session->output_h;
+		float new_x = (edl->session->crop_x1 + edl->session->crop_x2) / 2.;
+		float new_y = (edl->session->crop_y1 + edl->session->crop_y2) / 2.;
+		edl->tracks->crop_shrink(new_x, new_y, new_z);
+		break; }
+	}
 
 // Recalculate aspect ratio
 	if( defaults->get("AUTOASPECT", 0) ) {

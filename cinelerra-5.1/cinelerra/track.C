@@ -1863,3 +1863,42 @@ int Track::get_mixer_id()
 	return mixer_id;
 }
 
+void Track::get_fauto_xyz(int fauto, float &x, float &y, float &z)
+{
+	FloatAutos **fautos = (FloatAutos **)&automation->autos;
+	FloatAuto *xauto = (FloatAuto *)fautos[fauto+0]->get_auto_for_editing(-1, 1);
+	if( xauto ) x = xauto->get_value();
+	FloatAuto *yauto = (FloatAuto *)fautos[fauto+1]->get_auto_for_editing(-1, 1);
+	if( yauto ) y = yauto->get_value();
+	FloatAuto *zauto = (FloatAuto *)fautos[fauto+2]->get_auto_for_editing(-1, 1);
+	if( zauto ) z = zauto->get_value();
+}
+void Track::set_fauto_xyz(int fauto, float x, float y, float z)
+{
+	FloatAutos **fautos = (FloatAutos **)&automation->autos;
+	FloatAuto *xauto = (FloatAuto *)fautos[fauto+0]->get_auto_for_editing(-1, 1);
+	if( xauto ) xauto->set_value(x);
+	FloatAuto *yauto = (FloatAuto *)fautos[fauto+1]->get_auto_for_editing(-1, 1);
+	if( yauto ) yauto->set_value(y);
+	FloatAuto *zauto = (FloatAuto *)fautos[fauto+2]->get_auto_for_editing(-1, 1);
+	if( zauto ) zauto->set_value(z);
+}
+
+void Track::get_projector(float &x, float &y, float &z)
+{
+	get_fauto_xyz(AUTOMATION_PROJECTOR_X, x, y, z);
+}
+void Track::set_projector(float x, float y, float z)
+{
+	set_fauto_xyz(AUTOMATION_PROJECTOR_X, x, y, z);
+}
+
+void Track::get_camera(float &x, float &y, float &z)
+{
+	get_fauto_xyz(AUTOMATION_CAMERA_X, x, y, z);
+}
+void Track::set_camera(float x, float y, float z)
+{
+	set_fauto_xyz(AUTOMATION_CAMERA_X, x, y, z);
+}
+

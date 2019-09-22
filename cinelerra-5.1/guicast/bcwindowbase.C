@@ -462,7 +462,10 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window, const char *title
 #endif
 		{
 			int mask = VisualDepthMask | VisualClassMask;
-			static XVisualInfo vinfo = { .depth = 24, .c_class = DirectColor, };
+			static XVisualInfo vinfo;
+			memset(&vinfo, 0, sizeof(vinfo));
+			vinfo.depth = 24;
+			vinfo.c_class = TrueColor;
 			int nitems = 0;
 			XVisualInfo *vis_info = XGetVisualInfo(display, mask, &vinfo, &nitems);
 			vis = vis_info && nitems>0 ? vis_info[0].visual : 0;

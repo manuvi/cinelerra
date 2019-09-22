@@ -117,17 +117,43 @@ public:
 	CWindowToolGUI *gui;
 };
 
-class CWindowCropOK : public BC_GenericButton
+class CWindowCropApply : public BC_GenericButton
 {
 public:
-	CWindowCropOK(MWindow *mwindow, CWindowToolGUI *gui,
+	CWindowCropApply(MWindow *mwindow, CWindowCropGUI *crop_gui,
 			int x, int y);
 // Perform the cropping operation
 	int handle_event();
 	int keypress_event();
 	MWindow *mwindow;
-	CWindowToolGUI *gui;
+	CWindowCropGUI *crop_gui;
 };
+
+class CWindowCropOpMode : public BC_PopupMenu
+{
+	static const char *crop_ops[CROP_MODES];
+public:
+	CWindowCropOpMode(MWindow *mwindow, CWindowCropGUI *crop_gui,
+			int mode, int x, int y);
+	~CWindowCropOpMode();
+	void create_objects();
+	int handle_event();
+
+	MWindow *mwindow;
+	CWindowCropGUI *crop_gui;
+	int mode;
+};
+
+class CWindowCropOpItem : public BC_MenuItem
+{
+public:
+	CWindowCropOpItem(CWindowCropOpMode *popup, const char *text, int id);
+	int handle_event();
+
+	CWindowCropOpMode *popup;
+	int id;
+};
+
 
 class CWindowCropGUI : public CWindowToolGUI
 {
@@ -139,6 +165,7 @@ public:
 // Update the gui
 	void handle_event();
 	CWindowCoord *x1, *y1, *width, *height;
+	CWindowCropOpMode *crop_mode;
 };
 
 class CWindowMaskItem : public BC_ListBoxItem

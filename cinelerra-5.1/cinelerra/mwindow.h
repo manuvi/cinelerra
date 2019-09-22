@@ -285,7 +285,7 @@ public:
 	int zoom_in_t();
 	void split_x();
 	void split_y();
-	void crop_video();
+	void crop_video(int mode);
 	void update_plugins();
 // Call after every edit operation
 	void save_backup();

@@ -25,7 +25,9 @@
 class CWindowTool;
 class CWindowToolGUI;
 class CWindowCoord;
-class CWindowCropOK;
+class CWindowCropApply;
+class CWindowCropOpMode;
+class CWindowCropOpItem;
 class CWindowCropGUI;
 class CWindowMaskItem;
 class CWindowMaskItems;

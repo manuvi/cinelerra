@@ -101,9 +101,14 @@ public:
 // Update y pixels after a zoom
 	void update_y_pixels(Theme *theme);
 // Total number of tracks where the following toggles are selected
-	void select_all(int type,
-		int value);
-	void translate_projector(float offset_x, float offset_y);
+	void select_all(int type, int value);
+
+	void translate_fauto_xy(int fauto, float dx, float dy, int all);
+	void translate_projector(float dx, float dy, int all=0);
+	void translate_camera(float dx, float dy, int all=0);
+	void crop_resize(float x, float y, float z);
+	void crop_shrink(float x, float y, float z);
+
 	int total_of(int type);
 	Track* get_track_by_id(int id);
 // add a track

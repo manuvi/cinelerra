@@ -120,7 +120,8 @@ public:
 	int draw_floating_autos_derived(float view_start, float zoom_units, AutoConf *auto_conf, int flash);
 	int select_auto_derived(float zoom_units, float view_start, AutoConf *auto_conf, int cursor_x, int cursor_y);
 	int move_auto_derived(float zoom_units, float view_start, AutoConf *auto_conf, int cursor_x, int cursor_y, int shift_down);
-	void translate(float offset_x, float offset_y, int do_camera);
+	void set_fauto_xy(int fauto, float x, float y);
+	void translate(int fauto, float dx, float dy, int all);
 
 // ===================================== for handles, titles, etc
 

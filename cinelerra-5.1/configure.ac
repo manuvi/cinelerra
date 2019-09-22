@@ -597,14 +597,23 @@ CHECK_HEADERS([encore], [encore headers], [encore.h])
 CHECK_LIB([giflib], [gif], [DGifOpen])
 CHECK_HEADERS([giflib], [gif lib headers], [gif_lib.h])
 CHECK_LIB([jbig], [jbig], [jbg_dec_init])
+
 CHECK_LIB([VDPAU], [vdpau], [vdp_device_create_x11])
+if test "x$HAVE_VDPAU" != "xyes" -a "x$WANT_VDPAU" = "xyes"; then
+  AC_MSG_ERROR([requires vdpau support.])
+fi
+
 CHECK_LIB([VAAPI], [va], [vaInitialize])
-if test "x$WANT_VAAPI" != "xno" -a "x$HAVE_VAAPI" = "xyes"; then
+if test "x$HAVE_VAAPI" = "xyes" -a "x$WANT_VAAPI" != "xno"; then
   CHECK_HEADERS([vaapi_x11], [va x11 headers], [va/va_x11.h])
   CHECK_LIB([vaapi_x11], [va-x11], [vaGetDisplay])
   CHECK_HEADERS([vaapi_drm], [va drm headers], [va/va_drm.h])
   CHECK_LIB([vaapi_drm], [va-drm], [vaGetDisplayDRM])
 fi
+if test "x$HAVE_VAAPI" != "xyes" -a "x$WANT_VAAPI" = "xyes"; then
+  AC_MSG_ERROR([requires vappi support.])
+fi
+
 #CHECK_LIB([NVENC], [nvidia-encode], [NvEncodeAPICreateInstance])
 
 #if test "x$HAVE_mjpegtools" = "xyes"; then
@@ -763,6 +772,7 @@ AC_DEFUN([PKG_DISABLED],[
  echo "AC_HELP_STRING([disabled],[$1])"
 ])
 AC_DEFUN([PKG_SHARED],[
+ PKG_$1="shared"
  BUILD_$1=0
  AC_SUBST(BUILD_$1)
  SHARED_LIBS+="$SHARED_$1"
@@ -890,32 +900,6 @@ for v in GL XFT XXF86VM OSS ALSA FIREWIRE DV DVB \
   echo "  using: $vv-$v"
 done
 
-echo "  using: with-jobs = $WANT_JOBS"
-echo "  using: exec-name = $WANT_CIN"
-echo "  using: with-cinlib = $WANT_CINLIB_DIR"
-echo "  using: with-cindat = $WANT_CINDAT_DIR"
-echo "  using: with-config-dir = $WANT_CONFIG_DIR"
-echo "  using: with-browser = $WANT_CIN_BROWSER"
-echo "  using: with-plugin-dir = $WANT_PLUGIN_DIR"
-echo "  using: with-ladspa-dir = $WANT_LADSPA_DIR"
-echo "  using: with-opencv = $WANT_OPENCV"
-echo "  using: with-git-ffmpeg = $WANT_GIT_FFMPEG"
-echo "  using: with-noelision = $WANT_NOELISION"
-echo "  using: with-booby = $WANT_BOOBY"
-echo "  using: with-libzmpeg = $WANT_LIBZMPEG"
-echo "  using: with-commerical = $WANT_COMMERCIAL"
-echo "  using: with-vaapi = $WANT_VAAPI"
-echo "  using: with-vdpau = $WANT_VDPAU"
-echo "  using: with-nv = $WANT_NV"
-echo "  using: with-cuda = $WANT_CUDA"
-echo "  using: with-clang = $WANT_CLANG"
-echo ""
-echo "  using: thirdparty build = $WANT_CIN_3RDPARTY"
-echo "  using: single-user  = $WANT_CINBIN_BUILD"
-echo "  using: static-build = $WANT_STATIC_BUILD"
-echo "  using: ladspa-build = $WANT_LADSPA_BUILD"
-echo ""
-
 # build extras
 if test "x$WANT_CLANG" = "xyes" ; then
   FFMPEG_EXTRA_CFG+=' --cc=clang --cxx=clang++'
@@ -934,7 +918,6 @@ if test "x$WANT_VAAPI" != "xno" -a "x$HAVE_VAAPI" = "xyes"; then
   FFMPEG_EXTRA_LDFLAGS+=' -lva'
   EXTRA_LIBS+=' -lva'
   WANT_VAPPI="yes"
-  CFG_WANTS+=" VAAPI"
   if test "x$HAVE_vaapi_x11" = "xyes"; then
     FFMPEG_EXTRA_LDFLAGS+=' -lva-x11'
     EXTRA_LIBS+=' -lva-x11'
@@ -944,10 +927,13 @@ if test "x$WANT_VAAPI" != "xno" -a "x$HAVE_VAAPI" = "xyes"; then
     EXTRA_LIBS+=' -lva-drm'
   fi
 fi
+CFG_WANTS+=" VAAPI"
+
 if test "x$WANT_VDPAU" != "xno" -a "x$HAVE_VDPAU" = "xyes"; then
   WANT_VDPAU="yes"
-  CFG_WANTS+=" VDPAU"
 fi
+CFG_WANTS+=" VDPAU"
+
 if test "x$WANT_NV" != "xno"; then
   WANT_NV="yes"
   CFG_WANTS+=" NV"
@@ -974,6 +960,26 @@ if test "x$WANT_NOELISION" != "xno"; then
  /lib64/noelision \
   | tail -1`
 fi
+
+echo "  using: with-jobs = $WANT_JOBS"
+echo "  using: exec-name = $WANT_CIN"
+echo "  using: with-cinlib = $WANT_CINLIB_DIR"
+echo "  using: with-cindat = $WANT_CINDAT_DIR"
+echo "  using: with-config-dir = $WANT_CONFIG_DIR"
+echo "  using: with-browser = $WANT_CIN_BROWSER"
+echo "  using: with-plugin-dir = $WANT_PLUGIN_DIR"
+echo "  using: with-ladspa-dir = $WANT_LADSPA_DIR"
+echo "  using: with-opencv = $WANT_OPENCV"
+echo "  using: with-git-ffmpeg = $WANT_GIT_FFMPEG"
+echo "  using: with-noelision = $WANT_NOELISION"
+echo "  using: with-booby = $WANT_BOOBY"
+echo "  using: with-clang = $WANT_CLANG"
+echo ""
+echo "  using: thirdparty build = $WANT_CIN_3RDPARTY"
+echo "  using: single-user  = $WANT_CINBIN_BUILD"
+echo "  using: static-build = $WANT_STATIC_BUILD"
+echo "  using: ladspa-build = $WANT_LADSPA_BUILD"
+echo ""
 
 AC_SUBST(WANT_CIN_3RDPARTY)
 AC_SUBST(EXTRA_LIBS)
@@ -1016,7 +1022,7 @@ echo "export THIRDPARTY EXTRA_LIBS FFMPEG_EXTRA_CFG"
 echo ""
 
 echo "WANT_CIN := $WANT_CIN"
-CFG_WANTS+=" CIN_3RDPARTY LIBZMPEG COMMERCIAL"
+CFG_WANTS+=" CIN_3RDPARTY LIBZMPEG COMMERCIAL STATIC_BUILD"
 for w in $CFG_WANTS; do ww=WANT_$w; echo "WANT_$w := ${!ww}"; done
 echo ""
 
@@ -1067,8 +1073,11 @@ fi
 
 for pkg in $STATIC_PKGS; do
   eval pkg_lib="\$PKG_$pkg"
-  if test "x$pkg_lib" = "xno"; then continue; fi;
-  echo "static_pkgs += $pkg"
+  if test "x$pkg_lib" = "xyes"; then
+    echo "static_pkgs += $pkg"
+  elif test "x$pkg_lib" = "xshared"; then
+    echo "shared_pkgs += $pkg"
+  fi
 done
 echo ""
 
@@ -1097,7 +1106,7 @@ echo ""
 for lib in $SHARED_LIBS; do echo "shared_libs += $lib"; done
 echo ""
 for lib in $SYSTEM_LIBS; do echo "system_libs += $lib"; done
-echo "export static_pkgs static_blds shared_libs system_libs"
+echo "export static_pkgs shared_pkgs static_blds shared_libs system_libs"
 echo ""
 
 echo "thirdparty_libraries := \$(static_libs) \$(shared_libs)"
@@ -1108,11 +1117,13 @@ fi
 
 echo "libraries += -Wl,--start-group"
 echo "libraries += \$(thirdparty_libraries)"
+echo "libraries += \$(shared_libs)"
 echo "libraries += \$(system_libs)"
 echo "libraries += \$(EXTRA_LIBS)"
 echo "libraries += -Wl,--end-group"
 # -Wl,--start-group ... -Wl,--end-group does not work on ubuntu
 echo "libraries += \$(thirdparty_libraries)"
+echo "libraries += \$(shared_libs)"
 echo "libraries += \$(system_libs)"
 echo "libraries += \$(EXTRA_LIBS)"
 echo ""

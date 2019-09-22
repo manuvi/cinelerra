@@ -372,20 +372,20 @@ int CWindowCoord::handle_event()
 }
 
 
-CWindowCropOK::CWindowCropOK(MWindow *mwindow, CWindowToolGUI *gui, int x, int y)
- : BC_GenericButton(x, y, _("Do it"))
+CWindowCropApply::CWindowCropApply(MWindow *mwindow, CWindowCropGUI *crop_gui, int x, int y)
+ : BC_GenericButton(x, y, _("Apply"))
 {
 	this->mwindow = mwindow;
-	this->gui = gui;
+	this->crop_gui = crop_gui;
 }
-int CWindowCropOK::handle_event()
+int CWindowCropApply::handle_event()
 {
-	mwindow->crop_video();
+	mwindow->crop_video(crop_gui->crop_mode->mode);
 	return 1;
 }
 
 
-int CWindowCropOK::keypress_event()
+int CWindowCropApply::keypress_event()
 {
 	if(get_keypress() == 0xd)
 	{
@@ -395,7 +395,50 @@ int CWindowCropOK::keypress_event()
 	return 0;
 }
 
+const char *CWindowCropOpMode::crop_ops[] = {
+	N_("Reformat"),
+	N_("Resize"),
+	N_("Shrink"),
+};
 
+CWindowCropOpMode::CWindowCropOpMode(MWindow *mwindow, CWindowCropGUI *crop_gui,
+			int mode, int x, int y)
+ : BC_PopupMenu(x, y, 140, _(crop_ops[mode]), 1)
+{
+        this->mwindow = mwindow;
+        this->crop_gui = crop_gui;
+        this->mode = mode;
+}
+CWindowCropOpMode::~CWindowCropOpMode()
+{
+}
+
+void CWindowCropOpMode::create_objects()
+{
+	for( int id=0,nid=sizeof(crop_ops)/sizeof(crop_ops[0]); id<nid; ++id )
+		add_item(new CWindowCropOpItem(this, _(crop_ops[id]), id));
+	handle_event();
+}
+
+int CWindowCropOpMode::handle_event()
+{
+	set_text(_(crop_ops[mode]));
+	return 1;
+}
+
+CWindowCropOpItem::CWindowCropOpItem(CWindowCropOpMode *popup, const char *text, int id)
+ : BC_MenuItem(text)
+{
+	this->popup = popup;
+	this->id = id;
+}
+
+int CWindowCropOpItem::handle_event()
+{
+	popup->set_text(get_text());
+	popup->mode = id;
+	return popup->handle_event();
+}
 
 
 
@@ -430,7 +473,7 @@ void CWindowCropGUI::create_objects()
 	add_subwindow(title = new BC_Title(x, y, _("W:")));
 	column1 = MAX(column1, title->get_w());
 	y += pad;
-	add_subwindow(new CWindowCropOK(mwindow, thread->tool_gui, x, y));
+	add_subwindow(new CWindowCropApply(mwindow, this, x, y));
 
 	x += column1 + 5;
 	y = 10;
@@ -459,9 +502,16 @@ void CWindowCropGUI::create_objects()
 		mwindow->edl->session->crop_y1);
 	y1->create_objects();
 	y += pad;
+
 	height = new CWindowCoord(thread->tool_gui, x, y,
 		mwindow->edl->session->crop_y2 - mwindow->edl->session->crop_y1);
 	height->create_objects();
+	y += pad;
+
+	add_subwindow(crop_mode = new CWindowCropOpMode(mwindow, this,
+				CROP_REFORMAT, x, y));
+	crop_mode->create_objects();
+
 	unlock_window();
 }
 

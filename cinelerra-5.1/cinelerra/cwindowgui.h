@@ -54,6 +54,12 @@ class CWindowEditing;
 
 #define AUTO_ZOOM N_("Auto")
 
+#define CROP_REFORMAT 0
+#define CROP_RESIZE 1
+#define CROP_SHRINK 2
+#define CROP_MODES 3
+
+
 class CWindowGUI : public BC_Window
 {
 public:
