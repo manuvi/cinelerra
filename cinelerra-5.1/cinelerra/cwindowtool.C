@@ -480,10 +480,12 @@ void CWindowCropGUI::create_objects()
 	x1 = new CWindowCoord(thread->tool_gui, x, y,
 		mwindow->edl->session->crop_x1);
 	x1->create_objects();
+	x1->set_boundaries((int64_t)0, (int64_t)65536);
 	y += pad;
 	width = new CWindowCoord(thread->tool_gui, x, y,
 		mwindow->edl->session->crop_x2 - mwindow->edl->session->crop_x1);
 	width->create_objects();
+	width->set_boundaries((int64_t)1, (int64_t)65536);
 
 
 	x += x1->get_w() + 10;
@@ -501,11 +503,13 @@ void CWindowCropGUI::create_objects()
 	y1 = new CWindowCoord(thread->tool_gui, x, y,
 		mwindow->edl->session->crop_y1);
 	y1->create_objects();
+	y1->set_boundaries((int64_t)0, (int64_t)65536);
 	y += pad;
 
 	height = new CWindowCoord(thread->tool_gui, x, y,
 		mwindow->edl->session->crop_y2 - mwindow->edl->session->crop_y1);
 	height->create_objects();
+	height->set_boundaries((int64_t)1, (int64_t)65536);
 	y += pad;
 
 	add_subwindow(crop_mode = new CWindowCropOpMode(mwindow, this,

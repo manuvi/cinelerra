@@ -147,7 +147,11 @@ void VFrame::to_texture()
 
 void VFrame::create_pbuffer()
 {
+#ifdef GLx4
 	int ww = (get_w()+3) & ~3, hh = (get_h()+3) & ~3;
+#else
+	int ww = get_w(), hh = get_h();
+#endif
 	if( pbuffer && (pbuffer->w != ww || pbuffer->h != hh ||
 	    pbuffer->window_id != BC_WindowBase::get_synchronous()->current_window->get_id() ) ) {
 		delete pbuffer;
@@ -293,6 +297,10 @@ void VFrame::init_screen(int w, int h)
 	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, zero);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, zero);
 	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 0);
+#ifndef GLx4
+	glPixelStorei(GL_PACK_ALIGNMENT,1);
+	glPixelStorei(GL_UNPACK_ALIGNMENT,1);
+#endif
 #endif
 }
 

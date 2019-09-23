@@ -521,12 +521,14 @@ void Playback3D::copy_from_sync(Playback3DCommand *command)
 // command->frame->get_w(),
 // command->frame->get_h(),
 // command->frame->get_color_model());
-// With NVidia at least,
+#ifdef GLx4
+// With NVidia at least
 			if(w % 4)
 			{
 				printf("Playback3D::copy_from_sync: w=%d not supported because it is not divisible by 4.\n", w);
 			}
 			else
+#endif
 // Copy to texture
 			if(command->want_texture)
 			{

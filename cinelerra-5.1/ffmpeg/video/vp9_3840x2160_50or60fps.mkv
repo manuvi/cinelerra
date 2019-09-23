@@ -1,9 +1,9 @@
 matroska libvpx-vp9
 # 20171119-2100
 # based on https://developers.google.com/media/vp9/settings/vod/
-# for explanations see Feature5.pdf section 3
+# for explanations reference the Cinelerra Manual
 # 3840x2160 (50 or 60 frames per second)
-bitrate=18000k
+b=18000k
 minrate=9000k
 maxrate=26100k
 tile-columns=4

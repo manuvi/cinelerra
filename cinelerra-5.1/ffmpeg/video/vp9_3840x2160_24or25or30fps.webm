@@ -1,9 +1,9 @@
 webm libvpx-vp9
 # 20171119-2100
 # based on https://developers.google.com/media/vp9/settings/vod/
-# for explanations see Feature5.pdf section 3
+# for explanations reference the Cinelerra Manual
 # 3840x2160 (24, 25 or 30 frames per second)
-bitrate=12000k
+b=12000k
 minrate=6000k
 maxrate=17400k
 tile-columns=4

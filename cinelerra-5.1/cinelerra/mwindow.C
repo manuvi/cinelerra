@@ -4489,7 +4489,7 @@ void MWindow::resync_guis()
 	lwindow->gui->panel->set_meters(channels, 1);
 	lwindow->gui->flush();
 	lwindow->gui->unlock_window();
-
+#ifdef GLx4
 // Warn user
 	if(((edl->session->output_w % 4) ||
 		(edl->session->output_h % 4)) &&
@@ -4499,7 +4499,7 @@ void MWindow::resync_guis()
 			_("This project's dimensions are not multiples of 4 so\n"
 			"it can't be rendered by OpenGL."));
 	}
-
+#endif
 
 // Flash frame
 	sync_parameters(CHANGE_ALL);
@@ -4524,8 +4524,10 @@ int MWindow::select_asset(Asset *asset, int vstream, int astream, int delete_tra
 		double framerate = asset->get_frame_rate();
 		int width = asset->get_w();
 		int height = asset->get_h();
+#ifdef GLx4
 		// must be multiple of 4 for opengl
 		width = (width+3) & ~3;  height = (height+3) & ~3;
+#endif
 		int driver = session->playback_config->vconfig->driver;
 		int color_model = file->get_best_colormodel(asset, driver);
 //		color_model = BC_CModels::is_yuv(color_model) ?

@@ -35,6 +35,7 @@ video := \
 	color3way \
 	colorbalance \
 	crikey \
+	cropp \
 	crossfade \
 	decimate \
 	deinterlace \

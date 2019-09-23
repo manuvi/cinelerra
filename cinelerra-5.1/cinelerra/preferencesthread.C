@@ -273,7 +273,7 @@ int PreferencesThread::apply_settings()
 
 //edl->session->recording_format->dump();
 //mwindow->edl->session->recording_format->dump();
-
+#ifdef GLx4
 	if(((mwindow->edl->session->output_w % 4) ||
 		(mwindow->edl->session->output_h % 4)) &&
 		mwindow->edl->session->playback_config->vconfig->driver == PLAYBACK_X11_GL)
@@ -282,7 +282,7 @@ int PreferencesThread::apply_settings()
 			_("This project's dimensions are not multiples of 4 so\n"
 			"it can't be rendered by OpenGL."));
 	}
-
+#endif
 
 	if(redraw_meters)
 	{

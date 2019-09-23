@@ -203,7 +203,7 @@ void MWindow::asset_to_all()
 				}
 			}
 
-
+#ifdef GLx4
 			if( ((edl->session->output_w % 4) ||
 				(edl->session->output_h % 4)) &&
 				edl->session->playback_config->vconfig->driver == PLAYBACK_X11_GL ) {
@@ -211,7 +211,7 @@ void MWindow::asset_to_all()
 					_("This project's dimensions are not multiples of 4 so\n"
 					"it can't be rendered by OpenGL."));
 			}
-
+#endif
 // Get aspect ratio
 			if( defaults->get("AUTOASPECT", 0) ) {
 				create_aspect_ratio(
@@ -250,7 +250,7 @@ void MWindow::asset_to_size()
 		h = indexable->get_h();
 		edl->session->output_w = w;
 		edl->session->output_h = h;
-
+#ifdef GLx4
 		if( ((edl->session->output_w % 4) ||
 			(edl->session->output_h % 4)) &&
 			edl->session->playback_config->vconfig->driver == PLAYBACK_X11_GL ) {
@@ -258,7 +258,7 @@ void MWindow::asset_to_size()
 				_("This project's dimensions are not multiples of 4 so\n"
 				"it can't be rendered by OpenGL."));
 		}
-
+#endif
 // Get aspect ratio
 		if( defaults->get("AUTOASPECT", 0) ) {
 			create_aspect_ratio(edl->session->aspect_w,

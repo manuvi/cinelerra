@@ -64,7 +64,11 @@ GLXPbuffer BC_PBuffer::get_pbuffer()
 void BC_PBuffer::create_pbuffer(int w, int h)
 {
 #ifdef HAVE_GL
+#ifdef GLx4
 	int ww = (w + 3) & ~3, hh = (h + 3) & ~3;
+#else
+	int ww = w, hh = h;
+#endif
 	BC_WindowBase *current_window = BC_WindowBase::get_synchronous()->current_window;
 	window_id = current_window->get_id();
 

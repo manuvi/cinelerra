@@ -3,7 +3,7 @@ webm libvpx-vp9
 # More VP9 options if choose format of webm
 # Refer to Appendix C.3 in Cinelerra_GG manual
 # 640x480 (Medium Quality, 24/25/30 frames per second)
-bitrate=750k
+b=750k
 minrate=375k
 maxrate=1088k
 tile-columns=1
