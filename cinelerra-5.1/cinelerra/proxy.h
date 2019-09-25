@@ -64,7 +64,7 @@ public:
 class ProxyRender
 {
 public:
-	ProxyRender(MWindow *mwindow, Asset *format_asset);
+	ProxyRender(MWindow *mwindow, Asset *format_asset, int asset_scale);
 	~ProxyRender();
 	void to_proxy_path(char *new_path, Indexable *indexable, int scale);
 	static int from_proxy_path(char *new_path, Indexable *indexable, int scale);
@@ -88,6 +88,7 @@ public:
 	Mutex *counter_lock;
 	int total_rendered;
 	int failed, canceled;
+	int asset_scale;
 };
 
 class ProxyDialog : public BC_DialogThread

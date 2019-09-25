@@ -360,7 +360,7 @@ CWindowCoord::CWindowCoord(CWindowToolGUI *gui, int x, int y, float value, int l
 }
 
 CWindowCoord::CWindowCoord(CWindowToolGUI *gui, int x, int y, int value)
- : BC_TumbleTextBox(gui, (int64_t)value, (int64_t)-65536, (int64_t)65536, x, y, 70, 3)
+ : BC_TumbleTextBox(gui, (int64_t)value, (int64_t)-65536, (int64_t)65536, x, y, 70)
 {
 	this->gui = gui;
 }

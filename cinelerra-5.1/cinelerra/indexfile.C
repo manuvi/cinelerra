@@ -328,6 +328,11 @@ int IndexFile::open_source()
 			FileSystem fs;
 			asset->index_state->index_bytes = fs.get_size(asset->path);
 			source_length = source->get_audio_length();
+			int proxy_scale = asset->proxy_scale;
+			if( proxy_scale > 0 ) {
+				asset->width = asset->actual_width * proxy_scale;
+				asset->height = asset->actual_height * proxy_scale;
+			}
 		}
 	}
 	else

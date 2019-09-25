@@ -131,12 +131,12 @@ int FileList::open_file(int rd, int wr)
 				else
 					result = 1;
 				if( !result ) {
-					int width = asset->width;
-					int height = asset->height;
 					asset->actual_width = asset->width;
-					if( width ) asset->width = width;
 					asset->actual_height = asset->height;
-					if( height ) asset->height = height;
+					int scale = asset->proxy_scale;
+					if( !scale ) scale = 1;
+					asset->width = asset->actual_width * scale;
+					asset->height = asset->actual_height * scale;
 					asset->layers = 1;
 					if( !asset->frame_rate )
 						asset->frame_rate = 10;

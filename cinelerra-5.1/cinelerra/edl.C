@@ -1627,39 +1627,31 @@ void EDL::rescale_proxy(int orig_scale, int new_scale)
 	}
 }
 
-void EDL::set_proxy(int new_scale, int use_scaler,
+void EDL::set_proxy(int new_scale, int new_use_scaler,
 	ArrayList<Indexable*> *orig_assets, ArrayList<Indexable*> *proxy_assets)
 {
 	int orig_scale = session->proxy_scale;
-	int orig_use_scaler = session->proxy_use_scaler;
-
-// rescale to full size asset in read_frame
 	session->proxy_scale = new_scale;
-	session->proxy_use_scaler = use_scaler;
-
-	if( use_scaler ) {
-		for( int i=0; i<proxy_assets->size(); ++i ) {
-			Asset *proxy_asset = (Asset *)proxy_assets->get(i);
-			proxy_asset->width = orig_assets->get(i)->get_w();
-			proxy_asset->height = orig_assets->get(i)->get_h();
-		}
-		new_scale = 1;
-	}
-
-	if( !orig_use_scaler )
-		rescale_proxy(orig_scale, new_scale);
-
+	int orig_use_scaler = session->proxy_use_scaler;
+	session->proxy_use_scaler = new_use_scaler;
+	if( orig_use_scaler ) orig_scale = 1;
+	int scale = new_use_scaler ? new_scale : 1;
+	int asset_scale = new_scale == 1 && !new_use_scaler ? 0 : scale;
 // change original assets to proxy assets
-	int folder_no = use_scaler || new_scale != 1 ? AW_PROXY_FOLDER : AW_MEDIA_FOLDER;
+	int folder_no = new_use_scaler || new_scale != 1 ? AW_PROXY_FOLDER : AW_MEDIA_FOLDER;
 	for( int i=0,n=proxy_assets->size(); i<n; ++i ) {
 		Indexable *proxy_idxbl = proxy_assets->get(i);
 		proxy_idxbl->folder_no = folder_no;
 		if( !proxy_idxbl->is_asset ) continue;
 		Asset *proxy_asset = assets->update((Asset *)proxy_idxbl);
-		if( proxy_asset == (Asset *)proxy_idxbl ) continue;
-		proxy_asset->width = proxy_idxbl->get_w();
-		proxy_asset->height = proxy_idxbl->get_h();
+		proxy_asset->width = proxy_asset->actual_width * scale;
+		proxy_asset->height = proxy_asset->actual_height * scale;
+		proxy_asset->proxy_scale = asset_scale;
 	}
+// rescale to full size asset in read_frame
+	if( new_use_scaler ) new_scale = 1;
+	rescale_proxy(orig_scale, new_scale);
+
 // replace track contents
 	for( Track *track=tracks->first; track; track=track->next ) {
 		if( track->data_type != TRACK_VIDEO ) continue;
@@ -1706,15 +1698,17 @@ void EDL::set_proxy(int new_scale, int use_scaler,
 	}
 }
 
-void EDL::add_proxy(int use_scaler,
-	ArrayList<Indexable*> *orig_assets, ArrayList<Indexable*> *proxy_assets)
+void EDL::add_proxy(ArrayList<Indexable*> *orig_assets, ArrayList<Indexable*> *proxy_assets)
 {
-	if( use_scaler ) {
-		for( int i=0,n=proxy_assets->size(); i<n; ++i ) {
-			Asset *proxy_asset = (Asset *)proxy_assets->get(i);
-			proxy_asset->width = orig_assets->get(i)->get_w();
-			proxy_asset->height = orig_assets->get(i)->get_h();
-		}
+	int asset_scale = session->proxy_scale;
+	if( asset_scale == 1 ) asset_scale = 0;
+	int scale = !asset_scale ? 1 : asset_scale;
+// update proxy geom using scale
+	for( int i=0; i<proxy_assets->size(); ++i ) {
+		Asset *proxy_asset = (Asset *)proxy_assets->get(i);
+		proxy_asset->proxy_scale = asset_scale;
+		proxy_asset->width = proxy_asset->actual_width * scale;
+		proxy_asset->height = proxy_asset->actual_height * scale;
 	}
 
 // change original assets to proxy assets

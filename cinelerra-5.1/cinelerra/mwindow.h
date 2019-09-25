@@ -522,9 +522,8 @@ public:
 	int modify_pluginhandles();
 	void finish_modify_handles();
 	void rescale_proxy(EDL *clip, int orig_scale, int new_scale);
-	void add_proxy(int use_scaler,
-		ArrayList<Indexable*> *orig_assets,
-		ArrayList<Indexable*> *proxy_assets);
+	void add_proxy(ArrayList<Indexable*> *orig_assets,
+			ArrayList<Indexable*> *proxy_assets);
 	int render_proxy(ArrayList<Indexable *> &new_idxbls);
 	void beep(double freq, double secs, double gain);
 	int enable_proxy();

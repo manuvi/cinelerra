@@ -2275,9 +2275,8 @@ int MWindow::render_proxy(ArrayList<Indexable *> &new_idxbls)
 	Asset *format_asset = new Asset;
 	format_asset->format = FILE_FFMPEG;
 	format_asset->load_defaults(defaults, "PROXY_", 1, 1, 0, 0, 0);
-	ProxyRender proxy_render(this, format_asset);
 	int new_scale = edl->session->proxy_scale;
-	int use_scaler = edl->session->proxy_use_scaler;
+	ProxyRender proxy_render(this, format_asset, new_scale);
 
 	for( int i=0; i<new_idxbls.size(); ++i ) {
 		Indexable *orig = new_idxbls.get(i);
@@ -2294,8 +2293,7 @@ int MWindow::render_proxy(ArrayList<Indexable *> &new_idxbls)
 // render needed proxies
 	int result = proxy_render.create_needed_proxies(new_scale);
 	if( !result ) {
-		add_proxy(use_scaler,
-			&proxy_render.orig_idxbls, &proxy_render.orig_proxies);
+		add_proxy(&proxy_render.orig_idxbls, &proxy_render.orig_proxies);
 	}
 	format_asset->remove_user();
 	return !result ? proxy_render.needed_proxies.size() : -1;
@@ -2344,7 +2342,9 @@ int MWindow::to_proxy(Asset *asset, int new_scale, int new_use_scaler)
 	edl->Garbage::add_user();
 	save_backup();
 	undo_before(_("proxy"), this);
-	ProxyRender proxy_render(this, asset);
+	int asset_scale = new_scale == 1 ? 0 :
+			!new_use_scaler ? 1 : new_scale;
+	ProxyRender proxy_render(this, asset, asset_scale);
 
 // revert project to original size from current size
 // remove all session proxy assets at the at the current proxy_scale

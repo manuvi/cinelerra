@@ -269,8 +269,7 @@ public:
 	void rescale_proxy(int orig_scale, int new_scale);
 	void set_proxy(int new_scale, int use_scaler,
 		ArrayList<Indexable*> *orig_assets, ArrayList<Indexable*> *proxy_assets);
-	void add_proxy(int use_scaler,
-		ArrayList<Indexable*> *orig_assets, ArrayList<Indexable*> *proxy_assets);
+	void add_proxy(ArrayList<Indexable*> *orig_assets, ArrayList<Indexable*> *proxy_assets);
 	Asset *get_proxy_asset();
 	Track *add_new_track(int data_type);
 

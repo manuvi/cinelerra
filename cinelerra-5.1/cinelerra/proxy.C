@@ -88,6 +88,7 @@ ProxyDialog::ProxyDialog(MWindow *mwindow)
 	strcpy(asset->fformat, "mpeg");
 	strcpy(asset->vcodec, "mpeg.mpeg");
 	asset->ff_video_bitrate = 2000000;
+	asset->video_data = 1;
 
 	bzero(size_text, sizeof(char*) * MAX_SIZES);
 	bzero(size_factors, sizeof(int) * MAX_SIZES);
@@ -230,10 +231,11 @@ int ProxyRender::from_proxy_path(char *new_path, Indexable *indexable, int scale
 	return 0;
 }
 
-ProxyRender::ProxyRender(MWindow *mwindow, Asset *format_asset)
+ProxyRender::ProxyRender(MWindow *mwindow, Asset *format_asset, int asset_scale)
 {
 	this->mwindow = mwindow;
 	this->format_asset = format_asset;
+	this->asset_scale = asset_scale;
 	progress = 0;
 	counter_lock = new Mutex("ProxyDialog::counter_lock");
 	total_rendered = 0;
@@ -442,6 +444,7 @@ ProxyFormatTools::ProxyFormatTools(MWindow *mwindow, ProxyWindow *pwindow, Asset
 
 void ProxyFormatTools::update_format()
 {
+	asset->save_defaults(mwindow->defaults, "PROXY_", 1, 1, 0, 0, 0);
         FormatTools::update_format();
 	pwindow->use_scaler->update();
 }
@@ -722,7 +725,12 @@ void ProxyClient::process_package(LoadPackage *ptr)
 		proxy_render->update_progress();
 	}
 	if( !proxy_render->failed && !proxy_render->is_canceled() ) {
-		Asset *asset = mwindow->edl->assets->update(proxy);
+		Asset *asset = edl->assets->update(proxy);
+		asset->proxy_scale = proxy_render->asset_scale;
+		int scale = asset->proxy_scale;
+		if( !scale ) scale = 1;
+		asset->width = asset->actual_width * scale;
+		asset->height = asset->actual_height * scale;
 		mwindow->mainindexes->add_next_asset(0, asset);
 		mwindow->mainindexes->start_build();
 	}

@@ -2457,10 +2457,9 @@ void MWindow::rescale_proxy(EDL *clip, int orig_scale, int new_scale)
 	edl->rescale_proxy(orig_scale, new_scale);
 }
 
-void MWindow::add_proxy(int use_scaler,
-	ArrayList<Indexable*> *orig_assets, ArrayList<Indexable*> *proxy_assets)
+void MWindow::add_proxy(ArrayList<Indexable*> *orig_assets, ArrayList<Indexable*> *proxy_assets)
 {
-	edl->add_proxy(use_scaler, orig_assets, proxy_assets);
+	edl->add_proxy(orig_assets, proxy_assets);
 }
 
 void MWindow::cut_commercials()
