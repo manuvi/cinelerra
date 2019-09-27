@@ -31,16 +31,16 @@
 #include "mwindow.inc"
 #include "vframe.h"
 
-#include "ImfChannelList.h"
-#include "ImfChromaticities.h"
-#include "ImfCompression.h"
-#include "ImfIO.h"
-#include "ImfInputFile.h"
-#include "ImfOutputFile.h"
-#include "ImfPixelType.h"
-#include "ImfRgbaFile.h"
-#include "ImfRgbaYca.h"
-#include "ImfVersion.h"
+#include "OpenEXR/ImfChannelList.h"
+#include "OpenEXR/ImfChromaticities.h"
+#include "OpenEXR/ImfCompression.h"
+#include "OpenEXR/ImfIO.h"
+#include "OpenEXR/ImfInputFile.h"
+#include "OpenEXR/ImfOutputFile.h"
+#include "OpenEXR/ImfPixelType.h"
+#include "OpenEXR/ImfRgbaFile.h"
+#include "OpenEXR/ImfRgbaYca.h"
+#include "OpenEXR/ImfVersion.h"
 
 class EXRIStream : public Imf::IStream
 {

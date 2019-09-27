@@ -236,15 +236,6 @@ PKG_3RD([giflib],[yes],
   [ libgif.a ],
   [ . ])
 
-PKG_3RD([ilmbase],[auto],
-  [ilmbase-2.2.1],
-  [ Iex/.libs/libIex.a \
-    IexMath/.libs/libIexMath.a \
-    Half/.libs/libHalf.a \
-    Imath/.libs/libImath.a \
-    IlmThread/.libs/libIlmThread.a ],
-  [ Iex Half Imath config IlmThread ])
-
 PKG_DEF([ladspa], [ladspa-0.4.17], [], [])
 
 PKG_3RD([lame],[auto],
@@ -336,10 +327,15 @@ PKG_3RD([mjpegtools],[yes],
   [ .  lavtools utils ])
 
 PKG_3RD([openexr],[auto],
-  [openexr-2.2.1],
-  [ IlmImf/.libs/libIlmImf.a \
-    IlmImfUtil/.libs/libIlmImfUtil.a ],
-  [ IlmImf config ])
+  [openexr-2.4.0],
+  [ build/usr/local/lib/libIlmImfUtil.a \
+    build/usr/local/lib/libIlmImf.a \
+    build/usr/local/lib/libIlmThread.a \
+    build/usr/local/lib/libImath.a \
+    build/usr/local/lib/libIexMath.a \
+    build/usr/local/lib/libIex.a \
+    build/usr/local/lib/libHalf.a ],
+  [ build/usr/local/include ])
 
 #PKG_3RD([festival],[no],
 #  [festival],
@@ -562,8 +558,6 @@ CHECK_LIB([openjpeg], [openjp2], [opj_version])
 CHECK_HEADERS([openjpeg], [openjpeg headers], [openjpeg.h])
 CHECK_LIB([libsndfile], [sndfile], [sf_open])
 CHECK_HEADERS([libsndfile], [sndfile headers], [sndfile.h])
-CHECK_LIB([ilmbase], [IlmImf], [ImfOpenInputFile])
-CHECK_HEADERS([ilmbase], [IlmImf headers], [OpenEXR/ImfCRgbaFile.h])
 CHECK_LIB([libtheora], [theora], [theora_info_init], [-ltheoraenc -ltheoradec -logg])
 CHECK_HEADERS([libtheora], [threora headers], [theora/theoraenc.h])
 CHECK_LIB([libvorbis], [vorbisenc], [vorbis_encode_init], [-lvorbis -lvorbisfile -logg])
@@ -714,8 +708,6 @@ CHECK_WANT([CUDA], [auto], [build cuda plugins], [
 CHECK_WANT([DL], [auto], [system has libdl], [
  CHECK_LIB([DL], [dl], [dlopen])])
 
-CHECK_WANT([EXR], [auto], [use exr], [])
-
 CHECK_WANT([OPENCV], [no], [opencv=sys/sta/dyn,git/tar=url], [
 ])
 
@@ -726,7 +718,6 @@ CHECK_WANT([OPENEXR], [auto], [use openexr], [
  AC_MSG_CHECKING([for openexr available])
  saved_LIBS="$LIBS"
  saved_CXXFLAGS="$CXXFLAGS"
- # ilmbase libs
  LIBS=" -lIlmImf -lIlmThread -lIex -lpthread"
  CXXFLAGS="-I/usr/include/OpenEXR -I/usr/local/include/OpenEXR"
  AC_LANG_PUSH(C++)
@@ -746,8 +737,9 @@ EXRIStream() : Imf::IStream("mypath") {} };
 class EXROStream : public Imf::OStream { public: 
 EXROStream() : Imf::OStream("mypath") {} };
 ]])], [HAVE_OPENEXR=yes], [HAVE_OPENEXR=no])
+ HAVE_openexr="$HAVE_OPENEXR"
  RESULT="$HAVE_OPENEXR"
- if test "x$RESULT" = "xyes"; then
+ if test "x$RESULT" = "xyes" -a "x$WANT_STATIC_BUILD" = "xno"; then
    SHARED_openexr="$LIBS"
    CFG_CFLAGS+=" -I/usr/include/OpenEXR -I/usr/local/include/OpenEXR"
  fi
@@ -796,7 +788,6 @@ for dep in \
         ffmpeg/twolame ffmpeg/lame ffmpeg/openjpeg \
         ffmpeg/libvorbis ffmpeg/libtheora ffmpeg/x264 ffmpeg/x265 \
         libiec61883/libraw1394 libavc1394/librom1394 \
-        openexr/ilmbase ilmbase/libogg \
         libtheora/libogg libtheora/libvorbis ; do
   lib=`dirname $dep`;  needs=`basename $dep`
   eval pkg_lib="\$PKG_$lib"; eval needs_lib="\$HAVE_$needs";
@@ -831,7 +822,6 @@ PKG_PROVIDE([ffmpeg])
 PKG_PROVIDE([fftw])
 PKG_PROVIDE([flac])
 PKG_PROVIDE([giflib])
-PKG_PROVIDE([ilmbase], [$WANT_OPENEXR])
 PKG_PROVIDE([ladspa],[$WANT_LADSPA_BUILD])
 PKG_PROVIDE([lame])
 PKG_PROVIDE([libavc1394],[$WANT_FIREWIRE])

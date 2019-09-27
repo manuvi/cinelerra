@@ -422,7 +422,7 @@ int File::probe()
 			else continue;
 			return FILE_OK;
 		}
-#ifdef HAVE_EXR
+#ifdef HAVE_OPENEXR
 		if( !strcmp(pref->name,"EXR") ) { // EXR file
 			if( !FileEXR::check_sig(this->asset, data)) continue;
 			file = new FileEXR(this->asset, this);

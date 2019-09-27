@@ -1,6 +1,7 @@
 https://www.cybercom.net/~dcoffin/dcraw/dcraw.c
 http://download-mirror.savannah.gnu.org/releases//openexr/ilmbase-2.2.1.tar.gz
 http://gnu.mirrors.pair.com/savannah/savannah//openexr/openexr-2.2.1.tar.gz
+https://github.com/openexr/openexr/releases/tag/v2.4.0
 https://sourceforge.net/projects/opencvlibrary/files/latest/download?source=directory = 3.2.0
 #https://sourceforge.net/projects/opencore-amr/files/fdk-aac/fdk-aac-2.2.0.tar.gz/download
 http://www.mega-nerd.com/libsndfile/files/libsndfile-1.0.28.tar.gz
