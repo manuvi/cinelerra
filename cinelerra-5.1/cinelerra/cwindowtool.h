@@ -97,6 +97,7 @@ public:
 	virtual int close_event();
 	int keypress_event();
 	int translation_event();
+	int press(void (CWindowCanvas::*fn)());
 
 	MWindow *mwindow;
 	CWindowTool *thread;
@@ -760,15 +761,13 @@ class CWindowCameraGUI : public CWindowToolGUI
 public:
 	CWindowCameraGUI(MWindow *mwindow, CWindowTool *thread);
 	~CWindowCameraGUI();
+	void handle_event();
 	void create_objects();
 	void update();
 
-// Update the keyframe from text boxes
-	void handle_event();
-//	BezierAuto* get_keyframe();
 	CWindowCoord *x, *y, *z;
-private:
-// Toggles for keyframe curve mode (for camera automation only)
+	CWindowCameraAddKeyframe *add_keyframe;
+	CWindowCameraReset *reset;
 	CWindowCurveToggle *t_smooth, *t_linear;
 };
 
@@ -832,18 +831,39 @@ public:
 	CWindowCameraGUI *gui;
 };
 
+class CWindowCameraAddKeyframe : public BC_Button
+{
+public:
+	CWindowCameraAddKeyframe(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
+	int handle_event();
+
+	MWindow *mwindow;
+	CWindowToolGUI *gui;
+};
+
+class CWindowCameraReset : public BC_Button
+{
+public:
+	CWindowCameraReset(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
+	int handle_event();
+
+	MWindow *mwindow;
+	CWindowToolGUI *gui;
+};
+
+
 class CWindowProjectorGUI : public CWindowToolGUI
 {
 public:
 	CWindowProjectorGUI(MWindow *mwindow, CWindowTool *thread);
 	~CWindowProjectorGUI();
+	void handle_event();
 	void create_objects();
 	void update();
-	void handle_event();
-//	BezierAuto* get_keyframe();
+
 	CWindowCoord *x, *y, *z;
-private:
-// Toggles for keyframe curve mode (projector automation only)
+	CWindowProjectorAddKeyframe *add_keyframe;
+	CWindowProjectorReset *reset;
 	CWindowCurveToggle *t_smooth, *t_linear;
 };
 
@@ -907,6 +927,26 @@ public:
 	CWindowProjectorGUI *gui;
 };
 
+class CWindowProjectorAddKeyframe : public BC_Button
+{
+public:
+	CWindowProjectorAddKeyframe(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
+	int handle_event();
+
+	MWindow *mwindow;
+	CWindowToolGUI *gui;
+};
+
+class CWindowProjectorReset : public BC_Button
+{
+public:
+	CWindowProjectorReset(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
+	int handle_event();
+
+	MWindow *mwindow;
+	CWindowToolGUI *gui;
+};
+
 
 
 
@@ -927,7 +967,6 @@ public:
 	BC_TextBox *distance;
 	BC_TextBox *angle;
 };
-
 
 
 #endif

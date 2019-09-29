@@ -490,8 +490,9 @@ void TitleWindow::send_configure_change()
 void TitleWindow::previous_font()
 {
 	int current_font = font->get_number();
-	current_font--;
-	if( current_font < 0 ) current_font = fonts.total - 1;
+	if( !fonts.total ) current_font = -1;
+	else if( --current_font < 0 ) current_font = fonts.total - 1;
+	font->set_number(current_font);
 
 	if( current_font < 0 || current_font >= fonts.total ) return;
 
@@ -508,8 +509,9 @@ void TitleWindow::previous_font()
 void  TitleWindow::next_font()
 {
 	int current_font = font->get_number();
-	current_font++;
-	if( current_font >= fonts.total ) current_font = 0;
+	if( !fonts.total ) current_font = -1;
+	else if( ++current_font >= fonts.total ) current_font = 0;
+	font->set_number(current_font);
 
 	if( current_font < 0 || current_font >= fonts.total ) return;
 
@@ -940,6 +942,7 @@ void TitleWindow::check_style(const char *font_name, int update)
 		int style = stroker && atof(stroker->get_text()) ? BC_FONT_OUTLINE : 0;
 		if( bold->get_value() ) style |= BC_FONT_BOLD;
 		if( italic->get_value() ) style |= BC_FONT_ITALIC;
+		if( alias->get_value() ) style |= FONT_ALIAS;
 		client->config.style = style;
 	}
 }

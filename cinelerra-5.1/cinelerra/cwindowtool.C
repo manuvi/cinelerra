@@ -133,6 +133,7 @@ void CWindowTool::start_tool(int operation)
 				mwindow->edl->session->tool_window = 1;
 				gui->composite_panel->operation[CWINDOW_TOOL_WINDOW]->update(1);
 			}
+			mwindow->edl->session->tool_window = new_gui ? 1 : 0;
 			update_show_window();
 
 // Signal thread to run next tool GUI
@@ -861,6 +862,11 @@ void CWindowCameraGUI::create_objects()
 	add_subwindow(button = new CWindowCameraCenter(mwindow, this, x1, y));
 	x1 += button->get_w();
 	add_subwindow(button = new CWindowCameraRight(mwindow, this, x1, y));
+// additional Buttons to control the curve mode of the "current" keyframe
+	x1 += button->get_w() + 15;
+	add_subwindow(this->t_smooth = new CWindowCurveToggle(Camera_Crv_Smooth, mwindow, this, x1, y));
+	x1 += button->get_w() + 10;
+	add_subwindow(this->t_linear = new CWindowCurveToggle(Camera_Crv_Linear, mwindow, this, x1, y));
 
 	y += button->get_h();
 	x1 = 10;
@@ -869,11 +875,10 @@ void CWindowCameraGUI::create_objects()
 	add_subwindow(button = new CWindowCameraMiddle(mwindow, this, x1, y));
 	x1 += button->get_w();
 	add_subwindow(button = new CWindowCameraBottom(mwindow, this, x1, y));
-// additional Buttons to control the curve mode of the "current" keyframe
 	x1 += button->get_w() + 15;
-	add_subwindow(this->t_smooth = new CWindowCurveToggle(Camera_Crv_Smooth, mwindow, this, x1, y));
-	x1 += button->get_w();
-	add_subwindow(this->t_linear = new CWindowCurveToggle(Camera_Crv_Linear, mwindow, this, x1, y));
+	add_subwindow(this->add_keyframe = new CWindowCameraAddKeyframe(mwindow, this, x1, y));
+	x1 += button->get_w() + 10;
+	add_subwindow(this->reset = new CWindowCameraReset(mwindow, this, x1, y));
 
 // fill in current auto keyframe values, set toggle states.
 	this->update();
@@ -1193,6 +1198,34 @@ int CWindowCameraBottom::handle_event()
 	return 1;
 }
 
+CWindowCameraAddKeyframe::CWindowCameraAddKeyframe(MWindow *mwindow,
+		CWindowToolGUI *gui, int x, int y)
+ : BC_Button(x, y, mwindow->theme->get_image_set("keyframe_button"))
+{
+	this->mwindow = mwindow;
+	this->gui = gui;
+	set_tooltip(_("Add Keyframe: Shift-F11"));
+}
+
+int CWindowCameraAddKeyframe::handle_event()
+{
+	return gui->press(&CWindowCanvas::camera_keyframe);
+}
+
+CWindowCameraReset::CWindowCameraReset(MWindow *mwindow,
+		CWindowToolGUI *gui, int x, int y)
+ : BC_Button(x, y, mwindow->theme->get_image_set("reset_button"))
+{
+	this->mwindow = mwindow;
+	this->gui = gui;
+	set_tooltip(_("Reset Camera: F11"));
+}
+
+int CWindowCameraReset::handle_event()
+{
+	return gui->press(&CWindowCanvas::reset_camera);
+}
+
 
 CWindowProjectorGUI::CWindowProjectorGUI(MWindow *mwindow, CWindowTool *thread)
  : CWindowToolGUI(mwindow,
@@ -1249,6 +1282,11 @@ void CWindowProjectorGUI::create_objects()
 	add_subwindow(button = new CWindowProjectorCenter(mwindow, this, x1, y));
 	x1 += button->get_w();
 	add_subwindow(button = new CWindowProjectorRight(mwindow, this, x1, y));
+// additional Buttons to control the curve mode of the "current" keyframe
+	x1 += button->get_w() + 15;
+	add_subwindow(this->t_smooth = new CWindowCurveToggle(Projector_Crv_Smooth, mwindow, this, x1, y));
+	x1 += button->get_w() + 10;
+	add_subwindow(this->t_linear = new CWindowCurveToggle(Projector_Crv_Linear, mwindow, this, x1, y));
 
 	y += button->get_h();
 	x1 = 10;
@@ -1257,12 +1295,10 @@ void CWindowProjectorGUI::create_objects()
 	add_subwindow(button = new CWindowProjectorMiddle(mwindow, this, x1, y));
 	x1 += button->get_w();
 	add_subwindow(button = new CWindowProjectorBottom(mwindow, this, x1, y));
-
-// additional Buttons to control the curve mode of the "current" keyframe
 	x1 += button->get_w() + 15;
-	add_subwindow(this->t_smooth = new CWindowCurveToggle(Projector_Crv_Smooth, mwindow, this, x1, y));
-	x1 += button->get_w();
-	add_subwindow(this->t_linear = new CWindowCurveToggle(Projector_Crv_Linear, mwindow, this, x1, y));
+	add_subwindow(this->add_keyframe = new CWindowProjectorAddKeyframe(mwindow, this, x1, y));
+	x1 += button->get_w() + 10;
+	add_subwindow(this->reset = new CWindowProjectorReset(mwindow, this, x1, y));
 
 // fill in current auto keyframe values, set toggle states.
 	this->update();
@@ -1540,6 +1576,44 @@ int CWindowProjectorBottom::handle_event()
 	return 1;
 }
 
+CWindowProjectorAddKeyframe::CWindowProjectorAddKeyframe(MWindow *mwindow,
+		CWindowToolGUI *gui, int x, int y)
+ : BC_Button(x, y, mwindow->theme->get_image_set("keyframe_button"))
+{
+	this->mwindow = mwindow;
+	this->gui = gui;
+	set_tooltip(_("Add Keyframe: Shift-F12"));
+}
+
+int CWindowProjectorAddKeyframe::handle_event()
+{
+	return gui->press(&CWindowCanvas::projector_keyframe);
+}
+
+CWindowProjectorReset::CWindowProjectorReset(MWindow *mwindow,
+		CWindowToolGUI *gui, int x, int y)
+ : BC_Button(x, y, mwindow->theme->get_image_set("reset_button"))
+{
+	this->mwindow = mwindow;
+	this->gui = gui;
+	set_tooltip(_("Reset Projector: F12"));
+}
+
+int CWindowProjectorReset::handle_event()
+{
+	return gui->press(&CWindowCanvas::reset_projector);
+}
+
+int CWindowToolGUI::press(void (CWindowCanvas::*fn)())
+{
+	unlock_window();
+	CWindowGUI *cw_gui = thread->gui;
+	cw_gui->lock_window("CWindowGUI::press");
+	(cw_gui->canvas->*fn)();
+	cw_gui->unlock_window();
+	lock_window("CWindowToolGUI::press");
+	return 1;
+}
 
 CWindowMaskOnTrack::CWindowMaskOnTrack(MWindow *mwindow, CWindowMaskGUI *gui,
 		int x, int y, int w, const char *text)
@@ -3672,7 +3746,4 @@ void CWindowRulerGUI::update()
 void CWindowRulerGUI::handle_event()
 {
 }
-
-
-
 

@@ -2571,6 +2571,7 @@ int BC_PopupTextBox::handle_event()
 const char *BC_PopupTextBox::get_text() { return textbox->get_text(); }
 const wchar_t *BC_PopupTextBox::get_wtext() { return textbox->get_wtext(); }
 int BC_PopupTextBox::get_number() { return list_item; }
+void BC_PopupTextBox::set_number(int v) { list_item = v; }
 int BC_PopupTextBox::get_x() { return x; }
 int BC_PopupTextBox::get_y() { return y; }
 int BC_PopupTextBox::get_w() { return textbox->get_w() + listbox->get_w(); }

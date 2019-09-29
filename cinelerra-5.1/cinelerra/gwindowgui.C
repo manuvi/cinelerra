@@ -92,9 +92,9 @@ int GWindowGUI::auto_colors[AUTOMATION_TOTAL] =
 	LTGREEN,
 	LTBLUE,
 	LTPURPLE,
-	0,
-	0,
-	0,
+	-1,
+	-1,
+	-1,
 	ORANGE,
 };
 

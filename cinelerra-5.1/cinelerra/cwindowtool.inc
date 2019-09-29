@@ -79,6 +79,8 @@ class CWindowCameraRight;
 class CWindowCameraTop;
 class CWindowCameraMiddle;
 class CWindowCameraBottom;
+class CWindowCameraAddKeyframe;
+class CWindowCameraReset;
 class CWindowProjectorGUI;
 class CWindowProjectorLeft;
 class CWindowProjectorCenter;
@@ -86,6 +88,8 @@ class CWindowProjectorRight;
 class CWindowProjectorTop;
 class CWindowProjectorMiddle;
 class CWindowProjectorBottom;
+class CWindowProjectorAddKeyframe;
+class CWindowProjectorReset;
 class CWindowRulerGUI;
 
 class CWindowCurveToggle;

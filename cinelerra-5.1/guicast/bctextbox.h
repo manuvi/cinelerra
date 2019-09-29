@@ -353,6 +353,7 @@ public:
 	const char *get_text();
 	const wchar_t *get_wtext();
 	int get_number();
+	void set_number(int v);
 	int get_x();
 	int get_y();
 	int get_w();

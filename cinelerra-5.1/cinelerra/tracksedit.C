@@ -128,11 +128,20 @@ int Tracks::clear_hard_edges(double start, double end)
 		int64_t end_units = track->to_units(end, 0);
 
 		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
-			if( edit->startproject < start_units ) continue;
-			if( edit->startproject >= end_units ) continue;
-			edit->hard_left = 0;
-			if( !edit->previous ) continue;
-			edit->previous->hard_right = 0;
+			int64_t pos = edit->startproject;
+			if( pos > end_units ) break;
+			if( pos >= start_units ) {
+				edit->hard_left = 0;
+				if( edit->previous )
+					edit->previous->hard_right = 0;
+			}
+			pos += edit->length;
+			if( pos > end_units ) break;
+			if( pos >= start_units ) {
+				edit->hard_right = 0;
+				if( edit->next )
+					edit->next->hard_left = 0;
+			}
 		}
 	}
 	return 0;
