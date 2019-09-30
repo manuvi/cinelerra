@@ -191,6 +191,9 @@ audiofile.mak_params?=LIBS="-lm -lstdc++"
 flac.cfg_params?= --enable-shared=no
 flac.cflags?="$(call inc_path,libogg) $(call ld_path,libogg,src/.libs)"
 giflib.cfg_params=echo "exec true" > ./configure; chmod +x ./configure;
+ilmbase.cfg_vars= CFLAGS+=" -Wno-narrowing" CXXFLAGS+=" -Wno-narrowing"
+ilmbase.cfg_params?=--prefix=$(call bld_path,ilmbase,usr)
+ilmbase.mak_params?=; $(MAKE) -C ilmbase* install; cd $(call bld_path,ilmbase); ln -sf lib64 usr/lib
 lame.cfg_vars?= CFLAGS+=" -O"
 lame.cfg_params?=--enable-shared=no
 lame.mak_params?= ; cd $(call bld_path,lame,include); ln -sf . lame
@@ -232,14 +235,8 @@ openjpeg.cfg_vars?=$(call cmake_config,.)
 openjpeg.mak_params?= ; cd $(call bld_path,openjpeg,src/lib/openjp2); ln -sf . openjpeg-2.1
 opencv.cfg_vars?=$(call cmake_config,.)
 opencv.cfg_params?= -DBUILD_SHARED_LIBS:BOOL=OFF
-openexr.cfg_params?=\
- -DILMBASE_BUILD_BOTH_STATIC_SHARED:BOOL=ON \
- -DOPENEXR_BUILD_BOTH_STATIC_SHARED:BOOL=ON \
- -DILMBASE_LIB_SUFFIX= -DILMBASE_STATIC_LIB_SUFFIX= \
- -DOPENEXR_LIB_SUFFIX= -DOPENEXR_STATIC_LIB_SUFFIX= \
- -DCMAKE_INSTALL_LIBDIR=lib
-openexr.cfg_vars?= mkdir build && cd build && $(call cmake_config,..)
-openexr.mak_params?= -C build install DESTDIR=.
+openexr.cfg_vars?=LD_LIBRARY_PATH=$(call bld_path,ilmbase,usr/lib)
+openexr.cfg_params?=--enable-shared=no --with-ilmbase-prefix=$(call bld_path,ilmbase,usr)
 speech_tools.mak_params?=-j1
 tiff.cfg_params+= --enable-shared=no --disable-zstd $(call if_npkg,libwebp,--without-webp)
 twolame.cfg_params?=--enable-shared=no
@@ -321,6 +318,7 @@ $(call rules,$(call std-build,ffmpeg, twolame lame openjpeg opus \
 $(call rules,$(call std-build,fftw))
 $(call rules,$(call std-build,flac,libogg))
 $(call rules,$(call std-build,giflib))
+$(call rules,$(call std-build,ilmbase))
 $(call rules,$(call std-build,ladspa))
 $(call rules,$(call std-build,lame))
 $(call rules,$(call std-build,libaom))
@@ -338,7 +336,7 @@ $(call rules,$(call std-build,libuuid))
 $(call rules,$(call std-build,libvorbis))
 $(call rules,$(call std-build,mjpegtools, libjpeg))
 $(call rules,$(call std-build,opencv))
-$(call rules,$(call std-build,openexr))
+$(call rules,$(call std-build,openexr, ilmbase))
 $(call rules,$(call std-build,openjpeg))
 $(call rules,$(call std-build,opus))
 $(call rules,$(call std-build,speech_tools))
