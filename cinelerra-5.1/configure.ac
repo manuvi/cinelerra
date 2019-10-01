@@ -714,8 +714,6 @@ CHECK_WANT([CUDA], [auto], [build cuda plugins], [
 CHECK_WANT([DL], [auto], [system has libdl], [
  CHECK_LIB([DL], [dl], [dlopen])])
 
-CHECK_WANT([EXR], [auto], [use exr], [])
-
 CHECK_WANT([OPENCV], [no], [opencv=sys/sta/dyn,git/tar=url], [
 ])
 

@@ -8,6 +8,11 @@ Cinfinity icons selected in Preferences Sam (CC BY 3.0,
 Cakewalk and Neophyte themes by Olaf Wolff (CC BY 4.0,
   https://creativecommons.org/licenses/by/4.0/)
 .
+September 2019 New Features of note:
+  Crop & Position new plugin now available.
+  New "Load recent" in File pulldown, for recently used media.
+  Libraries x265 and openexr have been upgraded.
+  Camera and Projector menu has added Add Keyframe/Reset.
 August 2019 New Features of note:
   FFmpeg in use with Cinelerra is now version 4.2.
   Lipvpx has been upgraded to version 1.8.1.
