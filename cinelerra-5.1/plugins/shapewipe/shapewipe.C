@@ -41,13 +41,15 @@
 // feather slider range log2 = -10 .. -1 == 9.8e-4 .. 0.5
 #define SHAPE_FLOG_MIN -10.
 #define SHAPE_FLOG_MAX -1.
+#define SHAPE_FMIN expf(M_LN2*SHAPE_FLOG_MIN)
+#define SHAPE_FMAX expf(M_LN2*SHAPE_FLOG_MAX)
 
 REGISTER_PLUGIN(ShapeWipeMain)
 
 ShapeWipeConfig::ShapeWipeConfig()
 {
 	direction = 0;
-	feather = 0;
+	feather = SHAPE_FMIN;
 	preserve_aspect = 0;
 	strcpy(shape_name, DEFAULT_SHAPE);
 }
@@ -160,30 +162,70 @@ int ShapeWipeTumble::handle_down_event()
 
 ShapeWipeFeather::ShapeWipeFeather(ShapeWipeMain *client,
 		ShapeWipeWindow *window, int x, int y)
- : BC_FSlider(x, y, 0, 150, 150, SHAPE_FLOG_MIN, SHAPE_FLOG_MAX,
-	!client->config.feather ? SHAPE_FLOG_MIN :
-		log(client->config.feather)/M_LN2)
+ : BC_TumbleTextBox(window,
+		bclip(client->config.feather, SHAPE_FMIN, SHAPE_FMAX),
+		SHAPE_FMIN, SHAPE_FMAX, x, y, 64, 3)
+{
+	this->client = client;
+	this->window = window;
+}
+
+int ShapeWipeFeather::handle_event()
+{
+	float v = atof(get_text());
+	bclamp(v, SHAPE_FMIN, SHAPE_FMAX);
+	client->config.feather = v;
+	float sv = log(v)/M_LN2;
+	window->shape_fslider->update(sv);
+	client->send_configure_change();
+	return 1;
+}
+
+ShapeWipeFSlider::ShapeWipeFSlider(ShapeWipeMain *client,
+		ShapeWipeWindow *window, int x, int y, int w)
+ : BC_FSlider(x, y, 0, w, w, SHAPE_FLOG_MIN, SHAPE_FLOG_MAX,
+	log(bclip(client->config.feather, SHAPE_FMIN, SHAPE_FMAX))/M_LN2)
 {
 	this->client = client;
 	this->window = window;
 	set_precision(0.001);
 	set_pagination(0.01, 0.1);
+	enable_show_value(0);
 }
 
-char *ShapeWipeFeather::get_caption()
-{
-	double  v = get_value();
-	char *caption = BC_Slider::get_caption();
-	sprintf(caption, "%-5.3f", exp(v*M_LN2));
-	return caption;
-}
-
-int ShapeWipeFeather::handle_event()
+int ShapeWipeFSlider::handle_event()
 {
 	float v = get_value();
-	client->config.feather =  exp(M_LN2*v);
+	float vv = exp(M_LN2*v);
+	client->config.feather = vv;
+	window->shape_feather->update(vv);
 	client->send_configure_change();
 	return 1;
+}
+
+ShapeWipeReset::ShapeWipeReset(ShapeWipeMain *client,
+		ShapeWipeWindow *window, int x, int y)
+ : BC_Button(x, y, client->get_theme()->get_image_set("reset_button"))
+{
+	this->client = client;
+	this->window = window;
+	set_tooltip(_("Reset feather"));
+}
+
+int ShapeWipeReset::handle_event()
+{
+	window->shape_fslider->update(SHAPE_FLOG_MIN);
+	float v = SHAPE_FMIN;
+	window->shape_feather->update(v);
+	client->config.feather = v;
+	client->send_configure_change();
+	return 1;
+}
+
+int ShapeWipeReset::calculate_w(ShapeWipeMain *client)
+{
+	VFrame **reset_images = client->get_theme()->get_image_set("reset_button");
+	return reset_images[0]->get_w();
 }
 
 
@@ -206,14 +248,16 @@ int ShapeWipeShape::handle_event()
 
 
 ShapeWipeWindow::ShapeWipeWindow(ShapeWipeMain *plugin)
- : PluginClientWindow(plugin, 450, 125, 450, 125, 0)
+ : PluginClientWindow(plugin, 425, 215, 425, 215, 0)
 {
 	this->plugin = plugin;
+	shape_feather = 0;
 }
 
 ShapeWipeWindow::~ShapeWipeWindow()
 {
 	shapes.remove_all_objects();
+	delete shape_feather;
 }
 
 
@@ -221,48 +265,58 @@ void ShapeWipeWindow::create_objects()
 {
 	BC_Title *title = 0;
 	lock_window("ShapeWipeWindow::create_objects");
-	int widget_border = plugin->get_theme()->widget_border;
-	int window_border = plugin->get_theme()->window_border;
-	int x = window_border, y = window_border;
+	int pad = 10, margin = 10;
+	int x = margin, y = margin;
+	int ww = get_w() - 2*margin;
 
 	plugin->init_shapes();
 	for( int i=0; i<plugin->shape_titles.size(); ++i ) {
 		shapes.append(new BC_ListBoxItem(plugin->shape_titles.get(i)));
 	}
 
-	add_subwindow(title = new BC_Title(x, y, _("Direction:")));
-	x += title->get_w() + widget_border;
-	add_subwindow(left = new ShapeWipeW2B(plugin,
-		this, x, y));
-	x += left->get_w() + widget_border;
-	add_subwindow(right = new ShapeWipeB2W(plugin,
-		this, x, y));
-	x = window_border;
-	y += right->get_h() + widget_border;
-
+	BC_TitleBar *bar;
+	add_subwindow(bar = new BC_TitleBar(x, y, ww, x+ww/12,
+		pad, _("Wipe"), MEDIUMFONT));
+	y += bar->get_h() + pad;
 
 	add_subwindow(title = new BC_Title(x, y, _("Shape:")));
-	x += title->get_w() + widget_border;
-
-	shape_text = new ShapeWipeShape(plugin,
-		this, x, y, 150, 200);
+	int x1 = get_w()/5;
+	x = x1;
+	int tw = ww - x1 - ShapeWipeTumble::calculate_w() - pad -
+		BC_WindowBase::get_resources()->listbox_button[0]->get_w();
+	shape_text = new ShapeWipeShape(plugin, this, x1, y, tw, 200);
 	shape_text->create_objects();
-	x += shape_text->get_w() + widget_border;
+	x += shape_text->get_w() + pad;
 	add_subwindow(new ShapeWipeTumble(plugin,
 		this, x, y));
-	y += shape_text->get_h() + widget_border;
+	y += shape_text->get_h() + pad;
 
-	x = window_border;
+	x = margin;
 	add_subwindow(title = new BC_Title(x, y, _("Feather:")));
-	x += title->get_w() + widget_border;
-	add_subwindow(shape_feather = new ShapeWipeFeather(plugin, this, x, y));
-	y += shape_feather->get_h() + widget_border;
+	x = x1;
+	shape_feather = new ShapeWipeFeather(plugin, this, x, y);
+	shape_feather->create_objects();
+	shape_feather->set_log_floatincrement(1);
+	x += shape_feather->get_w() + 2*pad;
+	int sw = ww - ShapeWipeReset::calculate_w(plugin) - pad - x;
+	add_subwindow(shape_fslider = new ShapeWipeFSlider(plugin, this, x, y, sw));
+	x += shape_fslider->get_w() + 2*pad;
+	add_subwindow(shape_reset = new ShapeWipeReset(plugin, this, x, y));
+	y += shape_fslider->get_h() + pad;
 
-	x = window_border;
+	x = margin;
 	ShapeWipePreserveAspectRatio *aspect_ratio;
 	add_subwindow(aspect_ratio = new ShapeWipePreserveAspectRatio(
 		plugin, this, x, y));
-	y += aspect_ratio->get_h() + widget_border;
+	y += aspect_ratio->get_h() + pad;
+
+	add_subwindow(bar = new BC_TitleBar(x, y, ww, x+ww/12,
+		pad, _("Direction"), MEDIUMFONT));
+	y += bar->get_h() + pad;
+	x = margin;
+	add_subwindow(left = new ShapeWipeW2B(plugin, this, x, y));
+	y += left->get_h();
+	add_subwindow(right = new ShapeWipeB2W(plugin, this, x, y));
 
 	show_window();
 	unlock_window();

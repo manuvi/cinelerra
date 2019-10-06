@@ -29,6 +29,8 @@ class ShapeWipeW2B;
 class ShapeWipeB2W;
 class ShapeWipeTumble;
 class ShapeWipeFeather;
+class ShapeWipeFSlider;
+class ShapeWipeReset;
 class ShapeWipeShape;
 class ShapeWipePreserveAspectRatio;
 class ShapePackage;
@@ -79,13 +81,35 @@ public:
 	ShapeWipeWindow *window;
 };
 
-class ShapeWipeFeather : public BC_FSlider
+class ShapeWipeFeather : public BC_TumbleTextBox
 {
 public:
 	ShapeWipeFeather(ShapeWipeMain *client,
 		ShapeWipeWindow *window, int x, int y);
-	char *get_caption();
 	int handle_event();
+
+	ShapeWipeMain *client;
+	ShapeWipeWindow *window;
+};
+
+class ShapeWipeFSlider : public BC_FSlider
+{
+public:
+	ShapeWipeFSlider(ShapeWipeMain *client,
+		ShapeWipeWindow *window, int x, int y, int w);
+	int handle_event();
+
+	ShapeWipeMain *client;
+	ShapeWipeWindow *window;
+};
+
+class ShapeWipeReset : public BC_Button
+{
+public:
+	ShapeWipeReset(ShapeWipeMain *client,
+		ShapeWipeWindow *window, int x, int y);
+	int handle_event();
+	static int calculate_w(ShapeWipeMain *client);
 
 	ShapeWipeMain *client;
 	ShapeWipeWindow *window;
@@ -129,6 +153,8 @@ public:
 	ShapeWipeTumble *shape_tumbler;
 	ShapeWipeShape *shape_text;
 	ShapeWipeFeather *shape_feather;
+	ShapeWipeFSlider *shape_fslider;
+	ShapeWipeReset *shape_reset;
 	ArrayList<BC_ListBoxItem*> shapes;
 };
 
