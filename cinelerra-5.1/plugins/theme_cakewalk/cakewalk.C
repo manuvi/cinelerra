@@ -1,4 +1,4 @@
-/* Part of the Cakewalk theme. */
+/* cakewalk.C (uncommented). Part of the Cakewalk theme. */
 #include "bcsignals.h"
 #include "clip.h"
 #include "cwindowgui.h"
@@ -267,20 +267,23 @@ void CAKEWALKTHEME::initialize()
   "new_bigbutton_hi.png",
   "new_bigbutton_dn.png",
   "new_ok_images");
- new_button( "reset.png",
+ new_button(
+  "reset.png",
   "reset_up.png",
   "reset_hi.png",
   "reset_dn.png",
   "reset_button");
- new_button("unclear.png",
+ new_button(
+  "unclear.png",
   "unclear_up.png",
   "unclear_hi.png",
   "unclear_dn.png",
   "unclear_button");
- new_button("keyframe.png",
-  "keyframe_up.png",
-  "keyframe_hi.png",
-  "keyframe_dn.png",
+ new_button(
+  "keyframe.png",
+  "editpanel_up.png",
+  "editpanel_hi.png",
+  "editpanel_dn.png",
   "keyframe_button");
  resources->cancel_images = new_button(
   "cancel.png",
@@ -295,83 +298,80 @@ void CAKEWALKTHEME::initialize()
   "new_bigbutton_dn.png",
   "new_cancel_images");
  new_button("mask_pnt_linear.png",
-  "mask_button_up.png",
-  "mask_button_hi.png",
-  "mask_button_dn.png",
-  "mask_pnt_linear_images");
+      "mask_button_up.png",
+      "mask_button_hi.png",
+      "mask_button_dn.png",
+      "mask_pnt_linear_images");
  new_button("mask_crv_linear.png",
-  "mask_button_up.png",
-  "mask_button_hi.png",
-  "mask_button_dn.png",
-  "mask_crv_linear_images");
+      "mask_button_up.png",
+      "mask_button_hi.png",
+      "mask_button_dn.png",
+      "mask_crv_linear_images");
  new_button("mask_all_linear.png",
-  "mask_button_up.png",
-  "mask_button_hi.png",
-  "mask_button_dn.png",
-  "mask_all_linear_images");
+      "mask_button_up.png",
+      "mask_button_hi.png",
+      "mask_button_dn.png",
+      "mask_all_linear_images");
  new_button("mask_pnt_smooth.png",
-  "mask_button_up.png",
-  "mask_button_hi.png",
-  "mask_button_dn.png",
-  "mask_pnt_smooth_images");
+      "mask_button_up.png",
+      "mask_button_hi.png",
+      "mask_button_dn.png",
+      "mask_pnt_smooth_images");
  new_button("mask_crv_smooth.png",
-  "mask_button_up.png",
-  "mask_button_hi.png",
-  "mask_button_dn.png",
-  "mask_crv_smooth_images");
+      "mask_button_up.png",
+      "mask_button_hi.png",
+      "mask_button_dn.png",
+      "mask_crv_smooth_images");
  new_button("mask_all_smooth.png",
-  "mask_button_up.png",
-  "mask_button_hi.png",
-  "mask_button_dn.png",
-  "mask_all_smooth_images");
+      "mask_button_up.png",
+      "mask_button_hi.png",
+      "mask_button_dn.png",
+      "mask_all_smooth_images");
  new_button("mask_prst_sqr.png",
-  "mask_button_up.png",
-  "mask_button_hi.png",
-  "mask_button_dn.png",
-  "mask_prst_sqr_images");
+      "mask_button_up.png",
+      "mask_button_hi.png",
+      "mask_button_dn.png",
+      "mask_prst_sqr_images");
  new_button("mask_prst_crc.png",
-  "mask_button_up.png",
-  "mask_button_hi.png",
-  "mask_button_dn.png",
-  "mask_prst_crc_images");
+      "mask_button_up.png",
+      "mask_button_hi.png",
+      "mask_button_dn.png",
+      "mask_prst_crc_images");
  new_button("mask_prst_tri.png",
-  "mask_button_up.png",
-  "mask_button_hi.png",
-  "mask_button_dn.png",
-  "mask_prst_tri_images");
+      "mask_button_up.png",
+      "mask_button_hi.png",
+      "mask_button_dn.png",
+      "mask_prst_tri_images");
  new_button("mask_prst_ovl.png",
-  "mask_button_up.png",
-  "mask_button_hi.png",
-  "mask_button_dn.png",
-  "mask_prst_ovl_images");
-
+      "mask_button_up.png",
+      "mask_button_hi.png",
+      "mask_button_dn.png",
+      "mask_prst_ovl_images");
  new_button("mask_prst_load.png",
-  "mask_button_up.png",
-  "mask_button_hi.png",
-  "mask_button_dn.png",
-  "mask_prst_load_images");
+      "mask_button_up.png",
+      "mask_button_hi.png",
+      "mask_button_dn.png",
+      "mask_prst_load_images");
  new_button("mask_prst_save.png",
-  "mask_button_up.png",
-  "mask_button_hi.png",
-  "mask_button_dn.png",
-  "mask_prst_save_images");
+      "mask_button_up.png",
+      "mask_button_hi.png",
+      "mask_button_dn.png",
+      "mask_prst_save_images");
  new_button("mask_prst_trsh.png",
-  "mask_button_up.png",
-  "mask_button_hi.png",
-  "mask_button_dn.png",
-  "mask_prst_trsh_images");
-
+      "mask_button_up.png",
+      "mask_button_hi.png",
+      "mask_button_dn.png",
+      "mask_prst_trsh_images");
  new_button("mask_pstn_cen.png",
-  "mask_button_up.png",
-  "mask_button_hi.png",
-  "mask_button_dn.png",
-  "mask_pstn_cen_images");
+      "mask_button_up.png",
+      "mask_button_hi.png",
+      "mask_button_dn.png",
+      "mask_pstn_cen_images");
  new_button("mask_pstn_nrm.png",
-  "mask_button_up.png",
-  "mask_button_hi.png",
-  "mask_button_dn.png",
-  "mask_pstn_nrm_images");
-
+      "mask_button_up.png",
+      "mask_button_hi.png",
+      "mask_button_dn.png",
+      "mask_pstn_nrm_images");
  resources->bar_data = new_image("bar", "bar.png");
  resources->check = new_image("check", "check.png");
  resources->min_menu_w = 96;
@@ -713,11 +713,11 @@ void CAKEWALKTHEME::initialize()
   "proxy_s_down.png",
   "proxy_s_chkdhi.png");
  mask_mode_toggle = new_image_set(5,
-  "mask_mode_up.png",
-  "mask_mode_hi.png",
-  "mask_mode_chkd.png",
-  "mask_mode_down.png",
-  "mask_mode_chkdhi.png");
+          "mask_mode_up.png",
+          "mask_mode_hi.png",
+          "mask_mode_chkd.png",
+          "mask_mode_down.png",
+          "mask_mode_chkdhi.png");
  shbtn_data = new_image_set(
   3,
   "shbtn_up.png",
@@ -946,7 +946,7 @@ void CAKEWALKTHEME::initialize()
       transport_up, editpanel_hi, editpanel_checked,
       editpanel_dn, editpanel_checkedhi,
       "autokeyframe");
-new_toggle("spankeyframe.png",
+ new_toggle("spankeyframe.png",
       transport_up, editpanel_hi, editpanel_checked,
       editpanel_dn, editpanel_checkedhi,
       "spankeyframe");
@@ -1008,15 +1008,15 @@ new_toggle("spankeyframe.png",
       editpanel_up, editpanel_hi, editpanel_checked,
       editpanel_dn, editpanel_checkedhi,
       "tan_linear");
- new_toggle("mask_scale_x.png",   "mask_scale_up.png",    "mask_scale_uphi.png",
-  "mask_scale_chkd.png",  "mask_scale_xdown.png",  "mask_scale_chkdhi.png",
-  "mask_scale_x");
- new_toggle("mask_scale_y.png",   "mask_scale_up.png",    "mask_scale_uphi.png",
-  "mask_scale_chkd.png",  "mask_scale_ydown.png",  "mask_scale_chkdhi.png",
-  "mask_scale_y");
- new_toggle("mask_scale_xy.png",  "mask_scale_up.png",   "mask_scale_uphi.png",
-  "mask_scale_chkd.png", "mask_scale_xydown.png", "mask_scale_chkdhi.png",
-  "mask_scale_xy");
+ new_toggle("mask_scale_x.png", "mask_scale_up.png", "mask_scale_uphi.png",
+      "mask_scale_chkd.png", "mask_scale_xdown.png", "mask_scale_chkdhi.png",
+      "mask_scale_x");
+ new_toggle("mask_scale_y.png", "mask_scale_up.png", "mask_scale_uphi.png",
+      "mask_scale_chkd.png", "mask_scale_ydown.png", "mask_scale_chkdhi.png",
+      "mask_scale_y");
+ new_toggle("mask_scale_xy.png", "mask_scale_up.png", "mask_scale_uphi.png",
+      "mask_scale_chkd.png", "mask_scale_xydown.png", "mask_scale_chkdhi.png",
+      "mask_scale_xy");
  flush_images();
 }
 void CAKEWALKTHEME::get_vwindow_sizes(VWindowGUI *gui)
@@ -1124,7 +1124,7 @@ void CAKEWALKTHEME::draw_mwindow_bg(MWindowGUI *gui)
  gui->draw_vframe(get_image("panel_divider"),
       x - toggle_margin / 2 - pdw / 2 + 2,
       mbuttons_y - 1);
- x += 3 * get_image("autokeyframe")->get_w() + toggle_margin;
+ x += 2 * get_image("autokeyframe")->get_w() + toggle_margin;
  gui->draw_vframe(get_image("panel_divider"),
       x - toggle_margin / 2 - pdw / 2 + 2,
       mbuttons_y - 1);

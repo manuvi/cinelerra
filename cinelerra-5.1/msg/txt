@@ -11,7 +11,7 @@ Cakewalk and Neophyte themes by Olaf Wolff (CC BY 4.0,
 September 2019 New Features of note:
   Crop & Position new plugin now available.
   New "Load recent" in File pulldown, for recently used media.
-  Libraries x265 and openexr have been upgraded.
+  Library x265 has been upgraded to 3.1.2.
   Camera and Projector menu has added Add Keyframe/Reset.
 August 2019 New Features of note:
   FFmpeg in use with Cinelerra is now version 4.2.
