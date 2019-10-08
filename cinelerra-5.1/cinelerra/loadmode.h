@@ -27,8 +27,6 @@
 #include "mwindow.inc"
 #include "theme.inc"
 
-class LoadModeListBox;
-
 class LoadModeItem : public BC_ListBoxItem
 {
 public:
@@ -36,36 +34,48 @@ public:
 	int value;
 };
 
+class LoadModeToggle : public BC_Toggle
+{
+public:
+	LoadModeToggle(int x, int y, LoadMode *window,
+		int value, const char *images, const char *tooltip);
+	int handle_event();
+	LoadMode *window;
+	int value;
+};
+
 class LoadMode
 {
 public:
 	LoadMode(MWindow *mwindow,
-		BC_WindowBase *window,
-		int x,
-		int y,
-		int *output,
-		int use_nothing);
+		BC_WindowBase *window, int x, int y, int *output,
+		int use_nothing=1, int use_nested=0, int line_wrap=0);
 	~LoadMode();
-
-	int create_objects();
+	void create_objects();
 	int reposition_window(int x, int y);
-	static int calculate_w(BC_WindowBase *gui, Theme *theme);
-	static int calculate_h(BC_WindowBase *gui, Theme *theme);
+	static void load_mode_geometry(BC_WindowBase *gui, Theme *theme,
+		int use_nothing, int use_nested, int line_wrap,
+		int *pw, int *ph);
+	static int calculate_w(BC_WindowBase *gui, Theme *theme,
+		int use_nothing=1, int use_nested=0, int line_wrap=0);
+	static int calculate_h(BC_WindowBase *gui, Theme *theme,
+		int use_nothing=1, int use_nested=0, int line_wrap=0);
 	int get_h();
 	int get_x();
 	int get_y();
 
-	char* mode_to_text();
+	const char *mode_to_text();
+	void update();
+	int set_line_wrap(int v);
 
 	BC_Title *title;
 	BC_TextBox *textbox;
 	LoadModeListBox *listbox;
 	MWindow *mwindow;
 	BC_WindowBase *window;
-	int x;
-	int y;
-	int *output;
-	int use_nothing;
+	int x, y, *output;
+	int use_nothing, use_nested, line_wrap;
+	LoadModeToggle *mode[TOTAL_LOADMODES];
 	ArrayList<LoadModeItem*> load_modes;
 };
 

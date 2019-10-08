@@ -551,9 +551,6 @@ int BC_ListBox::draw_button(int flush)
 // Draw the button for a popup listbox
 	if( use_button && is_popup ) {
 		int image_number = 0;
-
-		draw_top_background(parent_window, 0, 0, w, h);
-
 		if( button_highlighted )
 			image_number = 1;
 		if( current_operation == BUTTON_DN )
@@ -561,8 +558,9 @@ int BC_ListBox::draw_button(int flush)
 		if( disabled )
 			image_number = 3;
 
-		pixmap->draw_pixmap(button_images[image_number],
-			0, 0, w, h, 0, 0);
+		int iw = button_images[image_number]->get_w();
+		int ih = button_images[image_number]->get_h();
+		pixmap->draw_pixmap(button_images[image_number],0,0,iw,ih);
 		flash(flush);
 	}
 	return 0;

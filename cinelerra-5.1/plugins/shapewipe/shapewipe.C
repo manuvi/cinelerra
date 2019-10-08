@@ -222,13 +222,6 @@ int ShapeWipeReset::handle_event()
 	return 1;
 }
 
-int ShapeWipeReset::calculate_w(ShapeWipeMain *client)
-{
-	VFrame **reset_images = client->get_theme()->get_image_set("reset_button");
-	return reset_images[0]->get_w();
-}
-
-
 ShapeWipeShape::ShapeWipeShape(ShapeWipeMain *client,
 		ShapeWipeWindow *window, int x, int y,
 		int text_w, int list_h)
@@ -280,15 +273,10 @@ void ShapeWipeWindow::create_objects()
 	y += bar->get_h() + pad;
 
 	add_subwindow(title = new BC_Title(x, y, _("Shape:")));
-	int x1 = get_w()/5;
-	x = x1;
-	int tw = ww - x1 - ShapeWipeTumble::calculate_w() - pad -
-		BC_WindowBase::get_resources()->listbox_button[0]->get_w();
-	shape_text = new ShapeWipeShape(plugin, this, x1, y, tw, 200);
+	int x1 = 85, x2 = 355, x3 = 386;
+	shape_text = new ShapeWipeShape(plugin, this, x1, y, x2-x1, 200);
 	shape_text->create_objects();
-	x += shape_text->get_w() + pad;
-	add_subwindow(new ShapeWipeTumble(plugin,
-		this, x, y));
+	add_subwindow(new ShapeWipeTumble(plugin, this, x3, y));
 	y += shape_text->get_h() + pad;
 
 	x = margin;
@@ -298,10 +286,8 @@ void ShapeWipeWindow::create_objects()
 	shape_feather->create_objects();
 	shape_feather->set_log_floatincrement(1);
 	x += shape_feather->get_w() + 2*pad;
-	int sw = ww - ShapeWipeReset::calculate_w(plugin) - pad - x;
-	add_subwindow(shape_fslider = new ShapeWipeFSlider(plugin, this, x, y, sw));
-	x += shape_fslider->get_w() + 2*pad;
-	add_subwindow(shape_reset = new ShapeWipeReset(plugin, this, x, y));
+	add_subwindow(shape_fslider = new ShapeWipeFSlider(plugin, this, x, y, x2-x));
+	add_subwindow(shape_reset = new ShapeWipeReset(plugin, this, x3, y));
 	y += shape_fslider->get_h() + pad;
 
 	x = margin;

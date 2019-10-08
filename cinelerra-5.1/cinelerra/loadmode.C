@@ -25,8 +25,19 @@
 #include "mwindow.h"
 #include "theme.h"
 
-
 // Must match macros
+static const char *mode_images[] =
+{
+	"loadmode_none",
+	"loadmode_new",
+	"loadmode_newcat",
+	"loadmode_newtracks",
+	"loadmode_cat",
+	"loadmode_paste",
+	"loadmode_resource",
+	"loadmode_nested"
+};
+
 static const char *mode_text[] =
 {
 	N_("Insert nothing"),
@@ -47,8 +58,28 @@ LoadModeItem::LoadModeItem(const char *text, int value)
 }
 
 
-LoadMode::LoadMode(MWindow *mwindow, BC_WindowBase *window,
-	int x, int y, int *output, int use_nothing)
+LoadModeToggle::LoadModeToggle(int x, int y, LoadMode *window,
+		int value, const char *images, const char *tooltip)
+ : BC_Toggle(x, y, window->mwindow->theme->get_image_set(images),
+		*window->output == value)
+{
+	this->window = window;
+	this->value = value;
+	set_tooltip(tooltip);
+}
+
+int LoadModeToggle::handle_event()
+{
+	*window->output = value;
+	window->update();
+	return 1;
+}
+
+
+
+LoadMode::LoadMode(MWindow *mwindow,
+		BC_WindowBase *window, int x, int y, int *output,
+		int use_nothing, int use_nested, int line_wrap)
 {
 	this->mwindow = mwindow;
 	this->window = window;
@@ -56,11 +87,9 @@ LoadMode::LoadMode(MWindow *mwindow, BC_WindowBase *window,
 	this->y = y;
 	this->output = output;
 	this->use_nothing = use_nothing;
-	int mode = LOADMODE_NOTHING;
-	if(use_nothing)
-		load_modes.append(new LoadModeItem(_(mode_text[mode]), mode));
-	while( ++mode < TOTAL_LOADMODES )
-		load_modes.append(new LoadModeItem(_(mode_text[mode]), mode));
+	this->use_nested = use_nested;
+	this->line_wrap = line_wrap;
+	for( int i=0; i<TOTAL_LOADMODES; ++i ) mode[i] = 0;
 }
 
 LoadMode::~LoadMode()
@@ -68,52 +97,148 @@ LoadMode::~LoadMode()
 	delete title;
 	delete textbox;
 	delete listbox;
-	for(int i = 0; i < load_modes.total; i++)
-		delete load_modes.values[i];
+	load_modes.remove_all_objects();
+	for( int i=0; i<TOTAL_LOADMODES; ++i ) delete mode[i];
 }
 
-int LoadMode::calculate_w(BC_WindowBase *gui, Theme *theme)
+const char *LoadMode::mode_to_text()
 {
-	return theme->loadmode_w + 24;
-}
-
-int LoadMode::calculate_h(BC_WindowBase *gui, Theme *theme)
-{
-	return BC_Title::calculate_h(gui, _("Insertion strategy:"), MEDIUMFONT) +
-		BC_TextBox::calculate_h(gui, MEDIUMFONT, 1, 1);
-}
-
-char* LoadMode::mode_to_text()
-{
-	for(int i = 0; i < load_modes.total; i++)
-	{
-		if(load_modes.values[i]->value == *output)
-			return load_modes.values[i]->get_text();
+	for( int i=0; i<load_modes.total; ++i ) {
+		if( load_modes[i]->value == *output )
+			return load_modes[i]->get_text();
 	}
 	return _("Unknown");
 }
 
-int LoadMode::create_objects()
+void LoadMode::load_mode_geometry(BC_WindowBase *gui, Theme *theme,
+		int use_nothing, int use_nested, int line_wrap,
+		int *pw, int *ph)
 {
-	int x = this->x, y = this->y;
-	char *default_text;
-	default_text = mode_to_text();
+	int pad = 5;
+	const char *title_text = _("Insertion strategy:");
+	int mw = BC_Title::calculate_w(gui, title_text);
+	int mh = BC_Title::calculate_h(gui, title_text);
+	int ix = mw + 2*pad, iy = 0, x1 = ix;
+	int ww = theme->loadmode_w + 24;
+	if( mw < ww ) mw = ww;
 
-	window->add_subwindow(title = new BC_Title(x, y, _("Insertion strategy:")));
-	y += title->get_h();
-	window->add_subwindow(textbox = new BC_TextBox(x, y,
-		mwindow->theme->loadmode_w, 1, default_text));
-	x += textbox->get_w();
-	window->add_subwindow(listbox = new LoadModeListBox(window, this, x, y));
+	for( int i=0; i<TOTAL_LOADMODES; ++i ) {
+		if( i == LOADMODE_NOTHING && !use_nothing) continue;
+		if( i == LOADMODE_NESTED && !use_nested) continue;
+		int text_line, w, h, toggle_x, toggle_y;
+		int text_x, text_y, text_w, text_h;
+		BC_Toggle::calculate_extents(gui,
+			theme->get_image_set(mode_images[i]), 0,
+			&text_line, &w, &h, &toggle_x, &toggle_y,
+			&text_x, &text_y, &text_w, &text_h, 0, MEDIUMFONT);
+		if( line_wrap && ix+w > ww ) { ix = x1;  iy += h+pad; }
+		if( (ix+=w) > mw ) mw = ix;
+		if( (h+=iy) > mh ) mh = h;
+		ix += pad;
+	}
 
+	ix = 0;  iy = mh+pad;
+	mh = iy + BC_TextBox::calculate_h(gui, MEDIUMFONT, 1, 1);
+	if( pw ) *pw = mw;
+	if( ph ) *ph = mh;
+}
+
+int LoadMode::calculate_w(BC_WindowBase *gui, Theme *theme,
+		int use_nothing, int use_nested, int line_wrap)
+{
+	int result = 0;
+	load_mode_geometry(gui, theme, use_nothing, use_nested, line_wrap,
+			&result, 0);
+	return result;
+}
+
+int LoadMode::calculate_h(BC_WindowBase *gui, Theme *theme,
+		int use_nothing, int use_nested, int line_wrap)
+{
+	int result = 0;
+	load_mode_geometry(gui, theme, use_nothing, use_nested, line_wrap,
+			0, &result);
+	return result;
+}
+
+void LoadMode::create_objects()
+{
+	int pad = 5;
+	const char *title_text = _("Insertion strategy:");
+	window->add_subwindow(title = new BC_Title(x, y, title_text));
+	int mw = title->get_w(), mh = title->get_h();
+	int ix = mw + 2*pad, iy = 0, x1 = ix;
+	int ww = mwindow->theme->loadmode_w + 24;
+	if( mw < ww ) mw = ww;
+
+	for( int i=0; i<TOTAL_LOADMODES; ++i ) {
+		if( i == LOADMODE_NOTHING && !use_nothing) continue;
+		if( i == LOADMODE_NESTED && !use_nested) continue;
+		load_modes.append(new LoadModeItem(_(mode_text[i]), i));
+		int text_line, w, h, toggle_x, toggle_y;
+		int text_x, text_y, text_w, text_h;
+		BC_Toggle::calculate_extents(window,
+			mwindow->theme->get_image_set(mode_images[i]), 0,
+			&text_line, &w, &h, &toggle_x, &toggle_y,
+			&text_x, &text_y, &text_w, &text_h, 0, MEDIUMFONT);
+		if( line_wrap && ix+w > ww ) { ix = x1;  iy += h+pad; }
+		mode[i] = new LoadModeToggle(x+ix, y+iy, this,
+			i, mode_images[i], _(mode_text[i]));
+		window->add_subwindow(mode[i]);
+		if( (ix+=w) > mw ) mw = ix;
+		if( (h+=iy) > mh ) mh = h;
+		ix += pad;
+	}
+
+	ix = 0;  iy = mh+pad;
+	const char *mode_text = mode_to_text();
+	textbox = new BC_TextBox(x+ix, y+iy,
+		mwindow->theme->loadmode_w, 1, mode_text);
+	window->add_subwindow(textbox);
+	ix += textbox->get_w();
+	listbox = new LoadModeListBox(window, this, x+ix, y+iy);
+	window->add_subwindow(listbox);
+	mh = iy + textbox->get_h();
+}
+
+int LoadMode::reposition_window(int x, int y)
+{
+	this->x = x;  this->y = y;
+	title->reposition_window(x, y);
+	int mw = title->get_w(), mh = title->get_h();
+	int pad = 5;
+	int ix = mw + 2*pad, iy = 0, x1 = ix;
+	int ww = mwindow->theme->loadmode_w + 24;
+	if( mw < ww ) mw = ww;
+
+	for( int i=0; i<TOTAL_LOADMODES; ++i ) {
+		if( i == LOADMODE_NOTHING && !use_nothing) continue;
+		if( i == LOADMODE_NESTED && !use_nested) continue;
+		int text_line, w, h, toggle_x, toggle_y;
+		int text_x, text_y, text_w, text_h;
+		BC_Toggle::calculate_extents(window,
+			mwindow->theme->get_image_set(mode_images[i]), 0,
+			&text_line, &w, &h, &toggle_x, &toggle_y,
+			&text_x, &text_y, &text_w, &text_h, 0, MEDIUMFONT);
+		if( line_wrap && ix+w > ww ) { ix = x1;  iy += h+pad; }
+		mode[i]->reposition_window(x+ix, y+iy);
+		if( (ix+=w) > mw ) mw = ix;
+		if( (h+=iy) > mh ) mh = h;
+		ix += pad;
+	}
+
+	ix = 0;  iy = mh+pad;
+	textbox->reposition_window(x+ix, y+iy);
+	ix += textbox->get_w();
+	listbox->reposition_window(x+ix, y+iy);
 	return 0;
 }
 
 int LoadMode::get_h()
 {
 	int result = 0;
-	result = MAX(result, title->get_h());
-	result = MAX(result, textbox->get_h());
+	load_mode_geometry(window, mwindow->theme,
+			use_nothing, use_nested, line_wrap, 0, &result);
 	return result;
 }
 
@@ -127,36 +252,26 @@ int LoadMode::get_y()
 	return y;
 }
 
-int LoadMode::reposition_window(int x, int y)
+void LoadMode::update()
 {
-	this->x = x;
-	this->y = y;
-	title->reposition_window(x, y);
-	y += 20;
-	textbox->reposition_window(x, y);
-	x += textbox->get_w();
-	listbox->reposition_window(x,
-		y,
-		mwindow->theme->loadmode_w);
-	return 0;
+	for( int i=0; i<TOTAL_LOADMODES; ++i ) {
+		if( !mode[i] ) continue;
+		mode[i]->set_value(*output == i);
+	}
+	textbox->update(mode_to_text());
 }
 
+int LoadMode::set_line_wrap(int v)
+{
+	int ret = line_wrap;
+	line_wrap = v;
+	return ret;
+}
 
-LoadModeListBox::LoadModeListBox(BC_WindowBase *window,
-	LoadMode *loadmode,
-	int x,
-	int y)
- : BC_ListBox(x,
- 	y,
-	loadmode->mwindow->theme->loadmode_w,
-	150,
-	LISTBOX_TEXT,
-	(ArrayList<BC_ListBoxItem *>*)&loadmode->load_modes,
-	0,
-	0,
-	1,
-	0,
-	1)
+LoadModeListBox::LoadModeListBox(BC_WindowBase *window, LoadMode *loadmode,
+		int x, int y)
+ : BC_ListBox(x, y, loadmode->mwindow->theme->loadmode_w, 150, LISTBOX_TEXT,
+	(ArrayList<BC_ListBoxItem *>*)&loadmode->load_modes, 0, 0, 1, 0, 1)
 {
 	this->window = window;
 	this->loadmode = loadmode;
@@ -170,13 +285,9 @@ int LoadModeListBox::handle_event()
 {
 	LoadModeItem *item = (LoadModeItem *)get_selection(0, 0);
 	if( item ) {
-		loadmode->textbox->update(item->get_text());
 		*(loadmode->output) = item->value;
+		loadmode->update();
 	}
 	return 1;
 }
-
-
-
-
 

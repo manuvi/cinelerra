@@ -256,7 +256,7 @@ void BlondCVTheme::initialize()
 			"ok_button");
 
 	resources->dirbox_margin = 50;
-	resources->filebox_margin = 101;
+	resources->filebox_margin = 120;
 	resources->file_color = 0x000000;
 	resources->directory_color = 0x0000ff;
 

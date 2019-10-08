@@ -22,7 +22,10 @@
 #ifndef LOADMODE_INC
 #define LOADMODE_INC
 
+class LoadModeItem;
+class LoadModeToggle;
 class LoadMode;
+class LoadModeListBox;
 
 // used in paste_edls to only add assets, not clips
 #define LOADMODE_ASSETSONLY -1

@@ -183,11 +183,9 @@ void LoadFileWindow::create_objects()
 	lock_window("LoadFileWindow::create_objects");
 	BC_FileBox::create_objects();
 
-	int x = get_w() / 2 -
-		LoadMode::calculate_w(this, mwindow->theme) / 2;
-	int y = get_cancel_button()->get_y() -
-		LoadMode::calculate_h(this, mwindow->theme);
-	loadmode = new LoadMode(mwindow, this, x, y, &thread->load_mode, 0);
+	int x = get_w() / 2 - LoadMode::calculate_w(this, mwindow->theme) / 2;
+	int y = get_y_margin();
+	loadmode = new LoadMode(mwindow, this, x, y, &thread->load_mode, 0, 1);
 	loadmode->create_objects();
 	add_subwindow(load_file_apply = new LoadFileApply(this));
 
@@ -199,16 +197,15 @@ void LoadFileWindow::create_objects()
 int LoadFileWindow::resize_event(int w, int h)
 {
 	draw_background(0, 0, w, h);
-	int x = w / 2 - 200;
-	int y = get_cancel_button()->get_y() -
-		LoadMode::calculate_h(this, mwindow->theme);
+	BC_FileBox::resize_event(w, h);
+	int x = w / 2 - LoadMode::calculate_w(this, mwindow->theme) / 2;
+	int y = get_y_margin();
 	loadmode->reposition_window(x, y);
-
 	x = (w - BC_GenericButton::calculate_w(this, _("Apply")))/2;
 	y = h - BC_GenericButton::calculate_h() - 15;
 	load_file_apply->reposition_window(x, y);
-
-	return BC_FileBox::resize_event(w, h);
+	flush();
+	return 1;
 }
 
 

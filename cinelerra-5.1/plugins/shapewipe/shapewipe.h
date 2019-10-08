@@ -109,7 +109,6 @@ public:
 	ShapeWipeReset(ShapeWipeMain *client,
 		ShapeWipeWindow *window, int x, int y);
 	int handle_event();
-	static int calculate_w(ShapeWipeMain *client);
 
 	ShapeWipeMain *client;
 	ShapeWipeWindow *window;

@@ -630,7 +630,7 @@ void MenuEffectWindow::create_objects()
 	format_tools->create_objects(x, y, asset->audio_data, asset->video_data,
 		0, 0, 0, 1, 0, 0, &menueffects->use_labels, 0);
 
-	loadmode = new LoadMode(mwindow, this, x, y, &menueffects->load_mode, 1);
+	loadmode = new LoadMode(mwindow, this, x, y, &menueffects->load_mode);
 	loadmode->create_objects();
 
 	add_subwindow(new MenuEffectWindowOK(this));

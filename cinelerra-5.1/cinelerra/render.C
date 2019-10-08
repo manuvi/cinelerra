@@ -1059,7 +1059,7 @@ void RenderWindow::create_objects()
 	renderprofile->create_objects();
 	y += 70;
 
-	loadmode = new LoadMode(mwindow, this, x, y, &render->load_mode, 1);
+	loadmode = new LoadMode(mwindow, this, x, y, &render->load_mode);
 	loadmode->create_objects();
 
 	add_subwindow(new BC_OKButton(this));

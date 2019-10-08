@@ -286,6 +286,7 @@ public:
 	char* get_newfolder_title();
 	char* get_rename_title();
 	char* get_delete_title();
+	int get_y_margin();
 	void delete_files();
 	BC_Button* get_ok_button();
 	BC_Button* get_cancel_button();
@@ -358,7 +359,7 @@ private:
 	BC_NewFolderThread *newfolder_thread;
 	BC_RenameThread *rename_thread;
 	BC_DeleteThread *delete_thread;
-	int h_padding;
+	int h_padding, y_margin;
 	ArrayList<BC_ListBoxItem*> recent_dirs;
 };
 

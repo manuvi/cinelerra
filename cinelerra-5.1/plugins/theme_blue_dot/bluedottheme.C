@@ -172,7 +172,7 @@ void BlueDotTheme::initialize()
 	resources->listbox_selected = BGREY;
 
 	resources->dirbox_margin = 50;
-	resources->filebox_margin = 101;
+	resources->filebox_margin = 105;
 	resources->file_color = 0x000000;
 	resources->directory_color = DKBLUE;
 	// COPIED FROM DEFAULT THEME <<4

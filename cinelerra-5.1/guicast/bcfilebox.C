@@ -546,6 +546,7 @@ BC_FileBox::BC_FileBox(int x, int y, const char *init_path,
 	this->h_padding = h_padding;
 	delete_thread = new BC_DeleteThread(this);
 	rename_thread = 0;
+	y_margin = 0;
 }
 
 BC_FileBox::~BC_FileBox()
@@ -679,7 +680,9 @@ void BC_FileBox::create_objects()
 		add_subwindow(filter_text = new BC_FileBoxFilterText(x1, y, this));
 		add_subwindow(filter_popup =
 			new BC_FileBoxFilterMenu(x1 + filter_text->get_w(), y, this));
+		y += filter_text->get_h() + 10;
 	}
+	y_margin = y;
 
 // listbox has to be active because refresh might be called from newfolder_thread
  	listbox->activate();
@@ -781,6 +784,9 @@ int BC_FileBox::resize_event(int w, int h)
 	set_w(w);  set_h(h);
 	get_resources()->filebox_w = get_w();
 	get_resources()->filebox_h = get_h();
+	y_margin = filter_text ?
+		filter_text->get_y() + filter_text->get_h() + 10 :
+		textbox->get_y() + textbox->get_h() + 10 ;
 	flush();
 	return 1;
 }
@@ -1322,6 +1328,11 @@ void BC_FileBox::create_listbox(int x, int y, int mode)
 
 	if(!listbox)
 		add_subwindow(listbox = new BC_FileBoxListBox(x, y, this));
+}
+
+int BC_FileBox::get_y_margin()
+{
+	return y_margin;
 }
 
 char* BC_FileBox::get_path(int selection)
