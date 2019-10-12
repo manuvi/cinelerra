@@ -51,7 +51,6 @@ AWindow::~AWindow()
 	delete asset_remove;
 	delete label_edit;
 	delete clip_edit;
-	delete effect_tip;
 }
 
 void AWindow::create_objects()
@@ -62,7 +61,6 @@ void AWindow::create_objects()
 	asset_remove = new AssetRemoveThread(mwindow);
 	clip_edit = new ClipEdit(mwindow, this, 0);
 	label_edit = new LabelEdit(mwindow, this, 0);
-	effect_tip = new EffectTipDialog(mwindow, this);
 }
 
 int AWindow::save_defaults(BC_Hash *defaults)

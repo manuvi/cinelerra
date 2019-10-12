@@ -1617,6 +1617,7 @@ int AWindowGUI::save_defaults(BC_Hash *defaults)
 {
 	defaults->update("PLUGIN_VISIBILTY", plugin_visibility);
 	defaults->update("VICON_DRAWING", vicon_drawing);
+	defaults->update("TIP_INFO", tip_info);
 	return 0;
 }
 
@@ -1624,6 +1625,7 @@ int AWindowGUI::load_defaults(BC_Hash *defaults)
 {
 	plugin_visibility = defaults->get("PLUGIN_VISIBILTY", plugin_visibility);
 	vicon_drawing = defaults->get("VICON_DRAWING", vicon_drawing);
+	tip_info = defaults->get("TIP_INFO", tip_info);
 	return 0;
 }
 
@@ -1726,6 +1728,12 @@ int AWindowGUI::cycle_assetlist_format()
 	start_vicon_drawing();
 	return 1;
 }
+
+void AWindowGUI::hide_tip_info()
+{
+	asset_list->hide_tooltip();
+}
+
 
 AWindowRemovePluginGUI::
 AWindowRemovePluginGUI(AWindow *awindow, AWindowRemovePlugin *thread,
@@ -1856,6 +1864,10 @@ int AWindowGUI::keypress_event()
 			return 1;
 		}
 		break;
+	case 'i':
+		tip_info = !tip_info ? 1 : 0;
+		if( !tip_info ) hide_tip_info();
+		return 1;
 	case 'o':
 		if( !ctrl_down() && !shift_down() ) {
 			assetlist_menu->load_file->handle_event();
@@ -2571,6 +2583,7 @@ int AWindowFolders::selection_changed()
 
 int AWindowFolders::button_press_event()
 {
+	gui->hide_tip_info();
 	int result = BC_ListBox::button_press_event();
 
 	if( !result ) {
@@ -2692,6 +2705,7 @@ AWindowAssets::AWindowAssets(MWindow *mwindow, AWindowGUI *gui, int x, int y, in
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
+	this->info_tip = -1;
 	set_drag_scroll(0);
 	set_scroll_stretch(1, 1);
 }
@@ -2702,6 +2716,7 @@ AWindowAssets::~AWindowAssets()
 
 int AWindowAssets::button_press_event()
 {
+	hide_tip_info();
 	AssetVIconThread *avt = gui->vicon_thread;
 	if( avt->draw_mode != ASSET_VIEW_NONE && is_event_win() ) {
 		int dir = 1, button = get_buttonpress();
@@ -3049,6 +3064,7 @@ int AWindowAssets::cursor_enter_event()
 
 int AWindowAssets::cursor_leave_event()
 {
+	hide_tip_info();
 	if( !is_event_win() ) return 0;
 	if( !gui->vicon_thread->viewing )
 		gui->stop_vicon_drawing();
@@ -3099,7 +3115,28 @@ int AWindowAssets::mouse_over_event(int no)
 	default:
 		break;
 	}
-	return 0;
+	if( no < 0 && info_tip >= 0 ) {
+		hide_tip_info();
+	}
+	if( gui->tip_info && no >= 0 &&
+	    info_tip != no && picon && picon->plugin ) {
+		const char *info = picon->plugin->tip;
+		if( !info ) info = _("No info available");
+		show_tip_info(info, no);
+	}
+	return 1;
+}
+
+void AWindowAssets::show_tip_info(const char *info, int no)
+{
+	show_tooltip(info);
+	info_tip = no;
+}
+
+void AWindowAssets::hide_tip_info()
+{
+	hide_tooltip();
+	info_tip = -1;
 }
 
 

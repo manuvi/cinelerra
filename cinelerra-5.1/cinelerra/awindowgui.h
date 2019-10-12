@@ -291,6 +291,7 @@ public:
 	void close_view_popup();
 	void update_picon(Indexable *indexable);
 	int cycle_assetlist_format();
+	void hide_tip_info();
 
 	VFrame *get_picon(const char *name, const char *plugin_icons);
 	VFrame *get_picon(const char *name);
@@ -374,6 +375,7 @@ public:
 	int avicon_w, avicon_h;
 	int vicon_drawing, play_off;
 	int allow_iconlisting;
+	int tip_info;
 
 // Create custom atoms to be used for async messages between windows
 	int create_custom_xatoms();
@@ -411,9 +413,12 @@ public:
 	int focus_out_event();
 	void update_vicon_area();
 	int mouse_over_event(int no);
+	void show_tip_info(const char *info, int no);
+	void hide_tip_info();
 
 	MWindow *mwindow;
 	AWindowGUI *gui;
+	int info_tip;
 };
 
 class AWindowDivider : public BC_SubWindow

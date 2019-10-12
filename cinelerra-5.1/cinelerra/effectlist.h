@@ -60,6 +60,7 @@ public:
 	EffectTipItem(AWindowGUI *gui);
 	~EffectTipItem();
 	int handle_event();
+	void update(int v=-1);
 
 	AWindowGUI *gui;
 };
@@ -75,6 +76,7 @@ public:
 	MWindow *mwindow;
 	AWindowGUI *gui;
 	AWindowListFormat *format;
+	EffectTipItem *info;
 };
 
 #endif

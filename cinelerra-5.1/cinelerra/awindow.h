@@ -53,7 +53,6 @@ public:
 	AssetRemoveThread *asset_remove;
 	ClipEdit *clip_edit;
 	LabelEdit *label_edit;
-	EffectTipDialog *effect_tip;
 };
 
 #endif

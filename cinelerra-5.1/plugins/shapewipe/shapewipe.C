@@ -268,8 +268,8 @@ void ShapeWipeWindow::create_objects()
 	}
 
 	BC_TitleBar *bar;
-	add_subwindow(bar = new BC_TitleBar(x, y, ww, x+ww/12,
-		pad, _("Wipe"), MEDIUMFONT));
+	add_subwindow(bar = new BC_TitleBar(x, y, ww, 20, 10,
+		_("Wipe"), MEDIUMFONT));
 	y += bar->get_h() + pad;
 
 	add_subwindow(title = new BC_Title(x, y, _("Shape:")));
@@ -296,8 +296,8 @@ void ShapeWipeWindow::create_objects()
 		plugin, this, x, y));
 	y += aspect_ratio->get_h() + pad;
 
-	add_subwindow(bar = new BC_TitleBar(x, y, ww, x+ww/12,
-		pad, _("Direction"), MEDIUMFONT));
+	add_subwindow(bar = new BC_TitleBar(x, y, ww, 20, 10,
+		_("Direction"), MEDIUMFONT));
 	y += bar->get_h() + pad;
 	x = margin;
 	add_subwindow(left = new ShapeWipeW2B(plugin, this, x, y));

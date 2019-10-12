@@ -15,7 +15,7 @@ AgingTV:	Use to achieve an "old" movie or TV show
 		effect by adding moving lines and snow.
 Auto Scale:	Automatically scale to a specified size.
 Blue Banana:	Used for color transformation or remapping as
-		well as chroma-key filtering. See Manual 10.9 usage:
+		well as chroma-key filtering. See PDF Manual for usage:
 		. Select a specifc target color.
 		. Create a selection region by expanding color.
 		. Optionally reduce or expand the alpha plane.
@@ -38,7 +38,7 @@ Chroma key:	Erases pixels which match chosen color;
 Chroma key (HSV): Replaces a color with another color or
 		transparency using HSV variables.
 Color 3 Way:	Modify color of Shadows, Midtones, and Highlights as
-		wanted.
+		you specify.
 Color Balance:	Modify RGB colors or white balance to compensate
 		for errors in video such as low lighting.
 CriKey:		Regionally based chroma key with interpolation;
@@ -59,6 +59,9 @@ CriKey:		Regionally based chroma key with interpolation;
 		.    Edge to just outline the edges of the region.
 		.    Mask - matching color pixels replaced by black.
 Crop & Position: Allows for cropping and positioning the input video.
+DeScratch:	Use to remove vertical scratches from film. It can
+		also be used, after image rotation, to remove horizontal
+		noise lines that may appear on analog VHS captures.
 Decimate:	Drop frames from a track which are most similar
 		in order to reduce frame rate.
 Deinterlace:	Several selections of line replication to eliminate
@@ -70,19 +73,19 @@ Denoise video:	Clear the video of noise; specify R,G,B, or Alpha.
 Difference key:	Creates transparency in areas which are similar
 		between 2 frames; must be applied to 2 tracks.
 DotTV:		Puts various size dots over the picture to simulate
-		tv effect.
-Downsample:	Reduce the sie of an image by throwing out data,
+		TV effect.
+Downsample:	Reduce the size of an image by throwing out data,
 		reducing sampling rate.
 Edge:		Display only the edges of the video throughout the image.
 Fields to frames: Reads frames at 2x the framerate, combining 2
 		input frames into 1 interlaced output frame.
-FindObj:	Locate a specific object in a scene and replace with 
+FindObj:	Locate a specific object in a scene and replace with
 		another object.  This uses OpenCV thirdparty package.
 Flip:		Flip a portion of a video track from left to right,
 		up to down or vice versa.
 FlowObj:	Retards image motion as shown with optical flow. Uses
 		the OpenCV thirdparty package.
-Frames to Fields: Extracts 2 interlaced fields stored in alternating
+Frames to fields: Extracts 2 interlaced fields stored in alternating
 		lines & outputs them as full frames.
 Freeze Frame:	Lowest numbered frame in highlighted area will play
 		in the entire region.
@@ -96,7 +99,7 @@ HistEq:		Remap colors using blended histogram weights.
 Histogram:	Shows the number of occurrences of each color on a
 		histogram plot.
 Histogram Bezier: Uses a Bezier curve (parametric) on the histogram plot.
-HolographgicTV:	Holographic tv effect.
+HolographicTV:	Holographic TV effect.
 Hue saturation:	Use to change hue, saturation and value parameters.
 Interpolate Bayer: Uses Bayer filter algorithm to interpolate (estimate)
 		missing color information.
@@ -140,7 +143,7 @@ MoveObj:	Move and stabilize object using OpenCV 3rd party pkg.
 N_Body:		Simulation that numerically approximates the evolution of a
 		system of bodies in which each body continuously interacts
 		with every other body using Cuda.
-Oil Painting:	Makes video tracks appear as a painting.
+Oil painting:	Makes video tracks appear as a painting.
 Overlay:	Combine tracks via an overlayer that puts images on
 		top of a bottom layer.
 Perspective:	Allows you to change the viewpoint of an object.
@@ -176,7 +179,7 @@ SVG via Inkscape: Allow the manipulation of an SVG image with
 Scale:		Reduce or expand the image size depending on the ratio.
 Scale Ratio:	Manipulate your video to maintain the pixel aspect
 		ratio (proportional geometry).  Change values on the
-		left and see the resuluts in the compositor window.
+		left and see the results in the compositor window.
 		. In R,Out R - current input and output aspect ratios
 		. In W/H,Out W/H - current width and height
 		. Scale type of None,Scaled,Cropped,Filled,Horiz/Vert
@@ -200,7 +203,6 @@ Time Average:	Use to create trail patterns, or reduce noise in still
 TimeFront:	Performs spatio-temporal video warping.
 Title:		Add text/timestamp/background pngs to video along with
 		the ability to drag to a location if Drag checked on.
-		Current text string limitation of 3071 characters.
 		Flexible attributes in textbox (mouse right click):
 		. color, font, alpha, size, png, bold, italic, blink,
 		. ul, caps, sup(super/sub script), fixed, nudge.
@@ -227,20 +229,19 @@ F_atadenoise:	Apply an Adaptive Temporal Averaging Denoiser.
 F_avgblur:	Apply average blur filter.
 F_bbox:		Compute bounding box for each frame.
 F_bench:	Benchmarks part of a filtergraph.
-F_bitplaneoise:	Measure bit plane noise.
+F_bitplanenoise: Measure bit plane noise.
 F_blackdetect:	Detect video intervals that are (almost) black.
 F_blackframe:	Detect frames that are (almost) black.
-F_boxblur:	Blurs the input video.
-		Through the settings you are
-		able to change the power and the
-		radius of the boxblur applied to luma, chroma and alpha.
+F_boxblur:	Blurs the input video. Through the settings you are
+		able to change the power and the radius of the boxblur
+		applied to luma, chroma and alpha.
 F_bwdif:	Deinterlaces the input image.
 F_chromahold:	Turns a certain color range into gray.
-F_chromakey:	Turns a certain color into
-		transparency.  Operates on YUV colors.
+F_chromakey:	Turns a certain color into transparency. Operates on
+		YUV colors.
 F_chromashift:	Shift chroma.
 F_ciescope:	Video CIE scope.
-F_color:	Provide an uniformly colored input.
+F_color:	Provide a uniformly colored input.
 F_colorbalance:	Adjusts the color balance.
 F_colorchannelmixer: Adjusts colors by mixing color channels.
 F_colorhold:	Turns a certain color range into gray.  Operates on RGB.
@@ -261,28 +262,24 @@ F_deflicker:	Remove temporal frame luminance variations.
 F_dejudder:	Removes judder produced by pullup.
 F_delogo:	Removes logo from input video.
 		When using this plugin a green box will appear on the
-		screen, once the logo is inside the box the
-		plugin will hide it. Through the settings you can specify
-		the position of the logo to hide (on a X-Y axis)
-		and the size of the box (so you can adjust it to the
-		size of the logo).
+		screen, once the logo is inside the box the plugin will
+		hide it. Through the settings you can specify the position
+		of the logo to hide (on a X-Y axis) and the size of the box
+		(so you can adjust it to the size of the logo).
 F_deshake:	Stabilizes shaky video.
 F_despill:	Remove unwanted foreground colors, caused by reflected color
 		of green or blue screen.
 F_dilation:	Applies dilation effect.
 F_doubleweave:	Weave input video fields into double number of frames.
 F_drawbox:	Draws a colored box on the input video.
-		Through the settings you are able to choose the
-		position of the box on X and Y coordinates,
-		the size of the box,
+		Through the settings you are able to choose the position
+		of the box on X and Y coordinates, the size of the box,
 		the color and the thickness of the lines.
 F_drawgraph:	Draw a graph using input video metadata.
 F_drawgrid:	Draws a colored grid on the input video.
-		Through the settings you can select the
-		horizontal and the vertical offset,
-		set the width and  height of
-		the grid cell, and the color and
-		thickness of the lines.
+		Through the settings you can select the horizontal and the
+		vertical offset, set the width and  height of the grid
+		cell, and the color and thickness of the lines.
 F_edgedetect:	Detects and draws edge.
 F_elbg:		Apply posterize effect, using the ELBG algorithm.
 F_entropy:	Measure video frames entropy.
@@ -309,8 +306,8 @@ F_hflip:	Horizontally flips the input video.
 F_histeq:	Applies global color histogram equalization.
 F_histogram:	Computes and draws a histogram.
 F_hqdn3d:	Applies a High Quality 3D Denoiser.
-F_hqx:		Scales the input by 2,
-		3 or 4 using the hq*x magnification algorithm.
+F_hqx:		Scales the input by 2, 3 or 4 using the hq*x magnification
+		algorithm.
 F_hue:		Adjust the hue and saturation of the input video.
 F_idet:		Interlace detect Filter.
 F_il:		Deinterleaves or interleaves fields.
@@ -353,7 +350,7 @@ F_pal100bars:	Generate PAL 100% color bars. This only works with RGB 8-bit.
 F_pal75bars:	Generate PAL 75% color bars. This only works with RGB 8-bit.
 F_perms:	Set permissions for the output video frame.
 F_perspective:	Corrects the perspective of video.
-F_phase:	Phases shift fields.
+F_phase:	Phase shift fields.
 F_pixscope:	Pixel data analysis for checking color and levels. It will
 		display sample values of color channels.
 F_pp:		Filters video using libpostproc.
@@ -362,8 +359,8 @@ F_prewitt:	Apply prewitt operator.
 F_pseudocolor:	Make pseudocolored video frames.
 F_readeia608:	Read EIA-608 Closed Caption codes from
 		input video and write them to frame metadata.
-F_readvitc:	Reads vertical interval
-		timecode and writes it to frame metadata.
+F_readvitc:	Reads vertical interval timecode and writes it to frame
+		metadata.
 F_realtime:	Slows down filtering to match realtime.
 F_removegrain:	Removes grain.
 F_repeatfields:	Hard repeat fields based on MPEG repeat field flag.
@@ -385,17 +382,16 @@ F_showpalette:	Display frame palette.
 F_shuffleframes: Shuffles video frames.
 F_shuffleplanes: Shuffles video planes.
 F_signalstats:	Separates statistics from video analysis.
-F_smartblur:	Blurs the input video without impacting
-		the outlines. Through the settings you can
-		select the radius,
-		the strength and the threshold of luma and chroma.
+F_smartblur:	Blurs the input video without impacting the outlines. Through
+		the settings you can select the radius, the strength and the
+		threshold of luma and chroma.
 F_smptebars:	Generate SMPTE color bars.
 F_smptehdbars:	Generate SMPTE HD color bars.
 F_sobel:	Applies sobel operator.
 F_spp:		Applies a simple post processing filter.
 F_stereo3d:	Converts video stereoscopic 3D view.
-F_super2xsai:	Scales the input by 2x using
-		the Super2xSal pixel art algorithm.
+F_super2xsai:	Scales the input by 2x using the Super2xSal pixel art
+		algorithm.
 F_swaprect:	Swaps 2 rectangular objects in video.
 F_swapuv:	Swaps U and V components.
 F_tpad:		Temporarily pad video frames.
@@ -407,6 +403,7 @@ F_tinterlace:	Performs temporal field interlacing.
 F_tlut2:	Compute and apply a lookup table from 2 successive frames.
 F_tmix:		Mix successive video frames.
 F_transpose:	Transposes input video.
+F_transpose_vaapi: VAAPI VPP for transpose.
 F_unsharp:	Sharpen or blur the input video.
 F_uspp:		Applies Ultra Simple/Slow Post-processing filter.
 F_vaguedenoiser: Applies a Wavelet based Denoiser.
@@ -416,9 +413,9 @@ F_vfrdet:	Variable frame rate detect filter.
 F_vibrance:	Boost or alter saturation.
 F_vignette:	Makes or reverses a vignette effect.
 		Through the settings you can set the circle center
-		position on a X-Y axis,choose the angle,
-		the aspect and set the dithering of the vignette.
-F_w3dif:	Applies Martin Weston three field deinterlace.
+		position on a X-Y axis,choose the angle, the aspect and set
+		the dithering of the vignette.
+F_w3fdif:	Applies Martin Weston three field deinterlace.
 F_waveform:	Video waveform monitor.
 F_weave:	Weaves input video fields into frames.
 F_xbr:		Scales the input using xBR algorithm.
@@ -466,7 +463,7 @@ F_bass:		Boosts or cuts lower frequencies.
 F_biquad:	Applies a biquad IIR filter with the given coefficents.
 F_chorus:	Adds a chorus effect to the audio.
 F_compand:	Compresses or expands audio dynamic range.
-F_compensationdelay: audio compensation delay line.
+F_compensationdelay: Audio compensation delay line.
 F_crossfeed:	Apply headphone crossfeed which blends the left and right
 		channels of a stereo audio recording.  It is mainly used
 		to reduce extreme stereo separation of low frequencies in
@@ -479,12 +476,12 @@ F_drmeter:	Measure audio dynamic range where setting window length in
 F_dyaudnorm:	Dynamic Audio Normalizer.  When using this plugin,
 		be sure to “attach effect” to all audio tracks by dragging
 		the plugin to the 1st audio track and then right mouse
-		clicking all subsequent audio tracks which brings up an menu.
+		clicking all subsequent audio tracks which brings up a menu.
 		Highlight the effect shown in the middle section and click OK.
 F_earwax:	Widens the stereo image.  When using this plugin,
 		be sure to “attach effect” to all audio tracks by dragging
 		the plugin to the 1st audio track and then right mouse
-		clicking all subsequent audio tracks which brings up an menu.
+		clicking all subsequent audio tracks which brings up a menu.
 		Highlight the effect shown in the middle section and click OK.
 F_equalizer:	Applies two-pole peaking equalization (EQ) filter.
 F_extrastereo:	Increases difference between stereo audio
@@ -492,7 +489,7 @@ F_extrastereo:	Increases difference between stereo audio
 		“attach effect” to all audio tracks by dragging
 		the plugin to the 1st audio track and then right mouse
 		clicking all subsequent audio tracks which
-		brings up an menu.  Highlight the effect shown in the
+		brings up a menu.  Highlight the effect shown in the
 		middle section and click OK.
 F_flanger:	Applies a flanging effect to the audio.
 F_haas:		Apply Haas Stereo Enhancer for a more natural sounding pan effect
@@ -500,7 +497,7 @@ F_haas:		Apply Haas Stereo Enhancer for a more natural sounding pan effect
 		applied to mono signals it gives some directionality and stretches
 		its stereo image.
 F_highpass:	Applies a high-pass filter with 3dB point frequency.
-F_hilbert:	Generate a Hilbert transform FIR coefficients.
+F_hilbert:	Generate Hilbert transform FIR coefficients.
 F_loudnorm:	EBU R128 loudness normalization.
 F_lowpass:	Applies a low-pass filter with 3dB point frequency.
 F_mcompand:	Multiband compress or expand audiodynamic range. The input audio
@@ -512,12 +509,12 @@ F_sine:		Generate sine wave audio signal.
 F_stereotools:	Applies various stereo tools.  When using this plugin,
 		be sure to “attach effect” to all audio tracks by dragging
 		the plugin to the 1st audio track and then right mouse
-		clicking all subsequent audio tracks which brings up an menu.
+		clicking all subsequent audio tracks which brings up a menu.
 		Highlight the effect shown in the middle section and click OK.
 F_stereowiden:	Applies stereo widening effect.  When using this plugin,
 		be sure to “attach effect” to all audio tracks by dragging
 		the plugin to the 1st audio track and then right mouse
-		clicking all subsequent audio tracks which brings up an menu.
+		clicking all subsequent audio tracks which brings up a menu.
 		Highlight the effect shown in the middle section and click OK.
 F_treble:	Boosts or cuts upper frequencies.
 F_tremolo:	Applies tremolo effect.
@@ -527,29 +524,29 @@ F_volumedetect:	Detect audio volume.
 #
 # audio plugins
 #
-L_AM pitchshifter: runs a single write pointer and two read pointers
+L_AM pitchshifter: Runs a single write pointer and two read pointers
 		over a ringbuffer. The output is faded between the
 		two readpointers according to the sine of the distance
-		from the write pointer. The design is based on the 
+		from the write pointer. The design is based on the
 		mechanism of a mechanical pitchshifter.
 L_Aliasing:	Effect that causes different signals to become aliases
 		of one another when sampled..
-#Allpass delay line, cubic spline interpolation: 
+#Allpass delay line, cubic spline interpolation:
 #Allpass delay line, linear interpolation:
 #Allpass delay line, noninterpolating:
 L_Analogue Oscillator: Simulates the output you get from an analogue synth's
 	 oscillators. You can get a reasonable emualtion of a 303's square.
 #4 x 4 pole allpass:
-L_Artificial latency: used to correct for latency between channels.
-L_Audio Divider (Suboctave Generator): Reduces the period of the signal by
-		the factor given, and makes it a square wave in the process.
-		Has some amplitude tracking capability.
+L_Artificial latency: Used to correct for latency between channels.
+L_Audio Divider (Suboctave Generator): Reduces the period of the signal by the factor given,
+		and makes it a square wave in the process.  Has some amplitude tracking
+		capability.
 AudioScope:	Convert input audio to video output representing the
 		audio power spectrum. Shows you the sound wave.
 #L_Auto phaser:
 L_Barry's Satan Maximiser: Compresses signals with a very short attack and
 		decay, infinite ratio and hard knee.  Gives good harsh
-		(non-musical) distortion. 
+		(non-musical) distortion.
 L_Bode frequency shifter: A popular analogue synth module, it works by
 		shifting all the frequencies of an input signal up or
 		down by a specified frequency
@@ -558,26 +555,26 @@ L_Bode frequency shifter (CV): Controls the frequency shift applied to
 L_Chebyshev distortion: Interesting distortion effect that is seeded
 		from incoming signal envelope.
 L_Comb Filter:	Controls the distance between the filters peaks.
-L_Comb Splitter:	Divides the input up into two parts with frequency 
+L_Comb Splitter:	Divides the input up into two parts with frequency
 		peaks at f Hz intervals, skewed by f/2 Hz between
-		the two outputs. 
+		the two outputs.
 #Comb delay line, cubic spline interpolation:
 #Comb delay line, linear interpolation:
 #Comb delay line, noninterpolating:
-Compressor:	Lessen the dynamic range between the loudest and quietest
-		parts of an audio signal by boosting the quieter signals
-		and attenuating the louder signals.
 L_Constant Signal Generator: Add an output DC offset at the given amplitude
 		to the input signal. It has no real use other than for
-		debugging and in modular synths. 
+		debugging and in modular synths.
 L_Crossfade:	Controls the degree to which the inputs are mixed into
 		the output.  Value of -1 means that the output is just
-		the A input, and a value of 1.0 means it is just the B. 
+		the A input, and a value of 1.0 means it is just the B.
 L_Crossfade (4 outs):  Controls the degree to which the inputs are mixed
-		into the output.  Value of -1 means the output is just 
+		into the output.  Value of -1 means the output is just
                 the A input, and a value of 1.0 means it is just the B.
 L_Crossover distortion: Simulation of the distortion that happens in class
 		B and AB power amps when the signal crosses 0.
+Compressor:	Lessen the dynamic range between the loudest and quietest
+		parts of an audio signal by boosting the quieter signals
+		and attenuating the louder signals.
 DC Offset:	Remove DC Offset, which is usually an undesirable
 		characteristic of a recording normally caused by
 		defective equipment. (Has no controls)
@@ -588,13 +585,13 @@ L_DJ EQ:	3-band Equalization - Hi-Mid-Lo.
 #L_DJ EQ (mono):
 #L_DJ flanger:
 L_Decimator:	Reduces the effective sample rate, and reduces the
-		bit depth of the input signal. 
+		bit depth of the input signal.
 L_Declipper:	Removes clicks from input signals.
 Delay audio:    Delay the audio by a specified time offset.
 #L_Delayorama:
 Denoise:	Reduce audio background noise.
 DenoiseFFT:	Noise removal from audio using FFT editing.
-Despike:	Detect and eliminate out of range impulse values. 
+Despike:	Detect and eliminate out of range impulse values.
 L_Diode Processor: Mangles the signal as if it had been passed through
 		 a diode rectifier network.
 L_Dyson compressor: Compress peaks to reduce dynamic range and create
@@ -612,12 +609,12 @@ EchoCancel:	Removes echoes from audio to improve the quality.
 L_Exponential signal decay: Time for the echoes to decay by 60 DCBs.
 #L_FM Oscillator:
 L_Fast Lookahead limiter: A limiter with an attack time of 5ms. It adds
-		just over 5ms of lantecy to the input signal, but 
+		just over 5ms of lantecy to the input signal, but
 		guarantees no signals over the limit, and tries to
-		get the minimum amount of distortion. 
+		get the minimum amount of distortion.
 L_Fast overdrive: Compresses the extreme peaks to make a sound similar
-		to an overdriven amplifier. 
-L_Flanger:	Digital flanger implementation.  Uses excursion, 
+		to an overdriven amplifier.
+L_Flanger:	Digital flanger implementation.  Uses excursion,
 		controlled bandwidth modulation function, which makes
 		the modulation less repetitive and noticable.
 L_Foldover distortion: Uses a sine wave approximation to simulate
@@ -632,22 +629,22 @@ L_Frequency tracker: Controls the level of damping applied to the output.
 		low values make it a bit slow to respond.
 L_GLAME Butterworth Highpass: Cuts off frequencies below a certain point.
 L_GLAME Butterworth Lowpass: Cuts off frequencies above a certain point.
-L_GSM simulator:	Encodes and decodes signal using the GSM voice 
+L_GSM simulator:	Encodes and decodes signal using the GSM voice
 		compression system. Has the effect of making it sound
-		like being sent over a European mobile phone network. 
-L_GVerb:		A mono In, stereo Out reverb implementation.
+		like being sent over a European mobile phone network.
+L_GVerb:	A mono In, stereo Out reverb implementation.
 Gain:		Add gain, input level, to increase/decrease loudness.
 #L_Gate:
 L_Giant flange:	A normal flanger with excessively long delay times.
-L_Glame Bandpass Analog Filter: IIR bandpass filter modeled after a
-		n analog circuit.
+L_Glame Bandpass Analog Filter: IIR bandpass filter modeled after an
+		analog circuit.
 L_Glame Bandpass Filter: Allows you to tweak the number of stages used
 		for filtering.  Every stage adds two more poles, which
 		leads to a steeper dropoff.
 #L_Glame Butterworth X-over Filter:
-L_Glame Highpass Filter: IIR highpass filter allows you to tweak the
-		number of stages used for filtering. Every stage adds
-		2 more poles, which leads to steeper dropoff. 
+L_Glame Highpass Filter: IIR highpass filter allows you to tweak the number
+		of stages used for filtering. Every stage adds 2 more poles,
+		which leads to steeper dropoff.
 #L_Glame Lowpass Filter:
 L_Gong beater:	Simulates the action of a beator on a gong surface,
 		used to trigger the gong physical model.
@@ -656,14 +653,14 @@ L_Hard Limiter:	Brick hard limiter with residue mixer.
 L_Harmonic generator: Allows you to add harmonics and remove the
 		fundamental from any audio signal.
 L_Hermes Filter:	Simulation of a modern analogue synth called a Pro Tone,
-L_Higher Quality Pitch Scaler: Pitch shifter implementation that scales
-		the harmonics appropriately with the base frequencies.
+L_Higher Quality Pitch Scaler: Pitch shifter implementation that scales the
+		harmonics appropriately with the base frequencies.
 L_Hilbert transformer: Phase shifts the input signal by 90 degrees. It
 		outputs the 90 degree phase shifted signal and the
 		unshifted signal, both delayed by an equal amount.
 L_Impulse convolver: Convolver for a set of short impulses which have to
 		be compiled in.
-Interpolate:	Generate a smooth curves based on sound - currently,
+Interpolate:	Generate a smooth curve based on sound - currently,
 		does not appear to work. (Has no controls).
 Invert Audio:	Reverses the numerical sign of the digital audio.
 		(Has no controls).
@@ -675,11 +672,12 @@ L_LS Filter:	Filter similiar to the filter used in giga sampler.
 Live Audio:	Reads audio directly from the soundcard input,
 		replacing any audio on track.
 Loop audio:	Loop some number of samples of audio over and over.
+#Overlay:	Overlay Top or Bottom track in Add/Multiply mode.
 L_Mag's Notch Filter: Allows you to tweak the number of stages used for
 		filtering.  Every stage adds two more poles, which
 		leads to a steeper dropoff.
 L_Matrix Spatialiser: Simple spatializer to control the width of a
-		stereo signal. 
+		stereo signal.
 #L_Matrix; MS to Stereo:
 #L_Matrix; Stereo to MS:
 L_Modulatable delay: A delay whose tape is modulated at audio rate.
@@ -691,44 +689,43 @@ L_Multivoice Chorus: Implementation of a Multivoice chorus algorithm,
 		produce a modulation law making it possible to have
 		many voices without the metallic, artificial sound.
 #L_Nonbandlimited single-sample impulses (Frequency; Control):
-Overlay:	Overlay Top or Bottom track in Add/Multiply mode.
 L_Pitch Scaler:	Pitch shifter implementation that scales the harmonics
 		appropriately with the base frequencies.
 Pitch shift:	Uses FFT to try to change the pitch without
 		changing the duration.
 L_Plate reverb:	Physical model of a steel plate reverb.  It uses 8
-		linear waveguides to model the plate. 
+		linear waveguides to model the plate.
 L_Pointer cast distortion: Distortion is created by treating the floating
 		point repesentation of the input signal as a 0.32 1's
 		complement fixed point integer. Not musical but still
-		recognizable.  Makes interesting noises. 
+		recognizable.  Makes interesting noises.
 L_Rate shifter:	Stretches or compresses the input with a ringbuffer.
 Remove Gaps:	Remove silent gap (below DB threshold) which persist
 		for more than the time limit.
-ResampleRT:	Allows you to convert an audio file from one 
+ResampleRT:	Allows you to convert an audio file from one
 		sample rate to another.
 L_Retro Flanger:	Model of someone flanging the input.  Models the tape
 		saturation effects and frequency smear of a manual
 		flanger.  Results are distorted, but more subtle
-		flanger sound than you get from a digial flanger. 
+		flanger sound than you get from a digial flanger.
 Reverb:		Reflections of sound to add depth and fullness.
 		Simulates creation of a large number of reflections
-		(lots of walls) which build up and then decay.  
+		(lots of walls) which build up and then decay.
 L_Reverse Delay (5s max): A reverse delay.
-Reverse audio:	Play the audio backwards.   
+Reverse audio:	Play the audio backwards.
 L_Ringmod with LFO: Simple ring modulator and LFO.
 L_Ringmod with two inputs: Simple 2 input ring modulator.
 L_SC1:		High quality RMS compressor designed for musical work.
 L_SC2:		Compressor with sidechain.
 L_SC3:		Stereo compressor with sidechain input.
 L_SC4:		Stereo compressor with variable envelope follower for
-		RMS / peak behavior. 
+		RMS / peak behavior.
 L_SC4 mono:	Mono compressor with variable envelope follower for
-		RMS / peak behavior. 
+		RMS / peak behavior.
 L_SE4:		Stereo expander with variable envelope follower for
 		RMS / peak behavior.
-L_Signal sifter:	Sorts and mixes blocks of the input signal to give a 
-		bumpy ramp effect.  Can produce some interesting noises. 
+L_Signal sifter:	Sorts and mixes blocks of the input signal to give a
+		bumpy ramp effect.  Can produce some interesting noises.
 L_Simple amplifier:	Controls the gain of the input signal in dB's.
 #L_Simple delay line, cubic spline interpolation:
 #L_Simple delay line, linear interpolation:
@@ -740,7 +737,7 @@ L_Sinus wavewrapper: Produces unusual distortion, for amp like tone.
 #L_Smooth Decimator:
 SoundLevel:	Displays the Max/RMS sound level in decibels.
 Spectrogram:	Visual representation of the sound levels at
-		specified frequencies as they vary with time. 
+		specified frequencies as they vary with time.
 L_State Variable Filter: Oversampled state variable filter with tweaks.
 L_Step Demuxer:	Inputs up to 8 signals and switches between them on
 		output when the signal on the clock input goes high.
@@ -837,7 +834,7 @@ L2_Calf Tape Simulator:	Modifies signals as if they were recorded on
 L2_Calf Transient Designer: Used to modify the envelope of percussive
 	signals like drum sounds or percussion instruments.
 L2_Calf Vintage Delay:	Simple simulation of tape echo with a filter
-	in a feedback loop and BPM-based toime setting.
+	in a feedback loop and BPM-based time setting.
 L2_Calf Vocoder: Modulates the frequency response of a carrier signal
 	by measuring response of a modulator signal in realtime.
 L2_Calf Wavetable: Synthesizer based on predefined wavetables with ADSR
@@ -867,8 +864,9 @@ Flash:		The video flashes when transitioning between segments.
 IrisSquare:	Video switches segments via a small rectangular view
 		that gradually grows to full size.
 Shape Wipe:	Wipe a specific shape across the video.  Available
-		shapes are: burst, circle, clock, heart, specks, spiral,
-		tile2x2h, tile2x2v.
+		shapes are: Butterfly, burst, circle-s, clock, cloud-s,
+		cross-s, diagonal-s, diamond-s, door-s, gravity, heart,
+		linear-s, Plasma, specks, spiral, tile-s, and Vblinds-s.
 Slide:		Image slides into view - can set: Left/Right/In/Out.
 Wipe:		Wipe the image across screen starting left or right.
 Zoom:		Zoom out video at X/Y magnification for some seconds.
