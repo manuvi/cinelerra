@@ -1,7 +1,7 @@
-diff -uN dav1d-0.4.0.orig/Makefile dav1d-0.4.0/Makefile
---- dav1d-0.4.0.orig/Makefile	1969-12-31 17:00:00.000000000 -0700
-+++ dav1d-0.4.0/Makefile	2019-09-05 16:38:01.820636946 -0600
-@@ -0,0 +1,358 @@
+diff -urN a/Makefile b/Makefile
+--- a/Makefile	1969-12-31 17:00:00.000000000 -0700
++++ b/Makefile	2019-10-14 10:54:47.354841430 -0600
+@@ -0,0 +1,363 @@
 +
 +_ARCH := $(shell uname -m)
 +ARCH_I32 := $(shell expr "x$(_ARCH)" : 'xi[346]86.*')
@@ -99,18 +99,21 @@ diff -uN dav1d-0.4.0.orig/Makefile dav1d-0.4.0/Makefile
 +# nasm
 +NASM_OBJS=$(call any,$(NASM_BLD), \
 +	cdef.obj \
-+	cdef_sse.obj \
-+	cpuid.obj \
++	film_grain.obj \
 +	ipred.obj \
-+	ipred_ssse3.obj \
 +	itx.obj \
-+	itx_ssse3.obj \
++	cdef_sse.obj \
++	ipred_ssse3.obj \
 +	loopfilter.obj \
 +	looprestoration.obj \
-+	looprestoration_ssse3.obj \
 +	mc.obj \
++	itx_ssse3.obj \
++	looprestoration_ssse3.obj \
++	loopfilter_ssse3.obj \
 +	mc_ssse3.obj \
-+	msac.obj)
++	cpuid.obj \
++	msac.obj )
++
 +$(NASM_BLD)/%.obj: src/x86/%.asm
 +	$(NASM) -f $(ASM_ARCH) \
 +		-I src/ -I $(BUILD)/ -MQ $@ -MF $@.ndep \
@@ -155,6 +158,7 @@ diff -uN dav1d-0.4.0.orig/Makefile dav1d-0.4.0/Makefile
 +BITS_OBJS= \
 +	cdef_tmpl.o \
 +	cdef_apply_tmpl.o \
++	fg_apply_tmpl.o \
 +	film_grain_tmpl.o \
 +	ipred_tmpl.o \
 +	ipred_prepare_tmpl.o \
@@ -166,6 +170,7 @@ diff -uN dav1d-0.4.0.orig/Makefile dav1d-0.4.0/Makefile
 +	mc_tmpl.o \
 +	recon_tmpl.o \
 +	x86/cdef_init_tmpl.c.o \
++	x86/film_grain_init_tmpl.c.o \
 +	x86/ipred_init_tmpl.c.o \
 +	x86/itx_init_tmpl.c.o \
 +	x86/loopfilter_init_tmpl.c.o \
@@ -209,7 +214,7 @@ diff -uN dav1d-0.4.0.orig/Makefile dav1d-0.4.0/Makefile
 +
 +$(BUILD)/include/vcs_version.h:
 +	mkdir -p $(BUILD)/include
-+	echo  > $@ "#define DAV1D_VERSION \"0.4.0\""
++	echo  > $@ "#define DAV1D_VERSION \"0.5.0\""
 +
 +$(BUILD)/include/dav1d/version.h:
 +	mkdir -p $(BUILD)/include/dav1d

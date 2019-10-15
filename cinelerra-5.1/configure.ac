@@ -413,7 +413,7 @@ PKG_3RD([libaom],[auto],
   [ usr/local/include ])
 
 PKG_3RD([dav1d],[auto],
-  [dav1d-0.4.0],
+  [dav1d-0.5.0],
   [ usr/local/lib*/libdav1d*.a ],
   [ usr/local/include ])
 

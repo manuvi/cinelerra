@@ -3129,7 +3129,12 @@ int AWindowAssets::mouse_over_event(int no)
 
 void AWindowAssets::show_tip_info(const char *info, int no)
 {
-	show_tooltip(info);
+	int margin = 28;
+	int tw = get_text_width(MEDIUMFONT, info) + TOOLTIP_MARGIN * 2;
+	int th = get_text_height(MEDIUMFONT, info) + TOOLTIP_MARGIN * 2;
+	int tx = get_w() - (tw + margin);
+	int ty = get_h() - (th + margin);
+	show_tooltip(info, tx, ty, tw, th);
 	info_tip = no;
 }
 
