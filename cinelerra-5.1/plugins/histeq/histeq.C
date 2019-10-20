@@ -82,25 +82,27 @@ HistEqWindow::~HistEqWindow()
 
 void HistEqWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int xs10 = xS(10), xs60 = xS(60);
+	int ys10 = yS(10);
+	int x = xs10, y = ys10;
 	int cw = get_w()-2*x, ch = cw*3/4;
 	add_subwindow(canvas = new HistEqCanvas(this, plugin, x, y, cw, ch));
-	y += canvas->get_h() + 10;
+	y += canvas->get_h() + ys10;
 	
 	add_subwindow(split = new HistEqSplit(this, plugin, x, y));
-	y += split->get_h() + 10;
+	y += split->get_h() + ys10;
 
 	add_subwindow(plot = new HistEqPlot(this, plugin, x, y));
-	y += plot->get_h() + 10;
+	y += plot->get_h() + ys10;
 
-	int x1 = x + 60;
+	int x1 = x + xs60;
 	add_subwindow(new BC_Title(x, y, _("Blend:")));
 	add_subwindow(blend = new HistEqBlend(this, plugin, x1, y));
-	y += blend->get_h() + 10;
+	y += blend->get_h() + ys10;
 
 	add_subwindow(new BC_Title(x, y, _("Gain:")));
 	add_subwindow(gain = new HistEqGain(this, plugin, x1, y));
-	y += gain->get_h() + 10;
+	y += gain->get_h() + ys10;
 
 	show_window();
 }
@@ -237,7 +239,7 @@ int HistEqPlot::handle_event()
 }
 
 HistEqBlend::HistEqBlend(HistEqWindow *gui, HistEqMain *plugin, int x, int y)
- : BC_FSlider(x, y, 0, 150, 200, 0, 1.0, plugin->config.blend, 0)
+ : BC_FSlider(x, y, 0, xS(150), yS(200), 0, xS(1.0), plugin->config.blend, 0)
 {
         this->gui = gui;
         this->plugin = plugin;
@@ -256,7 +258,7 @@ int HistEqBlend::handle_event()
 
 
 HistEqGain::HistEqGain(HistEqWindow *gui, HistEqMain *plugin, int x, int y)
- : BC_FSlider(x, y, 0, 150, 200, 0, 1.0, plugin->config.gain, 0)
+ : BC_FSlider(x, y, 0, xS(150), yS(200), 0, xS(1.0), plugin->config.gain, 0)
 {
         this->gui = gui;
         this->plugin = plugin;
@@ -277,7 +279,7 @@ int HistEqGain::handle_event()
 HistEqMain::HistEqMain(PluginServer *server)
  : PluginVClient(server)
 {
-	w = 300;  h = 375;
+	w = xS(300);  h = yS(375);
 	engine = 0;
 	sz = 0;
 	binsz = bsz = 0;  bins = 0;

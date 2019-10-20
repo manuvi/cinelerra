@@ -504,39 +504,41 @@ selection_changed()
 void DbWindowGUI::
 create_objects()
 {
-	int pady = BC_TextBox::calculate_h(this, MEDIUMFONT, 0, 1) + 5;
+	int xs10 = xS(10), xs15 = xS(15);
+	int ys5 = yS(5), ys10 = yS(10);
+	int pady = BC_TextBox::calculate_h(this, MEDIUMFONT, 0, 1) + ys5;
 	int padx = BC_Title::calculate_w(this, (char*)"X", MEDIUMFONT);
 	int x = padx/2, y = pady/4;
 	text_x = x;  text_y = y;
 	BC_Title *title = new BC_Title(text_x, text_y, _("Text:"), MEDIUMFONT, YELLOW);
 	add_subwindow(title);  x += title->get_w();
-	search_text = new DbWindowText(this, x, y, get_w()-x-10);
+	search_text = new DbWindowText(this, x, y, get_w()-x-xs10);
 	add_subwindow(search_text);
-	x = padx;  y += pady + 5;
+	x = padx;  y += pady + ys5;
 	title_text = new DbWindowTitleText(this, x, y);
 	add_subwindow(title_text);  x += title_text->get_w() + padx;
 	info_text = new DbWindowInfoText(this, x, y);
 	add_subwindow(info_text);  x += title_text->get_w() + padx;
 	match_case = new DbWindowMatchCase(this, x, y);
 	add_subwindow(match_case); x += match_case->get_w() + padx;
-	x = padx;  y += pady + 5;
-	search_x = 10;
-	search_y = get_h() - DbWindowStart::calculate_h() - 10;
+	x = padx;  y += pady + ys5;
+	search_x = xs10;
+	search_y = get_h() - DbWindowStart::calculate_h() - ys10;
 	search_start = new DbWindowStart(this, search_x, search_y);
 	add_subwindow(search_start);
-	del_items_x = search_x + DbWindowStart::calculate_w(this, search_start->get_text()) + 15;
+	del_items_x = search_x + DbWindowStart::calculate_w(this, search_start->get_text()) + xs15;
 	del_items_y = search_y;
 	del_items = new DbWindowDeleteItems(this, del_items_x, del_items_y);
 	add_subwindow(del_items);
 	cancel_w = DbWindowCancel::calculate_w();
 	cancel_h = DbWindowCancel::calculate_h();
-	cancel_x = get_w() - cancel_w - 10;
-	cancel_y = get_h() - cancel_h - 10;
+	cancel_x = get_w() - cancel_w - xs10;
+	cancel_y = get_h() - cancel_h - ys10;
 	cancel = new DbWindowCancel(this, cancel_x, cancel_y);
 	add_subwindow(cancel);
 	list_x = x;  list_y = y;
-	int list_w = get_w()-10 - list_x;
-	int list_h = min(search_y, cancel_y)-10 - list_y;
+	int list_w = get_w()-xs10 - list_x;
+	int list_h = min(search_y, cancel_y)-ys10 - list_y;
 	search_list = new DbWindowList(this, list_x, list_y, list_w, list_h);
 	add_subwindow(search_list);
 	vicon_thread = new DbWindowVIconThread(this);
@@ -552,13 +554,15 @@ create_objects()
 	set_icon(dwindow->mwindow->theme->get_image("record_icon"));
 }
 
+#define DBW_W xS(900)
+#define DBW_H yS(600)
 
 DbWindowGUI::
 DbWindowGUI(DbWindow *dwindow)
  : BC_Window(_(PROGRAM_NAME ": DbWindow"),
-	dwindow->mwindow->gui->get_abs_cursor_x(1) - 900 / 2,
-	dwindow->mwindow->gui->get_abs_cursor_y(1) - 600 / 2,
-	900, 600, 400, 400)
+	dwindow->mwindow->gui->get_abs_cursor_x(1) - DBW_W / 2,
+	dwindow->mwindow->gui->get_abs_cursor_y(1) - DBW_H / 2,
+	DBW_W, DBW_H, xS(400), yS(400))
 {
 	this->dwindow = dwindow;
 
@@ -592,18 +596,18 @@ DbWindowGUI(DbWindow *dwindow)
 	search_column_titles[col_start_time] = _("Start time");
 	search_column_titles[col_access_time] = _("Access time");
 	search_column_titles[col_access_count] = _("count");
-	search_column_widths[col_vicon] = 90;
-	search_column_widths[col_id] = 60;
-	search_column_widths[col_length] = 80;
-	search_column_widths[col_source] = 50;
-	search_column_widths[col_title] = 160;
-	search_column_widths[col_start_time] = 140;
-	search_column_widths[col_access_time] = 140;
-	search_column_widths[col_access_count] = 60;
+	search_column_widths[col_vicon] = xS(90);
+	search_column_widths[col_id] = xS(60);
+	search_column_widths[col_length] = xS(80);
+	search_column_widths[col_source] = xS(50);
+	search_column_widths[col_title] = xS(160);
+	search_column_widths[col_start_time] = xS(140);
+	search_column_widths[col_access_time] = xS(140);
+	search_column_widths[col_access_count] = xS(60);
 	int wd = 0;
 	for( int i=0; i<sizeof_col; ++i )
 		if( i != col_title ) wd += search_column_widths[i];
-	search_column_widths[col_title] = get_w() - wd - 40;
+	search_column_widths[col_title] = get_w() - wd - xS(40);
 }
 
 DbWindowGUI::~DbWindowGUI()
@@ -617,26 +621,28 @@ DbWindowGUI::~DbWindowGUI()
 int DbWindowGUI::
 resize_event(int w, int h)
 {
+	int xs10 = xS(10), xs15 = xS(15);
+	int ys10 = yS(10);
 	stop_drawing();
-	int cancel_x = w - BC_CancelButton::calculate_w() - 10;
-	int cancel_y = h - BC_CancelButton::calculate_h() - 10;
+	int cancel_x = w - BC_CancelButton::calculate_w() - xs10;
+	int cancel_y = h - BC_CancelButton::calculate_h() - ys10;
 	cancel->reposition_window(cancel_x, cancel_y);
-	search_x = 10;
-	search_y = h - BC_GenericButton::calculate_h() - 10;
+	search_x = xs10;
+	search_y = h - BC_GenericButton::calculate_h() - ys10;
 	search_start->reposition_window(search_x, search_y);
-	del_items_x = search_x + DbWindowStart::calculate_w(this, search_start->get_text()) + 15;
+	del_items_x = search_x + DbWindowStart::calculate_w(this, search_start->get_text()) + xs15;
 	del_items_y = search_y;
 	del_items->reposition_window(del_items_x,del_items_y);
-	int list_w = w-10 - list_x;
-	int list_h = min(search_y, cancel_y)-10 - list_y;
+	int list_w = w-xs10 - list_x;
+	int list_h = min(search_y, cancel_y)-ys10 - list_y;
 	canvas_w = SWIDTH;  canvas_h = SHEIGHT;
-	canvas_x = cancel_x - canvas_w - 15;
-	canvas_y = get_h() - canvas_h - 10;
+	canvas_x = cancel_x - canvas_w - xs15;
+	canvas_y = get_h() - canvas_h - ys10;
 	canvas->reposition_window(0, canvas_x, canvas_y, canvas_w, canvas_h);
 //	int wd = 0;
 //	for( int i=0; i<sizeof_col; ++i )
 //		if( i != col_title ) wd += search_column_widths[i];
-//	search_column_widths[col_title] = w - wd - 40;
+//	search_column_widths[col_title] = w - wd - xS(40);
 	search_list->reposition_window(list_x, list_y, list_w, list_h);
 	start_drawing();
 	return 1;
@@ -801,8 +807,8 @@ update()
 			if( !cp ) continue;
 			DbSearchItem *item = new DbSearchItem(cp, LTYELLOW);
 			if( search_columns[k] == col_vicon ) {
-				item->set_text_w(SWIDTH+10);
-				item->set_text_h(SHEIGHT+5);
+				item->set_text_w(SWIDTH+xS(10));
+				item->set_text_h(SHEIGHT+yS(5));
 				item->set_searchable(0);
 			}
 			search_items[k].append(item);

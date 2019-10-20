@@ -28,13 +28,7 @@
 class TestWindow : public BC_Window
 {
 public:
-	TestWindow() : BC_Window("Test",
-		0,
-		0,
-		320,
-		240)
-	{
-	};
+	TestWindow() : BC_Window("Test", 0, 0, 320, 240) {};
 
 	void create_objects()
 	{

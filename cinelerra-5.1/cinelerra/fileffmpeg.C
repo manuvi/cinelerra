@@ -46,7 +46,7 @@ FileFFMPEG::~FileFFMPEG()
 
 FFMpegConfigNum::FFMpegConfigNum(BC_Window *window,
 		int x, int y, char *title_text, int *output)
- : BC_TumbleTextBox(window, *output, -1, INT_MAX, 100, y, 100)
+ : BC_TumbleTextBox(window, *output, -1, INT_MAX, xS(100), y, xS(100))
 {
 	this->window = window;
 	this->x = x;  this->y = y;
@@ -462,7 +462,7 @@ FFMPEGConfigAudio::FFMPEGConfigAudio(BC_WindowBase *parent_window, Asset *asset,
  : BC_Window(_(PROGRAM_NAME ": Audio Preset"),
  	parent_window->get_abs_cursor_x(1),
  	parent_window->get_abs_cursor_y(1),
-	420, 420)
+	xS(420), yS(420))
 {
 	this->parent_window = parent_window;
 	this->asset = asset;
@@ -490,7 +490,7 @@ void FFMPEGConfigAudio::load_options()
 
 void FFMPEGConfigAudio::create_objects()
 {
-	int x = 10, y = 10;
+	int x = xS(10), y = yS(10);
 	lock_window("FFMPEGConfigAudio::create_objects");
 
 	FileSystem fs;
@@ -518,11 +518,11 @@ void FFMPEGConfigAudio::create_objects()
 		strcpy(asset->acodec, presets[0]->get_text());
 
 	add_tool(new BC_Title(x, y, _("Preset:")));
-	y += 25;
+	y += yS(25);
 	preset_popup = new FFMPEGConfigAudioPopup(this, x, y);
 	preset_popup->create_objects();
 
-	y += 50;
+	y += yS(50);
 	bitrate = new FFMpegAudioBitrate(this, x, y, _("Bitrate:"), &asset->ff_audio_bitrate);
 	bitrate->create_objects();
 	bitrate->set_increment(1000);
@@ -532,10 +532,10 @@ void FFMPEGConfigAudio::create_objects()
 	quality->create_objects();
 	quality->set_increment(1);
 	quality->set_boundaries((int64_t)-1, (int64_t)51);
-	y += quality->get_h() + 10;
+	y += quality->get_h() + yS(10);
 
 	add_subwindow(new BC_Title(x, y, _("Samples:")));
-	sample_format = new FFMpegSampleFormat(this, x+90, y, 100, 120);
+	sample_format = new FFMpegSampleFormat(this, x+xS(90), y, xS(100), yS(120));
 	sample_format->create_objects();
 	if( asset->acodec[0] ) {
 		sample_format->update_formats();
@@ -544,7 +544,7 @@ void FFMPEGConfigAudio::create_objects()
 	}
 	if( !asset->ff_sample_format[0] ) strcpy(asset->ff_sample_format, _("None"));
 	sample_format->update(asset->ff_sample_format);
-	y += sample_format->get_h() + 10;
+	y += sample_format->get_h() + yS(10);
 
 	BC_Title *title = new BC_Title(x, y, _("Audio Options:"));
 	add_subwindow(title);
@@ -553,8 +553,8 @@ void FFMPEGConfigAudio::create_objects()
 	int x1 = x + title->get_w() + 8;
 	add_subwindow(new FFOptionsViewAudio(this, x1, y, _("view")));
 
-	y += 25;
-	audio_options = new FFAudioOptions(this, x, y, get_w()-x-20, 8,
+	y += yS(25);
+	audio_options = new FFAudioOptions(this, x, y, get_w()-x-xS(20), 8,
 		 sizeof(asset->ff_audio_options)-1, asset->ff_audio_options);
 	audio_options->create_objects();
 	add_subwindow(new BC_OKButton(this));
@@ -585,7 +585,7 @@ FFAudioOptions::FFAudioOptions(FFMPEGConfigAudio *audio_popup,
 
 
 FFMPEGConfigAudioPopup::FFMPEGConfigAudioPopup(FFMPEGConfigAudio *popup, int x, int y)
- : BC_PopupTextBox(popup, &popup->presets, popup->asset->acodec, x, y, 300, 300)
+ : BC_PopupTextBox(popup, &popup->presets, popup->asset->acodec, x, y, xS(300), yS(300))
 {
 	this->popup = popup;
 }
@@ -626,7 +626,7 @@ FFMPEGConfigVideo::FFMPEGConfigVideo(BC_WindowBase *parent_window, Asset *asset,
  : BC_Window(_(PROGRAM_NAME ": Video Preset"),
  	parent_window->get_abs_cursor_x(1),
  	parent_window->get_abs_cursor_y(1),
-	420, 420)
+	xS(420), yS(420))
 {
 	this->parent_window = parent_window;
 	this->asset = asset;
@@ -657,11 +657,11 @@ void FFMPEGConfigVideo::load_options()
 
 void FFMPEGConfigVideo::create_objects()
 {
-	int x = 10, y = 10;
+	int x = xS(10), y = yS(10);
 	lock_window("FFMPEGConfigVideo::create_objects");
 
 	add_subwindow(new BC_Title(x, y, _("Compression:")));
-	y += 25;
+	y += yS(25);
 
 	FileSystem fs;
 	char option_path[BCTEXTLEN];
@@ -694,7 +694,7 @@ void FFMPEGConfigVideo::create_objects()
 		asset->ff_video_bitrate = 0;  asset->ff_video_quality = -1;
 	}
 
-	y += 50;
+	y += yS(50);
 	bitrate = new FFMpegVideoBitrate(this, x, y, _("Bitrate:"), &asset->ff_video_bitrate);
 	bitrate->create_objects();
 	bitrate->set_increment(100000);
@@ -704,10 +704,10 @@ void FFMPEGConfigVideo::create_objects()
 	quality->create_objects();
 	quality->set_increment(1);
 	quality->set_boundaries((int64_t)-1, (int64_t)51);
-	y += quality->get_h() + 10;
+	y += quality->get_h() + yS(10);
 
 	add_subwindow(new BC_Title(x, y, _("Pixels:")));
-	pixel_format = new FFMpegPixelFormat(this, x+90, y, 100, 120);
+	pixel_format = new FFMpegPixelFormat(this, x+xS(90), y, xS(100), yS(120));
 	pixel_format->create_objects();
 	if( asset->vcodec[0] ) {
 		pixel_format->update_formats();
@@ -716,7 +716,7 @@ void FFMPEGConfigVideo::create_objects()
 	}
 	if( !asset->ff_pixel_format[0] ) strcpy(asset->ff_pixel_format, _("None"));
 	pixel_format->update(asset->ff_pixel_format);
-	y += pixel_format->get_h() + 10;
+	y += pixel_format->get_h() + yS(10);
 
 	BC_Title *title = new BC_Title(x, y, _("Video Options:"));
 	add_subwindow(title);
@@ -725,8 +725,8 @@ void FFMPEGConfigVideo::create_objects()
 	int x1 = x + title->get_w() + 8;
 	add_subwindow(new FFOptionsViewVideo(this, x1, y, _("view")));
 
-	y += 25;
-	video_options = new FFVideoOptions(this, x, y, get_w()-x-20, 8,
+	y += yS(25);
+	video_options = new FFVideoOptions(this, x, y, get_w()-x-xS(20), 8,
 		 sizeof(asset->ff_video_options)-1, asset->ff_video_options);
 	video_options->create_objects();
 	add_subwindow(new BC_OKButton(this));
@@ -756,7 +756,7 @@ FFVideoOptions::FFVideoOptions(FFMPEGConfigVideo *video_popup,
 
 
 FFMPEGConfigVideoPopup::FFMPEGConfigVideoPopup(FFMPEGConfigVideo *popup, int x, int y)
- : BC_PopupTextBox(popup, &popup->presets, popup->asset->vcodec, x, y, 300, 300)
+ : BC_PopupTextBox(popup, &popup->presets, popup->asset->vcodec, x, y, xS(300), yS(300))
 {
 	this->popup = popup;
 }
@@ -890,7 +890,7 @@ FFOptions_OptPanel::
 void FFOptions_OptPanel::create_objects()
 {
 	const char *cols[] = { _("option"), _("value"), };
-	const int col1_w = 150;
+	const int col1_w = xS(150);
 	int wids[] = { col1_w, get_w()-col1_w };
 	BC_ListBox::update(&items[0], &cols[0], &wids[0], sizeof(items)/sizeof(items[0]));
 }
@@ -1456,7 +1456,7 @@ const char *FFOptions_Opt::tip()
 
 
 FFOptionsWindow::FFOptionsWindow(FFOptionsDialog *dialog)
- : BC_Window(_(PROGRAM_NAME ": Options"), 60, 30, 640, 400)
+ : BC_Window(_(PROGRAM_NAME ": Options"), xS(60), yS(30), xS(640), yS(400))
 {
 	this->dialog = dialog;
 	this->selected = 0;
@@ -1468,44 +1468,46 @@ FFOptionsWindow::~FFOptionsWindow()
 
 void FFOptionsWindow::create_objects()
 {
+	int xs8 = xS(8), xs10 = xS(10);
+	int ys10 = yS(10);
 	lock_window("FFOptionsWindow::create_objects");
 	BC_Title *title;
-	int x0 = 10, y0 = 10;
+	int x0 = xs10, y0 = ys10;
 	int x = x0, y = y0;
 	add_subwindow(title = new BC_Title(x, y, _("Format: ")));
 	x += title->get_w();
 	add_subwindow(new BC_Title(x, y, dialog->format_name));
-	x = x0 + 150;
+	x = x0 + xS(150);
 	add_subwindow(title = new BC_Title(x, y, _("Codec: ")));
 	x += title->get_w();
 	add_subwindow(new BC_Title(x, y, dialog->codec_name));
 
-	x = x0;  y += title->get_h() + 10;  y0 = y;
+	x = x0;  y += title->get_h() + ys10;  y0 = y;
 	add_subwindow(title = new BC_Title(x, y, _("Type: ")));
-	x += title->get_w() + 8;
+	x += title->get_w() + xs8;
 	add_subwindow(type = new BC_Title(x, y, (char *)""));
-	x = x0 + 150;
+	x = x0 + xS(150);
 	add_subwindow(title = new BC_Title(x, y, _("Range: ")));
-	x += title->get_w() + 8;
+	x += title->get_w() + xs8;
 	add_subwindow(range = new BC_Title(x, y, (char *)""));
 
-	x = x0;  y += title->get_h() + 10;
-	add_subwindow(units = new FFOptionsUnits(this, x, y, 120));
-	x += units->get_w() + 8;
-	int x1 = get_w() - BC_GenericButton::calculate_w(this, _("Apply")) - 8;
-	add_subwindow(text = new FFOptionsText(this, x, y, x1-x - 8));
+	x = x0;  y += title->get_h() + ys10;
+	add_subwindow(units = new FFOptionsUnits(this, x, y, xS(120)));
+	x += units->get_w() + xs8;
+	int x1 = get_w() - BC_GenericButton::calculate_w(this, _("Apply")) - xs8;
+	add_subwindow(text = new FFOptionsText(this, x, y, x1-x - xs8));
 	add_subwindow(apply = new FFOptionsApply(this, x1, y));
-	y += units->get_h() + 10;
+	y += units->get_h() + ys10;
 	add_subwindow(kind = new FFOptionsKind(this, x1, y0, apply->get_w()));
 	kind->create_objects();
 	const char *kind_text = _("Kind:");
-	x1 -= BC_Title::calculate_w(this, kind_text) + 8;
+	x1 -= BC_Title::calculate_w(this, kind_text) + xs8;
 	add_subwindow(kind_title = new BC_Title(x1, y0, kind_text));
 	y0 = y;
 
 	panel_x = x0;  panel_y = y0;
-	panel_w = get_w()-10 - panel_x;
-	panel_h = get_h()-10 - panel_y - BC_OKButton::calculate_h();
+	panel_w = get_w()-xs10 - panel_x;
+	panel_h = get_h()-ys10 - panel_y - BC_OKButton::calculate_h();
 	panel = new FFOptions_OptPanel(this, panel_x, panel_y, panel_w, panel_h);
 	add_subwindow(panel);
 	add_subwindow(new BC_OKButton(this));
@@ -1524,19 +1526,21 @@ void FFOptionsWindow::draw()
 
 int FFOptionsWindow::resize_event(int w, int h)
 {
-	int x1 = w - 8 - kind->get_w();
+	int xs8 = xS(8), xs10 = xS(10);
+	int ys10 = yS(10);
+	int x1 = w - xs8 - kind->get_w();
 	int y = kind->get_y();
 	kind->reposition_window(x1, y);
-	x1 -= kind_title->get_w() + 8;
+	x1 -= kind_title->get_w() + xs8;
 	kind_title->reposition_window(x1,y);
-	x1 = get_w() - apply->get_w() - 8;
+	x1 = get_w() - apply->get_w() - xs8;
 	int y1 = units->get_y();
 	apply->reposition_window(x1, y1);
-	int x0 = units->get_x() + units->get_w() + 8;
+	int x0 = units->get_x() + units->get_w() + xs8;
 	int y0 = units->get_y();
-	text->reposition_window(x0,y0, x1-x0-8);
-	panel_w = get_w()-10 - panel_x;
-	panel_h = get_h()-10 - panel_y;
+	text->reposition_window(x0,y0, x1-x0-xs8);
+	panel_w = get_w()-xs10 - panel_x;
+	panel_h = get_h()-ys10 - panel_y;
 	panel->reposition_window(panel_x,panel_y, panel_w, panel_h);
 	return 1;
 }

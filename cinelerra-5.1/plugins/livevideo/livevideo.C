@@ -197,8 +197,8 @@ LiveVideoWindow::LiveVideoWindow(LiveVideo *plugin)
  : PluginClientWindow(plugin,
 	plugin->w,
 	plugin->h,
-	100,
-	100,
+	xS(100),
+	yS(100),
 	1)
 {
 	this->plugin = plugin;
@@ -211,7 +211,9 @@ LiveVideoWindow::~LiveVideoWindow()
 
 void LiveVideoWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int xs10 = xS(10);
+	int ys5 = yS(5), ys10 = yS(10);
+	int x = xs10, y = ys10;
 
 	EDLSession *session = plugin->get_edl()->session;
 	if(session)
@@ -225,14 +227,14 @@ void LiveVideoWindow::create_objects()
 	}
 
 	add_subwindow(title = new BC_Title(x, y, _("Channels:")));
-	y += title->get_h() + 5;
+	y += title->get_h() + ys5;
 	add_subwindow(list = new LiveChannelList(plugin,
 		this,
 		x,
 		y,
-		get_w() - x - 10,
-		get_h() - y - BC_OKButton::calculate_h() - 10 - 10));
-	y += list->get_h() + 10;
+		get_w() - x - xs10,
+		get_h() - y - BC_OKButton::calculate_h() - ys10 - ys10));
+	y += list->get_h() + ys10;
 	add_subwindow(select = new LiveChannelSelect(plugin,
 		this,
 		x,
@@ -345,8 +347,8 @@ LiveVideo::LiveVideo(PluginServer *server)
 	vdevice = 0;
 	temp = 0;
 	channeldb = new ChannelDB;
-	w = 320;
-	h = 640;
+	w = xS(320);
+	h = yS(640);
 	prev_channel = 0;
 	dv = 0;
 	mjpeg = 0;

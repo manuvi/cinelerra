@@ -289,7 +289,7 @@ int BC_MenuPopup::activate_menu(int x,
 		if(this->y + this->h > top_y1) this->y -= this->h + h; // Bottom justify
 // Avoid top of menu going out of screen
 		if(this->y < 0)
-			this->y = 2;
+			this->y = yS(2);
 	}
 	else
 	{
@@ -300,7 +300,7 @@ int BC_MenuPopup::activate_menu(int x,
 		if(this->x + this->w > top_x1) this->x = new_x - this->w;
 		if(this->y + this->h > top_y1) this->y = new_y + h - this->h;
 	}
-	top_x0 += 2;  top_y0 += 2;
+	top_x0 += xS(2);  top_y0 += yS(2);
 	if( this->x < top_x0 ) this->x = top_x0;
 	if( this->y < top_y0 ) this->y = top_y0;
 
@@ -308,16 +308,12 @@ int BC_MenuPopup::activate_menu(int x,
 	if(menu_bar)
 	{
 		popup = new BC_Popup(menu_bar, this->x, this->y, this->w, this->h,
-					top_level->get_resources()->menu_up,
-					1,
-					menu_bar->bg_pixmap);
+				top_level->get_resources()->menu_up, 1, menu_bar->bg_pixmap);
 	}
 	else
 	{
 		popup = new BC_Popup(top_level, this->x, this->y, this->w, this->h,
-					top_level->get_resources()->menu_up,
-					1,
-					0);
+				top_level->get_resources()->menu_up, 1, 0);
 //		popup->set_background(top_level->get_resources()->menu_bg);
 	}
 	draw_items();
@@ -377,28 +373,30 @@ int BC_MenuPopup::draw_items()
 
 int BC_MenuPopup::get_dimensions()
 {
-	int widest_text = 10, widest_key = 10;
+	int xs10 = xS(10), xs20 = xS(20);
+	int ys4 = yS(4), ys5 = yS(10);
+	int widest_text = xs10, widest_key = xs10;
 	int text_w, key_w;
 	int i = 0;
 
 // pad for border
-	h = 2;
+	h = yS(2);
 // Set up parameters in each item and get total h.
 	for(i = 0; i < menu_items.total; i++)
 	{
-		text_w = 10 + top_level->get_text_width(MEDIUMFONT, menu_items.values[i]->text);
-		if(menu_items.values[i]->checked) text_w += check->get_w() + 1;
+		text_w = xs10 + top_level->get_text_width(MEDIUMFONT, menu_items.values[i]->text);
+		if(menu_items.values[i]->checked) text_w += check->get_w() + xS(1);
 
-		key_w = 10 + top_level->get_text_width(MEDIUMFONT, menu_items.values[i]->hotkey_text);
+		key_w = xs10 + top_level->get_text_width(MEDIUMFONT, menu_items.values[i]->hotkey_text);
 		if(text_w > widest_text) widest_text = text_w;
 		if(key_w > widest_key) widest_key = key_w;
 
 		if(!strcmp(menu_items.values[i]->text, "-"))
-			menu_items.values[i]->h = 5;
+			menu_items.values[i]->h = ys5;
 		else
 		{
 			menu_items.values[i]->h = item_bg[0] ? item_bg[0]->get_h() :
-				top_level->get_text_height(MEDIUMFONT) + 4;
+				top_level->get_text_height(MEDIUMFONT) + ys4;
 		}
 
 		menu_items.values[i]->y = h;
@@ -406,13 +404,13 @@ int BC_MenuPopup::get_dimensions()
 		menu_items.values[i]->down = 0;
 		h += menu_items.values[i]->h;
 	}
-	w = widest_text + widest_key + 20;
+	w = widest_text + widest_key + xs20;
 
 	w = MAX(w, top_level->get_resources()->min_menu_w);
 // pad for division
-	key_x = widest_text + 16;
+	key_x = widest_text + xS(16);
 // pad for border
-	h += 2;
+	h += yS(2);
 	return 0;
 }
 

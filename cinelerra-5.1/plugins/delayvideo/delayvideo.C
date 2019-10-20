@@ -71,10 +71,10 @@ void DelayVideoConfig::interpolate(DelayVideoConfig &prev,
 
 DelayVideoWindow::DelayVideoWindow(DelayVideo *plugin)
  : PluginClientWindow(plugin,
-	210,
-	120,
-	210,
-	120,
+	xS(210),
+	yS(120),
+	xS(210),
+	yS(120),
 	0)
 {
 	this->plugin = plugin;
@@ -87,10 +87,12 @@ DelayVideoWindow::~DelayVideoWindow()
 
 void DelayVideoWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int xs10 = xS(10);
+	int ys10 = yS(10), ys20 = yS(20);
+	int x = xs10, y = ys10;
 
 	add_subwindow(new BC_Title(x, y, _("Delay seconds:")));
-	y += 20;
+	y += ys20;
 	slider = new DelayVideoSlider(this, plugin, x, y);
 	slider->create_objects();
 	show_window();
@@ -125,7 +127,7 @@ DelayVideoSlider::DelayVideoSlider(DelayVideoWindow *window,
 	(float)10,
 	x,
 	y,
-	150)
+	xS(150))
 {
 	this->plugin = plugin;
 	set_increment(0.1);

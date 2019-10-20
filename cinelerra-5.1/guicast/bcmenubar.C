@@ -107,16 +107,16 @@ int BC_MenuBar::add_menu(BC_Menu* menu)
 
 // Get dimensions
 	if(menu_titles.total == 0)
-		x = 2;
+		x = xS(2);
 	else
 		x = menu_titles.values[menu_titles.total - 1]->x +
 			menu_titles.values[menu_titles.total - 1]->w;
 
-	w = get_text_width(MEDIUMFONT, menu->text) + 20;
+	w = get_text_width(MEDIUMFONT, menu->text) + xS(20);
 // get pointer
 	menu_titles.append(menu);
 // initialize and draw
-	menu->initialize(top_level, this, x, 2, w, get_h() - 4);
+	menu->initialize(top_level, this, x, yS(2), w, get_h() - yS(4));
 	return 0;
 }
 

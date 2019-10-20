@@ -69,7 +69,7 @@ void RumblerConfig::interpolate(RumblerConfig &prev, RumblerConfig &next,
 }
 
 RumblerWindow::RumblerWindow(Rumbler *plugin)
- : PluginClientWindow(plugin, 300, 150, 300, 150, 0)
+ : PluginClientWindow(plugin, xS(300), yS(150), xS(300), yS(150), 0)
 {
 	this->plugin = plugin;
 }
@@ -80,24 +80,26 @@ RumblerWindow::~RumblerWindow()
 
 void RumblerWindow::create_objects()
 {
-	int x = 10, x1 = x + 64, x2 =x1 + 100;
-	int y = 10;
+	int xs10 = xS(10), xs64 = xS(64), xs100 = xS(100);
+	int ys10 = yS(10), ys35 = yS(35);
+	int x = xs10, x1 = x + xs64, x2 = x1 + xs100;
+	int y = ys10;
 	BC_Title *title;
 
 	add_subwindow(title = new BC_Title(x1, y, _("rumble")));
 	add_subwindow(title = new BC_Title(x2, y, _("rate")));
-	y += title->get_h() + 10;
+	y += title->get_h() + ys10;
 	add_subwindow(title = new BC_Title(x, y, _("time:")));
 	add_subwindow(time_rumble = new RumblerRate(plugin, this, plugin->config.time_rumble, x1, y));
 	add_subwindow(time_rate = new RumblerRate(plugin, this, plugin->config.time_rate, x2, y));
-	y += title->get_h() + 10;
+	y += title->get_h() + ys10;
 	add_subwindow(title = new BC_Title(x, y, _("space:")));
 	add_subwindow(space_rumble = new RumblerRate(plugin, this, plugin->config.space_rumble, x1, y));
 	add_subwindow(space_rate = new RumblerRate(plugin, this, plugin->config.space_rate, x2, y));
-	y += title->get_h() + 10;
+	y += title->get_h() + ys10;
 	add_subwindow(title = new BC_Title(x, y, _("seq:")));
 	add_subwindow(seq = new RumblerSeq(plugin, this, plugin->config.sequence, x1, y));
-	y += 35;
+	y += ys35;
 	add_subwindow(reset = new RumblerReset(plugin, this, x, y));
 
 	show_window();
@@ -117,7 +119,7 @@ void RumblerWindow::update()
 
 RumblerRate::RumblerRate(Rumbler *plugin, RumblerWindow *gui,
 	float &value, int x, int y)
- : BC_TextBox(x, y, 90, 1, value)
+ : BC_TextBox(x, y, xS(90), 1, value)
 {
 	this->plugin = plugin;
 	this->value = &value;
@@ -133,7 +135,7 @@ int RumblerRate::handle_event()
 
 RumblerSeq::RumblerSeq(Rumbler *plugin, RumblerWindow *gui,
 	int &value, int x, int y)
- : BC_TextBox(x, y, 72, 1, value)
+ : BC_TextBox(x, y, xS(72), 1, value)
 {
 	this->plugin = plugin;
 	this->value = &value;

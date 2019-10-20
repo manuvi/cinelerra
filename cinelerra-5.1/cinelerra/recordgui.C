@@ -60,9 +60,9 @@
 
 RecordGUI::RecordGUI(MWindow *mwindow, Record *record)
  : BC_Window(_(PROGRAM_NAME ": Recording"),
- 	mwindow->session->rwindow_x, mwindow->session->rwindow_y,
+	mwindow->session->rwindow_x, mwindow->session->rwindow_y,
 	mwindow->session->rwindow_w, mwindow->session->rwindow_h,
-	10, 10, 1, 0, 1)
+	xS(10), yS(10), 1, 0, 1)
 {
 	this->mwindow = mwindow;
 	this->record = record;
@@ -72,7 +72,7 @@ RecordGUI::RecordGUI(MWindow *mwindow, Record *record)
 	prev_label_title = 0;
 	frames_behind = 0;
 	frames_dropped = 0;
-        framerate = 0;
+	framerate = 0;
 	samples_clipped = 0;
 	cron_status = 0;
 	batch_bay = 0;
@@ -131,6 +131,8 @@ RecordGUI::~RecordGUI()
 
 void RecordGUI::create_objects()
 {
+	int xs5 = xS(5), xs10 = xS(10), xs20 = xS(20), xs30 = xS(30);
+	int ys5 = yS(5), ys10 = yS(10);
 	char string[BCTEXTLEN];
 	flash_color = RED;
 	Asset *asset = record->default_asset;
@@ -143,12 +145,12 @@ void RecordGUI::create_objects()
 //printf("RecordGUI::create_objects 1\n");
 	mwindow->theme->draw_rwindow_bg(this);
 
-	int x = 10;
-	int y = 10;
+	int x = xs10;
+	int y = ys10;
 	int x1 = 0;
 	BC_Title *title;
 	int pad = max(BC_TextBox::calculate_h(this, MEDIUMFONT, 1, 1),
-		BC_Title::calculate_h(this, "X")) + 5;
+		BC_Title::calculate_h(this, "X")) + ys5;
 	int button_y = 0;
 
 // Current batch
@@ -176,8 +178,8 @@ void RecordGUI::create_objects()
 
 
 	int x2 = 0;
-	y = 10;
-	x = x1 + 20;
+	y = ys10;
+	x = x1 + xs20;
 	add_subwindow(batch_path = new RecordPath(this, x, y));
 	add_subwindow(batch_browse = new BrowseButton(mwindow->theme,
 		this,
@@ -202,7 +204,7 @@ void RecordGUI::create_objects()
 	batch_source->create_objects();
 	x2 = max(x2, batch_source->get_w());
 	y += pad;
-	batch_mode = new RecordGUIModeMenu(this, x, y, 200, "");
+	batch_mode = new RecordGUIModeMenu(this, x, y, xS(200), "");
 	batch_mode->create_objects();
 	x2 = max(x2, batch_mode->get_w());
 	y += pad;
@@ -215,10 +217,10 @@ void RecordGUI::create_objects()
 
 
 // Compression settings
-	x = x2 + x1 + 30;
-	y = 10;
+	x = x2 + x1 + xs30;
+	y = ys10;
 	int x3 = 0;
-	pad = BC_Title::calculate_h(this, "X") + 5;
+	pad = BC_Title::calculate_h(this, "X") + ys5;
 	add_subwindow(title = new BC_Title(x, y, _("Format:")));
 	x3 = max(title->get_w(), x3);
 	y += pad;
@@ -260,8 +262,8 @@ void RecordGUI::create_objects()
 	y += pad;
 
 	button_y = max(y, button_y);
-	y = 10;
-	x = x3 + x2 + x1 + 40;
+	y = ys10;
+	x = x3 + x2 + x1 + xS(40);
 
 	add_subwindow(new BC_Title(x, y,
 		File::formattostr(asset->format),
@@ -321,16 +323,16 @@ void RecordGUI::create_objects()
 		_("None"), MEDIUMFONT,
 		mwindow->theme->recordgui_variable_color));
 
-	y += pad + 10;
+	y += pad + ys10;
 	button_y = max(y, button_y);
 
 // Buttons
-	x = 10;
+	x = xs10;
 	y = button_y;
 
 	add_subwindow(title = new BC_Title(x,y, _("Batches:")));
 	int y_max = y + title->get_h();  x1 = x;
-	x += title->get_w() + 5;
+	x += title->get_w() + xs5;
 	add_subwindow(activate_batch = new RecordGUIActivateBatch(this, x, y));
 	x += activate_batch->get_w();
 	y_max = max(y_max, y + activate_batch->get_h());
@@ -343,10 +345,10 @@ void RecordGUI::create_objects()
 	add_subwindow(label_button = new RecordGUILabel(this, x, y));
 	y_max = max(y_max, y + label_button->get_h());
 
-	int y1 = y_max, y2 = y1 + 5;
+	int y1 = y_max, y2 = y1 + ys5;
 	add_subwindow(title = new BC_Title(x1,y2, _("Cron:")));
 	y_max = max(y_max, y2 + title->get_h());
-	x1 += title->get_w() + 5;
+	x1 += title->get_w() + xs5;
 	add_subwindow(cron_status = new BC_Title(x1,y2, _("Idle"), MEDIUMFONT,
 		mwindow->theme->recordgui_variable_color));
 	y_max = max(y_max, y2 + cron_status->get_h());
@@ -357,9 +359,9 @@ void RecordGUI::create_objects()
 	add_subwindow(clrlbls_button = new RecordGUIClearLabels(this, x4, y1));
 	y_max = max(y_max, y1 + clrlbls_button->get_h());
 
-	x = x1 = 10;
+	x = x1 = xs10;
 	y = y_max + pad;
-	y1 = y + pad + 5;
+	y1 = y + pad + ys5;
 
 	fill_frames = 0;
 	monitor_video = 0;
@@ -368,37 +370,37 @@ void RecordGUI::create_objects()
 	if(asset->video_data) {
 		add_subwindow(drop_frames = new RecordGUIDropFrames(this, x, y));
 		add_subwindow(fill_frames = new RecordGUIFillFrames(this, x, y1));
-		x += drop_frames->get_w() + 5;  x1 = x;
+		x += drop_frames->get_w() + xs5;  x1 = x;
 		add_subwindow(monitor_video = new RecordGUIMonitorVideo(this, x, y));
-		x += monitor_video->get_w() + 5;
+		x += monitor_video->get_w() + xs5;
 	}
 
 	if(asset->audio_data) {
 		add_subwindow(monitor_audio = new RecordGUIMonitorAudio(this, x, y));
-		x += monitor_audio->get_w() + 5;
+		x += monitor_audio->get_w() + xs5;
 		add_subwindow(meter_audio = new RecordGUIAudioMeters(this, x, y));
-		x += meter_audio->get_w() + 5;
+		x += meter_audio->get_w() + xs5;
 	}
 
 	add_subwindow(power_off = new RecordGUIPowerOff(this, x1, y1));
-	x1 += power_off->get_w() + 10;
+	x1 += power_off->get_w() + xs10;
 	add_subwindow(commercial_check = new RecordGUICommCheck(this, x1, y1));
 
 // Batches
-	x = 10;
-	y += 5;
+	x = xs10;
+	y += ys5;
 	if( fill_frames )
 		y = y1 + fill_frames->get_h();
 	else if( monitor_audio )
 		y += monitor_audio->get_h();
 
 	int bottom_margin = max(BC_OKButton::calculate_h(),
-		LoadMode::calculate_h(this, mwindow->theme)) + 5;
+		LoadMode::calculate_h(this, mwindow->theme)) + ys5;
 
 
 	add_subwindow(batch_bay = new RecordGUIBatches(this, x, y,
-		get_w() - 20, get_h() - y - bottom_margin - 10));
-	y += batch_bay->get_h() + 5;
+		get_w() - xs20, get_h() - y - bottom_margin - ys10));
+	y += batch_bay->get_h() + ys5;
 	record->record_batches.gui = batch_bay;
 	batch_bay->update_batches(-1);
 
@@ -407,7 +409,7 @@ void RecordGUI::create_objects()
 	load_mode = new LoadMode(mwindow, this,
 		get_w() / 2 - loadmode_w / 2, y, &record->load_mode);
 	load_mode->create_objects();
-	y += load_mode->get_h() + 5;
+	y += load_mode->get_h() + ys5;
 
 	add_subwindow(new RecordGUIOK(this));
 
@@ -463,6 +465,7 @@ int RecordGUI::translation_event()
 
 int RecordGUI::resize_event(int w, int h)
 {
+	int xs20 = xS(20), ys10 = yS(10);
 // Recompute batch list based on previous extents
 	int bottom_margin = mwindow->session->rwindow_h -
 		batch_bay->get_y() -
@@ -476,10 +479,10 @@ int RecordGUI::resize_event(int w, int h)
 	mwindow->theme->draw_rwindow_bg(this);
 
 	int new_h = mwindow->session->rwindow_h - bottom_margin - batch_bay->get_y();
-	if(new_h < 10) new_h = 10;
+	if(new_h < ys10) new_h = ys10;
 	batch_bay->reposition_window(batch_bay->get_x(),
 		batch_bay->get_y(),
-		mwindow->session->rwindow_w - 20,
+		mwindow->session->rwindow_w - xs20,
 		mwindow->session->rwindow_h - bottom_margin - batch_bay->get_y());
 
 	load_mode->reposition_window(mwindow->session->rwindow_w / 2 -
@@ -558,8 +561,8 @@ int RecordGUIBatches::selection_changed()
 
 
 RecordGUISave::RecordGUISave(RecordGUI *gui)
- : BC_Button(10,
-	gui->get_h() - BC_WindowBase::get_resources()->ok_images[0]->get_h() - 10,
+ : BC_Button(xS(10),
+	gui->get_h() - BC_WindowBase::get_resources()->ok_images[0]->get_h() - yS(10),
 	BC_WindowBase::get_resources()->ok_images)
 {
 	set_tooltip(_("Save the recording and quit."));
@@ -1292,7 +1295,7 @@ int RecordGUIModeTextBox::handle_event()
 
 RecordGUIModeListBox::RecordGUIModeListBox(RecordGUIModeMenu *mode_menu)
  : BC_ListBox(mode_menu->textbox->get_x() + mode_menu->textbox->get_w(),
-		mode_menu->textbox->get_y(), 100, 50, LISTBOX_TEXT,
+		mode_menu->textbox->get_y(), xS(100), yS(50), LISTBOX_TEXT,
 		&mode_menu->modes, 0, 0, 1, 0, 1)
 {
 	this->mode_menu = mode_menu;
@@ -1555,7 +1558,7 @@ void RecordGUIFlash::run()
 
 
 RecordGUIDCOffset::RecordGUIDCOffset(MWindow *mwindow, int y)
- : BC_Button(230, y, mwindow->theme->calibrate_data)
+ : BC_Button(xS(230), y, mwindow->theme->calibrate_data)
 {
 }
 
@@ -1569,7 +1572,7 @@ int RecordGUIDCOffset::handle_event()
 int RecordGUIDCOffset::keypress_event() { return 0; }
 
 RecordGUIDCOffsetText::RecordGUIDCOffsetText(char *text, int y, int number)
- : BC_TextBox(30, y+1, 67, 1, text, 0)
+ : BC_TextBox(xS(30), y+yS(1), xS(67), 1, text, 0)
 {
 	this->number = number;
 }
@@ -1584,7 +1587,7 @@ int RecordGUIDCOffsetText::handle_event()
 }
 
 RecordGUIReset::RecordGUIReset(MWindow *mwindow, RecordGUI *gui, int y)
- : BC_Button(400, y, mwindow->theme->over_button)
+ : BC_Button(xS(400), y, mwindow->theme->over_button)
 { this->gui = gui; }
 
 RecordGUIReset::~RecordGUIReset()
@@ -1597,7 +1600,7 @@ int RecordGUIReset::handle_event()
 }
 
 RecordGUIResetTranslation::RecordGUIResetTranslation(MWindow *mwindow, RecordGUI *gui, int y)
- : BC_Button(250, y, mwindow->theme->reset_data)
+ : BC_Button(xS(250), y, mwindow->theme->reset_data)
 {
 	this->gui = gui;
 }

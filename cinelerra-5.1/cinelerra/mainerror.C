@@ -41,18 +41,8 @@ MainError* MainError::main_error = 0;
 
 MainErrorGUI::MainErrorGUI(MWindow *mwindow, MainError *thread, int x, int y)
  : BC_Window(_(PROGRAM_NAME ": Messages"),
-        x,
-        y,
-        mwindow->session->ewindow_w,
-        mwindow->session->ewindow_h,
-        50,
-        50,
-        1,
-        0,
-        1,
-        -1,
-        "",
-        1)
+	x, y, mwindow->session->ewindow_w, mwindow->session->ewindow_h,
+	xS(50), yS(50), 1, 0, 1, -1, "", 1)
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
@@ -67,11 +57,11 @@ void MainErrorGUI::create_objects()
 	lock_window("MainErrorGUI::create_objects");
 	BC_Button *button;
 	add_subwindow(button = new BC_OKButton(this));
-	int x = 10, y = 10;
+	int x = xS(10), y = yS(10);
 	add_subwindow(title = new BC_Title(x, y, _("Message log:")));
-	y += title->get_h() + 5;
+	y += title->get_h() + yS(5);
 	add_subwindow(list = new BC_ListBox(x, y,
-                get_w() - 20, button->get_y() - y - 5,
+                get_w() - xS(20), button->get_y() - y - yS(5),
                 LISTBOX_TEXT,		// Display text list or icons
                 &thread->errors,	// Each column has an ArrayList of BC_ListBoxItems.
                 0,			// Titles for columns.  Set to 0 for no titles
@@ -103,10 +93,6 @@ int MainErrorGUI::resize_event(int w, int h)
 	mwindow->session->ewindow_h = h;
 	return 1;
 }
-
-
-
-
 
 
 MainError::MainError(MWindow *mwindow)
@@ -196,10 +182,4 @@ void MainError::show_error(const char *string)
 	int len = strlen(string);
 	printf("%s%s", string, len>0 && string[len-1] == '\n' ? "" : "\n");
 }
-
-
-
-
-
-
 

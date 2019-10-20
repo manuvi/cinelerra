@@ -156,8 +156,8 @@ WaveAmplitude::WaveAmplitude(WaveEffect *plugin, int x, int y)
  : BC_FSlider(x,
 			y,
 			0,
-			200,
-			200,
+			xS(200),
+			yS(200),
 			(float)0,
 			(float)100,
 			plugin->config.amplitude)
@@ -177,8 +177,8 @@ WavePhase::WavePhase(WaveEffect *plugin, int x, int y)
  : BC_FSlider(x,
 			y,
 			0,
-			200,
-			200,
+			xS(200),
+			yS(200),
 			(float)0,
 			(float)360,
 			plugin->config.phase)
@@ -196,8 +196,8 @@ WaveLength::WaveLength(WaveEffect *plugin, int x, int y)
  : BC_FSlider(x,
 			y,
 			0,
-			200,
-			200,
+			xS(200),
+			yS(200),
 			(float)0,
 			(float)50,
 			plugin->config.wavelength)
@@ -270,7 +270,7 @@ int WaveSliderClr::handle_event()
 
 
 WaveWindow::WaveWindow(WaveEffect *plugin)
- : PluginClientWindow(plugin, 385, 140, 385, 140, 0)
+ : PluginClientWindow(plugin, xS(385), yS(140), xS(385), yS(140), 0)
 {
 	this->plugin = plugin;
 }
@@ -281,36 +281,38 @@ WaveWindow::~WaveWindow()
 
 void WaveWindow::create_objects()
 {
-	int x = 10, y = 10, x1 = 115;
-	int x2 = 0; int clrBtn_w = 50;
-	int defaultBtn_w = 100;
+	int xs10 = xS(10), xs50 = xS(50), xs100 = xS(100), xs115 = xS(115);
+	int ys10 = yS(10), ys30 = yS(30), ys40 = yS(40);
+	int x = xs10, y = ys10, x1 = xs115;
+	int x2 = 0; int clrBtn_w = xs50;
+	int defaultBtn_w = xs100;
 
 //	add_subwindow(new BC_Title(x, y, _("Mode:")));
 //	add_subwindow(smear = new WaveSmear(plugin, this, x1, y));
-//	y += 20;
+//	y += ys20;
 //	add_subwindow(blacken = new WaveBlacken(plugin, this, x1, y));
-//	y += 30;
+//	y += ys30;
 //	add_subwindow(reflective = new WaveReflective(plugin, x1, y));
-//	y += 30;
+//	y += ys30;
 	add_subwindow(new BC_Title(x, y, _("Amplitude:")));
 	add_subwindow(amplitude = new WaveAmplitude(plugin, x1, y));
-	x2 = x1 + amplitude->get_w() + 10;
+	x2 = x1 + amplitude->get_w() + xs10;
 	add_subwindow(amplitudeClr = new WaveSliderClr(plugin, this, x2, y, clrBtn_w, RESET_AMPLITUDE));
 
-	y += 30;
+	y += ys30;
 	add_subwindow(new BC_Title(x, y, _("Phase:")));
 	add_subwindow(phase = new WavePhase(plugin, x1, y));
 	add_subwindow(phaseClr = new WaveSliderClr(plugin, this, x2, y, clrBtn_w, RESET_PHASE));
 
-	y += 30;
+	y += ys30;
 	add_subwindow(new BC_Title(x, y, _("Wavelength:")));
 	add_subwindow(wavelength = new WaveLength(plugin, x1, y));
 	add_subwindow(wavelengthClr = new WaveSliderClr(plugin, this, x2, y, clrBtn_w, RESET_WAVELENGTH));
 
-	y += 40;
+	y += ys40;
 	add_subwindow(reset = new WaveReset(plugin, this, x, y));
 	add_subwindow(default_settings = new WaveDefaultSettings(plugin, this,
-		(385 - 10 - defaultBtn_w), y, defaultBtn_w));
+		(xS(385) - xs10 - defaultBtn_w), y, defaultBtn_w));
 
 	show_window();
 	flush();

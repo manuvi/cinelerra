@@ -401,10 +401,10 @@ void PitchConfig::interpolate(PitchConfig &prev,
 
 PitchWindow::PitchWindow(PitchEffect *plugin)
  : PluginClientWindow(plugin,
-	150,
-	100,
-	150,
-	100,
+	xS(150),
+	yS(100),
+	xS(150),
+	yS(100),
 	0)
 {
 	this->plugin = plugin;
@@ -412,7 +412,7 @@ PitchWindow::PitchWindow(PitchEffect *plugin)
 
 void PitchWindow::create_objects()
 {
-	int x1 = 10, x = 10, y = 10;
+	int x1 = xS(10), x = xS(10), y = yS(10);
 
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x, y, _("Scale:")));
@@ -465,7 +465,7 @@ int PitchScale::handle_event()
 
 
 PitchSize::PitchSize(PitchWindow *window, PitchEffect *plugin, int x, int y)
- : BC_PopupMenu(x, y, 100, "4096", 1)
+ : BC_PopupMenu(x, y, xS(100), "4096", 1)
 {
 	this->plugin = plugin;
 }

@@ -73,7 +73,7 @@ int SWindowCancel::button_press_event()
 
 
 SWindowLoadPath::SWindowLoadPath(SWindowGUI *gui, int x, int y, char *path)
- : BC_TextBox(x, y, 200, 1, path)
+ : BC_TextBox(x, y, xS(200), 1, path)
 {
 	this->sw_gui = gui;
 }
@@ -140,58 +140,58 @@ int SWindowSaveFile::handle_event()
 void SWindowGUI::create_objects()
 {
 	lock_window("SWindowGUI::create_objects");
-	int x = 10, y = 10;
+	int x = xS(10), y = yS(10);
 	BC_Title *title = new BC_Title(x, y, _("Path:"));
 	add_subwindow(title);
-	int x1 = x + title->get_w() + pad, y1 = y;
+	int x1 = x + title->get_w() + xpad, y1 = y;
 	load_path = new SWindowLoadPath(this, x1, y1, script_path);
 	add_subwindow(load_path);
-	x1 += load_path->get_w() + 2*pad;
+	x1 += load_path->get_w() + 2*xpad;
 	add_subwindow(load_file = new SWindowLoadFile(this, x1, y1));
-	x1 += load_file->get_w() + 2*pad;
+	x1 += load_file->get_w() + 2*xpad;
 	add_subwindow(save_file = new SWindowSaveFile(this, x1, y1));
-	y += max(load_path->get_h(), load_file->get_h()) + pad;
-	x1 = x + pad, y1 = y;
+	y += max(load_path->get_h(), load_file->get_h()) + ypad;
+	x1 = x + ypad, y1 = y;
 	BC_Title *title1, *title2;
 	add_subwindow(title1 = new BC_Title(x1, y1, _("File Size:")));
-	y += title1->get_h() + pad;
+	y += title1->get_h() + ypad;
 	int y2 = y;
 	add_subwindow(title2 = new BC_Title(x1, y2, _("Entries:")));
-	int x2 = x1 + max(title1->get_w(), title2->get_w()) + pad;
+	int x2 = x1 + max(title1->get_w(), title2->get_w()) + xpad;
 	add_subwindow(script_filesz = new BC_Title(x2, y1, "0", MEDIUMFONT, YELLOW));
 	add_subwindow(script_entries = new BC_Title(x2, y2, "0", MEDIUMFONT, YELLOW));
-	int x3 = x2 + max(script_entries->get_w()*8, script_filesz->get_w()*8) + pad;
+	int x3 = x2 + max(script_entries->get_w()*8, script_filesz->get_w()*8) + xpad;
 	add_subwindow(title1 = new BC_Title(x3, y1, _("Lines:")));
 	add_subwindow(title2 = new BC_Title(x3, y2, _("Texts:")));
-	int x4 = x3 + max(title1->get_w(), title2->get_w()) + pad;
+	int x4 = x3 + max(title1->get_w(), title2->get_w()) + xpad;
 	add_subwindow(script_lines = new BC_Title(x4, y1, "0", MEDIUMFONT, YELLOW));
 	add_subwindow(script_texts = new BC_Title(x4, y2, "0", MEDIUMFONT, YELLOW));
-	int x5 = x4 + max(script_lines->get_w()*8, script_texts->get_w()*8) + 2*pad;
+	int x5 = x4 + max(script_lines->get_w()*8, script_texts->get_w()*8) + 2*xpad;
 	add_subwindow(prev_script = new ScriptPrev(this, x5, y1));
 	add_subwindow(next_script = new ScriptNext(this, x5, y2));
-	int x6 = x5 + max(prev_script->get_w(), next_script->get_w()) + 2*pad;
+	int x6 = x5 + max(prev_script->get_w(), next_script->get_w()) + 2*xpad;
 	add_subwindow(paste_script = new ScriptPaste(this, x6, y1));
 	add_subwindow(clear_script = new ScriptClear(this, x6, y2));
-	y += max(title1->get_h(), title2->get_h()) + 2*pad;
+	y += max(title1->get_h(), title2->get_h()) + 2*ypad;
 
-	script_position = new ScriptPosition(this, x, y, 100);
+	script_position = new ScriptPosition(this, x, y, xS(100));
 	script_position->create_objects();
-	x1 = x + script_position->get_w() + pad;
-	add_subwindow(script_scroll = new ScriptScroll(this, x1, y, get_w()-x1-pad));
-	y += script_scroll->get_h() + 2*pad;
-	x1 = x + pad;
+	x1 = x + script_position->get_w() + xpad;
+	add_subwindow(script_scroll = new ScriptScroll(this, x1, y, get_w()-x1-xpad));
+	y += script_scroll->get_h() + 2*ypad;
+	x1 = x + xpad;
 	blank_line = new char[2];
 	blank_line[0] = ' ';  blank_line[1] = 0;
 	add_subwindow(script_title = new BC_Title(x1, y, _("Script Text:")));
-	y += script_title->get_h() + pad;
+	y += script_title->get_h() + ypad;
 	int rows = (ok_y - y - BC_Title::calculate_h(this,_("Line Text:")) -
-		4*pad) / text_rowsz - 4;
-	int w1 = get_w() - x1 - pad;
+		4*ypad) / text_rowsz - 4;
+	int w1 = get_w() - x1 - xpad;
 	script_entry = new ScriptEntry(this, x1, y, w1, rows, blank_line);
 	script_entry->create_objects();
-	y += script_entry->get_h() + pad;
+	y += script_entry->get_h() + ypad;
 	add_subwindow(line_title = new BC_Title(x1, y, _("Line Text:")));
-	y += line_title->get_h() + pad;
+	y += line_title->get_h() + ypad;
 	line_entry = new ScriptEntry(this, x1, y, w1, 4);
 	line_entry->create_objects();
 	ok = new SWindowOK(this, ok_x, ok_y);
@@ -236,22 +236,23 @@ void SWindowGUI::load()
 }
 
 SWindowGUI::SWindowGUI(SWindow *swindow, int x, int y, int w, int h)
- : BC_Window(_(PROGRAM_NAME ": Subtitle"), x, y, w, h, 600, 500,
+ : BC_Window(_(PROGRAM_NAME ": Subtitle"), x, y, w, h, xS(600), yS(500),
 	1, 0, 0 , -1, swindow->mwindow->get_cwindow_display())
 {
 	this->swindow = swindow;
-	pad = 8;
+	xpad = xS(8);
+	ypad = yS(8);
 
 	ok = 0;
 	ok_w = BC_OKButton::calculate_w();
 	ok_h = BC_OKButton::calculate_h();
-	ok_x = 10;
-	ok_y = h - ok_h - 10;
+	ok_x = xS(10);
+	ok_y = h - ok_h - yS(10);
 	cancel = 0;
 	cancel_w = BC_CancelButton::calculate_w();
 	cancel_h = BC_CancelButton::calculate_h();
-	cancel_x = w - cancel_w - 10,
-	cancel_y = h - cancel_h - 10;
+	cancel_x = w - cancel_w - xS(10);
+	cancel_y = h - cancel_h - yS(10);
 
 	load_path = 0;
 	load_file = 0;
@@ -305,29 +306,29 @@ int SWindowGUI::resize_event(int w, int h)
 	swindow->mwindow->session->swindow_w = w;
 	swindow->mwindow->session->swindow_h = h;
 
-	ok_x = 10;
-	ok_y = h - ok_h - 10;
+	ok_x = xS(10);
+	ok_y = h - ok_h - yS(10);
 	ok->reposition_window(ok_x, ok_y);
-	cancel_x = w - cancel_w - 10,
-	cancel_y = h - cancel_h - 10;
+	cancel_x = w - cancel_w - xS(10);
+	cancel_y = h - cancel_h - yS(10);
 	cancel->reposition_window(cancel_x, cancel_y);
 
 	int x = script_position->get_x();
 	int y = script_position->get_y();
 	int hh = script_position->get_h();
 	int ww = script_position->get_w();
-	int x1 = x + ww + pad;
-	int w1 = w - x1 - pad;
+	int x1 = x + ww + xpad;
+	int w1 = w - x1 - xpad;
 	script_scroll->reposition_window(x1, y, w1);
-	y += hh + 2*pad;
+	y += hh + 2*ypad;
 	script_title->reposition_window(x, y);
-	y += script_title->get_h() + pad;
-	w1 = w - x - pad;
-	int rows = (ok_y - y - line_title->get_h() - 4*pad) / text_rowsz - 4;
+	y += script_title->get_h() + ypad;
+	w1 = w - x - xpad;
+	int rows = (ok_y - y - line_title->get_h() - 4*ypad) / text_rowsz - 4;
 	script_entry->reposition_window(x, y, w1, rows);
-	y += script_entry->get_h() + 2*pad;
+	y += script_entry->get_h() + 2*ypad;
 	line_title->reposition_window(x, y);
-	y += line_title->get_h() + pad;
+	y += line_title->get_h() + ypad;
 	line_entry->reposition_window(x, y, w1, 4);
 	return 0;
 }
@@ -924,8 +925,8 @@ void SWindow::run()
 		int y = mwindow->session->swindow_y;
 		int w = mwindow->session->swindow_w;
 		int h = mwindow->session->swindow_h;
-		if( w < 600 ) w = 600;
-		if( h < 500 ) h = 500;
+		if( w < xS(600) ) w = xS(600);
+		if( h < yS(500) ) h = yS(500);
 		int scr_x = mwindow->gui->get_screen_x(1, -1);
 		int scr_w = mwindow->gui->get_screen_w(1, -1);
 		if( x < scr_x ) x = scr_x;

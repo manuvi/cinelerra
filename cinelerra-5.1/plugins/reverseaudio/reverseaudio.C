@@ -104,7 +104,7 @@ ReverseAudioConfig::ReverseAudioConfig()
 
 
 ReverseAudioWindow::ReverseAudioWindow(ReverseAudio *plugin)
- : PluginClientWindow(plugin, 265, 60, 265, 60, 0)
+ : PluginClientWindow(plugin, xS(265), yS(60), xS(265), yS(60), 0)
 {
 	this->plugin = plugin;
 }
@@ -115,7 +115,7 @@ ReverseAudioWindow::~ReverseAudioWindow()
 
 void ReverseAudioWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int x = xS(10), y = yS(10);
 
 	add_subwindow(enabled = new ReverseAudioEnabled(plugin,
 		x,

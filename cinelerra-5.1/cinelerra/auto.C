@@ -30,8 +30,8 @@ Auto::Auto()
 	this->autos = 0;
 	position = 0;
 	skip = 0;
-	WIDTH = 10;
-	HEIGHT = 10;
+	WIDTH = xS(10);
+	HEIGHT = yS(10);
 	is_default = 0;
 }
 
@@ -42,8 +42,8 @@ Auto::Auto(EDL *edl, Autos *autos)
 	this->autos = autos;
 	position = 0;
 	skip = 0;
-	WIDTH = 10;
-	HEIGHT = 10;
+	WIDTH = xS(10);
+	HEIGHT = yS(10);
 	is_default = 0;
 }
 

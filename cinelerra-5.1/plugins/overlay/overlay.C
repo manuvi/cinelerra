@@ -184,10 +184,10 @@ const char* OverlayConfig::output_to_text(int output_layer)
 
 OverlayWindow::OverlayWindow(Overlay *plugin)
  : PluginClientWindow(plugin,
-	300,
-	160,
-	300,
-	160,
+	xS(300),
+	yS(160),
+	xS(300),
+	yS(160),
 	0)
 {
 	this->plugin = plugin;
@@ -199,26 +199,28 @@ OverlayWindow::~OverlayWindow()
 
 void OverlayWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int xs5 = xS(5), xs10 = xS(10);
+	int ys10 = yS(10), ys30 = yS(30);
+	int x = xs10, y = ys10;
 
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x, y, _("Mode:")));
 	add_subwindow(mode = new OverlayMode(plugin,
-		x + title->get_w() + 5,
+		x + title->get_w() + xs5,
 		y));
 	mode->create_objects();
 
-	y += 30;
+	y += ys30;
 	add_subwindow(title = new BC_Title(x, y, _("Layer order:")));
 	add_subwindow(direction = new OverlayDirection(plugin,
-		x + title->get_w() + 5,
+		x + title->get_w() + xs5,
 		y));
 	direction->create_objects();
 
-	y += 30;
+	y += ys30;
 	add_subwindow(title = new BC_Title(x, y, _("Output layer:")));
 	add_subwindow(output = new OverlayOutput(plugin,
-		x + title->get_w() + 5,
+		x + title->get_w() + xs5,
 		y));
 	output->create_objects();
 
@@ -233,7 +235,7 @@ void OverlayWindow::create_objects()
 
 
 OverlayMode::OverlayMode(Overlay *plugin, int x, int y)
- : BC_PopupMenu(x, y, 150,
+ : BC_PopupMenu(x, y, xS(150),
 	OverlayConfig::mode_to_text(plugin->config.mode), 1)
 {
 	this->plugin = plugin;
@@ -266,9 +268,7 @@ int OverlayMode::handle_event()
 OverlayDirection::OverlayDirection(Overlay *plugin,
 	int x,
 	int y)
- : BC_PopupMenu(x,
- 	y,
-	150,
+ : BC_PopupMenu(x, y, xS(150),
 	OverlayConfig::direction_to_text(plugin->config.direction),
 	1)
 {
@@ -307,9 +307,7 @@ int OverlayDirection::handle_event()
 OverlayOutput::OverlayOutput(Overlay *plugin,
 	int x,
 	int y)
- : BC_PopupMenu(x,
- 	y,
-	100,
+ : BC_PopupMenu(x, y, xS(100),
 	OverlayConfig::output_to_text(plugin->config.output_layer),
 	1)
 {

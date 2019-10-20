@@ -36,20 +36,15 @@
 
 
 
-Canvas::Canvas(MWindow *mwindow,
-	BC_WindowBase *subwindow,
-	int x,
-	int y,
-	int w,
-	int h,
-	int output_w,
-	int output_h,
+Canvas::Canvas(MWindow *mwindow, BC_WindowBase *subwindow,
+	int x, int y, int w, int h, int output_w, int output_h,
 	int use_scrollbars)
 {
 	reset();
 
-	if(w < 10) w = 10;
-	if(h < 10) h = 10;
+	int xs10 = xS(10), ys10 = yS(10);
+	if(w < xs10) w = xs10;
+	if(h < ys10) h = ys10;
 	this->mwindow = mwindow;
 	this->subwindow = subwindow;
 	this->x = x;

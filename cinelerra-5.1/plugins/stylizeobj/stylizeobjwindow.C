@@ -26,7 +26,7 @@
 #include "theme.h"
 
 StylizeObjWindow::StylizeObjWindow(StylizeObj *plugin)
- : PluginClientWindow(plugin, 320, 160, 320, 160, 0)
+ : PluginClientWindow(plugin, xS(320), yS(160), xS(320), yS(160), 0)
 {
 	this->plugin = plugin; 
 	smoothing = 0;
@@ -43,16 +43,18 @@ StylizeObjWindow::~StylizeObjWindow()
 
 void StylizeObjWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int xs10 = xS(10);
+	int ys10 = yS(10), ys15 = yS(15);
+	int x = xs10, y = ys10;
 	BC_Title *title = new BC_Title(x, y, _("StylizeObj"));
 	add_subwindow(title);
-	y += title->get_h() + 10;
+	y += title->get_h() + ys10;
 	int x1 = x;
 	add_subwindow(title = new BC_Title(x1, y, _("Mode: ")));
-	x1 += title->get_w() + 15;
+	x1 += title->get_w() + ys15;
 	add_subwindow(mode = new StylizeObjMode(this, x1, y, &plugin->config.mode));
 	mode->create_objects();
-	y += mode->get_h() + 10;
+	y += mode->get_h() + ys10;
 	x0 = x;  y0 = y;
 	update_params();
 	show_window(1);
@@ -60,28 +62,29 @@ void StylizeObjWindow::create_objects()
 
 void StylizeObjWindow::update_params()
 {
+	int ys10 = yS(10);
 	int x = x0, y = y0;
 	if( plugin->config.mode == MODE_PENCIL_SKETCH ||
 	    plugin->config.mode == MODE_COLOR_SKETCH ) {
-		int x1 = x + 80;
+		int x1 = x + xS(80);
 		if( !smooth_title )
 			add_subwindow(smooth_title = new BC_Title(x,y,_("Smooth:")));
 		if( !smoothing )
 			add_subwindow(smoothing = new StylizeObjFSlider(this,
-				x1,y,180, 0,100, &plugin->config.smoothing));
-		y += smoothing->get_h() + 10;
+				x1,y,xS(180), 0,xS(100), &plugin->config.smoothing));
+		y += smoothing->get_h() + ys10;
 		if( !edge_title )
 			add_subwindow(edge_title = new BC_Title(x,y,_("Edges:")));
 		if( !edge_strength )
 			add_subwindow(edge_strength = new StylizeObjFSlider(this,
-				x1,y,180, 0,100, &plugin->config.edge_strength));
-		y += edge_strength->get_h() + 10;
+				x1,y,xS(180), 0,xS(100), &plugin->config.edge_strength));
+		y += edge_strength->get_h() + ys10;
 		if( !shade_title )
 			add_subwindow(shade_title = new BC_Title(x,y,_("Shade:")));
 		if( !shade_factor )
 			add_subwindow(shade_factor = new StylizeObjFSlider(this,
-				x1,y,180, 0,100, &plugin->config.shade_factor));
-		//y += shade_factor->get_h() + 10;
+				x1,y,xS(180), 0,xS(100), &plugin->config.shade_factor));
+		//y += shade_factor->get_h() + ys10;
 	}
 	else {
 		delete smooth_title;	smooth_title = 0;
@@ -112,7 +115,7 @@ int StylizeObjModeItem::handle_event()
 }
 
 StylizeObjMode::StylizeObjMode(StylizeObjWindow *win, int x, int y, int *value)
- : BC_PopupMenu(x, y, 150, "", 1)
+ : BC_PopupMenu(x, y, xS(150), "", 1)
 {
 	this->win = win;
 	this->value = value;

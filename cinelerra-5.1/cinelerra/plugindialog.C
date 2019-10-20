@@ -128,16 +128,10 @@ PluginDialog::PluginDialog(MWindow *mwindow,
 	const char *window_title,
 	int x,
 	int y)
- : BC_Window(window_title,
- 	x,
-	y,
+ : BC_Window(window_title, x, y,
 	mwindow->session->plugindialog_w,
 	mwindow->session->plugindialog_h,
-	510,
-	415,
-	1,
-	0,
-	1)
+	xS(510), yS(415), 1, 0, 1)
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
@@ -165,6 +159,8 @@ PluginDialog::~PluginDialog()
 
 void PluginDialog::create_objects()
 {
+	int xs10 = xS(10);
+	int ys10 = yS(10), ys20 = yS(20);
 //	int use_default = 1;
 	mwindow->theme->get_plugindialog_sizes();
 	lock_window("PluginDialog::create_objects");
@@ -204,18 +200,14 @@ void PluginDialog::create_objects()
 		module_data.append(new BC_ListBoxItem(track->title));
 	}
 
-
-
-
-
 // Create widgets
 	add_subwindow(standalone_title = new BC_Title(mwindow->theme->plugindialog_new_x,
-		mwindow->theme->plugindialog_new_y - 20,
+		mwindow->theme->plugindialog_new_y - ys20,
 		_("Plugins:")));
 	int x1 = mwindow->theme->plugindialog_new_x, y1 = mwindow->theme->plugindialog_new_y;
 	int w1 = mwindow->theme->plugindialog_new_w, h1 = mwindow->theme->plugindialog_new_h;
 	add_subwindow(search_text = new PluginDialogSearchText(this, x1, y1, w1));
-	int dy = search_text->get_h() + 10;
+	int dy = search_text->get_h() + ys10;
 	y1 += dy;  h1 -= dy;
 	load_plugin_list(0);
 
@@ -235,7 +227,7 @@ void PluginDialog::create_objects()
 //
 
 	add_subwindow(shared_title = new BC_Title(mwindow->theme->plugindialog_shared_x,
-		mwindow->theme->plugindialog_shared_y - 20,
+		mwindow->theme->plugindialog_shared_y - ys20,
 		_("Shared effects:")));
 	add_subwindow(shared_list = new PluginDialogShared(this,
 		&shared_data,
@@ -256,7 +248,7 @@ void PluginDialog::create_objects()
 //
 
 	add_subwindow(module_title = new BC_Title(mwindow->theme->plugindialog_module_x,
-		mwindow->theme->plugindialog_module_y - 20,
+		mwindow->theme->plugindialog_module_y - ys20,
 		_("Shared tracks:")));
 	add_subwindow(module_list = new PluginDialogModules(this,
 		&module_data,
@@ -286,12 +278,9 @@ void PluginDialog::create_objects()
 
 	if(thread->is_mainmenu)
 		add_subwindow(single_standalone = new PluginDialogSingle(this,
-			mwindow->theme->plugindialog_new_x + BC_OKButton::calculate_w() + 10,
-			mwindow->theme->plugindialog_new_y +
-				mwindow->theme->plugindialog_new_h +
+			mwindow->theme->plugindialog_new_x + BC_OKButton::calculate_w() + xs10,
+			mwindow->theme->plugindialog_new_y + mwindow->theme->plugindialog_new_h +
 				get_text_height(MEDIUMFONT)));
-
-
 
 	add_subwindow(ok_btn = new BC_OKButton(this));
 	add_subwindow(can_btn = new BC_CancelButton(this));
@@ -310,17 +299,17 @@ void PluginDialog::create_objects()
 
 int PluginDialog::resize_event(int w, int h)
 {
+	int ys10 = yS(10), ys20 = yS(20);
 	mwindow->session->plugindialog_w = w;
 	mwindow->session->plugindialog_h = h;
 	mwindow->theme->get_plugindialog_sizes();
 
-
 	standalone_title->reposition_window(mwindow->theme->plugindialog_new_x,
-		mwindow->theme->plugindialog_new_y - 20);
+		mwindow->theme->plugindialog_new_y - ys20);
 	int x1 = mwindow->theme->plugindialog_new_x, y1 = mwindow->theme->plugindialog_new_y;
 	int w1 = mwindow->theme->plugindialog_new_w, h1 = mwindow->theme->plugindialog_new_h;
 	search_text->reposition_window(x1, y1, w1);
-	int dy = search_text->get_h() + 10;
+	int dy = search_text->get_h() + ys10;
 	y1 += dy;  h1 -= dy;
 	standalone_list->reposition_window(x1, y1, w1, h1);
 
@@ -332,7 +321,7 @@ int PluginDialog::resize_event(int w, int h)
 // 			mwindow->theme->plugindialog_newattach_y);
 
 	shared_title->reposition_window(mwindow->theme->plugindialog_shared_x,
-		mwindow->theme->plugindialog_shared_y - 20);
+		mwindow->theme->plugindialog_shared_y - ys20);
 	shared_list->reposition_window(mwindow->theme->plugindialog_shared_x,
 		mwindow->theme->plugindialog_shared_y,
 		mwindow->theme->plugindialog_shared_w,
@@ -349,7 +338,7 @@ int PluginDialog::resize_event(int w, int h)
 
 
 	module_title->reposition_window(mwindow->theme->plugindialog_module_x,
-		mwindow->theme->plugindialog_module_y - 20);
+		mwindow->theme->plugindialog_module_y - ys20);
 	module_list->reposition_window(mwindow->theme->plugindialog_module_x,
 		mwindow->theme->plugindialog_module_y,
 		mwindow->theme->plugindialog_module_w,
@@ -364,7 +353,7 @@ int PluginDialog::resize_event(int w, int h)
 
 	if(single_standalone)
 		single_standalone->reposition_window(
-			mwindow->theme->plugindialog_new_x + BC_OKButton::calculate_w() + 10,
+			mwindow->theme->plugindialog_new_x + BC_OKButton::calculate_w() + ys10,
 			mwindow->theme->plugindialog_new_y + mwindow->theme->plugindialog_new_h +
 				get_text_height(MEDIUMFONT));
 
@@ -500,7 +489,7 @@ int PluginDialogApply::handle_event()
 
 //
 // PluginDialogTextBox::PluginDialogTextBox(PluginDialog *dialog, char *text, int x, int y)
-//  : BC_TextBox(x, y, 200, 1, text)
+//  : BC_TextBox(x, y, xS(200), 1, text)
 // {
 // 	this->dialog = dialog;
 // }
@@ -524,16 +513,6 @@ int PluginDialogApply::handle_event()
 // 	return 1;
 // }
 //
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -599,26 +578,10 @@ int PluginDialogNew::selection_changed()
 // }
 
 
-
-
-
-
-
-
-
-
 PluginDialogShared::PluginDialogShared(PluginDialog *dialog,
 	ArrayList<BC_ListBoxItem*> *shared_data,
-	int x,
-	int y,
-	int w,
-	int h)
- : BC_ListBox(x,
- 	y,
-	w,
-	h,
-	LISTBOX_TEXT,
-	shared_data)
+	int x, int y, int w, int h)
+ : BC_ListBox(x, y, w, h, LISTBOX_TEXT, shared_data)
 {
 	this->dialog = dialog;
 }
@@ -690,16 +653,8 @@ int PluginDialogShared::selection_changed()
 
 PluginDialogModules::PluginDialogModules(PluginDialog *dialog,
 	ArrayList<BC_ListBoxItem*> *module_data,
-	int x,
-	int y,
-	int w,
-	int h)
- : BC_ListBox(x,
- 	y,
-	w,
-	h,
-	LISTBOX_TEXT,
-	module_data)
+	int x, int y, int w, int h)
+ : BC_ListBox(x, y, w, h, LISTBOX_TEXT, module_data)
 {
 	this->dialog = dialog;
 }
@@ -754,9 +709,7 @@ int PluginDialogSearchText::handle_event()
 }
 
 PluginDialogSingle::PluginDialogSingle(PluginDialog *dialog, int x, int y)
- : BC_CheckBox(x,
- 	y,
-	dialog->thread->single_standalone,
+ : BC_CheckBox(x, y, dialog->thread->single_standalone,
 	_("Attach single standalone and share others"))
 {
 	this->dialog = dialog;
@@ -801,16 +754,4 @@ int PluginDialogSingle::handle_event()
 //    return 1;
 // }
 //
-
-
-
-
-
-
-
-
-
-
-
-
 

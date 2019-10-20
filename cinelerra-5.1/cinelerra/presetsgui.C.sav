@@ -415,15 +415,10 @@ PresetsWindow::PresetsWindow(MWindow *mwindow,
 	int y,
 	char *title_string)
  : BC_Window(title_string,
- 	x,
-	y,
+	x, y,
 	mwindow->session->presetdialog_w,
 	mwindow->session->presetdialog_h,
-	320,
-	240,
-	1,
-	0,
-	1)
+	xS(320), yS(240), 1, 0, 1)
 {
 	this->mwindow = mwindow;
 	this->thread = thread;

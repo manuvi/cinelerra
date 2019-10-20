@@ -90,7 +90,7 @@ void BC_Toggle::calculate_extents(BC_WindowBase *gui,
 	*h = frame->get_h();
 	*toggle_x = 0;
 	*toggle_y = 0;
-	*text_x = *w + 5;
+	*text_x = *w + xS(5);
 	*text_y = 0;
 	*text_w = 0;
 	*text_h = 0;

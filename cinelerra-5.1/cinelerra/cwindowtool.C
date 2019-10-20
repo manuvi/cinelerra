@@ -263,20 +263,10 @@ void CWindowTool::update_values()
 
 
 CWindowToolGUI::CWindowToolGUI(MWindow *mwindow,
-	CWindowTool *thread,
-	const char *title,
-	int w,
-	int h)
+	CWindowTool *thread, const char *title, int w, int h)
  : BC_Window(title,
- 	mwindow->session->ctool_x,
-	mwindow->session->ctool_y,
-	w,
-	h,
-	w,
-	h,
-	0,
-	0,
-	1)
+		mwindow->session->ctool_x, mwindow->session->ctool_y,
+		w, h, w, h, 0, 0, 1)
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
@@ -354,14 +344,14 @@ void CWindowToolGUI::draw_preview(int changed_edl)
 
 
 CWindowCoord::CWindowCoord(CWindowToolGUI *gui, int x, int y, float value, int log_increment = 0)
- : BC_TumbleTextBox(gui, (float)value, (float)-65536, (float)65536, x, y, 70, 3)
+ : BC_TumbleTextBox(gui, (float)value, (float)-65536, (float)65536, x, y, xS(70), 3)
 {
 	this->gui = gui;
 	set_log_floatincrement(log_increment);
 }
 
 CWindowCoord::CWindowCoord(CWindowToolGUI *gui, int x, int y, int value)
- : BC_TumbleTextBox(gui, (int64_t)value, (int64_t)-65536, (int64_t)65536, x, y, 70)
+ : BC_TumbleTextBox(gui, (int64_t)value, (int64_t)-65536, (int64_t)65536, x, y, xS(70))
 {
 	this->gui = gui;
 }
@@ -404,11 +394,11 @@ const char *CWindowCropOpMode::crop_ops[] = {
 
 CWindowCropOpMode::CWindowCropOpMode(MWindow *mwindow, CWindowCropGUI *crop_gui,
 			int mode, int x, int y)
- : BC_PopupMenu(x, y, 140, _(crop_ops[mode]), 1)
+ : BC_PopupMenu(x, y, xS(140), _(crop_ops[mode]), 1)
 {
-        this->mwindow = mwindow;
-        this->crop_gui = crop_gui;
-        this->mode = mode;
+	this->mwindow = mwindow;
+	this->crop_gui = crop_gui;
+	this->mode = mode;
 }
 CWindowCropOpMode::~CWindowCropOpMode()
 {
@@ -446,11 +436,7 @@ int CWindowCropOpItem::handle_event()
 
 
 CWindowCropGUI::CWindowCropGUI(MWindow *mwindow, CWindowTool *thread)
- : CWindowToolGUI(mwindow,
- 	thread,
-	_(PROGRAM_NAME ": Crop"),
-	330,
-	100)
+ : CWindowToolGUI(mwindow, thread, _(PROGRAM_NAME ": Crop"), xS(330), yS(100))
 {
 }
 
@@ -461,13 +447,15 @@ CWindowCropGUI::~CWindowCropGUI()
 
 void CWindowCropGUI::create_objects()
 {
-	int x = 10, y = 10;
+	int xs5 = xS(5), xs10 = xS(10);
+	int ys5 = yS(5), ys10 = yS(10);
+	int x = xs10, y = ys10;
 	BC_Title *title;
 
 	lock_window("CWindowCropGUI::create_objects");
 	int column1 = 0;
 	int pad = MAX(BC_TextBox::calculate_h(this, MEDIUMFONT, 1, 1),
-		BC_Title::calculate_h(this, "X")) + 5;
+		BC_Title::calculate_h(this, "X")) + ys5;
 	add_subwindow(title = new BC_Title(x, y, "X1:"));
 	column1 = MAX(column1, title->get_w());
 	y += pad;
@@ -476,8 +464,8 @@ void CWindowCropGUI::create_objects()
 	y += pad;
 	add_subwindow(new CWindowCropApply(mwindow, this, x, y));
 
-	x += column1 + 5;
-	y = 10;
+	x += column1 + xs5;
+	y = ys10;
 	x1 = new CWindowCoord(thread->tool_gui, x, y,
 		mwindow->edl->session->crop_x1);
 	x1->create_objects();
@@ -489,8 +477,8 @@ void CWindowCropGUI::create_objects()
 	width->set_boundaries((int64_t)1, (int64_t)65536);
 
 
-	x += x1->get_w() + 10;
-	y = 10;
+	x += x1->get_w() + xs10;
+	y = ys10;
 	int column2 = 0;
 	add_subwindow(title = new BC_Title(x, y, "Y1:"));
 	column2 = MAX(column2, title->get_w());
@@ -499,8 +487,8 @@ void CWindowCropGUI::create_objects()
 	column2 = MAX(column2, title->get_w());
 	y += pad;
 
-	y = 10;
-	x += column2 + 5;
+	y = ys10;
+	x += column2 + xs5;
 	y1 = new CWindowCoord(thread->tool_gui, x, y,
 		mwindow->edl->session->crop_y1);
 	y1->create_objects();
@@ -539,10 +527,10 @@ void CWindowCropGUI::handle_event()
 			mwindow->edl->session->crop_y1;
 		mwindow->edl->session->crop_y1 = atol(y1->get_text());
 	}
- 	mwindow->edl->session->crop_x2 = atol(width->get_text()) +
- 		mwindow->edl->session->crop_x1;
- 	mwindow->edl->session->crop_y2 = atol(height->get_text()) +
- 		mwindow->edl->session->crop_y1;
+	mwindow->edl->session->crop_x2 = atol(width->get_text()) +
+		mwindow->edl->session->crop_x1;
+	mwindow->edl->session->crop_y2 = atol(height->get_text()) +
+		mwindow->edl->session->crop_y1;
 	update();
 	mwindow->cwindow->gui->canvas->redraw(1);
 }
@@ -559,7 +547,7 @@ void CWindowCropGUI::update()
 
 
 CWindowEyedropGUI::CWindowEyedropGUI(MWindow *mwindow, CWindowTool *thread)
- : CWindowToolGUI(mwindow, thread, _(PROGRAM_NAME ": Color"), 220, 290)
+ : CWindowToolGUI(mwindow, thread, _(PROGRAM_NAME ": Color"), xS(220), yS(290))
 {
 }
 
@@ -569,10 +557,11 @@ CWindowEyedropGUI::~CWindowEyedropGUI()
 
 void CWindowEyedropGUI::create_objects()
 {
+	int xs10 = xS(10), ys10 = yS(10);
 	int margin = mwindow->theme->widget_border;
-	int x = 10 + margin;
-	int y = 10 + margin;
-	int x2 = 70, x3 = x2 + 60;
+	int x = xs10 + margin;
+	int y = ys10 + margin;
+	int x2 = xS(70), x3 = x2 + xS(60);
 	lock_window("CWindowEyedropGUI::create_objects");
 	BC_Title *title0, *title1, *title2, *title3, *title4, *title5, *title6, *title7;
 	add_subwindow(title0 = new BC_Title(x, y,_("X,Y:")));
@@ -611,7 +600,7 @@ void CWindowEyedropGUI::create_objects()
 	add_subwindow(yuv_hex = new BC_Title(x3, this->y->get_y(), "#000000"));
 
 	y = title6->get_y() + this->v->get_h() + 2*margin;
-	add_subwindow(sample = new BC_SubWindow(x, y, 50, 50));
+	add_subwindow(sample = new BC_SubWindow(x, y, xS(50), yS(50)));
 	y += sample->get_h() + margin;
 	add_subwindow(use_max = new CWindowEyedropCheckBox(mwindow, this, x, y));
 	update();
@@ -789,7 +778,7 @@ int CWindowCurveToggle::handle_event()
 }
 
 
-CWindowEyedropCheckBox::CWindowEyedropCheckBox(MWindow *mwindow, 
+CWindowEyedropCheckBox::CWindowEyedropCheckBox(MWindow *mwindow,
 	CWindowEyedropGUI *gui, int x, int y)
  : BC_CheckBox(x, y, mwindow->edl->local_session->use_max, _("Use maximum"))
 {
@@ -807,11 +796,7 @@ int CWindowEyedropCheckBox::handle_event()
 
 
 CWindowCameraGUI::CWindowCameraGUI(MWindow *mwindow, CWindowTool *thread)
- : CWindowToolGUI(mwindow,
- 	thread,
-	_(PROGRAM_NAME ": Camera"),
-	170,
-	170)
+ : CWindowToolGUI(mwindow, thread, _(PROGRAM_NAME ": Camera"), xS(170), yS(170))
 {
 }
 CWindowCameraGUI::~CWindowCameraGUI()
@@ -820,7 +805,9 @@ CWindowCameraGUI::~CWindowCameraGUI()
 
 void CWindowCameraGUI::create_objects()
 {
-	int x = 10, y = 10, x1;
+	int xs10 = xS(10), xs15 = xS(15);
+	int ys10 = yS(10), ys30 = yS(30);
+	int x = xs10, y = ys10, x1;
 	Track *track = mwindow->cwindow->calculate_affected_track();
 	FloatAuto *x_auto = 0, *y_auto = 0, *z_auto = 0;
 	BC_Title *title;
@@ -839,15 +826,15 @@ void CWindowCameraGUI::create_objects()
 	this->x->create_objects();
 
 
-	y += 30;
-	x = 10;
+	y += ys30;
+	x = xs10;
 	add_subwindow(title = new BC_Title(x, y, "Y:"));
 	x += title->get_w();
 	this->y = new CWindowCoord(this, x, y,
 		y_auto ? y_auto->get_value() : (float)0);
 	this->y->create_objects();
-	y += 30;
-	x = 10;
+	y += ys30;
+	x = xs10;
 	add_subwindow(title = new BC_Title(x, y, "Z:"));
 	x += title->get_w();
 	this->z = new CWindowCoord(this, x, y,
@@ -855,29 +842,29 @@ void CWindowCameraGUI::create_objects()
 	this->z->create_objects();
 	this->z->set_increment(0.01);
 
-	y += 30;
-	x1 = 10;
+	y += ys30;
+	x1 = xs10;
 	add_subwindow(button = new CWindowCameraLeft(mwindow, this, x1, y));
 	x1 += button->get_w();
 	add_subwindow(button = new CWindowCameraCenter(mwindow, this, x1, y));
 	x1 += button->get_w();
 	add_subwindow(button = new CWindowCameraRight(mwindow, this, x1, y));
 // additional Buttons to control the curve mode of the "current" keyframe
-	x1 += button->get_w() + 15;
+	x1 += button->get_w() + xs15;
 	add_subwindow(this->t_smooth = new CWindowCurveToggle(Camera_Crv_Smooth, mwindow, this, x1, y));
-	x1 += button->get_w() + 10;
+	x1 += button->get_w() + xs10;
 	add_subwindow(this->t_linear = new CWindowCurveToggle(Camera_Crv_Linear, mwindow, this, x1, y));
 
 	y += button->get_h();
-	x1 = 10;
+	x1 = xs10;
 	add_subwindow(button = new CWindowCameraTop(mwindow, this, x1, y));
 	x1 += button->get_w();
 	add_subwindow(button = new CWindowCameraMiddle(mwindow, this, x1, y));
 	x1 += button->get_w();
 	add_subwindow(button = new CWindowCameraBottom(mwindow, this, x1, y));
-	x1 += button->get_w() + 15;
+	x1 += button->get_w() + xs15;
 	add_subwindow(this->add_keyframe = new CWindowCameraAddKeyframe(mwindow, this, x1, y));
-	x1 += button->get_w() + 10;
+	x1 += button->get_w() + xs10;
 	add_subwindow(this->reset = new CWindowCameraReset(mwindow, this, x1, y));
 
 // fill in current auto keyframe values, set toggle states.
@@ -897,8 +884,7 @@ void CWindowCameraGUI::handle_event()
 		if(event_caller == x)
 		{
 			x_auto = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(
-				track->automation->autos[AUTOMATION_CAMERA_X],
-				1);
+				track->automation->autos[AUTOMATION_CAMERA_X], 1);
 			if(x_auto)
 			{
 				x_auto->set_value(atof(x->get_text()));
@@ -910,8 +896,7 @@ void CWindowCameraGUI::handle_event()
 		if(event_caller == y)
 		{
 			y_auto = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(
-				track->automation->autos[AUTOMATION_CAMERA_Y],
-				1);
+				track->automation->autos[AUTOMATION_CAMERA_Y], 1);
 			if(y_auto)
 			{
 				y_auto->set_value(atof(y->get_text()));
@@ -923,8 +908,7 @@ void CWindowCameraGUI::handle_event()
 		if(event_caller == z)
 		{
 			z_auto = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(
-				track->automation->autos[AUTOMATION_CAMERA_Z],
-				1);
+				track->automation->autos[AUTOMATION_CAMERA_Z], 1);
 			if(z_auto)
 			{
 				float zoom = atof(z->get_text());
@@ -1003,8 +987,7 @@ int CWindowCameraLeft::handle_event()
 		int w = 0, h = 0;
 		track->get_source_dimensions(
 			mwindow->edl->local_session->get_selectionstart(1),
-			w,
-			h);
+			w, h);
 
 		if(w && h)
 		{
@@ -1035,8 +1018,7 @@ int CWindowCameraCenter::handle_event()
 	Track *track = mwindow->cwindow->calculate_affected_track();
 	if(track)
 		x_auto = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(
-			track->automation->autos[AUTOMATION_CAMERA_X],
-			1);
+			track->automation->autos[AUTOMATION_CAMERA_X], 1);
 
 	if(x_auto)
 	{
@@ -1073,8 +1055,7 @@ int CWindowCameraRight::handle_event()
 		int w = 0, h = 0;
 		track->get_source_dimensions(
 			mwindow->edl->local_session->get_selectionstart(1),
-			w,
-			h);
+			w, h);
 
 		if(w && h)
 		{
@@ -1113,8 +1094,7 @@ int CWindowCameraTop::handle_event()
 		int w = 0, h = 0;
 		track->get_source_dimensions(
 			mwindow->edl->local_session->get_selectionstart(1),
-			w,
-			h);
+			w, h);
 
 		if(w && h)
 		{
@@ -1181,8 +1161,7 @@ int CWindowCameraBottom::handle_event()
 		int w = 0, h = 0;
 		track->get_source_dimensions(
 			mwindow->edl->local_session->get_selectionstart(1),
-			w,
-			h);
+			w, h);
 
 		if(w && h)
 		{
@@ -1228,11 +1207,7 @@ int CWindowCameraReset::handle_event()
 
 
 CWindowProjectorGUI::CWindowProjectorGUI(MWindow *mwindow, CWindowTool *thread)
- : CWindowToolGUI(mwindow,
- 	thread,
-	_(PROGRAM_NAME ": Projector"),
-	170,
-	170)
+ : CWindowToolGUI(mwindow, thread, _(PROGRAM_NAME ": Projector"), xS(170), yS(170))
 {
 }
 CWindowProjectorGUI::~CWindowProjectorGUI()
@@ -1240,7 +1215,9 @@ CWindowProjectorGUI::~CWindowProjectorGUI()
 }
 void CWindowProjectorGUI::create_objects()
 {
-	int x = 10, y = 10, x1;
+	int xs10 = xS(10), xs15 = xS(15);
+	int ys30 = yS(30);
+	int x = xs10, y = yS(10);
 	Track *track = mwindow->cwindow->calculate_affected_track();
 	FloatAuto *x_auto = 0;
 	FloatAuto *y_auto = 0;
@@ -1259,15 +1236,15 @@ void CWindowProjectorGUI::create_objects()
 	this->x = new CWindowCoord(this, x, y,
 		x_auto ? x_auto->get_value() : (float)0);
 	this->x->create_objects();
-	y += 30;
-	x = 10;
+	y += ys30;
+	x = xs10;
 	add_subwindow(title = new BC_Title(x, y, "Y:"));
 	x += title->get_w();
 	this->y = new CWindowCoord(this, x, y,
 		y_auto ? y_auto->get_value() : (float)0);
 	this->y->create_objects();
-	y += 30;
-	x = 10;
+	y += ys30;
+	x = xs10;
 	add_subwindow(title = new BC_Title(x, y, "Z:"));
 	x += title->get_w();
 	this->z = new CWindowCoord(this, x, y,
@@ -1275,29 +1252,29 @@ void CWindowProjectorGUI::create_objects()
 	this->z->create_objects();
 	this->z->set_increment(0.01);
 
-	y += 30;
-	x1 = 10;
+	y += ys30;
+	int x1 = xs10;
 	add_subwindow(button = new CWindowProjectorLeft(mwindow, this, x1, y));
 	x1 += button->get_w();
 	add_subwindow(button = new CWindowProjectorCenter(mwindow, this, x1, y));
 	x1 += button->get_w();
 	add_subwindow(button = new CWindowProjectorRight(mwindow, this, x1, y));
 // additional Buttons to control the curve mode of the "current" keyframe
-	x1 += button->get_w() + 15;
+	x1 += button->get_w() + xs15;
 	add_subwindow(this->t_smooth = new CWindowCurveToggle(Projector_Crv_Smooth, mwindow, this, x1, y));
-	x1 += button->get_w() + 10;
+	x1 += button->get_w() + xs10;
 	add_subwindow(this->t_linear = new CWindowCurveToggle(Projector_Crv_Linear, mwindow, this, x1, y));
 
 	y += button->get_h();
-	x1 = 10;
+	x1 = xs10;
 	add_subwindow(button = new CWindowProjectorTop(mwindow, this, x1, y));
 	x1 += button->get_w();
 	add_subwindow(button = new CWindowProjectorMiddle(mwindow, this, x1, y));
 	x1 += button->get_w();
 	add_subwindow(button = new CWindowProjectorBottom(mwindow, this, x1, y));
-	x1 += button->get_w() + 15;
+	x1 += button->get_w() + xs15;
 	add_subwindow(this->add_keyframe = new CWindowProjectorAddKeyframe(mwindow, this, x1, y));
-	x1 += button->get_w() + 10;
+	x1 += button->get_w() + xs10;
 	add_subwindow(this->reset = new CWindowProjectorReset(mwindow, this, x1, y));
 
 // fill in current auto keyframe values, set toggle states.
@@ -1318,8 +1295,7 @@ void CWindowProjectorGUI::handle_event()
 		if(event_caller == x)
 		{
 			x_auto = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(
-				track->automation->autos[AUTOMATION_PROJECTOR_X],
-				1);
+				track->automation->autos[AUTOMATION_PROJECTOR_X], 1);
 			if(x_auto)
 			{
 				x_auto->set_value(atof(x->get_text()));
@@ -1331,8 +1307,7 @@ void CWindowProjectorGUI::handle_event()
 		if(event_caller == y)
 		{
 			y_auto = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(
-				track->automation->autos[AUTOMATION_PROJECTOR_Y],
-				1);
+				track->automation->autos[AUTOMATION_PROJECTOR_Y], 1);
 			if(y_auto)
 			{
 				y_auto->set_value(atof(y->get_text()));
@@ -1344,8 +1319,7 @@ void CWindowProjectorGUI::handle_event()
 		if(event_caller == z)
 		{
 			z_auto = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(
-				track->automation->autos[AUTOMATION_PROJECTOR_Z],
-				1);
+				track->automation->autos[AUTOMATION_PROJECTOR_Z], 1);
 			if(z_auto)
 			{
 				float zoom = atof(z->get_text());
@@ -1440,8 +1414,7 @@ int CWindowProjectorCenter::handle_event()
 	Track *track = mwindow->cwindow->calculate_affected_track();
 	if(track)
 		x_auto = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(
-			track->automation->autos[AUTOMATION_PROJECTOR_X],
-			1);
+			track->automation->autos[AUTOMATION_PROJECTOR_X], 1);
 
 	if(x_auto)
 	{
@@ -1617,7 +1590,7 @@ int CWindowToolGUI::press(void (CWindowCanvas::*fn)())
 
 CWindowMaskOnTrack::CWindowMaskOnTrack(MWindow *mwindow, CWindowMaskGUI *gui,
 		int x, int y, int w, const char *text)
- : BC_PopupTextBox(gui, 0, text, x, y, w, 120)
+ : BC_PopupTextBox(gui, 0, text, x, y, w, yS(120))
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
@@ -1723,7 +1696,7 @@ int CWindowMaskTrackTumbler::do_event(int dir)
 
 CWindowMaskName::CWindowMaskName(MWindow *mwindow, CWindowMaskGUI *gui,
 		int x, int y, const char *text)
- : BC_PopupTextBox(gui, 0, text, x, y, 100, 160)
+ : BC_PopupTextBox(gui, 0, text, x, y, xS(100), yS(160))
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
@@ -2055,7 +2028,7 @@ CWindowMaskAffectedPoint::CWindowMaskAffectedPoint(MWindow *mwindow,
 	CWindowMaskGUI *gui, int x, int y)
  : BC_TumbleTextBox(gui,
 		(int64_t)mwindow->cwindow->gui->affected_point,
-		(int64_t)0, INT64_MAX, x, y, 70)
+		(int64_t)0, INT64_MAX, x, y, xS(70))
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
@@ -2205,7 +2178,7 @@ int CWindowMaskDrawBoundary::handle_event()
 
 
 CWindowMaskFeather::CWindowMaskFeather(MWindow *mwindow, CWindowMaskGUI *gui, int x, int y)
- : BC_TumbleTextBox(gui, 0, INT_MIN, INT_MAX, x, y, 64, 2)
+ : BC_TumbleTextBox(gui, 0, INT_MIN, INT_MAX, x, y, xS(64), 2)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
@@ -2336,7 +2309,7 @@ int CWindowMaskFeatherSlider::update(int r, float v, float mn, float mx)
 }
 
 CWindowMaskFade::CWindowMaskFade(MWindow *mwindow, CWindowMaskGUI *gui, int x, int y)
- : BC_TumbleTextBox(gui, 0, -100.f, 100.f, x, y, 64, 2)
+ : BC_TumbleTextBox(gui, 0, -100.f, 100.f, x, y, xS(64), 2)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
@@ -2643,7 +2616,7 @@ int CWindowMaskGangFeather::handle_event()
 
 CWindowMaskGUI::CWindowMaskGUI(MWindow *mwindow, CWindowTool *thread)
  : CWindowToolGUI(mwindow, thread,
-	_(PROGRAM_NAME ": Mask"), 440, 700)
+	_(PROGRAM_NAME ": Mask"), xS(440), yS(700))
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
@@ -2669,24 +2642,28 @@ CWindowMaskGUI::~CWindowMaskGUI()
 
 void CWindowMaskGUI::create_objects()
 {
+	int t[SUBMASKS];
 	Theme *theme = mwindow->theme;
-	int x = 10, y = 10, margin = theme->widget_border, t[SUBMASKS];
+	int xs10 = xS(10), ys10 = yS(10);
+	int x = xs10, y = ys10;
+	int margin = theme->widget_border;
 	int clr_w = CWindowMaskClrMask::calculate_w(mwindow);
 	int clr_x = get_w()-x - clr_w;
 
 	lock_window("CWindowMaskGUI::create_objects");
 	BC_TitleBar *title_bar;
-	add_subwindow(title_bar = new BC_TitleBar(x, y, get_w()-2*x, 20, 10, _("Masks on Track")));
+	add_subwindow(title_bar = new BC_TitleBar(x, y, get_w()-2*x, xS(20), xS(10),
+			_("Masks on Track")));
 	y += title_bar->get_h() + margin;
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x,y, _("Track:")));
-	int x1 = x + 90, ww = clr_x-2*margin - x1;
+	int x1 = x + xS(90), ww = clr_x-2*margin - x1;
 	for( int i=0,n=sizeof(t)/sizeof(t[0]); i<n; ++i ) t[i] = x1+(i*ww)/n;
 	int del_x = t[5];
 	Track *track = mwindow->cwindow->calculate_affected_track();
 	const char *text = track ? track->title : "";
 	mwindow->cwindow->mask_track_id = track ? track->get_id() : -1;
-	mask_on_track = new CWindowMaskOnTrack(mwindow, this, x1, y, 100, text);
+	mask_on_track = new CWindowMaskOnTrack(mwindow, this, x1, y, xS(100), text);
 	mask_on_track->create_objects();
 	mask_on_track->set_tooltip(_("Video track"));
 	int x2 = x1 + mask_on_track->get_w();
@@ -2694,7 +2671,8 @@ void CWindowMaskGUI::create_objects()
 	mwindow->edl->local_session->solo_track_id = -1;
 	add_subwindow(mask_solo_track = new CWindowMaskSoloTrack(mwindow, this, del_x, y, 0));
 	y += mask_on_track->get_h() + margin;
-	add_subwindow(title_bar = new BC_TitleBar(x, y, get_w()-2*x, 20, 10, _("Masks")));
+	add_subwindow(title_bar = new BC_TitleBar(x, y, get_w()-2*x, xS(20), xS(10),
+			_("Masks")));
 	y += title_bar->get_h() + margin;
 	add_subwindow(title = new BC_Title(x, y, _("Mask:")));
 	mask_name = new CWindowMaskName(mwindow, this, x1, y, "");
@@ -2731,7 +2709,8 @@ void CWindowMaskGUI::create_objects()
 	}
 	add_subwindow(mask_unclr = new CWindowMaskUnclear(mwindow, this, clr_x, y));
 	y += mask_enables[0]->get_h() + 2*margin;
-	add_subwindow(title_bar = new BC_TitleBar(x, y, get_w()-2*x, 20, 10, _("Preset Shapes")));
+	add_subwindow(title_bar = new BC_TitleBar(x, y, get_w()-2*x, xS(20), xS(10),
+			_("Preset Shapes")));
 	y += title_bar->get_h() + margin;
 	add_subwindow(mask_shape_sqr = new CWindowMaskShape(mwindow, this,
 		"mask_prst_sqr_images", MASK_SHAPE_SQUARE, t[0], y, _("Square")));
@@ -2742,14 +2721,15 @@ void CWindowMaskGUI::create_objects()
 	add_subwindow(mask_shape_ovl = new CWindowMaskShape(mwindow, this,
 		"mask_prst_ovl_images", MASK_SHAPE_OVAL, t[3], y, _("Oval")));
 	add_subwindow(mask_load_list = new CWindowMaskLoadList(mwindow, this));
-	add_subwindow(mask_load = new CWindowMaskLoad(mwindow, this, t[5], y, 80));
-	add_subwindow(mask_save = new CWindowMaskSave(mwindow, this, t[6], y, 80));
-	add_subwindow(mask_delete = new CWindowMaskDelete(mwindow, this, t[7], y, 80));
+	add_subwindow(mask_load = new CWindowMaskLoad(mwindow, this, t[5], y, xS(80)));
+	add_subwindow(mask_save = new CWindowMaskSave(mwindow, this, t[6], y, xS(80)));
+	add_subwindow(mask_delete = new CWindowMaskDelete(mwindow, this, t[7], y, xS(80)));
 	y += mask_load->get_h() + 2*margin;
-	add_subwindow(title_bar = new BC_TitleBar(x, y, get_w()-2*x, 20, 10, _("Position & Scale")));
+	add_subwindow(title_bar = new BC_TitleBar(x, y, get_w()-2*x, xS(20), xS(10),
+			_("Position & Scale")));
 	y += title_bar->get_h() + 2*margin;
-	add_subwindow(mask_center = new CWindowMaskCenter(mwindow, this, t[0], y, 80));
-	add_subwindow(mask_normal = new CWindowMaskNormal(mwindow, this, t[1], y, 80));
+	add_subwindow(mask_center = new CWindowMaskCenter(mwindow, this, t[0], y, xS(80)));
+	add_subwindow(mask_normal = new CWindowMaskNormal(mwindow, this, t[1], y, xS(80)));
 
 	add_subwindow(mask_scale_x = new CWindowMaskScaleXY(mwindow, this,
 		t[5], y, theme->get_image_set("mask_scale_x"), 0, MASK_SCALE_X, _("xlate/scale x")));
@@ -2758,7 +2738,8 @@ void CWindowMaskGUI::create_objects()
 	add_subwindow(mask_scale_xy = new CWindowMaskScaleXY(mwindow, this,
 		t[7], y, theme->get_image_set("mask_scale_xy"), 1, MASK_SCALE_XY, _("xlate/scale xy")));
 	y += mask_center->get_h() + 2*margin;
-	add_subwindow(title_bar = new BC_TitleBar(x, y, get_w()-2*x, 20, 10, _("Fade & Feather")));
+	add_subwindow(title_bar = new BC_TitleBar(x, y, get_w()-2*x, xS(20), xS(10),
+			_("Fade & Feather")));
 	y += title_bar->get_h() + 2*margin;
 
 	add_subwindow(title = new BC_Title(x, y, _("Fade:")));
@@ -2777,7 +2758,8 @@ void CWindowMaskGUI::create_objects()
 	add_subwindow(feather_slider);
 	add_subwindow(gang_feather = new CWindowMaskGangFeather(mwindow, this, clr_x, y));
 	y += feather->get_h() + 2*margin;
-	add_subwindow(title_bar = new BC_TitleBar(x, y, get_w()-2*x, 20, 10, _("Mask Points")));
+	add_subwindow(title_bar = new BC_TitleBar(x, y, get_w()-2*x, xS(20), xS(10),
+			_("Mask Points")));
 	y += title_bar->get_h() + margin;
 
 	add_subwindow(title = new BC_Title(x, y, _("Point:")));
@@ -2811,7 +2793,8 @@ void CWindowMaskGUI::create_objects()
 		_("smooth all"), -1, 1, t[4], y, "mask_all_smooth_images"));
 	add_subwindow(draw_boundary = new CWindowMaskDrawBoundary(mwindow, this, del_x, y));
 	y += this->y->get_h() + 2*margin;
-	add_subwindow(title_bar = new BC_TitleBar(x, y, get_w()-2*x, 20, 10, _("Pivot Point")));
+	add_subwindow(title_bar = new BC_TitleBar(x, y, get_w()-2*x, xS(20), xS(10),
+			_("Pivot Point")));
 	y += title_bar->get_h() + margin;
 
 	add_subwindow(title = new BC_Title(x, y, "X:"));
@@ -2828,9 +2811,9 @@ void CWindowMaskGUI::create_objects()
 	y += focus_y->get_h() + 2*margin;
 	add_subwindow(bar = new BC_Bar(x, y, get_w()-2*x));
 	y += bar->get_h() + margin;
-	add_subwindow(this->apply_before_plugins = new CWindowMaskBeforePlugins(this, 10, y));
+	add_subwindow(this->apply_before_plugins = new CWindowMaskBeforePlugins(this, x, y));
 	y += this->apply_before_plugins->get_h();
-	add_subwindow(this->disable_opengl_masking = new CWindowDisableOpenGLMasking(this, 10, y));
+	add_subwindow(this->disable_opengl_masking = new CWindowDisableOpenGLMasking(this, x, y));
 	add_subwindow(help = new CWindowMaskHelp(mwindow, this, del_x, y));
 	y += this->disable_opengl_masking->get_h() + 2*margin;
 	help_y = y;
@@ -3317,7 +3300,7 @@ int CWindowMaskLoad::handle_event()
 	gui->mask_load_list->create_objects();
 	int px, py;
 	get_abs_cursor(px, py);
-	return gui->mask_load_list->activate(px, py, 120,160);
+	return gui->mask_load_list->activate(px, py, xS(120),yS(160));
 }
 
 
@@ -3399,24 +3382,26 @@ void CWindowMaskPresetDialog::start_dialog(int sx, int sy, MaskAuto *keyframe)
 
 CWindowMaskPresetGUI::CWindowMaskPresetGUI(CWindowMaskPresetDialog *preset_dialog,
 			int x, int y, const char *title)
- : BC_Window(title, x, y, 320, 100, 320, 100, 0, 0, 1)
+ : BC_Window(title, x, y, xS(320), yS(100), xS(320), yS(100), 0, 0, 1)
 {
 	this->preset_dialog = preset_dialog;
 }
 
 void CWindowMaskPresetGUI::create_objects()
 {
-	int x = 10, y = 10, pad = 8;
+	int xs8 = xS(8), xs10 = xS(10);
+	int ys10 = yS(10);
+	int x = xs10, y = ys10;
 	lock_window("CWindowMaskPresetGUI::create_objects");
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x, y,
 		preset_dialog->keyframe ? _("Save mask:") : _("Delete mask:")));
-	int x1 = x + title->get_w() + pad;
-	int x2 = get_w() - x - pad - x1 -
+	int x1 = x + title->get_w() + xs8;
+	int x2 = get_w() - x - xs8 - x1 -
 		BC_WindowBase::get_resources()->listbox_button[0]->get_w();
 	CWindowMaskGUI *gui = preset_dialog->gui;
 	preset_text = new CWindowMaskPresetText(this,
-		x1, y, x2, 120, gui->mask_name->get_text());
+		x1, y, x2, yS(120), gui->mask_name->get_text());
 	preset_text->create_objects();
 	preset_text->set_tooltip(_("Mask name"));
 	preset_text->update_items();
@@ -3669,7 +3654,7 @@ void CWindowMaskGUI::save_masks(ArrayList<SubMask *> &masks)
 
 
 CWindowRulerGUI::CWindowRulerGUI(MWindow *mwindow, CWindowTool *thread)
- : CWindowToolGUI(mwindow, thread, _(PROGRAM_NAME ": Ruler"), 320, 240)
+ : CWindowToolGUI(mwindow, thread, _(PROGRAM_NAME ": Ruler"), xS(320), yS(240))
 {
 }
 
@@ -3679,28 +3664,30 @@ CWindowRulerGUI::~CWindowRulerGUI()
 
 void CWindowRulerGUI::create_objects()
 {
-	int x = 10, y = 10, x1 = 100;
+	int xs10 = xS(10), xs200 = xS(200);
+	int ys5 = yS(5), ys10 = yS(10);
+	int x = xs10, y = ys10, x1 = xS(100);
 	BC_Title *title;
 
 	lock_window("CWindowRulerGUI::create_objects");
 	add_subwindow(title = new BC_Title(x, y, _("Current:")));
-	add_subwindow(current = new BC_TextBox(x1, y, 200, 1, ""));
-	y += title->get_h() + 5;
+	add_subwindow(current = new BC_TextBox(x1, y, xs200, 1, ""));
+	y += title->get_h() + ys5;
 	add_subwindow(title = new BC_Title(x, y, _("Point 1:")));
-	add_subwindow(point1 = new BC_TextBox(x1, y, 200, 1, ""));
-	y += title->get_h() + 5;
+	add_subwindow(point1 = new BC_TextBox(x1, y, xs200, 1, ""));
+	y += title->get_h() + ys5;
 	add_subwindow(title = new BC_Title(x, y, _("Point 2:")));
-	add_subwindow(point2 = new BC_TextBox(x1, y, 200, 1, ""));
-	y += title->get_h() + 5;
+	add_subwindow(point2 = new BC_TextBox(x1, y, xs200, 1, ""));
+	y += title->get_h() + ys5;
 	add_subwindow(title = new BC_Title(x, y, _("Deltas:")));
-	add_subwindow(deltas = new BC_TextBox(x1, y, 200, 1, ""));
-	y += title->get_h() + 5;
+	add_subwindow(deltas = new BC_TextBox(x1, y, xs200, 1, ""));
+	y += title->get_h() + ys5;
 	add_subwindow(title = new BC_Title(x, y, _("Distance:")));
-	add_subwindow(distance = new BC_TextBox(x1, y, 200, 1, ""));
-	y += title->get_h() + 5;
+	add_subwindow(distance = new BC_TextBox(x1, y, xs200, 1, ""));
+	y += title->get_h() + ys5;
 	add_subwindow(title = new BC_Title(x, y, _("Angle:")));
-	add_subwindow(angle = new BC_TextBox(x1, y, 200, 1, ""));
-	y += title->get_h() + 10;
+	add_subwindow(angle = new BC_TextBox(x1, y, xs200, 1, ""));
+	y += title->get_h() + ys10;
 	char string[BCTEXTLEN];
 	sprintf(string,
 		 _("Press Ctrl to lock ruler to the\nnearest 45%c%c angle."),
@@ -3708,7 +3695,7 @@ void CWindowRulerGUI::create_objects()
 	add_subwindow(title = new BC_Title(x,
 		y,
 		string));
-	y += title->get_h() + 10;
+	y += title->get_h() + ys10;
 	sprintf(string, _("Press Alt to translate the ruler."));
 	add_subwindow(title = new BC_Title(x,
 		y,

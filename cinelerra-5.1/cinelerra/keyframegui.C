@@ -457,7 +457,7 @@ KeyFrameWindow::KeyFrameWindow(MWindow *mwindow, KeyFrameThread *thread,
  : BC_Window(title_string, x, y,
 		mwindow->session->keyframedialog_w, 
 		mwindow->session->keyframedialog_h, 
-		320, 240, 1, 0, 1)
+		xS(320), yS(240), 1, 0, 1)
 {
 	this->mwindow = mwindow;
 	this->thread = thread;

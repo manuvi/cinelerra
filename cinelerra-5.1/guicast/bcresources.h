@@ -308,6 +308,7 @@ public:
 	int directory_color;
 	int file_color;
 	double font_scale, icon_scale;
+	double x_scale, y_scale;
 // fonts
 	static const char *small_font, *small_font2;
 	static const char *medium_font, *medium_font2;

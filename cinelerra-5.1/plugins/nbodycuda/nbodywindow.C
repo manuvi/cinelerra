@@ -38,7 +38,7 @@ static const char *display_modes[] = {
 static const int num_display_modes = sizeof(display_modes)/sizeof(*display_modes);
 
 N_BodyWindow::N_BodyWindow(N_BodyMain *plugin)
- : PluginClientWindow(plugin, 240, 200, 240, 200, 0)
+ : PluginClientWindow(plugin, xS(240), yS(200), xS(240), yS(200), 0)
 {
 	this->plugin = plugin; 
 	press_x = press_y = 0;
@@ -52,8 +52,8 @@ N_BodyWindow::~N_BodyWindow()
 
 void N_BodyWindow::create_objects()
 {
-	int x = 10, y = 10, pad = 5;
-	int x1 = 100;
+	int x = xS(10), y = yS(10), pad = xS(5);
+	int x1 = xS(100);
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x,y, _("NBody"), MEDIUMFONT, YELLOW));
 	y += title->get_h() + 2*pad;
@@ -192,7 +192,7 @@ int N_BodyDrag::handle_event()
 }
 
 N_BodySetMode::N_BodySetMode(N_BodyWindow *gui, int x, int y, const char *text)
- : BC_PopupTextBox(gui, 0, text, x, y, 100, 160)
+ : BC_PopupTextBox(gui, 0, text, x, y, xS(100), yS(160))
 {
 	this->gui = gui;
 }
@@ -215,7 +215,7 @@ int N_BodySetMode::handle_event()
 
 
 N_BodySetDemo::N_BodySetDemo(N_BodyWindow *gui, int x, int y, const char *text)
- : BC_PopupTextBox(gui, 0, text, x, y, 100, 160)
+ : BC_PopupTextBox(gui, 0, text, x, y, xS(100), yS(160))
 {
 	this->gui = gui;
 }
@@ -240,7 +240,7 @@ int N_BodySetDemo::handle_event()
 }
 
 N_BodyNumBodies::N_BodyNumBodies(N_BodyWindow *gui, int x, int y, const char *text)
- : BC_PopupTextBox(gui, 0, text, x, y, 100, 160)
+ : BC_PopupTextBox(gui, 0, text, x, y, xS(100), yS(160))
 {
 	this->gui = gui;
 }

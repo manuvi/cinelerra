@@ -1857,7 +1857,7 @@ int LoadLayoutNameText::handle_event()
 }
 
 LoadLayoutConfirm::LoadLayoutConfirm(LoadLayoutDialog *layout_dialog, int x, int y)
- : BC_Window(_(PROGRAM_NAME ": Layout"), x, y, 300,140, 300,140, 0)
+ : BC_Window(_(PROGRAM_NAME ": Layout"), x, y, xS(300),yS(140), xS(300),yS(140), 0)
 {
 	this->layout_dialog = layout_dialog;
 }
@@ -1868,20 +1868,22 @@ LoadLayoutConfirm::~LoadLayoutConfirm()
 
 void LoadLayoutConfirm::create_objects()
 {
+	int xs10 = xS(10), xs20 = xS(20);
+	int ys10 = yS(10);
 	lock_window("LoadLayoutConfirm::create_objects");
-	int x = 10, y = 10, pad = 10;
+	int x = xs10, y = ys10;
 	BC_SubMenu *layout_submenu = layout_dialog->load_layout->get_submenu();
 	LoadLayoutItem *item = (LoadLayoutItem *)
 		layout_submenu->get_item(layout_dialog->idx);
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x, y, _("Layout Name:")));
-	int x1 = x + title->get_w() + 10;
+	int x1 = x + title->get_w() + xs10;
 	add_subwindow(title = new BC_Title(x1, y, item->get_text()));
-	y += title->get_h() + pad;
+	y += title->get_h() + ys10;
 	add_subwindow(name_text = new LoadLayoutNameText(this,
-		x, y, get_w()-x-20, item->layout_text));
+		x, y, get_w()-x-xs20, item->layout_text));
 	y += name_text->get_h();
-	x1 = x + 80;
+	x1 = x + xS(80);
 	char legend[BCTEXTLEN];
 	sprintf(legend, _("a-z,A-Z,0-9_ only, %dch max"), LAYOUT_NAME_LEN);
 	add_subwindow(title = new BC_Title(x1, y, legend));

@@ -965,8 +965,8 @@ void RenderThread::run()
 }
 
 
-#define WIDTH 480
-#define HEIGHT 480
+#define WIDTH xS(480)
+#define HEIGHT yS(480)
 
 
 RenderWindow::RenderWindow(MWindow *mwindow,
@@ -1009,13 +1009,15 @@ void RenderWindow::load_profile(int profile_slot)
 
 void RenderWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int xs10 = xS(10), xs20 = xS(20);
+	int ys10 = yS(10), ys20 = yS(20), ys25 = yS(25), ys30 = yS(30);
+	int x = xs10, y = ys10;
 	lock_window("RenderWindow::create_objects");
 	add_subwindow(file_format = new BC_Title(x, y,
 		(render->use_labels ?
 			_("Select the first file to render to:") :
 			_("Select a file to render to:"))));
-	y += 25;
+	y += ys25;
 
 	render_format = new RenderFormat(mwindow, this, asset);
 	render_format->create_objects(x, y,
@@ -1028,36 +1030,36 @@ void RenderWindow::create_objects()
 	if( is_image )
 		render->range_type = RANGE_1FRAME;
 
-	int x1 = x + title->get_w() + 20, y1 = y;
+	int x1 = x + title->get_w() + xs20, y1 = y;
 	add_subwindow(rangeproject = new RenderRangeProject(this,
 		render->range_type == RANGE_PROJECT, x1, y));
 	int x2 = x1 + rangeproject->get_w();
-	y += 20;
+	y += ys20;
 	add_subwindow(rangeselection = new RenderRangeSelection(this,
 		render->range_type == RANGE_SELECTION, x1, y));
 	int x3 = x1 + rangeselection->get_w();
 	if( x2 < x3 ) x2 = x3;
-	y += 20;
+	y += ys20;
 	add_subwindow(rangeinout = new RenderRangeInOut(this,
 		render->range_type == RANGE_INOUT, x1, y));
 	x3 = x1 + rangeinout->get_w();
 	if( x2 < x3 ) x2 = x3;
-	y += 20;
+	y += ys20;
 	add_subwindow(range1frame = new RenderRange1Frame(this,
 		render->range_type == RANGE_1FRAME, x1, y));
 	x3 = x1 + range1frame->get_w();
 	if( x2 < x3 ) x2 = x3;
-	y += 30;
+	y += ys30;
 	if( is_image )
 		enable_render_range(0);
 
-	x1 = x2 + 20;
+	x1 = x2 + xs20;
 	render->beep = mwindow->edl->session->render_beep;
 	add_subwindow(beep_on_done = new RenderBeepOnDone(this, x1, y1));
 
 	renderprofile = new RenderProfile(mwindow, this, x, y, 1);
 	renderprofile->create_objects();
-	y += 70;
+	y += yS(70);
 
 	loadmode = new LoadMode(mwindow, this, x, y, &render->load_mode);
 	loadmode->create_objects();

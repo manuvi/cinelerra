@@ -23,6 +23,7 @@
 #include "clip.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "keys.h"
 #include "language.h"
 #include "localsession.h"
 #include "maincursor.h"
@@ -58,9 +59,9 @@ ZoomBar::~ZoomBar()
 
 void ZoomBar::create_objects()
 {
-	int x = 3;
-	int y = get_h() / 2 -
-		mwindow->theme->get_image_set("zoombar_menu", 0)[0]->get_h() / 2;
+	int xs5 = xS(5), xs10 = xS(10);
+	int x = xS(3), y = get_h()/2 -
+		mwindow->theme->get_image_set("zoombar_menu", 0)[0]->get_h()/2;
 
 	draw_top_background(get_parent(), 0, 0, get_w(), get_h());
 	sample_zoom = new SampleZoomPanel(mwindow, this, x, y);
@@ -74,16 +75,16 @@ void ZoomBar::create_objects()
 	track_zoom = new TrackZoomPanel(mwindow, this, x, y);
 	track_zoom->create_objects();
 	track_zoom->set_tooltip(_("Height of tracks in the timeline"));
-	x += track_zoom->get_w() + 10;
+	x += track_zoom->get_w() + xs10;
 
-	int wid = 120;
+	int wid = xS(120);
 	for( int i=AUTOGROUPTYPE_AUDIO_FADE; i<=AUTOGROUPTYPE_Y; ++i ) {
 		int ww = BC_GenericButton::calculate_w(this, AutoTypeMenu::to_text(i));
 		if( ww > wid ) wid = ww;
 	}
 	add_subwindow(auto_type = new AutoTypeMenu(mwindow, this, x, y, wid));
 	auto_type->create_objects();
-	x += auto_type->get_w() + 10;
+	x += auto_type->get_w() + xs10;
 #define DEFAULT_TEXT "000.00 to 000.00"
 	add_subwindow(auto_zoom = new AutoZoom(mwindow, this, x, y, 0));
 	x += auto_zoom->get_w();
@@ -93,19 +94,19 @@ void ZoomBar::create_objects()
 		x,
 		y,
 		DEFAULT_TEXT));
-	x += auto_zoom_text->get_w() + 5;
+	x += auto_zoom_text->get_w() + xs5;
 	add_subwindow(auto_zoom = new AutoZoom(mwindow, this, x, y, 1));
 	update_autozoom();
-	x += auto_zoom->get_w() + 5;
+	x += auto_zoom->get_w() + xs5;
 
 	add_subwindow(from_value = new FromTextBox(mwindow, this, x, y));
-	x += from_value->get_w() + 5;
+	x += from_value->get_w() + xs5;
 	add_subwindow(length_value = new LengthTextBox(mwindow, this, x, y));
-	x += length_value->get_w() + 5;
+	x += length_value->get_w() + xs5;
 	add_subwindow(to_value = new ToTextBox(mwindow, this, x, y));
-	x += to_value->get_w() + 5;
+	x += to_value->get_w() + xs5;
 	add_subwindow(title_alpha_bar = new TitleAlphaBar(mwindow, this, x, y));
-	x += title_alpha_bar->get_w() + 5;
+	x += title_alpha_bar->get_w() + xs5;
 	add_subwindow(title_alpha_text = new TitleAlphaText(mwindow, this, x, y));
 
 	update_formatting(from_value);
@@ -210,7 +211,7 @@ int ZoomBar::update_clocks()
 }
 
 TitleAlphaBar::TitleAlphaBar(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
- : BC_FSlider(x, y, 0, 150, 200, 0, 1.0, mwindow->session->title_bar_alpha, 0)
+ : BC_FSlider(x, y, 0, xS(150), xS(200), 0, 1.0, mwindow->session->title_bar_alpha, 0)
 {
 	this->mwindow = mwindow;
 	this->zoombar = zoombar;
@@ -229,7 +230,7 @@ int TitleAlphaBar::handle_event()
 }
 
 TitleAlphaText::TitleAlphaText(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
- : BC_TextBox(x, y, 48, 1, mwindow->session->title_bar_alpha, 0, MEDIUMFONT, 2)
+ : BC_TextBox(x, y, xS(48), 1, mwindow->session->title_bar_alpha, 0, MEDIUMFONT, 2)
 {
 	this->mwindow = mwindow;
 	this->zoombar = zoombar;
@@ -349,19 +350,9 @@ int ZoomBar::set_selection(int which_one)
 }
 
 
-
-
-
-
-
-
-
-
-
-
 SampleZoomPanel::SampleZoomPanel(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
  : ZoomPanel(mwindow, zoombar, mwindow->edl->local_session->zoom_sample,
-		x, y, 130, MIN_ZOOM_TIME, MAX_ZOOM_TIME, ZOOM_TIME)
+		x, y, xS(130), MIN_ZOOM_TIME, MAX_ZOOM_TIME, ZOOM_TIME)
 {
 	this->mwindow = mwindow;
 	this->zoombar = zoombar;
@@ -375,7 +366,7 @@ int SampleZoomPanel::handle_event()
 
 AmpZoomPanel::AmpZoomPanel(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
  : ZoomPanel(mwindow, zoombar, mwindow->edl->local_session->zoom_y,
-		x, y, 100, MIN_AMP_ZOOM, MAX_AMP_ZOOM, ZOOM_LONG)
+		x, y, xS(100), MIN_AMP_ZOOM, MAX_AMP_ZOOM, ZOOM_LONG)
 {
 	this->mwindow = mwindow;
 	this->zoombar = zoombar;
@@ -388,7 +379,7 @@ int AmpZoomPanel::handle_event()
 
 TrackZoomPanel::TrackZoomPanel(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
  : ZoomPanel(mwindow, zoombar, mwindow->edl->local_session->zoom_track,
-		x, y, 90, MIN_TRACK_ZOOM, MAX_TRACK_ZOOM, ZOOM_LONG)
+		x, y, xS(90), MIN_TRACK_ZOOM, MAX_TRACK_ZOOM, ZOOM_LONG)
 {
 	this->mwindow = mwindow;
 	this->zoombar = zoombar;
@@ -440,7 +431,7 @@ int AutoZoom::handle_down_event()
 
 
 AutoTypeMenu::AutoTypeMenu(MWindow *mwindow, ZoomBar *zoombar, int x, int y, int wid)
- : BC_PopupMenu(x, y, wid + 24,
+ : BC_PopupMenu(x, y, wid + xS(24),
 	to_text(mwindow->edl->local_session->zoombar_showautotype), 1, 0, 12)
 {
 	this->mwindow = mwindow;
@@ -484,12 +475,12 @@ int AutoTypeMenu::from_text(char *text)
 
 int AutoTypeMenu::draw_face(int dx, int color)
 {
-	BC_PopupMenu::draw_face(dx+8, color);
+	BC_PopupMenu::draw_face(dx+xS(8), color);
 	color = mwindow->edl->local_session->zoombar_showautocolor;
 	if( color >= 0 ) {
 		set_color(color);
 		int margin = get_margin();
-		int mx = margin+8, my = 3*margin/8;
+		int mx = margin+xS(8), my = 3*margin/8;
 		int bh = get_h() - 2*my;
 		draw_box(mx,my, bh,bh);
 	}
@@ -505,7 +496,7 @@ int AutoTypeMenu::handle_event()
 
 
 ZoomTextBox::ZoomTextBox(MWindow *mwindow, ZoomBar *zoombar, int x, int y, const char *text)
- : BC_TextBox(x, y, 130, 1, text)
+ : BC_TextBox(x, y, xS(130), 1, text)
 {
 	this->mwindow = mwindow;
 	this->zoombar = zoombar;
@@ -565,7 +556,7 @@ int ZoomTextBox::handle_event()
 
 
 FromTextBox::FromTextBox(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
- : BC_TextBox(x, y, 90, 1, "")
+ : BC_TextBox(x, y, xS(90), 1, "")
 {
 	this->mwindow = mwindow;
 	this->zoombar = zoombar;
@@ -574,7 +565,7 @@ FromTextBox::FromTextBox(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
 
 int FromTextBox::handle_event()
 {
-	if(get_keypress() == 13)
+	if(get_keypress() == NEWLINE)
 	{
 		zoombar->set_selection(SET_FROM);
 		return 1;
@@ -601,7 +592,7 @@ int FromTextBox::update_position(double new_position)
 
 
 LengthTextBox::LengthTextBox(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
- : BC_TextBox(x, y, 90, 1, "")
+ : BC_TextBox(x, y, xS(90), 1, "")
 {
 	this->mwindow = mwindow;
 	this->zoombar = zoombar;
@@ -610,7 +601,7 @@ LengthTextBox::LengthTextBox(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
 
 int LengthTextBox::handle_event()
 {
-	if(get_keypress() == 13)
+	if(get_keypress() == NEWLINE)
 	{
 		zoombar->set_selection(SET_LENGTH);
 		return 1;
@@ -635,7 +626,7 @@ int LengthTextBox::update_position(double new_position)
 
 
 ToTextBox::ToTextBox(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
- : BC_TextBox(x, y, 90, 1, "")
+ : BC_TextBox(x, y, xS(90), 1, "")
 {
 	this->mwindow = mwindow;
 	this->zoombar = zoombar;
@@ -644,7 +635,7 @@ ToTextBox::ToTextBox(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
 
 int ToTextBox::handle_event()
 {
-	if(get_keypress() == 13)
+	if(get_keypress() == NEWLINE)
 	{
 		zoombar->set_selection(SET_TO);
 		return 1;

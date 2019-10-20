@@ -34,10 +34,7 @@ FileFormat::FileFormat(MWindow *mwindow)
  : BC_Window(_(PROGRAM_NAME ": File Format"),
 		mwindow->gui->get_abs_cursor_x(0),
 		mwindow->gui->get_abs_cursor_y(0),
- 		375,
-		300,
-		375,
-		300)
+		xS(375), yS(300), xS(375), yS(300))
 {
 	this->mwindow = mwindow;
 }
@@ -64,46 +61,48 @@ void FileFormat::create_objects(Asset *asset, char *string2)
 
 void FileFormat::create_objects_(char *string2)
 {
+	int xs10 = xS(10);
+	int ys20 = yS(20), ys30 = yS(30);
 	char string[1024];
-	int x1 = 10, x2 = 180;
-	int x = x1, y = 10;
+	int x1 = xs10, x2 = xS(180);
+	int x = x1, y = xs10;
 
 	lock_window("FileFormat::create_objects_");
 	add_subwindow(new BC_Title(x, y, string2));
-	y += 20;
+	y += ys20;
 	add_subwindow(new BC_Title(x, y, _("Assuming raw PCM:")));
 
-	y += 30;
+	y += ys30;
 	add_subwindow(new BC_Title(x, y, _("Channels:")));
 	sprintf(string, "%d", asset->channels);
 	channels_button = new FileFormatChannels(x2, y, this, string);
 	channels_button->create_objects();
 
-	y += 30;
+	y += ys30;
 	add_subwindow(new BC_Title(x, y, _("Sample rate:")));
 	sprintf(string, "%d", asset->sample_rate);
 	add_subwindow(rate_button = new FileFormatRate(x2, y, this, string));
-	add_subwindow(new SampleRatePulldown(mwindow, rate_button, x2 + 100, y));
+	add_subwindow(new SampleRatePulldown(mwindow, rate_button, x2 + yS(100), y));
 
-	y += 30;
+	y += ys30;
 	add_subwindow(new BC_Title(x, y, _("Bits:")));
 	bitspopup = new BitsPopup(this, x2, y,
 		&asset->bits, 0, 1, 1, 0, 1);
 	bitspopup->create_objects();
 
-	y += 30;
+	y += ys30;
 	add_subwindow(new BC_Title(x, y, _("Header length:")));
 	sprintf(string, "%d", asset->header);
 	add_subwindow(header_button = new FileFormatHeader(x2, y, this, string));
 
-	y += 30;
+	y += ys30;
 
 //printf("FileFormat::create_objects_ 1 %d\n", asset->byte_order);
 	add_subwindow(new BC_Title(x, y, _("Byte order:")));
 	add_subwindow(lohi = new FileFormatByteOrderLOHI(x2, y, this, asset->byte_order));
 	add_subwindow(hilo = new FileFormatByteOrderHILO(x2 + 70, y, this, !asset->byte_order));
 
-	y += 30;
+	y += ys30;
 	add_subwindow(signed_button = new FileFormatSigned(x, y, this, asset->signed_));
 
 	add_subwindow(new BC_OKButton(this));

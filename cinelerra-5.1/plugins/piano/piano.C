@@ -464,8 +464,8 @@ void PianoThread::run()
 {
 	BC_DisplayInfo info;
 	window = new PianoWindow(synth,
-		info.get_abs_cursor_x() - 125,
-		info.get_abs_cursor_y() - 115);
+		info.get_abs_cursor_x() - xS(125),
+		info.get_abs_cursor_y() - yS(115));
 	window->create_objects();
 	int result = window->run_window();
 	completion.unlock();
@@ -484,16 +484,8 @@ void PianoThread::run()
 
 
 PianoWindow::PianoWindow(Piano *synth, int x, int y)
- : BC_Window(synth->gui_string,
- 	x,
-	y,
-	380,
-	synth->h,
-	380,
-	10,
-	1,
-	0,
-	1)
+ : BC_Window(synth->gui_string, x, y, xS(380), synth->h,
+	xS(380), yS(10), 1, 0, 1)
 {
 	this->synth = synth;
 }
@@ -530,59 +522,61 @@ int PianoWindow::create_objects()
 	harmonicmenu->add_item(new PianoFreqOdd(synth));
 	harmonicmenu->add_item(new PianoFreqPrime(synth));
 
-	int x = 10, y = 30, i;
+	int xs10 = xS(10), xs240 = xS(240);
+	int ys10 = yS(10), ys20 = yS(20), ys30 = yS(30), ys35 = yS(35);
+	int x = xs10, y = ys30, i;
 	add_subwindow(new BC_Title(x, y, _("Waveform")));
-	x += 240;
+	x += xs240;
 	add_subwindow(new BC_Title(x, y, _("Wave Function")));
-	y += 20;
-	x = 10;
-	add_subwindow(canvas = new PianoCanvas(synth, this, x, y, 230, 160));
+	y += ys20;
+	x = xs10;
+	add_subwindow(canvas = new PianoCanvas(synth, this, x, y, xS(230), yS(160)));
 	canvas->update();
 
-	x += 240;
+	x += xS(240);
 	char string[BCTEXTLEN];
 	waveform_to_text(string, synth->config.wavefunction);
 
 	add_subwindow(waveform = new PianoWaveForm(synth, x, y, string));
 	waveform->create_objects();
-	y += 30;
+	y += ys30;
 
 
 	add_subwindow(new BC_Title(x, y, _("Base Frequency:")));
-	y += 30;
+	y += ys30;
 	add_subwindow(base_freq = new PianoBaseFreq(synth, x, y));
-	x += 80;
-	add_subwindow(freqpot = new PianoFreqPot(synth, this, x, y - 10));
+	x += xs80;
+	add_subwindow(freqpot = new PianoFreqPot(synth, this, x, y - ys10));
 	base_freq->freq_pot = freqpot;
 	freqpot->freq_text = base_freq;
-	x -= 80;
-	y += 40;
+	x -= xs80;
+	y += ys40;
 	add_subwindow(new BC_Title(x, y, _("Wetness:")));
-	add_subwindow(wetness = new PianoWetness(synth, x + 70, y - 10));
+	add_subwindow(wetness = new PianoWetness(synth, x + xs70, y - ys10));
 
-	y += 40;
+	y += ys40;
 	add_subwindow(new PianoClear(synth, x, y));
 
 
-	x = 50;
-	y = 220;
+	x = xs50;
+	y = yS(220);
 	add_subwindow(new BC_Title(x, y, _("Level")));
-	x += 75;
+	x += xs75;
 	add_subwindow(new BC_Title(x, y, _("Phase")));
-	x += 75;
+	x += xs75;
 	add_subwindow(new BC_Title(x, y, _("Harmonic")));
 
 
 
-	y += 20; x = 10;
-	add_subwindow(subwindow = new PianoSubWindow(synth, x, y, 265, get_h() - y));
-	x += 265;
+	y += ys20; x = xs10;
+	add_subwindow(subwindow = new PianoSubWindow(synth, x, y, xS(265), get_h() - y));
+	x += xS(265);
 	add_subwindow(scroll = new PianoScroll(synth, this, x, y, get_h() - y));
 
 
-	x += 20;
+	x += xs20;
 	add_subwindow(new PianoAddOsc(synth, this, x, y));
-	y += 30;
+	y += ys30;
 	add_subwindow(new PianoDelOsc(synth, this, x, y));
 
 	update_scrollbar();
@@ -662,7 +656,7 @@ void PianoWindow::update_oscillators()
 		{
 			gui = oscillators.values[i];
 
-			gui->title->reposition_window(gui->title->get_x(), y + 15);
+			gui->title->reposition_window(gui->title->get_x(), y + yS(15));
 
 			gui->level->reposition_window(gui->level->get_x(), y);
 			gui->level->update(config->level);
@@ -723,7 +717,7 @@ int PianoOscGUI::create_objects(int y)
 {
 	char text[BCTEXTLEN];
 	sprintf(text, "%d:", number + 1);
-	window->subwindow->add_subwindow(title = new BC_Title(10, y + 15, text));
+	window->subwindow->add_subwindow(title = new BC_Title(xs10, y + ys15, text));
 
 	window->subwindow->add_subwindow(level = new PianoOscGUILevel(window->synth, this, y));
 	window->subwindow->add_subwindow(phase = new PianoOscGUIPhase(window->synth, this, y));
@@ -735,7 +729,7 @@ int PianoOscGUI::create_objects(int y)
 
 
 PianoOscGUILevel::PianoOscGUILevel(Piano *synth, PianoOscGUI *gui, int y)
- : BC_FPot(50,
+ : BC_FPot(xS(50),
  	y,
 	synth->config.oscillator_config.values[gui->number]->level,
 	INFINITYGAIN,
@@ -761,11 +755,11 @@ int PianoOscGUILevel::handle_event()
 
 
 PianoOscGUIPhase::PianoOscGUIPhase(Piano *synth, PianoOscGUI *gui, int y)
- : BC_IPot(125,
+ : BC_IPot(xS(125),
  	y,
 	(int64_t)(synth->config.oscillator_config.values[gui->number]->phase * 360),
 	0,
-	360)
+	xS(360))
 {
 	this->synth = synth;
 	this->gui = gui;
@@ -787,11 +781,11 @@ int PianoOscGUIPhase::handle_event()
 
 
 PianoOscGUIFreq::PianoOscGUIFreq(Piano *synth, PianoOscGUI *gui, int y)
- : BC_IPot(200,
+ : BC_IPot(xS(200),
  	y,
 	(int64_t)(synth->config.oscillator_config.values[gui->number]->freq_factor),
-	1,
-	100)
+	yS(1),
+	xS(100))
 {
 	this->synth = synth;
 	this->gui = gui;
@@ -930,7 +924,7 @@ int PianoClear::handle_event()
 
 
 PianoWaveForm::PianoWaveForm(Piano *synth, int x, int y, char *text)
- : BC_PopupMenu(x, y, 120, text)
+ : BC_PopupMenu(x, y, xS(120), text)
 {
 	this->synth = synth;
 }
@@ -1012,7 +1006,7 @@ int PianoFreqPot::handle_event()
 
 
 PianoBaseFreq::PianoBaseFreq(Piano *synth, int x, int y)
- : BC_TextBox(x, y, 70, 1, (int)synth->config.base_freq)
+ : BC_TextBox(x, y, xS(70), 1, (int)synth->config.base_freq)
 {
 	this->synth = synth;
 }

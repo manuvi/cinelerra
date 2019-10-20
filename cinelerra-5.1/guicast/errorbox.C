@@ -33,17 +33,13 @@ ErrorBox::~ErrorBox()
 void ErrorBox::create_objects(const char *text)
 {
 	lock_window("ErrorBox::create_objects");
-	int x = 10, y = 10;
+	int x = xS(10), y = yS(10);
 
-	add_subwindow(new BC_Title(get_w() / 2,
-		y,
-		text,
-		MEDIUMFONT,
-		get_resources()->default_text_color,
-		1));
-	x = get_w() / 2 - 30;
-	y = get_h() - 50;
-	add_tool(new BC_OKButton(x, y));
+	add_subwindow(new BC_Title(get_w() / 2, y, text,
+		MEDIUMFONT, get_resources()->default_text_color, 1));
+	x = get_w()/2 - xS(30);
+	y = get_h() - yS(50);
+	add_subwindow(new BC_OKButton(x, y));
 	show_window(1);
 	unlock_window();
 }

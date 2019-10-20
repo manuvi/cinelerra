@@ -28,13 +28,13 @@
 
 
 
-#define CROPHANDLE_W 10
-#define CROPHANDLE_H 10
+#define CROPHANDLE_W xS(10)
+#define CROPHANDLE_H yS(10)
 
 VideoWindowGUI::VideoWindowGUI(VideoWindow *thread, int w, int h)
  : BC_Window(_(PROGRAM_NAME ": Video out"),
 	(int)BC_INFINITY, (int)BC_INFINITY,
-	w, h, 10, 10, 1, 1, 1)
+	w, h, xS(10), yS(10), 1, 1, 1)
 {
 	this->thread = thread;
 }
@@ -65,7 +65,7 @@ int VideoWindowGUI::resize_event(int w, int h)
 // 	new_h = h;
 // 	thread->get_full_sizes(full_w, full_h);
 //
-// 	if(labs(full_w - new_w) < 50)
+// 	if(labs(full_w - new_w) < xS(50))
 // 	{
 // 		new_w = full_w;
 // 		new_h = full_h;
@@ -73,8 +73,8 @@ int VideoWindowGUI::resize_event(int w, int h)
 // 	else
 // 		thread->fix_size(new_w, new_h, w, thread->mwindow->get_aspect_ratio());
 //
-// 	if(new_w < 10) new_w = 10;
-// 	if(new_h < 10) new_h = 10;
+// 	if(new_w < xS(10)) new_w = xS(10);
+// 	if(new_h < yS(10)) new_h = yS(10);
 // 	w = thread->video_window_w = new_w;
 // 	h = new_h;
 //

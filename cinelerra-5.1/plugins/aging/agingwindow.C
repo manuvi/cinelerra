@@ -24,7 +24,7 @@
 #include "language.h"
 
 AgingWindow::AgingWindow(AgingMain *plugin)
- : PluginClientWindow(plugin, 300, 180, 300, 180, 0)
+ : PluginClientWindow(plugin, xS(300), yS(180), xS(300), yS(180), 0)
 {
 	this->plugin = plugin;
 }
@@ -35,30 +35,32 @@ AgingWindow::~AgingWindow()
 
 void AgingWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int xs100 = xS(100);
+	int ys5 = yS(5), ys15 = yS(15), ys180 = yS(180);
+	int x = xS(10), y = yS(10);
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x, y, _("Aging:")));
-	y += title->get_h() + 15;
+	y += title->get_h() + ys15;
 
 	add_subwindow(color = new AgingCheckBox(this, x, y,
 		&plugin->config.colorage, _("Grain")));
-	y += color->get_h() + 5;
+	y += color->get_h() + ys5;
 
 	add_subwindow(scratches = new AgingCheckBox(this, x, y,
 		&plugin->config.scratch, _("Scratch")));
-	add_subwindow(scratch_count = new AgingISlider(this, x+100, y, 180,
+	add_subwindow(scratch_count = new AgingISlider(this, x+xs100, y, ys180,
 		0,SCRATCH_MAX, &plugin->config.scratch_lines));
-	y += scratches->get_h() + 5;
+	y += scratches->get_h() + ys5;
 
 	add_subwindow(pits = new AgingCheckBox(this, x, y,
 		&plugin->config.pits, _("Pits")));
-	add_subwindow(pit_count = new AgingISlider(this, x+100, y, 180,
+	add_subwindow(pit_count = new AgingISlider(this, x+xs100, y, ys180,
 		0,100, &plugin->config.pits_interval));
-	y += pits->get_h() + 5;
+	y += pits->get_h() + ys5;
 
 	add_subwindow(dust = new AgingCheckBox(this, x, y,
 		&plugin->config.dust, _("Dust")));
-	add_subwindow(dust_count = new AgingISlider(this, x+100, y, 180,
+	add_subwindow(dust_count = new AgingISlider(this, x+xs100, y, ys180,
 		0,100, &plugin->config.dust_interval));
 
 	show_window(1);

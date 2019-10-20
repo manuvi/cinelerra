@@ -126,7 +126,8 @@ void ShBtnEditDialog::handle_close_event(int result)
 
 
 ShBtnEditWindow::ShBtnEditWindow(ShBtnEditDialog *shbtn_edit, int x, int y)
- : BC_Window(_(PROGRAM_NAME ": Shell"), x, y, 300, 200, 300, 200, 0, 0, 1)
+ : BC_Window(_(PROGRAM_NAME ": Shell"), x, y,
+		xS(300), yS(200), xS(300), yS(200), 0, 0, 1)
 {
 	this->shbtn_edit = shbtn_edit;
 	sb_dialog = 0;
@@ -217,7 +218,8 @@ ShBtnTextDialog::~ShBtnTextDialog()
 }
 
 ShBtnTextWindow::ShBtnTextWindow(ShBtnEditWindow *sb_window, int x, int y)
- : BC_Window(_(PROGRAM_NAME ": Commands"), x, y, 640, 160, 640, 150, 0, 0, 1)
+ : BC_Window(_(PROGRAM_NAME ": Commands"), x, y,
+		xS(640), yS(160), xS(640), yS(150), 0, 0, 1)
 {
         this->sb_window = sb_window;
 	warn = sb_window->sb_dialog->pref->warn;
@@ -245,7 +247,7 @@ int ShBtnErrWarnItem::handle_event()
 }
 
 ShBtnErrWarn::ShBtnErrWarn(ShBtnTextWindow *st_window, int x, int y)
- : BC_PopupMenu(x, y, 120, st_window->warn < 0 ? _("Always"):
+ : BC_PopupMenu(x, y, xS(120), st_window->warn < 0 ? _("Always"):
 	!st_window->warn ? _("Never") : _("On Error"))
 {
         this->st_window = st_window;
@@ -279,26 +281,26 @@ ShBtnRunScript::~ShBtnRunScript()
 void ShBtnTextWindow::create_objects()
 {
 	lock_window("ShBtnTextWindow::create_objects");
-        int x = 10, y = 10;
-	int x1 = 160;
+        int x = xS(10), y = yS(10);
+	int x1 = xS(160);
 	BC_Title *title = new BC_Title(x, y, _("Label:"));
 	add_subwindow(title);
 	title = new BC_Title(x1, y, _("Commands:"));
 	add_subwindow(title);
-	y += title->get_h() + 8;
+	y += title->get_h() + yS(8);
 	ShBtnPref *pref = sb_window->sb_dialog->pref;
-        cmd_name = new BC_TextBox(x, y, 140, 1, pref->name);
+        cmd_name = new BC_TextBox(x, y, xS(140), 1, pref->name);
         add_subwindow(cmd_name);
-        cmd_text = new BC_ScrollTextBox(this, x1, y, get_w()-x1-20, 4, pref->commands);
+        cmd_text = new BC_ScrollTextBox(this, x1, y, get_w()-x1-xS(20), 4, pref->commands);
 	cmd_text->create_objects();
-	y += cmd_text->get_h() + 16;
+	y += cmd_text->get_h() + yS(16);
         add_subwindow(title = new BC_Title(x1,y, _("OnExit Notify:")));
-	x1 += title->get_w() + 10;
+	x1 += title->get_w() + xS(10);
         add_subwindow(st_err_warn = new ShBtnErrWarn(this, x1, y));
 	st_err_warn->create_objects();
-	x1 += st_err_warn->get_w() + 20;
+	x1 += st_err_warn->get_w() + xS(20);
         add_subwindow(st_run_script = new ShBtnRunScript(this, x1, y));
-        y = get_h() - ShBtnTextOK::calculate_h() - 10;
+        y = get_h() - ShBtnTextOK::calculate_h() - yS(10);
         add_subwindow(new ShBtnTextOK(this, x, y));
         show_window();
 	unlock_window();
@@ -360,13 +362,13 @@ void ShBtnEditWindow::create_objects()
 	for( int i=0; i<preferences->shbtn_prefs.size(); ++i ) {
 		shbtn_items.append(new ShBtnPrefItem(preferences->shbtn_prefs[i]));
 	}
-	int x = 10, y = 10;
+	int x = xS(10), y = yS(10);
 	add_subwindow(op_list = new ShBtnPrefList(this, x, y));
-	x = 190;
+	x = xS(190);
 	add_subwindow(add_button = new ShBtnAddButton(this, x, y));
-	y += add_button->get_h() + 8;
+	y += add_button->get_h() + yS(8);
 	add_subwindow(del_button = new ShBtnDelButton(this, x, y));
-	y += del_button->get_h() + 8;
+	y += del_button->get_h() + yS(8);
 	add_subwindow(edit_button = new ShBtnEditButton(this, x, y));
 	add_subwindow(new BC_OKButton(this));
 	show_window();
@@ -392,7 +394,7 @@ ShBtnPrefItem::~ShBtnPrefItem()
 }
 
 ShBtnPrefList::ShBtnPrefList(ShBtnEditWindow *sb_window, int x, int y)
- : BC_ListBox(x, y, 140, 100, LISTBOX_TEXT, &sb_window->shbtn_items, 0, 0)
+ : BC_ListBox(x, y, xS(140), yS(100), LISTBOX_TEXT, &sb_window->shbtn_items, 0, 0)
 {
 	this->sb_window = sb_window;
 }

@@ -107,7 +107,7 @@ int DeInterlaceMain::is_realtime() { return 1; }
 	int h = input->get_h(); \
 	changed_rows = 0; \
  \
- 	type **in_rows = (type**)input->get_rows(); \
+	type **in_rows = (type**)input->get_rows(); \
 	type **out_rows = (type**)temp->get_rows(); \
 	int max_h = h - 1; \
 /*	temp_type abs_diff = 0, total = 0; */ \

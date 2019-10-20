@@ -36,11 +36,11 @@
 #include "theme.h"
 #include "track.h"
 
-#define COLOR_W 50
-#define COLOR_H 30
+#define COLOR_W xS(50)
+#define COLOR_H yS(30)
 
 CriKeyNum::CriKeyNum(CriKeyWindow *gui, int x, int y, float output)
- : BC_TumbleTextBox(gui, output, -32767.0f, 32767.0f, x, y, 120)
+ : BC_TumbleTextBox(gui, output, -32767.0f, 32767.0f, x, y, xS(120))
 {
 	this->gui = gui;
 	set_increment(1);
@@ -90,7 +90,7 @@ int CriKeyDrawModeItem::handle_event()
 	return 1;
 }
 CriKeyDrawMode::CriKeyDrawMode(CriKeyWindow *gui, int x, int y)
- : BC_PopupMenu(x, y, 100, "", 1)
+ : BC_PopupMenu(x, y, xS(100), "", 1)
 {
 	this->gui = gui;
 	draw_modes[DRAW_ALPHA]     = _("Alpha");
@@ -115,7 +115,7 @@ void CriKeyDrawMode::update(int mode, int send)
 
 
 CriKeyWindow::CriKeyWindow(CriKey *plugin)
- : PluginClientWindow(plugin, 380, 400, 380, 400, 0)
+ : PluginClientWindow(plugin, xS(380), yS(400), xS(380), yS(400), 0)
 {
 	this->plugin = plugin;
 	this->title_x = 0;    this->point_x = 0;
@@ -135,14 +135,16 @@ CriKeyWindow::~CriKeyWindow()
 
 void CriKeyWindow::create_objects()
 {
+	int xs10 = xS(10), xs32 = xS(32);
+	int ys5 = yS(5), ys10 = yS(10);
 	int x = 10, y = 10;
 	int margin = plugin->get_theme()->widget_border;
 	BC_Title *title;
-	add_subwindow(title = new BC_Title(x, y+5, _("Draw mode:")));
-	int x1 = x + title->get_w() + 10 + margin;
+	add_subwindow(title = new BC_Title(x, y+ys5, _("Draw mode:")));
+	int x1 = x + title->get_w() + xs10 + margin;
 	add_subwindow(draw_mode = new CriKeyDrawMode(this, x1, y));
 	draw_mode->create_objects();
-	y += draw_mode->get_h() + 10 + margin;
+	y += draw_mode->get_h() + ys10 + margin;
 
 	CriKeyPoint *pt = plugin->config.points[plugin->config.selected];
 	add_subwindow(title_x = new BC_Title(x, y, _("X:")));
@@ -162,7 +164,7 @@ void CriKeyWindow::create_objects()
 	add_subwindow(del_point = new CriKeyDelPoint(this, plugin, x1, y));
 	x1 += del_point->get_w() + margin;
 	add_subwindow(point_dn = new CriKeyPointDn(this, x1, y));
-	y += point_y->get_h() + margin + 10;
+	y += point_y->get_h() + margin + ys10;
 	add_subwindow(title = new BC_Title(x, y, _("Threshold:")));
 	y += title->get_h() + margin;
 	add_subwindow(threshold = new CriKeyThreshold(this, x, y, get_w() - x * 2));
@@ -173,14 +175,14 @@ void CriKeyWindow::create_objects()
 		if( !grab(plugin->server->mwindow->cwindow->gui) )
 			eprintf("drag enabled, but compositor already grabbed\n");
 	}
-	x1 = x + drag->get_w() + margin + 32;
-	add_subwindow(reset = new CriKeyReset(this, plugin, x1, y+3));
+	x1 = x + drag->get_w() + margin + xs32;
+	add_subwindow(reset = new CriKeyReset(this, plugin, x1, y+yS(3)));
 	y += drag->get_h() + margin;
 
 	add_subwindow(point_list = new CriKeyPointList(this, plugin, x, y));
 	point_list->update(plugin->config.selected);
 
-	y += point_list->get_h() + 10;
+	y += point_list->get_h() + ys10;
 	add_subwindow(notes = new BC_Title(x, y,
 		 _("Right click in composer: create new point\n"
 		   "Shift-left click in Enable field:\n"
@@ -341,15 +343,15 @@ void CriKeyWindow::done_event(int result)
 }
 
 CriKeyPointList::CriKeyPointList(CriKeyWindow *gui, CriKey *plugin, int x, int y)
- : BC_ListBox(x, y, 360, 130, LISTBOX_TEXT)
+ : BC_ListBox(x, y, xS(360), yS(130), LISTBOX_TEXT)
 {
 	this->gui = gui;
 	this->plugin = plugin;
-	titles[PT_E] = _("E");    widths[PT_E] = 50;
-	titles[PT_X] = _("X");    widths[PT_X] = 90;
-	titles[PT_Y] = _("Y");    widths[PT_Y] = 90;
-	titles[PT_T] = _("T");    widths[PT_T] = 70;
-	titles[PT_TAG] = _("Tag");  widths[PT_TAG] = 50;
+	titles[PT_E] = _("E");    widths[PT_E] = xS(50);
+	titles[PT_X] = _("X");    widths[PT_X] = xS(90);
+	titles[PT_Y] = _("Y");    widths[PT_Y] = xS(90);
+	titles[PT_T] = _("T");    widths[PT_T] = xS(70);
+	titles[PT_TAG] = _("Tag");  widths[PT_TAG] = xS(50);
 }
 CriKeyPointList::~CriKeyPointList()
 {
@@ -588,7 +590,7 @@ int CriKeyDrag::handle_event()
 }
 
 CriKeyNewPoint::CriKeyNewPoint(CriKeyWindow *gui, CriKey *plugin, int x, int y)
- : BC_GenericButton(x, y, 80, _("New"))
+ : BC_GenericButton(x, y, xS(80), _("New"))
 {
 	this->gui = gui;
 	this->plugin = plugin;
@@ -605,7 +607,7 @@ int CriKeyNewPoint::handle_event()
 }
 
 CriKeyDelPoint::CriKeyDelPoint(CriKeyWindow *gui, CriKey *plugin, int x, int y)
- : BC_GenericButton(x, y, 80, C_("Del"))
+ : BC_GenericButton(x, y, xS(80), C_("Del"))
 {
 	this->gui = gui;
 	this->plugin = plugin;

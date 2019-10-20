@@ -26,7 +26,7 @@
 #include "theme.h"
 
 MoveObjWindow::MoveObjWindow(MoveObj *plugin)
- : PluginClientWindow(plugin, 320, 240, 320, 240, 0)
+ : PluginClientWindow(plugin, xS(320), yS(240), xS(320), yS(240), 0)
 {
 	this->plugin = plugin; 
 }
@@ -37,7 +37,7 @@ MoveObjWindow::~MoveObjWindow()
 
 void MoveObjWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int x = xS(10), y = yS(10);
 	int margin = plugin->get_theme()->widget_border;
 	BC_Title *title;
 

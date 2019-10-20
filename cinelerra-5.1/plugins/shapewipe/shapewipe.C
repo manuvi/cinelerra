@@ -164,7 +164,7 @@ ShapeWipeFeather::ShapeWipeFeather(ShapeWipeMain *client,
 		ShapeWipeWindow *window, int x, int y)
  : BC_TumbleTextBox(window,
 		bclip(client->config.feather, SHAPE_FMIN, SHAPE_FMAX),
-		SHAPE_FMIN, SHAPE_FMAX, x, y, 64, 3)
+		SHAPE_FMIN, SHAPE_FMAX, x, y, xS(64), yS(3))
 {
 	this->client = client;
 	this->window = window;
@@ -241,7 +241,7 @@ int ShapeWipeShape::handle_event()
 
 
 ShapeWipeWindow::ShapeWipeWindow(ShapeWipeMain *plugin)
- : PluginClientWindow(plugin, 425, 215, 425, 215, 0)
+ : PluginClientWindow(plugin, xS(425), yS(215), xS(425), yS(215), 0)
 {
 	this->plugin = plugin;
 	shape_feather = 0;
@@ -258,7 +258,7 @@ void ShapeWipeWindow::create_objects()
 {
 	BC_Title *title = 0;
 	lock_window("ShapeWipeWindow::create_objects");
-	int pad = 10, margin = 10;
+	int pad = xS(10), margin = xS(10);
 	int x = margin, y = margin;
 	int ww = get_w() - 2*margin;
 
@@ -268,13 +268,13 @@ void ShapeWipeWindow::create_objects()
 	}
 
 	BC_TitleBar *bar;
-	add_subwindow(bar = new BC_TitleBar(x, y, ww, 20, 10,
+	add_subwindow(bar = new BC_TitleBar(x, y, ww, xS(20), yS(10),
 		_("Wipe"), MEDIUMFONT));
 	y += bar->get_h() + pad;
 
 	add_subwindow(title = new BC_Title(x, y, _("Shape:")));
-	int x1 = 85, x2 = 355, x3 = 386;
-	shape_text = new ShapeWipeShape(plugin, this, x1, y, x2-x1, 200);
+	int x1 = xS(85), x2 = xS(355), x3 = xS(386);
+	shape_text = new ShapeWipeShape(plugin, this, x1, y, x2-x1, yS(200));
 	shape_text->create_objects();
 	add_subwindow(new ShapeWipeTumble(plugin, this, x3, y));
 	y += shape_text->get_h() + pad;
@@ -296,7 +296,7 @@ void ShapeWipeWindow::create_objects()
 		plugin, this, x, y));
 	y += aspect_ratio->get_h() + pad;
 
-	add_subwindow(bar = new BC_TitleBar(x, y, ww, 20, 10,
+	add_subwindow(bar = new BC_TitleBar(x, y, ww, xS(20), yS(10),
 		_("Direction"), MEDIUMFONT));
 	y += bar->get_h() + pad;
 	x = margin;

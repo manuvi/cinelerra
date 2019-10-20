@@ -754,17 +754,19 @@ void DenoiseConfig::interpolate(DenoiseConfig &prev,
 
 
 DenoiseWindow::DenoiseWindow(DenoiseEffect *plugin)
- : PluginClientWindow(plugin, 280, 50, 280, 50, 0)
+ : PluginClientWindow(plugin, xS(280), yS(50), xS(280), yS(50), 0)
 {
 	this->plugin = plugin;
 }
 
 void DenoiseWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int xs10 = xS(10), xs70 = xS(70);
+	int ys10 = yS(10);
+	int x = xs10, y = ys10;
 
 	add_subwindow(new BC_Title(x, y, _("Level:")));
-	x += 70;
+	x += xs70;
 	add_subwindow(scale = new DenoiseLevel(plugin, x, y));
 	show_window();
 	flush();

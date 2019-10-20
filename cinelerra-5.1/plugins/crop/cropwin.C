@@ -44,10 +44,10 @@
 
 CropWin::CropWin(CropMain *client)
  : PluginClientWindow(client,
-	420,
-	290,
-	420,
-	290,
+	xS(420),
+	yS(290),
+	xS(420),
+	yS(290),
 	0)
 {
 	this->client = client;
@@ -59,79 +59,81 @@ CropWin::~CropWin()
 
 void CropWin::create_objects()
 {
-	int x = 10, x1 = 40, x2 = 80, x_middle= (get_w() / 2), x3 = 180;
-	int y = 10;
-	int clr_x = get_w()-x - 22; // note: clrBtn_w = 22
+	int xs10 = xS(10), xs20 = xS(20), xs200 = xS(200);
+	int ys10 = yS(10), ys20 = yS(20), ys30 = yS(30), ys40 = yS(40);
+	int x2 = xS(80), x3 = xS(180);
+	int x = xs10, y = ys10;
+	int clr_x = get_w()-x - xS(22); // note: clrBtn_w = 22
 
 	BC_TitleBar *title_bar;
 	BC_Bar *bar;
 
 // Crop section
-	add_subwindow(title_bar = new BC_TitleBar(x, y, get_w()-2*x, 20, 10, _("Crop")));
-	y += 20;
+	add_subwindow(title_bar = new BC_TitleBar(x, y, get_w()-2*x, xs20, xs10, _("Crop")));
+	y += ys20;
 	add_tool(new BC_Title(x, y, _("Left")));
 	add_tool(new BC_Title((x2-x), y, _("%")));
 	crop_left_text = new CropLeftText(this, client, (x + x2), y);
 	crop_left_text->create_objects();
-	crop_left_slider = new CropLeftSlider(this, client, x3, y, 200);
+	crop_left_slider = new CropLeftSlider(this, client, x3, y, xs200);
 	add_subwindow(crop_left_slider);
 	clr_x = x3 + crop_left_slider->get_w() + x;
 	add_subwindow(crop_left_clr = new CropEdgesClr(this, client,
 		clr_x, y, RESET_LEFT));
-	y += 30;
+	y += ys30;
 	add_tool(new BC_Title(x, y, _("Top")));
 	add_tool(new BC_Title((x2-x), y, _("%")));
 	crop_top_text = new CropTopText(this, client, (x + x2), y);
 	crop_top_text->create_objects();
-	crop_top_slider = new CropTopSlider(this, client, x3, y, 200);
+	crop_top_slider = new CropTopSlider(this, client, x3, y, xs200);
 	add_subwindow(crop_top_slider);
 	add_subwindow(crop_top_clr = new CropEdgesClr(this, client,
 		clr_x, y, RESET_TOP));
-	y += 30;
+	y += ys30;
 	add_tool(new BC_Title(x, y, _("Right")));
 	add_tool(new BC_Title((x2-x), y, _("%")));
 	crop_right_text = new CropRightText(this, client, (x + x2), y);
 	crop_right_text->create_objects();
-	crop_right_slider = new CropRightSlider(this, client, x3, y, 200);
+	crop_right_slider = new CropRightSlider(this, client, x3, y, xs200);
 	add_subwindow(crop_right_slider);
 	add_subwindow(crop_right_clr = new CropEdgesClr(this, client,
 		clr_x, y, RESET_RIGHT));
-	y += 30;
+	y += ys30;
 	add_tool(new BC_Title(x, y, _("Bottom")));
 	add_tool(new BC_Title((x2-x), y, _("%")));
 	crop_bottom_text = new CropBottomText(this, client, (x + x2), y);
 	crop_bottom_text->create_objects();
-	crop_bottom_slider = new CropBottomSlider(this, client,	x3, y, 200);
+	crop_bottom_slider = new CropBottomSlider(this, client,	x3, y, xs200);
 	add_subwindow(crop_bottom_slider);
 	add_subwindow(crop_bottom_clr = new CropEdgesClr(this, client,
 		clr_x, y, RESET_BOTTOM));
-	y += 40;
+	y += ys40;
 
 // Position section
-	add_subwindow(title_bar = new BC_TitleBar(x, y, get_w()-2*x, 20, 10, _("Position")));
-	y += 20;
+	add_subwindow(title_bar = new BC_TitleBar(x, y, get_w()-2*x, xs20, xs10, _("Position")));
+	y += ys20;
 	add_tool(new BC_Title(x, y, _("X")));
 	add_tool(new BC_Title((x2-x), y, _("%")));
 	crop_position_x_text = new CropPositionXText(this, client, (x + x2), y);
 	crop_position_x_text->create_objects();
-	crop_position_x_slider = new CropPositionXSlider(this, client, x3, y, 200);
+	crop_position_x_slider = new CropPositionXSlider(this, client, x3, y, xs200);
 	add_subwindow(crop_position_x_slider);
 	add_subwindow(crop_position_x_clr = new CropEdgesClr(this, client,
 		clr_x, y, RESET_POSITION_X));
-	y += 30;
+	y += ys30;
 	add_tool(new BC_Title(x, y, _("Y")));
 	add_tool(new BC_Title((x2-x), y, _("%")));
 	crop_position_y_text = new CropPositionYText(this, client, (x + x2), y);
 	crop_position_y_text->create_objects();
-	crop_position_y_slider = new CropPositionYSlider(this, client, x3, y, 200);
+	crop_position_y_slider = new CropPositionYSlider(this, client, x3, y, xs200);
 	add_subwindow(crop_position_y_slider);
 	add_subwindow(crop_position_y_clr = new CropEdgesClr(this, client,
 		clr_x, y, RESET_POSITION_Y));
-	y += 40;
+	y += ys40;
 
 // Reset section
 	add_subwindow(bar = new BC_Bar(x, y, get_w()-2*x));
-	y += 10;
+	y += ys10;
 	add_tool(reset = new CropReset(client, this, x, y));
 
 	show_window();
@@ -197,13 +199,8 @@ CropLeftText::CropLeftText(CropWin *win,
 	CropMain *client,
 	int x,
 	int y)
- : BC_TumbleTextBox(win,
- 	client->config.crop_l,
-	(float)0.00,
-	(float)100.00,
-	x,
-	y,
-	60, 2)
+ : BC_TumbleTextBox(win, client->config.crop_l,
+	(float)0.00, (float)100.00, x, y, xS(60), 2)
 {
 	this->win = win;
 	this->client = client;
@@ -251,13 +248,8 @@ CropTopText::CropTopText(CropWin *win,
 	CropMain *client,
 	int x,
 	int y)
- : BC_TumbleTextBox(win,
- 	client->config.crop_t,
-	(float)0.00,
-	(float)100.00,
-	x,
-	y,
-	60, 2)
+ : BC_TumbleTextBox(win, client->config.crop_t,
+	(float)0.00, (float)100.00, x, y, xS(60), 2)
 {
 	this->win = win;
 	this->client = client;
@@ -304,13 +296,8 @@ int CropTopSlider::handle_event()
 CropRightText::CropRightText(CropWin *win, CropMain *client,
 	int x,
 	int y)
- : BC_TumbleTextBox(win,
- 	client->config.crop_r,
-	(float)0.00,
-	(float)100.00,
-	x,
-	y,
-	60, 2)
+ : BC_TumbleTextBox(win, client->config.crop_r,
+	(float)0.00, (float)100.00, x, y, xS(60), 2)
 {
 	this->win = win;
 	this->client = client;
@@ -357,13 +344,8 @@ int CropRightSlider::handle_event()
 CropBottomText::CropBottomText(CropWin *win, CropMain *client,
 	int x,
 	int y)
- : BC_TumbleTextBox(win,
- 	client->config.crop_b,
-	(float)0.00,
-	(float)100.00,
-	x,
-	y,
-	60, 2)
+ : BC_TumbleTextBox(win, client->config.crop_b,
+	(float)0.00, (float)100.00, x, y, xS(60), 2)
 {
 	this->win = win;
 	this->client = client;
@@ -410,13 +392,8 @@ int CropBottomSlider::handle_event()
 CropPositionXText::CropPositionXText(CropWin *win, CropMain *client,
 	int x,
 	int y)
- : BC_TumbleTextBox(win,
- 	client->config.position_x,
-	(float)-100.00,
-	(float)100.00,
-	x,
-	y,
-	60, 2)
+ : BC_TumbleTextBox(win, client->config.position_x,
+	(float)-100.00, (float)100.00, x, y, xS(60), 2)
 {
 	this->win = win;
 	this->client = client;
@@ -463,13 +440,8 @@ int CropPositionXSlider::handle_event()
 CropPositionYText::CropPositionYText(CropWin *win, CropMain *client,
 	int x,
 	int y)
- : BC_TumbleTextBox(win,
- 	client->config.position_y,
-	(float)-100.00,
-	(float)100.00,
-	x,
-	y,
-	60, 2)
+ : BC_TumbleTextBox(win, client->config.position_y,
+	(float)-100.00, (float)100.00, x, y, xS(60), 2)
 {
 	this->win = win;
 	this->client = client;

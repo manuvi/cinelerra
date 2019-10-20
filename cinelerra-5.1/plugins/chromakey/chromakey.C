@@ -110,10 +110,10 @@ int ChromaKeyConfig::get_color()
 
 ChromaKeyWindow::ChromaKeyWindow(ChromaKey *plugin)
  : PluginClientWindow(plugin,
-	320,
-	220,
-	320,
-	220,
+	xS(320),
+	yS(220),
+	xS(320),
+	yS(220),
 	0)
 {
 	this->plugin = plugin;
@@ -127,32 +127,34 @@ ChromaKeyWindow::~ChromaKeyWindow()
 
 void ChromaKeyWindow::create_objects()
 {
-	int x = 10, y = 10, x1 = 100;
+	int xs10 = xS(10), xs100 = xS(100);
+	int ys10 = yS(10), ys30 = yS(30), ys50 = yS(50);
+	int x = xs10, y = ys10, x1 = xS(100);
 
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x, y, _("Color:")));
-	x += title->get_w() + 10;
+	x += title->get_w() + xs10;
 	add_subwindow(color = new ChromaKeyColor(plugin, this, x, y));
-	x += color->get_w() + 10;
-	add_subwindow(sample = new BC_SubWindow(x, y, 100, 50));
-	y += sample->get_h() + 10;
-	x = 10;
+	x += color->get_w() + xs10;
+	add_subwindow(sample = new BC_SubWindow(x, y, xs100, ys50));
+	y += sample->get_h() + xs10;
+	x = xs10;
 
 	add_subwindow(new BC_Title(x, y, _("Slope:")));
 	add_subwindow(slope = new ChromaKeySlope(plugin, x1, y));
 
-	y += 30;
+	y += ys30;
 	add_subwindow(new BC_Title(x, y, _("Threshold:")));
 	add_subwindow(threshold = new ChromaKeyThreshold(plugin, x1, y));
 
 
-	y += 30;
+	y += ys30;
 	add_subwindow(use_value = new ChromaKeyUseValue(plugin, x1, y));
 
-	y += 30;
+	y += ys30;
 	add_subwindow(use_colorpicker = new ChromaKeyUseColorPicker(plugin, this, x1, y));
 
-	y += use_colorpicker->get_h() + 10;
+	y += use_colorpicker->get_h() + xs10;
 	add_subwindow(new ChromaKeyReset(plugin, this, x, y));
 
 	color_thread = new ChromaKeyColorThread(plugin, this);
@@ -216,8 +218,8 @@ ChromaKeyThreshold::ChromaKeyThreshold(ChromaKey *plugin, int x, int y)
  : BC_FSlider(x,
 			y,
 			0,
-			200,
-			200,
+			xS(200),
+			yS(200),
 			(float)0,
 			(float)100,
 			plugin->config.threshold)
@@ -237,8 +239,8 @@ ChromaKeySlope::ChromaKeySlope(ChromaKey *plugin, int x, int y)
  : BC_FSlider(x,
 			y,
 			0,
-			200,
-			200,
+			xS(200),
+			yS(200),
 			(float)0,
 			(float)100,
 			plugin->config.slope)

@@ -89,56 +89,38 @@ void EditLengthThread::start(Edit *edit)
 	BC_DialogThread::start();
 }
 
+#define ELW_W xS(300)
+#define ELW_H yS(100)
+
 BC_Window* EditLengthThread::new_gui()
 {
 	BC_DisplayInfo display_info;
-	int x = display_info.get_abs_cursor_x() - 150;
-	int y = display_info.get_abs_cursor_y() - 50;
-	EditLengthDialog *gui = new EditLengthDialog(mwindow,
-		this,
-		x,
-		y);
+	int x = display_info.get_abs_cursor_x() - ELW_W/2;
+	int y = display_info.get_abs_cursor_y() - ELW_H/2;
+	EditLengthDialog *gui = new EditLengthDialog(mwindow, this, x, y);
 	gui->create_objects();
 	return gui;
 }
 
 void EditLengthThread::handle_close_event(int result)
 {
-	if(!result)
-	{
-		if(edit)
-		{
+	if(!result) {
+		if(edit) {
 //			mwindow->set_edit_length(edit, length);
 		}
-		else
-		{
+		else {
 			mwindow->set_edit_length(length);
 		}
 	}
 }
 
 
-
-
-
-
-
-
-
 EditLengthDialog::EditLengthDialog(MWindow *mwindow,
 	EditLengthThread *thread,
 	int x,
 	int y)
- : BC_Window(_(PROGRAM_NAME ": Edit length"),
-	x,
-	y,
-	300,
-	100,
-	-1,
-	-1,
-	0,
-	0,
-	1)
+ : BC_Window(_(PROGRAM_NAME ": Edit length"), x, y,
+	ELW_W, ELW_H, -1, -1, 0, 0, 1)
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
@@ -151,9 +133,11 @@ EditLengthDialog::~EditLengthDialog()
 
 void EditLengthDialog::create_objects()
 {
+	int xs10 = xS(10), xs100 = xS(100);
+	int ys10 = yS(10);
 	lock_window("EditLengthDialog::create_objects");
-	add_subwindow(new BC_Title(10, 10, _("Seconds:")));
-	text = new EditLengthText(mwindow, this, 100, 10);
+	add_subwindow(new BC_Title(xs10, ys10, _("Seconds:")));
+	text = new EditLengthText(mwindow, this, xs100, ys10);
 	text->create_objects();
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
@@ -168,21 +152,10 @@ int EditLengthDialog::close_event()
 }
 
 
-
-
-
-
 EditLengthText::EditLengthText(MWindow *mwindow,
-	EditLengthDialog *gui,
-	int x,
-	int y)
- : BC_TumbleTextBox(gui,
- 	(float)gui->thread->length,
-	(float)0,
-	(float)100,
-	x,
-	y,
-	100)
+	EditLengthDialog *gui, int x, int y)
+ : BC_TumbleTextBox(gui, (float)gui->thread->length,
+	0.f, 100.f, x, y, xS(100))
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
@@ -198,13 +171,4 @@ int EditLengthText::handle_event()
 
 	return 1;
 }
-
-
-
-
-
-
-
-
-
 

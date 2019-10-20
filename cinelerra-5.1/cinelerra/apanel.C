@@ -40,17 +40,18 @@ APanel::~APanel()
 
 void APanel::create_objects()
 {
-	int x = this->x + 5, y = this->y + 10;
+	int ys10 = yS(10), ys20 = yS(20);
+	int x = this->x + xS(5), y = this->y + ys10;
 	char string[BCTEXTLEN];
 	int x1 = x;
 
 	subwindow->add_subwindow(new BC_Title(x, y, _("Automation")));
-	y += 20;
+	y += ys20;
 	for(int i = 0; i < PLUGINS; i++)
 	{
 		sprintf(string, _("Plugin %d"), i + 1);
 		subwindow->add_subwindow(new BC_Title(x, y, string, SMALLFONT));
-		subwindow->add_subwindow(plugin_autos[i] = new APanelPluginAuto(mwindow, this, x, y + 20));
+		subwindow->add_subwindow(plugin_autos[i] = new APanelPluginAuto(mwindow, this, x, y + ys20));
 		if(x == x1)
 		{
 			x += plugin_autos[i]->get_w();
@@ -58,7 +59,7 @@ void APanel::create_objects()
 		else
 		{
 			x = x1;
-			y += plugin_autos[i]->get_h() + 20;
+			y += plugin_autos[i]->get_h() + ys20;
 		}
 	}
 
@@ -71,11 +72,7 @@ void APanel::create_objects()
 
 
 APanelPluginAuto::APanelPluginAuto(MWindow *mwindow, APanel *gui, int x, int y)
- : BC_FPot(x,
-		y,
-		0,
-		-1,
-		1)
+ : BC_FPot(x, y, 0, -1, 1)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;

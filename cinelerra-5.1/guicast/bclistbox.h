@@ -29,8 +29,6 @@
 #include "bctoggle.h"
 #include "bccolors.h"
 
-#define BCPOPUPLISTBOX_W 25
-#define BCPOPUPLISTBOX_H 25
 
 class BC_ListBoxYScroll;
 class BC_ListBoxXScroll;
@@ -250,11 +248,9 @@ public:
 	int get_title_h();
 	int get_display_mode();
 	void set_justify(int value);
-	int get_w() { return is_popup ? BCPOPUPLISTBOX_W : popup_w; }
-	int get_h() { return is_popup ? BCPOPUPLISTBOX_H : popup_h; }
-	int gui_tooltip(const char *text) {
-		return is_popup && gui ? gui->show_tooltip(text, gui->get_w(),0, -1,-1) : -1;
-	}
+	int get_w();
+	int get_h();
+	int gui_tooltip(const char *text);
 	int get_view_w() { return view_w; }
 	int get_view_h() { return view_h; }
 	int get_row_height() { return row_height; }

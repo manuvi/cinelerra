@@ -164,7 +164,7 @@ put_clip(File *file, int track, double position, double length)
 
 	clip_id = mdb->clip_id();
 	cancelled = 0;
-	scan_status = new ScanStatus(this, 30, 30, 1, 1,
+	scan_status = new ScanStatus(this, xS(30), yS(30), 1, 1,
 		cancelled, _("Cutting Ads"));
 	scan_status->update_length(0, frames);
 	scan_status->update_position(0, 0);
@@ -574,7 +574,7 @@ int Commercials::
 scan_media()
 {
 	cancelled = 0;
-	scan_status = new ScanStatus(this, 30, 30, 2, 2,
+	scan_status = new ScanStatus(this, xS(30), yS(30), 2, 2,
 		cancelled, _("Cutting Ads"));
 	if( !openDb() ) {
 		scan_video();
@@ -697,11 +697,11 @@ update_status(int clip, double start, double end)
 
 ScanStatusGUI::
 ScanStatusGUI(ScanStatus *sswindow, int x, int y, int nlines, int nbars)
- : BC_Window(_("Scanning"), x, y, 340,
-	40 + BC_CancelButton::calculate_h() +
+ : BC_Window(_("Scanning"), x, y, xS(340),
+	yS(40) + BC_CancelButton::calculate_h() +
 		(BC_Title::calculate_h((BC_WindowBase*) sswindow->
-			commercials->mwindow->gui, _("My")) + 5) * nlines +
-		(BC_ProgressBar::calculate_h() + 5) * nbars, 0, 0, 0)
+			commercials->mwindow->gui, _("My")) + yS(5)) * nlines +
+		(BC_ProgressBar::calculate_h() + yS(5)) * nbars, 0, 0, 0)
 {
 	this->sswindow = sswindow;
 	this->nlines = nlines;
@@ -720,16 +720,18 @@ ScanStatusGUI::
 void ScanStatusGUI::
 create_objects(const char *text)
 {
+	int xs10 = xS(10), xs20 = xS(20);
+	int ys5 = yS(5), ys10 = yS(10);
 	lock_window("ScanStatusGUI::create_objects");
-	int x = 10, y = 10;
+	int x = xs10, y = ys10;
 	int dy = BC_Title::calculate_h((BC_WindowBase*) sswindow->
-		commercials->mwindow->gui, "My") + 5;
+		commercials->mwindow->gui, "My") + ys5;
 	for( int i=0; i<nlines; ++i, y+=dy, text="" )
 		add_tool(texts[i] = new BC_Title(x, y, text));
-	y += 10;
-	dy = BC_ProgressBar::calculate_h() + 5;
+	y += ys10;
+	dy = BC_ProgressBar::calculate_h() + ys5;
 	for( int i=0; i<nbars; ++i, y+=dy )
-		add_tool(bars[i] = new ScanStatusBar(x, y, get_w() - 20, 100));
+		add_tool(bars[i] = new ScanStatusBar(x, y, get_w() - xs20, yS(100)));
 
 	add_tool(new BC_CancelButton(this));
 	unlock_window();

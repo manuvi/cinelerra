@@ -39,7 +39,7 @@
 
 ZWindowGUI::ZWindowGUI(MWindow *mwindow, ZWindow *zwindow, Mixer *mixer)
  : BC_Window(zwindow->title, mixer->x, mixer->y, mixer->w, mixer->h,
-	100, 75, 1, 1, 0)
+	xS(100), yS(75), 1, 1, 0)
 {
 	this->mwindow = mwindow;
 	this->zwindow = zwindow;
@@ -59,7 +59,8 @@ void ZWindowGUI::create_objects()
 {
 	lock_window("ZWindowGUI::create_objects");
 
-	canvas = new ZWindowCanvas(mwindow, this, 10,10, get_w()-20,get_h()-20);
+	canvas = new ZWindowCanvas(mwindow, this,
+			xS(10),yS(10), get_w()-xS(20),get_h()-yS(20));
 	canvas->create_objects(mwindow->edl);
 	playback_engine = new PlaybackEngine(mwindow, canvas);
 	playback_engine->create_objects();
@@ -71,7 +72,8 @@ void ZWindowGUI::create_objects()
 
 int ZWindowGUI::resize_event(int w, int h)
 {
-	canvas->reposition_window(0, 10,10, w-20,h-20);
+	canvas->reposition_window(0,
+			xS(10),yS(10), w-xS(20),h-yS(20));
 	zwindow->reposition(get_x(), get_y(), w, h);
 	BC_WindowBase::resize_event(w, h);
 	return 1;

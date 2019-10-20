@@ -47,8 +47,8 @@
 #include "transportque.h"
 #include "vrender.h"
 
-#define WIDTH 400
-#define HEIGHT 330
+#define WIDTH xS(400)
+#define HEIGHT yS(330)
 #define MAX_SCALE 16
 
 ProxyMenuItem::ProxyMenuItem(MWindow *mwindow)
@@ -388,7 +388,7 @@ void ProxyWindow::create_objects()
 	}
 
 	int x = margin;
-	int y = margin+10;
+	int y = margin+yS(10);
 	add_subwindow(use_scaler = new ProxyUseScaler(this, x, y));
 	y += use_scaler->get_h() + margin;
 
@@ -396,7 +396,7 @@ void ProxyWindow::create_objects()
 	add_subwindow(text = new BC_Title(x, y, _("Scale factor:")));
 	x += text->get_w() + margin;
 
-	int popupmenu_w = BC_PopupMenu::calculate_w(get_text_width(MEDIUMFONT, dialog->size_text[0])+15);
+	int popupmenu_w = BC_PopupMenu::calculate_w(get_text_width(MEDIUMFONT, dialog->size_text[0])+xS(15));
 	add_subwindow(scale_factor = new ProxyMenu(mwindow, this, x, y, popupmenu_w, ""));
 	scale_factor->update_sizes();
 	x += scale_factor->get_w() + margin;
@@ -417,7 +417,7 @@ void ProxyWindow::create_objects()
 	add_subwindow(active_scale = new BC_Title(x, y, ""));
 	y += active_scale->get_h() + margin;
 
-	x = margin;  y += 25;
+	x = margin;  y += yS(25);
 	format_tools = new ProxyFormatTools(mwindow, this, dialog->asset);
 	format_tools->create_objects(x, y, 0, 1, 0, 0, 0, 1, 0, 1, // skip the path
 		0, 0);

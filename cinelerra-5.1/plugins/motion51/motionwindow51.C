@@ -32,7 +32,7 @@
 #include "pluginserver.h"
 
 Motion51Window::Motion51Window(Motion51Main *plugin)
- : PluginClientWindow(plugin, 600, 400, 600, 400, 0)
+ : PluginClientWindow(plugin, xS(600), yS(400), xS(600), yS(400), 0)
 {
 	this->plugin = plugin;
 }
@@ -43,62 +43,64 @@ Motion51Window::~Motion51Window()
 
 void Motion51Window::create_objects()
 {
-	int x = 10, y = 20;
+	int xs10 = xS(10), xs30 = xS(30), xs120 = xS(120);
+	int ys5 = yS(5), ys10 = yS(10), ys20 = yS(20);
+	int x = xs10, y = ys20, xs72 = xS(72);
 	int x0 = x, x1 = get_w()/2;
-	add_subwindow(sample_steps = new Motion51SampleSteps(plugin, x0=x, y, 120));
-	BC_Title *title = new BC_Title(x0+=sample_steps->get_w()+10, y, _("Samples"));
+	add_subwindow(sample_steps = new Motion51SampleSteps(plugin, x0=x, y, xs120));
+	BC_Title *title = new BC_Title(x0+=sample_steps->get_w()+xs10, y, _("Samples"));
 	add_subwindow(title);
 	sample_steps->create_objects();
 	sample_r = new Motion51Limits(plugin, this, x1,y, _("Sample Radius%"),
-		&plugin->config.sample_r, 0.f,100.f, 72);
+		&plugin->config.sample_r, 0.f,100.f, xs72);
 	sample_r->create_objects();
-	y += sample_r->get_h() + 20;
+	y += sample_r->get_h() + ys20;
 
 	block_x = new Motion51Limits(plugin, this, x0=x,y, _("Center X%"),
-		&plugin->config.block_x, 0.f, 100.f, 72);
+		&plugin->config.block_x, 0.f, 100.f, xs72);
 	block_x->create_objects();
 	block_y = new Motion51Limits(plugin, this, x1,y, _("Center Y%"),
-		&plugin->config.block_y, 0.f, 100.f, 72);
+		&plugin->config.block_y, 0.f, 100.f, xs72);
 	block_y->create_objects();
-	y += block_x->get_h() + 10;
+	y += block_x->get_h() + ys10;
 	block_w = new Motion51Limits(plugin, this, x0,y, _("Search W%"),
-		&plugin->config.block_w, 0.f,100.f, 72);
+		&plugin->config.block_w, 0.f,100.f, xs72);
 	block_w->create_objects();
 	block_h = new Motion51Limits(plugin, this, x1,y, _("Search H%"),
-		&plugin->config.block_h, 0.f,100.f, 72);
+		&plugin->config.block_h, 0.f,100.f, xs72);
 	block_h->create_objects();
-	y += block_w->get_h() + 10;
+	y += block_w->get_h() + ys10;
 
 	horiz_limit = new Motion51Limits(plugin, this, x0=x,y, _("Horiz shake limit%"),
-		&plugin->config.horiz_limit, 0.f, 75.f, 72);
+		&plugin->config.horiz_limit, 0.f, 75.f, xs72);
 	horiz_limit->create_objects();
 	shake_fade = new Motion51Limits(plugin, this, x1,y, _("Shake fade%"),
-		&plugin->config.shake_fade, 0.f, 75.f, 72);
+		&plugin->config.shake_fade, 0.f, 75.f, xs72);
 	shake_fade->create_objects();
-	y += horiz_limit->get_h() + 10;
+	y += horiz_limit->get_h() + ys10;
 	vert_limit = new Motion51Limits(plugin, this, x0,y, _("Vert shake limit%"),
-		&plugin->config.vert_limit, 0.f, 75.f, 72);
+		&plugin->config.vert_limit, 0.f, 75.f, xs72);
 	vert_limit->create_objects();
-	y += vert_limit->get_h() + 10;
+	y += vert_limit->get_h() + ys10;
 	twist_limit = new Motion51Limits(plugin, this, x0,y, _("Twist limit%"),
-		&plugin->config.twist_limit, 0.f, 75.f, 72);
+		&plugin->config.twist_limit, 0.f, 75.f, xs72);
 	twist_limit->create_objects();
 	twist_fade = new Motion51Limits(plugin, this, x1,y, _("Twist fade%"),
-		&plugin->config.twist_fade, 0.f, 75.f, 72);
+		&plugin->config.twist_fade, 0.f, 75.f, xs72);
 	twist_fade->create_objects();
-	y += twist_fade->get_h() + 20;
+	y += twist_fade->get_h() + ys20;
 
 	add_subwindow(draw_vectors = new Motion51DrawVectors(plugin, this, x, y));
 	add_subwindow(title = new BC_Title(x1, y, _("Tracking file:")));
-	y += draw_vectors->get_h() + 5;
+	y += draw_vectors->get_h() + ys5;
 	add_subwindow(enable_tracking = new Motion51EnableTracking(plugin, this, x, y));
 	add_subwindow(tracking_file = new Motion51TrackingFile(plugin,
-		plugin->config.tracking_file, this, x1, y, get_w()-30-x1));
-	y += enable_tracking->get_h() + 20;
+		plugin->config.tracking_file, this, x1, y, get_w()-xs30-x1));
+	y += enable_tracking->get_h() + ys20;
 
 	add_subwindow(reset_config = new Motion51ResetConfig(plugin, this, x0=x, y));
 	add_subwindow(reset_tracking = new Motion51ResetTracking(plugin, this, x1, y));
-	y += reset_config->get_h()+20;
+	y += reset_config->get_h()+ys20;
 
 	int pef = client->server->mwindow->edl->session->video_every_frame;
 	add_subwindow(pef_title = new BC_Title(x, y,
@@ -154,7 +156,7 @@ Motion51Limits::~Motion51Limits()
 void Motion51Limits::create_objects()
 {
 	BC_TumbleTextBox::create_objects();
-	int tx = BC_TumbleTextBox::get_x() + BC_TumbleTextBox::get_w() + 5;
+	int tx = BC_TumbleTextBox::get_x() + BC_TumbleTextBox::get_w() + xS(5);
 	int ty = BC_TumbleTextBox::get_y();
 	gui->add_subwindow(title = new BC_Title(tx,ty,ttext));
 }

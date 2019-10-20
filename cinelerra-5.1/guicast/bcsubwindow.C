@@ -25,10 +25,8 @@
 
 BC_SubWindow::BC_SubWindow(int x, int y, int w, int h, int bg_color)
 {
-	this->x = x;
-	this->y = y;
-	this->w = w;
-	this->h = h;
+	this->x = x;  this->y = y;
+	this->w = w;  this->h = h;
 	this->bg_color = bg_color;
 //printf("BC_SubWindow::BC_SubWindow 1\n");
 }
@@ -45,10 +43,6 @@ int BC_SubWindow::initialize()
 			0, 0);
 	return 0;
 }
-
-
-
-
 
 
 BC_SubWindowList::BC_SubWindowList()

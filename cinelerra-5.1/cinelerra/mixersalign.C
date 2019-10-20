@@ -85,7 +85,7 @@ MixersAlignMixerList::MixersAlignMixerList(MixersAlignWindow *gui,
 	this->dialog = dialog;
 	this->gui = gui;
 	for( int i=MIX_SZ; --i>=0; ) {
-		col_widths[i] = mix_widths[i];
+		col_widths[i] = xS(mix_widths[i]);
 		col_titles[i] = _(mix_titles[i]);
 	}
 }
@@ -200,7 +200,7 @@ MixersAlignMTrackList::MixersAlignMTrackList(MixersAlignWindow *gui,
 	this->dialog = dialog;
 	this->gui = gui;
 	for( int i=MTK_SZ; --i>=0; ) {
-		col_widths[i] = mtk_widths[i];
+		col_widths[i] = xS(mtk_widths[i]);
 		col_titles[i] = _(mtk_titles[i]);
 	}
 }
@@ -273,7 +273,7 @@ MixersAlignATrackList::MixersAlignATrackList(MixersAlignWindow *gui,
 	this->dialog = dialog;
 	this->gui = gui;
 	for( int i=ATK_SZ; --i>=0; ) {
-		col_widths[i] = atk_widths[i];
+		col_widths[i] = xS(atk_widths[i]);
 		col_titles[i] = _(atk_titles[i]);
 	}
 }
@@ -479,7 +479,7 @@ int MixersAlignUndoItem::handle_event()
 
 MixersAlignUndo::MixersAlignUndo(MixersAlignWindow *gui,
 		MixersAlign *dialog, int x, int y)
- : BC_PopupMenu(x, y, 100, _("Undo"))
+ : BC_PopupMenu(x, y, xS(100), _("Undo"))
 {
 	this->gui = gui;
 	this->dialog = dialog;
@@ -505,7 +505,7 @@ void MixersAlignUndo::add_undo_item(int no)
 
 MixersAlignCheckPoint::MixersAlignCheckPoint(MixersAlignWindow *gui,
 		MixersAlign *dialog, int x, int y)
- : BC_GenericButton(x, y, 100, _("CheckPoint"))
+ : BC_GenericButton(x, y, xS(100), _("CheckPoint"))
 {
 	this->gui = gui;
 	this->dialog = dialog;
@@ -518,7 +518,7 @@ int MixersAlignCheckPoint::handle_event()
 }
 
 MixersAlignWindow::MixersAlignWindow(MixersAlign *dialog, int x, int y)
- : BC_Window(_("Align Mixers"), x, y, 880, 380, 880, 380, 1)
+ : BC_Window(_("Align Mixers"), x, y, xS(880), yS(380), xS(880), yS(380), 1)
 {
 	this->dialog = dialog;
 }
@@ -528,7 +528,9 @@ MixersAlignWindow::~MixersAlignWindow()
 
 void MixersAlignWindow::create_objects()
 {
-	int x = 10, y = 10, w4 = (get_w()-x-10)/4, lw = w4 + 20;
+	int xs10 = xS(10), xs20 = xS(20);
+	int ys10 = yS(10), ys20 = yS(20);
+	int x = xs10, y = ys10, w4 = (get_w()-x-xs10)/4, lw = w4 + xs20;
 	int x1 = x, x2 = x1 + lw , x3 = x2 + lw, x4 = get_w()-x;
 	mixer_title = new BC_Title(x1,y, _("Mixers:"), MEDIUMFONT, YELLOW);
 	add_subwindow(mixer_title);
@@ -536,25 +538,25 @@ void MixersAlignWindow::create_objects()
 	add_subwindow(mtrack_title);
 	atrack_title = new BC_Title(x3,y, _("Audio Tracks:"), MEDIUMFONT, YELLOW);
 	add_subwindow(atrack_title);
-	y += mixer_title->get_h() + 10;
-	int y1 = y, y2 = get_h() - BC_OKButton::calculate_h() - 32;
+	y += mixer_title->get_h() + ys10;
+	int y1 = y, y2 = get_h() - BC_OKButton::calculate_h() - yS(32);
 	int lh = y2 - y1;
-	mixer_list = new MixersAlignMixerList(this, dialog, x1, y, x2-x1-20, lh);
+	mixer_list = new MixersAlignMixerList(this, dialog, x1, y, x2-x1-xs20, lh);
 	add_subwindow(mixer_list);
-	mtrack_list = new MixersAlignMTrackList(this, dialog, x2, y, x3-x2-20, lh);
+	mtrack_list = new MixersAlignMTrackList(this, dialog, x2, y, x3-x2-xs20, lh);
 	add_subwindow(mtrack_list);
-	atrack_list = new MixersAlignATrackList(this, dialog, x3, y, x4-x3-20, lh);
+	atrack_list = new MixersAlignATrackList(this, dialog, x3, y, x4-x3-xs20, lh);
 	add_subwindow(atrack_list);
-	int xr = x2-10 - MixersAlignReset::calculate_width(this);
-	y1 = y2+20;
+	int xr = x2-xs10 - MixersAlignReset::calculate_width(this);
+	y1 = y2+ys20;
 	add_subwindow(reset = new MixersAlignReset(this, dialog, xr, y1));
-	add_subwindow(match = new MixersAlignMatch(this, dialog, x2+10, y1));
-	int xa = x3-10 - MixersAlignNudgeTracks::calculate_width(this);
+	add_subwindow(match = new MixersAlignMatch(this, dialog, x2+xs10, y1));
+	int xa = x3-xs10 - MixersAlignNudgeTracks::calculate_width(this);
 	add_subwindow(nudge_tracks = new MixersAlignNudgeTracks(this, dialog, xa, y1));
-	y2 = y1 + nudge_tracks->get_h() + 10;
+	y2 = y1 + nudge_tracks->get_h() + ys10;
 	add_subwindow(match_all = new MixersAlignMatchAll(this, dialog, xr, y2));
 	add_subwindow(nudge_selected = new MixersAlignNudgeSelected(this, dialog, xa, y2));
-	int xu = x3+10;
+	int xu = x3+xs10;
 	add_subwindow(check_point = new MixersAlignCheckPoint(this, dialog, xu, y1));
 	add_subwindow(undo = new MixersAlignUndo(this, dialog, xu, y2));
 	undo->create_objects();
@@ -565,27 +567,29 @@ void MixersAlignWindow::create_objects()
 
 int MixersAlignWindow::resize_event(int w, int h)
 {
-	int x = 10, y = 10, w4 = (w-x-10)/4, lw = w4 + 20;
+	int xs10 = xS(10), xs20 = xS(20);
+	int ys10 = yS(10), ys20 = yS(20);
+	int x = xs10, y = ys10, w4 = (w-x-xs10)/4, lw = w4 + xs20;
 	int x1 = x, x2 = x1 + lw , x3 = x2 + lw, x4 = w-x;
 	mixer_title->reposition_window(x1, y);
 	mtrack_title->reposition_window(x2, y);
 	atrack_title->reposition_window(x3, y);
-	y += mixer_title->get_h() + 10;
-	int y1 = y, y2 = h - BC_OKButton::calculate_h() - 32;
+	y += mixer_title->get_h() + ys10;
+	int y1 = y, y2 = h - BC_OKButton::calculate_h() - yS(32);
 	int lh = y2 - y1;
-	mixer_list->reposition_window(x1, y, x2-x1-20, lh);
-	mtrack_list->reposition_window(x2, y, x3-x2-20, lh);
-	atrack_list->reposition_window(x3, y, x4-x3-20, lh);
-	int xr = x2-10 - MixersAlignReset::calculate_width(this);
-	y1 = y2+20;
+	mixer_list->reposition_window(x1, y, x2-x1-xs20, lh);
+	mtrack_list->reposition_window(x2, y, x3-x2-xs20, lh);
+	atrack_list->reposition_window(x3, y, x4-x3-xs20, lh);
+	int xr = x2-xs10 - MixersAlignReset::calculate_width(this);
+	y1 = y2+ys20;
 	reset->reposition_window(xr, y1);
-	match->reposition_window(x2+10, y1);
-	int xa = x3-10 - MixersAlignNudgeTracks::calculate_width(this);
+	match->reposition_window(x2+xs10, y1);
+	int xa = x3-xs10 - MixersAlignNudgeTracks::calculate_width(this);
 	nudge_tracks->reposition_window(xa, y1);
-	y2 = y1 + nudge_tracks->get_h() + 10;
+	y2 = y1 + nudge_tracks->get_h() + ys10;
 	match_all->reposition_window(xr, y2);
 	nudge_selected->reposition_window(xa, y2);
-	int xu = x3+10;
+	int xu = x3+xs10;
 	check_point->reposition_window(xu, y1);
 	undo->reposition_window(xu, y2);
 	return 0;

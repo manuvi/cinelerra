@@ -69,17 +69,8 @@ BC_ResizeCall::BC_ResizeCall(int w, int h)
 }
 
 
-
-
-
-
-
 int BC_WindowBase::shm_completion_event = -1;
-
-
-
 BC_Resources BC_WindowBase::resources;
-
 Window XGroupLeader = 0;
 
 Mutex BC_KeyboardHandlerLock::keyboard_listener_mutex("keyboard_listener",0);
@@ -2092,15 +2083,8 @@ int BC_WindowBase::init_colors()
 	char *data = 0;
 	XImage *ximage;
 	ximage = XCreateImage(top_level->display,
-					top_level->vis,
-					top_level->default_depth,
-					ZPixmap,
-					0,
-					data,
-					16,
-					16,
-					8,
-					0);
+			top_level->vis, top_level->default_depth,
+			ZPixmap, 0, data, 16, 16, 8, 0);
 	bits_per_pixel = ximage->bits_per_pixel;
 	XDestroyImage(ximage);
 
@@ -3880,13 +3864,13 @@ int BC_WindowBase::get_abs_cursor_y(int lock_window)
 
 void BC_WindowBase::get_pop_cursor(int &px, int &py, int lock_window)
 {
-	int margin = 100;
+	int xmargin = xS(100), ymargin = yS(100);
 	get_abs_cursor(px, py, lock_window);
-	if( px < margin ) px = margin;
-	if( py < margin ) py = margin;
-	int wd = get_screen_w(lock_window,-1) - margin;
+	if( px < xmargin ) px = xmargin;
+	if( py < ymargin ) py = ymargin;
+	int wd = get_screen_w(lock_window,-1) - xmargin;
 	if( px > wd ) px = wd;
-	int ht = get_screen_h(lock_window,-1) - margin;
+	int ht = get_screen_h(lock_window,-1) - ymargin;
 	if( py > ht ) py = ht;
 }
 int BC_WindowBase::get_pop_cursor_x(int lock_window)
@@ -4147,21 +4131,15 @@ int BC_WindowBase::reposition_window(int x, int y, int w, int h)
 	{
 // KDE shifts window right and down.
 // FVWM leaves window alone and adds border around it.
-		XMoveResizeWindow(top_level->display,
-			win,
+		XMoveResizeWindow(top_level->display, win,
 			x - BC_DisplayInfo::auto_reposition_x,
 			y - BC_DisplayInfo::auto_reposition_y,
-			this->w,
-			this->h);
+			this->w, this->h);
 	}
 	else
 	{
-		XMoveResizeWindow(top_level->display,
-			win,
-			x,
-			y,
-			this->w,
-			this->h);
+		XMoveResizeWindow(top_level->display, win, x, y,
+			this->w, this->h);
 	}
 
 	if(resize)
@@ -4381,12 +4359,8 @@ int BC_WindowBase::save_defaults(BC_Hash *defaults)
 
 // For some reason XTranslateCoordinates can take a long time to return.
 // We work around this by only calling it when the event windows are different.
-void BC_WindowBase::translate_coordinates(Window src_w,
-		Window dest_w,
-		int src_x,
-		int src_y,
-		int *dest_x_return,
-		int *dest_y_return)
+void BC_WindowBase::translate_coordinates(Window src_w, Window dest_w,
+		int src_x, int src_y, int *dest_x_return, int *dest_y_return)
 {
 	Window tempwin = 0;
 //Timer timer;
@@ -4398,14 +4372,8 @@ void BC_WindowBase::translate_coordinates(Window src_w,
 	}
 	else
 	{
-		XTranslateCoordinates(top_level->display,
-			src_w,
-			dest_w,
-			src_x,
-			src_y,
-			dest_x_return,
-			dest_y_return,
-			&tempwin);
+		XTranslateCoordinates(top_level->display, src_w, dest_w,
+			src_x, src_y, dest_x_return, dest_y_return, &tempwin);
 //printf("BC_WindowBase::translate_coordinates 1 %lld\n", timer.get_difference());
 	}
 }
@@ -4419,10 +4387,6 @@ void BC_WindowBase::get_win_coordinates(int abs_x, int abs_y, int *x, int *y)
 {
 	translate_coordinates(top_level->rootwin, win, abs_x, abs_y, x, y);
 }
-
-
-
-
 
 
 #ifdef HAVE_LIBXXF86VM

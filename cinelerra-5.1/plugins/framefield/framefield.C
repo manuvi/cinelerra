@@ -187,10 +187,10 @@ int FrameFieldConfig::equivalent(FrameFieldConfig &src)
 
 FrameFieldWindow::FrameFieldWindow(FrameField *plugin)
  : PluginClientWindow(plugin,
-	210,
-	160,
-	200,
-	160,
+	xS(210),
+	yS(160),
+	xS(200),
+	yS(160),
 	0)
 {
 	this->plugin = plugin;
@@ -198,11 +198,13 @@ FrameFieldWindow::FrameFieldWindow(FrameField *plugin)
 
 void FrameFieldWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int xs10 = xS(10);
+	int ys5 = yS(5), ys10 = yS(10);
+	int x = xs10, y = ys10;
 	add_subwindow(top = new FrameFieldTop(plugin, this, x, y));
-	y += top->get_h() + 5;
+	y += top->get_h() + ys5;
 	add_subwindow(bottom = new FrameFieldBottom(plugin, this, x, y));
-	y += bottom->get_h() + 5;
+	y += bottom->get_h() + ys5;
 	show_window();
 	flush();
 }

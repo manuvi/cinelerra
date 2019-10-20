@@ -84,10 +84,10 @@ void RemoveGapsConfig::boundaries()
 
 RemoveGapsWindow::RemoveGapsWindow(RemoveGaps *plugin)
  : PluginClientWindow(plugin,
-	320,
-	160,
-	320,
-	160,
+	xS(320),
+	yS(160),
+	xS(320),
+	yS(160),
 	0)
 {
 	this->plugin = plugin;
@@ -99,7 +99,7 @@ RemoveGapsWindow::~RemoveGapsWindow()
 
 void RemoveGapsWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int x = xS(10), y = yS(10);
 	BC_Title *title;
 
 	add_subwindow(title = new BC_Title(x, y, _("Threshold of gap (DB):")));

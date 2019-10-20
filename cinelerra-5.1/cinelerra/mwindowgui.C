@@ -80,15 +80,9 @@
 // the main window uses its own private colormap for video
 MWindowGUI::MWindowGUI(MWindow *mwindow)
  : BC_Window(_(PROGRAM_NAME ": Program"),
- 		mwindow->session->mwindow_x,
-		mwindow->session->mwindow_y,
-		mwindow->session->mwindow_w,
-		mwindow->session->mwindow_h,
-		100,
-		100,
-		1,
-		1,
-		1)
+		mwindow->session->mwindow_x, mwindow->session->mwindow_y,
+		mwindow->session->mwindow_w, mwindow->session->mwindow_h,
+		xS(100), yS(100), 1, 1, 1)
 {
 	this->mwindow = mwindow;
 //	samplescroll = 0;
@@ -124,7 +118,7 @@ MWindowGUI::MWindowGUI(MWindow *mwindow)
 	keyframe_menu = 0;
 	keyframe_hide = 0;
 	keyvalue_popup = 0;
- 	transition_menu = 0;
+	transition_menu = 0;
 	remote_control = 0;
 	cwindow_remote_handler = 0;
 	record_remote_handler = 0;
@@ -281,9 +275,9 @@ void MWindowGUI::create_objects()
 
 	add_subwindow(mbuttons = new MButtons(mwindow, this));
 	mbuttons->create_objects();
-	int x1 = mbuttons->get_x() + mbuttons->get_w(), y1 = mbuttons->get_y()+2;
+	int x1 = mbuttons->get_x() + mbuttons->get_w(), y1 = mbuttons->get_y()+yS(2);
 	add_subwindow(proxy_toggle = new ProxyToggle(mwindow, mbuttons, x1, y1));
-	x1 += proxy_toggle->get_w() + 3;
+	x1 += proxy_toggle->get_w() + xS(3);
 	add_subwindow(ffmpeg_toggle = new FFMpegToggle(mwindow, mbuttons, x1, y1));
 
 	pane[TOP_LEFT_PANE] = new TimelinePane(mwindow,
@@ -417,9 +411,9 @@ int MWindowGUI::resize_event(int w, int h)
 	mwindow->theme->get_mwindow_sizes(this, w, h);
 	mwindow->theme->draw_mwindow_bg(this);
 	mbuttons->resize_event();
-	int x1 = mbuttons->get_x() + mbuttons->get_w(), y1 = mbuttons->get_y()+2;
+	int x1 = mbuttons->get_x() + mbuttons->get_w(), y1 = mbuttons->get_y()+yS(2);
 	proxy_toggle->reposition_window(x1, y1);
-	x1 += proxy_toggle->get_w() + 3;
+	x1 += proxy_toggle->get_w() + xS(3);
 	ffmpeg_toggle->reposition_window(x1, y1);
 	statusbar->resize_event();
 	zoombar->resize_event();
@@ -1010,10 +1004,9 @@ int MWindowGUI::drag_motion()
 	    mwindow->session->current_operation == DRAG_EDIT ||
 	    mwindow->session->current_operation == DRAG_GROUP ||
 	    mwindow->session->current_operation == DRAG_AEFFECT_COPY ||
-	    mwindow->session->current_operation == DRAG_VEFFECT_COPY )
-        {
-                redraw = 1;
-        }
+	    mwindow->session->current_operation == DRAG_VEFFECT_COPY ) {
+		redraw = 1;
+	}
 
 
 // printf("drag_motion %d %d over_track=%p over_edit=%p\n",

@@ -653,7 +653,7 @@ int Edit::select_handle(float view_start, float zoom_units, int cursor_x, int cu
 
 	int64_t pixel1, pixel2;
 	pixel1 = left;
-	pixel2 = pixel1 + 10;
+	pixel2 = pixel1 + xS(10);
 
 // test left edit
 // cursor_x is faked in acanvas
@@ -665,7 +665,7 @@ int Edit::select_handle(float view_start, float zoom_units, int cursor_x, int cu
 
 	//int64_t endproject = startproject + length;
 	pixel2 = right;
-	pixel1 = pixel2 - 10;
+	pixel1 = pixel2 - xS(10);
 
 // test right edit
 	if(cursor_x >= pixel1 && cursor_x <= pixel2)

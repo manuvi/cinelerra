@@ -226,8 +226,8 @@ OilRadius::OilRadius(OilEffect *plugin, int x, int y)
  : BC_FSlider(x,
 	   	y,
 		0,
-		200,
-		200,
+		xS(200),
+		yS(200),
 		(float)0,
 		(float)30,
 		plugin->config.radius)
@@ -283,10 +283,10 @@ int OilReset::handle_event()
 
 OilWindow::OilWindow(OilEffect *plugin)
  : PluginClientWindow(plugin,
-	300,
-	120,
-	300,
-	120,
+	xS(300),
+	yS(120),
+	xS(300),
+	yS(120),
 	0)
 {
 	this->plugin = plugin;
@@ -298,12 +298,14 @@ OilWindow::~OilWindow()
 
 void OilWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int xs10 = xS(10), xs70 = xS(70);
+	int ys10 = yS(10), ys40 = yS(40);
+	int x = xs10, y = ys10;
 	add_subwindow(new BC_Title(x, y, _("Radius:")));
-	add_subwindow(radius = new OilRadius(plugin, x + 70, y));
-	y += 40;
+	add_subwindow(radius = new OilRadius(plugin, x + xs70, y));
+	y += ys40;
 	add_subwindow(intensity = new OilIntensity(plugin, x, y));
-	y += 40;
+	y += ys40;
 	add_subwindow(reset = new OilReset(plugin, this, x, y));
 
 	show_window();

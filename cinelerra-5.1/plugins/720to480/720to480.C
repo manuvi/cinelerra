@@ -52,16 +52,7 @@ _720to480Config::_720to480Config()
 
 
 _720to480Window::_720to480Window(_720to480Main *client, int x, int y)
- : BC_Window(client->gui_string,
- 	x,
-	y,
-	230,
-	150,
-	230,
-	150,
-	0,
-	0,
-	1)
+ : BC_Window(client->gui_string, x, y, xS(230), yS(150), xS(230), yS(150), 0, 0, 1)
 {
 	this->client = client;
 }
@@ -73,15 +64,16 @@ _720to480Window::~_720to480Window()
 
 void _720to480Window::create_objects()
 {
-	int x = 10, y = 10;
+	lock_window("720to480Window::create_objects");
+	int x = xS(10), y = yS(10);
 
 	add_tool(odd_first = new _720to480Order(client, this, 1, x, y, _("Odd field first")));
-	y += 25;
+	y += yS(25);
 	add_tool(even_first = new _720to480Order(client, this, 0, x, y, _("Even field first")));
 
-// 	y += 25;
+// 	y += yS(25);
 // 	add_tool(forward = new _720to480Direction(client, this, FORWARD, x, y, _("Downsample")));
-// 	y += 25;
+// 	y += yS(25);
 // 	add_tool(reverse = new _720to480Direction(client, this, REVERSE, x, y, _("Upsample")));
 //
 	add_subwindow(new BC_OKButton(this));
@@ -89,6 +81,7 @@ void _720to480Window::create_objects()
 
 	show_window();
 	flush();
+	unlock_window();
 }
 
 int _720to480Window::close_event()

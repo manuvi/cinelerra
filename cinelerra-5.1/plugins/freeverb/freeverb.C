@@ -294,10 +294,10 @@ int FreeverbMode::handle_event()
 
 FreeverbWindow::FreeverbWindow(FreeverbEffect *plugin)
  : PluginClientWindow(plugin,
-	180,
-	250,
-	180,
-	250,
+	xS(180),
+	yS(250),
+	xS(180),
+	yS(250),
 	0)
 {
 	this->plugin = plugin;
@@ -305,7 +305,9 @@ FreeverbWindow::FreeverbWindow(FreeverbEffect *plugin)
 
 void FreeverbWindow::create_objects()
 {
-	int x1 = 10, x2 = 100, x3 = 135, y1 = 10, y2 = 20, margin = 30;
+	int xs10 = xS(10), xs100 = xS(100), xs135 = xS(135);
+	int ys10 = yS(10), ys20 = yS(20), ys30 = yS(30);
+	int x1 = xs10, x2 = xs100, x3 = xs135, y1 = ys10, y2 = ys20, margin = ys30;
 
 	add_subwindow(new BC_Title(x1, y2, _("Gain:")));
 	add_subwindow(gain = new FreeverbGain(plugin, x3, y1));

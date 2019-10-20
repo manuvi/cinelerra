@@ -478,7 +478,7 @@ BC_Window* CreateBD_Thread::new_gui()
 	int scr_x = mwindow->gui->get_screen_x(0, -1);
 	int scr_w = mwindow->gui->get_screen_w(0, -1);
 	int scr_h = mwindow->gui->get_screen_h(0, -1);
-	int w = 500, h = 290;
+	int w = xS(500), h = yS(290);
 	int x = scr_x + scr_w/2 - w/2, y = scr_h/2 - h/2;
 
 	gui = new CreateBD_GUI(this, x, y, w, h);
@@ -709,7 +709,7 @@ CreateBD_WideAudio::~CreateBD_WideAudio()
 
 
 CreateBD_GUI::CreateBD_GUI(CreateBD_Thread *thread, int x, int y, int w, int h)
- : BC_Window(_(PROGRAM_NAME ": Create BD"), x, y, w, h, 50, 50, 1, 0, 1)
+ : BC_Window(_(PROGRAM_NAME ": Create BD"), x, y, w, h, xS(50), yS(50), 1, 0, 1)
 {
 	this->thread = thread;
 	at_x = at_y = tmp_x = tmp_y = 0;
@@ -739,20 +739,23 @@ CreateBD_GUI::~CreateBD_GUI()
 
 void CreateBD_GUI::create_objects()
 {
+	int xs10 = xS(10), xs30 = xS(30), xs35 = xS(35);
+	int xs160 = xS(160), xs170 = xS(170);
+	int ys5 = yS(5), ys10 = yS(10);
 	lock_window("CreateBD_GUI::create_objects");
-	int pady = BC_TextBox::calculate_h(this, MEDIUMFONT, 0, 1) + 5;
+	int pady = BC_TextBox::calculate_h(this, MEDIUMFONT, 0, 1) + ys5;
 	int padx = BC_Title::calculate_w(this, (char*)"X", MEDIUMFONT);
 	int x = padx/2, y = pady/2;
 	BC_Title *title = new BC_Title(x, y, _("Title:"), MEDIUMFONT, YELLOW);
 	add_subwindow(title);
 	at_x = x + title->get_w();  at_y = y;
-	asset_title = new CreateBD_AssetTitle(this, at_x, at_y, get_w()-at_x-10);
+	asset_title = new CreateBD_AssetTitle(this, at_x, at_y, get_w()-at_x-xs10);
 	add_subwindow(asset_title);
 	y += title->get_h() + pady/2;
 	title = new BC_Title(x, y, _("Work path:"), MEDIUMFONT, YELLOW);
 	add_subwindow(title);
 	tmp_x = x + title->get_w();  tmp_y = y;
-	tmp_path = new CreateBD_TmpPath(this, tmp_x, tmp_y,  get_w()-tmp_x-35);
+	tmp_path = new CreateBD_TmpPath(this, tmp_x, tmp_y,  get_w()-tmp_x-xs35);
 	add_subwindow(tmp_path);
 	btmp_path = new BrowseButton(thread->mwindow->theme, this, tmp_path,
 		tmp_x+tmp_path->get_w(), tmp_y, "/tmp",
@@ -761,7 +764,7 @@ void CreateBD_GUI::create_objects()
 	y += title->get_h() + pady/2;
 	disk_space = new CreateBD_DiskSpace(this, x, y);
 	add_subwindow(disk_space);
-	int x0 = get_w() - 170;
+	int x0 = get_w() - xs170;
 	title = new BC_Title(x0, y, _("Media:"), MEDIUMFONT, YELLOW);
 	add_subwindow(title);
 	int x1 =  x0+title->get_w()+padx;
@@ -779,7 +782,7 @@ void CreateBD_GUI::create_objects()
 	add_subwindow(standard);
 	standard->create_objects();
 	standard->set_text(bd_formats[thread->use_standard].name);
-	x0 -= 30;
+	x0 -= xs30;
 	title = new BC_Title(x0, y, _("Scale:"), MEDIUMFONT, YELLOW);
 	add_subwindow(title);
 	x1 = x0+title->get_w()+padx;
@@ -794,9 +797,9 @@ void CreateBD_GUI::create_objects()
 	need_histogram = new CreateBD_Histogram(this, x1, y);
 	add_subwindow(need_histogram);
 	y += need_histogram->get_h() + pady/2;
-	non_standard = new BC_Title(x1, y+5, "", MEDIUMFONT, RED);
+	non_standard = new BC_Title(x1, y+ys5, "", MEDIUMFONT, RED);
 	add_subwindow(non_standard);
-	x1 += 160;  y = y1;
+	x1 += xs160;  y = y1;
 	need_inverse_telecine = new CreateBD_InverseTelecine(this, x1, y);
 	add_subwindow(need_inverse_telecine);
 	y += need_inverse_telecine->get_h() + pady/2;
@@ -805,7 +808,7 @@ void CreateBD_GUI::create_objects()
 	y += need_wide_audio->get_h() + pady/2;
 	need_resize_tracks = new CreateBD_ResizeTracks(this, x1, y);
 	add_subwindow(need_resize_tracks);
-	x1 += 160;  y = y1;
+	x1 += xs160;  y = y1;
 	need_labeled = new CreateBD_LabelChapters(this, x1, y);
 	add_subwindow(need_labeled);
 	y += need_labeled->get_h() + pady/2;
@@ -813,14 +816,14 @@ void CreateBD_GUI::create_objects()
 	add_subwindow(need_farmed);
 	ok_w = BC_OKButton::calculate_w();
 	ok_h = BC_OKButton::calculate_h();
-	ok_x = 10;
-	ok_y = get_h() - ok_h - 10;
+	ok_x = xs10;
+	ok_y = get_h() - ok_h - xs10;
 	ok = new CreateBD_OK(this, ok_x, ok_y);
 	add_subwindow(ok);
 	cancel_w = BC_CancelButton::calculate_w();
 	cancel_h = BC_CancelButton::calculate_h();
-	cancel_x = get_w() - cancel_w - 10,
-	cancel_y = get_h() - cancel_h - 10;
+	cancel_x = get_w() - cancel_w - xs10,
+	cancel_y = get_h() - cancel_h - ys10;
 	cancel = new CreateBD_Cancel(this, cancel_x, cancel_y);
 	add_subwindow(cancel);
 	show_window();
@@ -829,13 +832,15 @@ void CreateBD_GUI::create_objects()
 
 int CreateBD_GUI::resize_event(int w, int h)
 {
-	asset_title->reposition_window(at_x, at_y, get_w()-at_x-10);
-	tmp_path->reposition_window(tmp_x, tmp_y,  get_w()-tmp_x-35);
+	int xs10 = xS(10), xs35 = xS(35);
+	int ys10 = yS(10);
+	asset_title->reposition_window(at_x, at_y, get_w()-at_x-xs10);
+	tmp_path->reposition_window(tmp_x, tmp_y,  get_w()-tmp_x-xs35);
 	btmp_path->reposition_window(tmp_x+tmp_path->get_w(), tmp_y);
-	ok_y = h - ok_h - 10;
+	ok_y = h - ok_h - ys10;
 	ok->reposition_window(ok_x, ok_y);
-	cancel_x = w - cancel_w - 10,
-	cancel_y = h - cancel_h - 10;
+	cancel_x = w - cancel_w - xs10,
+	cancel_y = h - cancel_h - ys10;
 	cancel->reposition_window(cancel_x, cancel_y);
 	return 0;
 }
@@ -1018,7 +1023,7 @@ int CreateBD_FormatItem::handle_event()
 
 
 CreateBD_Format::CreateBD_Format(CreateBD_GUI *gui, int x, int y)
- : BC_PopupMenu(x, y, 180, bd_formats[gui->thread->use_standard].name, 1)
+ : BC_PopupMenu(x, y, xS(180), bd_formats[gui->thread->use_standard].name, 1)
 {
 	this->gui = gui;
 }
@@ -1073,7 +1078,7 @@ int CreateBD_ScaleItem::handle_event()
 
 
 CreateBD_Scale::CreateBD_Scale(CreateBD_GUI *gui, int x, int y)
- : BC_PopupMenu(x, y, 100, "", 1)
+ : BC_PopupMenu(x, y, xS(100), "", 1)
 {
 	this->gui = gui;
 }
@@ -1099,7 +1104,7 @@ int CreateBD_Scale::handle_event()
 
 
 CreateBD_MediaSize::CreateBD_MediaSize(CreateBD_GUI *gui, int x, int y)
- : BC_PopupTextBox(gui, 0, 0, x, y, 70,50)
+ : BC_PopupTextBox(gui, 0, 0, x, y, xS(70),yS(50))
 {
 	this->gui = gui;
 }

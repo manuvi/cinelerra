@@ -165,10 +165,10 @@ int FieldFrameConfig::equivalent(FieldFrameConfig &src)
 
 FieldFrameWindow::FieldFrameWindow(FieldFrame *plugin)
  : PluginClientWindow(plugin,
-	230,
-	100,
-	230,
-	100,
+	xS(230),
+	yS(100),
+	xS(230),
+	yS(100),
 	0)
 {
 	this->plugin = plugin;
@@ -176,13 +176,15 @@ FieldFrameWindow::FieldFrameWindow(FieldFrame *plugin)
 
 void FieldFrameWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int xs10 = xS(10);
+	int ys10 = yS(10), ys30 = yS(30);
+	int x = xs10, y = ys10;
 	add_subwindow(top = new FieldFrameTop(plugin, this, x, y));
-	y += 30;
+	y += ys30;
 	add_subwindow(bottom = new FieldFrameBottom(plugin, this, x, y));
-// 	y += 30;
+// 	y += ys30;
 // 	add_subwindow(first = new FieldFrameFirst(plugin, this, x, y));
-// 	y += 30;
+// 	y += ys30;
 // 	add_subwindow(second = new FieldFrameSecond(plugin, this, x, y));
 
 	show_window();

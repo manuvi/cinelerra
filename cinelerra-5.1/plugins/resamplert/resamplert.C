@@ -79,10 +79,10 @@ void ResampleRTConfig::boundaries()
 
 ResampleRTWindow::ResampleRTWindow(ResampleRT *plugin)
  : PluginClientWindow(plugin,
-	210,
-	160,
-	200,
-	160,
+	xS(210),
+	yS(160),
+	xS(200),
+	yS(160),
 	0)
 {
 	this->plugin = plugin;

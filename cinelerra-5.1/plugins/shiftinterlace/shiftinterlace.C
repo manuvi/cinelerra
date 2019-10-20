@@ -86,10 +86,10 @@ void ShiftInterlaceConfig::interpolate(ShiftInterlaceConfig &prev,
 
 ShiftInterlaceWindow::ShiftInterlaceWindow(ShiftInterlaceMain *plugin)
  : PluginClientWindow(plugin,
-	370,
-	110,
-	370,
-	110,
+	xS(370),
+	yS(110),
+	xS(370),
+	yS(110),
 	0)
 {
 	this->plugin = plugin;
@@ -98,21 +98,23 @@ ShiftInterlaceWindow::ShiftInterlaceWindow(ShiftInterlaceMain *plugin)
 
 void ShiftInterlaceWindow::create_objects()
 {
-	int x = 10, y = 10;
-	int margin = 30;
-	int x1 = 0; int clrBtn_w = 50;
+	int xs10 = xS(10), xs30 = xS(30), xs50 = xS(50), xs90 = xS(90);
+	int ys10 = yS(10), ys40 = yS(40);
+	int x = xs10, y = ys10;
+	int margin = xs30;
+	int x1 = 0; int clrBtn_w = xs50;
 
 	add_subwindow(new BC_Title(x, y, _("Odd offset:")));
-	add_subwindow(odd_offset = new ShiftInterlaceOdd(plugin, x + 90, y));
-	x1 = x + 90 + odd_offset->get_w() + 10;
+	add_subwindow(odd_offset = new ShiftInterlaceOdd(plugin, x + xs90, y));
+	x1 = x + xs90 + odd_offset->get_w() + xs10;
 	add_subwindow(odd_offsetClr = new ShiftInterlaceSliderClr(plugin, this, x1, y, clrBtn_w, RESET_ODD_OFFSET));
 
 	y += margin;
 	add_subwindow(new BC_Title(x, y, _("Even offset:")));
-	add_subwindow(even_offset = new ShiftInterlaceEven(plugin, x + 90, y));
+	add_subwindow(even_offset = new ShiftInterlaceEven(plugin, x + xs90, y));
 	add_subwindow(even_offsetClr = new ShiftInterlaceSliderClr(plugin, this, x1, y, clrBtn_w, RESET_EVEN_OFFSET));
 
-	y += 40;
+	y += ys40;
 	add_subwindow(reset = new ShiftInterlaceReset(plugin, this, x, y));
 	show_window();
 	flush();
@@ -140,8 +142,8 @@ ShiftInterlaceOdd::ShiftInterlaceOdd(ShiftInterlaceMain *plugin, int x, int y)
  : BC_ISlider(x,
  	y,
 	0,
-	200,
-	200,
+	xS(200),
+	yS(200),
 	-100,
 	100,
 	plugin->config.odd_offset)
@@ -162,8 +164,8 @@ ShiftInterlaceEven::ShiftInterlaceEven(ShiftInterlaceMain *plugin, int x, int y)
  : BC_ISlider(x,
  	y,
 	0,
-	200,
-	200,
+	xS(200),
+	yS(200),
 	-100,
 	100,
 	plugin->config.even_offset)

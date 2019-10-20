@@ -97,7 +97,7 @@ void RGBShiftConfig::interpolate(RGBShiftConfig &prev,
 #define MAXVALUE 100
 
 RGBShiftLevel::RGBShiftLevel(RGBShiftEffect *plugin, int *output, int x, int y)
- : BC_ISlider(x, y, 0, 200, 200, -MAXVALUE, MAXVALUE, *output)
+ : BC_ISlider(x, y, 0, xS(200), yS(200), -MAXVALUE, MAXVALUE, *output)
 {
 	this->plugin = plugin;
 	this->output = output;
@@ -152,47 +152,49 @@ int RGBShiftSliderClr::handle_event()
 
 
 RGBShiftWindow::RGBShiftWindow(RGBShiftEffect *plugin)
- : PluginClientWindow(plugin, 320, 230, 320, 230, 0)
+ : PluginClientWindow(plugin, xS(320), yS(230), xS(320), yS(230), 0)
 {
 	this->plugin = plugin;
 }
 
 void RGBShiftWindow::create_objects()
 {
-	int x = 10, y = 10, x1 = 50;
-	int x2 = 0; int clrBtn_w = 50;
+	int xs10 = xS(10), xs50 = xS(50);
+	int ys10 = yS(10), ys30 = yS(30), ys40 = yS(40);
+	int x = xs10, y = ys10, x1 = xs50;
+	int x2 = 0; int clrBtn_w = xs50;
 
 	add_subwindow(new BC_Title(x, y, _("R_dx:")));
 	add_subwindow(r_dx = new RGBShiftLevel(plugin, &plugin->config.r_dx, x1, y));
-	x2 = x1 + r_dx->get_w() + 10;
+	x2 = x1 + r_dx->get_w() + xs10;
 	add_subwindow(r_dxClr = new RGBShiftSliderClr(plugin, this, x2, y, clrBtn_w, RESET_R_DX));
 
-	y += 30;
+	y += ys30;
 	add_subwindow(new BC_Title(x, y, _("R_dy:")));
 	add_subwindow(r_dy = new RGBShiftLevel(plugin, &plugin->config.r_dy, x1, y));
 	add_subwindow(r_dyClr = new RGBShiftSliderClr(plugin, this, x2, y, clrBtn_w, RESET_R_DY));
 
-	y += 30;
+	y += ys30;
 	add_subwindow(new BC_Title(x, y, _("G_dx:")));
 	add_subwindow(g_dx = new RGBShiftLevel(plugin, &plugin->config.g_dx, x1, y));
 	add_subwindow(g_dxClr = new RGBShiftSliderClr(plugin, this, x2, y, clrBtn_w, RESET_G_DX));
 
-	y += 30;
+	y += ys30;
 	add_subwindow(new BC_Title(x, y, _("G_dy:")));
 	add_subwindow(g_dy = new RGBShiftLevel(plugin, &plugin->config.g_dy, x1, y));
 	add_subwindow(g_dyClr = new RGBShiftSliderClr(plugin, this, x2, y, clrBtn_w, RESET_G_DY));
 
-	y += 30;
+	y += ys30;
 	add_subwindow(new BC_Title(x, y, _("B_dx:")));
 	add_subwindow(b_dx = new RGBShiftLevel(plugin, &plugin->config.b_dx, x1, y));
 	add_subwindow(b_dxClr = new RGBShiftSliderClr(plugin, this, x2, y, clrBtn_w, RESET_B_DX));
 
-	y += 30;
+	y += ys30;
 	add_subwindow(new BC_Title(x, y, _("B_dy:")));
 	add_subwindow(b_dy = new RGBShiftLevel(plugin, &plugin->config.b_dy, x1, y));
 	add_subwindow(b_dyClr = new RGBShiftSliderClr(plugin, this, x2, y, clrBtn_w, RESET_B_DY));
 
-	y += 40;
+	y += ys40;
 	add_subwindow(reset = new RGBShiftReset(plugin, this, x, y));
 
 	show_window();

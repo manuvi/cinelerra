@@ -329,7 +329,7 @@ JPEGConfigVideo::JPEGConfigVideo(BC_WindowBase *parent_window, Asset *asset)
  : BC_Window(_(PROGRAM_NAME ": Video Compression"),
  	parent_window->get_abs_cursor_x(1),
  	parent_window->get_abs_cursor_y(1),
-	400, 200)
+	xS(400), yS(200))
 {
 	this->parent_window = parent_window;
 	this->asset = asset;
@@ -341,14 +341,15 @@ JPEGConfigVideo::~JPEGConfigVideo()
 
 void JPEGConfigVideo::create_objects()
 {
-	int x = 10, y = 10;
+	int xs10 = xS(10), ys10 = yS(10);
+	int x = xs10, y = ys10;
 	lock_window("JPEGConfigVideo::create_objects");
 	add_subwindow(new BC_Title(x, y, _("Quality:")));
 	BC_ISlider *slider;
-	add_subwindow(slider = new BC_ISlider(x + 80, y,
-		0, 200, 200, 0, 100, asset->jpeg_quality, 0, 0,
+	add_subwindow(slider = new BC_ISlider(x + xS(80), y,
+		0, xS(200), xS(200), 0, xS(100), asset->jpeg_quality, 0, 0,
 		&asset->jpeg_quality));
-	y += slider->get_h() + 10;
+	y += slider->get_h() + ys10;
 	add_subwindow(new BC_CheckBox(x, y, 
 		&asset->jpeg_sphere, _("Tag for spherical playback")));
 

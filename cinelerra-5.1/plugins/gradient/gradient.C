@@ -128,11 +128,11 @@ int GradientConfig::get_out_color()
 	return result;
 }
 
-#define COLOR_W 100
-#define COLOR_H 30
+#define COLOR_W xS(100)
+#define COLOR_H yS(30)
 
 GradientWindow::GradientWindow(GradientMain *plugin)
- : PluginClientWindow(plugin, 350, 290, 350, 290, 0)
+ : PluginClientWindow(plugin, xS(350), yS(290), xS(350), yS(290), 0)
 {
 	this->plugin = plugin;
 	angle = 0;
@@ -149,8 +149,10 @@ GradientWindow::~GradientWindow()
 
 void GradientWindow::create_objects()
 {
+	int xs10 = xS(10);
+	int ys10 = yS(10);
 	int margin = plugin->get_theme()->widget_border;
-	int x = 10, y = 10;
+	int x = xs10, y = ys10;
 	BC_Title *title;
 
 	add_subwindow(title = new BC_Title(x, y, _("Shape:")));
@@ -216,7 +218,7 @@ void GradientWindow::update_shape()
 		delete center_y;  center_y = 0;
 		if( !angle ) {
 			add_subwindow(angle_title = new BC_Title(x, y, _("Angle:")));
-			add_subwindow(angle = new GradientAngle(plugin, x + angle_title->get_w() + 10, y));
+			add_subwindow(angle = new GradientAngle(plugin, x + angle_title->get_w() + xS(10), y));
 		}
 	}
 	else {
@@ -225,11 +227,11 @@ void GradientWindow::update_shape()
 		if( !center_x ) {
 			add_subwindow(center_x_title = new BC_Title(x, y, _("Center X:")));
 			add_subwindow(center_x = new GradientCenterX(plugin,
-				x + center_x_title->get_w() + 10, y));
-			x += center_x_title->get_w() + 10 + center_x->get_w() + 10;
+				x + center_x_title->get_w() + xS(10), y));
+			x += center_x_title->get_w() + xS(10) + center_x->get_w() + xS(10);
 			add_subwindow(center_y_title = new BC_Title(x, y, _("Center Y:")));
 			add_subwindow(center_y = new GradientCenterY(plugin,
-				x + center_y_title->get_w() + 10, y));
+				x + center_y_title->get_w() + xS(10), y));
 		}
 	}
 	show_window();
@@ -242,7 +244,7 @@ void GradientWindow::done_event(int result)
 }
 
 GradientShape::GradientShape(GradientMain *plugin, GradientWindow *gui, int x, int y)
- : BC_PopupMenu(x, y, 100, to_text(plugin->config.shape), 1)
+ : BC_PopupMenu(x, y, xS(100), to_text(plugin->config.shape), 1)
 {
 	this->plugin = plugin;
 	this->gui = gui;
@@ -275,7 +277,7 @@ int GradientShape::handle_event()
 
 
 GradientCenterX::GradientCenterX(GradientMain *plugin, int x, int y)
- : BC_FPot(x, y, plugin->config.center_x, 0, 100)
+ : BC_FPot(x, y, plugin->config.center_x, 0, xS(100))
 {
 	this->plugin = plugin;
 }
@@ -288,7 +290,7 @@ int GradientCenterX::handle_event()
 
 
 GradientCenterY::GradientCenterY(GradientMain *plugin, int x, int y)
- : BC_FPot(x, y, plugin->config.center_y, 0, 100)
+ : BC_FPot(x, y, plugin->config.center_y, 0, xS(100))
 {
 	this->plugin = plugin;
 }
@@ -316,7 +318,7 @@ int GradientAngle::handle_event()
 
 
 GradientRate::GradientRate(GradientMain *plugin, int x, int y)
- : BC_PopupMenu(x, y, 100, to_text(plugin->config.rate), 1)
+ : BC_PopupMenu(x, y, xS(100), to_text(plugin->config.rate), 1)
 {
 	this->plugin = plugin;
 }
@@ -351,7 +353,7 @@ int GradientRate::handle_event()
 
 
 GradientInRadius::GradientInRadius(GradientMain *plugin, int x, int y)
- : BC_FSlider(x, y, 0, 200, 200,
+ : BC_FSlider(x, y, 0, xS(200), yS(200),
 		0.f, 100.f, (float)plugin->config.in_radius)
 {
 	this->plugin = plugin;
@@ -366,7 +368,7 @@ int GradientInRadius::handle_event()
 
 
 GradientOutRadius::GradientOutRadius(GradientMain *plugin, int x, int y)
- : BC_FSlider(x, y, 0, 200, 200,
+ : BC_FSlider(x, y, 0, xS(200), yS(200),
 		0.f, 100.f, (float)plugin->config.out_radius)
 {
 	this->plugin = plugin;

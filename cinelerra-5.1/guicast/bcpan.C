@@ -91,11 +91,7 @@ int BC_Pan::initialize()
 	BC_SubWindow::initialize();
 	temp_channel = new VFrame;
 	temp_channel->set_use_shm(0);
-	temp_channel->reallocate(0,
-		-1,
-		0,
-		0,
-		0,
+	temp_channel->reallocate(0, -1, 0, 0, 0,
 		get_resources()->pan_data[PAN_CHANNEL]->get_w(),
 		get_resources()->pan_data[PAN_CHANNEL]->get_h(),
 		get_resources()->pan_data[PAN_CHANNEL]->get_color_model(),
@@ -227,14 +223,8 @@ int BC_Pan::activate(int popup_x, int popup_y)
 	active = 0;
 	if (popup_x < 0 || popup_y < 0)
 	{
-		XTranslateCoordinates(top_level->display,
-			win,
-			top_level->rootwin,
-			0,
-			0,
-			&x,
-			&y,
-			&tempwin);
+		XTranslateCoordinates(top_level->display, win,
+			top_level->rootwin, 0, 0, &x, &y, &tempwin);
 
 		x -= (images[PAN_POPUP]->get_w() - get_w()) / 2;
 		y -= (images[PAN_POPUP]->get_h() - get_h()) / 2;
@@ -316,8 +306,8 @@ void BC_Pan::draw_popup()
 	popup->flash();
 }
 
-#define PICON_W 6
-#define PICON_H 6
+#define PICON_W xS(6)
+#define PICON_H yS(6)
 
 void BC_Pan::draw(int flash, int flush)
 {

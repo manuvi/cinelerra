@@ -254,22 +254,22 @@ int BC_Button::get_status()
 
 BC_OKButton::BC_OKButton(int x, int y)
  : BC_Button(x, y,
- 	BC_WindowBase::get_resources()->ok_images)
+	BC_WindowBase::get_resources()->ok_images)
 {
 }
 
 BC_OKButton::BC_OKButton(BC_WindowBase *parent_window, VFrame **images)
- : BC_Button(10,
- 	parent_window->get_h() - images[0]->get_h() - 10,
- 	images)
+ : BC_Button(xS(10),
+	parent_window->get_h() - images[0]->get_h() - yS(10),
+	images)
 {
 	set_tooltip(_("OK"));
 }
 
 BC_OKButton::BC_OKButton(BC_WindowBase *parent_window)
- : BC_Button(10,
- 	parent_window->get_h() - BC_WindowBase::get_resources()->ok_images[0]->get_h() - 10,
- 	BC_WindowBase::get_resources()->ok_images)
+ : BC_Button(xS(10),
+	parent_window->get_h() - BC_WindowBase::get_resources()->ok_images[0]->get_h() - yS(10),
+	BC_WindowBase::get_resources()->ok_images)
 {
 	set_tooltip(_("OK"));
 }
@@ -282,8 +282,8 @@ int BC_OKButton::handle_event()
 
 int BC_OKButton::resize_event(int w, int h)
 {
-	reposition_window(10,
-		h - BC_WindowBase::get_resources()->cancel_images[0]->get_h() - 10);
+	reposition_window(xS(10),
+		h - BC_WindowBase::get_resources()->cancel_images[0]->get_h() - yS(10));
 	return 1;
 }
 
@@ -317,23 +317,23 @@ int BC_OKButton::calculate_w()
 
 BC_CancelButton::BC_CancelButton(int x, int y)
  : BC_Button(x, y,
- 	BC_WindowBase::get_resources()->cancel_images)
+	BC_WindowBase::get_resources()->cancel_images)
 {
 	set_tooltip(_("Cancel"));
 }
 
 BC_CancelButton::BC_CancelButton(BC_WindowBase *parent_window)
- : BC_Button(parent_window->get_w() - BC_WindowBase::get_resources()->cancel_images[0]->get_w() - 10,
- 	parent_window->get_h() - BC_WindowBase::get_resources()->cancel_images[0]->get_h() - 10,
- 	BC_WindowBase::get_resources()->cancel_images)
+ : BC_Button(parent_window->get_w() - BC_WindowBase::get_resources()->cancel_images[0]->get_w() - xS(10),
+	parent_window->get_h() - BC_WindowBase::get_resources()->cancel_images[0]->get_h() - yS(10),
+	BC_WindowBase::get_resources()->cancel_images)
 {
 	set_tooltip(_("Cancel"));
 }
 
 BC_CancelButton::BC_CancelButton(BC_WindowBase *parent_window, VFrame **images)
- : BC_Button(parent_window->get_w() - images[0]->get_w() - 10,
- 	parent_window->get_h() - images[0]->get_h() - 10,
- 	images)
+ : BC_Button(parent_window->get_w() - images[0]->get_w() - xS(10),
+	parent_window->get_h() - images[0]->get_h() - yS(10),
+	images)
 {
 	set_tooltip(_("Cancel"));
 }
@@ -346,8 +346,8 @@ int BC_CancelButton::handle_event()
 
 int BC_CancelButton::resize_event(int w,int h)
 {
-	reposition_window(w - BC_WindowBase::get_resources()->cancel_images[0]->get_w() - 10,
-	 	h - BC_WindowBase::get_resources()->cancel_images[0]->get_h() - 10);
+	reposition_window(w - BC_WindowBase::get_resources()->cancel_images[0]->get_w() - xS(10),
+	 	h - BC_WindowBase::get_resources()->cancel_images[0]->get_h() - yS(10));
 	return 1;
 }
 
@@ -485,8 +485,8 @@ int BC_GenericButton::draw_face(int flush)
 
 
 BC_OKTextButton::BC_OKTextButton(BC_WindowBase *parent_window)
- : BC_GenericButton(10,
- 	parent_window->get_h() - BC_GenericButton::calculate_h() - 10,
+ : BC_GenericButton(xS(10),
+	parent_window->get_h() - BC_GenericButton::calculate_h() - yS(10),
 	_("OK"))
 {
 	this->parent_window = parent_window;
@@ -494,8 +494,8 @@ BC_OKTextButton::BC_OKTextButton(BC_WindowBase *parent_window)
 
 int BC_OKTextButton::resize_event(int w, int h)
 {
-	reposition_window(10,
-		parent_window->get_h() - BC_GenericButton::calculate_h() - 10);
+	reposition_window(xS(10),
+		parent_window->get_h() - BC_GenericButton::calculate_h() - yS(10));
 	return 1;
 }
 
@@ -514,8 +514,8 @@ int BC_OKTextButton::keypress_event()
 
 
 BC_CancelTextButton::BC_CancelTextButton(BC_WindowBase *parent_window)
- : BC_GenericButton(parent_window->get_w() - BC_GenericButton::calculate_w(parent_window, _("Cancel")) - 10,
- 	parent_window->get_h() - BC_GenericButton::calculate_h() - 10,
+ : BC_GenericButton(parent_window->get_w() - BC_GenericButton::calculate_w(parent_window, _("Cancel")) - xS(10),
+	parent_window->get_h() - BC_GenericButton::calculate_h() - yS(10),
 	_("Cancel"))
 {
 	this->parent_window = parent_window;
@@ -523,8 +523,8 @@ BC_CancelTextButton::BC_CancelTextButton(BC_WindowBase *parent_window)
 
 int BC_CancelTextButton::resize_event(int w, int h)
 {
-	reposition_window(parent_window->get_w() - BC_GenericButton::calculate_w(parent_window, _("Cancel")) - 10,
-		parent_window->get_h() - BC_GenericButton::calculate_h() - 10);
+	reposition_window(parent_window->get_w() - BC_GenericButton::calculate_w(parent_window, _("Cancel")) - xS(10),
+		parent_window->get_h() - BC_GenericButton::calculate_h() - yS(10));
 	return 1;
 }
 

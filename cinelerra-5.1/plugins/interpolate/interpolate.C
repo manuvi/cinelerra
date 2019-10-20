@@ -45,8 +45,8 @@ InterpolatePixelsOffset::InterpolatePixelsOffset(InterpolatePixelsWindow *window
  : BC_ISlider(x,
  	y,
 	0,
-	50,
-	50,
+	xS(50),
+	yS(50),
 	0,
 	1,
 	*output,
@@ -74,10 +74,10 @@ int InterpolatePixelsOffset::handle_event()
 
 InterpolatePixelsWindow::InterpolatePixelsWindow(InterpolatePixelsMain *client)
  : PluginClientWindow(client,
-	200,
-	100,
-	200,
-	100,
+	xS(200),
+	yS(100),
+	xS(200),
+	yS(100),
 	0)
 {
 	this->client = client;
@@ -89,21 +89,23 @@ InterpolatePixelsWindow::~InterpolatePixelsWindow()
 
 void InterpolatePixelsWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int xs5 = xS(5), xs10 = xS(10), xs50 = xS(50);
+	int ys5 = yS(5), ys10 = yS(10);
+	int x = xs10, y = ys10;
 
 	BC_Title *title;
 	add_tool(title = new BC_Title(x, y, _("X Offset:")));
 	add_tool(x_offset = new InterpolatePixelsOffset(this,
-		x + title->get_w() + 5,
+		x + title->get_w() + xs5,
 		y,
 		&client->config.x));
-	y += MAX(x_offset->get_h(), title->get_h()) + 5;
+	y += MAX(x_offset->get_h(), title->get_h()) + ys5;
 	add_tool(title = new BC_Title(x, y, _("Y Offset:")));
 	add_tool(y_offset = new InterpolatePixelsOffset(this,
-		x + title->get_w() + 5,
+		x + title->get_w() + xs5,
 		y,
 		&client->config.y));
-	y += MAX(y_offset->get_h(), title->get_h()) + 5;
+	y += MAX(y_offset->get_h(), title->get_h()) + ys5;
 
 	show_window();
 }

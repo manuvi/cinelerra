@@ -39,8 +39,8 @@
 
 #define AltMask Mod1Mask
 
-#define COLOR_W 40
-#define COLOR_H 24
+#define COLOR_W xS(40)
+#define COLOR_H yS(24)
 
 const char *SketcherPoint::types[] = {
 	N_("off"),
@@ -79,7 +79,7 @@ int SketcherCurvePenItem::handle_event()
 }
 
 SketcherCurvePen::SketcherCurvePen(SketcherWindow *gui, int x, int y, int pen)
- : BC_PopupMenu(x,y,100,_(cv_pen[pen]))
+ : BC_PopupMenu(x,y,xS(100),_(cv_pen[pen]))
 {
 	this->gui = gui;
 	this->pen = pen;
@@ -256,7 +256,7 @@ void SketcherCurveWidth::update(int width)
 
 
 SketcherWindow::SketcherWindow(Sketcher *plugin)
- : PluginClientWindow(plugin, 380, 620, 380, 620, 0)
+ : PluginClientWindow(plugin, xS(380), yS(620), xS(380), yS(620), 0)
 {
 	this->plugin = plugin;
 	this->title_pen = 0;  this->curve_pen = 0;
@@ -293,7 +293,7 @@ SketcherWindow::~SketcherWindow()
 
 void SketcherWindow::create_objects()
 {
-	int x = 10, y = 10, dy = 0, x1, y1;
+	int x = xS(10), y = yS(10), dy = 0, x1, y1;
 	int margin = plugin->get_theme()->widget_border;
 	BC_Title *title;
 	int ci = plugin->config.cv_selected;
@@ -301,7 +301,7 @@ void SketcherWindow::create_objects()
 		ci = plugin->new_curve();
 	SketcherCurve *cv = plugin->config.curves[ci];
 
-	reset_curves = new SketcherResetCurves(this, plugin, x1=x, y+3);
+	reset_curves = new SketcherResetCurves(this, plugin, x1=x, y+yS(3));
 	add_subwindow(reset_curves);	dy = bmax(dy,reset_curves->get_h());
 	x1 += reset_curves->get_w() + 2*margin;
 	const char *curve_text = _("Curve");
@@ -328,9 +328,9 @@ void SketcherWindow::create_objects()
 	add_subwindow(curve_up);	dy = bmax(dy,curve_up->get_h());
 	x1 += curve_up->get_w() + 4*margin;
 	y1 = BC_Title::calculate_h(this, _("Pen:"));
-	title_pen = new BC_Title(x1+30, y+dy-y1, _("Pen:"));
+	title_pen = new BC_Title(x1+xS(30), y+dy-y1, _("Pen:"));
 	add_subwindow(title_pen);	dy = bmax(dy,title_pen->get_h());
-	int x2 = (get_w()+x1)/2 + 20;
+	int x2 = (get_w()+x1)/2 + xS(20);
 	y1 = BC_Title::calculate_h(this, _("Color:"));
 	title_color = new BC_Title(x2, y+dy-y1, _("Color:"));
 	add_subwindow(title_color);	dy = bmax(dy,title_color->get_h());
@@ -352,17 +352,17 @@ void SketcherWindow::create_objects()
 	curve_list->update(ci);
 
 	BC_Bar *bar;
-	bar = new BC_Bar(x, y, get_w()-2*x);
+	bar = new BC_Bar(x, y, get_w()-xS(2)*x);
 	add_subwindow(bar);		dy = bmax(dy,bar->get_h());
-	bar = new BC_Bar(x, y+=dy, get_w()-2*x);
+	bar = new BC_Bar(x, y+=dy, get_w()-xS(2)*x);
 	add_subwindow(bar);		dy = bmax(dy,bar->get_h());
-	y += dy + 2*margin;
+	y += dy + yS(2)*margin;
 
 	int pi = plugin->config.pt_selected;
 	SketcherPoint *pt = pi >= 0 && pi < cv->points.size() ? cv->points[pi] : 0;
-	reset_points = new SketcherResetPoints(this, plugin, x1=x, y+3);
+	reset_points = new SketcherResetPoints(this, plugin, x1=x, y+yS(3));
 	add_subwindow(reset_points);	dy = bmax(dy,reset_points->get_h());
-	x1 += reset_points->get_w() + 2*margin; 
+	x1 += reset_points->get_w() + xS(2)*margin;
 	if( plugin->config.drag ) {
 		if( !grab(plugin->server->mwindow->cwindow->gui) ) {
 			eprintf("drag enabled, but compositor already grabbed\n");
@@ -371,7 +371,7 @@ void SketcherWindow::create_objects()
 	}
 	drag = new SketcherDrag(this, x1, y);
 	add_subwindow(drag);		dy = bmax(dy,drag->get_h());
-	x1 += drag->get_w() + 2*margin;
+	x1 += drag->get_w() + xS(2)*margin;
 	int arc = pt ? pt->arc : ARC_LINE;
 	point_type = new SketcherPointType(this, x1, y, arc);
 	add_subwindow(point_type);	dy = bmax(dy,point_type->get_h());
@@ -392,15 +392,15 @@ void SketcherWindow::create_objects()
 	x1 += new_point->get_w() + margin;
 	point_up = new SketcherPointUp(this, x1, y);
 	add_subwindow(point_up);	dy = bmax(dy,point_up->get_h());
-	x1 += point_up->get_w() + 2*margin;
+	x1 += point_up->get_w() + xS(2)*margin;
 	title_x = new BC_Title(x1, y, _("X:"));
 	add_subwindow(title_x);		dy = bmax(dy,title_x->get_h());
 	x1 += title_x->get_w() + margin;
 	point_x = new SketcherPointX(this, x1, y, !pt ? 0.f : pt->x);
 	point_x->create_objects();	dy = bmax(dy, point_x->get_h());
-	x2 = x1 + point_x->get_w() + 2*margin + 10;
+	x2 = x1 + point_x->get_w() + xS(2)*margin + xS(10);
 	y1 = BC_Title::calculate_h(this, _("ID:"));
-	title_id = new BC_Title(x2+16, y+dy-y1, _("ID:"));
+	title_id = new BC_Title(x2+xS(16), y+dy-y1, _("ID:"));
 	add_subwindow(title_id);	dy = bmax(dy, title_id->get_h());
 	y += dy + margin;  dy = 0;
 
@@ -409,7 +409,7 @@ void SketcherWindow::create_objects()
 	x1 += del_point->get_w() + margin;
 	point_dn = new SketcherPointDn(this, x1, y);
 	add_subwindow(point_dn);	dy = bmax(dy,point_dn->get_h());
-	x1 += point_dn->get_w() + 2*margin;
+	x1 += point_dn->get_w() + xS(2)*margin;
 	title_y = new BC_Title(x1, y, _("Y:"));
 	add_subwindow(title_y);		dy = bmax(dy,title_y->get_h());
 	x1 += title_y->get_w() + margin;
@@ -417,12 +417,12 @@ void SketcherWindow::create_objects()
 	point_y->create_objects();	dy = bmax(dy, point_y->get_h());
 	point_id = new SketcherPointId(this, x2, y, !pt ? 0 : pt->id);
 	point_id->create_objects();	dy = bmax(dy, point_id->get_h());
-	y += dy + margin + 5;		dy = 0;
+	y += dy + margin + yS(5);		dy = 0;
 	point_list->update(pi);
 
-	bar = new BC_Bar(x, y, get_w()-2*x);
+	bar = new BC_Bar(x, y, get_w()-xS(2)*x);
 	add_subwindow(bar);		dy = bmax(dy,bar->get_h());
-	y += dy + 2*margin;
+	y += dy + yS(2)*margin;
 
 	add_subwindow(notes0 = new BC_Title(x, y,
 		 _("\n"
@@ -431,21 +431,21 @@ void SketcherWindow::create_objects()
 		   "Ctrl=\n"
 		   "Ctrl+Alt=\n"
 		   "Ctrl+Shift=")));	dy = bmax(dy, notes0->get_h());
-	add_subwindow(notes1 = new BC_Title(x+100, y,
+	add_subwindow(notes1 = new BC_Title(x+xS(100), y,
 		 _("     LMB\n"
 		   "new line point\n"
 		   "select point\n"
 		   "drag point\n"
 		   "drag all curves\n"
 		   "new fill point"))); dy = bmax(dy, notes1->get_h());
-	add_subwindow(notes2 = new BC_Title(x+220, y,
+	add_subwindow(notes2 = new BC_Title(x+xS(220), y,
 		 _("      RMB\n"
 		   "new arc point\n"
 		   "select curve\n"
 		   "drag curve\n"
 		   "new curve\n"
 		   "new off point"))); dy = bmax(dy, notes2->get_h());
-	y += dy + margin + 10;
+	y += dy + margin + yS(10);
 
 	add_subwindow(notes3 = new BC_Title(x, y,
 		   "Key DEL= delete point, +Shift= delete curve\n"));
@@ -732,15 +732,15 @@ int SketcherWindow::keypress_event()
 
 
 SketcherCurveList::SketcherCurveList(SketcherWindow *gui, Sketcher *plugin, int x, int y)
- : BC_ListBox(x, y, 360, 130, LISTBOX_TEXT)
+ : BC_ListBox(x, y, xS(360), yS(130), LISTBOX_TEXT)
 {
 	this->gui = gui;
 	this->plugin = plugin;
-	col_titles[CV_ID] = _("ID");      col_widths[CV_ID] = 64;
-	col_titles[CV_RAD] = _("width");  col_widths[CV_RAD] = 64;
-	col_titles[CV_PEN] = _("pen");    col_widths[CV_PEN] = 64;
-	col_titles[CV_CLR] = _("color");  col_widths[CV_CLR] = 80;
-	col_titles[CV_ALP] = _("alpha");  col_widths[CV_ALP] = 64;
+	col_titles[CV_ID] = _("ID");      col_widths[CV_ID] = xS(64);
+	col_titles[CV_RAD] = _("width");  col_widths[CV_RAD] = xS(64);
+	col_titles[CV_PEN] = _("pen");    col_widths[CV_PEN] = xS(64);
+	col_titles[CV_CLR] = _("color");  col_widths[CV_CLR] = xS(80);
+	col_titles[CV_ALP] = _("alpha");  col_widths[CV_ALP] = xS(64);
 }
 SketcherCurveList::~SketcherCurveList()
 {
@@ -830,7 +830,7 @@ void SketcherCurveList::add_curve(const char *id, const char *pen,
 }
 
 SketcherNewCurve::SketcherNewCurve(SketcherWindow *gui, Sketcher *plugin, int x, int y)
- : BC_GenericButton(x, y, 64, _("New"))
+ : BC_GenericButton(x, y, xS(64), _("New"))
 {
 	this->gui = gui;
 	this->plugin = plugin;
@@ -856,7 +856,7 @@ int SketcherNewCurve::handle_event()
 }
 
 SketcherDelCurve::SketcherDelCurve(SketcherWindow *gui, Sketcher *plugin, int x, int y)
- : BC_GenericButton(x, y, 64, C_("Del"))
+ : BC_GenericButton(x, y, xS(64), C_("Del"))
 {
 	this->gui = gui;
 	this->plugin = plugin;
@@ -967,7 +967,7 @@ int SketcherPointTypeItem::handle_event()
 }
 
 SketcherPointType::SketcherPointType(SketcherWindow *gui, int x, int y, int arc)
- : BC_PopupMenu(x,y,100,_(pt_type[arc]))
+ : BC_PopupMenu(x,y,xS(100),_(pt_type[arc]))
 {
 	this->gui = gui;
 	this->type = arc;
@@ -984,14 +984,14 @@ void SketcherPointType::update(int arc)
 
 
 SketcherPointList::SketcherPointList(SketcherWindow *gui, Sketcher *plugin, int x, int y)
- : BC_ListBox(x, y, 360, 130, LISTBOX_TEXT)
+ : BC_ListBox(x, y, xS(360), yS(130), LISTBOX_TEXT)
 {
 	this->gui = gui;
 	this->plugin = plugin;
-	col_titles[PT_ID] = _("ID");    col_widths[PT_ID] = 50;
-	col_titles[PT_TY] = _("Type");  col_widths[PT_TY] = 80;
-	col_titles[PT_X] = _("X");      col_widths[PT_X] = 90;
-	col_titles[PT_Y] = _("Y");      col_widths[PT_Y] = 90;
+	col_titles[PT_ID] = _("ID");    col_widths[PT_ID] = xS(50);
+	col_titles[PT_TY] = _("Type");  col_widths[PT_TY] = xS(80);
+	col_titles[PT_X] = _("X");      col_widths[PT_X] = xS(90);
+	col_titles[PT_Y] = _("Y");      col_widths[PT_Y] = xS(90);
 	set_selection_mode(LISTBOX_MULTIPLE);
 }
 SketcherPointList::~SketcherPointList()
@@ -1212,7 +1212,7 @@ int SketcherDrag::handle_event()
 }
 
 SketcherNewPoint::SketcherNewPoint(SketcherWindow *gui, Sketcher *plugin, int x, int y)
- : BC_GenericButton(x, y, 64, _("New"))
+ : BC_GenericButton(x, y, xS(64), _("New"))
 {
 	this->gui = gui;
 	this->plugin = plugin;
@@ -1231,7 +1231,7 @@ int SketcherNewPoint::handle_event()
 }
 
 SketcherDelPoint::SketcherDelPoint(SketcherWindow *gui, Sketcher *plugin, int x, int y)
- : BC_GenericButton(x, y, 64, C_("Del"))
+ : BC_GenericButton(x, y, xS(64), C_("Del"))
 {
 	this->gui = gui;
 	this->plugin = plugin;

@@ -31,7 +31,7 @@
 #include "errorbox.h"
 #include "mwindowgui.h"
 
-#define LISTWIDTH 200
+#define LISTWIDTH xS(200)
 
 RenderProfileItem::RenderProfileItem(const char *text, int value)
  : BC_ListBoxItem(text)
@@ -83,33 +83,20 @@ int RenderProfile::create_objects()
 {
 	int x = this->x, y = this->y;
 	const char *default_text = "";
-	rwindow->add_subwindow(new BC_Title(x,
-		y,
-			_("RenderProfile:")));
-
+	rwindow->add_subwindow(new BC_Title(x, y, _("RenderProfile:")));
 
 	int old_y = y;
 	rwindow->add_subwindow(title = new BC_Title(x, y, _("Render profile:")));
-	y += 25;
-	rwindow->add_subwindow(textbox = new BC_TextBox(x,
-		y,
-		LISTWIDTH,
-		1,
-		default_text));
+	y += yS(25);
+	rwindow->add_subwindow(textbox = new BC_TextBox(x, y, LISTWIDTH, 1, default_text));
 	x += textbox->get_w();
 	rwindow->add_subwindow(listbox = new RenderProfileListBox(rwindow, this, x, y));
 
 	y = old_y;
-	x += listbox->get_w() + 10;
-	rwindow->add_subwindow(saveprofile = new SaveRenderProfileButton(this,
-		x,
-		y));
-	y += 25;
-	rwindow->add_subwindow(deleteprofile = new DeleteRenderProfileButton(this,
-		x,
-		y));
-
-
+	x += listbox->get_w() + xS(10);
+	rwindow->add_subwindow(saveprofile = new SaveRenderProfileButton(this, x, y));
+	y += yS(25);
+	rwindow->add_subwindow(deleteprofile = new DeleteRenderProfileButton(this, x, y));
 
 	return 0;
 }
@@ -137,7 +124,7 @@ int RenderProfile::reposition_window(int x, int y)
 	this->x = x;
 	this->y = y;
 	title->reposition_window(x, y);
-	y += 20;
+	y += yS(20);
 	textbox->reposition_window(x, y);
 	x += textbox->get_w();
 	listbox->reposition_window(x,
@@ -148,20 +135,10 @@ int RenderProfile::reposition_window(int x, int y)
 
 
 RenderProfileListBox::RenderProfileListBox(BC_WindowBase *window,
-	RenderProfile *renderprofile,
-	int x,
-	int y)
- : BC_ListBox(x,
- 	y,
-	LISTWIDTH,
-	150,
-	LISTBOX_TEXT,
+	RenderProfile *renderprofile, int x, int y)
+ : BC_ListBox(x, y, LISTWIDTH, yS(150), LISTBOX_TEXT,
 	(ArrayList<BC_ListBoxItem *>*)&renderprofile->profiles,
-	0,
-	0,
-	1,
-	0,
-	1)
+	0, 0, 1, 0, 1)
 {
 	this->window = window;
 	this->renderprofile = renderprofile;
@@ -300,12 +277,6 @@ int DeleteRenderProfileButton::handle_event()
 		profile->textbox->update("");
 
 	}
-
-
 	return 1;
 }
-
-
-
-
 

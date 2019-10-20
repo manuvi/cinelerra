@@ -115,7 +115,7 @@ int APatchGUI::update(int x, int y)
 	else if( h >= y2 ) {
 		float v = mwindow->get_float_auto(this, AUTOMATION_FADE)->get_value();
 		patchbay->add_subwindow(fade = new AFadePatch(this, x1+x, y1+y,
-			patchbay->get_w() - 10, v));
+			patchbay->get_w() - xS(10), v));
 	}
 	y1 = y2;
 
@@ -162,11 +162,11 @@ int APatchGUI::update(int x, int y)
 	}
 	else if( h >= y2 ) {
 		patchbay->add_subwindow(mix = new AMixPatch(mwindow, this, x1+x, y1+y+5));
-		x1 += mix->get_w() + 10;
+		x1 += mix->get_w() + xS(10);
 		patchbay->add_subwindow(pan = new APanPatch(mwindow, this, x1+x, y1+y));
-		x1 += pan->get_w() + 20;
+		x1 += pan->get_w() + xS(20);
 		patchbay->add_subwindow(nudge = new NudgePatch(mwindow, this, x1+x, y1+y,
-				patchbay->get_w() - x1-x - 10));
+				patchbay->get_w() - x1-x - xS(10)));
 	}
 	y1 = y2;
 
@@ -221,7 +221,7 @@ int AFadePatch::handle_event()
 }
 
 AKeyFadePatch::AKeyFadePatch(MWindow *mwindow, APatchGUI *patch, int x, int y)
- : BC_SubWindow(x,y, 200,20, GWindowGUI::auto_colors[AUTOMATION_FADE])
+ : BC_SubWindow(x,y, xS(200),yS(20), GWindowGUI::auto_colors[AUTOMATION_FADE])
 {
 	this->mwindow = mwindow;
 	this->patch = patch;
@@ -231,7 +231,7 @@ void AKeyFadePatch::create_objects()
 {
 	int x = 0, y = 0;
 	float v = mwindow->get_float_auto(patch, AUTOMATION_FADE)->get_value();
-	add_subwindow(akey_fade_text = new AKeyFadeText(this, x, y, 64, v));
+	add_subwindow(akey_fade_text = new AKeyFadeText(this, x, y, xS(64), v));
 	x += akey_fade_text->get_w();
 	VFrame **lok_images = mwindow->theme->get_image_set("lok");
 	int w1 = get_w() - x - lok_images[0]->get_w();
@@ -345,14 +345,13 @@ int AKeyPanPatch::handle_event()
 
 
 AMeterPatch::AMeterPatch(MWindow *mwindow, APatchGUI *patch, int x, int y)
- : BC_Meter(x, y, METER_HORIZ, patch->patchbay->get_w() - 10,
+ : BC_Meter(x, y, METER_HORIZ, patch->patchbay->get_w() - xS(10),
 	mwindow->edl->session->min_meter_db, mwindow->edl->session->max_meter_db,
 	mwindow->edl->session->meter_format, 0, -1)
 {
 	this->mwindow = mwindow;
 	this->patch = patch;
-	set_delays(TRACKING_RATE * 10,
-			TRACKING_RATE);
+	set_delays(TRACKING_RATE * 10, TRACKING_RATE);
 }
 
 int AMeterPatch::button_press_event()

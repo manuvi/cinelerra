@@ -285,7 +285,7 @@ int PluginFClientPot::handle_event()
 }
 
 PluginFClientSlider::PluginFClientSlider(PluginFClientWindow *fwin, int x, int y)
- : BC_FSlider(x, y, 0, fwin->get_w()-x-20, fwin->get_w()-x-20, 0.f, 0.f, 0.f)
+ : BC_FSlider(x, y, 0, fwin->get_w()-x-xS(20), fwin->get_w()-x-xS(20), 0.f, 0.f, 0.f)
 {
 	this->fwin = fwin;
 }
@@ -522,7 +522,7 @@ const char *PluginFClient_Opt::tip()
 int PluginFClient_OptPanel::update()
 {
 	const char *cols[] = { "option", "value", };
-	const int col1_w = 150;
+	const int col1_w = xS(150);
 	int wids[] = { col1_w, get_w()-col1_w };
 	BC_ListBox::update(&items[0], &cols[0], &wids[0], sizeof(items)/sizeof(items[0]),
 		get_xposition(), get_yposition(), get_highlighted_item());
@@ -531,7 +531,7 @@ int PluginFClient_OptPanel::update()
 
 
 PluginFClientWindow::PluginFClientWindow(PluginFClient *ffmpeg)
- : PluginClientWindow(ffmpeg->plugin, 600, 300, 600, 300, 1)
+ : PluginClientWindow(ffmpeg->plugin, xS(600), yS(300), xS(600), yS(300), 1)
 {
 	this->ffmpeg = ffmpeg;
 	this->selected = 0;
@@ -543,41 +543,42 @@ PluginFClientWindow::~PluginFClientWindow()
 
 void PluginFClientWindow::create_objects()
 {
+	int xs8 = xS(8), xs10 = xS(10), ys10 = yS(10);
 	char string[BCTEXTLEN];
 	BC_Title *title;
-	int x = 10, y = 10;
+	int x = xs10, y = ys10;
 	const char *descr = ffmpeg->config.ffilt->description();
 	if( !descr ) descr = ffmpeg->config.ffilt->filter_name();
 	add_subwindow(title = new BC_Title(x, y, descr));
-	y += title->get_h() + 10;
+	y += title->get_h() + ys10;
 	int x0 = x;
 	sprintf(string, _("Type: "));
 	add_subwindow(title = new BC_Title(x0, y, string));
-	x0 += title->get_w() + 8;
+	x0 += title->get_w() + xs8;
 	add_subwindow(type = new BC_Title(x0, y, (char *)""));
-	x0 = x + 150;
+	x0 = x + xS(150);
 	sprintf(string, _("Range: "));
 	add_subwindow(title = new BC_Title(x0, y, string));
-	x0 += title->get_w() + 8;
+	x0 += title->get_w() + xs8;
 	add_subwindow(range = new BC_Title(x0, y, (char *)""));
-	int x1 = get_w() - BC_GenericButton::calculate_w(this, _("Reset")) - 8;
+	int x1 = get_w() - BC_GenericButton::calculate_w(this, _("Reset")) - xs8;
 	add_subwindow(reset = new PluginFClientReset(this, x1, y));
-	y += title->get_h() + 10;
+	y += title->get_h() + ys10;
 	x0 = x;
-	add_subwindow(units = new PluginFClientUnits(this, x0, y, 120));
-	x0 += units->get_w() + 8;
-	x1 = get_w() - BC_GenericButton::calculate_w(this, _("Apply")) - 8;
+	add_subwindow(units = new PluginFClientUnits(this, x0, y, xS(120)));
+	x0 += units->get_w() + xs8;
+	x1 = get_w() - BC_GenericButton::calculate_w(this, _("Apply")) - xs8;
 	add_subwindow(apply = new PluginFClientApply(this, x1, y));
-	add_subwindow(text = new PluginFClientText(this, x0, y, x1-x0 - 8));
-	y += title->get_h() + 10;
+	add_subwindow(text = new PluginFClientText(this, x0, y, x1-x0 - xs8));
+	y += title->get_h() + ys10;
 	add_subwindow(pot = new PluginFClientPot(this, x, y));
-	x1 = x + pot->get_w() + 10;
-	add_subwindow(slider = new PluginFClientSlider(this, x1, y+10));
-	y += pot->get_h() + 10;
+	x1 = x + pot->get_w() + xs10;
+	add_subwindow(slider = new PluginFClientSlider(this, x1, y+ys10));
+	y += pot->get_h() + ys10;
 
 	panel_x = x;  panel_y = y;
-	panel_w = get_w()-10 - panel_x;
-	panel_h = get_h()-10 - panel_y;
+	panel_w = get_w()-xs10 - panel_x;
+	panel_h = get_h()-ys10 - panel_y;
 	panel = new PluginFClient_OptPanel(this, panel_x, panel_y, panel_w, panel_h);
 	add_subwindow(panel);
 	panel->create_objects();
@@ -593,21 +594,22 @@ void PluginFClientWindow::draw()
 
 int PluginFClientWindow::resize_event(int w, int h)
 {
-	int x = get_w() - BC_GenericButton::calculate_w(this, _("Reset")) - 8;
+	int xs8 = xS(8), xs10 = xS(10), ys10 = yS(10);
+	int x = get_w() - BC_GenericButton::calculate_w(this, _("Reset")) - xs8;
 	int y = reset->get_y();
 	reset->reposition_window(x, y);
-	int x1 = get_w() - BC_GenericButton::calculate_w(this, _("Apply")) - 8;
+	int x1 = get_w() - BC_GenericButton::calculate_w(this, _("Apply")) - xs8;
 	int y1 = units->get_y();
 	apply->reposition_window(x1, y1);
-	int x0 = units->get_x() + units->get_w() + 8;
+	int x0 = units->get_x() + units->get_w() + xs8;
 	int y0 = units->get_y();
-	text->reposition_window(x0,y0, x1-x0-8);
-	x1 = pot->get_x() + pot->get_w() + 10;
-	int w1 = w - slider->get_x() - 20;
+	text->reposition_window(x0,y0, x1-x0-xs8);
+	x1 = pot->get_x() + pot->get_w() + xs10;
+	int w1 = w - slider->get_x() - xS(20);
 	slider->set_pointer_motion_range(w1);
 	slider->reposition_window(x1, slider->get_y(), w1, slider->get_h());
-	panel_w = get_w()-10 - panel_x;
-	panel_h = get_h()-10 - panel_y;
+	panel_w = get_w()-xs10 - panel_x;
+	panel_h = get_h()-ys10 - panel_y;
 	panel->reposition_window(panel_x,panel_y, panel_w, panel_h);
 	return 1;
 }

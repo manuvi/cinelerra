@@ -29,7 +29,7 @@
 
 
 TimeAvgWindow::TimeAvgWindow(TimeAvgMain *client)
- : PluginClientWindow(client, 250, 400, 250, 400, 0)
+ : PluginClientWindow(client, xS(250), yS(400), xS(250), yS(400), 0)
 {
 	this->client = client;
 }
@@ -40,53 +40,55 @@ TimeAvgWindow::~TimeAvgWindow()
 
 void TimeAvgWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int xs10 = xS(10);
+	int ys5 = yS(5), ys10 = yS(10), ys30 = yS(30);
+	int x = xs10, y = ys10;
 	BC_Bar *bar;
 	BC_Title *title;
 
 	add_tool(title = new BC_Title(x, y, _("Frame count:")));
-	y += title->get_h() + 5;
+	y += title->get_h() + ys5;
 	add_tool(total_frames = new TimeAvgSlider(client, x, y));
-	y += 30;
+	y += ys30;
 	add_tool(paranoid = new TimeAvgParanoid(client, x, y));
-	y += 30;
+	y += ys30;
 	add_tool(no_subtract = new TimeAvgNoSubtract(client, x, y));
-	y += 30;
-	add_tool(bar = new BC_Bar(x, y, get_w() - x * 2));
-	y += bar->get_h() + 5;
+	y += ys30;
+	add_tool(bar = new BC_Bar(x, y, get_w() - x * xS(2)));
+	y += bar->get_h() + ys5;
 
 
 
 	add_tool(avg = new TimeAvgAvg(client, this, x, y));
-	y += 30;
+	y += ys30;
 	add_tool(accum = new TimeAvgAccum(client, this, x, y));
-	y += 30;
-	add_tool(bar = new BC_Bar(x, y, get_w() - x * 2));
-	y += bar->get_h() + 5;
+	y += ys30;
+	add_tool(bar = new BC_Bar(x, y, get_w() - x * xS(2)));
+	y += bar->get_h() + ys5;
 
 
 
 	add_tool(replace = new TimeAvgReplace(client, this, x, y));
-	y += 30;
+	y += ys30;
 	add_tool(new BC_Title(x, y, _("Threshold:")));
-	y += title->get_h() + 5;
+	y += title->get_h() + ys5;
 	add_tool(threshold = new TimeThresholdSlider(client, x, y));
-	y += 30;
+	y += ys30;
 	add_tool(new BC_Title(x, y, _("Border:")));
-	y += title->get_h() + 5;
+	y += title->get_h() + ys5;
 	add_tool(border = new TimeBorderSlider(client, x, y));
-	y += 30;
+	y += ys30;
 
 
 
-	add_tool(bar = new BC_Bar(x, y, get_w() - x * 2));
-	y += bar->get_h() + 5;
+	add_tool(bar = new BC_Bar(x, y, get_w() - x * xS(2)));
+	y += bar->get_h() + ys5;
 
 
 	add_tool(greater = new TimeAvgGreater(client, this, x, y));
-	y += 30;
+	y += ys30;
 	add_tool(less = new TimeAvgLess(client, this, x, y));
-	y += 30;
+	y += ys30;
 
 	update_toggles();
 	show_window();
@@ -125,13 +127,7 @@ void TimeAvgWindow::update_toggles()
 
 
 TimeAvgSlider::TimeAvgSlider(TimeAvgMain *client, int x, int y)
- : BC_ISlider(x,
- 	y,
-	0,
-	190,
-	200,
-	1,
-	MAX_FRAMES,
+ : BC_ISlider(x, y, 0, xS(190),yS(200), 1,MAX_FRAMES,
 	client->config.frames)
 {
 	this->client = client;
@@ -151,13 +147,7 @@ int TimeAvgSlider::handle_event()
 
 
 TimeThresholdSlider::TimeThresholdSlider(TimeAvgMain *client, int x, int y)
- : BC_ISlider(x,
- 	y,
-	0,
-	190,
-	200,
-	1,
-	255,
+ : BC_ISlider(x, y, 0, xS(190),yS(200), 1,255,
 	client->config.threshold)
 {
 	this->client = client;
@@ -176,13 +166,7 @@ int TimeThresholdSlider::handle_event()
 
 
 TimeBorderSlider::TimeBorderSlider(TimeAvgMain *client, int x, int y)
- : BC_ISlider(x,
- 	y,
-	0,
-	190,
-	200,
-	0,
-	8,
+ : BC_ISlider(x, y, 0, xS(190),yS(200), 0,8,
 	client->config.border)
 {
 	this->client = client;

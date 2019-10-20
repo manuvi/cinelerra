@@ -2034,7 +2034,7 @@ public:
 
 // --------------------------------------- Main GUI window --------------------------------------
 BluebananaWindow::BluebananaWindow(BluebananaMain *plugin)
- : PluginClientWindow(plugin,1000,1000,0,1,1)
+ : PluginClientWindow(plugin,xS(1000),yS(1000),0,1,1)
 {
   do_render=0;
   windowx = get_x();

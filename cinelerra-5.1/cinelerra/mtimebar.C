@@ -101,10 +101,11 @@ void MTimeBar::stop_transport()
 	gui->stop_transport("MTimeBar::stop_transport");
 }
 
-#define TEXT_MARGIN 4
-#define TICK_SPACING 5
-#define LINE_MARGIN 3
-#define TICK_MARGIN 16
+#define TEXT_MARGIN xS(4)
+#define TICK_SPACING xS(5)
+#define LINE_MARGIN yS(3)
+#define TICK_MARGIN yS(16)
+
 void MTimeBar::draw_time()
 {
 
@@ -399,7 +400,7 @@ void MTimeBar::draw_time()
 		set_font(MEDIUMFONT);
 
 		draw_text(pixel + TEXT_MARGIN, get_text_ascent(MEDIUMFONT), string);
-		draw_line(pixel, LINE_MARGIN, pixel, get_h() - 2);
+		draw_line(pixel, LINE_MARGIN, pixel, get_h() - yS(2));
 
 		double position2 = start_position + text_interval * (iteration + 1);
 		int pixel2 = (int64_t)(position2 / time_per_pixel) -
@@ -413,7 +414,7 @@ void MTimeBar::draw_time()
 				mwindow->edl->local_session->view_start[pane->number];
 			if(labs(pixel - pixel1) > 1 &&
 				labs(pixel - pixel2) > 1)
-				draw_line(pixel, TICK_MARGIN, pixel, get_h() - 2);
+				draw_line(pixel, TICK_MARGIN, pixel, get_h() - yS(2));
 		}
 		iteration++;
 	}

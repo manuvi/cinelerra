@@ -27,7 +27,7 @@
 
 
 UnsharpWindow::UnsharpWindow(UnsharpMain *plugin)
- : PluginClientWindow(plugin, 285, 170, 285, 170, 0)
+ : PluginClientWindow(plugin, xS(285), yS(170), xS(285), yS(170), 0)
 {
 	this->plugin = plugin;
 }
@@ -38,30 +38,32 @@ UnsharpWindow::~UnsharpWindow()
 
 void UnsharpWindow::create_objects()
 {
-	int x = 10, y = 10, x1 = 90;
-	int x2 = 0; int clrBtn_w = 50;
-	int defaultBtn_w = 100;
+	int xs10 = xS(10), xs50 = xS(50), xs90 = xS(90), xs100 = xS(100);
+	int ys10 = yS(10), ys40 = yS(40), ys50 = yS(50);
+	int x = xs10, y = ys10, x1 = xs90;
+	int x2 = 0; int clrBtn_w = xs50;
+	int defaultBtn_w = xs100;
 	BC_Title *title;
 
-	add_subwindow(title = new BC_Title(x, y + 10, _("Radius:")));
+	add_subwindow(title = new BC_Title(x, y + ys10, _("Radius:")));
 	add_subwindow(radius = new UnsharpRadius(plugin, x + x1, y));
-	x2 = 285 - 10 - clrBtn_w;
-	add_subwindow(radiusClr = new UnsharpSliderClr(plugin, this, x2, y + 10, clrBtn_w, RESET_RADIUS));
+	x2 = xS(285) - xs10 - clrBtn_w;
+	add_subwindow(radiusClr = new UnsharpSliderClr(plugin, this, x2, y + ys10, clrBtn_w, RESET_RADIUS));
 
-	y += 40;
-	add_subwindow(title = new BC_Title(x, y + 10, _("Amount:")));
+	y += ys40;
+	add_subwindow(title = new BC_Title(x, y + ys10, _("Amount:")));
 	add_subwindow(amount = new UnsharpAmount(plugin, x + x1, y));
-	add_subwindow(amountClr = new UnsharpSliderClr(plugin, this, x2, y + 10, clrBtn_w, RESET_AMOUNT));
+	add_subwindow(amountClr = new UnsharpSliderClr(plugin, this, x2, y + ys10, clrBtn_w, RESET_AMOUNT));
 
-	y += 40;
-	add_subwindow(title = new BC_Title(x, y + 10, _("Threshold:")));
+	y += ys40;
+	add_subwindow(title = new BC_Title(x, y + ys10, _("Threshold:")));
 	add_subwindow(threshold = new UnsharpThreshold(plugin, x + x1, y));
-	add_subwindow(thresholdClr = new UnsharpSliderClr(plugin, this, x2, y + 10, clrBtn_w, RESET_THRESHOLD));
+	add_subwindow(thresholdClr = new UnsharpSliderClr(plugin, this, x2, y + ys10, clrBtn_w, RESET_THRESHOLD));
 
-	y += 50;
+	y += ys50;
 	add_subwindow(reset = new UnsharpReset(plugin, this, x, y));
 	add_subwindow(default_settings = new UnsharpDefaultSettings(plugin, this,
-		(285 - 10 - defaultBtn_w), y, defaultBtn_w));
+		(xS(285) - xs10 - defaultBtn_w), y, defaultBtn_w));
 
 	show_window();
 	flush();

@@ -114,6 +114,21 @@ int BC_DisplayInfo::xinerama_geometry(int screen, int &x, int &y, int &w, int &h
 	return 0;
 }
 
+int BC_DisplayInfo::xinerama_big_screen()
+{
+	int screens = get_xinerama_screens();
+	int best = 0, ret = -1;
+	for( int k=screens; --k>=0; ) {
+		int w = xinerama_info[k].width, h = xinerama_info[k].height;
+		int sz = w * h;
+		if( sz > best ) {
+			ret = xinerama_info[k].screen_number;
+			best = sz;
+		}
+	}
+	return ret;
+}
+
 static void get_top_coords(Display *display, Window win, int &px,int &py, int &tx,int &ty)
 {
 	Window *pcwin = 0;  unsigned int ncwin = 0;

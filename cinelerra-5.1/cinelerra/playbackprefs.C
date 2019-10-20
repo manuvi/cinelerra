@@ -59,6 +59,8 @@ PlaybackPrefs::~PlaybackPrefs()
 
 void PlaybackPrefs::create_objects()
 {
+	int xs5 = xS(5), xs10 = xS(10), xs30 = xS(30);
+	int ys5 = yS(5), ys30 = yS(30);
 	int x, y, x2, y2;
 	char string[BCTEXTLEN];
 	BC_WindowBase *window;
@@ -91,50 +93,46 @@ SET_TRACE
 	menu->add_item(new BC_MenuItem("131072"));
 	menu->add_item(new BC_MenuItem("262144"));
 
-	y += menu->get_h() + 5;
+	y += menu->get_h() + ys5;
 	x2 = x;
 	add_subwindow(title1 = new BC_Title(x2, y, _("Audio offset (sec):")));
-	x2 += title1->get_w() + 5;
+	x2 += title1->get_w() + xs5;
 	audio_offset = new PlaybackAudioOffset(pwindow, this, x2, y);
 	audio_offset->create_objects();
-	y += audio_offset->get_h() + 5;
+	y += audio_offset->get_h() + ys5;
 
 SET_TRACE
 	add_subwindow(new PlaybackViewFollows(pwindow,
 		pwindow->thread->edl->session->view_follows_playback, y));
-	y += 30;
+	y += ys30;
 	add_subwindow(new PlaybackSoftwareTimer(pwindow,
 		pwindow->thread->edl->session->playback_software_position, y));
-	y += 30;
+	y += ys30;
 	add_subwindow(new PlaybackRealTime(pwindow,
 		pwindow->thread->edl->session->real_time_playback, y));
-	y += 30;
+	y += ys30;
 	PlaybackMap51_2 *map51_2 = new PlaybackMap51_2(pwindow, this,
 		playback_config->aconfig->map51_2, y);
 	add_subwindow(map51_2);
-	x2 =  map51_2->get_x() + map51_2->get_w() + 15;
+	x2 =  map51_2->get_x() + map51_2->get_w() + xS(15);
 	y2 = y + BC_TextBox::calculate_h(this,MEDIUMFONT,1,1) - get_text_height(MEDIUMFONT);
 
 	add_subwindow(title2 = new BC_Title(x2, y2, _("Gain:")));
-	x2 += title2->get_w() + 8;
+	x2 += title2->get_w() + xS(8);
 	play_gain = new PlaybackGain(x2, y, pwindow, this);
 	play_gain->create_objects();
-	y += 40;
+	y += yS(40);
 	add_subwindow(new BC_Title(x, y, _("Audio Driver:")));
-	audio_device = new ADevicePrefs(x + 100, y, pwindow,
+	audio_device = new ADevicePrefs(x + xS(100), y, pwindow,
 		this, playback_config->aconfig, 0, MODEPLAY);
 	audio_device->initialize(0);
-
 SET_TRACE
-
-
-
 // Video
- 	y += audio_device->get_h(0) + margin;
+	y += audio_device->get_h(0) + margin;
 
 SET_TRACE
 	add_subwindow(new BC_Bar(x, y, 	get_w() - x * 2));
-	y += 5;
+	y += ys5;
 
 SET_TRACE
 	add_subwindow(title1 = new BC_Title(x, y, _("Video Out"), LARGEFONT));
@@ -142,7 +140,7 @@ SET_TRACE
 
 SET_TRACE
 	add_subwindow(window = new VideoEveryFrame(pwindow, this, x, y));
-	int x1 = x + window->get_w() + 30;
+	int x1 = x + window->get_w() + xs30;
 	const char *txt = _("Framerate achieved:");
 	int y1 = y + (window->get_h() - BC_Title::calculate_h(this, txt)) / 2;
 	add_subwindow(title1 = new BC_Title(x1, y1, txt));
@@ -152,17 +150,17 @@ SET_TRACE
 	y += window->get_h() + 2*margin;
 
 //	add_subwindow(asynchronous = new VideoAsynchronous(pwindow, x, y));
-//	y += asynchronous->get_h() + 10;
+//	y += asynchronous->get_h() + ys10;
 
 SET_TRACE
- 	add_subwindow(title1 = new BC_Title(x, y, _("Scaling equation: Enlarge / Reduce ")));
+	add_subwindow(title1 = new BC_Title(x, y, _("Scaling equation: Enlarge / Reduce ")));
 	VScalingEquation *vscaling_equation =
-		new VScalingEquation(x + title1->get_w() + 65, y,
+		new VScalingEquation(x + title1->get_w() + xS(65), y,
 			&pwindow->thread->edl->session->interpolation_type);
 	add_subwindow(vscaling_equation);
 	vscaling_equation->create_objects();
 SET_TRACE
-	y += 35;
+	y += yS(35);
 
 	add_subwindow(title1 = new BC_Title(x, y, _("DVD Subtitle to display:")));
 	PlaybackSubtitleNumber *subtitle_number;
@@ -170,7 +168,7 @@ SET_TRACE
 	subtitle_number = new PlaybackSubtitleNumber(x1, y, pwindow, this);
 	subtitle_number->create_objects();
 
-	x2 = x + title1->get_w() + 10 + subtitle_number->get_w() + 85;
+	x2 = x + title1->get_w() + xs10 + subtitle_number->get_w() + xS(85);
 	PlaybackSubtitle *subtitle_toggle;
 	x1 += subtitle_number->get_w() + margin;
 	add_subwindow(subtitle_toggle = new PlaybackSubtitle(x2, y, pwindow, this));
@@ -183,17 +181,17 @@ SET_TRACE
 	add_subwindow(title1=new BC_Title(x2, y2, _("TOC Program No:"), MEDIUMFONT));
 	PlaybackProgramNumber *program_number;
 	program_number = new PlaybackProgramNumber(
-		x2 + title1->get_w() + 10, y2, pwindow, this);
+		x2 + title1->get_w() + xs10, y2, pwindow, this);
 	program_number->create_objects();
 
 	add_subwindow(interpolate_raw = new PlaybackInterpolateRaw( x, y,
 		pwindow, this));
 	y += interpolate_raw->get_h() + margin;
 
- 	add_subwindow(white_balance_raw = new PlaybackWhiteBalanceRaw(x, y,
+	add_subwindow(white_balance_raw = new PlaybackWhiteBalanceRaw(x, y,
 		pwindow, this));
- 	if(!pwindow->thread->edl->session->interpolate_raw) 
- 		white_balance_raw->disable();
+	if(!pwindow->thread->edl->session->interpolate_raw)
+		white_balance_raw->disable();
 	y += white_balance_raw->get_h() + margin;
 
 	add_subwindow(vdevice_title = new BC_Title(x, y, _("Video Driver:")));
@@ -218,7 +216,7 @@ int PlaybackPrefs::draw_framerate(int flush)
 PlaybackAudioOffset::PlaybackAudioOffset(PreferencesWindow *pwindow,
 	PlaybackPrefs *playback, int x, int y)
  : BC_TumbleTextBox(playback, playback->playback_config->aconfig->audio_offset,
-	-10.0, 10.0, x, y, 100)
+	-10.0, 10.0, x, y, xS(100))
 {
 	this->pwindow = pwindow;
 	this->playback = playback;
@@ -237,7 +235,7 @@ int PlaybackAudioOffset::handle_event()
 
 PlaybackModuleFragment::PlaybackModuleFragment(int x, int y,
 	PreferencesWindow *pwindow, PlaybackPrefs *playback, char *text)
- : BC_PopupMenu(x, y, 100, text, 1)
+ : BC_PopupMenu(x, y, xS(100), text, 1)
 {
 	this->pwindow = pwindow;
 	this->playback = playback;
@@ -251,7 +249,7 @@ int PlaybackModuleFragment::handle_event()
 
 
 PlaybackViewFollows::PlaybackViewFollows(PreferencesWindow *pwindow, int value, int y)
- : BC_CheckBox(10, y, value, _("View follows playback"))
+ : BC_CheckBox(xS(10), y, value, _("View follows playback"))
 {
 	this->pwindow = pwindow;
 }
@@ -264,7 +262,7 @@ int PlaybackViewFollows::handle_event()
 
 
 PlaybackSoftwareTimer::PlaybackSoftwareTimer(PreferencesWindow *pwindow, int value, int y)
- : BC_CheckBox(10, y, value, _("Disable hardware synchronization"))
+ : BC_CheckBox(xS(10), y, value, _("Disable hardware synchronization"))
 {
 	this->pwindow = pwindow;
 }
@@ -277,7 +275,7 @@ int PlaybackSoftwareTimer::handle_event()
 
 
 PlaybackRealTime::PlaybackRealTime(PreferencesWindow *pwindow, int value, int y)
- : BC_CheckBox(10, y, value, _("Audio playback in real time priority (root only)"))
+ : BC_CheckBox(xS(10), y, value, _("Audio playback in real time priority (root only)"))
 {
 	this->pwindow = pwindow;
 }
@@ -291,7 +289,7 @@ int PlaybackRealTime::handle_event()
 
 PlaybackMap51_2::PlaybackMap51_2(PreferencesWindow *pwindow,
 		PlaybackPrefs *playback_prefs, int value, int y)
- : BC_CheckBox(10, y, value, _("Map 5.1->2"))
+ : BC_CheckBox(xS(10), y, value, _("Map 5.1->2"))
 {
 	this->pwindow = pwindow;
 	this->playback_prefs = playback_prefs;
@@ -306,9 +304,7 @@ int PlaybackMap51_2::handle_event()
 
 PlaybackInterpolateRaw::PlaybackInterpolateRaw( int x, int y,
 		PreferencesWindow *pwindow, PlaybackPrefs *playback)
- : BC_CheckBox(x,
- 	y,
-	pwindow->thread->edl->session->interpolate_raw,
+ : BC_CheckBox(x, y, pwindow->thread->edl->session->interpolate_raw,
 	_("Interpolate CR2 images"))
 {
 	this->pwindow = pwindow;
@@ -331,8 +327,7 @@ int PlaybackInterpolateRaw::handle_event()
 
 PlaybackWhiteBalanceRaw::PlaybackWhiteBalanceRaw( int x, int y,
 		PreferencesWindow *pwindow, PlaybackPrefs *playback)
- : BC_CheckBox(x,
- 	y,
+ : BC_CheckBox(x, y,
 	pwindow->thread->edl->session->interpolate_raw &&
 		pwindow->thread->edl->session->white_balance_raw,
 	_("White balance CR2 images"))
@@ -358,7 +353,7 @@ int PlaybackWhiteBalanceRaw::handle_event()
 // 	if(!pwindow->thread->edl->session->video_every_frame)
 // 		disable();
 // }
-// 
+//
 // int VideoAsynchronous::handle_event()
 // {
 // 	pwindow->thread->edl->session->video_asynchronous = get_value();
@@ -409,7 +404,7 @@ int PlaybackSubtitle::handle_event()
 PlaybackSubtitleNumber::PlaybackSubtitleNumber(int x, int y,
 	PreferencesWindow *pwindow, PlaybackPrefs *playback)
  : BC_TumbleTextBox(playback, pwindow->thread->edl->session->subtitle_number,
- 	0, 31, x, y, 50)
+	0, 31, x, y, xS(50))
 {
 	this->pwindow = pwindow;
 	this->playback = playback;
@@ -443,7 +438,7 @@ PlaybackProgramNumber::PlaybackProgramNumber(int x, int y,
 	PreferencesWindow *pwindow, PlaybackPrefs *playback)
  : BC_TumbleTextBox(playback,
 	pwindow->thread->edl->session->program_no,
- 	0, 31, x, y, 50)
+	0, 31, x, y, xS(50))
 {
 	this->pwindow = pwindow;
 	this->playback = playback;
@@ -459,7 +454,7 @@ PlaybackGain::PlaybackGain(int x, int y,
 	PreferencesWindow *pwindow, PlaybackPrefs *playback)
  : BC_TumbleTextBox(playback,
 		pwindow->thread->edl->session->playback_config->aconfig->play_gain,
-		0.0001f, 10000.0f, x, y, 72)
+		0.0001f, 10000.0f, x, y, xS(72))
 {
 	this->pwindow = pwindow;
 	this->set_increment(0.1);

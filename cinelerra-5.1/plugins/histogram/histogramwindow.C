@@ -38,8 +38,8 @@ HistogramWindow::HistogramWindow(HistogramMain *plugin)
  : PluginClientWindow(plugin,
 	plugin->w,
 	plugin->h,
-	440,
-	500,
+	xS(440),
+	yS(500),
 	1)
 {
 	this->plugin = plugin;
@@ -106,7 +106,7 @@ void HistogramWindow::create_objects()
 
 	y += canvas_title2->get_h() + margin;
 	x = x1;
-	canvas_h = get_h() - y - 210;
+	canvas_h = get_h() - y - yS(210);
 
 
 	add_subwindow(low_input_carrot = new HistogramCarrot(plugin,
@@ -182,7 +182,7 @@ void HistogramWindow::create_objects()
 	x = x1;
 
 	add_subwindow(output = new HistogramSlider(plugin, this,
-		canvas->get_x(), y, canvas->get_w(), 20, 0));
+		canvas->get_x(), y, canvas->get_w(), yS(20), 0));
 	output->update();
 
 // Output border
@@ -216,7 +216,7 @@ void HistogramWindow::create_objects()
 	add_subwindow(automatic = new HistogramAuto(plugin, x, y));
 
 	//int y1 = y;
-	x = 200;
+	x = xS(200);
 	add_subwindow(threshold_title = new BC_Title(x, y, _("Threshold:")));
 	x += threshold_title->get_w() + margin;
 	threshold = new HistogramText(plugin, this, x, y);
@@ -230,7 +230,7 @@ void HistogramWindow::create_objects()
 	y += automatic->get_h() + margin;
 	add_subwindow(plot = new HistogramPlot(plugin, x, y));
 
-	y += plot->get_h() + 5;
+	y += plot->get_h() + yS(5);
 	add_subwindow(split = new HistogramSplit(plugin, x, y));
 
 	update(1, 1, 1, 1);
@@ -973,7 +973,7 @@ int HistogramMode::handle_event()
 
 HistogramText::HistogramText(HistogramMain *plugin,
 	HistogramWindow *gui, int x, int y, float hist_min, float hist_max)
- : BC_TumbleTextBox(gui, 0.0, hist_min, hist_max, x, y, 70)
+ : BC_TumbleTextBox(gui, 0.0, hist_min, hist_max, x, y, xS(70))
 {
 	this->plugin = plugin;
 	this->gui = gui;

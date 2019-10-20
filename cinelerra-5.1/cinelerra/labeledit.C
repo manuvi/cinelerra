@@ -74,10 +74,13 @@ BC_Window *LabelEdit::new_gui()
 	return label_edit_window;
 }
 
+#define LEW_W xS(400)
+#define LEW_H yS(350)
+
 LabelEditWindow::LabelEditWindow(MWindow *mwindow, LabelEdit *thread)
  : BC_Window(_(PROGRAM_NAME ": Label Info"),
-	thread->x - 400/2, thread->y - 350/2,
-	400, 350, 400, 430, 0, 0, 1)
+	thread->x - LEW_W/2, thread->y - LEW_H/2,
+	LEW_W, LEW_H, xS(400), yS(430), 0, 0, 1)
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
@@ -92,14 +95,14 @@ void LabelEditWindow::create_objects()
 	lock_window("LabelEditWindow::create_objects");
 	this->label = thread->label;
 
-	int x = 10, y = 10;
+	int x = xS(10), y = yS(10);
 	int x1 = x;
 	BC_Title *title;
 
 	add_subwindow(title = new BC_Title(x1, y, _("Label Text:")));
 	y += title->get_h() + 5;
 	add_subwindow(textbox = new LabelEditComments(this, x1, y, get_w() - x1 * 2,
-		BC_TextBox::pixels_to_rows(this, MEDIUMFONT, get_h() - 10 - 40 - y)));
+		BC_TextBox::pixels_to_rows(this, MEDIUMFONT, get_h() - y - yS(10 + 40))));
 
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));

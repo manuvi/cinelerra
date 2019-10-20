@@ -119,16 +119,8 @@ void thread_fork()
 class TestWindow : public BC_Window
 {
 public:
-	TestWindow() : BC_Window("test",
-				0,
-				0,
-				320,
-				240,
-				-1,
-				-1,
-				0,
-				0,
-				1)
+	TestWindow() : BC_Window("test", 0, 0, 320, 240,
+				-1, -1, 0, 0, 1)
 	{
 		current_cursor = 0;
 		test_keypress = 1;
@@ -169,15 +161,7 @@ int main(int argc, char *argv[])
 	int angles[] = { 180, 0 };
 	float values[] = { 1, 0 };
 
-	window.add_tool(new BC_Pan(10,
-		120,
-		100,
-		1,
-		2,
-		angles,
-		-1,
-		-1,
-		values));
+	window.add_tool(new BC_Pan(10, 120, 100, 1, 2, angles, -1, -1, values));
 	window.add_tool(new BC_TextBox(10, 10, 200, 5, _("Mary Egbert\nhad a little lamb.")));
 	BC_Title *title;
 	window.add_tool(title = new BC_Title(10, 210, _("Hello world")));

@@ -557,9 +557,3 @@ BC_WindowBase* BC_Synchronous::get_window()
 	return current_window;
 }
 
-
-
-
-
-
-

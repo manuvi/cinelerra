@@ -179,7 +179,7 @@ RotateText::RotateText(RotateWindow *window,
 	int y)
  : BC_TextBox(x,
  	y,
-	90,
+	xS(90),
 	1,
 	(float)plugin->config.angle)
 {
@@ -263,19 +263,21 @@ int RotateReset::handle_event()
 
 
 RotateWindow::RotateWindow(RotateEffect *plugin)
- : PluginClientWindow(plugin, 300, 230, 300, 230, 0)
+ : PluginClientWindow(plugin, xS(300), yS(230), xS(300), yS(230), 0)
 {
 	this->plugin = plugin;
 }
 
-#define RADIUS 30
+#define RADIUS xS(30)
 
 void RotateWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int xs10 = xS(10), xs50 = xS(50), xs150 = xS(150);
+	int ys10 = yS(10), ys20 = yS(20), ys25 = yS(25), ys50 = yS(50), ys60 = yS(60);
+	int x = xs10, y = ys10;
 	BC_Title *title;
 	add_tool(new BC_Title(x, y, _("Rotate")));
-	x += 50;  y += 20;
+	x += xs50;  y += ys20;
 	add_tool(toggle0 = new RotateToggle(this, plugin,
 		plugin->config.angle == 0, x, y, 0, "0"));
     x += RADIUS;  y += RADIUS;
@@ -287,25 +289,25 @@ void RotateWindow::create_objects()
     x -= RADIUS;  y -= RADIUS;
 	add_tool(toggle270 = new RotateToggle(this, plugin,
 		plugin->config.angle == 270, x, y, 270, "270"));
-//	add_subwindow(bilinear = new RotateInterpolate(plugin, 10, y + 60));
-	x += 150;  y -= 50;
+//	add_subwindow(bilinear = new RotateInterpolate(plugin, xs10, y + ys60));
+	x += xs150;  y -= ys50;
 	add_tool(fine = new RotateFine(this, plugin, x, y));
-	y += fine->get_h() + 10;
+	y += fine->get_h() + ys10;
 	add_tool(text = new RotateText(this, plugin, x, y));
-	y += 25;
+	y += ys25;
 	add_tool(new BC_Title(x, y, _("Degrees")));
 
-	y += text->get_h() + 10;
+	y += text->get_h() + ys10;
 	add_subwindow(title = new BC_Title(x, y, _("Pivot (x,y):")));
-	y += title->get_h() + 10;
+	y += title->get_h() + ys10;
 	add_subwindow(this->x = new RotateX(this, plugin, x, y));
-	x += this->x->get_w() + 10;
+	x += this->x->get_w() + xs10;
 	add_subwindow(this->y = new RotateY(this, plugin, x, y));
 
-//	y += this->y->get_h() + 10;
-	x = 10;
+//	y += this->y->get_h() + ys10;
+	x = xs10;
 	add_subwindow(draw_pivot = new RotateDrawPivot(this, plugin, x, y));
-	y += 60;
+	y += ys60;
 	add_subwindow(reset = new RotateReset(plugin, this, x, y));
 
 	show_window();
@@ -532,8 +534,8 @@ int RotateEffect::process_buffer(VFrame *frame,
 //printf("RotateEffect::process_buffer %d draw_pivot=%d\n", __LINE__, config.draw_pivot);
 
 // Draw center
-#define CENTER_H 20
-#define CENTER_W 20
+#define CENTER_H xS(20)
+#define CENTER_W yS(20)
 #define DRAW_CENTER(components, type, max) \
 { \
 	type **rows = (type**)get_output()->get_rows(); \

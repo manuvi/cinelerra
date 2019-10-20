@@ -33,10 +33,10 @@
 
 DespikeWindow::DespikeWindow(Despike *despike)
  : PluginClientWindow(despike,
-	230,
-	110,
-	230,
-	110,
+	xS(230),
+	yS(110),
+	xS(230),
+	yS(110),
 	0)
 {
 	this->despike = despike;
@@ -48,13 +48,15 @@ DespikeWindow::~DespikeWindow()
 
 void DespikeWindow::create_objects()
 {
-	int x = 10, y = 10;
-	add_tool(new BC_Title(5, y, _("Maximum level:")));
-	y += 20;
+	int xs5 = xS(5), xs10 = xS(10);
+	int ys10 = yS(10), ys20 = yS(20), ys30 = yS(30);
+	int x = xs10, y = ys10;
+	add_tool(new BC_Title(xs5, y, _("Maximum level:")));
+	y += ys20;
 	add_tool(level = new DespikeLevel(despike, x, y));
-	y += 30;
-	add_tool(new BC_Title(5, y, _("Maximum rate of change:")));
-	y += 20;
+	y += ys30;
+	add_tool(new BC_Title(xs5, y, _("Maximum rate of change:")));
+	y += ys20;
 	add_tool(slope = new DespikeSlope(despike, x, y));
 	show_window();
 	flush();
@@ -68,8 +70,8 @@ DespikeLevel::DespikeLevel(Despike *despike, int x, int y)
  : BC_FSlider(x,
  	y,
 	0,
-	200,
-	200,
+	xS(200),
+	yS(200),
 	INFINITYGAIN,
 	0,
 	despike->config.level)
@@ -87,8 +89,8 @@ DespikeSlope::DespikeSlope(Despike *despike, int x, int y)
  : BC_FSlider(x,
  	y,
 	0,
-	200,
-	200,
+	xS(200),
+	yS(200),
 	INFINITYGAIN,
 	0,
 	despike->config.slope)

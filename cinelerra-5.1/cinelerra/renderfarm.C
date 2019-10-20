@@ -492,13 +492,7 @@ void RenderFarmServerThread::send_asset()
 // The asset must be sent in two segments.
 // One segment is stored in the EDL and contains decoding information.
 // One segment is stored in the asset and contains encoding information.
-	server->default_asset->save_defaults(&defaults,
-		0,
-		1,
-		1,
-		1,
-		1,
-		1);
+	server->default_asset->save_defaults(&defaults, 0, 1, 1, 1, 1, 1);
 	defaults.save_string(string1);
 	FileXML file;
 	server->default_asset->write(&file, 0, 0);

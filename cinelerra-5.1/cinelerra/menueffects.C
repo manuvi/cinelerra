@@ -566,15 +566,11 @@ MenuEffectWindow::MenuEffectWindow(MWindow *mwindow,
 	ArrayList<BC_ListBoxItem*> *plugin_list,
 	Asset *asset)
  : BC_Window(_(PROGRAM_NAME ": Render effect"),
- 		mwindow->gui->get_abs_cursor_x(1),
+		mwindow->gui->get_abs_cursor_x(1),
 		mwindow->gui->get_abs_cursor_y(1) - mwindow->session->menueffect_h / 2,
 		mwindow->session->menueffect_w,
 		mwindow->session->menueffect_h,
-		580,
-		350,
-		1,
-		0,
-		1)
+		xS(580), yS(350), 1, 0, 1)
 {
 	this->menueffects = menueffects;
 	this->plugin_list = plugin_list;
@@ -607,11 +603,12 @@ void MenuEffectWindow::create_objects()
 		add_subwindow(list_title = new BC_Title(mwindow->theme->menueffect_list_x,
 			mwindow->theme->menueffect_list_y,
 			_("Select an effect")));
+		int ys5 = yS(5);
 		add_subwindow(list = new MenuEffectWindowList(this,
 			mwindow->theme->menueffect_list_x,
-			mwindow->theme->menueffect_list_y + list_title->get_h() + 5,
+			mwindow->theme->menueffect_list_y + list_title->get_h() + ys5,
 			mwindow->theme->menueffect_list_w,
-			mwindow->theme->menueffect_list_h - list_title->get_h() - 5,
+			mwindow->theme->menueffect_list_h - list_title->get_h() - ys5,
 			plugin_list));
 	}
 
@@ -649,10 +646,11 @@ int MenuEffectWindow::resize_event(int w, int h)
 	{
 		list_title->reposition_window(mwindow->theme->menueffect_list_x,
 			mwindow->theme->menueffect_list_y);
+		int ys5 = yS(5);
 		list->reposition_window(mwindow->theme->menueffect_list_x,
-			mwindow->theme->menueffect_list_y + list_title->get_h() + 5,
+			mwindow->theme->menueffect_list_y + list_title->get_h() + ys5,
 			mwindow->theme->menueffect_list_w,
-			mwindow->theme->menueffect_list_h - list_title->get_h() - 5);
+			mwindow->theme->menueffect_list_h - list_title->get_h() - ys5);
 	}
 
 	if(file_title) file_title->reposition_window(mwindow->theme->menueffect_file_x,
@@ -719,12 +717,7 @@ MenuEffectWindowList::MenuEffectWindowList(MenuEffectWindow *window,
 	int w,
 	int h,
 	ArrayList<BC_ListBoxItem*> *plugin_list)
- : BC_ListBox(x,
- 		y,
-		w,
-		h,
-		LISTBOX_TEXT,
-		plugin_list)
+ : BC_ListBox(x, y, w, h, LISTBOX_TEXT, plugin_list)
 {
 	this->window = window;
 }
@@ -737,12 +730,14 @@ int MenuEffectWindowList::handle_event()
 }
 
 #define PROMPT_TEXT _("Set up effect panel and hit \"OK\"")
+#define MEP_W xS(260)
+#define MEP_H yS(100)
 
 MenuEffectPrompt::MenuEffectPrompt(MWindow *mwindow)
  : BC_Window(_(PROGRAM_NAME ": Effect Prompt"),
- 		mwindow->gui->get_abs_cursor_x(1) - 260 / 2,
-		mwindow->gui->get_abs_cursor_y(1) - 300,
- 		MenuEffectPrompt::calculate_w(mwindow->gui),
+		mwindow->gui->get_abs_cursor_x(1) - MEP_W/2,
+		mwindow->gui->get_abs_cursor_y(1) - MEP_H/2,
+		MenuEffectPrompt::calculate_w(mwindow->gui),
 		MenuEffectPrompt::calculate_h(mwindow->gui),
 		MenuEffectPrompt::calculate_w(mwindow->gui),
 		MenuEffectPrompt::calculate_h(mwindow->gui),
@@ -752,15 +747,15 @@ MenuEffectPrompt::MenuEffectPrompt(MWindow *mwindow)
 
 int MenuEffectPrompt::calculate_w(BC_WindowBase *gui)
 {
-	int w = BC_Title::calculate_w(gui, PROMPT_TEXT) + 10;
-	w = MAX(w, BC_OKButton::calculate_w() + BC_CancelButton::calculate_w() + 30);
+	int w = BC_Title::calculate_w(gui, PROMPT_TEXT) + xS(10);
+	w = MAX(w, BC_OKButton::calculate_w() + BC_CancelButton::calculate_w() + xS(30));
 	return w;
 }
 
 int MenuEffectPrompt::calculate_h(BC_WindowBase *gui)
 {
 	int h = BC_Title::calculate_h(gui, PROMPT_TEXT);
-	h += BC_OKButton::calculate_h() + 30;
+	h += BC_OKButton::calculate_h() + yS(30);
 	return h;
 }
 
@@ -768,7 +763,7 @@ int MenuEffectPrompt::calculate_h(BC_WindowBase *gui)
 void MenuEffectPrompt::create_objects()
 {
 	lock_window("MenuEffectPrompt::create_objects");
-	int x = 10, y = 10;
+	int x = xS(10), y = yS(10);
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x, y, PROMPT_TEXT));
 	add_subwindow(new BC_OKButton(this));

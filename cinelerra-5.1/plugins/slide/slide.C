@@ -137,10 +137,10 @@ int SlideOut::handle_event()
 
 SlideWindow::SlideWindow(SlideMain *plugin)
  : PluginClientWindow(plugin,
-	320,
-	100,
-	320,
-	100,
+	xS(320),
+	yS(100),
+	xS(320),
+	yS(100),
 	0)
 {
 	this->plugin = plugin;
@@ -153,28 +153,30 @@ SlideWindow::SlideWindow(SlideMain *plugin)
 
 void SlideWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int xs10 = xS(10), xs100 = xS(100);
+	int ys10 = yS(10), ys30 = yS(30);
+	int x = xs10, y = ys10;
 	add_subwindow(new BC_Title(x, y, _("Direction:")));
-	x += 100;
+	x += xs100;
 	add_subwindow(left = new SlideLeft(plugin,
 		this,
 		x,
 		y));
-	x += 100;
+	x += xs100;
 	add_subwindow(right = new SlideRight(plugin,
 		this,
 		x,
 		y));
 
-	y += 30;
-	x = 10;
+	y += ys30;
+	x = xs10;
 	add_subwindow(new BC_Title(x, y, _("Direction:")));
-	x += 100;
+	x += xs100;
 	add_subwindow(in = new SlideIn(plugin,
 		this,
 		x,
 		y));
-	x += 100;
+	x += xs100;
 	add_subwindow(out = new SlideOut(plugin,
 		this,
 		x,

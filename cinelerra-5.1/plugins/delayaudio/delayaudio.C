@@ -205,7 +205,7 @@ void DelayAudio::update_gui()
 
 
 DelayAudioWindow::DelayAudioWindow(DelayAudio *plugin)
- : PluginClientWindow(plugin, 285, 80, 285, 80, 0)
+ : PluginClientWindow(plugin, xS(285), yS(80), xS(285), yS(80), 0)
 {
 	this->plugin = plugin;
 }
@@ -216,12 +216,14 @@ DelayAudioWindow::~DelayAudioWindow()
 
 void DelayAudioWindow::create_objects()
 {
-	add_subwindow(new BC_Title(10, 10, _("Delay seconds:")));
+	int xs10 = xS(10);
+	int ys10 = yS(10), ys40 = yS(40);
+	add_subwindow(new BC_Title(xs10, ys10, _("Delay seconds:")));
 	length = new DelayAudioTextBox(
 		plugin,
 		this,
-		10,
-		40);
+		xs10,
+		ys40);
 	length->create_objects();
 	update_gui();
 	show_window();

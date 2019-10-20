@@ -216,10 +216,10 @@ void DownSampleConfig::interpolate(DownSampleConfig &prev,
 
 DownSampleWindow::DownSampleWindow(DownSampleMain *plugin)
  : PluginClientWindow(plugin,
-	230,
-	380,
-	230,
-	380,
+	xS(230),
+	yS(380),
+	xS(230),
+	yS(380),
 	0)
 {
 	this->plugin = plugin;
@@ -231,68 +231,70 @@ DownSampleWindow::~DownSampleWindow()
 
 void DownSampleWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int xs10 = xS(10);
+	int ys10 = yS(10), ys30 = yS(30);
+	int x = xs10, y = ys10;
 
 	add_subwindow(new BC_Title(x, y, _("Horizontal")));
-	y += 30;
+	y += ys30;
 	add_subwindow(h = new DownSampleSize(plugin,
 		x,
 		y,
 		&plugin->config.horizontal,
 		1,
 		100));
-	y += 30;
+	y += ys30;
 	add_subwindow(new BC_Title(x, y, _("Horizontal offset")));
-	y += 30;
+	y += ys30;
 	add_subwindow(h_x = new DownSampleSize(plugin,
 		x,
 		y,
 		&plugin->config.horizontal_x,
 		0,
 		100));
-	y += 30;
+	y += ys30;
 	add_subwindow(new BC_Title(x, y, _("Vertical")));
-	y += 30;
+	y += ys30;
 	add_subwindow(v = new DownSampleSize(plugin,
 		x,
 		y,
 		&plugin->config.vertical,
 		1,
 		100));
-	y += 30;
+	y += ys30;
 	add_subwindow(new BC_Title(x, y, _("Vertical offset")));
-	y += 30;
+	y += ys30;
 	add_subwindow(v_y = new DownSampleSize(plugin,
 		x,
 		y,
 		&plugin->config.vertical_y,
 		0,
 		100));
-	y += 30;
+	y += ys30;
 	add_subwindow(r = new DownSampleToggle(plugin,
 		x,
 		y,
 		&plugin->config.r,
 		_("Red")));
-	y += 30;
+	y += ys30;
 	add_subwindow(g = new DownSampleToggle(plugin,
 		x,
 		y,
 		&plugin->config.g,
 		_("Green")));
-	y += 30;
+	y += ys30;
 	add_subwindow(b = new DownSampleToggle(plugin,
 		x,
 		y,
 		&plugin->config.b,
 		_("Blue")));
-	y += 30;
+	y += ys30;
 	add_subwindow(a = new DownSampleToggle(plugin,
 		x,
 		y,
 		&plugin->config.a,
 		_("Alpha")));
-	y += 30;
+	y += ys30;
 
 	show_window();
 	flush();
@@ -338,7 +340,7 @@ DownSampleSize::DownSampleSize(DownSampleMain *plugin,
 	int *output,
 	int min,
 	int max)
- : BC_ISlider(x, y, 0, 200, 200, min, max, *output)
+ : BC_ISlider(x, y, 0, xS(200), yS(200), min, max, *output)
 {
 	this->plugin = plugin;
 	this->output = output;

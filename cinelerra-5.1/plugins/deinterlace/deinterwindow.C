@@ -32,10 +32,10 @@
 
 DeInterlaceWindow::DeInterlaceWindow(DeInterlaceMain *client)
  : PluginClientWindow(client,
-	200,
-	250,
-	200,
-	250,
+	xS(200),
+	yS(250),
+	xS(200),
+	yS(250),
 	0)
 {
 	this->client = client;
@@ -47,28 +47,30 @@ DeInterlaceWindow::~DeInterlaceWindow()
 
 void DeInterlaceWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int xs10 = xS(10);
+	int ys10 = yS(10), ys25 = yS(25);
+	int x = xs10, y = ys10;
 	add_tool(new BC_Title(x, y, _("Select lines to keep")));
-	y += 25;
+	y += ys25;
 	add_tool(none = new DeInterlaceOption(client, this, DEINTERLACE_NONE, x, y, _("Do nothing")));
-	y += 25;
+	y += ys25;
 	add_tool(odd_fields = new DeInterlaceOption(client, this, DEINTERLACE_EVEN, x, y, _("Odd lines")));
-	y += 25;
+	y += ys25;
 	add_tool(even_fields = new DeInterlaceOption(client, this, DEINTERLACE_ODD, x, y, _("Even lines")));
-	y += 25;
+	y += ys25;
 	add_tool(average_fields = new DeInterlaceOption(client, this, DEINTERLACE_AVG, x, y, _("Average lines")));
-	y += 25;
+	y += ys25;
 	add_tool(swap_odd_fields = new DeInterlaceOption(client, this, DEINTERLACE_SWAP_ODD, x, y, _("Swap odd fields")));
-	y += 25;
+	y += ys25;
 	add_tool(swap_even_fields = new DeInterlaceOption(client, this, DEINTERLACE_SWAP_EVEN, x, y, _("Swap even fields")));
-	y += 25;
+	y += ys25;
 	add_tool(avg_even = new DeInterlaceOption(client, this, DEINTERLACE_AVG_EVEN, x, y, _("Average even lines")));
 
 // 	draw_line(170, y + 5, 190, y + 5);
 // 	draw_line(190, y + 5, 190, y + 70);
 // 	draw_line(150, y + 70, 190, y + 70);
- 	y += 25;
- 	add_tool(avg_odd = new DeInterlaceOption(client, this, DEINTERLACE_AVG_ODD, x, y, _("Average odd lines")));
+	y += ys25;
+	add_tool(avg_odd = new DeInterlaceOption(client, this, DEINTERLACE_AVG_ODD, x, y, _("Average odd lines")));
 // 	draw_line(170, y + 5, 190, y + 5);
 // 	y += 30;
 //	add_tool(adaptive = new DeInterlaceAdaptive(client, x, y));

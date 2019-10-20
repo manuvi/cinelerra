@@ -74,10 +74,10 @@ int ZoomLimit::handle_event()
 
 ZoomWindow::ZoomWindow(ZoomMain *plugin)
  : PluginClientWindow(plugin,
-	250,
-	125,
-	250,
-	125,
+	xS(250),
+	yS(125),
+	xS(250),
+	yS(125),
 	0)
 {
 	this->plugin = plugin;
@@ -104,7 +104,7 @@ void ZoomWindow::create_objects()
 		&plugin->max_magnification_x,
 		x,
 		y,
-		get_w() - window_border * 2 - widget_border - BC_Tumbler::calculate_w());
+		get_w() - window_border * xS(2) - widget_border - BC_Tumbler::calculate_w());
 	limit_x->create_objects();
 	y += limit_x->get_h() + widget_border;
 	add_subwindow(title = new BC_Title(x, y, _("Y Magnification:")));
@@ -114,7 +114,7 @@ void ZoomWindow::create_objects()
 		&plugin->max_magnification_y,
 		x,
 		y,
-		get_w() - window_border * 2 - widget_border - BC_Tumbler::calculate_w());
+		get_w() - window_border * xS(2) - widget_border - BC_Tumbler::calculate_w());
 	limit_y->create_objects();
 
 	show_window();
@@ -134,8 +134,8 @@ ZoomMain::ZoomMain(PluginServer *server)
 {
 	overlayer = 0;
 	temp = 0;
-	max_magnification_x = 10;
-	max_magnification_y = 10;
+	max_magnification_x = xS(10);
+	max_magnification_y = yS(10);
 }
 
 ZoomMain::~ZoomMain()

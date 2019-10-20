@@ -109,7 +109,7 @@ int VPatchGUI::update(int x, int y)
 	else if( h >= y2 ) {
 		int64_t v = mwindow->get_float_auto(this, AUTOMATION_FADE)->get_value();
 		patchbay->add_subwindow(fade = new VFadePatch(this, x1+x, y1+y,
-			patchbay->get_w() - 10, v));
+			patchbay->get_w() - xS(10), v));
 	}
 	y1 = y2;
 
@@ -130,13 +130,13 @@ int VPatchGUI::update(int x, int y)
 		}
 	}
 	else if( h >= y2 ) {
-		patchbay->add_subwindow(mix = new VMixPatch(mwindow, this, x1+x, y1+y+5));
+		patchbay->add_subwindow(mix = new VMixPatch(mwindow, this, x1+x, y1+y+yS(5)));
 		x1 += mix->get_w();
 		patchbay->add_subwindow(mode = new VModePatch(mwindow, this, x1+x, y1+y));
 		mode->create_objects();
 		x1 += mode->get_w();
 		patchbay->add_subwindow(nudge = new NudgePatch(mwindow, this, x1+x, y1+y,
-			patchbay->get_w() - x1-x - 10));
+			patchbay->get_w() - x1-x - xS(10)));
 	}
 	y1 = y2;
 
@@ -190,7 +190,7 @@ int VFadePatch::handle_event()
 }
 
 VKeyFadePatch::VKeyFadePatch(MWindow *mwindow, VPatchGUI *patch, int x, int y)
- : BC_SubWindow(x,y, 200,20, GWindowGUI::auto_colors[AUTOMATION_FADE])
+ : BC_SubWindow(x,y, xS(200),yS(20), GWindowGUI::auto_colors[AUTOMATION_FADE])
 {
 	this->mwindow = mwindow;
 	this->patch = patch;
@@ -200,7 +200,7 @@ void VKeyFadePatch::create_objects()
 {
 	int x = 0, y = 0;
 	int64_t v = mwindow->get_float_auto(patch, AUTOMATION_FADE)->get_value();
-	add_subwindow(vkey_fade_text = new VKeyFadeText(this, x, y, 64, v));
+	add_subwindow(vkey_fade_text = new VKeyFadeText(this, x, y, xS(64), v));
 	x += vkey_fade_text->get_w();
 	VFrame **lok_images = mwindow->theme->get_image_set("lok");
 	int w1 = get_w() - x - lok_images[0]->get_w();
@@ -262,7 +262,7 @@ int VKeyFadeSlider::handle_event()
 
 
 VModePatch::VModePatch(MWindow *mwindow, VPatchGUI *patch, int x, int y)
- : BC_PopupMenu(x, y, patch->patchbay->mode_icons[0]->get_w() + 20,
+ : BC_PopupMenu(x, y, patch->patchbay->mode_icons[0]->get_w() + xS(20),
 	"", 1, mwindow->theme->get_image_set("mode_popup", 0), 0)
 {
 	this->mwindow = mwindow;

@@ -73,11 +73,6 @@ VFrameScene::~VFrameScene()
 }
 
 
-
-
-
-
-
 //static BCCounter counter;
 
 VFramePng::VFramePng(unsigned char *png_data, double s)

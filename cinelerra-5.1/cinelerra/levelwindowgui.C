@@ -35,15 +35,9 @@
 
 LevelWindowGUI::LevelWindowGUI(MWindow *mwindow, LevelWindow *thread)
  : BC_Window(_(PROGRAM_NAME ": Levels"),
- 	mwindow->session->lwindow_x,
-	mwindow->session->lwindow_y,
-	mwindow->session->lwindow_w,
-	mwindow->session->lwindow_h,
-	10,
-	10,
-	1,
-	0,
-	1)
+	mwindow->session->lwindow_x, mwindow->session->lwindow_y,
+	mwindow->session->lwindow_w, mwindow->session->lwindow_h,
+	xS(10), yS(10), 1, 0, 1)
 {
 	this->thread = thread;
 	this->mwindow = mwindow;

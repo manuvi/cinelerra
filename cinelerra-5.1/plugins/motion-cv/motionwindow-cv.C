@@ -31,7 +31,7 @@
 #include "pluginserver.h"
 
 MotionCVWindow::MotionCVWindow(MotionCVMain *plugin)
- : PluginClientWindow(plugin, 815, 600, 815, 600, 0)
+ : PluginClientWindow(plugin, xS(815), yS(600), xS(815), yS(600), 0)
 {
 	this->plugin = plugin;
 }
@@ -42,109 +42,111 @@ MotionCVWindow::~MotionCVWindow()
 
 void MotionCVWindow::create_objects()
 {
-	int x1 = 10, x = 10, y = 10;
-	int x2 = 410;
+	int xs10 = xS(10), xs20 = xS(20), xs30 = xS(30), xs50 = xS(50), xs120 = xS(120), xs410 = xS(410);
+	int ys10 = yS(10), ys20 = yS(20), ys30 = yS(30), ys40 = yS(40), ys50 = yS(50);
+	int x1 = xs10, x = xs10, y = ys10;
+	int x2 = xs410;
 	BC_Title *title;
 
 	add_subwindow(global = new MotionCVGlobal(plugin, this, x1, y));
 	add_subwindow(rotate = new MotionCVRotate(plugin, this, x2, y));
-	y += 50;
+	y += ys50;
 
 	add_subwindow(title = new BC_Title(x1, y,
 		_("Translation search radius:\n(W/H Percent of image)")));
 	add_subwindow(global_range_w = new GlobalRange(plugin,
-			x1 + title->get_w() + 10, y,
+			x1 + title->get_w() + xs10, y,
 			&plugin->config.global_range_w));
 	add_subwindow(global_range_h = new GlobalRange(plugin,
-			x1 + title->get_w() + 30 + global_range_w->get_w(), y,
+			x1 + title->get_w() + xs30 + global_range_w->get_w(), y,
 			&plugin->config.global_range_h));
 
 	add_subwindow(title = new BC_Title(x2, y,
 		_("Rotation search radius:\n(Degrees)")));
 	add_subwindow(rotation_range =
-		      new RotationRange(plugin, x2 + title->get_w() + 10, y));
+		      new RotationRange(plugin, x2 + title->get_w() + xs10, y));
 
-	y += 50;
+	y += ys50;
 	add_subwindow(title = new BC_Title(x1, y,
 		_("Translation block size:\n(W/H Percent of image)")));
 	add_subwindow(global_block_w = new BlockSize(plugin,
-			x1 + title->get_w() + 10, y,
+			x1 + title->get_w() + xs10, y,
 			&plugin->config.global_block_w));
 	add_subwindow(global_block_h = new BlockSize(plugin,
-			x1 + title->get_w() + 30 + global_block_w->get_w(), y,
+			x1 + title->get_w() + xs30 + global_block_w->get_w(), y,
 			&plugin->config.global_block_h));
 
 	add_subwindow(title = new BC_Title(x2, y,
 		_("Rotation block size:\n(W/H Percent of image)")));
 	add_subwindow(rotation_block_w = new BlockSize(plugin,
-			x2 + title->get_w() + 10, y,
+			x2 + title->get_w() + xs10, y,
 			&plugin->config.rotation_block_w));
 	add_subwindow(rotation_block_h = new BlockSize(plugin,
-			x2 + title->get_w() + 30 + rotation_block_w->get_w(), y,
+			x2 + title->get_w() + xs30 + rotation_block_w->get_w(), y,
 			&plugin->config.rotation_block_h));
 
-	y += 50;
+	y += ys50;
 	add_subwindow(title = new BC_Title(x1, y, _("Translation search steps:")));
 	add_subwindow(global_search_positions = new GlobalSearchPositions(plugin,
-			x1 + title->get_w() + 10, y, 80));
+			x1 + title->get_w() + xs10, y, xs120));
 	global_search_positions->create_objects();
 
 	add_subwindow(title = new BC_Title(x2, y, _("Rotation search steps:")));
 	add_subwindow(rotation_search_positions = new RotationSearchPositions(plugin,
-			x2 + title->get_w() + 10, y, 80));
+			x2 + title->get_w() + xs10, y, xs120));
 	rotation_search_positions->create_objects();
 
-	y += 50;
+	y += ys50;
 	add_subwindow(title = new BC_Title(x, y, _("Translation direction:")));
 	add_subwindow(mode3 = new Mode3(plugin,
-			this, x + title->get_w() + 10, y));
+			this, x + title->get_w() + xs10, y));
 	mode3->create_objects();
 
-	y += 40;  int y1 = y;
+	y += ys40;  int y1 = y;
 	add_subwindow(title = new BC_Title(x2, y, _("Tracking file:")));
 	add_subwindow(tracking_file = new MotionCVTrackingFile(plugin,
 			plugin->config.  tracking_file, this,
-			x2 + title->get_w() + 20, y));
-	y1 += tracking_file->get_h() + 10;
+			x2 + title->get_w() + xs20, y));
+	y1 += tracking_file->get_h() + ys10;
 
-	add_subwindow(title = new BC_Title(x, y + 10, _("Block X:")));
+	add_subwindow(title = new BC_Title(x, y + xs10, _("Block X:")));
 	add_subwindow(block_x = new MotionCVBlockX(plugin, this,
-			x + title->get_w() + 10, y));
+			x + title->get_w() + xs10, y));
 	add_subwindow(block_x_text = new MotionCVBlockXText(plugin,
-			this, x + title->get_w() + 10 + block_x->get_w() + 10, y + 10));
+			this, x + title->get_w() + xs10 + block_x->get_w() + xs10, y + ys10));
 
-	y += 40;
-	add_subwindow(title = new BC_Title(x, y + 10, _("Block Y:")));
+	y += ys40;
+	add_subwindow(title = new BC_Title(x, y + ys10, _("Block Y:")));
 	add_subwindow(block_y = new MotionCVBlockY(plugin, this,
-			x + title->get_w() + 10, y));
+			x + title->get_w() + xs10, y));
 	add_subwindow(block_y_text = new MotionCVBlockYText(plugin, this,
-			x + title->get_w() + 10 + block_y->get_w() + 10, y + 10));
+			x + title->get_w() + xs10 + block_y->get_w() + xs10, y + ys10));
 
-	add_subwindow(title = new BC_Title(x2, y1 + 10, _("Maximum absolute offset:")));
+	add_subwindow(title = new BC_Title(x2, y1 + ys10, _("Maximum absolute offset:")));
 	add_subwindow(magnitude = new MotionCVMagnitude(plugin,
-			x2 + title->get_w() + 10, y1));
+			x2 + title->get_w() + xs10, y1));
 
-	y1 += 40;
-	add_subwindow(title = new BC_Title(x2, y1 + 10, _("Settling speed:")));
+	y1 += ys40;
+	add_subwindow(title = new BC_Title(x2, y1 + ys10, _("Settling speed:")));
 	add_subwindow(return_speed = new MotionCVReturnSpeed(plugin,
-			x2 + title->get_w() + 10, y1));
+			x2 + title->get_w() + xs10, y1));
 
-	y1 += 40;
+	y1 += ys40;
 	add_subwindow(vectors = new MotionCVDrawVectors(plugin, this, x2, y1));
-	y = y1 + vectors->get_h() + 10;
+	y = y1 + vectors->get_h() + ys10;
 
 	x1 = x;  y1 = y;
  	add_subwindow(track_single =
 		new TrackSingleFrame(plugin, this, x1, y1));
-	y += 20;
+	y += ys20;
 	add_subwindow(track_previous = new TrackPreviousFrame(plugin, this, x, y));
-	y += 20;
+	y += ys20;
 	add_subwindow(previous_same = new PreviousFrameSameBlock(plugin, this, x, y));
 
-	y += 40;
+	y += ys40;
 	add_subwindow(title = new BC_Title(x, y, _("Master layer:")));
 	add_subwindow(master_layer = new MasterLayer(plugin, this,
-			x + title->get_w() + 10, y));
+			x + title->get_w() + xs10, y));
 	master_layer->create_objects();
  	add_subwindow(title =
 		new BC_Title(x1=x2, y1=y, _("Frame number:")));
@@ -156,23 +158,23 @@ void MotionCVWindow::create_objects()
  	add_subwindow(addtrackedframeoffset =
 		new AddTrackedFrameOffset(plugin, this, x1=x2, y1+=track_frame_number->get_h()));
 	int pef = client->server->mwindow->edl->session->video_every_frame;
-	add_subwindow(pef_title = new BC_Title(x1=x2+50, y1+=addtrackedframeoffset->get_h() + 5,
+	add_subwindow(pef_title = new BC_Title(x1=x2+xs50, y1+=addtrackedframeoffset->get_h() + yS(5),
 		!pef ?	_("For best results\n"
 				" Set: Play every frame\n"
 				" Preferences-> Playback-> Video Out") :
 			_("Currently using: Play every frame"), MEDIUMFONT,
 		!pef ? RED : GREEN));
 
-	y += 30;
+	y += ys30;
 	add_subwindow(title = new BC_Title(x, y, _("Action:")));
 	add_subwindow(mode1 = new Mode1(plugin, this,
-			x + title->get_w() + 10, y));
+			x + title->get_w() + xs10, y));
 	mode1->create_objects();
 
-	y += 30;
+	y += ys30;
 	add_subwindow(title = new BC_Title(x, y, _("Calculation:")));
 	add_subwindow(mode2 = new Mode2(plugin, this,
-			x + title->get_w() + 10, y));
+			x + title->get_w() + xs10, y));
 	mode2->create_objects();
 
 	show_window(1);
@@ -336,7 +338,7 @@ int AddTrackedFrameOffset::handle_event()
 
 MotionCVTrackingFile::MotionCVTrackingFile(MotionCVMain *plugin,
 		const char *filename, MotionCVWindow *gui, int x, int y)
- : BC_TextBox(x, y, 250, 1, filename)
+ : BC_TextBox(x, y, xS(250), 1, filename)
 {
 	this->plugin = plugin;
 	this->gui = gui;
@@ -413,7 +415,7 @@ int MotionCVBlockY::handle_event()
 
 MotionCVBlockXText::MotionCVBlockXText(MotionCVMain *plugin,
 		MotionCVWindow *gui, int x, int y)
- : BC_TextBox(x, y, 75, 1, (float)plugin->config.block_x)
+ : BC_TextBox(x, y, xS(75), 1, (float)plugin->config.block_x)
 {
 	this->plugin = plugin;
 	this->gui = gui;
@@ -430,7 +432,7 @@ int MotionCVBlockXText::handle_event()
 
 MotionCVBlockYText::MotionCVBlockYText(MotionCVMain *plugin,
 		MotionCVWindow *gui, int x, int y)
- : BC_TextBox(x, y, 75, 1, (float)plugin->config.block_y)
+ : BC_TextBox(x, y, xS(75), 1, (float)plugin->config.block_y)
 {
 	this->plugin = plugin;
 	this->gui = gui;
@@ -483,7 +485,7 @@ int TrackSingleFrame::handle_event()
 
 TrackFrameNumber::TrackFrameNumber(MotionCVMain *plugin,
 		MotionCVWindow *gui, int x, int y)
- : BC_TextBox(x, y, 100, 1, plugin->config.track_frame)
+ : BC_TextBox(x, y, xS(100), 1, plugin->config.track_frame)
 {
 	this->plugin = plugin;
 	this->gui = gui;
@@ -576,7 +578,7 @@ int MasterLayer::calculate_w(MotionCVWindow *gui)
 	int result = 0;
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(0)));
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(1)));
-	return result + 50;
+	return result + xS(80);
 }
 
 Mode1::Mode1(MotionCVMain *plugin, MotionCVWindow *gui, int x, int y)
@@ -632,7 +634,7 @@ int Mode1::calculate_w(MotionCVWindow *gui)
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(MotionCVConfig::STABILIZE)));
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(MotionCVConfig::STABILIZE_PIXEL)));
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(MotionCVConfig::NOTHING)));
-	return result + 50;
+	return result + xS(80);
 }
 
 Mode2::Mode2(MotionCVMain *plugin, MotionCVWindow *gui, int x, int y)
@@ -684,7 +686,7 @@ int Mode2::calculate_w(MotionCVWindow *gui)
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(MotionCVConfig::RECALCULATE)));
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(MotionCVConfig::SAVE)));
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(MotionCVConfig::LOAD)));
-	return result + 50;
+	return result + xS(80);
 }
 
 Mode3::Mode3(MotionCVMain *plugin, MotionCVWindow *gui, int x, int y)
@@ -732,7 +734,7 @@ int Mode3::calculate_w(MotionCVWindow *gui)
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(1, 0)));
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(0, 1)));
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(0, 0)));
-	return result + 50;
+	return result + xS(80);
 }
 
 

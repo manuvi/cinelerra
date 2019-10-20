@@ -31,10 +31,10 @@
 
 BlurWindow::BlurWindow(BlurMain *client)
  : PluginClientWindow(client,
-	200,
-	360,
-	200,
-	360,
+	xS(200),
+	yS(360),
+	xS(200),
+	yS(360),
 	0)
 {
 	this->client = client;
@@ -47,30 +47,32 @@ BlurWindow::~BlurWindow()
 
 void BlurWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int xs10 = xS(10);
+	int ys10 = yS(10), ys20 = yS(20), ys30 = yS(30), ys35 = yS(35), ys40 = yS(40);
+	int x = xs10, y = ys10;
 	BC_Title *title;
 
 	add_subwindow(new BC_Title(x, y, _("Blur")));
-	y += 20;
+	y += ys20;
 	add_subwindow(horizontal = new BlurHorizontal(client, this, x, y));
-	y += 30;
+	y += ys30;
 	add_subwindow(vertical = new BlurVertical(client, this, x, y));
-	y += 35;
+	y += ys35;
 	add_subwindow(title = new BC_Title(x, y, _("Radius:")));
-	y += title->get_h() + 10;
+	y += title->get_h() + ys10;
 	add_subwindow(radius = new BlurRadius(client, this, x, y));
-	add_subwindow(radius_text = new BlurRadiusText(client, this, x + radius->get_w() + 10, y, 100));
-	y += radius->get_h() + 10;
+	add_subwindow(radius_text = new BlurRadiusText(client, this, x + radius->get_w() + xs10, y, 100));
+	y += radius->get_h() + ys10;
 	add_subwindow(a_key = new BlurAKey(client, x, y));
-	y += 30;
+	y += ys30;
 	add_subwindow(a = new BlurA(client, x, y));
-	y += 30;
+	y += ys30;
 	add_subwindow(r = new BlurR(client, x, y));
-	y += 30;
+	y += ys30;
 	add_subwindow(g = new BlurG(client, x, y));
-	y += 30;
+	y += ys30;
 	add_subwindow(b = new BlurB(client, x, y));
-	y += 40;
+	y += ys40;
 	add_subwindow(reset = new BlurReset(client, this, x, y));
 
 	show_window();

@@ -42,7 +42,7 @@ PluginClient* new_plugin(PluginServer *server)
 
 
 ResampleFraction::ResampleFraction(ResampleEffect *plugin, int x, int y)
- : BC_TextBox(x, y, 100, 1, (float)plugin->scale, 1, MEDIUMFONT, 6)
+ : BC_TextBox(x, y, xS(100), 1, (float)plugin->scale, 1, MEDIUMFONT, 6)
 {
 	this->plugin = plugin;
 }
@@ -62,12 +62,12 @@ int ResampleFraction::handle_event()
 
 ResampleWindow::ResampleWindow(ResampleEffect *plugin, int x, int y)
  : BC_Window(_(PROGRAM_NAME ": Resample"),
- 				x - 160,
-				y - 75,
- 				320,
-				150,
-				320,
-				150,
+				x - xS(160),
+				y - yS(75),
+				xS(320),
+				yS(150),
+				xS(320),
+				yS(150),
 				0,
 				0,
 				1)
@@ -77,10 +77,12 @@ ResampleWindow::ResampleWindow(ResampleEffect *plugin, int x, int y)
 
 void ResampleWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int xs10 = xS(10);
+	int ys10 = yS(10), ys20 = yS(20);
+	int x = xs10, y = ys10;
 	lock_window("ResampleWindow::create_objects");
 	add_subwindow(new BC_Title(x, y, _("Scale factor:")));
-	y += 20;
+	y += ys20;
 	add_subwindow(new ResampleFraction(plugin, x, y));
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));

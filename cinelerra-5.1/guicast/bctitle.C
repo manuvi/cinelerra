@@ -193,7 +193,7 @@ void BC_Title::get_size(BC_WindowBase *gui, int font, const char *text, int fixe
 	}
 
 	h *= gui->get_text_height(font);
-	w += 5;
+	w += xS(5);
 	if(fixed_w > 0) w = fixed_w;
 }
 

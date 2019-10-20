@@ -30,10 +30,10 @@
 
 SelTempAvgWindow::SelTempAvgWindow(SelTempAvgMain *client)
  : PluginClientWindow(client,
-	310,
-	540,
-	300,
-	540,
+	xS(310),
+	yS(540),
+	xS(300),
+	yS(540),
 	0)
 {
 	this->client = client;

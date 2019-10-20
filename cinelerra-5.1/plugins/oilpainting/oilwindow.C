@@ -59,14 +59,16 @@ OilWindow::~OilWindow()
 
 int OilWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int xs10 = xS(10), xs50 = xS(50);
+	int ys10 = yS(10), ys20 = yS(20), ys50 = yS(50);
+	int x = xs10, y = ys10;
 	add_tool(new BC_Title(x, y, _("Oil Painting")));
-	y += 20;
+	y += ys20;
 	add_tool(radius = new OilRadius(client, x, y));
-	x += 50;
+	x += xs50;
 	add_tool(new BC_Title(x, y, _("Radius")));
-	y += 50;
-	x = 10;
+	y += ys50;
+	x = xs10;
 	add_tool(use_intensity = new OilIntensity(client, x, y));
 }
 

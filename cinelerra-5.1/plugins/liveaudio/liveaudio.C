@@ -128,10 +128,10 @@ LiveAudioConfig::LiveAudioConfig()
 
 LiveAudioWindow::LiveAudioWindow(LiveAudio *plugin)
  : PluginClientWindow(plugin,
-	300,
-	160,
-	300,
-	160,
+	xS(300),
+	yS(160),
+	xS(300),
+	yS(160),
 	0)
 {
 	this->plugin = plugin;
@@ -143,7 +143,7 @@ LiveAudioWindow::~LiveAudioWindow()
 
 void LiveAudioWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int x = xS(10), y = yS(10);
 
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x, y, _("Live audio")));

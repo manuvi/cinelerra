@@ -77,8 +77,7 @@ ConfirmDeleteAllIndexes::ConfirmDeleteAllIndexes(MWindow *mwindow, char *string)
  : BC_Window(_(PROGRAM_NAME ": Delete All Indexes"),
  		mwindow->gui->get_abs_cursor_x(1),
 		mwindow->gui->get_abs_cursor_y(1),
-		340,
-		140)
+		xS(340), yS(140))
 {
 	this->string = string;
 }
@@ -90,12 +89,12 @@ ConfirmDeleteAllIndexes::~ConfirmDeleteAllIndexes()
 void ConfirmDeleteAllIndexes::create_objects()
 {
 	lock_window("ConfirmDeleteAllIndexes::create_objects");
-	int x = 10, y = 10;
+	int x = xS(10), y = yS(10);
 	add_subwindow(new BC_Title(x, y, string));
 
-	y += 20;
+	y += yS(20);
 	add_subwindow(new BC_OKButton(x, y));
-	x = get_w() - 100;
+	x = get_w() - xS(100);
 	add_subwindow(new BC_CancelButton(x, y));
 	unlock_window();
 }

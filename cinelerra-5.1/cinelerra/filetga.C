@@ -397,27 +397,13 @@ void FileTGA::read_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp)
 
 	if(output_frame != frame)
 	{
-		BC_CModels::transfer(frame->get_rows(),
-			output_frame->get_rows(),
-			frame->get_y(),
-			frame->get_u(),
-			frame->get_v(),
-			output_frame->get_y(),
-			output_frame->get_u(),
-			output_frame->get_v(),
-			0,
-			0,
-			width,
-			height,
-			0,
-			0,
-			frame->get_w(),
-			frame->get_h(),
-			output_frame->get_color_model(),
-			frame->get_color_model(),
-			0,
-			width,
-			frame->get_w());
+		BC_CModels::transfer(frame->get_rows(), output_frame->get_rows(),
+			frame->get_y(), frame->get_u(), frame->get_v(),
+			output_frame->get_y(), output_frame->get_u(), output_frame->get_v(),
+			0, 0, width, height,
+			0, 0, frame->get_w(), frame->get_h(),
+			output_frame->get_color_model(), frame->get_color_model(),
+			0, width, frame->get_w());
 	}
 }
 
@@ -494,27 +480,13 @@ void FileTGA::write_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp
 		}
 		input_frame = temp;
 
-		BC_CModels::transfer(input_frame->get_rows(),
-			frame->get_rows(),
-			input_frame->get_y(),
-			input_frame->get_u(),
-			input_frame->get_v(),
-			frame->get_y(),
-			frame->get_u(),
-			frame->get_v(),
-			0,
-			0,
-			frame->get_w(),
-			frame->get_h(),
-			0,
-			0,
-			frame->get_w(),
-			frame->get_h(),
-			frame->get_color_model(),
-			input_frame->get_color_model(),
-			0,
-			frame->get_w(),
-			frame->get_w());
+		BC_CModels::transfer(input_frame->get_rows(), frame->get_rows(),
+			input_frame->get_y(), input_frame->get_u(), input_frame->get_v(),
+			frame->get_y(), frame->get_u(), frame->get_v(),
+			0, 0, frame->get_w(), frame->get_h(),
+			0, 0, frame->get_w(), frame->get_h(),
+			frame->get_color_model(), input_frame->get_color_model(),
+			0, frame->get_w(), frame->get_w());
 	}
 //printf("FileTGA::write_tga 1\n");
 
@@ -586,26 +558,14 @@ void FileTGA::write_data(unsigned char *buffer,
 //printf("FileTGA::write_data 2 %d\n", len);
 }
 
-void FileTGA::read_line(unsigned char *row,
-	unsigned char *data,
-	int64_t &file_offset,
-	int image_type,
-	int bpp,
-	int image_compression,
-	int bytes,
-	int width,
-	int fliphoriz,
-	int alphabits,
-	int data_size)
+void FileTGA::read_line(unsigned char *row, unsigned char *data,
+	int64_t &file_offset, int image_type, int bpp, int image_compression,
+	int bytes, int width, int fliphoriz, int alphabits, int data_size)
 {
 	if(file_offset >= data_size) return;
 	if(image_compression == TGA_COMP_RLE)
 	{
-		rle_read(row,
-			data,
-			file_offset,
-			bytes,
-			width);
+		rle_read(row, data, file_offset, bytes, width);
 	}
 	else
 	{
@@ -638,24 +598,21 @@ void FileTGA::read_line(unsigned char *row,
 
 void FileTGA::flip_line(unsigned char *row, int bytes, int width)
 {
-  	unsigned char temp;
+	unsigned char temp;
 	unsigned char *alt;
 	int x, s;
-
 	alt = row + (bytes * (width - 1));
 
-	for (x = 0; x * 2 <= width; x++)
-    {
-    	for(s = 0; s < bytes; ++s)
-		{
+	for (x = 0; x * 2 <= width; x++) {
+		for(s = 0; s < bytes; ++s) {
 			temp = row[s];
 			row[s] = alt[s];
 			alt[s] = temp;
 		}
 
-    	row += bytes;
-    	alt -= bytes;
-    }
+		row += bytes;
+		alt -= bytes;
+	}
 }
 
 void FileTGA::rle_read(unsigned char *row,
@@ -719,10 +676,10 @@ void FileTGA::rle_write(unsigned char *buffer,
 	int64_t &file_offset)
 {
 	int repeat = 0;
-  	int direct = 0;
-  	unsigned char *from = buffer;
+	int direct = 0;
+	unsigned char *from = buffer;
 	unsigned char output;
-  	int x;
+	int x;
 
 	for(x = 1; x < width; ++x)
 	{
@@ -799,44 +756,26 @@ void FileTGA::rle_write(unsigned char *buffer,
 }
 
 
-void FileTGA::bgr2rgb(unsigned char *dest,
-	 unsigned char *src,
-	 int width,
-	 int bytes,
-	 int alpha)
+void FileTGA::bgr2rgb(unsigned char *dest, unsigned char *src,
+		 int width, int bytes, int alpha)
 {
 	int x;
 	unsigned char r, g, b;
 
-	if(alpha)
-    {
-    	for(x = 0; x < width; x++)
-		{
-			r = src[2];
-			g = src[1];
-			b = src[0];
-			*(dest++) = r;
-			*(dest++) = g;
-			*(dest++) = b;
-			*(dest++) = src[3];
-
+	if(alpha) {
+		for(x = 0; x < width; x++) {
+			r = src[2]; g = src[1]; b = src[0];
+			*(dest++) = r; *(dest++) = g; *(dest++) = b;
+			*(dest++) = src[3]; src += bytes;
+		}
+	}
+	else {
+		for(x = 0; x < width; x++) {
+			r = src[2]; g = src[1]; b = src[0];
+			*(dest++) = r; *(dest++) = g; *(dest++) = b;
 			src += bytes;
 		}
-    }
-	else
-    {
-    	for(x = 0; x < width; x++)
-		{
-			r = src[2];
-			g = src[1];
-			b = src[0];
-			*(dest++) = r;
-			*(dest++) = g;
-			*(dest++) = b;
-
-			src += bytes;
-		}
-    }
+	}
 }
 
 void FileTGA::upsample(unsigned char *dest,
@@ -848,28 +787,20 @@ void FileTGA::upsample(unsigned char *dest,
 
 	dest += (width - 1) * 3;
 	src += (width - 1) * bytes;
-	for(x = width - 1; x >= 0; x--)
-    {
-    	dest[0] =  ((src[1] << 1) & 0xf8);
-    	dest[0] += (dest[0] >> 5);
+	for(x = width - 1; x >= 0; x--) {
+		dest[0] =  ((src[1] << 1) & 0xf8);
+		dest[0] += (dest[0] >> 5);
 
-    	dest[1] =  ((src[0] & 0xe0) >> 2) + ((src[1] & 0x03) << 6);
-    	dest[1] += (dest[1] >> 5);
+		dest[1] =  ((src[0] & 0xe0) >> 2) + ((src[1] & 0x03) << 6);
+		dest[1] += (dest[1] >> 5);
 
-    	dest[2] =  ((src[0] << 3) & 0xf8);
-    	dest[2] += (dest[2] >> 5);
+		dest[2] =  ((src[0] << 3) & 0xf8);
+		dest[2] += (dest[2] >> 5);
 
-    	dest -= 3;
-    	src -= bytes;
-    }
+		dest -= 3;
+		src -= bytes;
+	}
 }
-
-
-
-
-
-
-
 
 
 TGAUnit::TGAUnit(FileTGA *file, FrameWriter *writer)
@@ -885,23 +816,10 @@ TGAUnit::~TGAUnit()
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
 TGAConfigVideo::TGAConfigVideo(BC_WindowBase *gui, Asset *asset)
  : BC_Window(_(PROGRAM_NAME ": Video Compression"),
- 	gui->get_abs_cursor_x(1),
- 	gui->get_abs_cursor_y(1),
-	400,
-	100)
+	gui->get_abs_cursor_x(1), gui->get_abs_cursor_y(1),
+	xS(400), yS(100))
 {
 	this->gui = gui;
 	this->asset = asset;
@@ -920,14 +838,11 @@ TGAConfigVideo::~TGAConfigVideo()
 void TGAConfigVideo::create_objects()
 {
 	lock_window("TGAConfigVideo::create_objects");
-	int x = 10, y = 10;
+	int x = xS(10), y = yS(10);
 
 	add_subwindow(new BC_Title(x, y, _("Compression:")));
 	TGACompression *textbox = new TGACompression(this,
-		x + 110,
-		y,
-		asset,
-		&compression_items);
+			x + xS(110), y, asset, &compression_items);
 	textbox->create_objects();
 	add_subwindow(new BC_OKButton(this));
 	show_window(1);
@@ -941,18 +856,11 @@ int TGAConfigVideo::close_event()
 }
 
 
-TGACompression::TGACompression(TGAConfigVideo *gui,
-	int x,
-	int y,
-	Asset *asset,
-	ArrayList<BC_ListBoxItem*> *compression_items)
- : BC_PopupTextBox(gui,
-	compression_items,
- 	FileTGA::compression_to_str(gui->asset->vcodec),
-	x,
- 	y,
-	200,
-	200)
+TGACompression::TGACompression(TGAConfigVideo *gui, int x, int y,
+	Asset *asset, ArrayList<BC_ListBoxItem*> *compression_items)
+ : BC_PopupTextBox(gui, compression_items,
+	FileTGA::compression_to_str(gui->asset->vcodec),
+	x, y, xS(200), yS(200))
 {
 	this->asset = asset;
 }

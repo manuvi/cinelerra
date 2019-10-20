@@ -32,10 +32,10 @@
 
 BlurZoomWindow::BlurZoomWindow(BlurZoomMain *client)
  : PluginClientWindow(client,
-	300,
-	170,
-	300,
-	170,
+	xS(300),
+	yS(170),
+	xS(300),
+	yS(170),
 	0)
 {
 	this->client = client;

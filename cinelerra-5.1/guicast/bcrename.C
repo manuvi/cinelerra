@@ -22,6 +22,7 @@
 #include "condition.h"
 #include "bcfilebox.h"
 #include "bcrename.h"
+#include "bcresources.h"
 #include "bctitle.h"
 #include "filesystem.h"
 #include "language.h"
@@ -31,22 +32,9 @@
 #include <sys/stat.h>
 
 
-
-
-
-
-
 BC_Rename::BC_Rename(BC_RenameThread *thread, int x, int y, BC_FileBox *filebox)
  : BC_Window(filebox->get_rename_title(),
- 	x,
-	y,
-	320,
-	120,
-	0,
-	0,
-	0,
-	0,
-	1)
+	x, y, xS(320), yS(120), 0, 0, 0, 0, 1)
 {
 	this->thread = thread;
 }
@@ -58,14 +46,14 @@ BC_Rename::~BC_Rename()
 
 void BC_Rename::create_objects()
 {
-	int x = 10, y = 10;
+	int x = xS(10), y = yS(10);
 	lock_window("BC_Rename::create_objects");
 	add_tool(new BC_Title(x, y, _("Enter a new name for the file:")));
-	y += 20;
-	add_subwindow(textbox = new BC_TextBox(x, y, 300, 1, thread->orig_name));
-	y += 30;
+	y += yS(20);
+	add_subwindow(textbox = new BC_TextBox(x, y, xS(300), 1, thread->orig_name));
+	y += yS(30);
 	add_subwindow(new BC_OKButton(this));
-	x = get_w() - 100;
+	x = get_w() - xS(100);
 	add_subwindow(new BC_CancelButton(this));
 	show_window();
 	unlock_window();
@@ -88,7 +76,7 @@ BC_RenameThread::BC_RenameThread(BC_FileBox *filebox)
 
 BC_RenameThread::~BC_RenameThread()
 {
- 	interrupt();
+	interrupt();
 	delete change_lock;
 	delete completion_lock;
 }

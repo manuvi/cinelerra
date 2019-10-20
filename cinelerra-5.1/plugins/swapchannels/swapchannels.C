@@ -85,10 +85,10 @@ void SwapConfig::copy_from(SwapConfig &that)
 
 SwapWindow::SwapWindow(SwapMain *plugin)
  : PluginClientWindow(plugin,
-	250,
-	200,
-	250,
-	200,
+	xS(250),
+	yS(200),
+	xS(250),
+	yS(200),
 	0)
 {
 	this->plugin = plugin;
@@ -101,28 +101,30 @@ SwapWindow::~SwapWindow()
 
 void SwapWindow::create_objects()
 {
-	int x = 10, y = 10;
-	int margin = 30;
+	int xs10 = xS(10), xs30 = xS(30), xs160 = xS(160);
+	int ys5 = yS(5), ys10 = yS(10), ys40 = yS(40);
+	int x = xs10, y = ys10;
+	int margin = xs30;
 
 	add_subwindow(new BC_Title(x, y, _("Swap channels")));
 	y += margin;
-	add_subwindow(new BC_Title(x + 160, y + 5, _("-> Red")));
+	add_subwindow(new BC_Title(x + xs160, y + ys5, _("-> Red")));
 	add_subwindow(red = new SwapMenu(plugin, &(plugin->config.red), x, y));
 	red->create_objects();
 	y += margin;
-	add_subwindow(new BC_Title(x + 160, y + 5, _("-> Green")));
+	add_subwindow(new BC_Title(x + xs160, y + ys5, _("-> Green")));
 	add_subwindow(green = new SwapMenu(plugin, &(plugin->config.green), x, y));
 	green->create_objects();
 	y += margin;
-	add_subwindow(new BC_Title(x + 160, y + 5, _("-> Blue")));
+	add_subwindow(new BC_Title(x + xs160, y + ys5, _("-> Blue")));
 	add_subwindow(blue = new SwapMenu(plugin, &(plugin->config.blue), x, y));
 	blue->create_objects();
 	y += margin;
-	add_subwindow(new BC_Title(x + 160, y + 5, _("-> Alpha")));
+	add_subwindow(new BC_Title(x + xs160, y + ys5, _("-> Alpha")));
 	add_subwindow(alpha = new SwapMenu(plugin, &(plugin->config.alpha), x, y));
 	alpha->create_objects();
 
-	y += 40;
+	y += ys40;
 	add_subwindow(reset = new SwapReset(plugin, this, x, y));
 
 	show_window();
@@ -137,7 +139,7 @@ void SwapWindow::create_objects()
 
 
 SwapMenu::SwapMenu(SwapMain *client, int *output, int x, int y)
- : BC_PopupMenu(x, y, 150, client->output_to_text(*output))
+ : BC_PopupMenu(x, y, xS(150), client->output_to_text(*output))
 {
 	this->client = client;
 	this->output = output;

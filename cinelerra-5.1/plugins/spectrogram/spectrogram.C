@@ -125,9 +125,7 @@ int SpectrogramLevel::handle_event()
 SpectrogramMode::SpectrogramMode(Spectrogram *plugin,
 	int x,
 	int y)
- : BC_PopupMenu(x,
-	y,
-	120,
+ : BC_PopupMenu(x, y, xS(120),
 	mode_to_text(plugin->config.mode))
 {
 	this->plugin = plugin;
@@ -195,13 +193,8 @@ int SpectrogramHistory::handle_event()
 
 
 SpectrogramWindowSize::SpectrogramWindowSize(Spectrogram *plugin,
-	int x,
-	int y,
-	char *text)
- : BC_PopupMenu(x,
-	y,
-	80,
-	text)
+	int x, int y, char *text)
+ : BC_PopupMenu(x, y, xS(120), text)
 {
 	this->plugin = plugin;
 }
@@ -266,10 +259,7 @@ int SpectrogramNormalize::handle_event()
 
 
 SpectrogramFreq::SpectrogramFreq(Spectrogram *plugin, int x, int y)
- : BC_TextBox(x,
-		y,
-		100,
-		1,
+ : BC_TextBox(x, y, xS(100), 1,
 		(int)plugin->config.frequency)
 {
 	this->plugin = plugin;
@@ -345,8 +335,8 @@ void SpectrogramCanvas::calculate_point()
 {
 	int x = get_cursor_x();
 	int y = get_cursor_y();
-	CLAMP(x, 0, get_w() - 1);
-	CLAMP(y, 0, get_h() - 1);
+	CLAMP(x, 0, get_w()-1);
+	CLAMP(y, 0, get_h()-1);
 
 	((SpectrogramWindow*)plugin->thread->window)->calculate_frequency(
 		x,
@@ -377,12 +367,8 @@ void SpectrogramCanvas::draw_overlay()
 
 
 SpectrogramWindow::SpectrogramWindow(Spectrogram *plugin)
- : PluginClientWindow(plugin,
-	plugin->w,
-	plugin->h,
-	320,
-	320,
-	1)
+ : PluginClientWindow(plugin, plugin->w, plugin->h,
+	xS(320), yS(320), 1)
 {
 	this->plugin = plugin;
 	probe_x = probe_y = -1;
@@ -403,11 +389,7 @@ void SpectrogramWindow::create_objects()
 
 
 	add_subwindow(canvas = new SpectrogramCanvas(plugin,
-		0,
-		0,
-		get_w(),
-		get_h() -
-			BC_Pot::calculate_h() * 2 -
+		0, 0, get_w(), get_h() - BC_Pot::calculate_h() * 2 -
 			plugin->get_theme()->widget_border * 3));
 	canvas->set_cursor(CROSS_CURSOR, 0, 0);
 
@@ -666,8 +648,8 @@ Spectrogram::Spectrogram(PluginServer *server)
 {
 	reset();
 	timer = new Timer;
-	w = 640;
-	h = 480;
+	w = xS(640);
+	h = yS(480);
 }
 
 Spectrogram::~Spectrogram()
@@ -1030,10 +1012,10 @@ void Spectrogram::update_gui()
 						float db = ptr->data[
 							MIN((w - x2), ptr->data_size - 1)];
 //if(x2 > w - 10) printf("%.02f ", ptr->data[x2]);
-						int y2 = h - 1 - (int)((db - INFINITYGAIN) /
+						int y2 = h-1 - (int)((db - INFINITYGAIN) /
 							(0 - INFINITYGAIN) *
 							h);
-						CLAMP(y2, 0, h - 1);
+						CLAMP(y2, 0, h-1);
 
 						if(number)
 						{

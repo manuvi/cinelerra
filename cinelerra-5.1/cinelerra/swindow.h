@@ -203,7 +203,7 @@ public:
 	ScriptEntry *script_entry;
 	ScriptEntry *line_entry;
 	ScriptScroll *script_scroll;
-	int pad;
+	int xpad, ypad;
 	char *blank_line;
 
 	char script_path[BCTEXTLEN];

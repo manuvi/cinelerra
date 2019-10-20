@@ -62,14 +62,14 @@ new VFrame(default_data.get_w(), default_data.get_h(), BC_RGBA8888)
 Theme::Theme()
  : BC_Theme()
 {
-	window_border = 10;
-	widget_border = 5;
+	window_border = xS(10);
+	widget_border = xS(5);
 	this->mwindow = 0;
 	theme_title = _(DEFAULT_THEME);
 	last_image = 0;
 	mtransport_margin = 0;
 	toggle_margin = 0;
-	control_pixels = 50;
+	control_pixels = xS(50);
 	timebar_cursor_color = RED;
 
 	BC_WindowBase::get_resources()->bg_color = BLOND;
@@ -77,14 +77,14 @@ Theme::Theme()
 	BC_WindowBase::get_resources()->button_highlighted = 0xffe000;
 	BC_WindowBase::get_resources()->recursive_resizing = 0;
 	audio_color = BLACK;
-	fade_h = 22;
+	fade_h = yS(22);
 	inout_highlight_color = GREEN;
-	meter_h = 17;
-	mode_h = 30;
-	pan_h = 32;
-	pan_x = 50;
-	play_h = 22;
-	title_h = 23;
+	meter_h = yS(17);
+	mode_h = yS(30);
+	pan_h = yS(32);
+	pan_x = xS(50);
+	play_h = yS(22);
+	title_h = yS(23);
 	clock_bg_color = BLACK;
 	clock_fg_color = GREEN;
 	assetedit_color = YELLOW;
@@ -93,8 +93,8 @@ Theme::Theme()
 
 	preferences_category_overlap = 0;
 
-	loadmode_w = 350;
-	czoom_w = 110;
+	loadmode_w = xS(350);
+	czoom_w = xS(110);
 
 #include "data/about_bg_png.h"
 	about_bg = new VFramePng(about_bg_png);
@@ -600,18 +600,18 @@ void Theme::build_toggle(VFrame** &data,
 void Theme::get_mwindow_sizes(MWindowGUI *gui, int w, int h)
 {
 	mbuttons_x = 0;
-	mbuttons_y = gui->menu_h() + 1;
-	mbuttons_w = w - (ffmpeg_toggle[0]->get_w()+2 + proxy_p_toggle[0]->get_w()+2);
+	mbuttons_y = gui->menu_h() + yS(1);
+	mbuttons_w = w - (ffmpeg_toggle[0]->get_w()+2 + proxy_p_toggle[0]->get_w()+xS(2));
 	mbuttons_h = get_image("mbutton_bg")->get_h();
-	mclock_x = window_border - 5;
-	mclock_y = mbuttons_y - 1 + mbuttons_h;
-	mclock_w = get_image("clock_bg")->get_w() - 20;
+	mclock_x = window_border - xS(5);
+	mclock_y = mbuttons_y-1 + mbuttons_h;
+	mclock_w = get_image("clock_bg")->get_w() - xS(20);
 	mclock_h = get_image("clock_bg")->get_h();
 	mtimebar_x = get_image("patchbay_bg")->get_w();
 	mtimebar_y = mbuttons_y - 1 + mbuttons_h;
 	mtimebar_w = w - mtimebar_x;
 	mtimebar_h = get_image("timebar_bg")->get_h();
-	mzoom_h = 25;
+	mzoom_h = yS(25);
 	mzoom_x = 0;
 	mzoom_y = h - get_image("statusbar")->get_h();
 	mzoom_w = w;
@@ -619,15 +619,15 @@ void Theme::get_mwindow_sizes(MWindowGUI *gui, int w, int h)
 	mstatus_y = mzoom_y + mzoom_h;
 	mstatus_w = w;
 	mstatus_h = h - mstatus_y;
-	mstatus_message_x = 10;
-	mstatus_message_y = 5;
-	mstatus_progress_x = mstatus_w - statusbar_cancel_data[0]->get_w() - 240;
-	mstatus_progress_y = mstatus_h - BC_WindowBase::get_resources()->progress_images[0]->get_h() - 3;
-	mstatus_progress_w = 230;
+	mstatus_message_x = xS(10);
+	mstatus_message_y = yS(5);
+	mstatus_progress_x = mstatus_w - statusbar_cancel_data[0]->get_w() - xS(240);
+	mstatus_progress_y = mstatus_h - BC_WindowBase::get_resources()->progress_images[0]->get_h() - yS(3);
+	mstatus_progress_w = xS(230);
 	mstatus_cancel_x = mstatus_w - statusbar_cancel_data[0]->get_w();
 	mstatus_cancel_y = mstatus_h - statusbar_cancel_data[0]->get_h();
 	mcanvas_x = 0;
-	mcanvas_y = mbuttons_y - 1 + mbuttons_h;
+	mcanvas_y = mbuttons_y-1 + mbuttons_h;
 	mcanvas_w = w;
 	mcanvas_h = mzoom_y - mtimebar_y;
 	control_pixels = (mcanvas_w * control_pixels) / 1000;
@@ -648,15 +648,8 @@ void Theme::get_mwindow_sizes(MWindowGUI *gui, int w, int h)
 }
 
 void Theme::get_pane_sizes(MWindowGUI *gui,
-	int *view_x,
-	int *view_y,
-	int *view_w,
-	int *view_h,
-	int number,
-	int x,
-	int y,
-	int w,
-	int h)
+	int *view_x, int *view_y, int *view_w, int *view_h,
+	int number, int x, int y, int w, int h)
 {
 	*view_x = x;
 	*view_y = y;
@@ -711,9 +704,9 @@ void Theme::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 	int zoom_w = ZoomPanel::calculate_w(czoom_w);
 	int status_w = get_image("cwindow_active")->get_w();
 // Space between buttons & status icon
-	int division_w = 24;
+	int division_w = xS(24);
 
-	ctimebar_h = 16;
+	ctimebar_h = yS(16);
 
 	if(cwindow_controls)
 	{
@@ -755,9 +748,9 @@ SET_TRACE
 			czoom_x = ctransport_x + transport_w + widget_border;
 			czoom_y = ctransport_y + widget_border;
 
-			cstatus_x = 426;
+			cstatus_x = xS(426);
 			cstatus_y = mwindow->session->cwindow_h -
-				get_image("cwindow_active")->get_h() - 30;
+				get_image("cwindow_active")->get_h() - yS(30);
 		}
 		else
 		{
@@ -782,21 +775,14 @@ SET_TRACE
 		}
 
 
-		ccomposite_x = 0;
-		ccomposite_y = 5;
+		ccomposite_x = xS(0);
+		ccomposite_y = yS(5);
 		ccomposite_w = get_image("cpanel_bg")->get_w();
 		ccomposite_h = mwindow->session->cwindow_h - buttons_h;
-
-
-
-
-
-
 
 		ccanvas_x = ccomposite_x + ccomposite_w;
 		ccanvas_y = 0;
 		ccanvas_h = ccomposite_h;
-
 
 		ccanvas_w = cmeter_x - ccanvas_x - widget_border;
 SET_TRACE
@@ -810,10 +796,10 @@ SET_TRACE
 		ccomposite_w = get_image("cpanel_bg")->get_w();
 		ccomposite_h = mwindow->session->cwindow_h - get_image("cbuttons_left")->get_h();
 
-		cedit_x = 10;
-		cedit_y = mwindow->session->cwindow_h + 17;
-		ctransport_x = 10;
-		ctransport_y = cedit_y + 40;
+		cedit_x = xS(10);
+		cedit_y = mwindow->session->cwindow_h + yS(17);
+		ctransport_x = xS(10);
+		ctransport_y = cedit_y + yS(40);
 		ccanvas_x = 0;
 		ccanvas_y = 0;
 		ccanvas_w = mwindow->session->cwindow_w;
@@ -934,10 +920,10 @@ void Theme::get_vwindow_sizes(VWindowGUI *gui)
 	int edit_w = EditPanel::calculate_w(mwindow, 0, 10);
 	int transport_w = PlayTransport::get_transport_width(mwindow) + toggle_margin;
 // Space between buttons & time
-	int division_w = 30;
-	vtime_w = 150;
-	vtimebar_h = 16;
-	int vtime_border = 15;
+	int division_w = xS(30);
+	vtime_w = xS(150);
+	vtimebar_h = yS(16);
+	int vtime_border = xS(15);
 
 	vmeter_y = widget_border;
 	vmeter_h = mwindow->session->vwindow_h - cmeter_y - widget_border;
@@ -977,9 +963,9 @@ void Theme::get_vwindow_sizes(VWindowGUI *gui)
 			get_image_set("autokeyframe")[0]->get_h() -
 			widget_border;
 
-		vdivision_x = 280;
-		vtime_x = vedit_x + 20; //vdivision_x;
-		vtime_y = vedit_y + 30; //+ 20;
+		vdivision_x = xS(280);
+		vtime_x = vedit_x + xS(20); //vdivision_x;
+		vtime_y = vedit_y + yS(30); //+ yS(20);
 	}
 	else
 	{
@@ -1024,10 +1010,10 @@ void Theme::get_awindow_sizes(AWindowGUI *gui)
 	afolders_w = mwindow->session->afolders_w;
 	afolders_h = mwindow->session->awindow_h - afolders_y;
 	adivider_x = afolders_x + afolders_w;
-	adivider_y = 0;
-	adivider_w = 5;
+	adivider_y = xS(0);
+	adivider_w = yS(5);
 	adivider_h = afolders_h;
-	alist_x = afolders_x + afolders_w + 5;
+	alist_x = afolders_x + afolders_w + xS(5);
 	alist_y = afolders_y;
 	alist_w = mwindow->session->awindow_w - alist_x;
 	alist_h = afolders_h;
@@ -1040,14 +1026,14 @@ void Theme::get_rmonitor_sizes(int do_audio,
 	int do_avc,
 	int audio_channels)
 {
-	int x = 10;
-	int y = 3;
+	int x = xS(10);
+	int y = yS(3);
 
 
 	if(do_avc)
 	{
-		rmonitor_canvas_y = 30;
-		rmonitor_tx_x = 10;
+		rmonitor_canvas_y = yS(30);
+		rmonitor_tx_x = xS(10);
 		rmonitor_tx_y = 0;
 	}
 	else
@@ -1060,16 +1046,16 @@ void Theme::get_rmonitor_sizes(int do_audio,
 
 	if(do_channel)
 	{
-		y = 5;
+		y = yS(5);
 		rmonitor_channel_x = x;
-		rmonitor_channel_y = 5;
-		x += 280;
-		rmonitor_canvas_y = 35;
+		rmonitor_channel_y = yS(5);
+		x += xS(280);
+		rmonitor_canvas_y = yS(35);
 	}
 
 	if(do_interlace)
 	{
-		y = 4;
+		y = yS(4);
 		rmonitor_interlace_x = x;
 		rmonitor_interlace_y = y;
 	}
@@ -1089,8 +1075,8 @@ void Theme::get_rmonitor_sizes(int do_audio,
 			rmonitor_meter_w = mwindow->session->rmonitor_w - widget_border * 2;
 		}
 
-		rmonitor_meter_y = 40;
-		rmonitor_meter_h = mwindow->session->rmonitor_h - 10 - rmonitor_meter_y;
+		rmonitor_meter_y = yS(40);
+		rmonitor_meter_h = mwindow->session->rmonitor_h - yS(10) - rmonitor_meter_y;
 	}
 	else
 	{
@@ -1099,13 +1085,13 @@ void Theme::get_rmonitor_sizes(int do_audio,
 
 	rmonitor_canvas_x = 0;
 	rmonitor_canvas_w = rmonitor_meter_x - rmonitor_canvas_x;
-	if(do_audio) rmonitor_canvas_w -= 10;
+	if(do_audio) rmonitor_canvas_w -= xS(10);
 	rmonitor_canvas_h = mwindow->session->rmonitor_h - rmonitor_canvas_y;
 
 	if(!do_video && do_audio)
 	{
-		rmonitor_meter_y -= 30;
-		rmonitor_meter_h += 30;
+		rmonitor_meter_y -= yS(30);
+		rmonitor_meter_h += yS(30);
 	}
 
 }
@@ -1118,14 +1104,16 @@ void Theme::get_batchrender_sizes(BatchRenderGUI *gui,
 	int w,
 	int h)
 {
-	batchrender_x1 = 10;
-	batchrender_x2 = 300;
-	batchrender_x3 = 400;
+	batchrender_x1 = xS(10);
+	batchrender_x2 = xS(300);
+	batchrender_x3 = xS(400);
 }
 
 void Theme::get_plugindialog_sizes()
 {
-	int x = 10, y = 30;
+	int xs10 = xS(10), ys10 = yS(10);
+	int xs20 = xS(20), ys100 = yS(100);
+	int x = xs10, y = yS(30);
 	plugindialog_new_x = x;
 	plugindialog_new_y = y;
 	plugindialog_shared_x = mwindow->session->plugindialog_w / 3;
@@ -1133,19 +1121,19 @@ void Theme::get_plugindialog_sizes()
 	plugindialog_module_x = mwindow->session->plugindialog_w * 2 / 3;
 	plugindialog_module_y = y;
 
-	plugindialog_new_w = plugindialog_shared_x - plugindialog_new_x - 10;
-	plugindialog_new_h = mwindow->session->plugindialog_h - 100;
-	plugindialog_shared_w = plugindialog_module_x - plugindialog_shared_x - 10;
-	plugindialog_shared_h = mwindow->session->plugindialog_h - 100;
-	plugindialog_module_w = mwindow->session->plugindialog_w - plugindialog_module_x - 10;
-	plugindialog_module_h = mwindow->session->plugindialog_h - 100;
+	plugindialog_new_w = plugindialog_shared_x - plugindialog_new_x - xs10;
+	plugindialog_new_h = mwindow->session->plugindialog_h - ys100;
+	plugindialog_shared_w = plugindialog_module_x - plugindialog_shared_x - xs10;
+	plugindialog_shared_h = mwindow->session->plugindialog_h - ys100;
+	plugindialog_module_w = mwindow->session->plugindialog_w - plugindialog_module_x - xs10;
+	plugindialog_module_h = mwindow->session->plugindialog_h - ys100;
 
-	plugindialog_newattach_x = plugindialog_new_x + 20;
-	plugindialog_newattach_y = plugindialog_new_y + plugindialog_new_h + 10;
-	plugindialog_sharedattach_x = plugindialog_shared_x + 20;
-	plugindialog_sharedattach_y = plugindialog_shared_y + plugindialog_shared_h + 10;
-	plugindialog_moduleattach_x = plugindialog_module_x + 20;
-	plugindialog_moduleattach_y = plugindialog_module_y + plugindialog_module_h + 10;
+	plugindialog_newattach_x = plugindialog_new_x + xs20;
+	plugindialog_newattach_y = plugindialog_new_y + plugindialog_new_h + ys10;
+	plugindialog_sharedattach_x = plugindialog_shared_x + xs20;
+	plugindialog_sharedattach_y = plugindialog_shared_y + plugindialog_shared_h + ys10;
+	plugindialog_moduleattach_x = plugindialog_module_x + xs20;
+	plugindialog_moduleattach_y = plugindialog_module_y + plugindialog_module_h + ys10;
 }
 
 // void Theme::get_presetdialog_sizes(PresetsWindow *gui)
@@ -1291,26 +1279,26 @@ void Theme::get_menueffect_sizes(int use_list)
 {
 	if(use_list)
 	{
-		menueffect_list_x = 10;
-		menueffect_list_y = 10;
-		menueffect_list_w = mwindow->session->menueffect_w - 400;
+		menueffect_list_x = xS(10);
+		menueffect_list_y = yS(10);
+		menueffect_list_w = mwindow->session->menueffect_w - xS(400);
 		menueffect_list_h = mwindow->session->menueffect_h -
 			menueffect_list_y -
-			BC_OKButton::calculate_h() - 10;
+			BC_OKButton::calculate_h() - yS(10);
 	}
 	else
 	{
 		menueffect_list_x = 0;
-		menueffect_list_y = 10;
+		menueffect_list_y = yS(10);
 		menueffect_list_w = 0;
 		menueffect_list_h = 0;
 	}
 
-	menueffect_file_x = menueffect_list_x + menueffect_list_w + 10;
-	menueffect_file_y = 10;
+	menueffect_file_x = menueffect_list_x + menueffect_list_w + xS(10);
+	menueffect_file_y = yS(10);
 
 	menueffect_tools_x = menueffect_file_x;
-	menueffect_tools_y = menueffect_file_y + 20;
+	menueffect_tools_y = menueffect_file_y + yS(20);
 }
 
 void Theme::get_preferences_sizes()

@@ -5,7 +5,7 @@
 
 TestWindowGUI::
 TestWindowGUI()
- : BC_Window("test", 100,100, 100,100, 100,100)
+ : BC_Window("test", xS(100),yS(100), xS(100),yS(100), xS(100),yS(100))
 {
  	in_motion = 0;  last_x = last_y = -1;
 	set_bg_color(BLACK);

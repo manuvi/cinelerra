@@ -316,7 +316,7 @@ void BatchRenderThread::load_defaults(BC_Hash *defaults)
 	for( int i = 0; i < BATCHRENDER_COLUMNS; i++ ) {
 		char string[BCTEXTLEN];
 		sprintf(string, "BATCHRENDER_COLUMN%d", i);
-		list_width[i] = defaults->get(string, column_widths[i]);
+		list_width[i] = defaults->get(string, xS(column_widths[i]));
 	}
 }
 
@@ -724,7 +724,7 @@ void BatchRenderThread::trap_hook(FILE *fp, void *vp)
 BatchRenderGUI::BatchRenderGUI(MWindow *mwindow,
 	BatchRenderThread *thread, int x, int y, int w, int h)
  : BC_Window(_(PROGRAM_NAME ": Batch Render"),
-	x, y, w, h, 730, 400, 1, 0, 1)
+	x, y, w, h, xS(730), yS(400), 1, 0, 1)
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
@@ -743,21 +743,23 @@ BatchRenderGUI::~BatchRenderGUI()
 
 void BatchRenderGUI::create_objects()
 {
+	int xs10 = xS(10), xs30 = xS(30), xs40 = xS(40);
+	int ys5 = yS(5), ys10 = yS(10), ys15 = yS(15);
 	lock_window("BatchRenderGUI::create_objects");
 	mwindow->theme->get_batchrender_sizes(this, get_w(), get_h());
 	create_list(0);
 
 	int x = mwindow->theme->batchrender_x1;
-	int y = 5;
-	int x1 = x, x2 = get_w()/2 + 30; // mwindow->theme->batchrender_x2;
-	int y1 = 5, y2 = 5;
+	int y = ys5;
+	int x1 = x, x2 = get_w()/2 + xs30; // mwindow->theme->batchrender_x2;
+	int y1 = ys5, y2 = ys5;
 
 // output file
 	add_subwindow(output_path_title = new BC_Title(x1, y1, _("Output path:")));
 	y1 += output_path_title->get_h() + mwindow->theme->widget_border;
 
 	format_tools = new BatchFormat(mwindow, this, thread->get_current_asset());
-	format_tools->set_w(x2 - 40);
+	format_tools->set_w(x2 - xs40);
 	BatchRenderJob *current_job = thread->get_current_job();
 	format_tools->create_objects(x1, y1, 1, 1, 1, 1, 0, 1, 0, 0,
 			thread->do_labeled ? &current_job->labeled : 0, 0);
@@ -767,7 +769,7 @@ void BatchRenderGUI::create_objects()
 		use_renderfarm = new BatchRenderUseFarm(thread, x1, y1,
 			&current_job->farmed);
 		add_subwindow(use_renderfarm);
-		y1 += use_renderfarm->get_h() + 10;
+		y1 += use_renderfarm->get_h() + ys10;
 		if( thread->do_farmed < 0 )
 			use_renderfarm->disable();
 	}
@@ -778,7 +780,7 @@ void BatchRenderGUI::create_objects()
 
 	x = x2;  y = y2;
 	add_subwindow(edl_path_text = new BatchRenderEDLPath( thread,
-		x, y, get_w()-x - 40, thread->get_current_edl()));
+		x, y, get_w()-x - xs40, thread->get_current_edl()));
 	x =  x2 + edl_path_text->get_w();
 	add_subwindow(edl_path_browse = new BrowseButton(
 		mwindow->theme, this, edl_path_text, x, y, thread->get_current_edl(),
@@ -809,15 +811,15 @@ void BatchRenderGUI::create_objects()
 	add_subwindow(batch_path = new BC_Title(x1, y, thread->batch_path, MEDIUMFONT));
 	y += list_title->get_h() + mwindow->theme->widget_border;
 	y1 = get_h();
-	y1 -= 15 + BC_GenericButton::calculate_h() + mwindow->theme->widget_border;
+	y1 -= ys15 + BC_GenericButton::calculate_h() + mwindow->theme->widget_border;
 	add_subwindow(batch_list = new BatchRenderList(thread, x, y,
-		get_w() - x - 10, y1 - y));
+		get_w() - x - xs10, y1 - y));
 	y += batch_list->get_h() + mwindow->theme->widget_border;
 
 	add_subwindow(start_button = new BatchRenderStart(thread, x, y));
 	x = get_w() / 2 - BC_GenericButton::calculate_w(this, _("Stop")) / 2;
 	add_subwindow(stop_button = new BatchRenderStop(thread, x, y));
-	x = get_w() - BC_GenericButton::calculate_w(this, _("Close")) - 10;
+	x = get_w() - BC_GenericButton::calculate_w(this, _("Close")) - xs10;
 	add_subwindow(cancel_button = new BatchRenderCancel(thread, x, y));
 
 	show_window(1);
@@ -843,14 +845,16 @@ void BatchRenderGUI::button_enable()
 
 int BatchRenderGUI::resize_event(int w, int h)
 {
+	int xs10 = xS(10), xs40 = xS(40);
+	int ys5 = yS(5), ys15 = yS(15);
 	mwindow->session->batchrender_w = w;
 	mwindow->session->batchrender_h = h;
 	mwindow->theme->get_batchrender_sizes(this, w, h);
 
 	int x = mwindow->theme->batchrender_x1;
-	int y = 5;
-	int x1 = x, x2 = get_w()/2 + 10; // mwindow->theme->batchrender_x2;
-	int y1 = 5, y2 = 5;
+	int y = ys5;
+	int x1 = x, x2 = get_w()/2 + xs10; // mwindow->theme->batchrender_x2;
+	int y1 = ys5, y2 = ys5;
 
 // output file
 	output_path_title->reposition_window(x1, y1);
@@ -862,7 +866,7 @@ int BatchRenderGUI::resize_event(int w, int h)
 	x = x2, y = y2;
 	edl_path_title->reposition_window(x, y);
 	y += edl_path_title->get_h() + mwindow->theme->widget_border;
-	edl_path_text->reposition_window(x, y, w - x - 40);
+	edl_path_text->reposition_window(x, y, w - x - xs40);
 	x += edl_path_text->get_w();
 	edl_path_browse->reposition_window(x, y);
 	y2 = y + edl_path_browse->get_h() + mwindow->theme->widget_border;
@@ -883,20 +887,20 @@ int BatchRenderGUI::resize_event(int w, int h)
 	y += loadlist_batch->get_h() + mwindow->theme->widget_border;
 	warning->reposition_window(x2, y);
 
-	y1 = 15 + BC_GenericButton::calculate_h() + mwindow->theme->widget_border;
+	y1 = ys15 + BC_GenericButton::calculate_h() + mwindow->theme->widget_border;
 	y2 = get_h() - y1 - batch_list->get_h();
 	y2 -= list_title->get_h() + mwindow->theme->widget_border;
 
 	x = mwindow->theme->batchrender_x1;  y = y2;
 	list_title->reposition_window(x, y);
 	y += list_title->get_h() + mwindow->theme->widget_border;
-	batch_list->reposition_window(x, y, w - x - 10, h - y - y1);
+	batch_list->reposition_window(x, y, w - x - xs10, h - y - y1);
 	y += batch_list->get_h() + mwindow->theme->widget_border;
 
 	start_button->reposition_window(x, y);
 	x = w / 2 - stop_button->get_w() / 2;
 	stop_button->reposition_window(x, y);
-	x = w - cancel_button->get_w() - 10;
+	x = w - cancel_button->get_w() - xs10;
 	cancel_button->reposition_window(x, y);
 	return 1;
 }
@@ -1103,7 +1107,8 @@ void BatchRenderSaveList::run()
 	char default_path[BCTEXTLEN];
 	sprintf(default_path, "~");
 	thread->mwindow->defaults->get("DEFAULT_BATCHLOADPATH", default_path);
-	BC_FileBox filewindow(100, 100, default_path, _("Save Batch Render List"),
+	BC_FileBox filewindow(xS(100), yS(100), default_path,
+			_("Save Batch Render List"),
 			_("Enter a Batch Render filename to save as:"),
 			0, 0, 0, 0);
 	gui = &filewindow;
@@ -1181,7 +1186,7 @@ void BatchRenderLoadList::run()
 	char default_path[BCTEXTLEN];
 	sprintf(default_path, "~");
 	thread->mwindow->defaults->get("DEFAULT_BATCHLOADPATH", default_path);
-	BC_FileBox filewindow(100, 100, default_path, _("Load Batch Render List"),
+	BC_FileBox filewindow(xS(100), yS(100), default_path, _("Load Batch Render List"),
 			_("Enter a Batch Render filename to load from:"),
 			0, 0, 0, 0);
 	gui = &filewindow;

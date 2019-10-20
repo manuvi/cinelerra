@@ -194,7 +194,7 @@ int ScaleThread::update_aspect(ScaleWindow *window)
 
 
 ScaleWindow::ScaleWindow(ScaleThread *thread)
- : BC_Window(_(PROGRAM_NAME ": Scale"), 370, 260, 0, 0)
+ : BC_Window(_(PROGRAM_NAME ": Scale"), xS(370), yS(260), 0, 0)
 { this->thread = thread; }
 
 ScaleWindow::~ScaleWindow()
@@ -203,118 +203,97 @@ ScaleWindow::~ScaleWindow()
 
 void ScaleWindow::create_objects()
 {
+	int xs5 = xS(5), xs10 = xS(10), xs20 = xS(20), xs30 = xS(30), xs200 = xS(200);
+	int ys5 = yS(5), ys10 = yS(10), ys20 = yS(20), ys30 = yS(30);
 	lock_window("ScaleWindow::create_objects");
-	int x = 10, y = 10;
+	int x = xs10, y = ys10;
+	int x0 = x, x1 = x + xS(70), x2 = x1 = xS(110), x3 = x = xS(70);
 	add_subwindow(new BC_Title(x, y, _("New camera size:")));
-	add_subwindow(new BC_Title(x + 200, y, _("New projector size:")));
-	y += 30;
-	add_subwindow(new BC_Title(x, y, _("Width:")));
-	x += 70;
-	add_subwindow(dimension[0] = new ScaleSizeText(x, y, thread, &(thread->dimension[0])));
-	x += 110;
-	add_subwindow(new BC_Title(x, y, _("Width:")));
-	x += 70;
-	add_subwindow(dimension[2] = new ScaleSizeText(x, y, thread, &(thread->dimension[2])));
+	add_subwindow(new BC_Title(x + xs200, y, _("New projector size:")));
+	y += ys30;
+	add_subwindow(new BC_Title(x0, y, _("Width:")));
+	add_subwindow(dimension[0] = new ScaleSizeText(x1, y, thread, &(thread->dimension[0])));
+	add_subwindow(new BC_Title(x2, y, _("Width:")));
+	add_subwindow(dimension[2] = new ScaleSizeText(x3, y, thread, &(thread->dimension[2])));
 
-	y += 30;
-	x = 10;
-	add_subwindow(new BC_Title(x, y, _("Height:")));
-	x += 70;
-	add_subwindow(dimension[1] = new ScaleSizeText(x, y, thread, &(thread->dimension[1])));
-	x += 110;
-	add_subwindow(new BC_Title(x, y, _("Height:")));
-	x += 70;
-	add_subwindow(dimension[3] = new ScaleSizeText(x, y, thread, &(thread->dimension[3])));
+	y += ys30;
+	add_subwindow(new BC_Title(x0, y, _("Height:")));
+	add_subwindow(dimension[1] = new ScaleSizeText(x1, y, thread, &(thread->dimension[1])));
+	add_subwindow(new BC_Title(x2, y, _("Height:")));
+	add_subwindow(dimension[3] = new ScaleSizeText(x3, y, thread, &(thread->dimension[3])));
 
-	y += 30;
-	x = 10;
-	add_subwindow(new BC_Title(x, y, _("W Ratio:")));
-	x += 70;
-	add_subwindow(ratio[0] = new ScaleRatioText(x, y, thread, &(thread->ratio[0])));
-	x += 110;
-	add_subwindow(new BC_Title(x, y, _("W Ratio:")));
-	x += 70;
-	add_subwindow(ratio[2] = new ScaleRatioText(x, y, thread, &(thread->ratio[2])));
+	y += ys30;
+	add_subwindow(new BC_Title(x0, y, _("W Ratio:")));
+	add_subwindow(ratio[0] = new ScaleRatioText(x1, y, thread, &(thread->ratio[0])));
+	add_subwindow(new BC_Title(x2, y, _("W Ratio:")));
+	add_subwindow(ratio[2] = new ScaleRatioText(x3, y, thread, &(thread->ratio[2])));
 
-	y += 30;
-	x = 10;
-	add_subwindow(new BC_Title(x, y, _("H Ratio:")));
-	x += 70;
-	add_subwindow(ratio[1] = new ScaleRatioText(x, y, thread, &(thread->ratio[1])));
-	x += 110;
-	add_subwindow(new BC_Title(x, y, _("H Ratio:")));
-	x += 70;
-	add_subwindow(ratio[3] = new ScaleRatioText(x, y, thread, &(thread->ratio[3])));
+	y += ys30;
+	add_subwindow(new BC_Title(x0, y, _("H Ratio:")));
+	add_subwindow(ratio[1] = new ScaleRatioText(x1, y, thread, &(thread->ratio[1])));
+	add_subwindow(new BC_Title(x2, y, _("H Ratio:")));
+	add_subwindow(ratio[3] = new ScaleRatioText(x3, y, thread, &(thread->ratio[3])));
 
-//	y += 30;
-//	x = 10;
-//	add_subwindow(new BC_Title(x, y, "X Offset:"));
-//	x += 70;
-//	add_subwindow(offsets[0] = new ScaleOffsetText(x, y, thread, &(thread->offsets[0])));
-//	x += 110;
-//	add_subwindow(new BC_Title(x, y, "X Offset:"));
-//	x += 70;
-//	add_subwindow(offsets[2] = new ScaleOffsetText(x, y, thread, &(thread->offsets[2])));
+//	y += ys30;
+//	add_subwindow(new BC_Title(x0, y, "X Offset:"));
+//	add_subwindow(offsets[0] = new ScaleOffsetText(x1, y, thread, &(thread->offsets[0])));
+//	add_subwindow(new BC_Title(x2, y, "X Offset:"));
+//	add_subwindow(offsets[2] = new ScaleOffsetText(x3, y, thread, &(thread->offsets[2])));
 //
-//	y += 30;
-//	x = 10;
-//	add_subwindow(new BC_Title(x, y, "Y Offset:"));
-//	x += 70;
-//	add_subwindow(offsets[1] = new ScaleOffsetText(x, y, thread, &(thread->offsets[1])));
-//	x += 110;
-//	add_subwindow(new BC_Title(x, y, "Y Offset:"));
-//	x += 70;
-//	add_subwindow(offsets[3] = new ScaleOffsetText(x, y, thread, &(thread->offsets[3])));
+//	y += ys30;
+//	add_subwindow(new BC_Title(x0, y, "Y Offset:"));
+//	add_subwindow(offsets[1] = new ScaleOffsetText(x1, y, thread, &(thread->offsets[1])));
+//	add_subwindow(new BC_Title(x2, y, "Y Offset:"));
+//	add_subwindow(offsets[3] = new ScaleOffsetText(x3, y, thread, &(thread->offsets[3])));
 
-	x = 10;
-	y += 30;
+	y += ys30;
 	add_subwindow(new BC_Title(x, y, _("Aspect ratio:")));
-	x += 100;
+	x += xS(100);
 	char string[1024];
 	sprintf(string, "%.0f", thread->aspect_w);
 	add_subwindow(aspect_w = new ScaleAspectW(x, y, thread, &(thread->aspect_w), string));
-	x += 55;
+	x += xS(55);
 	add_subwindow(new BC_Title(x, y, ":"));
-	x += 10;
+	x += xs10;
 	sprintf(string, "%.0f", thread->aspect_h);
 	add_subwindow(aspect_h = new ScaleAspectH(x, y, thread, &(thread->aspect_h), string));
-	x += 60;
+	x += xS(60);
 	add_subwindow(new ScaleAspectAuto(x, y + 5, thread));
 
-	y += 30;
-//	x = 40;
+	y += ys30;
+//	x = xS(40);
 //	add_subwindow(new BC_Title(x, y, _("Camera position:")));
-//	x += 200;
+//	x += xs200;
 //	add_subwindow(new BC_Title(x, y, _("Projector position:")));
 
 //	ScalePosition *position;
-//	x = 60;
-//	y += 25;
+//	x = xS(60);
+//	y += yS(25);
 //	add_subwindow(position1 = new ScalePosition(x, y, thread, this,
 //		&(thread->orig_dimension[0]), &(thread->dimension[0]), &(thread->offsets[0])));
 //	position1->draw();
 
-//	x += 200;
+//	x += xs200;
 //	add_subwindow(position2 = new ScalePosition(x, y, thread, this,
 //		&(thread->orig_dimension[2]), &(thread->dimension[2]), &(thread->offsets[2])));
 //	position2->draw();
 
-//	y += 110;
-	x = 10;
+//	y += yS(110);
+	x = xs10;
 	add_subwindow(new ScaleConstrain(x, y, thread));
-	x += 200;
+	x += xs200;
 	add_subwindow(new ScaleData(x, y, thread));
 
-	y += 30;
-	x = 50;
+	y += ys30;
+	x = xS(50);
 	add_subwindow(new BC_OKButton(x, y));
-	x += 200;
+	x += xs200;
 	add_subwindow(new BC_CancelButton(x, y));
 	unlock_window();
 }
 
 ScaleSizeText::ScaleSizeText(int x, int y, ScaleThread *thread, int *output)
- : BC_TextBox(x, y, 100, 1, *output)
+ : BC_TextBox(x, y, xS(100), 1, *output)
 {
 	this->thread = thread;
 	this->output = output;
@@ -323,8 +302,7 @@ ScaleSizeText::~ScaleSizeText() {}
 int ScaleSizeText::handle_event()
 {
 	*output = atol(get_text());
-	*output /= 2;
-	*output *= 2;
+	*output /= 2;  *output *= 2;
 	if(*output <= 0) *output = 2;
 	if(*output > 10000) *output = 10000;
 	*output *= -1;
@@ -332,7 +310,7 @@ int ScaleSizeText::handle_event()
 }
 
 ScaleOffsetText::ScaleOffsetText(int x, int y, ScaleThread *thread, int *output)
- : BC_TextBox(x, y, 100, 1, *output)
+ : BC_TextBox(x, y, xs(100), 1, *output)
 { this->thread = thread; this->output = output; }
 ScaleOffsetText::~ScaleOffsetText() {}
 int ScaleOffsetText::handle_event()
@@ -345,7 +323,7 @@ int ScaleOffsetText::handle_event()
 }
 
 ScaleRatioText::ScaleRatioText(int x, int y, ScaleThread *thread, float *output)
- : BC_TextBox(x, y, 100, 1, *output)
+ : BC_TextBox(x, y, xS(100), 1, *output)
 { this->thread = thread; this->output = output; }
 ScaleRatioText::~ScaleRatioText() {}
 int ScaleRatioText::handle_event()
@@ -399,7 +377,7 @@ int ScaleAspectAuto::handle_event()
 
 
 ScaleAspectW::ScaleAspectW(int x, int y, ScaleThread *thread, float *output, char *string)
- : BC_TextBox(x, y, 50, 1, string)
+ : BC_TextBox(x, y, xS(50), 1, string)
 {
 	this->output = output;
 	this->thread = thread;
@@ -415,7 +393,7 @@ int ScaleAspectW::handle_event()
 
 
 ScaleAspectH::ScaleAspectH(int x, int y, ScaleThread *thread, float *output, char *string)
- : BC_TextBox(x, y, 50, 1, string)
+ : BC_TextBox(x, y, xS(50), 1, string)
 {
 	this->output = output;
 	this->thread = thread;

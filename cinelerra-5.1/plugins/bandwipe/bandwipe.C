@@ -53,7 +53,7 @@ BandWipeCount::BandWipeCount(BandWipeMain *plugin,
 		(int64_t)1000,
 		x,
 		y,
-		50)
+		xS(50))
 {
 	this->plugin = plugin;
 	this->window = window;
@@ -119,10 +119,10 @@ int BandWipeOut::handle_event()
 
 BandWipeWindow::BandWipeWindow(BandWipeMain *plugin)
  : PluginClientWindow(plugin,
-	320,
-	50,
-	320,
-	50,
+	xS(320),
+	yS(50),
+	xS(320),
+	yS(50),
 	0)
 {
 	this->plugin = plugin;
@@ -131,23 +131,24 @@ BandWipeWindow::BandWipeWindow(BandWipeMain *plugin)
 
 void BandWipeWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int xs50 = xS(50);
+	int x = xS(10), y = yS(10);
 	add_subwindow(new BC_Title(x, y, _("Bands:")));
-	x += 50;
+	x += xs50;
 	count = new BandWipeCount(plugin,
 		this,
 		x,
 		y);
 	count->create_objects();
-// 	y += 30;
+// 	y += yS(30);
 // 	add_subwindow(new BC_Title(x, y, _("Direction:")));
-// 	x += 100;
+// 	x += yS(100);
 // 	add_subwindow(in = new BandWipeIn(plugin,
 // 		this,
 // 		x,
 // 		y));
-// 	x += 100;
-// 	x = 10;
+// 	x += xS(100);
+// 	x = xS(10);
 // 	add_subwindow(out = new BandWipeOut(plugin,
 // 		this,
 // 		x,

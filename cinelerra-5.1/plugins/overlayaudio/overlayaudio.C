@@ -185,10 +185,10 @@ const char* OverlayAudioConfig::mode_to_text(int mode)
 
 OverlayAudioWindow::OverlayAudioWindow(OverlayAudio *plugin)
  : PluginClientWindow(plugin,
-	400,
-	100,
-	400,
-	100,
+	xS(400),
+	yS(100),
+	xS(400),
+	yS(100),
 	0)
 {
 	this->plugin = plugin;
@@ -196,7 +196,7 @@ OverlayAudioWindow::OverlayAudioWindow(OverlayAudio *plugin)
 
 void OverlayAudioWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int x = xS(10), y = yS(10);
 	int x1 = x;
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x, y, _("Output track:")));
@@ -221,9 +221,7 @@ void OverlayAudioWindow::create_objects()
 
 
 OutputTrack::OutputTrack(OverlayAudio *plugin, int x , int y)
- : BC_PopupMenu(x,
- 	y,
-	100,
+ : BC_PopupMenu(x, y, xS(100),
 	OverlayAudioConfig::output_to_text(plugin->config.output_track),
 	1)
 {
@@ -269,12 +267,8 @@ int OutputTrack::handle_event()
 
 
 
-OverlayMode::OverlayMode(OverlayAudio *plugin,
-	int x,
-	int y)
- : BC_PopupMenu(x,
- 	y,
-	150,
+OverlayMode::OverlayMode(OverlayAudio *plugin, int x, int y)
+ : BC_PopupMenu(x, y, xS(150),
 	OverlayAudioConfig::mode_to_text(plugin->config.mode),
 	1)
 {

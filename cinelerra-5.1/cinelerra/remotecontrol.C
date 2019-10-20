@@ -9,7 +9,7 @@
 
 RemoteWindow::RemoteWindow(RemoteControl *remote_control)
  : BC_Window(_(PROGRAM_NAME ": RemoteWindow"),
-		0, 0, 16, 16, -1, -1, 1, 0, 1)
+		0, 0, xS(16), yS(16), -1, -1, 1, 0, 1)
 {
 	this->remote_control = remote_control;
 }
@@ -102,7 +102,8 @@ void RemoteControl::fill_color(int color)
 }
 
 RemoteGUI::RemoteGUI(BC_WindowBase *wdw, RemoteControl *remote_control)
- : BC_Popup(wdw, remote_control->mwindow_gui->mwindow->session->mwindow_x,0,16,16, -1, 1)
+ : BC_Popup(wdw, remote_control->mwindow_gui->mwindow->session->mwindow_x,0,
+		xS(16),yS(16), -1, 1)
 {
 	this->remote_control = remote_control;
 }

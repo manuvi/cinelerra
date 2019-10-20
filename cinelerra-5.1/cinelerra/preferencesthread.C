@@ -64,8 +64,8 @@
 
 
 
-#define WIDTH 860
-#define HEIGHT 700
+#define WIDTH xS(860)
+#define HEIGHT yS(700)
 
 
 PreferencesMenuitem::PreferencesMenuitem(MWindow *mwindow)
@@ -125,7 +125,7 @@ BC_Window* PreferencesThread::new_gui()
 	//int need_new_indexes = 0;
 	rerender = 0;
 
- 	mwindow->gui->lock_window("NewThread::new_gui");
+	mwindow->gui->lock_window("NewThread::new_gui");
 	int scr_x = mwindow->gui->get_screen_x(0, -1);
 	int scr_w = mwindow->gui->get_screen_w(0, -1);
 	int scr_h = mwindow->gui->get_screen_h(0, -1);
@@ -406,12 +406,6 @@ SET_TRACE
 }
 
 
-
-
-
-
-
-
 PreferencesWindow::PreferencesWindow(MWindow *mwindow,
 	PreferencesThread *thread, int x, int y, int w, int h)
  : BC_Window(_(PROGRAM_NAME ": Preferences"), x,y, w,h,w,h, 1)
@@ -586,15 +580,6 @@ int PreferencesWindow::set_current_dialog(int number)
 }
 
 
-
-
-
-
-
-
-
-
-
 PreferencesButton::PreferencesButton(MWindow *mwindow,
 	PreferencesThread *thread,
 	int x,
@@ -616,19 +601,11 @@ int PreferencesButton::handle_event()
 }
 
 
-
-
-
-
-
-
-
 PreferencesDialog::PreferencesDialog(MWindow *mwindow,
 	PreferencesWindow *pwindow)
- : BC_SubWindow(10,
- 	40,
-	pwindow->get_w() - 20,
- 	pwindow->get_h() - BC_GenericButton::calculate_h() - 10 - 40)
+ : BC_SubWindow(xS(10), yS(40),
+	pwindow->get_w() - xS(20),
+	pwindow->get_h() - BC_GenericButton::calculate_h() - yS(10 + 40))
 {
 	this->pwindow = pwindow;
 	this->mwindow = mwindow;
@@ -639,14 +616,12 @@ PreferencesDialog::~PreferencesDialog()
 {
 }
 
+
 // ============================== category window
-
-
-
 
 PreferencesApply::PreferencesApply(MWindow *mwindow, PreferencesThread *thread)
  : BC_GenericButton(thread->window->get_w() / 2 - BC_GenericButton::calculate_w(thread->window, _("Apply")) / 2,
- 	thread->window->get_h() - BC_GenericButton::calculate_h() - 10,
+	thread->window->get_h() - BC_GenericButton::calculate_h() - yS(10),
 	_("Apply"))
 {
 	this->mwindow = mwindow;
@@ -660,16 +635,14 @@ int PreferencesApply::handle_event()
 }
 int PreferencesApply::resize_event(int w, int h)
 {
-	reposition_window(w/2 - get_w()/2, h-get_h()-10);
+	reposition_window(w/2 - get_w()/2, h-get_h()-yS(10));
 	return 1;
 }
 
 
-
-
 PreferencesOK::PreferencesOK(MWindow *mwindow, PreferencesThread *thread)
- : BC_GenericButton(10,
- 	thread->window->get_h() - BC_GenericButton::calculate_h() - 10,
+ : BC_GenericButton(xS(10),
+	thread->window->get_h() - BC_GenericButton::calculate_h() - yS(10),
 	_("OK"))
 {
 	this->mwindow = mwindow;
@@ -691,16 +664,15 @@ int PreferencesOK::handle_event()
 }
 int PreferencesOK::resize_event(int w, int h)
 {
-	reposition_window(10, h-get_h()-10);
+	reposition_window(xS(10), h-get_h()-yS(10));
 	return 1;
 }
 
 
-
 PreferencesCancel::PreferencesCancel(MWindow *mwindow, PreferencesThread *thread)
- : BC_GenericButton(thread->window->get_w() - BC_GenericButton::calculate_w(thread->window, _("Cancel")) - 10,
- 	thread->window->get_h() - BC_GenericButton::calculate_h() - 10,
- 	_("Cancel"))
+ : BC_GenericButton(thread->window->get_w() - BC_GenericButton::calculate_w(thread->window, _("Cancel")) - xS(10),
+	thread->window->get_h() - BC_GenericButton::calculate_h() - yS(10),
+	_("Cancel"))
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
@@ -721,27 +693,16 @@ int PreferencesCancel::handle_event()
 }
 int PreferencesCancel::resize_event(int w, int h)
 {
-	reposition_window(w-get_w()-10, h-get_h()-10);
+	reposition_window(w-get_w()-xS(10), h-get_h()-yS(10));
 	return 1;
 }
-
-
-
-
-
-
-
-
 
 
 PreferencesCategory::PreferencesCategory(MWindow *mwindow, PreferencesThread *thread, int x, int y)
  : BC_PopupTextBox(thread->window,
 		&thread->window->categories,
 		thread->category_to_text(thread->current_dialog),
-		x,
-		y,
-		200,
-		150)
+		x, y, xS(200), yS(150))
 {
 	this->mwindow = mwindow;
 	this->thread = thread;

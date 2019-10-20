@@ -259,44 +259,46 @@ int ChanSearchList::move_column_event()
 
 void ChanSearchGUI::create_objects()
 {
+	int xs10 = xS(10), xs20 = xS(20);
+	int ys5 = yS(5), ys10 = yS(10);
 	lock_window("ChanSearchGUI::create_objects");
-	int pady = BC_TextBox::calculate_h(this, MEDIUMFONT, 0, 1) + 5;
+	int pady = BC_TextBox::calculate_h(this, MEDIUMFONT, 0, 1) + ys5;
 	int padx = BC_Title::calculate_w(this, (char*)"X", MEDIUMFONT);
 	int x = padx/2, y = pady/4;
 	BC_Title *title = new BC_Title(text_x, text_y, _("Text:"), MEDIUMFONT, YELLOW);
 	add_subwindow(title);  x += title->get_w();
 	text_x = x;  text_y = y;
-	search_text = new ChanSearchText(this, x, y, get_w()-x-10);
+	search_text = new ChanSearchText(this, x, y, get_w()-x-xs10);
 	add_subwindow(search_text);
-	x = padx;  y += pady + 5;
+	x = padx;  y += pady + ys5;
 	title_text = new ChanSearchTitleText(this, x, y);
 	add_subwindow(title_text);  x += title_text->get_w() + padx;
 	info_text = new ChanSearchInfoText(this, x, y);
 	add_subwindow(info_text);  x += title_text->get_w() + padx;
 	match_case = new ChanSearchMatchCase(this, x, y);
 	add_subwindow(match_case); x += match_case->get_w() + padx;
-	results_x = x + 20;  results_y = y + 5;
+	results_x = x + xs20;  results_y = y + ys5;
 	results = new BC_Title(results_x, results_y, " ", MEDIUMFONT, YELLOW);
 	add_subwindow(results);
-	x = padx;  y += pady + 5;
-	search_x = 10;
-	search_y = get_h() - BC_GenericButton::calculate_h() - 10;
+	x = padx;  y += pady + ys5;
+	search_x = xs10;
+	search_y = get_h() - BC_GenericButton::calculate_h() - ys10;
 	search_start = new ChanSearchStart(this, search_x, search_y);
 	add_subwindow(search_start);
 	cancel_w = ChanSearchCancel::calculate_w();
 	cancel_h = ChanSearchCancel::calculate_h();
-	cancel_x = get_w() - cancel_w - 10;
-	cancel_y = get_h() - cancel_h - 10;
+	cancel_x = get_w() - cancel_w - xs10;
+	cancel_y = get_h() - cancel_h - ys10;
 	cancel = new ChanSearchCancel(this, cancel_x, cancel_y);
 	add_subwindow(cancel);
 	list_x = x;  list_y = y;
-	int list_w = get_w()-10 - list_x;
-	int list_h = min(search_y, cancel_y)-10 - list_y;
+	int list_w = get_w()-xs10 - list_x;
+	int list_h = min(search_y, cancel_y)-ys10 - list_y;
 	search_list = new ChanSearchList(this, list_x, list_y, list_w, list_h);
 	add_subwindow(search_list);
 	search_list->show_window();
 	int clktip_x = list_x;
-	int clktip_y = list_y + list_h + 5;
+	int clktip_y = list_y + list_h + ys5;
 	click_tip = new BC_Title(clktip_x, clktip_y, _("dbl clk row to find title"));
 	add_subwindow(click_tip);
 
@@ -305,11 +307,14 @@ void ChanSearchGUI::create_objects()
 	unlock_window();
 }
 
+#define CSW_W xS(500)
+#define CSW_H yS(300)
+
 ChanSearchGUI::ChanSearchGUI(ChanSearch *cswindow)
  : BC_Window(_(PROGRAM_NAME ": ChanSearch"),
-	cswindow->iwindow->gui->get_abs_cursor_x(1) - 500 / 2,
-	cswindow->iwindow->gui->get_abs_cursor_y(1) - 300 / 2,
-	500, 300, 400, 300)
+	cswindow->iwindow->gui->get_abs_cursor_x(1) - CSW_W/2,
+	cswindow->iwindow->gui->get_abs_cursor_y(1) - CSW_H/2,
+	CSW_W, CSW_H, xS(400), yS(300))
 {
 	this->cswindow = cswindow;
 	this->iwindow = cswindow->iwindow;
@@ -341,9 +346,9 @@ ChanSearchGUI::ChanSearchGUI(ChanSearch *cswindow)
 	search_column_titles[0] = _("Source");
 	search_column_titles[1] = C_("Title");
 	search_column_titles[2] = _("Start time");
-	search_column_widths[0] = 120;
-	search_column_widths[2] = 120;
-	search_column_widths[1] = get_w()-search_column_widths[0]-search_column_widths[2]-32;
+	search_column_widths[0] = xS(120);
+	search_column_widths[2] = xS(120);
+	search_column_widths[1] = get_w()-search_column_widths[0]-search_column_widths[2]-xS(32);
 }
 
 ChanSearchGUI::~ChanSearchGUI()
@@ -362,19 +367,21 @@ ChanSearchGUI::~ChanSearchGUI()
 
 int ChanSearchGUI::resize_event(int w, int h)
 {
+	int xs5 = xS(5), xs10 = xS(10);
+	int ys10 = yS(10);
 	search_text->reposition_window(text_x, text_y, w-text_x-10);
-	int cancel_x = w - BC_CancelButton::calculate_w() - 10;
-	int cancel_y = h - BC_CancelButton::calculate_h() - 10;
+	int cancel_x = w - BC_CancelButton::calculate_w() - xs10;
+	int cancel_y = h - BC_CancelButton::calculate_h() - ys10;
 	cancel->reposition_window(cancel_x, cancel_y);
-	search_x = 10;
-	search_y = h - BC_GenericButton::calculate_h() - 10;
+	search_x = xs10;
+	search_y = h - BC_GenericButton::calculate_h() - ys10;
 	search_start->reposition_window(search_x, search_y);
-	int list_w = w-10 - list_x;
-	int list_h = min(search_y, cancel_y)-10 - list_y;
-	search_column_widths[1] = w-search_column_widths[0]-search_column_widths[2]-32;
+	int list_w = w-xs10 - list_x;
+	int list_h = min(search_y, cancel_y)-ys10 - list_y;
+	search_column_widths[1] = w-search_column_widths[0]-search_column_widths[2]-xS(32);
 	search_list->reposition_window(list_x, list_y, list_w, list_h);
 	int clktip_x = list_x;
-	int clktip_y = list_y + list_h + 5;
+	int clktip_y = list_y + list_h + xs5;
 	click_tip->reposition_window(clktip_x, clktip_y);
 	update();
 	return 1;
@@ -1285,6 +1292,8 @@ int ChannelInfoGUIBatches::handle_event()
 
 void ChannelInfoGUI::create_objects()
 {
+	int xs10 = xS(10);
+	int ys5 = yS(5), ys10 = yS(10);
 	lock_window("ChannelInfoGUI::create_objects");
 	panel = new ChannelPanel(this,0,0,panel_w,panel_h);
 	add_subwindow(panel);
@@ -1311,9 +1320,9 @@ void ChannelInfoGUI::create_objects()
 	batch_bay->set_current_batch(-1);
 	batch_bay->update_batches(-1);
 
-	pad = BC_TextBox::calculate_h(this, MEDIUMFONT, 0, 1) + 5;
-	x0 = bay_x+bay_w + 10;
-	y0 = bay_y+10;
+	pad = BC_TextBox::calculate_h(this, MEDIUMFONT, 0, 1) + ys5;
+	x0 = bay_x+bay_w + xs10;
+	y0 = bay_y+ys10;
 	int ww = 0;
 	int x = x0;
 	int y = y0;
@@ -1361,9 +1370,9 @@ void ChannelInfoGUI::create_objects()
 
 	x = x0 + pad;
 	add_subwindow(channel_clear_batch = new ChannelClearBatch(this, x, y));
-	x += channel_clear_batch->get_w() + 10;
+	x += channel_clear_batch->get_w() + xs10;
 	add_subwindow(channel_new_batch = new ChannelNewBatch(this, x, y));
-	x += channel_new_batch->get_w() + 10;
+	x += channel_new_batch->get_w() + xs10;
 	add_subwindow(channel_delete_batch = new ChannelDeleteBatch(this, x, y));
 	x += channel_delete_batch->get_w();
 	ww = max(x-x0, ww);
@@ -1381,9 +1390,12 @@ void ChannelInfoGUI::create_objects()
 
 ChannelInfoGUI::ChannelInfoGUI(ChannelInfo *iwindow,
 	int x, int y, int w, int h)
- : BC_Window(_(PROGRAM_NAME ": Channel Info"), x, y, w, h, 600, 400,
-	1, 0, 0 , -1, iwindow->mwindow->get_cwindow_display())
+ : BC_Window(_(PROGRAM_NAME ": Channel Info"), x, y,
+	w, h, xS(600), yS(400), 1, 0, 0 , -1,
+	iwindow->mwindow->get_cwindow_display())
 {
+	int xs10 = xS(10), xs20 = xS(20);
+	int ys5 = yS(5), ys10 = yS(10);
 	this->iwindow = iwindow;
 	panel = 0;
 	batch_bay =0;
@@ -1411,31 +1423,31 @@ ChannelInfoGUI::ChannelInfoGUI(ChannelInfo *iwindow,
 	x0 = y0 = title_w = data_w = status_w = pad = 0;
 	ok_w = BC_OKButton::calculate_w();
 	ok_h = BC_OKButton::calculate_h();
-	ok_x = 10;
-	ok_y = h - ok_h - 10;
+	ok_x = xs10;
+	ok_y = h - ok_h - ys10;
 	BC_CheckBox::calculate_extents(this, &cron_w, &cron_h, cron_caption);
 	cron_x = ok_x;
-	cron_y = ok_y - cron_h - 10;
+	cron_y = ok_y - cron_h - ys10;
 	BC_CheckBox::calculate_extents(this, &power_w, &power_h, power_caption);
 	power_x = cron_x;
-	power_y = cron_y - power_h - 5;
+	power_y = cron_y - power_h - ys5;
 	find_h = BC_GenericButton::calculate_h();
 	find_x = power_x;
-	find_y = power_y - find_h - 10;
+	find_y = power_y - find_h - ys10;
 	cancel_w = BC_CancelButton::calculate_w();
 	cancel_h = BC_CancelButton::calculate_h();
-	cancel_x = w - cancel_w - 10,
-	cancel_y = h - cancel_h - 10;
-	max_bay_w = 700;
-	bay_h = 150;
-	bay_x = ok_w + 20;
-	int x1 = cron_x+cron_w + 10;
+	cancel_x = w - cancel_w - xs10,
+	cancel_y = h - cancel_h - ys10;
+	max_bay_w = xS(700);
+	bay_h = yS(150);
+	bay_x = ok_w + xs20;
+	int x1 = cron_x+cron_w + xs10;
 	if( x1 > bay_x ) bay_x = x1;
-	x1 = power_x+power_w + 10;
+	x1 = power_x+power_w + xs10;
 	if( x1 > bay_x ) bay_x = x1;
 	bay_y = h - bay_h;
 	// data_w,status_w zero, updated in create_objects
-	bay_w = (w-bay_x) - (data_w+10) - (max(cancel_w, status_w)+20);
+	bay_w = (w-bay_x) - (data_w+xs10) - (max(cancel_w, status_w)+xs20);
 	if( bay_w > max_bay_w ) bay_w = max_bay_w;
 	panel_w = w;
 	panel_h = h - bay_h;
@@ -1472,39 +1484,41 @@ int ChannelInfoGUI::translation_event()
 
 int ChannelInfoGUI::resize_event(int w, int h)
 {
+	int xs10 = xS(10), xs20 = xS(20);
+	int ys5 = yS(5), ys10 = yS(10);
 	iwindow->mwindow->session->cswindow_w = w;
 	iwindow->mwindow->session->cswindow_h = h;
 	panel_w = w;
 	panel_h = h - bay_h;
 	panel->resize(panel_w,panel_h);
 	panel->reposition_window(0,0,panel_w,panel_h);
-	ok_x = 10;
-	ok_y = h - ok_h - 10;
+	ok_x = xs10;
+	ok_y = h - ok_h - ys10;
 	ok->reposition_window(ok_x, ok_y);
 	cron_x = ok_x;
-	cron_y = ok_y - cron_h - 10;
+	cron_y = ok_y - cron_h - ys10;
 	channel_cron->reposition_window(cron_x, cron_y);
 	power_x = cron_x;
-	power_y = cron_y - power_h - 5;
+	power_y = cron_y - power_h - ys5;
 	channel_poweroff->reposition_window(power_x, power_y);
 	find_x = power_x;
-	find_y = power_y - find_h - 10;
+	find_y = power_y - find_h - ys10;
 	channel_find->reposition_window(find_x, find_y);
-	cancel_x = w - cancel_w - 10,
-	cancel_y = h - cancel_h - 10;
+	cancel_x = w - cancel_w - xs10,
+	cancel_y = h - cancel_h - ys10;
 	cancel->reposition_window(cancel_x, cancel_y);
-	bay_x = ok_w + 20;
-	int x1 = cron_x+cron_w + 10;
+	bay_x = ok_w + xs20;
+	int x1 = cron_x+cron_w + xs10;
 	if( x1 > bay_x ) bay_x = x1;
-	x1 = power_x+power_w + 10;
+	x1 = power_x+power_w + xs10;
 	if( x1 > bay_x ) bay_x = x1;
 	bay_y = h - bay_h;
-	bay_w = (w-bay_x) - (data_w+10) - (max(cancel_w, status_w)+20);
+	bay_w = (w-bay_x) - (data_w+xs10) - (max(cancel_w, status_w)+xs20);
 	if( bay_w > max_bay_w ) bay_w = max_bay_w;
 	batch_bay->reposition_window(bay_x, bay_y, bay_w, bay_h);
 
-	int x0 = bay_x+bay_w + 10;
-	int y0 = bay_y+10;
+	int x0 = bay_x+bay_w + xs10;
+	int y0 = bay_y+ys10;
 	int x = x0;
 	int y = y0;
 
@@ -1529,9 +1543,9 @@ int ChannelInfoGUI::resize_event(int w, int h)
 
 	x = x0 + pad;
 	channel_clear_batch->reposition_window(x, y);
-	x += channel_clear_batch->get_w() + 10;
+	x += channel_clear_batch->get_w() + xs10;
 	channel_new_batch->reposition_window(x, y);
-	x += channel_new_batch->get_w() + 10;
+	x += channel_new_batch->get_w() + xs10;
 	channel_delete_batch->reposition_window(x, y);
 
 	y = y0;
@@ -1676,8 +1690,8 @@ void ChannelInfo::run()
 		int y = mwindow->session->cswindow_y;
 		int w = mwindow->session->cswindow_w;
 		int h = mwindow->session->cswindow_h;
-		if( w < 600 ) w = 600;
-		if( h < 400 ) h = 400;
+		if( w < xS(600) ) w = xS(600);
+		if( h < yS(400) ) h = yS(400);
 		int scr_x = mwindow->gui->get_screen_x(1, -1);
 		int scr_w = mwindow->gui->get_screen_w(1, -1);
 		if( x < scr_x ) x = scr_x;
@@ -1825,7 +1839,7 @@ ChannelDuration::ChannelDuration(ChannelInfoGUI *gui, int x, int y, int w)
 
 ChannelEarlyTime::ChannelEarlyTime(ChannelInfoGUI *gui, int x, int y,
 	double *output_time)
- : TimeEntryTumbler(gui, x, y, 0, output_time, 15, TIME_MS2, 75)
+ : TimeEntryTumbler(gui, x, y, 0, output_time, 15, TIME_MS2, xS(75))
 {
 	this->gui = gui;
 }
@@ -1845,7 +1859,7 @@ int ChannelEarlyTime::handle_down_event()
 
 ChannelLateTime::ChannelLateTime(ChannelInfoGUI *gui, int x, int y,
 	double *output_time)
- : TimeEntryTumbler(gui, x, y, 0, output_time, 15, TIME_MS2, 75)
+ : TimeEntryTumbler(gui, x, y, 0, output_time, 15, TIME_MS2, xS(75))
 {
 	this->gui = gui;
 }

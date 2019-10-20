@@ -341,23 +341,14 @@ int FileAC3::write_samples(double **buffer, int64_t len)
 }
 
 
-
-
-
-
-
 AC3ConfigAudio::AC3ConfigAudio(BC_WindowBase *parent_window,
 	Asset *asset)
  : BC_Window(_(PROGRAM_NAME ": Audio Compression"),
  	parent_window->get_abs_cursor_x(1),
  	parent_window->get_abs_cursor_y(1),
-	500,
-	BC_OKButton::calculate_h() + 100,
-	500,
-	BC_OKButton::calculate_h() + 100,
-	0,
-	0,
-	1)
+	xS(500), BC_OKButton::calculate_h() + yS(100),
+	xS(500), BC_OKButton::calculate_h() + yS(100),
+	0, 0, 1)
 {
 	this->parent_window = parent_window;
 	this->asset = asset;
@@ -365,15 +356,12 @@ AC3ConfigAudio::AC3ConfigAudio(BC_WindowBase *parent_window,
 
 void AC3ConfigAudio::create_objects()
 {
-	int x = 10, y = 10;
-	int x1 = 150;
+	int x = xS(10), y = yS(10);
+	int x1 = xS(150);
 	lock_window("AC3ConfigAudio::create_objects");
 	add_tool(new BC_Title(x, y, _("Bitrate (kbps):")));
 	AC3ConfigAudioBitrate *bitrate;
-	add_tool(bitrate =
-		new AC3ConfigAudioBitrate(this,
-			x1,
-			y));
+	add_tool(bitrate = new AC3ConfigAudioBitrate(this, x1, y));
 	bitrate->create_objects();
 
 	add_subwindow(new BC_OKButton(this));
@@ -388,16 +376,8 @@ int AC3ConfigAudio::close_event()
 }
 
 
-
-
-
-
-AC3ConfigAudioBitrate::AC3ConfigAudioBitrate(AC3ConfigAudio *gui,
-	int x,
-	int y)
- : BC_PopupMenu(x,
- 	y,
-	150,
+AC3ConfigAudioBitrate::AC3ConfigAudioBitrate(AC3ConfigAudio *gui, int x, int y)
+ : BC_PopupMenu(x, y, xS(150),
 	AC3ConfigAudioBitrate::bitrate_to_string(gui->string, gui->asset->ac3_bitrate))
 {
 	this->gui = gui;

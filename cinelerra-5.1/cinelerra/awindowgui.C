@@ -1258,7 +1258,7 @@ AWindowGUI::AWindowGUI(MWindow *mwindow, AWindow *awindow)
  : BC_Window(_(PROGRAM_NAME ": Resources"),
 	mwindow->session->awindow_x, mwindow->session->awindow_y,
 	mwindow->session->awindow_w, mwindow->session->awindow_h,
-	100, 100, 1, 1, 1)
+	xS(100), yS(100), 1, 1, 1)
 {
 	this->mwindow = mwindow;
 	this->awindow = awindow;
@@ -1422,6 +1422,7 @@ void AWindowGUI::plugin_icon(VFrame *&vfrm, BC_Pixmap *&icon, const char *fn, un
 
 void AWindowGUI::create_objects()
 {
+	int ys5 = yS(5), ys10 = yS(10);
 	lock_window("AWindowGUI::create_objects");
 	asset_titles[0] = C_("Title");
 	asset_titles[1] = _("Comments");
@@ -1482,9 +1483,9 @@ void AWindowGUI::create_objects()
 
 	int x1 = mwindow->theme->alist_x, y1 = mwindow->theme->alist_y;
 	int w1 = mwindow->theme->alist_w, h1 = mwindow->theme->alist_h;
-	search_text = new AWindowSearchText(mwindow, this, x1, y1+5);
+	search_text = new AWindowSearchText(mwindow, this, x1, y1+ys5);
 	search_text->create_objects();
-	int dy = search_text->get_h() + 10;
+	int dy = search_text->get_h() + ys10;
 	y1 += dy;  h1 -= dy;
 	add_subwindow(asset_list = new AWindowAssets(mwindow, this, x1, y1, w1, h1));
 
@@ -1507,7 +1508,7 @@ void AWindowGUI::create_objects()
 		int nw = get_text_width(MEDIUMFONT, _(av_names[i]));
 		if( tw < nw )  tw = nw;
 	}
-	int pw = BC_PopupMenu::calculate_w(16, tw, 1);
+	int pw = BC_PopupMenu::calculate_w(xS(16), tw, 1);
 	const char *text = _(AVIconDrawing::avicon_names[vicon_drawing]);
 	add_subwindow(avicon_drawing = new AVIconDrawing(this, fw, fy, pw, text));
 	avicon_drawing->create_objects();
@@ -1596,10 +1597,11 @@ int AWindowGUI::translation_event()
 
 void AWindowGUI::reposition_objects()
 {
+	int ys5 = yS(5), ys10 = yS(10);
 	int x1 = mwindow->theme->alist_x, y1 = mwindow->theme->alist_y;
 	int w1 = mwindow->theme->alist_w, h1 = mwindow->theme->alist_h;
-	search_text->reposition_window(x1, y1+5, w1);
-	int dy = search_text->get_h() + 10;
+	search_text->reposition_window(x1, y1+ys5, w1);
+	int dy = search_text->get_h() + ys10;
 	y1 += dy;  h1 -= dy;
 	asset_list->reposition_window(x1, y1, w1, h1);
 	divider->reposition_window(
@@ -1738,7 +1740,9 @@ void AWindowGUI::hide_tip_info()
 AWindowRemovePluginGUI::
 AWindowRemovePluginGUI(AWindow *awindow, AWindowRemovePlugin *thread,
 	int x, int y, PluginServer *plugin)
- : BC_Window(_(PROGRAM_NAME ": Remove plugin"), x,y, 500,200, 50, 50, 1, 0, 1, -1, "", 1)
+ : BC_Window(_(PROGRAM_NAME ": Remove plugin"), x,y,
+		xS(500),yS(200), xS(50), yS(50),
+		1, 0, 1, -1, "", 1)
 {
 	this->awindow = awindow;
 	this->thread = thread;
@@ -1758,17 +1762,19 @@ AWindowRemovePluginGUI::
 
 void AWindowRemovePluginGUI::create_objects()
 {
+	int xs10 = xS(10), xs20 = xS(20);
+	int ys5 = yS(5), ys10 = yS(10);
 	lock_window("AWindowRemovePluginGUI::create_objects");
 	BC_Button *ok_button = new BC_OKButton(this);
 	add_subwindow(ok_button);
 	BC_Button *cancel_button = new BC_CancelButton(this);
 	add_subwindow(cancel_button);
-	int x = 10, y = 10;
+	int x = xs10, y = ys10;
 	BC_Title *title = new BC_Title(x, y, _("remove plugin?"));
 	add_subwindow(title);
-	y += title->get_h() + 5;
+	y += title->get_h() + ys5;
 	list = new BC_ListBox(x, y,
-		get_w() - 20, ok_button->get_y() - y - 5, LISTBOX_TEXT, &plugin_list,
+		get_w() - xs20, ok_button->get_y() - y - ys5, LISTBOX_TEXT, &plugin_list,
 		0, 0, 1, 0, 0, LISTBOX_SINGLE, ICON_LEFT, 0);
 	add_subwindow(list);
 	show_window();
@@ -2496,7 +2502,7 @@ int AWindowDivider::button_press_event()
 int AWindowDivider::cursor_motion_event()
 {
 	if( mwindow->session->current_operation == DRAG_PARTITION ) {
-		int wmin = 25;
+		int wmin = xS(25);
 		int wmax = mwindow->session->awindow_w - mwindow->theme->adivider_w - wmin;
 		int fw = gui->get_relative_cursor_x();
 		if( fw > wmax ) fw = wmax;
@@ -2887,7 +2893,7 @@ void AWindowAssets::draw_background()
 	set_font(LARGEFONT);
 	int folder = mwindow->edl->session->awindow_folder;
 	const char *title = mwindow->edl->get_folder_name(folder);
-	draw_text(get_w() - get_text_width(LARGEFONT, title) - 4, 30,
+	draw_text(get_w() - get_text_width(LARGEFONT, title) - xS(4), yS(30),
 		title, -1, get_bg_surface());
 }
 
@@ -3129,11 +3135,10 @@ int AWindowAssets::mouse_over_event(int no)
 
 void AWindowAssets::show_tip_info(const char *info, int no)
 {
-	int margin = 28;
 	int tw = get_text_width(MEDIUMFONT, info) + TOOLTIP_MARGIN * 2;
 	int th = get_text_height(MEDIUMFONT, info) + TOOLTIP_MARGIN * 2;
-	int tx = get_w() - (tw + margin);
-	int ty = get_h() - (th + margin);
+	int tx = get_w() - (tw + xS(28));
+	int ty = get_h() - (th + yS(28));
 	show_tooltip(info, tx, ty, tw, th);
 	info_tip = no;
 }
@@ -3166,10 +3171,11 @@ AWindowSearchText::AWindowSearchText(MWindow *mwindow, AWindowGUI *gui, int x, i
 
 void AWindowSearchText::create_objects()
 {
-	int x1 = x, y1 = y, margin = 10;
+	int xs10 = xS(10);
+	int x1 = x, y1 = y;
 	gui->add_subwindow(text_title = new BC_Title(x1, y1, _("Search:")));
-	x1 += text_title->get_w() + margin;
-	int w1 = gui->get_w() - x1 - 2*margin;
+	x1 += text_title->get_w() + xs10;
+	int w1 = gui->get_w() - x1 - 2*xs10;
 	gui->add_subwindow(text_box = new AWindowSearchTextBox(this, x1, y1, w1));
 }
 
@@ -3181,7 +3187,7 @@ int AWindowSearchText::handle_event()
 
 int AWindowSearchText::get_w()
 {
-	return text_box->get_w() + text_title->get_w() + 10;
+	return text_box->get_w() + text_title->get_w() + xS(10);
 }
 
 int AWindowSearchText::get_h()
@@ -3191,10 +3197,11 @@ int AWindowSearchText::get_h()
 
 void AWindowSearchText::reposition_window(int x, int y, int w)
 {
-	int x1 = x, y1 = y, margin = 10;
+	int xs10 = xS(10);
+	int x1 = x, y1 = y;
 	text_title->reposition_window(x1, y1);
-	x1 += text_title->get_w() + margin;
-	int w1 = gui->get_w() - x1 - 2*margin;
+	x1 += text_title->get_w() + xs10;
+	int w1 = gui->get_w() - x1 - 2*xs10;
 	text_box->reposition_window(x1, y1, w1);
 }
 

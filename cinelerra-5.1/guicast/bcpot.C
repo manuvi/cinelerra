@@ -141,8 +141,8 @@ int BC_Pot::angle_to_coords(int &x1, int &y1, int &x2, int &y2, float angle)
 	y1 = resources->pot_y1;
 	if(status == POT_DN)
 	{
-		x1 += resources->pot_offset;
-		y1 += resources->pot_offset;
+		x1 += xS(resources->pot_offset);
+		y1 += yS(resources->pot_offset);
 	}
 
 	while(angle < 0) angle += 360;
@@ -406,21 +406,8 @@ int BC_Pot::cursor_motion_event()
 }
 
 
-
-
-
-
-
-
-
-
-
-BC_FPot::BC_FPot(int x,
-	int y,
-	float value,
-	float minvalue,
-	float maxvalue,
-	VFrame **data)
+BC_FPot::BC_FPot(int x, int y,
+	float value, float minvalue, float maxvalue, VFrame **data)
  : BC_Pot(x, y, data)
 {
 	this->value = value;
@@ -505,18 +492,8 @@ void BC_FPot::update(float value, float minvalue, float maxvalue)
 }
 
 
-
-
-
-
-
-
-BC_IPot::BC_IPot(int x,
-	int y,
-	int64_t value,
-	int64_t minvalue,
-	int64_t maxvalue,
-	VFrame **data)
+BC_IPot::BC_IPot(int x, int y,
+	int64_t value, int64_t minvalue, int64_t maxvalue, VFrame **data)
  : BC_Pot(x, y, data)
 {
 	this->value = value;
@@ -594,14 +571,7 @@ void BC_IPot::update(int64_t value, int64_t minvalue, int64_t maxvalue)
 }
 
 
-
-
-
-
-BC_QPot::BC_QPot(int x,
-	int y,
-	int64_t value,
-	VFrame **data)
+BC_QPot::BC_QPot(int x, int y, int64_t value, VFrame **data)
  : BC_Pot(x, y, data)
 {
 	this->value = Freq::fromfreq(value);
@@ -667,18 +637,8 @@ void BC_QPot::update(int64_t value)
 }
 
 
-
-
-
-
-
-
-BC_PercentagePot::BC_PercentagePot(int x,
-	int y,
-	float value,
-	float minvalue,
-	float maxvalue,
-	VFrame **data)
+BC_PercentagePot::BC_PercentagePot(int x, int y,
+	float value, float minvalue, float maxvalue, VFrame **data)
  : BC_Pot(x, y, data)
 {
 	this->value = value;
@@ -741,11 +701,4 @@ void BC_PercentagePot::update(float value)
 		draw(1);
 	}
 }
-
-
-
-
-
-
-
 

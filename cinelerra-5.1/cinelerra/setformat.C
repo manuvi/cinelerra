@@ -271,13 +271,6 @@ void SetFormatThread::update_aspect()
 }
 
 
-
-
-
-
-
-
-
 SetFormatWindow::SetFormatWindow(MWindow *mwindow,
 	SetFormatThread *thread, int x, int y)
  : BC_Window(_(PROGRAM_NAME ": Set Format"), x, y,
@@ -296,7 +289,7 @@ SetFormatWindow::~SetFormatWindow()
 void SetFormatWindow::create_objects()
 {
 	lock_window("SetFormatWindow::create_objects");
-	int x = 10, y = mwindow->theme->setformat_y1;
+	int x = xS(10), y = mwindow->theme->setformat_y1;
 	BC_TextBox *textbox;
 	BC_Title *title;
 	mwindow->theme->draw_setformat_bg(this);
@@ -417,17 +410,10 @@ void SetFormatWindow::create_objects()
 		y,
 		_("Color model:")));
 	x = mwindow->theme->setformat_x4;
-	add_subwindow(textbox = new BC_TextBox(x,
-		y,
-		100,
-		1,
-		""));
+	add_subwindow(textbox = new BC_TextBox(x, y, xS(100), 1, ""));
 	x += textbox->get_w();
-	add_subwindow(color_model = new ColormodelPulldown(mwindow,
-		textbox,
-		&thread->new_settings->session->color_model,
-		x,
-		y));
+	add_subwindow(color_model = new ColormodelPulldown(mwindow, textbox,
+		&thread->new_settings->session->color_model, x, y));
 
 	y += mwindow->theme->setformat_margin;
 	add_subwindow(new BC_Title(mwindow->theme->setformat_x3,
@@ -435,13 +421,11 @@ void SetFormatWindow::create_objects()
 		_("Aspect ratio:")));
 	y += mwindow->theme->setformat_margin;
 	x = mwindow->theme->setformat_x3;
-	add_subwindow(aspect_w = new ScaleAspectText(x,
-		y,
-		thread,
+	add_subwindow(aspect_w = new ScaleAspectText(x, y, thread,
 		&(thread->new_settings->session->aspect_w)));
-	x += aspect_w->get_w() + 5;
+	x += aspect_w->get_w() + xS(5);
 	add_subwindow(new BC_Title(x, y, ":"));
-	x += 10;
+	x += xS(10);
 	add_subwindow(aspect_h = new ScaleAspectText(x,
 		y,
 		thread,
@@ -452,7 +436,7 @@ void SetFormatWindow::create_objects()
 		aspect_h,
 		x,
 		y));
-	x += 30;
+	x += xS(30);
 	add_subwindow(auto_aspect = new ScaleAspectAuto(x, y, thread));
 	y += mwindow->theme->setformat_margin;
 
@@ -460,27 +444,20 @@ void SetFormatWindow::create_objects()
 	add_subwindow(new BC_Title(mwindow->theme->setformat_x3,
 		y,
 		_("Interlace mode:")));
-	add_subwindow(textbox = new BC_TextBox(mwindow->theme->setformat_x4,
-		y,
-		140,
-		1,
-		""));
+	add_subwindow(textbox = new BC_TextBox(mwindow->theme->setformat_x4, y,
+		xS(140), 1, ""));
 	add_subwindow(interlace_pulldown = new InterlacemodePulldown(mwindow,
-		textbox,
-		&(thread->new_settings->session->interlace_mode),
+		textbox, &(thread->new_settings->session->interlace_mode),
 		(ArrayList<BC_ListBoxItem*>*)&mwindow->interlace_project_modes,
-		mwindow->theme->setformat_x4 + textbox->get_w(),
-		y));
+		mwindow->theme->setformat_x4 + textbox->get_w(), y));
 	y += mwindow->theme->setformat_margin;
-
 
 	BC_OKTextButton *ok;
 	BC_CancelTextButton *cancel;
 	add_subwindow(ok = new BC_OKTextButton(this));
 	add_subwindow(cancel = new BC_CancelTextButton(this));
 	add_subwindow(new SetFormatApply((ok->get_x() + cancel->get_x()) / 2,
-		ok->get_y(),
-		thread));
+		ok->get_y(), thread));
 	flash();
 	show_window();
 	unlock_window();
@@ -519,7 +496,7 @@ EDL* SetFormatPresets::get_edl()
 
 
 SetSampleRateTextBox::SetSampleRateTextBox(SetFormatThread *thread, int x, int y)
- : BC_TextBox(x, y, 100, 1, (int64_t)thread->new_settings->session->sample_rate)
+ : BC_TextBox(x, y, xS(100), 1, (int64_t)thread->new_settings->session->sample_rate)
 {
 	this->thread = thread;
 }
@@ -530,7 +507,7 @@ int SetSampleRateTextBox::handle_event()
 }
 
 SetChannelsTextBox::SetChannelsTextBox(SetFormatThread *thread, int x, int y)
- : BC_TextBox(x, y, 100, 1, thread->new_settings->session->audio_channels)
+ : BC_TextBox(x, y, xS(100), 1, thread->new_settings->session->audio_channels)
 {
 	this->thread = thread;
 }
@@ -612,10 +589,7 @@ int SetChannelsCanvas::draw(int angle)
 	for(int i = 0; i < thread->new_settings->session->audio_channels; i++)
 	{
 		get_dimensions(thread->new_settings->session->achannel_positions[i],
-			x,
-			y,
-			w,
-			h);
+			x, y, w, h);
 		double rotate_angle = thread->new_settings->session->achannel_positions[i];
 		rotate_angle = -rotate_angle;
 		while(rotate_angle < 0) rotate_angle += 360;
@@ -644,19 +618,16 @@ int SetChannelsCanvas::draw(int angle)
 }
 
 int SetChannelsCanvas::get_dimensions(int channel_position,
-	int &x,
-	int &y,
-	int &w,
-	int &h)
+		int &x, int &y, int &w, int &h)
 {
-#define MARGIN 10
-	int real_w = this->get_w() - box_r * 2 - MARGIN;
-	int real_h = this->get_h() - box_r * 2 - MARGIN;
+	int xs10 = xS(10), ys10 = yS(10);
+	int real_w = this->get_w() - box_r * 2 - xs10;
+	int real_h = this->get_h() - box_r * 2 - ys10;
 	float corrected_position = channel_position;
 	if(corrected_position < 0) corrected_position += 360;
 	Units::polar_to_xy((float)corrected_position, real_w / 2, x, y);
-	x += real_w / 2 + MARGIN / 2;
-	y += real_h / 2 + MARGIN / 2;
+	x += real_w / 2 + xs10 / 2;
+	y += real_h / 2 + ys10 / 2;
 	w = box_r * 2;
 	h = box_r * 2;
 	return 0;
@@ -723,7 +694,7 @@ int SetChannelsCanvas::cursor_motion_event()
 
 
 SetFrameRateTextBox::SetFrameRateTextBox(SetFormatThread *thread, int x, int y)
- : BC_TextBox(x, y, 100, 1, (float)thread->new_settings->session->frame_rate)
+ : BC_TextBox(x, y, xS(100), 1, (float)thread->new_settings->session->frame_rate)
 {
 	this->thread = thread;
 }
@@ -737,7 +708,7 @@ int SetFrameRateTextBox::handle_event()
 
 //
 // SetVChannels::SetVChannels(SetFormatThread *thread, int x, int y)
-//  : BC_TextBox(x, y, 100, 1, thread->channels)
+//  : BC_TextBox(x, y, xS(100), 1, thread->channels)
 // {
 // 	this->thread = thread;
 // }
@@ -751,7 +722,7 @@ int SetFrameRateTextBox::handle_event()
 
 
 ScaleSizeText::ScaleSizeText(int x, int y, SetFormatThread *thread, int *output)
- : BC_TextBox(x, y, 100, 1, *output)
+ : BC_TextBox(x, y, xS(100), 1, *output)
 {
 	this->thread = thread;
 	this->output = output;
@@ -762,8 +733,7 @@ ScaleSizeText::~ScaleSizeText()
 int ScaleSizeText::handle_event()
 {
 	*output = atol(get_text());
-	*output /= 2;
-	*output *= 2;
+	*output /= 2;  *output *= 2;
 	if(*output <= 0) *output = 2;
 	if(*output > 10000) *output = 10000;
 	*output *= -1;
@@ -777,7 +747,7 @@ ScaleRatioText::ScaleRatioText(int x,
 	int y,
 	SetFormatThread *thread,
 	float *output)
- : BC_TextBox(x, y, 100, 1, *output)
+ : BC_TextBox(x, y, xS(100), 1, *output)
 {
 	this->thread = thread;
 	this->output = output;
@@ -815,7 +785,7 @@ int ScaleAspectAuto::handle_event()
 }
 
 ScaleAspectText::ScaleAspectText(int x, int y, SetFormatThread *thread, float *output)
- : BC_TextBox(x, y, 70, 1, *output)
+ : BC_TextBox(x, y, xS(70), 1, *output)
 {
 	this->output = output;
 	this->thread = thread;

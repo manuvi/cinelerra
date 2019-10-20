@@ -108,7 +108,7 @@ void ReframeRTConfig::boundaries()
 
 
 ReframeRTWindow::ReframeRTWindow(ReframeRT *plugin)
- : PluginClientWindow(plugin, 230, 235, 230, 235, 0)
+ : PluginClientWindow(plugin, xS(230), yS(235), xS(230), yS(235), 0)
 {
 	this->plugin = plugin;
 }
@@ -144,11 +144,11 @@ void ReframeRTWindow::create_objects()
 
 	y += denom->get_h() + plugin->get_theme()->widget_border;
 	add_subwindow(stretch = new ReframeRTStretch(plugin, this, x, y));
-	y += 30;
+	y += yS(30);
 	add_subwindow(downsample = new ReframeRTDownsample(plugin, this, x, y));
-	y += 30;
+	y += yS(30);
 	add_subwindow(interpolate = new ReframeRTInterpolate(plugin, this, x, y));
-	y += 40;
+	y += yS(40);
 	add_subwindow(reset = new ReframeRTReset(plugin, this, x, y));
 	show_window();
 }

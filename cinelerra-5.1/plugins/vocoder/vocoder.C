@@ -270,10 +270,10 @@ int VocoderBands::handle_event()
 
 VocoderWindow::VocoderWindow(Vocoder *plugin)
  : PluginClientWindow(plugin,
-	320,
-	150,
-	320,
-	150,
+	xS(320),
+	yS(150),
+	xS(320),
+	yS(150),
 	0)
 {
 	this->plugin = plugin;

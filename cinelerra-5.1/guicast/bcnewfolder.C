@@ -19,10 +19,11 @@
  *
  */
 
-#include "condition.h"
+#include "bcresources.h"
 #include "bcfilebox.h"
 #include "bcnewfolder.h"
 #include "bctitle.h"
+#include "condition.h"
 #include "filesystem.h"
 #include "language.h"
 #include "mutex.h"
@@ -30,22 +31,9 @@
 #include <sys/stat.h>
 
 
-
-
-
-
-
 BC_NewFolder::BC_NewFolder(int x, int y, BC_FileBox *filebox)
  : BC_Window(filebox->get_newfolder_title(),
- 	x,
-	y,
-	320,
-	120,
-	0,
-	0,
-	0,
-	0,
-	1)
+	x, y, xS(320), yS(120), 0, 0, 0, 0, 1)
 {
 }
 
@@ -57,13 +45,13 @@ BC_NewFolder::~BC_NewFolder()
 void BC_NewFolder::create_objects()
 {
 	lock_window("BC_NewFolder::create_objects");
-	int x = 10, y = 10;
+	int x = xS(10), y = yS(10);
 	add_tool(new BC_Title(x, y, _("Enter the name of the folder:")));
-	y += 20;
-	add_subwindow(textbox = new BC_TextBox(x, y, 300, 1, _("Untitled")));
-	y += 30;
+	y += yS(20);
+	add_subwindow(textbox = new BC_TextBox(x, y, xS(300), 1, _("Untitled")));
+	y += yS(30);
 	add_subwindow(new BC_OKButton(this));
-	x = get_w() - 100;
+	x = get_w() - xS(100);
 	add_subwindow(new BC_CancelButton(this));
 	show_window();
 	unlock_window();
@@ -86,7 +74,7 @@ BC_NewFolderThread::BC_NewFolderThread(BC_FileBox *filebox)
 
 BC_NewFolderThread::~BC_NewFolderThread()
 {
- 	interrupt();
+	interrupt();
 	delete change_lock;
 	delete completion_lock;
 }

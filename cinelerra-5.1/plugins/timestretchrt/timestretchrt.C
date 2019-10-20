@@ -93,10 +93,10 @@ void TimeStretchRTConfig::boundaries()
 
 TimeStretchRTWindow::TimeStretchRTWindow(TimeStretchRT *plugin)
  : PluginClientWindow(plugin,
-	210, 
-	200, 
-	200, 
-	210,
+	xS(210),
+	yS(200),
+	xS(200),
+	yS(210),
 	0)
 {
 	this->plugin = plugin;
@@ -108,7 +108,7 @@ TimeStretchRTWindow::~TimeStretchRTWindow()
 
 void TimeStretchRTWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int x = xS(10), y = yS(10);
 	int margin = plugin->get_theme()->widget_border;
 
 	BC_Title *title = 0;

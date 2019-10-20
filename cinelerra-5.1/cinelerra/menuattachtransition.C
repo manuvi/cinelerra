@@ -123,7 +123,7 @@ TransitionDialog::TransitionDialog(MWindow *mwindow,
  : BC_Window(_("Attach Transition"), x, y,
 	mwindow->session->transitiondialog_w,
 	mwindow->session->transitiondialog_h,
-	320, 240, 1, 0, 1)
+	xS(320), yS(240), 1, 0, 1)
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
@@ -170,21 +170,21 @@ TransitionDefaultText::~TransitionDefaultText()
 
 void TransitionDialog::create_objects()
 {
-	int x = 10;
-	int y = 10;
+	int x = xS(10);
+	int y = yS(10);
 
 	lock_window("TransitionDialog::create_objects");
 	add_subwindow(name_title = new BC_Title(x, y, _("Select transition from list")));
-	y += name_title->get_h() + 5;
+	y += name_title->get_h() + yS(5);
 	add_subwindow(name_list = new TransitionDialogName(thread,
 		&thread->transition_names,
 		x,
 		y,
 		get_w() - x - x,
-		get_h() - y - BC_OKButton::calculate_h() - 100));
-	y += name_list->get_h() + 20;
+		get_h() - y - BC_OKButton::calculate_h() - yS(100)));
+	y += name_list->get_h() + yS(20);
 	add_subwindow(set_default = new TransitionSetDefault(this, x, y));
-	y += set_default->get_h() + 10;
+	y += set_default->get_h() + yS(10);
 	const char *default_transition = "";
 	EDL *edl = mwindow->edl;
 	switch( thread->data_type ) {
@@ -196,7 +196,7 @@ void TransitionDialog::create_objects()
 		break;
 	}
 	add_subwindow(set_default_text = new TransitionDefaultText(this, x, y,
-			get_w()-x-20, default_transition));
+			get_w()-x-xS(20), default_transition));
 	if( thread->number >= 0 ) {
 		name_list->update_selection(&thread->transition_names, thread->number, 0);
 		name_list->draw_items(0);
@@ -210,20 +210,19 @@ void TransitionDialog::create_objects()
 
 int TransitionDialog::resize_event(int w, int h)
 {
-	int x = 10;
-	int y = 10;
+	int x = xS(10);
+	int y = yS(10);
 
 	name_title->reposition_window(x, y);
-	y += name_title->get_h() + 5;
+	y += name_title->get_h() + yS(5);
 	name_list->reposition_window(x, y,
-		w - x - x, h - y - BC_OKButton::calculate_h() - 100);
-	y += name_list->get_h() + 20;
+		w - x - x, h - y - BC_OKButton::calculate_h() - yS(100));
+	y += name_list->get_h() + yS(20);
 	set_default->reposition_window(x, y);
-	y += set_default->get_h() + 10;
-	set_default_text->reposition_window(x, y, get_w()-x-20);
+	y += set_default->get_h() + yS(10);
+	set_default_text->reposition_window(x, y, get_w()-x-xS(20));
 	return 1;
 }
-
 
 
 TransitionDialogName::TransitionDialogName(TransitionDialogThread *thread,
@@ -251,7 +250,4 @@ int TransitionDialogName::selection_changed()
 		thread->transition_names.values[thread->number]->get_text());
 	return 1;
 }
-
-
-
 

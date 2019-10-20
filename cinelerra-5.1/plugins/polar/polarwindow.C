@@ -55,15 +55,17 @@ PolarWindow::~PolarWindow()
 
 int PolarWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int xs10 = xS(10), xs80 = xS(80), xs190 = xS(190), xs200 = xS(200);
+	int ys10 = yS(10), ys20 = yS(20), ys30 = yS(30), ys35 = yS(35);
+	int x = xs10, y = ys10;
 	add_tool(new BC_Title(x, y, _("Depth")));
-	add_tool(automation[0] = new AutomatedFn(client, this, x + 80, y, 0));
-	y += 20;
+	add_tool(automation[0] = new AutomatedFn(client, this, x + xs80, y, 0));
+	y += ys20;
 	add_tool(depth_slider = new DepthSlider(client, x, y));
-	y += 35;
+	y += ys35;
 	add_tool(new BC_Title(x, y, _("Angle")));
-	add_tool(automation[1] = new AutomatedFn(client, this, x + 80, y, 1));
-	y += 20;
+	add_tool(automation[1] = new AutomatedFn(client, this, x + xs80, y, xS(1)));
+	y += ys20;
 	add_tool(angle_slider = new AngleSlider(client, x, y));
 }
 
@@ -76,7 +78,7 @@ int PolarWindow::close_event()
 }
 
 DepthSlider::DepthSlider(PolarMain *client, int x, int y)
- : BC_ISlider(x, y, 190, 30, 200, client->depth, 0, MAXDEPTH, DKGREY, BLACK, 1)
+ : BC_ISlider(x, y, xs190, ys30, xs200, client->depth, 0, MAXDEPTH, DKGREY, BLACK, 1)
 {
 	this->client = client;
 }
@@ -91,7 +93,7 @@ int DepthSlider::handle_event()
 }
 
 AngleSlider::AngleSlider(PolarMain *client, int x, int y)
- : BC_ISlider(x, y, 190, 30, 200, client->angle, 0, MAXANGLE, DKGREY, BLACK, 1)
+ : BC_ISlider(x, y, xs190, ys30, xs200, client->angle, 0, MAXANGLE, DKGREY, BLACK, 1)
 {
 	this->client = client;
 }
@@ -106,7 +108,7 @@ int AngleSlider::handle_event()
 }
 
 AutomatedFn::AutomatedFn(PolarMain *client, PolarWindow *window, int x, int y, int number)
- : BC_CheckBox(x, y, 16, 16, client->automated_function == number, _("Automate"))
+ : BC_CheckBox(x, y, xS(16), yS(16), client->automated_function == number, _("Automate"))
 {
 	this->client = client;
 	this->window = window;

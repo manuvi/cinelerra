@@ -1689,17 +1689,16 @@ int BC_ListBox::get_scrollbars()
 	int flush = 0;
 
 	title_h = get_title_h();
-	view_h = popup_h - title_h - 4;
-	view_w = popup_w - 4;
+	view_h = popup_h - title_h - yS(4);
+	view_w = popup_w - xS(4);
 
 // Create scrollbars as needed
 	for( int i=0; i<2; ++i ) {
 		if( w_needed > view_w ) {
 			need_xscroll = 1;
-			view_h = popup_h -
-				title_h -
+			view_h = popup_h - title_h -
 				get_resources()->hscroll_data[SCROLL_HANDLE_UP]->get_h() -
-				4;
+				yS(4);
 		}
 		else {
 			need_xscroll = 0;
@@ -1709,7 +1708,7 @@ int BC_ListBox::get_scrollbars()
 			need_yscroll = 1;
 			view_w = popup_w -
 				get_resources()->vscroll_data[SCROLL_HANDLE_UP]->get_w() -
-				4;
+				xS(4);
 		}
 		else {
 			need_yscroll = 0;
@@ -1768,10 +1767,10 @@ int BC_ListBox::get_scrollbars()
 	}
 
 	if( !bg_surface ||
-	    view_w + 4 != bg_surface->get_w() ||
-	    view_h + 4 != bg_surface->get_h() ) {
+	    view_w + xS(4) != bg_surface->get_w() ||
+	    view_h + yS(4) != bg_surface->get_h() ) {
 		if( bg_surface ) delete bg_surface;
-		bg_surface = new BC_Pixmap(gui, view_w + 4, view_h + 4);
+		bg_surface = new BC_Pixmap(gui, view_w + xS(4), view_h + yS(4));
 		bg_draw = 1;
 	}
 
@@ -1779,6 +1778,18 @@ int BC_ListBox::get_scrollbars()
 	return 0;
 }
 
+int BC_ListBox::get_w()
+{
+	return is_popup ? button_images[0]->get_w() + xS(1) : popup_w;
+}
+int BC_ListBox::get_h()
+{
+	return is_popup ? button_images[0]->get_h() + yS(1) : popup_h;
+}
+int BC_ListBox::gui_tooltip(const char *text)
+{
+	return is_popup && gui ? gui->show_tooltip(text, gui->get_w(),0, -1,-1) : -1;
+}
 
 void BC_ListBox::set_drag_scroll(int value)
 {
@@ -1815,18 +1826,18 @@ int BC_ListBox::drag_scroll_event()
 		result = 1;
 	}
 	else
-	if( get_cursor_y() >= view_h + title_h + 4 ) {
-		yposition += get_cursor_y() - (view_h + title_h + 4);
+	if( get_cursor_y() >= view_h + title_h + yS(4) ) {
+		yposition += get_cursor_y() - (view_h + title_h + yS(4));
 		result = 1;
 	}
 
-	if( get_cursor_x() < 2 ) {
-		xposition -= 2 - get_cursor_x();
+	if( get_cursor_x() < xS(2) ) {
+		xposition -= xS(2) - get_cursor_x();
 		result = 1;
 	}
 	else
-	if( get_cursor_x() >= view_w + 2 ) {
-		xposition += get_cursor_x() - (view_w + 2);
+	if( get_cursor_x() >= view_w + xS(2) ) {
+		xposition += get_cursor_x() - (view_w + xS(2));
 		result = 1;
 	}
 
@@ -3300,9 +3311,9 @@ int BC_ListBox::drag_stop_event()
 				reposition_item(data,
 					selection_number,
 					top_level->cursor_x - drag_popup->get_w() / 2 -
-						LISTBOX_MARGIN - 2 + xposition,
+						LISTBOX_MARGIN - xS(2) + xposition,
 					top_level->cursor_y - drag_popup->get_h() / 2 -
-						LISTBOX_MARGIN - 2 + yposition);
+						LISTBOX_MARGIN - yS(2) + yposition);
 			}
 			else
 // Move rows
@@ -3437,8 +3448,8 @@ int BC_ListBox::activate(int take_focus)
 	XTranslateCoordinates(top_level->display,
 		parent_window->win, top_level->rootwin,
 		wx, wy, &abs_x, &abs_y, &xwin);
-	if( x <= 0 ) x = 2;
-	if( y <= 0 ) y = 2;
+	if( x <= 0 ) x = xS(2);
+	if( y <= 0 ) y = yS(2);
 	return activate(abs_x, abs_y);
 }
 
@@ -3545,13 +3556,13 @@ int BC_ListBox::keypress_event()
 		break;
 
 	case LEFT:
-		xposition -= 10;
+		xposition -= xS(10);
 		redraw = 1;
 		result = 1;
 		break;
 
 	case RIGHT:
-		xposition += 10;
+		xposition += xS(10);
 		redraw = 1;
 		result = 1;
 		break;

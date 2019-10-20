@@ -49,7 +49,7 @@ StatusBar::~StatusBar()
 void StatusBar::create_objects()
 {
 //printf("StatusBar::create_objects 1\n");
-	int x = 10; //int y = 5;
+	int x = xS(10); //int y = 5;
 //printf("StatusBar::create_objects 1\n");
 	draw_top_background(get_parent(), 0, 0, get_w(), get_h());
 	add_subwindow(status_text = new BC_Title(mwindow->theme->mstatus_message_x,
@@ -57,7 +57,7 @@ void StatusBar::create_objects()
 		"",
 		MEDIUMFONT,
 		mwindow->theme->message_normal));
-	x = get_w() - 290;
+	x = get_w() - xS(290);
 // printf("StatusBar::create_objects %d: 0x%08x\n",
 // __LINE__, mwindow->theme->message_normal);
 	add_subwindow(main_progress =
@@ -65,7 +65,7 @@ void StatusBar::create_objects()
 			mwindow->theme->mstatus_progress_y,
 			mwindow->theme->mstatus_progress_w,
 			mwindow->theme->mstatus_progress_w));
-	x += main_progress->get_w() + 5;
+	x += main_progress->get_w() + xS(5);
 //printf("StatusBar::create_objects 1\n");
 	add_subwindow(main_progress_cancel =
 		new StatusBarCancel(mwindow,
@@ -78,9 +78,7 @@ void StatusBar::create_objects()
 
 void StatusBar::resize_event()
 {
-	int x = 10; //int y = 1;
-
-
+	int x = xS(10); //int y = 1;
 	reposition_window(mwindow->theme->mstatus_x,
 		mwindow->theme->mstatus_y,
 		mwindow->theme->mstatus_w,
@@ -92,11 +90,11 @@ void StatusBar::resize_event()
 	status_text->reposition_window(mwindow->theme->mstatus_message_x,
 		mwindow->theme->mstatus_message_y);
 
-	x = get_w() - 290;
+	x = get_w() - xS(290);
 	main_progress->reposition_window(mwindow->theme->mstatus_progress_x,
 		mwindow->theme->mstatus_progress_y);
 
-	x += main_progress->get_w() + 5;
+	x += main_progress->get_w() + xS(5);
 	main_progress_cancel->reposition_window(mwindow->theme->mstatus_cancel_x,
 		mwindow->theme->mstatus_cancel_y);
 
@@ -112,7 +110,7 @@ void StatusBar::show_message(const char *text, int msg_color, int box_color)
 		set_color(box_color);
 		int bb = th/4, bh = th - bb*2;
 		draw_box(mx+bb,my+bb, bh,bh);
-		flash(mx,my, th,th);  mx += 5;
+		flash(mx,my, th,th);  mx += xS(5);
 		if( (mx+=th) != tx )
 			status_text->reposition_window(mx, my);
 	}

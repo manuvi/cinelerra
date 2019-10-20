@@ -34,10 +34,10 @@
 
 InterpolateVideoWindow::InterpolateVideoWindow(InterpolateVideo *plugin)
  : PluginClientWindow(plugin,
-	250,
-	250,
-	250,
-	250,
+	xS(250),
+	yS(250),
+	xS(250),
+	yS(250),
 	0)
 {
 	this->plugin = plugin;
@@ -49,7 +49,9 @@ InterpolateVideoWindow::~InterpolateVideoWindow()
 
 void InterpolateVideoWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int xs5 = xS(5), xs10 = xS(10);
+	int ys10 = yS(10);
+	int x = xs10, y = ys10;
 
 	BC_Title *title;
 
@@ -62,7 +64,7 @@ void InterpolateVideoWindow::create_objects()
 		y));
 	add_subwindow(rate_menu = new InterpolateVideoRateMenu(plugin,
 		this,
-		x + rate->get_w() + 5,
+		x + rate->get_w() + xs5,
 		y));
 	y += rate->get_h() + plugin->get_theme()->widget_border;
 	add_subwindow(keyframes = new InterpolateVideoKeyframes(plugin,
@@ -147,7 +149,7 @@ InterpolateVideoRate::InterpolateVideoRate(InterpolateVideo *plugin,
 	int y)
  : BC_TextBox(x,
 	y,
-	90,
+	xS(90),
 	1,
 	(float)plugin->config.input_rate)
 {
@@ -171,8 +173,8 @@ InterpolateVideoRateMenu::InterpolateVideoRateMenu(InterpolateVideo *plugin,
 	int y)
  : BC_ListBox(x,
  	y,
-	100,
-	200,
+	xS(100),
+	yS(200),
 	LISTBOX_TEXT,
 	&plugin->get_theme()->frame_rates,
 	0,

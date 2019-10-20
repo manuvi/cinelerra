@@ -39,13 +39,6 @@
 #include <string.h>
 
 
-
-
-
-
-
-
-
 SaveBackup::SaveBackup(MWindow *mwindow)
  : BC_MenuItem(_("Save backup"), "b", 'b')
 {
@@ -57,15 +50,6 @@ int SaveBackup::handle_event()
 	mwindow->gui->show_message(_("Saved backup."));
 	return 1;
 }
-
-
-
-
-
-
-
-
-
 
 
 Save::Save(MWindow *mwindow) : BC_MenuItem(_("Save"), "s", 's')
@@ -252,7 +236,7 @@ int SaveProjectModeItem::handle_event()
 }
 
 SaveProjectMode::SaveProjectMode(SaveProjectWindow *gui, int x, int y)
- : BC_PopupMenu(x, y, 100, "")
+ : BC_PopupMenu(x, y, xS(100), "")
 {
 	this->gui = gui;
 	save_modes[SAVE_PROJECT_COPY]     = _("Copy");
@@ -298,7 +282,7 @@ SaveProjectWindow::SaveProjectWindow(MWindow *mwindow, const char *dir_path,
 		mwindow->gui->get_abs_cursor_x(1),
 		mwindow->gui->get_abs_cursor_y(1) -
 			BC_WindowBase::get_resources()->filebox_h / 2,
-		540, 220, 540, 220, 0)
+		xS(540), yS(220), xS(540), yS(220), 0)
 {
 	this->mwindow = mwindow;
 	strcpy(this->dir_path, dir_path);
@@ -312,26 +296,28 @@ SaveProjectWindow::~SaveProjectWindow()
 
 void SaveProjectWindow::create_objects()
 {
-	int x = 20, y = 20, x1 = get_w()-80;
+	int xs10 = xS(10), xs20 = xS(20);
+	int ys10 = yS(10), ys20 = yS(20);
+	int x = xs20, y = ys20, x1 = get_w()-xS(80);
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x, y, _("Project Directory:")));
-	y += title->get_h() + 10;
+	y += title->get_h() + ys10;
 	add_subwindow(textbox = new SaveProjectTextBox(this, x, y, x1-x));
-	x1 += 10;
+	x1 += xs10;
 	add_subwindow(recent_project = new BC_RecentList("RECENT_PROJECT",
-		mwindow->defaults, textbox, 10, x1, y, 300, 100));
+		mwindow->defaults, textbox, 10, x1, y, xS(300), yS(100)));
 	recent_project->load_items("RECENT_PROJECT");
-	x1 += recent_project->get_w() + 10;
+	x1 += recent_project->get_w() + xs10;
 	add_subwindow(browse_button = new BrowseButton(mwindow->theme, this,
-		textbox, x1, y-5, "", "", "", 1));
-	y += textbox->get_h() + 20;
+		textbox, x1, y-yS(5), "", "", "", 1));
+	y += textbox->get_h() + ys20;
 	add_subwindow(mode_popup = new SaveProjectMode(this, x, y));
 	mode_popup->create_objects();
-	y += mode_popup->get_h() + 10;
+	y += mode_popup->get_h() + ys10;
 	x1 = x;
 	BC_CheckBox *overwrite_files, *reload_project;
 	add_subwindow(overwrite_files = new BC_CheckBox(x1, y, &overwrite, _("Overwrite files")));
-	x1 += overwrite_files->get_w() + 20;
+	x1 += overwrite_files->get_w() + xs20;
 	add_subwindow(reload_project = new BC_CheckBox(x1, y, &reload, _("Reload project")));
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));

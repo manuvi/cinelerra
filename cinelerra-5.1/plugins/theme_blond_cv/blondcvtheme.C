@@ -45,18 +45,10 @@
 #include "vwindowgui.h"
 
 
-
-
 PluginClient* new_plugin(PluginServer *server)
 {
 	return new BlondCVThemeMain(server);
 }
-
-
-
-
-
-
 
 BlondCVThemeMain::BlondCVThemeMain(PluginServer *server)
  : PluginTClient(server)
@@ -76,12 +68,6 @@ Theme* BlondCVThemeMain::new_theme()
 	theme->set_data(_binary_theme_blond_cv_data_start);
 	return theme;
 }
-
-
-
-
-
-
 
 
 BlondCVTheme::BlondCVTheme()
@@ -185,7 +171,7 @@ void BlondCVTheme::initialize()
 		"radial_down.png",
 		"radial_checkedhi.png");
 
-	resources->generic_button_margin = 15;
+	resources->generic_button_margin = xS(15);
 	resources->pot_needle_color = resources->text_default;
 	resources->pot_offset = 1;
 	resources->progress_text = resources->text_default;
@@ -212,8 +198,8 @@ void BlondCVTheme::initialize()
 	resources->menu_down = 0x007d7b;
 	resources->menu_up = 0x009594;
 	resources->menu_shadow = 0x004a4a;
-	resources->popupmenu_margin = 10;          // ugly
-	resources->popupmenu_triangle_margin = 15; // ugly
+	resources->popupmenu_margin = xS(10);
+	resources->popupmenu_triangle_margin = xS(15);
 	resources->hscroll_data = new_image_set(10,
 			"hscroll_center_up.png",
 			"hscroll_center_hi.png",
@@ -240,7 +226,7 @@ void BlondCVTheme::initialize()
 			"vscroll_fwd_dn.png");
 
 	resources->listbox_title_margin = 0;
-	resources->listbox_title_hotspot = 5;  // No. of pixels around the borders to allow dragging
+	resources->listbox_title_hotspot = xS(5);  // No. of pixels around the borders to allow dragging
 	resources->listbox_border1 = 0x4a484a; // (top outer)
 	resources->listbox_border2 = 0x000000; // (top inner)
 	resources->listbox_border3 = 0xffe200; // (bottom inner)
@@ -255,8 +241,8 @@ void BlondCVTheme::initialize()
 			"generic_dn.png",
 			"ok_button");
 
-	resources->dirbox_margin = 50;
-	resources->filebox_margin = 120;
+	resources->dirbox_margin = yS(50);
+	resources->filebox_margin = yS(120);
 	resources->file_color = 0x000000;
 	resources->directory_color = 0x0000ff;
 
@@ -552,11 +538,11 @@ void BlondCVTheme::initialize()
 		"editpanel_dn.png",
 		"swap_extents");
 	preferences_category_overlap = 0;
-	preferencescategory_x = 5;
-	preferencescategory_y = 5;
-	preferencestitle_x = 5;
-	preferencestitle_y = 10;
-	preferencesoptions_x = 5;
+	preferencescategory_x = xS(5);
+	preferencescategory_y = yS(5);
+	preferencestitle_x = xS(5);
+	preferencestitle_y = yS(10);
+	preferencesoptions_x = xS(5);
 	preferencesoptions_y = 0;
 // CWindow
 	cpanel_bg = new_image("cpanel_bg.png");
@@ -571,8 +557,8 @@ void BlondCVTheme::initialize()
 
 	message_normal = resources->text_default;
 	audio_color = BLACK;
-	mtransport_margin = 11;
-	toggle_margin = 11;
+	mtransport_margin = xS(11);
+	toggle_margin = xS(11);
 // VWindow
 	vbuttons_left = new_image("vbuttons_left.png");
 	vbuttons_right = new_image("vbuttons_right.png");
@@ -626,31 +612,27 @@ void BlondCVTheme::initialize()
 	timebar_view_data = new_image("timebar_view.png");
 
 	new_image("preferences_bg", "preferences_bg.png");
-	setformat_w = 600;
-	setformat_h = 560;
-	setformat_x1 = 15;
-	setformat_x2 = 100;
 
 
 	new_image("new_bg", "new_bg.png");
 	new_image("setformat_bg", "setformat_bg2.png");
-	setformat_x3 = 315;
-	setformat_x4 = 415;
-	setformat_y1 = 20;
-	setformat_y2 = 85;
 	setformat_w = get_image("setformat_bg")->get_w();
 	setformat_h = get_image("setformat_bg")->get_h();
-	setformat_x4 = 425;
-	setformat_y3 = 125;
-	setformat_margin = 30;
-	setformat_channels_x = 25;
-	setformat_channels_y = 242;
-	setformat_channels_w = 250;
-	setformat_channels_h = 250;
+	setformat_x1 = xS(15);
+	setformat_x2 = xS(100);
+	setformat_x3 = xS(315);
+	setformat_x4 = xS(415);
+	setformat_y1 = yS(20);
+	setformat_y2 = yS(85);
+	setformat_y3 = yS(125);
+	setformat_margin = xS(30);
+	setformat_channels_x = xS(25);
+	setformat_channels_y = yS(242);
+	setformat_channels_w = xS(250);
+	setformat_channels_h = yS(250);
 
-	loadfile_pad = 52;
-	browse_pad = 20;
-
+	loadfile_pad = yS(52);
+	browse_pad = yS(20);
 
 	new_image_set("playpatch_data",
 		5,
@@ -709,11 +691,7 @@ void BlondCVTheme::initialize()
 	new_image_set("playpatch_data", 5, "playpatch_up.png", "playpatch_hi.png", "playpatch_checked.png", "playpatch_dn.png", "playpatch_checkedhi.png");
 	new_image_set("recordpatch_data", 5, "recordpatch_up.png", "recordpatch_hi.png", "recordpatch_checked.png", "recordpatch_dn.png", "recordpatch_checkedhi.png");
 
-
 	build_overlays();
-
-
-
 
 	out_point = new_image_set(5,
 		"out_up.png",
@@ -1006,7 +984,7 @@ void BlondCVTheme::initialize()
 	resources->medium_font = cstrdup(string);
 
 	channel_position_color = MEYELLOW;
-	resources->meter_title_w = 25;
+	resources->meter_title_w = xS(25);
 
 	// (asset) edit info text color
 	edit_font_color = YELLOW;
@@ -1029,19 +1007,19 @@ void BlondCVTheme::initialize()
 }
 
 
-#define CWINDOW_METER_MARGIN 5
-#define VWINDOW_METER_MARGIN 5
+#define CWINDOW_METER_MARGIN xS(5)
+#define VWINDOW_METER_MARGIN xS(5)
 
 
 void BlondCVTheme::get_mwindow_sizes(MWindowGUI *gui, int w, int h)
 {
 	mbuttons_x = 0;
 	mbuttons_y = gui->mainmenu->get_h();
-	mbuttons_w = w - (ffmpeg_toggle[0]->get_w()+2 + proxy_p_toggle[0]->get_w()+2);
+	mbuttons_w = w - (ffmpeg_toggle[0]->get_w()+xS(2) + proxy_p_toggle[0]->get_w()+xS(2));
 	mbuttons_h = get_image("mbutton_bg")->get_h();
-	mclock_x = 10;
+	mclock_x = xS(10);
 	mclock_y = mbuttons_y + mbuttons_h + CWINDOW_METER_MARGIN;
-	mclock_w = get_image("clock_bg")->get_w() - 40;
+	mclock_w = get_image("clock_bg")->get_w() - xS(40);
 	mclock_h = get_image("clock_bg")->get_h();
 	mtimebar_x = get_image("patchbay_bg")->get_w();
 	mtimebar_y = mbuttons_y + mbuttons_h;
@@ -1051,11 +1029,11 @@ void BlondCVTheme::get_mwindow_sizes(MWindowGUI *gui, int w, int h)
 	mstatus_y = h - statusbar_left->get_h();
 	mstatus_w = w;
 	mstatus_h = statusbar_left->get_h();
-	mstatus_message_x = 10;
-	mstatus_message_y = 5;
-	mstatus_progress_x = mstatus_w - statusbar_cancel_data[0]->get_w() - 240;
+	mstatus_message_x = xS(10);
+	mstatus_message_y = yS(5);
+	mstatus_progress_x = mstatus_w - statusbar_cancel_data[0]->get_w() - xS(240);
 	mstatus_progress_y = mstatus_h - BC_WindowBase::get_resources()->progress_images[0]->get_h();
-	mstatus_progress_w = 230;
+	mstatus_progress_w = xS(230);
 	mstatus_cancel_x = mstatus_w - statusbar_cancel_data[0]->get_w();
 	mstatus_cancel_y = mstatus_h - statusbar_cancel_data[0]->get_h();
 	mzoom_x = 0;
@@ -1087,23 +1065,23 @@ void BlondCVTheme::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 	if(cwindow_controls)
 	{
 		ccomposite_x = 0;
-		ccomposite_y = 5;
+		ccomposite_y = yS(5);
 		ccomposite_w = cpanel_bg->get_w();
 		ccomposite_h = mwindow->session->cwindow_h - cbuttons_left->get_h();
-		cedit_x = 10;
-		cedit_y = ccomposite_h + 17;
-		ctransport_x = 10;
+		cedit_x = xS(10);
+		cedit_y = ccomposite_h + yS(17);
+		ctransport_x = xS(10);
 		ctransport_y = mwindow->session->cwindow_h - get_image_set("autokeyframe")[0]->get_h();
 		ccanvas_x = ccomposite_x + ccomposite_w;
 		ccanvas_y = 0;
 		ccanvas_h = ccomposite_h;
-		cstatus_x = 525;
-		cstatus_y = mwindow->session->cwindow_h - 40;
+		cstatus_x = xS(525);
+		cstatus_y = mwindow->session->cwindow_h - yS(40);
 		if(mwindow->edl->session->cwindow_meter)
 		{
 			cmeter_x = mwindow->session->cwindow_w - MeterPanel::get_meters_width(this,mwindow->edl->session->audio_channels,
 				mwindow->edl->session->cwindow_meter);
-			ccanvas_w = cmeter_x - ccanvas_x - 5;
+			ccanvas_w = cmeter_x - ccanvas_x - xS(5);
 		}
 		else
 		{
@@ -1120,10 +1098,10 @@ SET_TRACE
 		ccomposite_w = cpanel_bg->get_w();
 		ccomposite_h = mwindow->session->cwindow_h - get_image("cbuttons_left")->get_h();
 
-		cedit_x = 10;
-		cedit_y = mwindow->session->cwindow_h + 17;
-		ctransport_x = 10;
-		ctransport_y = cedit_y + 40;
+		cedit_x = xS(10);
+		cedit_y = mwindow->session->cwindow_h + yS(17);
+		ctransport_x = xS(10);
+		ctransport_y = cedit_y + yS(40);
 		ccanvas_x = 0;
 		ccanvas_y = 0;
 		ccanvas_w = mwindow->session->cwindow_w;
@@ -1136,25 +1114,24 @@ SET_TRACE
 
 SET_TRACE
 
-	czoom_x = ctransport_x + PlayTransport::get_transport_width(mwindow) + 20;
-	czoom_y = ctransport_y + 5;
+	czoom_x = ctransport_x + PlayTransport::get_transport_width(mwindow) + xS(20);
+	czoom_y = ctransport_y + yS(5);
 
-
-	cmeter_y = 5;
+	cmeter_y = yS(5);
 	cmeter_h = mwindow->session->cwindow_h - cmeter_y;
 
-	cslider_w = ccanvas_x + ccanvas_w - cslider_x - 5;
+	cslider_w = ccanvas_x + ccanvas_w - cslider_x - xS(5);
 	ctimebar_x = ccanvas_x;
 	ctimebar_y = ccanvas_y + ccanvas_h;
 	ctimebar_w = ccanvas_w;
-	ctimebar_h = 16;
+	ctimebar_h = yS(16);
 
 
 // Not used
 	ctime_x = ctransport_x + PlayTransport::get_transport_width(mwindow);
 	ctime_y = ctransport_y;
 	cdest_x = czoom_x;
-	cdest_y = czoom_y + 30;
+	cdest_y = czoom_y + yS(30);
 SET_TRACE
 }
 
@@ -1162,57 +1139,49 @@ SET_TRACE
 void BlondCVTheme::get_recordgui_sizes(RecordGUI *gui, int w, int h)
 {
 
-	recordgui_status_x = 10;
-	recordgui_status_y = 10;
-	recordgui_status_x2 = 160;
-	recordgui_batch_x = 310;
-	recordgui_batch_y = 10;
-	recordgui_batchcaption_x = recordgui_batch_x + 110;
+	recordgui_status_x = xS(10);
+	recordgui_status_y = yS(10);
+	recordgui_status_x2 = xS(160);
+	recordgui_batch_x = xS(310);
+	recordgui_batch_y = yS(10);
+	recordgui_batchcaption_x = recordgui_batch_x + xS(110);
 
 
 	recordgui_transport_x = recordgui_batch_x;
-	recordgui_transport_y = recordgui_batch_y + 150;
+	recordgui_transport_y = recordgui_batch_y + yS(150);
 
-	//recordgui_buttons_x = recordgui_batch_x - 50;
-	//recordgui_buttons_y = recordgui_transport_y + 40;
+	//recordgui_buttons_x = recordgui_batch_x - xS(50);
+	//recordgui_buttons_y = recordgui_transport_y + yS(40);
 	//recordgui_options_x = recordgui_buttons_x;
-	//recordgui_options_y = recordgui_buttons_y + 35;
+	//recordgui_options_y = recordgui_buttons_y + yS(35);
 
-	recordgui_batches_x = 10;
-	recordgui_batches_y = 270;
-	recordgui_batches_w = w - 20;
-	recordgui_batches_h = h - recordgui_batches_y - 70;
+	recordgui_batches_x = xS(10);
+	recordgui_batches_y = yS(270);
+	recordgui_batches_w = w - xS(20);
+	recordgui_batches_h = h - recordgui_batches_y - yS(70);
 	recordgui_loadmode_x = w / 2 - loadmode_w / 2;
-	recordgui_loadmode_y = h - 60;
+	recordgui_loadmode_y = h - yS(60);
 
-	recordgui_controls_x = 10;
-	recordgui_controls_y = h - 40;
+	recordgui_controls_x = xS(10);
+	recordgui_controls_y = h - yS(40);
 }
 /*
-void BlondCVTheme::get_rmonitor_sizes(int do_audio,
-	int do_video,
-	int do_channel,
-	int do_interlace,
-	int do_avc,
-	int audio_channels)
+void BlondCVTheme::get_rmonitor_sizes(int do_audio, int do_video,
+	int do_channel, int do_interlace, int do_avc, int audio_channels)
 {
-	Theme::get_rmonitor_sizes(do_audio,
-		do_video,
-		do_channel,
-		do_interlace,
-		do_avc,
-		audio_channels);
+	Theme::get_rmonitor_sizes(do_audio, do_video,
+		do_channel, do_interlace, do_avc, audio_channels);
 	if(!do_video && do_audio)
 	{
-		rmonitor_meter_y -= 30;
-		rmonitor_meter_h += 30;
+		rmonitor_meter_y -= yS(30);
+		rmonitor_meter_h += yS(30);
 	}
 }
 */
 
 void BlondCVTheme::get_vwindow_sizes(VWindowGUI *gui)
 {
-	vmeter_y = 5;
+	vmeter_y = yS(5);
 	vmeter_h = mwindow->session->vwindow_h - cmeter_y;
 	vcanvas_x = 0;
 	vcanvas_y = 0;
@@ -1220,8 +1189,8 @@ void BlondCVTheme::get_vwindow_sizes(VWindowGUI *gui)
 
 	if(mwindow->edl->session->vwindow_meter)
 	{
-		rmonitor_meter_y -= 30;
-		rmonitor_meter_h += 30;
+		rmonitor_meter_y -= yS(30);
+		rmonitor_meter_h += yS(30);
 		vmeter_x = mwindow->session->vwindow_w -
 			VWINDOW_METER_MARGIN -
 			MeterPanel::get_meters_width(this,
@@ -1238,19 +1207,19 @@ void BlondCVTheme::get_vwindow_sizes(VWindowGUI *gui)
 	vtimebar_x = vcanvas_x;
 	vtimebar_y = vcanvas_y + vcanvas_h;
 	vtimebar_w = vcanvas_w;
-	vtimebar_h = 16;
+	vtimebar_h = yS(16);
 
-	vslider_x = 10;
-	vslider_y = vtimebar_y + 25;
+	vslider_x = xS(10);
+	vslider_y = vtimebar_y + yS(25);
 	vslider_w = vtimebar_w - vslider_x;
-	vedit_x = 10;
+	vedit_x = xS(10);
 	vedit_y = vslider_y + BC_Slider::get_span(0);
-	vtransport_x = 10;
+	vtransport_x = xS(10);
 	vtransport_y = mwindow->session->vwindow_h -
 		get_image_set("autokeyframe")[0]->get_h();
-	vtime_x = 380;
-	vtime_y = vedit_y + 10;
-	vtime_w = 125;
+	vtime_x = xS(380);
+	vtime_y = vedit_y + yS(10);
+	vtime_w = xS(125);
 }
 
 
@@ -1300,28 +1269,21 @@ void BlondCVTheme::build_overlays()
 }
 
 
-
-
-
-
-
-
-
 void BlondCVTheme::draw_rwindow_bg(RecordGUI *gui)
 {
 // 	int y;
-// 	int margin = 50;
-// 	int margin2 = 80;
+// 	int margin = xS(50);
+// 	int margin2 = xS(80);
 // 	gui->draw_9segment(recordgui_batch_x - margin,
 // 		0,
 // 		mwindow->session->rwindow_w - recordgui_status_x + margin,
 // 		recordgui_buttons_y,
 // 		rgui_batch);
 // 	gui->draw_3segmenth(recordgui_options_x - margin2,
-// 		recordgui_buttons_y - 5,
+// 		recordgui_buttons_y - yS(5),
 // 		mwindow->session->rwindow_w - recordgui_options_x + margin2,
 // 		rgui_controls);
-// 	y = recordgui_buttons_y - 5 + rgui_controls->get_h();
+// 	y = recordgui_buttons_y - yS(5) + rgui_controls->get_h();
 // 	gui->draw_9segment(0,
 // 		y,
 // 		mwindow->session->rwindow_w,
@@ -1331,81 +1293,58 @@ void BlondCVTheme::draw_rwindow_bg(RecordGUI *gui)
 
 void BlondCVTheme::draw_rmonitor_bg(RecordMonitorGUI *gui)
 {
-// 	int margin = 45;
-// 	int panel_w = 300;
+// 	int margin = xS(45);
+// 	int panel_w = xS(300);
 // 	int x = rmonitor_meter_x - margin;
 // 	int w = mwindow->session->rmonitor_w - x;
 // 	if(w < rmonitor_meters->get_w()) w = rmonitor_meters->get_w();
-// 	gui->clear_box(0,
-// 		0,
+// 	gui->clear_box(0, 0,
 // 		mwindow->session->rmonitor_w,
 // 		mwindow->session->rmonitor_h);
-// 	gui->draw_9segment(x,
-// 		0,
+// 	gui->draw_9segment(x, 0,
 // 		w,
 // 		mwindow->session->rmonitor_h,
 // 		rmonitor_meters);
 }
 
 
-
-
-
-
 void BlondCVTheme::draw_mwindow_bg(MWindowGUI *gui)
 {
 // Button bar
-	gui->draw_3segmenth(mbuttons_x,
-		mbuttons_y,
-		750,
-		mbutton_left);
-	gui->draw_3segmenth(mbuttons_x + 750,
-		mbuttons_y,
-		mbuttons_w - 500,
-		mbutton_right);
+	gui->draw_3segmenth(mbuttons_x, mbuttons_y,
+		xS(750), mbutton_left);
+	gui->draw_3segmenth(mbuttons_x + xS(750), mbuttons_y,
+		mbuttons_w - xS(500), mbutton_right);
 
 // Clock
-	gui->draw_3segmenth(0,
-		mbuttons_y + mbutton_left->get_h(),
-		get_image("patchbay_bg")->get_w(),
-		get_image("clock_bg"));
+	gui->draw_3segmenth(0, mbuttons_y + mbutton_left->get_h(),
+		get_image("patchbay_bg")->get_w(), get_image("clock_bg"));
 
 // Patchbay
-	gui->draw_3segmentv(patchbay_x,
-		patchbay_y,
-		patchbay_h + 20,
-		get_image("patchbay_bg"));
+	gui->draw_3segmentv(patchbay_x, patchbay_y,
+		patchbay_h + yS(20), get_image("patchbay_bg"));
 
 // Track canvas
-	gui->draw_9segment(mcanvas_x,
-		mcanvas_y,
-		mcanvas_w,
-		patchbay_h + 20,
+	gui->draw_9segment(mcanvas_x, mcanvas_y,
+		mcanvas_w, patchbay_h + yS(20),
 		tracks_bg);
 
 // Timebar
-	gui->draw_3segmenth(mtimebar_x,
-		mtimebar_y,
+	gui->draw_3segmenth(mtimebar_x, mtimebar_y,
 		mtimebar_w,
 		get_image("timebar_bg"));
 
 // Zoombar
-	int zoombar_center = 710;
-	gui->draw_3segmenth(mzoom_x,
-		mzoom_y,
-		zoombar_center,
-		zoombar_left);
+	int zoombar_center = xS(710);
+	gui->draw_3segmenth(mzoom_x, mzoom_y,
+		zoombar_center, zoombar_left);
 	if(mzoom_w > zoombar_center)
-		gui->draw_3segmenth(mzoom_x + zoombar_center,
-			mzoom_y,
-			mzoom_w - zoombar_center,
-			zoombar_right);
+		gui->draw_3segmenth(mzoom_x + zoombar_center, mzoom_y,
+			mzoom_w - zoombar_center, zoombar_right);
 
 // Status
-	gui->draw_3segmenth(mstatus_x,
-		mstatus_y,
-		zoombar_center,
-		statusbar_left);
+	gui->draw_3segmenth(mstatus_x, mstatus_y,
+		zoombar_center, statusbar_left);
 
 	if(mstatus_w > zoombar_center)
 		gui->draw_3segmenth(mstatus_x + zoombar_center,
@@ -1416,7 +1355,7 @@ void BlondCVTheme::draw_mwindow_bg(MWindowGUI *gui)
 
 void BlondCVTheme::draw_cwindow_bg(CWindowGUI *gui)
 {
-	const int button_division = 570;
+	const int button_division = xS(570);
 	gui->draw_3segmentv(0, 0, ccomposite_h, get_image("cpanel_bg"));
 	gui->draw_3segmenth(0, ccomposite_h, button_division, get_image("cbuttons_left"));
 	if(mwindow->edl->session->cwindow_meter)
@@ -1435,35 +1374,30 @@ void BlondCVTheme::draw_cwindow_bg(CWindowGUI *gui)
 	{
 		gui->draw_3segmenth(button_division,
 			ccomposite_h,
-			cmeter_x - CWINDOW_METER_MARGIN - button_division + 100,
+			cmeter_x - CWINDOW_METER_MARGIN - button_division + xS(100),
 			get_image("cbuttons_right"));
 	}
 }
 
 void BlondCVTheme::draw_vwindow_bg(VWindowGUI *gui)
 {
-	const int button_division = 400;
-	gui->draw_3segmenth(0,
-		vcanvas_h,
-		button_division,
-		get_image("vbuttons_left"));
+	const int button_division = xS(400);
+	gui->draw_3segmenth(0, vcanvas_h,
+		button_division, get_image("vbuttons_left"));
 	if(mwindow->edl->session->vwindow_meter)
 	{
-		gui->draw_3segmenth(button_division,
-			vcanvas_h,
+		gui->draw_3segmenth(button_division, vcanvas_h,
 			vmeter_x - VWINDOW_METER_MARGIN - button_division,
 			get_image("cbuttons_right"));
-		gui->draw_9segment(vmeter_x - VWINDOW_METER_MARGIN,
-			0,
+		gui->draw_9segment(vmeter_x - VWINDOW_METER_MARGIN, 0,
 			mwindow->session->vwindow_w - vmeter_x + VWINDOW_METER_MARGIN,
 			mwindow->session->vwindow_h,
 			get_image("cmeter_bg"));
 	}
 	else
 	{
-		gui->draw_3segmenth(button_division,
-			vcanvas_h,
-			vmeter_x - VWINDOW_METER_MARGIN - button_division + 100,
+		gui->draw_3segmenth(button_division, vcanvas_h,
+			vmeter_x - VWINDOW_METER_MARGIN - button_division + xS(100),
 			get_image("cbuttons_right"));
 	}
 }
@@ -1497,7 +1431,9 @@ void BlondCVTheme::draw_setformat_bg(SetFormatWindow *gui)
 // pmd: SUV (same), 1_2_2blond (nonexist)
 void BlondCVTheme::get_plugindialog_sizes()
 {
-	int x = 10, y = 30;
+	int xs10 = xS(10), xs20 = xS(20);
+	int ys10 = yS(10), ys120 = yS(120);
+	int x = xs10, y = yS(30);
 	plugindialog_new_x = x;
 	plugindialog_new_y = y;
 	plugindialog_shared_x = mwindow->session->plugindialog_w / 3;
@@ -1505,19 +1441,19 @@ void BlondCVTheme::get_plugindialog_sizes()
 	plugindialog_module_x = mwindow->session->plugindialog_w * 2 / 3;
 	plugindialog_module_y = y;
 
-	plugindialog_new_w = plugindialog_shared_x - plugindialog_new_x - 10;
-	plugindialog_new_h = mwindow->session->plugindialog_h - 120;
-	plugindialog_shared_w = plugindialog_module_x - plugindialog_shared_x - 10;
-	plugindialog_shared_h = mwindow->session->plugindialog_h - 120;
-	plugindialog_module_w = mwindow->session->plugindialog_w - plugindialog_module_x - 10;
-	plugindialog_module_h = mwindow->session->plugindialog_h - 120;
+	plugindialog_new_w = plugindialog_shared_x - plugindialog_new_x - xs10;
+	plugindialog_new_h = mwindow->session->plugindialog_h - ys120;
+	plugindialog_shared_w = plugindialog_module_x - plugindialog_shared_x - xs10;
+	plugindialog_shared_h = mwindow->session->plugindialog_h - ys120;
+	plugindialog_module_w = mwindow->session->plugindialog_w - plugindialog_module_x - xs10;
+	plugindialog_module_h = mwindow->session->plugindialog_h - ys120;
 
-	plugindialog_newattach_x = plugindialog_new_x + 20;
-	plugindialog_newattach_y = plugindialog_new_y + plugindialog_new_h + 10;
-	plugindialog_sharedattach_x = plugindialog_shared_x + 20;
-	plugindialog_sharedattach_y = plugindialog_shared_y + plugindialog_shared_h + 10;
-	plugindialog_moduleattach_x = plugindialog_module_x + 20;
-	plugindialog_moduleattach_y = plugindialog_module_y + plugindialog_module_h + 10;
+	plugindialog_newattach_x = plugindialog_new_x + xs20;
+	plugindialog_newattach_y = plugindialog_new_y + plugindialog_new_h + ys10;
+	plugindialog_sharedattach_x = plugindialog_shared_x + xs20;
+	plugindialog_sharedattach_y = plugindialog_shared_y + plugindialog_shared_h + ys10;
+	plugindialog_moduleattach_x = plugindialog_module_x + xs20;
+	plugindialog_moduleattach_y = plugindialog_module_y + plugindialog_module_h + ys10;
 }
 
 

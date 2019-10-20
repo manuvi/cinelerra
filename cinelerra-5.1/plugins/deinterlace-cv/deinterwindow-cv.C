@@ -27,10 +27,10 @@
 
 DeInterlaceWindow::DeInterlaceWindow(DeInterlaceMain *client)
  : PluginClientWindow(client,
-	400,
-	200,
-	400,
-	200,
+	xS(400),
+	yS(200),
+	xS(400),
+	yS(200),
 	0)
 {
 	this->client = client;
@@ -44,15 +44,17 @@ DeInterlaceWindow::~DeInterlaceWindow()
 
 void DeInterlaceWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int xs10 = xS(10);
+	int ys10 = yS(10), ys25 = yS(25);
+	int x = xs10, y = ys10;
 	add_tool(new BC_Title(x, y, _("Select deinterlacing mode")));
-	y += 25;
+	y += ys25;
 	add_tool(mode = new DeInterlaceMode(client, this, x, y));
 	mode->create_objects();
-	y += 25;
+	y += ys25;
 	optional_controls_x=x;
 	optional_controls_y=y;
-	y += 125;
+	y += yS(125);
 	char string[BCTEXTLEN];
 	get_status_string(string, 0);
 	add_tool(status = new BC_Title(x, y, string));
@@ -85,27 +87,27 @@ int DeInterlaceWindow::set_mode(int mode, int recursive)
 		case DEINTERLACE_KEEP:
 		case DEINTERLACE_BOBWEAVE:
 			add_subwindow(dominance_top = new DeInterlaceDominanceTop(client, this, x, y, _("Keep top field")));
-			y+=25;
+			y+=yS(25);
 			add_subwindow(dominance_bottom = new DeInterlaceDominanceBottom(client, this, x, y, _("Keep bottom field")));
-			y+=25;
+			y+=yS(25);
 			break;
 		case DEINTERLACE_AVG_1F:
 			add_subwindow(dominance_top = new DeInterlaceDominanceTop(client, this, x, y, _("Average top fields")));
-			y+=25;
+			y+=yS(25);
 			add_subwindow(dominance_bottom = new DeInterlaceDominanceBottom(client, this, x, y,_("Average bottom fields")));
-			y+=25;
+			y+=yS(25);
 			break;
 		case DEINTERLACE_SWAP:
 			add_subwindow(dominance_top = new DeInterlaceDominanceTop(client, this, x, y, _("Top field first")));
-			y+=25;
+			y+=yS(25);
 			add_subwindow(dominance_bottom = new DeInterlaceDominanceBottom(client, this, x, y, _("Bottom field first")));
-			y+=25;
+			y+=yS(25);
 			break;
 		case DEINTERLACE_TEMPORALSWAP:
 			add_subwindow(dominance_top = new DeInterlaceDominanceTop(client, this, x, y, _("Top field first")));
-			y+=25;
+			y+=yS(25);
 			add_subwindow(dominance_bottom = new DeInterlaceDominanceBottom(client, this, x, y, _("Bottom field first")));
-			y+=25;
+			y+=yS(25);
 			break;
 		case DEINTERLACE_NONE:
 		case  DEINTERLACE_AVG:
@@ -123,13 +125,13 @@ int DeInterlaceWindow::set_mode(int mode, int recursive)
 		case  DEINTERLACE_AVG_1F:
 			add_subwindow(adaptive = new DeInterlaceAdaptive(client, x, y));
 
-			add_subwindow(threshold = new DeInterlaceThreshold(client, x + 150, y));
-			add_subwindow(threshold->title_caption=new BC_Title(x+150, y + 50, _("Threshold")));
+			add_subwindow(threshold = new DeInterlaceThreshold(client, x + xS(150), y));
+			add_subwindow(threshold->title_caption=new BC_Title(x+xS(150), y + yS(50), _("Threshold")));
 			adaptive->update(client->config.adaptive?BC_Toggle::TOGGLE_CHECKED:0);
 			break;
 		case DEINTERLACE_BOBWEAVE:
-			add_subwindow(threshold = new DeInterlaceThreshold(client, x + 150, y));
-			add_subwindow(threshold->title_caption=new BC_Title(x+150, y + 50, _("Bob Threshold")));
+			add_subwindow(threshold = new DeInterlaceThreshold(client, x + xS(150), y));
+			add_subwindow(threshold->title_caption=new BC_Title(x+xS(150), y + yS(50), _("Bob Threshold")));
 			break;
 		case DEINTERLACE_NONE:
 		case DEINTERLACE_KEEP:
@@ -237,7 +239,7 @@ DeInterlaceMode::DeInterlaceMode(DeInterlaceMain*plugin,
 	DeInterlaceWindow *gui,
 	int x,
 	int y)
- : BC_PopupMenu(x, y, 200, to_text(plugin->config.mode), 1)
+ : BC_PopupMenu(x, y, xS(200), to_text(plugin->config.mode), 1)
 {
 	this->plugin = plugin;
 	this->gui = gui;

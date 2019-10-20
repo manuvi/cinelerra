@@ -319,24 +319,15 @@ void ExportEDL::run()
 
 }
 
+#define WIDTH xS(410)
+#define HEIGHT yS(400)
 
-
-
-
-
-
-
-#define WIDTH 410
-#define HEIGHT 400
-
-static const char *default_list_titles[] =
-{
+static const char *default_list_titles[] = {
 	N_("No."),
 	N_("Track name")
 };
 
-static int default_list_widths[] =
-{
+static int default_list_widths[] = {
 	40,
 	200
 };
@@ -352,7 +343,7 @@ ExportEDLWindow::ExportEDLWindow(MWindow *mwindow, ExportEDL *exportedl, ExportE
 	this->exportasset = exportasset;
 	for( int i=0; i<2; ++i ) {
 		list_titles[i] = _(default_list_titles[i]);
-		list_widths[i] = default_list_widths[i];
+		list_widths[i] = xS(default_list_widths[i]);
 	}
 }
 
@@ -363,32 +354,33 @@ ExportEDLWindow::~ExportEDLWindow()
 }
 
 
-
 void ExportEDLWindow::create_objects()
 {
+	int xs5 = xS(5);
+	int ys5 = yS(5), ys25 = yS(25);
 	lock_window("ExportEDLWindow::create_objects");
-	int x = 5, y = 5;
+	int x = xs5, y = ys5;
 	add_subwindow(new BC_Title(x, y,
 			_("Select a file to export to:")));
-	y += 25;
+	y += ys25;
 
 	add_subwindow(path_textbox = new ExportEDLPathText(x, y, this));
-	x += 300;
+	x += xS(300);
 	path_recent = new BC_RecentList("EDLPATH", mwindow->defaults,
-					path_textbox, 10, x, y, 300, 100);
+					path_textbox, 10, x, y, xS(300), yS(100));
 	add_subwindow(path_recent);
 // FIX
 	path_recent->load_items("EDLPATH");
 
-	x += 24;
+	x += xS(24);
 	add_subwindow(path_button = new BrowseButton(
 		mwindow->theme, this, path_textbox, x, y - 4, exportasset->path,
 		_("Output to file"), _("Select a file to write to:"), 0));
 
-	y += 34;
-	x = 5;
+	y += xS(34);
+	x = xs5;
 	add_subwindow(new BC_Title(x, y, _("Select track to be exported:")));
-	y += 25;
+	y += ys25;
 
 
 	items_tracks[0].remove_all_objects();
@@ -414,7 +406,7 @@ void ExportEDLWindow::create_objects()
 	}
 
 
-	add_subwindow(track_list = new ExportEDLWindowTrackList(this, x, y, 400, 200));
+	add_subwindow(track_list = new ExportEDLWindowTrackList(this, x, y, xS(400), yS(200)));
 
 	y += 5 + track_list->get_h();
 	add_subwindow(new BC_Title(x, y, _("Currently only CMX 3600 format is supported")));
@@ -428,7 +420,7 @@ void ExportEDLWindow::create_objects()
 
 
 ExportEDLPathText::ExportEDLPathText(int x, int y, ExportEDLWindow *window)
- : BC_TextBox(x, y, 300, 1, window->exportasset->path)
+ : BC_TextBox(x, y, xS(300), 1, window->exportasset->path)
 {
 	this->window = window;
 }
@@ -460,6 +452,4 @@ int ExportEDLWindowTrackList::handle_event()
 //	window->set_done(0);
 	return 1;
 }
-
-
 

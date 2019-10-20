@@ -336,16 +336,6 @@ FrameWriterUnit* FilePNG::new_writer_unit(FrameWriter *writer)
 }
 
 
-
-
-
-
-
-
-
-
-
-
 PNGUnit::PNGUnit(FilePNG *file, FrameWriter *writer)
  : FrameWriterUnit(writer)
 {
@@ -358,19 +348,10 @@ PNGUnit::~PNGUnit()
 }
 
 
-
-
-
-
-
-
-
 PNGConfigVideo::PNGConfigVideo(BC_WindowBase *parent_window, Asset *asset)
  : BC_Window(_(PROGRAM_NAME ": Video Compression"),
-	parent_window->get_abs_cursor_x(1),
-	parent_window->get_abs_cursor_y(1),
-	200,
-	100)
+	parent_window->get_abs_cursor_x(1), parent_window->get_abs_cursor_y(1),
+	xS(200), yS(100))
 {
 	this->parent_window = parent_window;
 	this->asset = asset;
@@ -383,7 +364,7 @@ PNGConfigVideo::~PNGConfigVideo()
 void PNGConfigVideo::create_objects()
 {
 	lock_window("PNGConfigVideo::create_objects");
-	int x = 10, y = 10;
+	int x = xS(10), y = yS(10);
 	add_subwindow(new PNGUseAlpha(this, x, y));
 	add_subwindow(new BC_OKButton(this));
 	show_window(1);
@@ -408,6 +389,4 @@ int PNGUseAlpha::handle_event()
 	gui->asset->png_use_alpha = get_value();
 	return 1;
 }
-
-
 

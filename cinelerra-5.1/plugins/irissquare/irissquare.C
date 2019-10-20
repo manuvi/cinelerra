@@ -92,10 +92,10 @@ int IrisSquareOut::handle_event()
 
 IrisSquareWindow::IrisSquareWindow(IrisSquareMain *plugin)
  : PluginClientWindow(plugin,
-	320,
-	50,
-	320,
-	50,
+	xS(320),
+	yS(50),
+	xS(320),
+	yS(50),
 	0)
 {
 	this->plugin = plugin;
@@ -104,14 +104,16 @@ IrisSquareWindow::IrisSquareWindow(IrisSquareMain *plugin)
 
 void IrisSquareWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int xs10 = xS(10), xs100 = xS(100);
+	int ys10 = yS(10);
+	int x = xs10, y = ys10;
 	add_subwindow(new BC_Title(x, y, _("Direction:")));
-	x += 100;
+	x += xs100;
 	add_subwindow(in = new IrisSquareIn(plugin,
 		this,
 		x,
 		y));
-	x += 100;
+	x += xs100;
 	add_subwindow(out = new IrisSquareOut(plugin,
 		this,
 		x,

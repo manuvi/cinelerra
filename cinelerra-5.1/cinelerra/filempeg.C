@@ -162,13 +162,13 @@ void FileMPEG::get_info(char *title_path, char *path, char *text, int len)
 	cp += snprintf(cp,ep-cp, _("size: %s"), string);
 
 	if( mpeg3_is_program_stream(fd) )
-	  cp += snprintf(cp,ep-cp, _("  program stream\n"));
+		cp += snprintf(cp,ep-cp, _("  program stream\n"));
 	else if( mpeg3_is_transport_stream(fd) )
-	  cp += snprintf(cp,ep-cp, _("  transport stream\n"));
+		cp += snprintf(cp,ep-cp, _("  transport stream\n"));
 	else if( mpeg3_is_video_stream(fd) )
-	  cp += snprintf(cp,ep-cp, _("  video stream\n"));
+		cp += snprintf(cp,ep-cp, _("  video stream\n"));
 	else if( mpeg3_is_audio_stream(fd) )
-	  cp += snprintf(cp,ep-cp, _("  audio stream\n"));
+		cp += snprintf(cp,ep-cp, _("  audio stream\n"));
 
 	int64_t sdate = mpeg3_get_source_date(fd);
 	if( !sdate ) {
@@ -235,7 +235,7 @@ void FileMPEG::get_info(char *title_path, char *path, char *text, int len)
 
 	ArrayList<double> cell_times;
 	int cell_no = 0; double cell_time;
-        while( !mpeg3_get_cell_time(fd, cell_no++, &cell_time) ) {
+	while( !mpeg3_get_cell_time(fd, cell_no++, &cell_time) ) {
 		cell_times.append(cell_time);
 	}
 	if( cell_times.size() > 1 ) {
@@ -287,8 +287,8 @@ void FileMPEG::get_info(char *title_path, char *path, char *text, int len)
 		if( mpeg3_dvb_get_channel(fd,n, &major, &minor) ) continue;
 		cp += snprintf(cp,ep-cp, "\n**chan %3d.%-3d\n", major, minor);
 		int len = mpeg3_dvb_get_chan_info(fd, n, -1, 0, cp, 1023);
-                if( len < 0 ) len = snprintf(cp,ep-cp,_("no info"));
-                cp += len;  *cp++ = '*';  *cp++ = '*';  *cp++ = '\n';
+		if( len < 0 ) len = snprintf(cp,ep-cp,_("no info"));
+		cp += len;  *cp++ = '*';  *cp++ = '*';  *cp++ = '\n';
 		for( int ord=0; ord<0x80; ++ord ) {
 			for( int i=0; (len=mpeg3_dvb_get_chan_info(fd,n,ord,i,cp,1023)) >= 0; ++i ) {
 				char *bp = cp;  cp += len;
@@ -355,7 +355,7 @@ int FileMPEG::reset_parameters_derived()
 	mjpeg_out = 0;
 	mjpeg_eof = 0;
 	mjpeg_error = 0;
-        recd_fd = -1;
+	recd_fd = -1;
 	fd = 0;
 	video_out = 0;
 	prev_track = 0;
@@ -606,7 +606,7 @@ int FileMPEG::open_file(int rd, int wr)
 // Frame rate
 			int frame_rate_code = -1;
 			int ncodes = sizeof(frame_rate_codes) / sizeof(double);
-    			for(int i = 1; i < ncodes; ++i)
+			for(int i = 1; i < ncodes; ++i)
 			{
 				if(EQUIV(asset->frame_rate, frame_rate_codes[i]))
 				{
@@ -847,7 +847,7 @@ int FileMPEG::create_toc(char *toc_path)
 			gettimeofday(&current_time, 0);
 			int64_t elapsed_seconds = current_time.tv_sec - start_time.tv_sec;
 			int64_t total_seconds = !bytes_processed ? 0 :
-                                 elapsed_seconds * total_bytes / bytes_processed;
+				elapsed_seconds * total_bytes / bytes_processed;
 			int64_t eta = total_seconds - elapsed_seconds;
 			progress.update(bytes_processed, 1);
 			char string[BCTEXTLEN];
@@ -1713,20 +1713,10 @@ void FileMPEGVideo::run()
 
 
 
-
-
-
-
-
-
-
-
-
 MPEGConfigAudio::MPEGConfigAudio(BC_WindowBase *parent_window, Asset *asset)
  : BC_Window(_(PROGRAM_NAME ": Audio Compression"),
- 	parent_window->get_abs_cursor_x(1),
- 	parent_window->get_abs_cursor_y(1),
-	310, 120, -1, -1, 0, 0, 1)
+	parent_window->get_abs_cursor_x(1), parent_window->get_abs_cursor_y(1),
+	xS(310), yS(120), -1, -1, 0, 0, 1)
 {
 	this->parent_window = parent_window;
 	this->asset = asset;
@@ -1738,8 +1728,8 @@ MPEGConfigAudio::~MPEGConfigAudio()
 
 void MPEGConfigAudio::create_objects()
 {
-	int x = 10, y = 10;
-	int x1 = 150;
+	int x = xS(10), y = yS(10);
+	int x1 = xS(150);
 	MPEGLayer *layer;
 
 	lock_window("MPEGConfigAudio::create_objects");
@@ -1755,7 +1745,7 @@ void MPEGConfigAudio::create_objects()
 	add_tool(layer = new MPEGLayer(x1, y, this));
 	layer->create_objects();
 
-	y += 30;
+	y += yS(30);
 	add_tool(new BC_Title(x, y, _("Kbits per second:")));
 	add_tool(bitrate = new MPEGABitrate(x1, y, this));
 	bitrate->create_objects();
@@ -1774,7 +1764,7 @@ int MPEGConfigAudio::close_event()
 
 
 MPEGLayer::MPEGLayer(int x, int y, MPEGConfigAudio *gui)
- : BC_PopupMenu(x, y, 100, layer_to_string(gui->asset->ampeg_derivative))
+ : BC_PopupMenu(x, y, xS(100), layer_to_string(gui->asset->ampeg_derivative))
 {
 	this->gui = gui;
 }
@@ -1794,41 +1784,24 @@ int MPEGLayer::handle_event()
 
 int MPEGLayer::string_to_layer(char *string)
 {
-	if(!strcasecmp(layer_to_string(2), string))
-		return 2;
-	if(!strcasecmp(layer_to_string(3), string))
-		return 3;
-
+	if(!strcasecmp(layer_to_string(2), string)) return 2;
+	if(!strcasecmp(layer_to_string(3), string)) return 3;
 	return 2;
 }
 
 char* MPEGLayer::layer_to_string(int layer)
 {
-	switch(layer)
-	{
-		case 2:
-			return _("II");
-			break;
-
-		case 3:
-			return _("III");
-			break;
-
-		default:
-			return _("II");
-			break;
+	switch(layer) {
+		case 2: return _("II");
+		case 3: return _("III");
 	}
+	return _("II");
 }
 
 
-
-
-
-
-
 MPEGABitrate::MPEGABitrate(int x, int y, MPEGConfigAudio *gui)
- : BC_PopupMenu(x, y, 100,
- 	bitrate_to_string(gui->string, gui->asset->ampeg_bitrate))
+ : BC_PopupMenu(x, y, xS(100),
+	bitrate_to_string(gui->string, gui->asset->ampeg_bitrate))
 {
 	this->gui = gui;
 }
@@ -1842,8 +1815,7 @@ void MPEGABitrate::set_layer(int layer)
 {
 	while(total_items()) del_item(0);
 
-	if(layer == 2)
-	{
+	if(layer == 2) {
 		add_item(new BC_MenuItem("160"));
 		add_item(new BC_MenuItem("192"));
 		add_item(new BC_MenuItem("224"));
@@ -1851,8 +1823,7 @@ void MPEGABitrate::set_layer(int layer)
 		add_item(new BC_MenuItem("320"));
 		add_item(new BC_MenuItem("384"));
 	}
-	else
-	{
+	else {
 		add_item(new BC_MenuItem("8"));
 		add_item(new BC_MenuItem("16"));
 		add_item(new BC_MenuItem("24"));
@@ -1894,18 +1865,11 @@ char* MPEGABitrate::bitrate_to_string(char *string, int bitrate)
 
 
 
-
-
-
-
-
-
 MPEGConfigVideo::MPEGConfigVideo(BC_WindowBase *parent_window,
 	Asset *asset)
  : BC_Window(_(PROGRAM_NAME ": Video Compression"),
- 	parent_window->get_abs_cursor_x(1),
- 	parent_window->get_abs_cursor_y(1),
-	500, 400, -1, -1, 0, 0, 1)
+	parent_window->get_abs_cursor_x(1), parent_window->get_abs_cursor_y(1),
+	xS(500), yS(400), -1, -1, 0, 0, 1)
 {
 	this->parent_window = parent_window;
 	this->asset = asset;
@@ -1918,9 +1882,9 @@ MPEGConfigVideo::~MPEGConfigVideo()
 
 void MPEGConfigVideo::create_objects()
 {
-	int x = 10, y = 10;
-	int x1 = x + 150;
-	//int x2 = x + 300;
+	int x = xS(10), y = yS(10);
+	int x1 = x + xS(150);
+	//int x2 = x + xS(300);
 
 	lock_window("MPEGConfigVideo::create_objects");
 	if(asset->format == FILE_MPEG)
@@ -1933,7 +1897,7 @@ void MPEGConfigVideo::create_objects()
 	add_subwindow(new BC_Title(x, y, _("Color model:")));
 	add_subwindow(cmodel = new MPEGColorModel(x1, y, this));
 	cmodel->create_objects();
-	y += 30;
+	y += yS(30);
 
 	update_cmodel_objs();
 
@@ -1985,71 +1949,72 @@ void MPEGConfigVideo::reset_cmodel()
 
 void MPEGConfigVideo::update_cmodel_objs()
 {
+	int xs10 = xS(10);
+	int ys5 = yS(5), ys30 = yS(30), ys40 = yS(40);
 	BC_Title *title;
-	int x = 10;
-	int y = 40;
-	int x1 = x + 150;
-	int x2 = x + 280;
+	int x = xs10, y = ys40;
+	int x1 = x + xS(150);
+	int x2 = x + xS(280);
 
 	delete_cmodel_objs();
 
 	if(asset->vmpeg_cmodel == BC_YUV420P)
 	{
-		add_subwindow(title = new BC_Title(x, y + 5, _("Format Preset:")));
+		add_subwindow(title = new BC_Title(x, y + ys5, _("Format Preset:")));
 		titles.append(title);
 		add_subwindow(preset = new MPEGPreset(x1, y, this));
 		preset->create_objects();
-		y += 30;
+		y += ys30;
 	}
 
-	add_subwindow(title = new BC_Title(x, y + 5, _("Derivative:")));
+	add_subwindow(title = new BC_Title(x, y + ys5, _("Derivative:")));
 	titles.append(title);
 	add_subwindow(derivative = new MPEGDerivative(x1, y, this));
 	derivative->create_objects();
-	y += 30;
+	y += ys30;
 
-	add_subwindow(title = new BC_Title(x, y + 5, _("Bitrate:")));
+	add_subwindow(title = new BC_Title(x, y + ys5, _("Bitrate:")));
 	titles.append(title);
 	add_subwindow(bitrate = new MPEGBitrate(x1, y, this));
 	add_subwindow(fixed_bitrate = new MPEGFixedBitrate(x2, y, this));
-	y += 30;
+	y += ys30;
 
 	add_subwindow(title = new BC_Title(x, y, _("Quantization:")));
 	titles.append(title);
 	quant = new MPEGQuant(x1, y, this);
 	quant->create_objects();
 	add_subwindow(fixed_quant = new MPEGFixedQuant(x2, y, this));
-	y += 30;
+	y += ys30;
 
 	add_subwindow(title = new BC_Title(x, y, _("I frame distance:")));
 	titles.append(title);
 	iframe_distance = new MPEGIFrameDistance(x1, y, this);
 	iframe_distance->create_objects();
-	y += 30;
+	y += ys30;
 
 	if(asset->vmpeg_cmodel == BC_YUV420P)
 	{
-  		add_subwindow(title = new BC_Title(x, y, _("P frame distance:")));
+		add_subwindow(title = new BC_Title(x, y, _("P frame distance:")));
 		titles.append(title);
 		pframe_distance = new MPEGPFrameDistance(x1, y, this);
 		pframe_distance->create_objects();
-  		y += 30;
+		y += ys30;
 
 		add_subwindow(top_field_first = new BC_CheckBox(x, y, &asset->vmpeg_field_order, _("Bottom field first")));
-  		y += 30;
+		y += ys30;
 	}
 
 	add_subwindow(progressive = new BC_CheckBox(x, y, &asset->vmpeg_progressive, _("Progressive frames")));
-	y += 30;
+	y += ys30;
 	add_subwindow(denoise = new BC_CheckBox(x, y, &asset->vmpeg_denoise, _("Denoise")));
-	y += 30;
+	y += ys30;
 	add_subwindow(seq_codes = new BC_CheckBox(x, y, &asset->vmpeg_seq_codes, _("Sequence start codes in every GOP")));
 
 }
 
 
 MPEGDerivative::MPEGDerivative(int x, int y, MPEGConfigVideo *gui)
- : BC_PopupMenu(x, y, 150, derivative_to_string(gui->asset->vmpeg_derivative))
+ : BC_PopupMenu(x, y, xS(150), derivative_to_string(gui->asset->vmpeg_derivative))
 {
 	this->gui = gui;
 }
@@ -2084,7 +2049,7 @@ char* MPEGDerivative::derivative_to_string(int derivative)
 
 
 MPEGPreset::MPEGPreset(int x, int y, MPEGConfigVideo *gui)
- : BC_PopupMenu(x, y, 200, value_to_string(gui->asset->vmpeg_preset))
+ : BC_PopupMenu(x, y, xS(200), value_to_string(gui->asset->vmpeg_preset))
 {
 	this->gui = gui;
 }
@@ -2133,17 +2098,8 @@ char* MPEGPreset::value_to_string(int derivative)
 }
 
 
-
-
-
-
-
-
-
-
-
 MPEGBitrate::MPEGBitrate(int x, int y, MPEGConfigVideo *gui)
- : BC_TextBox(x, y, 100, 1, gui->asset->vmpeg_bitrate)
+ : BC_TextBox(x, y, xS(100), 1, gui->asset->vmpeg_bitrate)
 {
 	this->gui = gui;
 }
@@ -2156,17 +2112,11 @@ int MPEGBitrate::handle_event()
 };
 
 
-
-
-
 MPEGQuant::MPEGQuant(int x, int y, MPEGConfigVideo *gui)
  : BC_TumbleTextBox(gui,
- 	(int64_t)gui->asset->vmpeg_quantization,
-	(int64_t)1,
-	(int64_t)100,
-	x,
-	y,
-	100)
+	(int64_t)gui->asset->vmpeg_quantization,
+	(int64_t)1, (int64_t)100,
+	x, y, xS(100))
 {
 	this->gui = gui;
 }
@@ -2207,20 +2157,11 @@ int MPEGFixedQuant::handle_event()
 
 
 
-
-
-
-
-
-
 MPEGIFrameDistance::MPEGIFrameDistance(int x, int y, MPEGConfigVideo *gui)
  : BC_TumbleTextBox(gui,
- 	(int64_t)gui->asset->vmpeg_iframe_distance,
-	(int64_t)1,
-	(int64_t)100,
-	x,
-	y,
-	50)
+	(int64_t)gui->asset->vmpeg_iframe_distance,
+	(int64_t)1, (int64_t)100,
+	x, y, xS(50))
 {
 	this->gui = gui;
 }
@@ -2232,19 +2173,11 @@ int MPEGIFrameDistance::handle_event()
 }
 
 
-
-
-
-
-
 MPEGPFrameDistance::MPEGPFrameDistance(int x, int y, MPEGConfigVideo *gui)
  : BC_TumbleTextBox(gui,
- 	(int64_t)gui->asset->vmpeg_pframe_distance,
-	(int64_t)0,
-	(int64_t)2,
-	x,
-	y,
-	50)
+	(int64_t)gui->asset->vmpeg_pframe_distance,
+	(int64_t)0, (int64_t)2,
+	x, y, xS(50))
 {
 	this->gui = gui;
 }
@@ -2256,14 +2189,8 @@ int MPEGPFrameDistance::handle_event()
 }
 
 
-
-
-
-
-
-
 MPEGColorModel::MPEGColorModel(int x, int y, MPEGConfigVideo *gui)
- : BC_PopupMenu(x, y, 150, cmodel_to_string(gui->asset->vmpeg_cmodel))
+ : BC_PopupMenu(x, y, xS(150), cmodel_to_string(gui->asset->vmpeg_cmodel))
 {
 	this->gui = gui;
 }
@@ -2300,9 +2227,4 @@ char* MPEGColorModel::cmodel_to_string(int cmodel)
 		default: return _("YUV 4:2:0");
 	}
 }
-
-
-
-
-
 

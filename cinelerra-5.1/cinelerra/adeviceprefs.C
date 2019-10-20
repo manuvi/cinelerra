@@ -108,10 +108,7 @@ int ADevicePrefs::initialize(int creation)
 
 	if(!menu) {
 		dialog->add_subwindow(menu = new ADriverMenu(x,
-			y + 10,
-			this,
-			(mode == MODERECORD),
-			driver));
+			y + yS(10), this, (mode == MODERECORD), driver));
 		menu->create_objects();
 	}
 
@@ -270,7 +267,7 @@ int ADevicePrefs::create_oss_objs()
 	BC_Resources *resources = BC_WindowBase::get_resources();
 
 	for(int i = 0; i < MAXDEVICES; i++) {
-		int x1 = x + menu->get_w() + 5;
+		int x1 = x + menu->get_w() + xS(5);
 #if 0
 		switch(mode) {
 		case MODEPLAY:
@@ -283,7 +280,7 @@ int ADevicePrefs::create_oss_objs()
 			output_int = &out_config->oss_enable[i];
 			break;
 		}
-		dialog->add_subwindow(oss_enable[i] = new OSSEnable(x1, y1 + 20, output_int));
+		dialog->add_subwindow(oss_enable[i] = new OSSEnable(x1, y1 + yS(20), output_int));
 		x1 += oss_enable[i]->get_w() + margin;
 #endif
 		switch(mode) {
@@ -378,7 +375,7 @@ int ADevicePrefs::create_alsa_objs()
 	alsa_device->create_objects();
 	int x2 = x1;
 
-	x1 += alsa_device->get_w() + 5;
+	x1 += alsa_device->get_w() + xS(5);
 	switch(mode) {
 	case MODEPLAY:
 		output_int = &out_config->alsa_out_bits;
@@ -415,7 +412,7 @@ int ADevicePrefs::create_alsa_objs()
 
 int ADevicePrefs::create_esound_objs()
 {
-	int x1 = x + menu->get_w() + 5;
+	int x1 = x + menu->get_w() + xS(5);
 	char *output_char = 0;
 	int *output_int = 0;
 	BC_Resources *resources = BC_WindowBase::get_resources();
@@ -434,7 +431,7 @@ int ADevicePrefs::create_esound_objs()
 	server_title = new BC_Title(x1, y, _("Server:"),
 			MEDIUMFONT, resources->text_default);
 	dialog->add_subwindow(server_title);
-	esound_server = new ADeviceTextBox(x1, y + 20, output_char);
+	esound_server = new ADeviceTextBox(x1, y + yS(20), output_char);
 	dialog->add_subwindow(esound_server);
 
 	switch(mode) {
@@ -448,18 +445,20 @@ int ADevicePrefs::create_esound_objs()
 		output_int = &out_config->esound_out_port;
 		break;
 	}
-	x1 += esound_server->get_w() + 5;
+	x1 += esound_server->get_w() + xS(5);
 	port_title = new BC_Title(x1, y, _("Port:"),
 			MEDIUMFONT, resources->text_default);
 	dialog->add_subwindow(port_title);
-	esound_port = new ADeviceIntBox(x1, y + 20, output_int);
+	esound_port = new ADeviceIntBox(x1, y + yS(20), output_int);
 	dialog->add_subwindow(esound_port);
 	return 0;
 }
 
 int ADevicePrefs::create_firewire_objs()
 {
-	int x1 = x + menu->get_w() + 5;
+	int xs5 = xS(5);
+	int ys20 = yS(20);
+	int x1 = x + menu->get_w() + xs5;
 	int *output_int = 0;
 	char *output_char = 0;
 	BC_Resources *resources = BC_WindowBase::get_resources();
@@ -481,8 +480,8 @@ int ADevicePrefs::create_firewire_objs()
 
 	if(output_char) {
 		dialog->add_subwindow(path_title = new BC_Title(x1, y, _("Device Path:"), MEDIUMFONT, resources->text_default));
-		dialog->add_subwindow(firewire_path = new ADeviceTextBox(x1, y + 20, output_char));
-		x1 += firewire_path->get_w() + 5;
+		dialog->add_subwindow(firewire_path = new ADeviceTextBox(x1, y + ys20, output_char));
+		x1 += firewire_path->get_w() + xs5;
 	}
 
 // Firewire port
@@ -503,10 +502,10 @@ int ADevicePrefs::create_firewire_objs()
 	port_title = new BC_Title(x1, y, _("Port:"),
 			MEDIUMFONT, resources->text_default);
 	dialog->add_subwindow(port_title);
-	firewire_port = new ADeviceIntBox(x1, y + 20, output_int);
+	firewire_port = new ADeviceIntBox(x1, y + ys20, output_int);
 	dialog->add_subwindow(firewire_port);
 
-	x1 += firewire_port->get_w() + 5;
+	x1 += firewire_port->get_w() + xs5;
 
 // Firewire channel
 	switch(mode) {
@@ -523,9 +522,9 @@ int ADevicePrefs::create_firewire_objs()
 	channel_title = new BC_Title(x1, y, _("Channel:"),
 			MEDIUMFONT, resources->text_default);
 	dialog->add_subwindow(channel_title);
-	firewire_channel = new ADeviceIntBox(x1, y + 20, output_int);
+	firewire_channel = new ADeviceIntBox(x1, y + ys20, output_int);
 	dialog->add_subwindow(firewire_channel);
-	x1 += firewire_channel->get_w() + 5;
+	x1 += firewire_channel->get_w() + xs5;
 
 // Syt offset
 	switch(mode) {
@@ -547,9 +546,9 @@ int ADevicePrefs::create_firewire_objs()
 		syt_title = new BC_Title(x1, y, _("Syt Offset:"),
 				MEDIUMFONT, resources->text_default);
 		dialog->add_subwindow(syt_title);
-		firewire_syt = new ADeviceIntBox(x1, y + 20, output_int);
+		firewire_syt = new ADeviceIntBox(x1, y + ys20, output_int);
 		dialog->add_subwindow(firewire_syt);
-		x1 += firewire_syt->get_w() + 5;
+		x1 += firewire_syt->get_w() + xs5;
 	}
 
 	return 0;
@@ -559,31 +558,31 @@ int ADevicePrefs::create_firewire_objs()
 
 int ADevicePrefs::create_dvb_objs()
 {
-	int x1 = x + menu->get_w() + 30;
-	int y1 = y + 10;
+	int x1 = x + menu->get_w() + xS(30);
+	int y1 = y + yS(10);
 	char *output_char = in_config->dvb_in_adapter;
-	int y2 = y1 - BC_Title::calculate_h(dialog, _("DVB Adapter:"), MEDIUMFONT) - 5;
+	int y2 = y1 - BC_Title::calculate_h(dialog, _("DVB Adapter:"), MEDIUMFONT) - yS(5);
 	BC_Resources *resources = BC_WindowBase::get_resources();
 	dvb_adapter_title = new BC_Title(x1, y2, _("DVB Adapter:"),
 			MEDIUMFONT, resources->text_default);
 	dialog->add_subwindow(dvb_adapter_title);
 	dvb_adapter_path = new ADeviceTextBox(x1, y1, output_char);
 	dialog->add_subwindow(dvb_adapter_path);
-	int x2 = x1 + dvb_adapter_path->get_w() + 5;
+	int x2 = x1 + dvb_adapter_path->get_w() + xS(5);
 	dvb_device_title = new BC_Title(x2, y2, _("dev:"),
 			MEDIUMFONT, resources->text_default);
 	dialog->add_subwindow(dvb_device_title);
 	int *output_int = &in_config->dvb_in_device;
-	dvb_adapter_device = new ADeviceTumbleBox(this, x2, y1, output_int, 0, 9, 20);
+	dvb_adapter_device = new ADeviceTumbleBox(this, x2, y1, output_int, 0, 9, xS(20));
 	dvb_adapter_device->create_objects();
-	x2 += dvb_device_title->get_w() + 30;
+	x2 += dvb_device_title->get_w() + xS(30);
 	bits_title = new BC_Title(x2, y2, _("Bits:"),
 			MEDIUMFONT, resources->text_default);
 	dialog->add_subwindow(bits_title);
 	output_int = &in_config->dvb_in_bits;
 	dvb_bits = new BitsPopup(dialog, x2, y1, output_int, 0, 0, 0, 0, 1);
 	dvb_bits->create_objects();
-	x1 += 100;  y1 += dvb_adapter_path->get_h() + 5;
+	x1 += xS(100);  y1 += dvb_adapter_path->get_h() + yS(5);
 	output_int =  &in_config->follow_audio;
 	follow_audio_config = new BC_CheckBox(x1, y1, output_int, _("Follow audio config"));
 	dialog->add_subwindow(follow_audio_config);
@@ -592,9 +591,9 @@ int ADevicePrefs::create_dvb_objs()
 
 int ADevicePrefs::create_v4l2mpeg_objs()
 {
-	int x1 = x + menu->get_w() + 30;
-	int y1 = y + 10;
-	int y2 = y1 - BC_Title::calculate_h(dialog, _("Bits:"), MEDIUMFONT) - 5;
+	int x1 = x + menu->get_w() + xS(30);
+	int y1 = y + yS(10);
+	int y2 = y1 - BC_Title::calculate_h(dialog, _("Bits:"), MEDIUMFONT) - yS(5);
 	BC_Resources *resources = BC_WindowBase::get_resources();
 	bits_title = new BC_Title(x1, y2, _("Bits:"),
 			MEDIUMFONT, resources->text_default);
@@ -602,7 +601,7 @@ int ADevicePrefs::create_v4l2mpeg_objs()
 	int *output_int = &in_config->v4l2_in_bits;
 	v4l2_bits = new BitsPopup(dialog, x1, y1, output_int, 0, 0, 0, 0, 1);
 	v4l2_bits->create_objects();
-	x1 += v4l2_bits->get_w() + 10;
+	x1 += v4l2_bits->get_w() + xS(10);
 	follow_audio_config = new BC_CheckBox(x1, y1,
 			&in_config->follow_audio, _("Follow audio config"));
 	dialog->add_subwindow(follow_audio_config);
@@ -612,7 +611,7 @@ int ADevicePrefs::create_v4l2mpeg_objs()
 
 ADriverMenu::ADriverMenu(int x, int y, ADevicePrefs *device_prefs,
 	int do_input, int *output)
- : BC_PopupMenu(x, y, 125, adriver_to_string(*output), 1)
+ : BC_PopupMenu(x, y, xS(125), adriver_to_string(*output), 1)
 {
 	this->output = output;
 	this->do_input = do_input;
@@ -730,7 +729,7 @@ int OSSEnable::handle_event()
 
 
 ADeviceTextBox::ADeviceTextBox(int x, int y, char *output)
- : BC_TextBox(x, y, 150, 1, output)
+ : BC_TextBox(x, y, xS(150), 1, output)
 {
 	this->output = output;
 }
@@ -742,7 +741,7 @@ int ADeviceTextBox::handle_event()
 }
 
 ADeviceIntBox::ADeviceIntBox(int x, int y, int *output)
- : BC_TextBox(x, y, 80, 1, *output)
+ : BC_TextBox(x, y, xS(80), 1, *output)
 {
 	this->output = output;
 }
@@ -775,7 +774,7 @@ ALSADevice::ALSADevice(PreferencesDialog *dialog,
 	int y,
 	char *output,
 	ArrayList<BC_ListBoxItem*> *devices)
- : BC_PopupTextBox(dialog, devices, output, x, y, 200, 200)
+ : BC_PopupTextBox(dialog, devices, output, x, y, xS(200), yS(200))
 {
 	this->output = output;
 }

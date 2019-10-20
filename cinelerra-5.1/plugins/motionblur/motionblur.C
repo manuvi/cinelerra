@@ -231,10 +231,10 @@ void MotionBlurConfig::interpolate(MotionBlurConfig &prev,
 
 MotionBlurWindow::MotionBlurWindow(MotionBlurMain *plugin)
  : PluginClientWindow(plugin,
-	260,
-	120,
-	260,
-	120,
+	xS(260),
+	yS(120),
+	xS(260),
+	yS(120),
 	0)
 {
 	this->plugin = plugin;
@@ -246,14 +246,16 @@ MotionBlurWindow::~MotionBlurWindow()
 
 void MotionBlurWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int xs10 = xS(10);
+	int ys10 = yS(10), ys20 = yS(20), ys30 = yS(30);
+	int x = xs10, y = ys10;
 
 	add_subwindow(new BC_Title(x, y, _("Length:")));
-	y += 20;
+	y += ys20;
 	add_subwindow(radius = new MotionBlurSize(plugin, x, y, &plugin->config.radius, 0, 100));
-	y += 30;
+	y += ys30;
 	add_subwindow(new BC_Title(x, y, _("Steps:")));
-	y += 20;
+	y += ys20;
 	add_subwindow(steps = new MotionBlurSize(plugin, x, y, &plugin->config.steps, 1, 100));
 
 	show_window();
@@ -270,7 +272,7 @@ MotionBlurSize::MotionBlurSize(MotionBlurMain *plugin,
 	int *output,
 	int min,
 	int max)
- : BC_ISlider(x, y, 0, 240, 240, min, max, *output)
+ : BC_ISlider(x, y, 0, xS(240), yS(240), min, max, *output)
 {
 	this->plugin = plugin;
 	this->output = output;

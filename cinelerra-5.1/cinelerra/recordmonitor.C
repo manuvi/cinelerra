@@ -77,7 +77,7 @@ RecordMonitor::~RecordMonitor()
 
 void RecordMonitor::create_objects()
 {
-	int min_w = 150;
+	int min_w = xS(150);
 
 	if( !record->default_asset->video_data )
 		min_w = MeterPanel::get_meters_width(mwindow->theme,
@@ -169,12 +169,12 @@ int RecordMonitor::get_canvas_height()
 int RecordMonitor::get_channel_x()
 {
 //	return 240;
-	return 5;
+	return xS(5);
 }
 
 int RecordMonitor::get_channel_y()
 {
-	return 2;
+	return yS(2);
 }
 
 void RecordMonitor::stop_playback()
@@ -236,7 +236,7 @@ RecordMonitorGUI::RecordMonitorGUI(MWindow *mwindow,
 			mwindow->session->rmonitor_y,
  			mwindow->session->rmonitor_w,
  			mwindow->session->rmonitor_h,
-			min_w, 50, 1, 1, 1, -1,
+			min_w, yS(50), 1, 1, 1, -1,
 			mwindow->get_cwindow_display())
 {
 //printf("%d %d\n", mwindow->session->rmonitor_w, mwindow->theme->rmonitor_meter_x);
@@ -325,7 +325,7 @@ void RecordMonitorGUI::create_objects()
 
 				add_subwindow(avc1394transport_timecode =
 					new BC_Title(avc1394_transport->x_end,
-						mwindow->theme->rmonitor_tx_y + 10,
+						mwindow->theme->rmonitor_tx_y + yS(10),
 						"00:00:00:00",
 						MEDIUM_7SEGMENT,
 						BLACK));
@@ -345,8 +345,8 @@ void RecordMonitorGUI::create_objects()
 			background_done = 1;
 		}
 
-		mwindow->theme->rmonitor_canvas_w = MAX(10, mwindow->theme->rmonitor_canvas_w);
-		mwindow->theme->rmonitor_canvas_h = MAX(10, mwindow->theme->rmonitor_canvas_h);
+		mwindow->theme->rmonitor_canvas_w = MAX(xS(10), mwindow->theme->rmonitor_canvas_w);
+		mwindow->theme->rmonitor_canvas_h = MAX(yS(10), mwindow->theme->rmonitor_canvas_h);
 		canvas = new RecordMonitorCanvas(mwindow, this, record,
 			mwindow->theme->rmonitor_canvas_x,
 			mwindow->theme->rmonitor_canvas_y,
@@ -358,7 +358,7 @@ void RecordMonitorGUI::create_objects()
 #ifdef HAVE_DVB
 		if( driver == CAPTURE_DVB ) {
 			int ssw = SignalStatus::calculate_w(this);
-			signal_status = new SignalStatus(this, get_w()-ssw-3, 0);
+			signal_status = new SignalStatus(this, get_w()-ssw-xS(3), 0);
 			add_subwindow(signal_status);
 			signal_status->create_objects();
 		}

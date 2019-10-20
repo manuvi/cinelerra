@@ -81,7 +81,7 @@ CWindowGUI::CWindowGUI(MWindow *mwindow, CWindow *cwindow)
 	mwindow->session->cwindow_y,
 	mwindow->session->cwindow_w,
 	mwindow->session->cwindow_h,
-	100, 100, 1, 1, 1,
+	xS(100), yS(100), 1, 1, 1,
 	BC_WindowBase::get_resources()->bg_color,
 	mwindow->get_cwindow_display())
 {
@@ -946,14 +946,7 @@ int CWindowZoom::handle_event()
 
 #ifdef USE_SLIDER
 CWindowSlider::CWindowSlider(MWindow *mwindow, CWindow *cwindow, int x, int y, int pixels)
- : BC_PercentageSlider(x,
-			y,
-			0,
-			pixels,
-			pixels,
-			0,
-			1,
-			0)
+ : BC_PercentageSlider(x, y, 0, pixels, pixels, 0, 1, 0)
 {
 	this->mwindow = mwindow;
 	this->cwindow = cwindow;
@@ -1036,15 +1029,10 @@ void CWindowTransport::goto_end()
 
 
 CWindowCanvas::CWindowCanvas(MWindow *mwindow, CWindowGUI *gui)
- : Canvas(mwindow,
- 	gui,
-	mwindow->theme->ccanvas_x,
-	mwindow->theme->ccanvas_y,
-	mwindow->theme->ccanvas_w,
-	mwindow->theme->ccanvas_h,
-	0,
-	0,
-	mwindow->edl->session->cwindow_scrollbars)
+ : Canvas(mwindow, gui,
+	mwindow->theme->ccanvas_x, mwindow->theme->ccanvas_y,
+	mwindow->theme->ccanvas_w, mwindow->theme->ccanvas_h,
+	0, 0, mwindow->edl->session->cwindow_scrollbars)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
@@ -1132,8 +1120,8 @@ void CWindowCanvas::draw_refresh(int flush)
 //printf("CWindowCanvas::draw_refresh 10\n");
 }
 
-#define CROPHANDLE_W 10
-#define CROPHANDLE_H 10
+#define CROPHANDLE_W xS(10)
+#define CROPHANDLE_H yS(10)
 
 void CWindowCanvas::draw_crophandle(int x, int y)
 {
@@ -1141,20 +1129,18 @@ void CWindowCanvas::draw_crophandle(int x, int y)
 }
 
 
-#define CONTROL_W 10
-#define CONTROL_H 10
-#define FIRST_CONTROL_W 20
-#define FIRST_CONTROL_H 20
+#define CONTROL_W xS(10)
+#define CONTROL_H yS(10)
+#define FIRST_CONTROL_W xS(20)
+#define FIRST_CONTROL_H yS(20)
 #undef BC_INFINITY
 #define BC_INFINITY 65536
 
-#define RULERHANDLE_W 16
-#define RULERHANDLE_H 16
+#define RULERHANDLE_W xS(16)
+#define RULERHANDLE_H yS(16)
 
-int CWindowCanvas::do_ruler(int draw,
-	int motion,
-	int button_press,
-	int button_release)
+int CWindowCanvas::do_ruler(int draw, int motion,
+		int button_press, int button_release)
 {
 	int result = 0;
 	float x1 = mwindow->edl->session->ruler_x1;
@@ -1265,9 +1251,7 @@ int CWindowCanvas::do_ruler(int draw,
 					{
 						double angle_value = fabs(atan((mwindow->edl->session->ruler_y2 - mwindow->edl->session->ruler_y1) /
 							(mwindow->edl->session->ruler_x2 - mwindow->edl->session->ruler_x1)) *
-							360 /
-							2 /
-							M_PI);
+							360 / 2 / M_PI);
 						double distance_value =
 							sqrt(SQR(mwindow->edl->session->ruler_x2 - mwindow->edl->session->ruler_x1) +
 							SQR(mwindow->edl->session->ruler_y2 - mwindow->edl->session->ruler_y1));
@@ -1315,9 +1299,7 @@ int CWindowCanvas::do_ruler(int draw,
 					{
 						double angle_value = fabs(atan((mwindow->edl->session->ruler_y2 - mwindow->edl->session->ruler_y1) /
 							(mwindow->edl->session->ruler_x2 - mwindow->edl->session->ruler_x1)) *
-							360 /
-							2 /
-							M_PI);
+							360 / 2 / M_PI);
 						double distance_value =
 							sqrt(SQR(mwindow->edl->session->ruler_x2 - mwindow->edl->session->ruler_x1) +
 							SQR(mwindow->edl->session->ruler_y2 - mwindow->edl->session->ruler_y1));
@@ -1813,15 +1795,13 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 // Make copy of current parameters in local keyframe
 			gui->mask_keyframe =
 				(MaskAuto*)gui->cwindow->calculate_affected_auto(
-					mask_autos,
-					0);
+					mask_autos, 0);
 			gui->orig_mask_keyframe->copy_data(gui->mask_keyframe);
 #else
 
 			gui->mask_keyframe =
 				(MaskAuto*)gui->cwindow->calculate_affected_auto(
-					mask_autos,
-					1);
+					mask_autos, 1);
 #endif
 		}
 		SubMask *mask = gui->mask_keyframe->get_submask(mwindow->edl->session->cwindow_mask);
@@ -3128,7 +3108,7 @@ int CWindowCanvas::test_bezier(int button_press,
 			float z_val = gui->affected_z->get_value();
 
 			if( gui->translating_zoom ) {
-				float z = gui->center_z + (cursor_y - gui->y_origin) / 128;
+				float z = gui->center_z + (cursor_y - gui->y_origin) / yS(128);
 				if( z < 0 ) z = 0;
 				if( !EQUIV(z_val, z) ) {
 					rerender = 1;

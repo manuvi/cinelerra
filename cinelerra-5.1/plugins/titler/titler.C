@@ -105,8 +105,8 @@ TitleConfig::TitleConfig()
 	wtext = 0;  wsize = 0;  wlen = 0;
 	title_x = title_y = 0.0;
 	title_w = title_h = 0;
-	window_w = 860;
-	window_h = 460;
+	window_w = xS(860);
+	window_h = yS(460);
 	next_keyframe_position = 0;
 	prev_keyframe_position = 0;
 	timecode = 0;

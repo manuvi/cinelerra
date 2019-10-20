@@ -66,7 +66,7 @@ void FormatPresets::create_objects()
 
 	gui_base->add_subwindow(new BC_Title(x, y, _("Presets:")));
 	int x1 = x;
-	y += 20;
+	y += yS(20);
 
 
 	gui_base->add_subwindow(text = new FormatPresetsText(mwindow,
@@ -129,10 +129,7 @@ FormatPresetsText::FormatPresetsText(MWindow *mwindow,
 	FormatPresets *gui,
 	int x,
 	int y)
- : BC_TextBox(x,
- 	y,
-	200,
-	1,
+ : BC_TextBox(x, y, xS(200), 1,
 	gui->get_preset_text(gui->get_edl()))
 {
 	this->gui =  gui;
@@ -157,7 +154,7 @@ FormatPresetsPulldown::FormatPresetsPulldown(MWindow *mwindow,
 	FormatPresets *gui,
 	int x,
 	int y)
- : BC_ListBox(x, y, 200, 250,
+ : BC_ListBox(x, y, xS(200), yS(250),
 		LISTBOX_TEXT,                   // Display text list or icons
 		(ArrayList<BC_ListBoxItem*>*)&gui->preset_items, // Each column has an ArrayList of BC_ListBoxItems.
 		0,  // Titles for columns.  Set to 0 for no titles

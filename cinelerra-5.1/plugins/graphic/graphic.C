@@ -40,10 +40,10 @@
 // Canvas parameters
 #define MAJOR_DIVISIONS 7
 #define MINOR_DIVISIONS 5
-#define LINE_W4 12
-#define LINE_W3 10
-#define LINE_W2 5
-#define LINE_W1 2
+#define LINE_W4 xS(12)
+#define LINE_W3 xS(10)
+#define LINE_W2 xS(5)
+#define LINE_W1 xS(2)
 
 
 
@@ -227,7 +227,7 @@ int GraphicCanvas::button_release_event()
 	return 0;
 }
 
-#define BOX_SIZE 10
+#define BOX_SIZE xS(10)
 
 int GraphicCanvas::freq_to_y(int freq,
 	ArrayList<GraphicPoint*> *points,
@@ -699,7 +699,7 @@ int GraphicReset::handle_event()
 
 
 GraphicSize::GraphicSize(GraphicGUI *window, GraphicEQ *plugin, int x, int y)
- : BC_PopupMenu(x, y, 100, "4096", 1)
+ : BC_PopupMenu(x, y, xS(100), "4096", 1)
 {
 	this->plugin = plugin;
 	this->window = window;
@@ -766,8 +766,8 @@ GraphicGUI::GraphicGUI(GraphicEQ *plugin)
  : PluginClientWindow(plugin,
 	plugin->w,
 	plugin->h,
-	320,
-	200,
+	xS(320),
+	yS(200),
 	1)
 {
 	this->plugin = plugin;
@@ -802,12 +802,12 @@ void GraphicGUI::create_objects()
 //	int y1 = y;
 	add_subwindow(freq_title = new BC_Title(x, y, _("Frequency:")));
 	x += freq_title->get_w() + margin;
-	add_subwindow(freq_text = new FreqTextBox(plugin, this, x, y, 100));
+	add_subwindow(freq_text = new FreqTextBox(plugin, this, x, y, xS(100)));
 	x += freq_text->get_w() + margin;
 
 	add_subwindow(level_title = new BC_Title(x, y, _("Level:")));
 	x += level_title->get_w() + margin;
-	add_subwindow(value_text = new ValueTextBox(plugin, this, x, y, 100));
+	add_subwindow(value_text = new ValueTextBox(plugin, this, x, y, xS(100)));
 	x += value_text->get_w() + margin;
 
 	add_subwindow(reset = new GraphicReset(plugin, this, x, y));
@@ -1031,8 +1031,8 @@ GraphicEQ::GraphicEQ(PluginServer *server)
 	fft = 0;
 	need_reconfigure = 1;
 	active_point = -1;
-	w = 640;
-	h = 480;
+	w = xS(640);
+	h = yS(480);
 }
 
 GraphicEQ::~GraphicEQ()

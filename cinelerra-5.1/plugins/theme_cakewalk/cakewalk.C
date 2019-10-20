@@ -98,7 +98,7 @@ void CAKEWALKTHEME::initialize()
  resources->popup_title_text = WHITE;
  resources->menu_item_text = WHITE;
  resources->menu_highlighted_fontcolor = BLACK;
- resources->generic_button_margin = 20;
+ resources->generic_button_margin = xS(20);
  resources->pot_needle_color = TextFg;
  resources->pot_offset = 1;
  resources->progress_text = resources->text_default;
@@ -108,11 +108,11 @@ void CAKEWALKTHEME::initialize()
  resources->menu_up = ALARM;
  resources->menu_shadow = ALARM;
  resources->menu_highlighted = CwCyan;
- resources->popupmenu_margin = 15;
- resources->popupmenu_triangle_margin = 15;
+ resources->popupmenu_margin = xS(15);
+ resources->popupmenu_triangle_margin = xS(15);
  resources->listbox_title_color = TextFgBright;
- resources->listbox_title_margin = 15;
- resources->listbox_title_hotspot = 15;
+ resources->listbox_title_margin = xS(15);
+ resources->listbox_title_hotspot = xS(15);
  resources->listbox_border1 = TextBorderOut;
  resources->listbox_border2 = CwDarkGray;
  resources->listbox_border3 = CwDarkGray;
@@ -124,7 +124,7 @@ void CAKEWALKTHEME::initialize()
  resources->listbox_bg = 0;
  resources->listbox_text = TextFg;
  resources->listbox_selected = CwCyan;
- resources->filebox_margin = 130;
+ resources->filebox_margin = yS(130);
  resources->file_color = WHITE;
  resources->directory_color = ComicYellow;
  title_font = MEDIUMFONT;
@@ -132,7 +132,7 @@ void CAKEWALKTHEME::initialize()
  recordgui_fixed_color = MeterGreen;
  recordgui_variable_color = MeterYellow;
  channel_position_color = MeterYellow;
- resources->meter_title_w = 25;
+ resources->meter_title_w = xS(25);
  edit_font_color = ComicYellow;
  assetedit_color = TextFgBright;
  timebar_cursor_color = WHITE;
@@ -374,7 +374,7 @@ void CAKEWALKTHEME::initialize()
       "mask_pstn_nrm_images");
  resources->bar_data = new_image("bar", "bar.png");
  resources->check = new_image("check", "check.png");
- resources->min_menu_w = 96;
+ resources->min_menu_w = xS(96);
  resources->menu_popup_bg = new_image("menu_popup_bg.png");
  resources->menu_item_bg = new_image_set(
   3,
@@ -523,7 +523,7 @@ void CAKEWALKTHEME::initialize()
   "vscroll_right_up.png",
   "vscroll_right_hi.png",
   "vscroll_right_dn.png");
- resources->scroll_minhandle = 20;
+ resources->scroll_minhandle = xS(20);
  new_button(
   "prevtip.png", "tipbutton_up.png",
   "tipbutton_hi.png", "tipbutton_dn.png", "prev_tip");
@@ -538,14 +538,14 @@ void CAKEWALKTHEME::initialize()
   "editpanel_hi.png", "editpanel_dn.png", "swap_extents");
  preferences_category_overlap = 0;
  preferencescategory_x = 0;
- preferencescategory_y = 5;
- preferencestitle_x = 5;
- preferencestitle_y = 10;
- preferencesoptions_x = 5;
+ preferencescategory_y = yS(5);
+ preferencestitle_x = xS(5);
+ preferencestitle_y = yS(10);
+ preferencesoptions_x = xS(5);
  preferencesoptions_y = 0;
  message_normal = resources->text_default;
- mtransport_margin = 10;
- toggle_margin = 10;
+ mtransport_margin = xS(10);
+ toggle_margin = xS(10);
  new_button("pane.png", "pane_up.png", "pane_hi.png", "pane_dn.png",
       "pane");
  new_image_set("xpane", 3,
@@ -612,20 +612,20 @@ void CAKEWALKTHEME::initialize()
  timebar_view_data = new_image("timebar_view.png");
  setformat_w = get_image("setformat_bg")->get_w();
  setformat_h = get_image("setformat_bg")->get_h();
- setformat_x1 = 15;
- setformat_x2 = 110;
- setformat_x3 = 315;
- setformat_x4 = 425;
- setformat_y1 = 20;
- setformat_y2 = 85;
- setformat_y3 = 125;
- setformat_margin = 30;
- setformat_channels_x = 25;
- setformat_channels_y = 242;
- setformat_channels_w = 250;
- setformat_channels_h = 250;
- loadfile_pad = get_image_set("loadmode_new")[0]->get_h() + 10;
- browse_pad = 20;
+ setformat_x1 = xS(15);
+ setformat_x2 = xS(110);
+ setformat_x3 = xS(315);
+ setformat_x4 = xS(425);
+ setformat_y1 = yS(20);
+ setformat_y2 = yS(85);
+ setformat_y3 = yS(125);
+ setformat_margin = yS(30);
+ setformat_channels_x = xS(25);
+ setformat_channels_y = yS(242);
+ setformat_channels_w = xS(250);
+ setformat_channels_h = yS(250);
+ loadfile_pad = get_image_set("loadmode_new")[0]->get_h() + yS(10);
+ browse_pad = yS(20);
  new_toggle("playpatch.png",
       "playpatch_up.png",
       "playpatch_hi.png",
@@ -1021,12 +1021,12 @@ void CAKEWALKTHEME::initialize()
 }
 void CAKEWALKTHEME::get_vwindow_sizes(VWindowGUI *gui)
 {
- int edit_w = EditPanel::calculate_w(mwindow, 0, 10);
+ int edit_w = EditPanel::calculate_w(mwindow, 0, xS(10));
  int transport_w = PlayTransport::get_transport_width(mwindow) + toggle_margin;
- vtimebar_h = 16;
- int division_w = 30;
- vtime_w = 140;
- int vtime_border = 15;
+ vtimebar_h = yS(16);
+ int division_w = xS(30);
+ vtime_w = xS(140);
+ int vtime_border = xS(15);
  vmeter_y = widget_border;
  vmeter_h = mwindow->session->vwindow_h - cmeter_y - widget_border;
  int buttons_h;
@@ -1056,9 +1056,9 @@ void CAKEWALKTHEME::get_vwindow_sizes(VWindowGUI *gui)
   vtransport_y = mwindow->session->vwindow_h -
    get_image_set("autokeyframe")[0]->get_h() -
    widget_border;
-  vdivision_x = 280;
-  vtime_x = vedit_x + 65;
-  vtime_y = vedit_y + 28;
+  vdivision_x = xS(280);
+  vtime_x = vedit_x + xS(65);
+  vtime_y = vedit_y + yS(28);
  } else {
   buttons_h = vtimebar_h +
    widget_border +
@@ -1117,16 +1117,17 @@ void CAKEWALKTHEME::draw_mwindow_bg(MWindowGUI *gui)
  int x = mbuttons_x;
  x += 9 * get_image("play")->get_w();
  x += mtransport_margin;
+ int xs2 = xS(2);
  gui->draw_vframe(get_image("panel_divider"),
-      x - toggle_margin / 2 - pdw / 2 + 2,
+      x - toggle_margin / 2 - pdw / 2 + xs2,
       mbuttons_y - 1);
  x += 2 * get_image("arrow")->get_w() + toggle_margin;
  gui->draw_vframe(get_image("panel_divider"),
-      x - toggle_margin / 2 - pdw / 2 + 2,
+      x - toggle_margin / 2 - pdw / 2 + xs2,
       mbuttons_y - 1);
  x += 2 * get_image("autokeyframe")->get_w() + toggle_margin;
  gui->draw_vframe(get_image("panel_divider"),
-      x - toggle_margin / 2 - pdw / 2 + 2,
+      x - toggle_margin / 2 - pdw / 2 + xs2,
       mbuttons_y - 1);
  gui->draw_3segmenth(0,
       mbuttons_y - 1 + get_image("mbutton_bg")->get_h(),
@@ -1146,10 +1147,8 @@ void CAKEWALKTHEME::draw_mwindow_bg(MWindowGUI *gui)
       mtimebar_w,
       get_image("timebar_bg"));
  gui->set_color(CwDarkGray);
- gui->draw_box(mzoom_x,
-      mzoom_y,
-      mwindow->session->mwindow_w,
-      25);
+ gui->draw_box(mzoom_x, mzoom_y,
+      mwindow->session->mwindow_w, yS(25));
  gui->draw_3segmenth(mzoom_x,
       mzoom_y,
       mzoom_w,
@@ -1173,7 +1172,7 @@ void CAKEWALKTHEME::draw_cwindow_bg(CWindowGUI *gui)
  } else {
   gui->draw_3segmenth(cstatus_x,
        ccomposite_h,
-       cmeter_x - widget_border - cstatus_x + 100,
+       cmeter_x - widget_border - cstatus_x + xS(100),
        get_image("cbuttons_right"));
  }
 }
@@ -1197,14 +1196,11 @@ void CAKEWALKTHEME::draw_vwindow_bg(VWindowGUI *gui)
  } else {
   gui->draw_3segmenth(vdivision_x,
        vcanvas_h,
-       vmeter_x - widget_border - vdivision_x + 100,
+       vmeter_x - widget_border - vdivision_x + xS(100),
        get_image("vbuttons_right"));
  }
- gui->draw_3segmenth(
-  vtime_x - 5,
-  vtime_y + 0,
-  vtime_w + 10,
-  get_image("vclock"));
+ gui->draw_3segmenth(vtime_x - xS(5), vtime_y + 0,
+  vtime_w + xS(10), get_image("vclock"));
 }
 void CAKEWALKTHEME::draw_preferences_bg(PreferencesWindow *gui)
 {

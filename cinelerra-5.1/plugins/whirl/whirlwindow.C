@@ -31,7 +31,7 @@
 
 
 WhirlWindow::WhirlWindow(WhirlMain *client)
- : PluginClientWindow(client, 210, 170, 200, 170, 0)
+ : PluginClientWindow(client, xS(210), yS(170), xS(200), yS(170), 0)
 { this->client = client; }
 
 WhirlWindow::~WhirlWindow()
@@ -46,26 +46,28 @@ WhirlWindow::~WhirlWindow()
 
 void WhirlWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int xs10 = xS(10), xs80 = xS(80);
+	int ys10 = yS(10), ys20 = yS(20), ys30 = yS(30), ys35 = yS(35);
+	int x = xs10, y = ys10;
 	add_tool(new BC_Title(x, y, _("Angle")));
-	add_tool(automation[0] = new AutomatedFn(client, this, x + 80, y, 0));
-	y += 20;
+	add_tool(automation[0] = new AutomatedFn(client, this, x + xs80, y, 0));
+	y += ys20;
 	add_tool(angle_slider = new AngleSlider(client, x, y));
-	y += 35;
+	y += ys35;
 	add_tool(new BC_Title(x, y, _("Pinch")));
-	add_tool(automation[1] = new AutomatedFn(client, this, x + 80, y, 1));
-	y += 20;
+	add_tool(automation[1] = new AutomatedFn(client, this, x + xs80, y, 1));
+	y += ys20;
 	add_tool(pinch_slider = new PinchSlider(client, x, y));
-	y += 35;
+	y += ys35;
 	add_tool(new BC_Title(x, y, _("Radius")));
-	add_tool(automation[2] = new AutomatedFn(client, this, x + 80, y, 2));
-	y += 20;
+	add_tool(automation[2] = new AutomatedFn(client, this, x + xs80, y, 2));
+	y += ys20;
 	add_tool(radius_slider = new RadiusSlider(client, x, y));
 }
 
 
 AngleSlider::AngleSlider(WhirlMain *client, int x, int y)
- : BC_ISlider(x, y, 190, 30, 200, client->angle, -MAXANGLE, MAXANGLE, DKGREY, BLACK, 1)
+ : BC_ISlider(x, y, xS(190), yS(30), xS(200), client->angle, -MAXANGLE, MAXANGLE, DKGREY, BLACK, 1)
 {
 	this->client = client;
 }
@@ -80,8 +82,7 @@ int AngleSlider::handle_event()
 }
 
 PinchSlider::PinchSlider(WhirlMain *client, int x, int y)
- : BC_ISlider(x, y, 190, 30, 200, client->pinch, -MAXPINCH, MAXPINCH, DKGREY, BLACK, 1)
-{
+ : BC_ISlider(x, y, xS(190), yS(30), xS(200), client->pinch, -MAXPINCH, MAXPINCH, DKGREY, BLACK, 1)
 	this->client = client;
 }
 PinchSlider::~PinchSlider()
@@ -95,7 +96,7 @@ int PinchSlider::handle_event()
 }
 
 RadiusSlider::RadiusSlider(WhirlMain *client, int x, int y)
- : BC_ISlider(x, y, 190, 30, 200, client->radius, 0, MAXRADIUS, DKGREY, BLACK, 1)
+ : BC_ISlider(x, y, xS(190), yS(30), xS(200), client->radius, 0, MAXRADIUS, DKGREY, BLACK, 1)
 {
 	this->client = client;
 }

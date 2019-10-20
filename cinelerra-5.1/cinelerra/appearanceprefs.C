@@ -61,51 +61,54 @@ AppearancePrefs::~AppearancePrefs()
 
 void AppearancePrefs::create_objects()
 {
+	int xs5 = xS(5), xs10 = xS(10), xs30 = xS(30);
+	int ys5 = yS(5), ys10 = yS(10), ys15 = yS(15);
+	int ys20 = yS(20), ys35 = yS(35);
 	BC_Resources *resources = BC_WindowBase::get_resources();
 	int margin = mwindow->theme->widget_border;
 	char string[BCTEXTLEN];
 	int x0 = mwindow->theme->preferencesoptions_x;
 	int y0 = mwindow->theme->preferencesoptions_y;
-	int x = x0, y = y0, x1 = x + 100;
+	int x = x0, y = y0, x1 = x + xS(100);
 
 	add_subwindow(new BC_Title(x, y, _("Layout:"), LARGEFONT,
 		resources->text_default));
-	y += 35;
+	y += ys35;
 	int y1 = y;
 
 	ViewTheme *theme;
 	add_subwindow(new BC_Title(x, y, _("Theme:")));
 	add_subwindow(theme = new ViewTheme(x1, y, pwindow));
 	theme->create_objects();
-	y += theme->get_h() + 5;
+	y += theme->get_h() + ys5;
 
 	x = x0;
 	ViewPluginIcons *plugin_icons;
 	add_subwindow(new BC_Title(x, y, _("Plugin Icons:")));
 	add_subwindow(plugin_icons = new ViewPluginIcons(x1, y, pwindow));
 	plugin_icons->create_objects();
-	y += plugin_icons->get_h() + 15;
+	y += plugin_icons->get_h() + ys15;
 	x1 = get_w()/2;
 
-	int x2 = x1 + 160, y2 = y;
+	int x2 = x1 + xS(160), y2 = y;
 	y = y1;
 	add_subwindow(new BC_Title(x1, y, _("View thumbnail size:")));
 	thumbnail_size = new ViewThumbnailSize(pwindow, this, x2, y);
 	thumbnail_size->create_objects();
-	y += thumbnail_size->get_h() + 5;
+	y += thumbnail_size->get_h() + ys5;
 	add_subwindow(new BC_Title(x1, y, _("Vicon quality:")));
 	vicon_size = new ViewViconSize(pwindow, this, x2, y);
 	vicon_size->create_objects();
-	y += vicon_size->get_h() + 5;
+	y += vicon_size->get_h() + ys5;
 	add_subwindow(new BC_Title(x1, y, _("Vicon color mode:")));
 	add_subwindow(vicon_color_mode = new ViewViconColorMode(pwindow, x2, y));
 	vicon_color_mode->create_objects();
-	y += vicon_color_mode->get_h() + 5;
+	y += vicon_color_mode->get_h() + ys5;
 	y = bmax(y, y2);	
 
-	y += 10;
-	add_subwindow(new BC_Bar(5, y, 	get_w() - 10));
-	y += 15;
+	y += ys10;
+	add_subwindow(new BC_Bar(xs5, y, get_w() - xs10));
+	y += ys15;
 
 	add_subwindow(new BC_Title(x, y, _("Time Format:"), LARGEFONT,
 		resources->text_default));
@@ -113,124 +116,124 @@ void AppearancePrefs::create_objects()
 	add_subwindow(new BC_Title(x1, y, _("Flags:"), LARGEFONT,
 		resources->text_default));
 
-	y += get_text_height(LARGEFONT) + 5;
-	y += 10;
+	y += get_text_height(LARGEFONT) + ys5;
+	y += ys10;
 	y1 = y;
 
 	add_subwindow(hms = new TimeFormatHMS(pwindow, this,
 		pwindow->thread->edl->session->time_format == TIME_HMS,
 		x, y));
-	y += 20;
+	y += ys20;
 	add_subwindow(hmsf = new TimeFormatHMSF(pwindow, this,
 		pwindow->thread->edl->session->time_format == TIME_HMSF,
 		x, y));
-	y += 20;
+	y += ys20;
 	add_subwindow(samples = new TimeFormatSamples(pwindow, this,
 		pwindow->thread->edl->session->time_format == TIME_SAMPLES,
 		x, y));
-	y += 20;
+	y += ys20;
 	add_subwindow(hex = new TimeFormatHex(pwindow, this,
 		pwindow->thread->edl->session->time_format == TIME_SAMPLES_HEX,
 		x, y));
-	y += 20;
+	y += ys20;
 	add_subwindow(frames = new TimeFormatFrames(pwindow, this,
 		pwindow->thread->edl->session->time_format == TIME_FRAMES,
 		x, y));
-	y += 20;
+	y += ys20;
 	add_subwindow(feet = new TimeFormatFeet(pwindow, this,
 		pwindow->thread->edl->session->time_format == TIME_FEET_FRAMES,
 		x, y));
-	x += feet->get_w() + 15;
+	x += feet->get_w() + xS(15);
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x, y, _("Frames per foot:")));
 	x += title->get_w() + margin;
 	sprintf(string, "%0.2f", pwindow->thread->edl->session->frames_per_foot);
 	add_subwindow(new TimeFormatFeetSetting(pwindow,
-		x, y - 5, 	string));
+		x, y - ys5, 	string));
 	x = x0;
-	y += 20;
+	y += ys20;
 	add_subwindow(seconds = new TimeFormatSeconds(pwindow, this,
 		pwindow->thread->edl->session->time_format == TIME_SECONDS,
 		x, y));
 	x = x0;
-	y += 35;
-	add_subwindow(new BC_Bar(5, y, 	get_w()/2 - 30));
-	y += 15;
+	y += ys35;
+	add_subwindow(new BC_Bar(xs5, y, get_w()/2 - xs30));
+	y += ys15;
 
 	add_subwindow(new BC_Title(x, y, _("Color:"), LARGEFONT,
 		resources->text_default));
-	y += 35;
+	y += ys35;
 	add_subwindow(title = new BC_Title(x, y, _("Highlighting Inversion color:")));
 	x += title->get_w() + margin;
 	char hex_color[BCSTRLEN];
 	sprintf(hex_color, "%06x", preferences->highlight_inverse);
         add_subwindow(new HighlightInverseColor(pwindow, x, y, hex_color));
 	x2 = x;  x = x0;
-	y += 35;
+	y += ys35;
 	add_subwindow(title = new BC_Title(x, y, _("Composer BG Color:")));
 	int clr_color = pwindow->thread->edl->session->cwindow_clear_color;
 	int clr_alpha = pwindow->thread->edl->session->cwindow_clear_alpha;
         add_subwindow(cwdw_bg_color = new Composer_BG_Color(pwindow,
-		x2, y, 80, 24, clr_color, clr_alpha));
+		x2, y, xS(80), yS(24), clr_color, clr_alpha));
 	draw_3d_border(x2-2,y-2, 80+4,24+4, 1);
 	cwdw_bg_color->create_objects();
-	y += 35;
+	y += ys35;
 
 	x = x0;
 	add_subwindow(title = new BC_Title(x, y, _("YUV color space:")));
 	x += title->get_w() + margin;
 	add_subwindow(yuv_color_space = new YuvColorSpace(x, y, pwindow));
 	yuv_color_space->create_objects();
-	y += yuv_color_space->get_h() + 5;
+	y += yuv_color_space->get_h() + ys5;
 
 	x = x0;
 	add_subwindow(title = new BC_Title(x, y, _("YUV color range:")));
 	x += title->get_w() + margin;
 	add_subwindow(yuv_color_range = new YuvColorRange(x, y, pwindow));
 	yuv_color_range->create_objects();
-	y += yuv_color_range->get_h() + 5;
+	y += yuv_color_range->get_h() + ys5;
 
 	UseTipWindow *tip_win = new UseTipWindow(pwindow, x1, y1);
 	add_subwindow(tip_win);
-	y1 += tip_win->get_h() + 5;
+	y1 += tip_win->get_h() + ys5;
 	AutocolorAssets *autocolor_assets = new AutocolorAssets(pwindow, x1, y1);
 	add_subwindow(autocolor_assets);
-	y1 += autocolor_assets->get_h() + 5;
+	y1 += autocolor_assets->get_h() + ys5;
 	UseWarnIndecies *idx_win = new UseWarnIndecies(pwindow, x1, y1);
 	add_subwindow(idx_win);
-	y1 += idx_win->get_h() + 5;
+	y1 += idx_win->get_h() + ys5;
 	UseWarnVersion *ver_win = new UseWarnVersion(pwindow, x1, y1);
 	add_subwindow(ver_win);
-	y1 += ver_win->get_h() + 5;
+	y1 += ver_win->get_h() + ys5;
 	BD_WarnRoot *bdwr_win = new BD_WarnRoot(pwindow, x1, y1);
 	add_subwindow(bdwr_win);
-	y1 += bdwr_win->get_h() + 5;
+	y1 += bdwr_win->get_h() + ys5;
 	PopupMenuBtnup *pop_win = new PopupMenuBtnup(pwindow, x1, y1);
 	add_subwindow(pop_win);
-	y1 += pop_win->get_h() + 5;
+	y1 += pop_win->get_h() + ys5;
 	GrabFocusPolicy *grab_input_focus = new GrabFocusPolicy(pwindow, x1, y1);
 	add_subwindow(grab_input_focus);
-	y1 += grab_input_focus->get_h() + 5;
+	y1 += grab_input_focus->get_h() + ys5;
 	ActivateFocusPolicy *focus_activate = new ActivateFocusPolicy(pwindow, x1, y1);
 	add_subwindow(focus_activate);
-	y1 += focus_activate->get_h() + 5;
+	y1 += focus_activate->get_h() + ys5;
 	DeactivateFocusPolicy *focus_deactivate = new DeactivateFocusPolicy(pwindow, x1, y1);
 	add_subwindow(focus_deactivate);
-	y1 += focus_deactivate->get_h() + 5;
+	y1 += focus_deactivate->get_h() + ys5;
 	ForwardRenderDisplacement *displacement = new ForwardRenderDisplacement(pwindow, x1, y1);
 	add_subwindow(displacement);
-	y1 += displacement->get_h() + 5;
+	y1 += displacement->get_h() + ys5;
 	add_subwindow(thumbnails = new ViewThumbnails(x1, y1, pwindow));
-	y1 += thumbnails->get_h() + 5;
+	y1 += thumbnails->get_h() + ys5;
 	PerpetualSession *perpetual = new PerpetualSession(x1, y1, pwindow);
 	add_subwindow(perpetual);
-	y1 += perpetual->get_h() + 5;
+	y1 += perpetual->get_h() + ys5;
 	CtrlToggle *ctrl_toggle = new CtrlToggle(x1, y1, pwindow);
 	add_subwindow(ctrl_toggle);
-	y1 += ctrl_toggle->get_h() + 5;
+	y1 += ctrl_toggle->get_h() + ys5;
 	RectifyAudioToggle *rect_toggle = new RectifyAudioToggle(x1, y1, pwindow);
 	add_subwindow(rect_toggle);
-	y1 += rect_toggle->get_h() + 5;
+	y1 += rect_toggle->get_h() + ys5;
 	if( y < y1 ) y = y1;
 }
 
@@ -323,7 +326,7 @@ int TimeFormatFeet::handle_event()
 }
 
 TimeFormatFeetSetting::TimeFormatFeetSetting(PreferencesWindow *pwindow, int x, int y, char *string)
- : BC_TextBox(x, y, 90, 1, string)
+ : BC_TextBox(x, y, xS(90), 1, string)
 { this->pwindow = pwindow; }
 
 int TimeFormatFeetSetting::handle_event()
@@ -335,7 +338,7 @@ int TimeFormatFeetSetting::handle_event()
 
 
 ViewTheme::ViewTheme(int x, int y, PreferencesWindow *pwindow)
- : BC_PopupMenu(x, y, 200, pwindow->thread->preferences->theme, 1)
+ : BC_PopupMenu(x, y, xS(200), pwindow->thread->preferences->theme, 1)
 {
 	this->pwindow = pwindow;
 }
@@ -374,7 +377,7 @@ int ViewThemeItem::handle_event()
 
 
 ViewPluginIcons::ViewPluginIcons(int x, int y, PreferencesWindow *pwindow)
- : BC_PopupMenu(x, y, 200, pwindow->thread->preferences->plugin_icons, 1)
+ : BC_PopupMenu(x, y, xS(200), pwindow->thread->preferences->plugin_icons, 1)
 {
 	this->pwindow = pwindow;
 }
@@ -441,7 +444,7 @@ ViewThumbnailSize::ViewThumbnailSize(PreferencesWindow *pwindow,
 		AppearancePrefs *aprefs, int x, int y)
  : BC_TumbleTextBox(aprefs,
 	pwindow->thread->preferences->awindow_picon_h,
-	16, 512, x, y, 80)
+	16, 512, x, y, xS(80))
 
 {
 	this->pwindow = pwindow;
@@ -460,7 +463,7 @@ ViewViconSize::ViewViconSize(PreferencesWindow *pwindow,
 		AppearancePrefs *aprefs, int x, int y)
  : BC_TumbleTextBox(aprefs,
 	pwindow->thread->preferences->vicon_size,
-	16, 512, x, y, 80)
+	16, 512, x, y, xS(80))
 
 {
 	this->pwindow = pwindow;
@@ -476,7 +479,7 @@ int ViewViconSize::handle_event()
 }
 
 ViewViconColorMode::ViewViconColorMode(PreferencesWindow *pwindow, int x, int y)
- : BC_PopupMenu(x, y, 100,
+ : BC_PopupMenu(x, y, xS(100),
 	_(vicon_color_modes[pwindow->thread->preferences->vicon_color_mode]), 1)
 {
 	this->pwindow = pwindow;
@@ -658,7 +661,7 @@ int AutocolorAssets::handle_event()
 }
 
 HighlightInverseColor::HighlightInverseColor(PreferencesWindow *pwindow, int x, int y, const char *hex)
- : BC_TextBox(x, y, 80, 1, hex)
+ : BC_TextBox(x, y, xS(80), 1, hex)
 {
 	this->pwindow = pwindow;
 }
@@ -684,7 +687,7 @@ const char *YuvColorSpace::color_space[] = {
 };
 
 YuvColorSpace::YuvColorSpace(int x, int y, PreferencesWindow *pwindow)
- : BC_PopupMenu(x, y, 100,
+ : BC_PopupMenu(x, y, xS(100),
 	_(color_space[pwindow->thread->preferences->yuv_color_space]), 1)
 {
 	this->pwindow = pwindow;
@@ -727,7 +730,7 @@ const char *YuvColorRange::color_range[] = {
 };
 
 YuvColorRange::YuvColorRange(int x, int y, PreferencesWindow *pwindow)
- : BC_PopupMenu(x, y, 100,
+ : BC_PopupMenu(x, y, xS(100),
 	_(color_range[pwindow->thread->preferences->yuv_color_range]), 1)
 {
 	this->pwindow = pwindow;

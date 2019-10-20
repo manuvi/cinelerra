@@ -170,14 +170,15 @@ void GWindowGUI::calculate_extents(BC_WindowBase *gui, int *w, int *h)
 {
 	int temp1, temp2, temp3, temp4, temp5, temp6, temp7;
 	int current_w, current_h;
-	*w = 10;
-	*h = 10;
+	int ys5 = yS(5), ys10 = yS(10);
+	*w = xS(10);
+	*h = ys10;
 
 	for( int i=0; i<(int)(sizeof(toggle_order)/sizeof(toggle_order[0])); ++i ) {
 		toggleinfo *tp = &toggle_order[i];
 		int ref = tp->ref;
 		if( ref < 0 ) {
-			*h += get_resources()->bar_data->get_h() + 5;
+			*h += get_resources()->bar_data->get_h() + ys5;
 			continue;
 		}
 		BC_Toggle::calculate_extents(gui,
@@ -187,11 +188,11 @@ void GWindowGUI::calculate_extents(BC_WindowBase *gui, int *w, int *h)
 			toggle_text(tp), MEDIUMFONT);
 		current_w += current_h;
 		*w = MAX(current_w, *w);
-		*h += current_h + 5;
+		*h += current_h + ys5;
 	}
 
-	*h += 10;
-	*w += 20;
+	*h += ys10;
+	*w += xS(20);
 }
 
 GWindowColorButton::GWindowColorButton(GWindowToggle *auto_toggle,
@@ -237,17 +238,19 @@ void GWindowColorButton::handle_done_event(int result)
 
 void GWindowGUI::create_objects()
 {
-	int x = 10, y = 10;
+	int xs10 = xS(10);
+	int ys5 = yS(5), ys10 = yS(10);
+	int x = xs10, y = ys10;
 	lock_window("GWindowGUI::create_objects");
 
 	for( int i=0; i<(int)(sizeof(toggle_order)/sizeof(toggle_order[0])); ++i ) {
 		toggleinfo *tp = &toggle_order[i];
 		int ref = tp->ref;
 		if( ref < 0 ) {
-			BC_Bar *bar = new BC_Bar(x,y,get_w()-x-10);
+			BC_Bar *bar = new BC_Bar(x,y,get_w()-x-xs10);
 			add_tool(bar);
 			toggles[i] = 0;
-			y += bar->get_h() + 5;
+			y += bar->get_h() + ys5;
 			continue;
 		}
 		const char *label = toggle_text(tp);
@@ -264,14 +267,14 @@ void GWindowGUI::create_objects()
 			case AUTOMATION_MASK: vframe = mwindow->theme->maskkeyframe_data;  break;
 			}
 			if( !vframe ) {
-				int wh = toggle->get_h() - 4;
+				int wh = toggle->get_h() - yS(4);
 				GWindowColorButton *color_button =
-					new GWindowColorButton(toggle, get_w()-wh-10, y+2, wh, color);
+					new GWindowColorButton(toggle, get_w()-wh-ys10, y+yS(2), wh, color);
 				add_tool(color_button);
 				color_button->create_objects();
 			}
 			else
-				draw_vframe(vframe, get_w()-vframe->get_w()-10, y);
+				draw_vframe(vframe, get_w()-vframe->get_w()-xs10, y);
 		}
 		else {
 			const char *accel = 0;
@@ -286,16 +289,16 @@ void GWindowGUI::create_objects()
 				break;
 			case NON_AUTOMATION_HARD_EDGES:
 				VFrame *vframe = mwindow->theme->hardedge_data;
-				draw_vframe(vframe, get_w()-vframe->get_w()-10, y);
+				draw_vframe(vframe, get_w()-vframe->get_w()-xs10, y);
 				hard_edges = toggle;
 				break;
 			}
 			 if( accel ) {
-				int x1 = get_w() - BC_Title::calculate_w(this, accel) - 10;
+				int x1 = get_w() - BC_Title::calculate_w(this, accel) - xs10;
 				add_subwindow(new BC_Title(x1, y, accel));
 			}
 		}
-		y += toggles[i]->get_h() + 5;
+		y += toggles[i]->get_h() + ys5;
 	}
 	update_toggles(0);
 	unlock_window();

@@ -120,10 +120,10 @@ void TimeFrontConfig::interpolate(TimeFrontConfig &prev,
 
 TimeFrontWindow::TimeFrontWindow(TimeFrontMain *plugin)
  : PluginClientWindow(plugin,
-	350,
-	290,
-	350,
-	290,
+	xS(350),
+	yS(290),
+	xS(350),
+	yS(290),
 	0)
 {
 	this->plugin = plugin;
@@ -150,28 +150,30 @@ TimeFrontWindow::~TimeFrontWindow()
 
 void TimeFrontWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int xs10 = xS(10);
+	int ys10 = yS(10), ys35 = yS(35), ys40 = yS(40), ys140 = yS(140);
+	int x = xs10, y = ys10;
 	BC_Title *title;
 
 	add_subwindow(title = new BC_Title(x, y, _("Type:")));
 	add_subwindow(shape = new TimeFrontShape(plugin,
 		this,
-		x + title->get_w() + 10,
+		x + title->get_w() + xs10,
 		y));
 	shape->create_objects();
-	y += 40;
+	y += ys40;
 	shape_x = x;
 	shape_y = y;
-	y += 140;
+	y += ys140;
 	add_subwindow(title = new BC_Title(x, y, _("Time range:")));
-	add_subwindow(frame_range = new TimeFrontFrameRange(plugin, x + title->get_w() + 10, y));
-	frame_range_x = x + frame_range->get_w() + 10;
+	add_subwindow(frame_range = new TimeFrontFrameRange(plugin, x + title->get_w() + xs10, y));
+	frame_range_x = x + frame_range->get_w() + xs10;
 	frame_range_y = y;
-	y += 35;
+	y += ys35;
 	update_shape();
 
 	add_subwindow(invert = new TimeFrontInvert(plugin, x, y));
-	add_subwindow(show_grayscale = new TimeFrontShowGrayscale(plugin, x+ 100, y));
+	add_subwindow(show_grayscale = new TimeFrontShowGrayscale(plugin, x+ xS(100), y));
 
 
 	show_window();
@@ -199,23 +201,23 @@ void TimeFrontWindow::update_shape()
 		if(!angle)
 		{
 			add_subwindow(angle_title = new BC_Title(x, y, _("Angle:")));
-			add_subwindow(angle = new TimeFrontAngle(plugin, x + angle_title->get_w() + 10, y));
+			add_subwindow(angle = new TimeFrontAngle(plugin, x + angle_title->get_w() + xS(10), y));
 		}
 		if(!rate){
-			y = shape_y + 40;
+			y = shape_y + yS(40);
 
 			add_subwindow(rate_title = new BC_Title(x, y, _("Rate:")));
 			add_subwindow(rate = new TimeFrontRate(plugin,
-				x + rate_title->get_w() + 10,
+				x + rate_title->get_w() + xS(10),
 				y));
 			rate->create_objects();
-			y += 40;
+			y += yS(40);
 			add_subwindow(in_radius_title = new BC_Title(x, y, _("Inner radius:")));
-			add_subwindow(in_radius = new TimeFrontInRadius(plugin, x + in_radius_title->get_w() + 10, y));
-			y += 30;
+			add_subwindow(in_radius = new TimeFrontInRadius(plugin, x + in_radius_title->get_w() + xS(10), y));
+			y += yS(30);
 			add_subwindow(out_radius_title = new BC_Title(x, y, _("Outer radius:")));
-			add_subwindow(out_radius = new TimeFrontOutRadius(plugin, x + out_radius_title->get_w() + 10, y));
-			y += 35;
+			add_subwindow(out_radius = new TimeFrontOutRadius(plugin, x + out_radius_title->get_w() + xS(10), y));
+			y += yS(35);
 
 		}
 	} else
@@ -233,32 +235,32 @@ void TimeFrontWindow::update_shape()
 		{
 			add_subwindow(center_x_title = new BC_Title(x, y, _("Center X:")));
 			add_subwindow(center_x = new TimeFrontCenterX(plugin,
-				x + center_x_title->get_w() + 10,
+				x + center_x_title->get_w() + xS(10),
 				y));
-			x += center_x_title->get_w() + 10 + center_x->get_w() + 10;
+			x += center_x_title->get_w() + xS(10) + center_x->get_w() + xS(10);
 			add_subwindow(center_y_title = new BC_Title(x, y, _("Center Y:")));
 			add_subwindow(center_y = new TimeFrontCenterY(plugin,
-				x + center_y_title->get_w() + 10,
+				x + center_y_title->get_w() + xS(10),
 				y));
 		}
 
 
 		if(!rate)
 		{
-			y = shape_y + 40;
+			y = shape_y + yS(40);
 			x = shape_x;
 			add_subwindow(rate_title = new BC_Title(x, y, _("Rate:")));
 			add_subwindow(rate = new TimeFrontRate(plugin,
-				x + rate_title->get_w() + 10,
+				x + rate_title->get_w() + xS(10),
 				y));
 			rate->create_objects();
-			y += 40;
+			y += yS(40);
 			add_subwindow(in_radius_title = new BC_Title(x, y, _("Inner radius:")));
-			add_subwindow(in_radius = new TimeFrontInRadius(plugin, x + in_radius_title->get_w() + 10, y));
-			y += 30;
+			add_subwindow(in_radius = new TimeFrontInRadius(plugin, x + in_radius_title->get_w() + xS(10), y));
+			y += yS(30);
 			add_subwindow(out_radius_title = new BC_Title(x, y, _("Outer radius:")));
-			add_subwindow(out_radius = new TimeFrontOutRadius(plugin, x + out_radius_title->get_w() + 10, y));
-			y += 35;
+			add_subwindow(out_radius = new TimeFrontOutRadius(plugin, x + out_radius_title->get_w() + xS(10), y));
+			y += yS(35);
 		}
 	} else
 	if(plugin->config.shape == TimeFrontConfig::OTHERTRACK)
@@ -292,7 +294,7 @@ void TimeFrontWindow::update_shape()
 			add_subwindow(track_usage_title = new BC_Title(x, y, _("As timefront use:")));
 			add_subwindow(track_usage = new TimeFrontTrackUsage(plugin,
 				this,
-				x + track_usage_title->get_w() + 10,
+				x + track_usage_title->get_w() + xS(10),
 				y));
 			track_usage->create_objects();
 
@@ -349,7 +351,7 @@ TimeFrontShape::TimeFrontShape(TimeFrontMain *plugin,
 	TimeFrontWindow *gui,
 	int x,
 	int y)
- : BC_PopupMenu(x, y, 230, to_text(plugin->config.shape), 1)
+ : BC_PopupMenu(x, y, xS(230), to_text(plugin->config.shape), 1)
 {
 	this->plugin = plugin;
 	this->gui = gui;
@@ -397,7 +399,7 @@ int TimeFrontShape::handle_event()
 
 TimeFrontTrackUsage::TimeFrontTrackUsage(TimeFrontMain *plugin,
 	TimeFrontWindow *gui, int x, int y)
- : BC_PopupMenu(x, y, 140, to_text(plugin->config.track_usage), 1)
+ : BC_PopupMenu(x, y, xS(140), to_text(plugin->config.track_usage), 1)
 {
 	this->plugin = plugin;
 	this->gui = gui;
@@ -489,11 +491,7 @@ int TimeFrontAngle::handle_event()
 
 
 TimeFrontRate::TimeFrontRate(TimeFrontMain *plugin, int x, int y)
- : BC_PopupMenu(x,
- 	y,
-	155,
-	to_text(plugin->config.rate),
-	1)
+ : BC_PopupMenu(x, y, xS(155), to_text(plugin->config.rate), 1)
 {
 	this->plugin = plugin;
 }
@@ -536,8 +534,8 @@ TimeFrontInRadius::TimeFrontInRadius(TimeFrontMain *plugin, int x, int y)
  : BC_FSlider(x,
  	y,
 	0,
-	200,
-	200,
+	xS(200),
+	yS(200),
 	(float)0,
 	(float)100,
 	(float)plugin->config.in_radius)
@@ -557,8 +555,8 @@ TimeFrontOutRadius::TimeFrontOutRadius(TimeFrontMain *plugin, int x, int y)
  : BC_FSlider(x,
  	y,
 	0,
-	200,
-	200,
+	xS(200),
+	yS(200),
 	(float)0,
 	(float)100,
 	(float)plugin->config.out_radius)
@@ -577,8 +575,8 @@ TimeFrontFrameRange::TimeFrontFrameRange(TimeFrontMain *plugin, int x, int y)
  : BC_ISlider(x,
  	y,
 	0,
-	200,
-	200,
+	xS(200),
+	yS(200),
 	(int)1,
 	(int)255,
 	(int)plugin->config.frame_range)

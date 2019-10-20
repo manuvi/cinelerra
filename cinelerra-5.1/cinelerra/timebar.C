@@ -277,20 +277,16 @@ void TimeBar::update_labels()
 // Create new label
 				if( output >= labels.total ) {
 					LabelGUI *new_label;
-					add_subwindow(new_label =
-						new LabelGUI(mwindow,
-							this,
-							pixel,
-							LabelGUI::get_y(mwindow, this),
+					add_subwindow(new_label = new LabelGUI(mwindow, this,
+							pixel, LabelGUI::get_y(mwindow, this),
 							current->position));
 					new_label->set_cursor(INHERIT_CURSOR, 0, 0);
 					new_label->set_tooltip(current->textstr);
 					new_label->label = current;
 					labels.append(new_label);
 				}
-				else
 // Reposition old label
-				{
+				else {
 					LabelGUI *gui = labels.values[output];
 					if( gui->pixel != pixel ) {
 						gui->pixel = pixel;
@@ -362,7 +358,7 @@ void TimeBar::draw_inout_highlight()
 	CLAMP(in_x, 0, get_w());
 	CLAMP(out_x, 0, get_w());
 	set_color(mwindow->theme->inout_highlight_color);
-	int lw = 5;
+	int lw = xS(5);
 	set_line_width(lw);
 	set_inverse();
 	draw_line(in_x, get_h()-2*lw, out_x, get_h()-2*lw);
@@ -537,14 +533,10 @@ EDL* TimeBar::get_edl()
 
 void TimeBar::draw_range()
 {
-
-
 //printf("TimeBar::draw_range %d %p\n", __LINE__, get_edl());
  	if( has_preview() && get_edl() ) {
  		int x1, x2;
 		get_preview_pixels(x1, x2);
-
-//printf("TimeBar::draw_range %f %d %d\n", edl_length, x1, x2);
 		draw_3segmenth(0, 0, x1, mwindow->theme->timebar_view_data);
  		draw_top_background(get_parent(), x1, 0, x2 - x1, get_h());
 		draw_3segmenth(x2, 0, get_w() - x2, mwindow->theme->timebar_view_data);
@@ -939,8 +931,6 @@ int TimeBar::select_region(double position)
 	update_highlights();
 	return 0;
 }
-
-
 
 
 int TimeBar::delete_arrows()

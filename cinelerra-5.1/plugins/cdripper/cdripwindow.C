@@ -27,7 +27,7 @@
 
 CDRipWindow::CDRipWindow(CDRipMain *cdripper, int x, int y)
  : BC_Window(_(PROGRAM_NAME ": CD Ripper"),
- 	x, y, 450, 230, 450, 230, 0, 0, 1)
+	x, y, xS(450), yS(230), xS(450), yS(230), 0, 0, 1)
 {
 	this->cdripper = cdripper;
 }
@@ -38,43 +38,45 @@ CDRipWindow::~CDRipWindow()
 
 void CDRipWindow::create_objects()
 {
-	int y = 10, x = 10;
-	add_tool(new BC_Title(x, y, _("Select the range to transfer:"))); y += 25;
-	add_tool(new BC_Title(x, y, _("Track:"))); x += 70;
-	add_tool(new BC_Title(x, y, _("Min."))); x += 70;
-	add_tool(new BC_Title(x, y, _("Sec."))); x += 100;
+	int xs10 = xS(10), xs70 = xS(70), xs100 = xS(100);
+	int ys10 = yS(10), ys25 = yS(25), ys30 = yS(30), ys35 = yS(35);
+	int y = ys10, x = xs10;
+	add_tool(new BC_Title(x, y, _("Select the range to transfer:"))); y += ys25;
+	add_tool(new BC_Title(x, y, _("Track:"))); x += xs70;
+	add_tool(new BC_Title(x, y, _("Min."))); x += xs70;
+	add_tool(new BC_Title(x, y, _("Sec."))); x += xs100;
 
-	add_tool(new BC_Title(x, y, _("Track:"))); x += 70;
-	add_tool(new BC_Title(x, y, _("Min."))); x += 70;
-	add_tool(new BC_Title(x, y, _("Sec."))); x += 100;
+	add_tool(new BC_Title(x, y, _("Track:"))); x += xs70;
+	add_tool(new BC_Title(x, y, _("Min."))); x += xs70;
+	add_tool(new BC_Title(x, y, _("Sec."))); x += xs100;
 
-	x = 10;  y += 25;
+	x = xs10;  y += ys25;
 	add_tool(track1 = new CDRipTextValue(this, &(cdripper->track1), x, y, 50));
-	x += 70;
+	x += xs70;
 	add_tool(min1 = new CDRipTextValue(this, &(cdripper->min1), x, y, 50));
-	x += 70;
+	x += xs70;
 	add_tool(sec1 = new CDRipTextValue(this, &(cdripper->sec1), x, y, 50));
-	x += 100;
+	x += xs100;
 
 	add_tool(track2 = new CDRipTextValue(this, &(cdripper->track2), x, y, 50));
-	x += 70;
+	x += xs70;
 	add_tool(min2 = new CDRipTextValue(this, &(cdripper->min2), x, y, 50));
-	x += 70;
+	x += xs70;
 	add_tool(sec2 = new CDRipTextValue(this, &(cdripper->sec2), x, y, 50));
 
-	x = 10;   y += 30;
+	x = xs10;   y += ys30;
 	add_tool(new BC_Title(x, y, _("From"), LARGEFONT, RED));
-	x += 240;
+	x += xS(240);
 	add_tool(new BC_Title(x, y, _("To"), LARGEFONT, RED));
 
-	x = 10;   y += 35;
+	x = xs10;   y += ys35;
 	add_tool(new BC_Title(x, y, _("CD Device:")));
-	x += 100;
+	x += xs100;
 	add_tool(device = new CDRipWindowDevice(this, cdripper->device, x, y, 200));
 
-	x = 10;   y += 35;
+	x = xs10;   y += ys35;
 	add_tool(new BC_OKButton(this));
-	x += 300;
+	x += xS(300);
 	add_tool(new BC_CancelButton(this));
 	show_window();
 	flush();

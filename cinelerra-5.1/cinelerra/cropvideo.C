@@ -94,7 +94,7 @@ int CropVideo::save_defaults()
 }
 
 CropVideoWindow::CropVideoWindow(MWindow *mwindow, CropVideo *thread)
- : BC_Window(_(PROGRAM_NAME ": Crop"), 380, 75, 0, 0)
+ : BC_Window(_(PROGRAM_NAME ": Crop"), xS(380), yS(75), 0, 0)
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
@@ -107,11 +107,11 @@ CropVideoWindow::~CropVideoWindow()
 void CropVideoWindow::create_objects()
 {
 	lock_window("CropVideoWindow::create_objects");
-	int x = 10, y = 10;
+	int x = xS(10), y = yS(10);
 	add_subwindow(new BC_Title(x, y, _("Select a region to crop in the video output window")));
-	y += 30;
+	y += yS(30);
 	add_subwindow(new BC_OKButton(x, y));
-	x = get_w() - 100;
+	x = get_w() - xS(100);
 	add_subwindow(new BC_CancelButton(x, y));
 	unlock_window();
 }

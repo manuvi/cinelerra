@@ -148,7 +148,7 @@ void NEOPHYTETHEME::initialize()
 	resources->menu_highlighted_fontcolor = CreamyWhiteBright;
 	/* This indent is too global and the fullness ultimately depends
 	 * on the text. (Pref. top right, engl.: ~17) */
-	resources->generic_button_margin = 20;     // [15]
+	resources->generic_button_margin = xS(20);     // [15]
 	resources->pot_needle_color = CreamyWhite; // [resources->text_default] – marginal
 	resources->pot_offset = 1;                 // only the needle
 	resources->progress_text = resources->text_default;
@@ -161,12 +161,12 @@ void NEOPHYTETHEME::initialize()
 	resources->menu_shadow = ALARM;
 
 	resources->menu_highlighted = BabyBlue;
-	resources->popupmenu_margin = 15;       // indent, moves the button text to the right
-	resources->popupmenu_triangle_margin = 15;
+	resources->popupmenu_margin = xS(15);       // indent, moves the button text to the right
+	resources->popupmenu_triangle_margin = xS(15);
 
 	resources->listbox_title_color = CreamyWhiteBright; // columns header
-	resources->listbox_title_margin = 15;               // [20] indent
-	resources->listbox_title_hotspot = 15;              // [20]
+	resources->listbox_title_margin = xS(15);               // [20] indent
+	resources->listbox_title_hotspot = xS(15);              // [20]
 
 	resources->listbox_border2 = BlackNineTwo; // as text_border
 	resources->listbox_border1 = BLACK;
@@ -182,7 +182,7 @@ void NEOPHYTETHEME::initialize()
 	resources->listbox_text = CreamyWhite;
 	resources->listbox_selected = 0x3d5477;     // approximately matches column_hi
   
-	resources->filebox_margin = 130; // [130]
+	resources->filebox_margin = yS(130); // [130]
 	resources->file_color = WHITE;
 	resources->directory_color = BabyBlue;
 
@@ -196,7 +196,7 @@ void NEOPHYTETHEME::initialize()
 	recordgui_variable_color = RED;
 	      
 	channel_position_color = ComicYellow; // Set Format, speaker numbers 
-	resources->meter_title_w = 25;
+	resources->meter_title_w = xS(25);
 
 	// (asset) edit info text color
 	edit_font_color = ComicYellow; // ? ../../cinelerra/theme.h:282
@@ -475,7 +475,7 @@ void NEOPHYTETHEME::initialize()
 	resources->bar_data = new_image("bar", "bar.png");
 	resources->check = new_image("check", "check.png");
 
-	resources->min_menu_w = 96;
+	resources->min_menu_w = xS(96);
 	resources->menu_popup_bg = new_image("menu_popup_bg.png");
 	resources->menu_item_bg = new_image_set(
 		3,
@@ -649,17 +649,17 @@ void NEOPHYTETHEME::initialize()
 	// Record windows
 	preferences_category_overlap = 0;
 	preferencescategory_x = 0;
-	preferencescategory_y = 5;
-	preferencestitle_x = 5;
-	preferencestitle_y = 10;
-	preferencesoptions_x = 5;
+	preferencescategory_y = yS(5);
+	preferencestitle_x = xS(5);
+	preferencestitle_y = yS(10);
+	preferencesoptions_x = xS(5);
 	preferencesoptions_y = 0;
 
 	// MWindow
 	message_normal = resources->text_default;
 
-	mtransport_margin = 10;
-	toggle_margin = 10;
+	mtransport_margin = xS(10);
+	toggle_margin = xS(10);
 
 	new_button("pane.png", "pane_up.png", "pane_hi.png", "pane_dn.png",
 			   "pane");
@@ -745,21 +745,21 @@ void NEOPHYTETHEME::initialize()
 
 	setformat_w = get_image("setformat_bg")->get_w();
 	setformat_h = get_image("setformat_bg")->get_h();
-	setformat_x1 = 15;
-	setformat_x2 = 110;
-	setformat_x3 = 315;
-	setformat_x4 = 425;
-	setformat_y1 = 20;
-	setformat_y2 = 85;
-	setformat_y3 = 125;
-	setformat_margin = 30;
-	setformat_channels_x = 25;
-	setformat_channels_y = 242;
-	setformat_channels_w = 250;
-	setformat_channels_h = 250;
+	setformat_x1 = xS(15);
+	setformat_x2 = xS(110);
+	setformat_x3 = xS(315);
+	setformat_x4 = xS(425);
+	setformat_y1 = yS(20);
+	setformat_y2 = yS(85);
+	setformat_y3 = yS(125);
+	setformat_margin = xS(30);
+	setformat_channels_x = xS(25);
+	setformat_channels_y = yS(242);
+	setformat_channels_w = xS(250);
+	setformat_channels_h = yS(250);
 
-	loadfile_pad = get_image_set("loadmode_new")[0]->get_h() + 10;
-	browse_pad = 20;
+	loadfile_pad = get_image_set("loadmode_new")[0]->get_h() + yS(10);
+	browse_pad = yS(20);
 
 	new_toggle("playpatch.png",
 			   "playpatch_up.png",
@@ -1175,19 +1175,19 @@ void NEOPHYTETHEME::initialize()
 // Re-align the Clock. theme.c:931 
 void NEOPHYTETHEME::get_vwindow_sizes(VWindowGUI *gui)
 {
-	int edit_w = EditPanel::calculate_w(mwindow, 0, 10);
+	int edit_w = EditPanel::calculate_w(mwindow, 0, xS(10));
 	int transport_w = PlayTransport::get_transport_width(mwindow) + toggle_margin;
-	vtimebar_h = 16;       // The height of the position indicator
-	int division_w = 30;
+	vtimebar_h = yS(16);       // The height of the position indicator
+	int division_w = xS(30);
 	
 	/* For the deco, [150]-10. The remaining space should theoretically
 	   suffice for 999,999:59:59.960 hours. Total size: 140 x 26, where
 	   a height of 24 or 22 px would be nicer. */
-	vtime_w = 140;
+	vtime_w = xS(140);
 	
 	/* Indent, flat. Larger indentation also puts
 	   the 35% view into the compact view. */
-	int vtime_border = 15; 
+	int vtime_border = xS(15);
   
 	vmeter_y = widget_border;
 	vmeter_h = mwindow->session->vwindow_h - cmeter_y - widget_border;
@@ -1223,9 +1223,9 @@ void NEOPHYTETHEME::get_vwindow_sizes(VWindowGUI *gui)
 			get_image_set("autokeyframe")[0]->get_h() -
 			widget_border;
 
-		vdivision_x = 280;      // field width, compact
-		vtime_x = vedit_x + 38; // concentric
-		vtime_y = vedit_y + 24; // vertical alignment
+		vdivision_x = xS(280);      // field width, compact
+		vtime_x = vedit_x + xS(38); // concentric
+		vtime_y = vedit_y + yS(24); // vertical alignment
 	} else {
 		buttons_h = vtimebar_h +
 			widget_border +
@@ -1285,20 +1285,18 @@ void NEOPHYTETHEME::build_overlays()
 void NEOPHYTETHEME::draw_rwindow_bg(RecordGUI *gui)
 {
 	// int y;
-	// int margin = 50;
-	// int margin2 = 80;
-	// gui->draw_9segment(recordgui_batch_x - margin,
-	// 	0,
+	// int margin = xS(50);
+	// int margin2 = xS(80);
+	// gui->draw_9segment(recordgui_batch_x - margin, 0,
 	// 	mwindow->session->rwindow_w - recordgui_status_x + margin,
 	// 	recordgui_buttons_y,
 	// 	rgui_batch);
 	// gui->draw_3segmenth(recordgui_options_x - margin2,
-	// 	recordgui_buttons_y - 5,
+	// 	recordgui_buttons_y - yS(5),
 	// 	mwindow->session->rwindow_w - recordgui_options_x + margin2,
 	// 	rgui_controls);
-	// y = recordgui_buttons_y - 5 + rgui_controls->get_h();
-	// gui->draw_9segment(0,
-	// 	y,
+	// y = recordgui_buttons_y - yS(5) + rgui_controls->get_h();
+	// gui->draw_9segment(0, y,
 	// 	mwindow->session->rwindow_w,
 	// 	mwindow->session->rwindow_h - y,
 	// 	rgui_list);
@@ -1306,17 +1304,15 @@ void NEOPHYTETHEME::draw_rwindow_bg(RecordGUI *gui)
 
 void NEOPHYTETHEME::draw_rmonitor_bg(RecordMonitorGUI *gui)
 {
-	// int margin = 45;
-	// int panel_w = 300;
+	// int margin = xS(45);
+	// int panel_w = xS(300);
 	// int x = rmonitor_meter_x - margin;
 	// int w = mwindow->session->rmonitor_w - x;
 	// if(w < rmonitor_meters->get_w()) w = rmonitor_meters->get_w();
-	// gui->clear_box(0,
-	// 	0,
+	// gui->clear_box(0, 0,
 	// 	mwindow->session->rmonitor_w,
 	// 	mwindow->session->rmonitor_h);
-	// gui->draw_9segment(x,
-	// 	0,
+	// gui->draw_9segment(x, 0,
 	// 	w,
 	// 	mwindow->session->rmonitor_h,
 	// 	rmonitor_meters);
@@ -1363,26 +1359,20 @@ void NEOPHYTETHEME::draw_mwindow_bg(MWindowGUI *gui)
 				  mcanvas_w - BC_ScrollBar::get_span(SCROLL_VERT),
 				  mcanvas_h - BC_ScrollBar::get_span(SCROLL_HORIZ) - mtimebar_h);
 	// Timebar
-	gui->draw_3segmenth(mtimebar_x,
-						mtimebar_y,
-						mtimebar_w,
-						get_image("timebar_bg"));
+	gui->draw_3segmenth(mtimebar_x, mtimebar_y,
+		mtimebar_w, get_image("timebar_bg"));
 	// Zoombar
 	gui->set_color(BlackNineTwo);
-	gui->draw_box(mzoom_x,
-				  mzoom_y,
-				  mwindow->session->mwindow_w,
-				  25);
+	gui->draw_box(mzoom_x, mzoom_y,
+		mwindow->session->mwindow_w, yS(25));
 	// Scrollbar filler
 	// gui->draw_vframe(get_image("mscroll_filler"),
 	//                  mcanvas_x + mcanvas_w - BC_ScrollBar::get_span(SCROLL_VERT),
 	//                  mcanvas_y + mcanvas_h - BC_ScrollBar::get_span(SCROLL_HORIZ));
 
 	// Status
-	gui->draw_3segmenth(mzoom_x,
-						mzoom_y,
-						mzoom_w,
-						get_image("statusbar"));
+	gui->draw_3segmenth(mzoom_x, mzoom_y,
+		mzoom_w, get_image("statusbar"));
 }
 
 void NEOPHYTETHEME::draw_cwindow_bg(CWindowGUI *gui)
@@ -1403,42 +1393,34 @@ void NEOPHYTETHEME::draw_cwindow_bg(CWindowGUI *gui)
 						   mwindow->session->cwindow_h,
 						   get_image("cmeter_bg"));
 	} else {
-		gui->draw_3segmenth(cstatus_x,
-							ccomposite_h,
-							cmeter_x - widget_border - cstatus_x + 100,
-							get_image("cbuttons_right"));
+		gui->draw_3segmenth(cstatus_x, ccomposite_h,
+			cmeter_x - widget_border - cstatus_x + xS(100),
+			get_image("cbuttons_right"));
 	}
 }
 
 void NEOPHYTETHEME::draw_vwindow_bg(VWindowGUI *gui)
 {
-	gui->draw_3segmenth(0,
-						vcanvas_h,
-						vdivision_x,
-						get_image("vbuttons_left"));
+	gui->draw_3segmenth(0, vcanvas_h,
+		vdivision_x, get_image("vbuttons_left"));
 	if(mwindow->edl->session->vwindow_meter)
 	{
-		gui->draw_3segmenth(vdivision_x,
-							vcanvas_h,
-							vmeter_x - widget_border - vdivision_x,
-							get_image("vbuttons_right"));
-		gui->draw_9segment(vmeter_x - widget_border,
-						   0,
-						   mwindow->session->vwindow_w - vmeter_x + widget_border,
-						   mwindow->session->vwindow_h,
-						   get_image("cmeter_bg"));
+		gui->draw_3segmenth(vdivision_x, vcanvas_h,
+			vmeter_x - widget_border - vdivision_x, get_image("vbuttons_right"));
+		gui->draw_9segment(vmeter_x - widget_border, 0,
+			   mwindow->session->vwindow_w - vmeter_x + widget_border,
+			   mwindow->session->vwindow_h, get_image("cmeter_bg"));
 	} else {
-		gui->draw_3segmenth(vdivision_x,
-							vcanvas_h,
-							vmeter_x - widget_border - vdivision_x + 100,
-							get_image("vbuttons_right"));
+		gui->draw_3segmenth(vdivision_x, vcanvas_h,
+			vmeter_x - widget_border - vdivision_x + xS(100),
+			get_image("vbuttons_right"));
 	}
 
 	// Clock deco
 	gui->draw_3segmenth(
-		vtime_x - 5,  // -left, +right 
-		vtime_y + 0,  // -up, +down. Careful, move some of the buttons as well.
-		vtime_w + 10, // protruded l/r x*2
+		vtime_x - xS(5),  // -left, +right
+		vtime_y + 0,      // -up, +down. Careful, move some of the buttons as well.
+		vtime_w + xS(10), // protruded l/r x*2
 		get_image("vclock"));
 
 }

@@ -275,10 +275,10 @@ void MainSession::default_window_positions(int window_config)
 		BC_DisplayInfo b_display_info(b_x11_host);
 		b_root_w = b_display_info.get_root_w();
 		b_root_h = b_display_info.get_root_h();
-		cwindow_x = 50;
-		cwindow_y = 50;
-		cwindow_w = b_root_w-100;
-		cwindow_h = b_root_h-100;
+		cwindow_x = xS(50);
+		cwindow_y = yS(50);
+		cwindow_w = b_root_w-xS(100);
+		cwindow_h = b_root_h-yS(100);
 	}
 
 	ctool_x = cwindow_x + cwindow_w / 2;
@@ -294,11 +294,11 @@ void MainSession::default_window_positions(int window_config)
 	awindow_w = root_x + root_w - awindow_x - border_left - border_right;
 	awindow_h = mwindow_h;
 
-	bwindow_w = 600;
-	bwindow_h = 360;
+	bwindow_w = xS(600);
+	bwindow_h = yS(360);
 
-	ewindow_w = 640;
-	ewindow_h = 240;
+	ewindow_w = xS(640);
+	ewindow_h = yS(240);
 
 	channels_x = 0;
 	channels_y = 0;
@@ -306,12 +306,12 @@ void MainSession::default_window_positions(int window_config)
 	picture_y = 0;
 	scope_x = 0;
 	scope_y = 0;
-	scope_w = 640;
-	scope_h = 320;
+	scope_w = xS(640);
+	scope_h = yS(320);
 	histogram_x = 0;
 	histogram_y = 0;
-	histogram_w = 320;
-	histogram_h = 480;
+	histogram_w = xS(320);
+	histogram_h = yS(480);
 	record_scope = 0;
 	use_hist = 1;
 	use_wave = 1;
@@ -324,7 +324,7 @@ void MainSession::default_window_positions(int window_config)
 			mwindow->edl->session->audio_channels,
 			1);
 	else
-		lwindow_w = 100;
+		lwindow_w = xS(100);
 
 	lwindow_y = 0;
 	lwindow_x = root_w - lwindow_w;
@@ -332,36 +332,36 @@ void MainSession::default_window_positions(int window_config)
 
 	rwindow_x = root_x;
 	rwindow_y = root_y;
-	rwindow_h = 500;
-	rwindow_w = 650;
+	rwindow_h = yS(500);
+	rwindow_w = xS(650);
 
 	cswindow_x = root_x;
 	cswindow_y = root_y;
-	cswindow_w = 1280;
-	cswindow_h = 600;
+	cswindow_w = xS(1280);
+	cswindow_h = yS(600);
 
 	if( !dual_head || window_config != 2 ) {
-		rmonitor_x = rwindow_x + rwindow_w + 10;
+		rmonitor_x = rwindow_x + rwindow_w + xS(10);
 		rmonitor_y = rwindow_y;
 		rmonitor_w = root_x + root_w - rmonitor_x;
 		rmonitor_h = rwindow_h;
 	}
 	else {
-		rmonitor_x = cswindow_x = 50;
-		rmonitor_y = cswindow_y = 50;
-		rmonitor_w = b_root_w-100;
-		rmonitor_h = b_root_h-100;
+		rmonitor_x = cswindow_x = xS(50);
+		rmonitor_y = cswindow_y = yS(50);
+		rmonitor_w = b_root_w-xS(100);
+		rmonitor_h = b_root_h-yS(100);
 		if( cswindow_w < rmonitor_w ) cswindow_w = rmonitor_w;
 		if( cswindow_h < rmonitor_h ) cswindow_h = rmonitor_h;
 	}
 
 	swindow_x = root_x;
 	swindow_y = root_y;
-	swindow_w = 600;
-	swindow_h = 400;
+	swindow_w = xS(600);
+	swindow_h = yS(400);
 
-	batchrender_w = 750;
-	batchrender_h = 400;
+	batchrender_w = xS(750);
+	batchrender_h = yS(400);
 	batchrender_x = root_w / 2 - batchrender_w / 2;
 	batchrender_y = root_h / 2 - batchrender_h / 2;
 }

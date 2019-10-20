@@ -53,11 +53,14 @@ void TransitionLengthThread::start(Transition *transition, double length)
 	BC_DialogThread::start();
 }
 
+#define TLW_W xS(300)
+#define TLW_H yS(100)
+
 BC_Window* TransitionLengthThread::new_gui()
 {
 	BC_DisplayInfo display_info;
-	int x = display_info.get_abs_cursor_x() - 150;
-	int y = display_info.get_abs_cursor_y() - 50;
+	int x = display_info.get_abs_cursor_x() - TLW_W / 2;
+	int y = display_info.get_abs_cursor_y() - TLW_H / 2;
 	TransitionLengthDialog *gui = new TransitionLengthDialog(mwindow, this, x, y);
 	gui->create_objects();
 	return gui;
@@ -120,7 +123,7 @@ int TransitionUnitsItem::handle_event()
 }
 
 TransitionUnitsPopup::TransitionUnitsPopup(TransitionLengthDialog *gui, int x, int y)
- : BC_PopupMenu(x, y, 120, "", 1)
+ : BC_PopupMenu(x, y, xS(120), "", 1)
 {
 	this->gui = gui;
 	units = TIME_SECONDS;
@@ -145,7 +148,7 @@ void TransitionUnitsPopup::create_objects()
 TransitionLengthDialog::TransitionLengthDialog(MWindow *mwindow,
 	TransitionLengthThread *thread, int x, int y)
  : BC_Window(_(PROGRAM_NAME ": Transition length"), x, y,
-		300, 100, -1, -1, 0, 0, 1)
+		TLW_W, TLW_H, -1, -1, 0, 0, 1)
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
@@ -159,9 +162,9 @@ TransitionLengthDialog::~TransitionLengthDialog()
 void TransitionLengthDialog::create_objects()
 {
 	lock_window("TransitionLengthDialog::create_objects");
-	add_subwindow(units_popup = new TransitionUnitsPopup(this, 10, 10));
+	add_subwindow(units_popup = new TransitionUnitsPopup(this, xS(10), yS(10)));
 	units_popup->create_objects();
-	text = new TransitionLengthText(mwindow, this, 160, 10);
+	text = new TransitionLengthText(mwindow, this, xS(160), yS(10));
 	text->create_objects();
 	text->set_precision(3);
 	text->set_increment(0.1);
@@ -181,7 +184,7 @@ int TransitionLengthDialog::close_event()
 TransitionLengthText::TransitionLengthText(MWindow *mwindow,
 	TransitionLengthDialog *gui, int x, int y)
  : BC_TumbleTextBox(gui, (float)gui->thread->new_length,
-		0.f, 100.f, x, y, 100)
+		0.f, 100.f, x, y, xS(100))
 {
 	this->mwindow = mwindow;
 	this->gui = gui;

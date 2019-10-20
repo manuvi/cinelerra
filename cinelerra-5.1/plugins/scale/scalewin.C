@@ -29,7 +29,7 @@
 
 
 ScaleWin::ScaleWin(ScaleMain *client)
- : PluginClientWindow(client, 400, 100, 400, 100, 0)
+ : PluginClientWindow(client, xS(400), yS(100), xS(400), yS(100), 0)
 {
 	this->client = client;
 }
@@ -44,17 +44,19 @@ ScaleWin::~ScaleWin()
 
 void ScaleWin::create_objects()
 {
-	int x0 = 10, y0 = 10;
-	int y1 = y0 + 25;
-	int y2 = y1 + 25;
+	int xs10 = xS(10), xs15 = xS(15), xs20 = xS(20);
+	int ys10 = yS(10), ys25 = yS(25);
+	int x0 = xs10, y0 = ys10;
+	int y1 = y0 + ys25;
+	int y2 = y1 + ys25;
 	BC_Title *title = new BC_Title(x0, y1, _("Scale:"));
 	add_tool(title);
-	int x1 = x0 + title->get_w() + 10;
+	int x1 = x0 + title->get_w() + xs10;
 	add_tool(use_scale = new ScaleUseScale(this, client, x1, y1));
-	int x2 = x1 + use_scale->get_w() + 10;
+	int x2 = x1 + use_scale->get_w() + xs10;
 	x_factor = new ScaleXFactor(this, client, x2, y1);
 	x_factor->create_objects();
-	int x3 = x2 + x_factor->get_w() + 20;
+	int x3 = x2 + x_factor->get_w() + xs20;
 	y_factor = new ScaleYFactor(this, client, x3, y1);
 	y_factor->create_objects();
 	add_tool(constrain = new ScaleConstrain(client, x1, y2));
@@ -64,11 +66,11 @@ void ScaleWin::create_objects()
 	add_tool(use_size = new ScaleUseSize(this, client, x1, y0));
 	width = new ScaleWidth(this, client, x2, y0);
 	width->create_objects();
-	int x = x2 + width->get_w() + 3;
+	int x = x2 + width->get_w() + xS(3);
 	add_tool(new BC_Title(x, y0, _("x")));
 	height= new ScaleHeight(this, client, x3, y0);
 	height->create_objects();
-	int x4 = x3 + height->get_w() + 15;
+	int x4 = x3 + height->get_w() + xs15;
 	add_tool(pulldown = new FrameSizePulldown(client->server->mwindow->theme,
 			width->get_textbox(), height->get_textbox(), x4, y0));
 
@@ -78,7 +80,7 @@ void ScaleWin::create_objects()
 
 ScaleXFactor::ScaleXFactor(ScaleWin *win,
 	ScaleMain *client, int x, int y)
- : BC_TumbleTextBox(win, (float)client->config.x_factor, 0., 100., x, y, 100)
+ : BC_TumbleTextBox(win, (float)client->config.x_factor, 0., 100., x, y, xS(100))
 {
 //printf("ScaleXFactor::ScaleXFactor %f\n", client->config.x_factor);
 	this->client = client;
@@ -113,7 +115,7 @@ int ScaleXFactor::handle_event()
 
 
 ScaleYFactor::ScaleYFactor(ScaleWin *win, ScaleMain *client, int x, int y)
- : BC_TumbleTextBox(win, (float)client->config.y_factor, 0., 100., x, y, 100)
+ : BC_TumbleTextBox(win, (float)client->config.y_factor, 0., 100., x, y, xS(100))
 {
 	this->client = client;
 	this->win = win;
@@ -145,7 +147,7 @@ int ScaleYFactor::handle_event()
 
 ScaleWidth::ScaleWidth(ScaleWin *win,
 	ScaleMain *client, int x, int y)
- : BC_TumbleTextBox(win, client->config.width, 0, 100000, x, y, 90)
+ : BC_TumbleTextBox(win, client->config.width, 0, 100000, x, y, xS(90))
 {
 //printf("ScaleWidth::ScaleWidth %f\n", client->config.x_factor);
 	this->client = client;
@@ -173,7 +175,7 @@ int ScaleWidth::handle_event()
 
 
 ScaleHeight::ScaleHeight(ScaleWin *win, ScaleMain *client, int x, int y)
- : BC_TumbleTextBox(win, client->config.height, 0, 100000, x, y, 90)
+ : BC_TumbleTextBox(win, client->config.height, 0, 100000, x, y, xS(90))
 {
 	this->client = client;
 	this->win = win;

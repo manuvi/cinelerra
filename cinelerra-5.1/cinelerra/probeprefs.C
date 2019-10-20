@@ -50,7 +50,7 @@ void FileProbeDialog::handle_close_event(int result)
 
 
 ProbeEditWindow::ProbeEditWindow(FileProbeDialog *pb_dialog, int x, int y)
- : BC_Window(_(PROGRAM_NAME ": Probes"), x, y, 300, 200, 300, 200, 0, 0, 1)
+ : BC_Window(_(PROGRAM_NAME ": Probes"), x, y, xS(300), yS(200), xS(300), yS(200), 0, 0, 1)
 {
 	this->pb_dialog = pb_dialog;
 	probe_list = 0;
@@ -69,6 +69,7 @@ ProbeEditWindow::~ProbeEditWindow()
 
 void ProbeEditWindow::create_objects()
 {
+	int xs10 = xS(10), ys10 = yS(10);
 	lock_window("ProbeEditWindow::create_objects");
 	pb_enabled = new BC_Pixmap(this,
                 BC_WindowBase::get_resources()->listbox_up,
@@ -80,14 +81,14 @@ void ProbeEditWindow::create_objects()
 	for( int i=0; i<preferences->file_probes.size(); ++i ) {
 		probe_items.append(new ProbePrefItem(this, preferences->file_probes[i]));
 	}
-	int x = 10, y = 10;
+	int x = xs10, y = ys10;
 	add_subwindow(probe_list = new ProbePrefList(this, x, y));
 	y += probe_list->get_h();
 	int x1 = x, y1 = y;
 	add_subwindow(probe_up_button = new ProbeUpButton(this, x1, y1));
-	x1 += probe_up_button->get_w() + 10;
+	x1 += probe_up_button->get_w() + xs10;
 	add_subwindow(probe_down_button = new ProbeDownButton(this, x1, y1));
-	x1 += probe_down_button->get_w() + 10;
+	x1 += probe_down_button->get_w() + xs10;
 	add_subwindow(probe_enabled = new ProbeEnabled(this, x1, y1));
 	probe_enabled->disable();
 
@@ -232,8 +233,9 @@ void ProbePrefItem::set_armed(int armed)
 }
 
 ProbePrefList::ProbePrefList(ProbeEditWindow *pb_window, int x, int y)
- : BC_ListBox(x, y, pb_window->get_w()-x-10, pb_window->get_h()-y-80, LISTBOX_ICON_LIST,
-	(ArrayList<BC_ListBoxItem *>*) &pb_window->probe_items, 0, 0)
+ : BC_ListBox(x, y, pb_window->get_w()-x-xS(10), pb_window->get_h()-y-yS(80),
+	LISTBOX_ICON_LIST, (ArrayList<BC_ListBoxItem *>*) &pb_window->probe_items,
+	0, 0)
 {
 	this->pb_window = pb_window;
 }

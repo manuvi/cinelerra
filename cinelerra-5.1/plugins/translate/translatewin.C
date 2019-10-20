@@ -39,10 +39,10 @@
 
 TranslateWin::TranslateWin(TranslateMain *client)
  : PluginClientWindow(client,
-	300,
-	250,
-	300,
-	250,
+	xS(300),
+	yS(250),
+	xS(300),
+	yS(250),
 	0)
 {
 	this->client = client;
@@ -54,59 +54,61 @@ TranslateWin::~TranslateWin()
 
 void TranslateWin::create_objects()
 {
-	int x = 10, y = 10;
+	int xs10 = xS(10), xs150 = xS(150);
+	int ys10 = yS(10), ys20 = yS(20), ys30 = yS(30), ys40 = yS(40);
+	int x = xs10, y = ys10;
 
 	add_tool(new BC_Title(x, y, _("In X:")));
-	y += 20;
+	y += ys20;
 	in_x = new TranslateCoord(this, client, x, y, &client->config.in_x);
 	in_x->create_objects();
-	y += 30;
+	y += ys30;
 
 	add_tool(new BC_Title(x, y, _("In Y:")));
-	y += 20;
+	y += ys20;
 	in_y = new TranslateCoord(this, client, x, y, &client->config.in_y);
 	in_y->create_objects();
-	y += 30;
+	y += ys30;
 
 	add_tool(new BC_Title(x, y, _("In W:")));
-	y += 20;
+	y += ys20;
 	in_w = new TranslateCoord(this, client, x, y, &client->config.in_w);
 	in_w->create_objects();
-	y += 30;
+	y += ys30;
 
 	add_tool(new BC_Title(x, y, _("In H:")));
-	y += 20;
+	y += ys20;
 	in_h = new TranslateCoord(this, client, x, y, &client->config.in_h);
 	in_h->create_objects();
 
-	y += 40;
+	y += ys40;
 	add_tool(reset = new TranslateReset(client, this, x, y));
 
-	x += 150;
-	y = 10;
+	x += xs150;
+	y = ys10;
 	add_tool(new BC_Title(x, y, _("Out X:")));
-	y += 20;
+	y += ys20;
 	out_x = new TranslateCoord(this, client, x, y, &client->config.out_x);
 	out_x->create_objects();
-	y += 30;
+	y += ys30;
 
 	add_tool(new BC_Title(x, y, _("Out Y:")));
-	y += 20;
+	y += ys20;
 	out_y = new TranslateCoord(this, client, x, y, &client->config.out_y);
 	out_y->create_objects();
-	y += 30;
+	y += ys30;
 
 	add_tool(new BC_Title(x, y, _("Out W:")));
-	y += 20;
+	y += ys20;
 	out_w = new TranslateCoord(this, client, x, y, &client->config.out_w);
 	out_w->create_objects();
-	y += 30;
+	y += ys30;
 
 	add_tool(new BC_Title(x, y, _("Out H:")));
-	y += 20;
+	y += ys20;
 	out_h = new TranslateCoord(this, client, x, y, &client->config.out_h);
 	out_h->create_objects();
-	y += 30;
+	y += ys30;
 
 	show_window();
 	flush();
@@ -138,7 +140,7 @@ TranslateCoord::TranslateCoord(TranslateWin *win,
 	(int)10000,
 	x,
 	y,
-	100)
+	xS(100))
 {
 //printf("TranslateWidth::TranslateWidth %f\n", client->config.w);
 	this->client = client;

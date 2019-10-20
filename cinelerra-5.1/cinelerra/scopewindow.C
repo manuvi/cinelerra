@@ -737,11 +737,12 @@ void ScopeGUI::allocate_bitmaps()
 // wave_h,
 // vector_w,
 // vector_h);
-	w = MAX(wave_w, 16);
-	h = MAX(wave_h, 16);
+	int xs16 = xS(16), ys16 = yS(16);
+	w = MAX(wave_w, xs16);
+	h = MAX(wave_h, ys16);
 	waveform_bitmap = new_bitmap(w, h);
-	w = MAX(vector_w, 16);
-	h = MAX(vector_h, 16);
+	w = MAX(vector_w, xs16);
+	h = MAX(vector_h, ys16);
 	vector_bitmap = new_bitmap(w, h);
 }
 

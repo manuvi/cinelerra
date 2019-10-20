@@ -92,10 +92,10 @@ int WipeRight::handle_event()
 
 WipeWindow::WipeWindow(WipeMain *plugin)
  : PluginClientWindow(plugin,
-	320,
-	50,
-	320,
-	50,
+	xS(320),
+	yS(50),
+	xS(320),
+	yS(50),
 	0)
 {
 	this->plugin = plugin;

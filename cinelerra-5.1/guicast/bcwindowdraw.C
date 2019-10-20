@@ -178,12 +178,7 @@ void BC_WindowBase::draw_utf8_text(int x, int y,
 
 	if(top_level->get_xft_struct(top_level->current_font))
 	{
-		draw_xft_text(x,
-			y,
-			text,
-			length,
-			pixmap,
-			1);
+		draw_xft_text(x, y, text, length, pixmap, 1);
 		return;
 	}
  BT
@@ -195,22 +190,15 @@ void BC_WindowBase::draw_utf8_text(int x, int y,
 			{
 				XmbDrawString(top_level->display,
 					pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap,
-					top_level->get_curr_fontset(),
-					top_level->gc,
-					x,
-					y,
-					&text[j],
-					i - j);
+					top_level->get_curr_fontset(), top_level->gc,
+					x, y, &text[j], i - j);
 			}
 			else
 			{
 				XDrawString(top_level->display,
 					pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap,
 					top_level->gc,
-					x,
-					y,
-					&text[j],
-					i - j);
+					x, y, &text[j], i - j);
 			}
 
 			j = i + 1;
@@ -595,7 +583,7 @@ void BC_WindowBase::draw_colored_box(int x, int y, int w, int h, int down, int h
 
 void BC_WindowBase::draw_border(char *text, int x, int y, int w, int h)
 {
-	int left_indent = 20;
+	int left_indent = xS(20);
 	int lx, ly, ux, uy;
 
 	h--; w--;
@@ -611,16 +599,16 @@ void BC_WindowBase::draw_border(char *text, int x, int y, int w, int h)
 	}
 
 	set_color(top_level->get_resources()->button_shadow);
-	draw_line(x, y, x + left_indent - 5, y);
+	draw_line(x, y, x + left_indent - xS(5), y);
 	draw_line(x, y, x, uy);
-	draw_line(x + left_indent + 5 + get_text_width(MEDIUMFONT, text), y, ux, y);
+	draw_line(x + left_indent + xS(5) + get_text_width(MEDIUMFONT, text), y, ux, y);
 	draw_line(x, y, x, uy);
 	draw_line(ux, ly, ux, uy);
 	draw_line(lx, uy, ux, uy);
 	set_color(top_level->get_resources()->button_light);
-	draw_line(lx, ly, x + left_indent - 5 - 1, ly);
+	draw_line(lx, ly, x + left_indent - xS(5) - 1, ly);
 	draw_line(lx, ly, lx, uy - 1);
-	draw_line(x + left_indent + 5 + get_text_width(MEDIUMFONT, text), ly, ux - 1, ly);
+	draw_line(x + left_indent + xS(5) + get_text_width(MEDIUMFONT, text), ly, ux - 1, ly);
 	draw_line(lx, ly, lx, uy - 1);
 	draw_line(x + w, y, x + w, y + h);
 	draw_line(x, y + h, x + w, y + h);
@@ -638,13 +626,8 @@ void BC_WindowBase::draw_triangle_down_flat(int x, int y, int w, int h)
 	point[1].x = x3; point[1].y = y1;
 	point[2].x = x1; point[2].y = y1;
 
-	XFillPolygon(top_level->display,
-		pixmap->opaque_pixmap,
-		top_level->gc,
-		(XPoint *)point,
-		3,
-		Nonconvex,
-		CoordModeOrigin);
+	XFillPolygon(top_level->display, pixmap->opaque_pixmap, top_level->gc,
+		(XPoint *)point, 3, Nonconvex, CoordModeOrigin);
 	draw_line(x1,y1, x3,y1);
 }
 
@@ -662,13 +645,8 @@ void BC_WindowBase::draw_triangle_up(int x, int y, int w, int h,
 	point[1].y = y2; point[2].x = x1; point[2].y = y2;
 
 	set_color(middle);
-	XFillPolygon(top_level->display,
-		pixmap->opaque_pixmap,
-		top_level->gc,
-		(XPoint *)point,
-		3,
-		Nonconvex,
-		CoordModeOrigin);
+	XFillPolygon(top_level->display, pixmap->opaque_pixmap, top_level->gc,
+		(XPoint *)point, 3, Nonconvex, CoordModeOrigin);
 
 // bottom and top right
 	set_color(shadow1);
@@ -797,14 +775,16 @@ void BC_WindowBase::draw_triangle_right(int x, int y, int w, int h,
 
 void BC_WindowBase::draw_check(int x, int y)
 {
-	const int w = 15, h = 15;
-	draw_line(x + 3, y + h / 2 + 0, x + 6, y + h / 2 + 2);
-	draw_line(x + 3, y + h / 2 + 1, x + 6, y + h / 2 + 3);
-	draw_line(x + 6, y + h / 2 + 2, x + w - 4, y + h / 2 - 3);
-	draw_line(x + 3, y + h / 2 + 2, x + 6, y + h / 2 + 4);
-	draw_line(x + 6, y + h / 2 + 2, x + w - 4, y + h / 2 - 3);
-	draw_line(x + 6, y + h / 2 + 3, x + w - 4, y + h / 2 - 2);
-	draw_line(x + 6, y + h / 2 + 4, x + w - 4, y + h / 2 - 1);
+	int xs3 = xS(3), xs4 = xS(4), xs6 = xS(6);
+	int ys1 = yS(1), ys2 = yS(2), ys3 = yS(3), ys4 = yS(4);
+	const int w = xS(15), h = yS(15), yh2 = y + h/2;
+	draw_line(x + xs3, yh2 + 0,   x + xs6,     yh2 + ys2);
+	draw_line(x + xs3, yh2 + ys1, x + xs6,     yh2 + ys3);
+	draw_line(x + xs6, yh2 + ys2, x + w - xs4, yh2 - ys3);
+	draw_line(x + xs3, yh2 + ys2, x + xs6,     yh2 + ys4);
+	draw_line(x + xs6, yh2 + ys2, x + w - xs4, yh2 - ys3);
+	draw_line(x + xs6, yh2 + ys3, x + w - xs4, yh2 - ys2);
+	draw_line(x + xs6, yh2 + ys4, x + w - xs4, yh2 - ys1);
 }
 
 void BC_WindowBase::draw_tiles(BC_Pixmap *tile, int origin_x, int origin_y, int x, int y, int w, int h)
@@ -987,15 +967,8 @@ void BC_WindowBase::slide_right(int distance)
 	if(distance < w)
 	{
 		XCopyArea(top_level->display,
-			pixmap->opaque_pixmap,
-			pixmap->opaque_pixmap,
-			top_level->gc,
-			0,
-			0,
-			w - distance,
-			h,
-			distance,
-			0);
+			pixmap->opaque_pixmap, pixmap->opaque_pixmap, top_level->gc,
+			0, 0, w - distance, h, distance, 0);
 	}
 }
 
@@ -1004,23 +977,11 @@ void BC_WindowBase::slide_up(int distance)
 	if(distance < h)
 	{
 		XCopyArea(top_level->display,
-			pixmap->opaque_pixmap,
-			pixmap->opaque_pixmap,
-			top_level->gc,
-			0,
-			distance,
-			w,
-			h - distance,
-			0,
-			0);
+			pixmap->opaque_pixmap, pixmap->opaque_pixmap, top_level->gc,
+			0, distance, w, h - distance, 0, 0);
 		set_color(bg_color);
-		XFillRectangle(top_level->display,
-			pixmap->opaque_pixmap,
-			top_level->gc,
-			0,
-			h - distance,
-			w,
-			distance);
+		XFillRectangle(top_level->display, pixmap->opaque_pixmap, top_level->gc,
+			0, h - distance, w, distance);
 	}
 }
 
@@ -1029,35 +990,19 @@ void BC_WindowBase::slide_down(int distance)
 	if(distance < h)
 	{
 		XCopyArea(top_level->display,
-			pixmap->opaque_pixmap,
-			pixmap->opaque_pixmap,
-			top_level->gc,
-			0,
-			0,
-			w,
-			h - distance,
-			0,
-			distance);
+			pixmap->opaque_pixmap, pixmap->opaque_pixmap, top_level->gc,
+			0, 0, w, h - distance, 0, distance);
 		set_color(bg_color);
 		XFillRectangle(top_level->display,
-			pixmap->opaque_pixmap,
-			top_level->gc,
-			0,
-			0,
-			w,
-			distance);
+			pixmap->opaque_pixmap, top_level->gc,
+			0, 0, w, distance);
 	}
 }
 
 // 3 segments in separate pixmaps.  Obsolete.
-void BC_WindowBase::draw_3segment(int x,
-	int y,
-	int w,
-	int h,
-	BC_Pixmap *left_image,
-	BC_Pixmap *mid_image,
-	BC_Pixmap *right_image,
-	BC_Pixmap *pixmap)
+void BC_WindowBase::draw_3segment(int x, int y, int w, int h,
+	BC_Pixmap *left_image, BC_Pixmap *mid_image,
+	BC_Pixmap *right_image, BC_Pixmap *pixmap)
 {
 	if(w <= 0 || h <= 0) return;
 	int left_boundary = left_image->get_w_fixed();
@@ -1089,25 +1034,14 @@ void BC_WindowBase::draw_3segment(int x,
 			if(i + output_w > w) output_w = w - i;
 
 		image->write_drawable(pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap,
-				x + i,
-				y,
-				output_w,
-				h,
-				0,
-				0);
-
+				x + i, y, output_w, h, 0, 0);
 		i += output_w;
 	}
 }
 // 3 segments in separate vframes.  Obsolete.
-void BC_WindowBase::draw_3segment(int x,
-	int y,
-	int w,
-	int h,
-	VFrame *left_image,
-	VFrame *mid_image,
-	VFrame *right_image,
-	BC_Pixmap *pixmap)
+void BC_WindowBase::draw_3segment(int x, int y, int w, int h,
+	VFrame *left_image, VFrame *mid_image,
+	VFrame *right_image, BC_Pixmap *pixmap)
 {
 	if(w <= 0 || h <= 0) return;
 	int left_boundary = left_image->get_w_fixed();
@@ -1141,16 +1075,8 @@ void BC_WindowBase::draw_3segment(int x,
 			if(i + output_w > w) output_w = w - i;
 
 		if(image)
-			draw_vframe(image,
-					x + i,
-					y,
-					output_w,
-					h,
-					0,
-					0,
-					0,
-					0,
-					pixmap);
+			draw_vframe(image, x + i, y, output_w, h,
+					0, 0, 0, 0, pixmap);
 
 		if(output_w == 0) break;
 		i += output_w;
@@ -1171,19 +1097,10 @@ void BC_WindowBase::draw_3segment(int x,
 //         |-------------------|----------------------|------------------|
 
 
-void BC_WindowBase::draw_3segmenth(int x,
-		int y,
-		int w,
-		VFrame *image,
-		BC_Pixmap *pixmap)
+void BC_WindowBase::draw_3segmenth(int x, int y, int w,
+		VFrame *image, BC_Pixmap *pixmap)
 {
-	draw_3segmenth(x,
-		y,
-		w,
-		x,
-		w,
-		image,
-		pixmap);
+	draw_3segmenth(x, y, w, x, w, image, pixmap);
 }
 
 void BC_WindowBase::draw_3segmenth(int x, int y, int w,
@@ -1353,56 +1270,23 @@ void BC_WindowBase::draw_3segmenth(int x, int y, int w, int total_x, int total_w
 //printf("BC_WindowBase::draw_3segment 2 left_out_x=%d left_out_w=%d center_out_x=%d center_out_w=%d right_out_x=%d right_out_w=%d\n",
 //	left_out_x, left_out_w, center_out_x, center_out_w, right_out_x, right_out_w);
 	if(left_out_w > 0)
-	{
-		draw_pixmap(src,
-			left_out_x,
-			y,
-			left_out_w,
-			src->get_h(),
-			left_in_x,
-			0,
-			dst);
-	}
+		draw_pixmap(src, left_out_x, y, left_out_w, src->get_h(), left_in_x, 0, dst);
 
 	if(right_out_w > 0)
-	{
-		draw_pixmap(src,
-			right_out_x,
-			y,
-			right_out_w,
-			src->get_h(),
-			right_in_x,
-			0,
-			dst);
-	}
+		draw_pixmap(src, right_out_x, y, right_out_w, src->get_h(), right_in_x, 0, dst);
 
-	for(int pixel = center_out_x;
-		pixel < center_out_x + center_out_w;
-		pixel += half_src)
-	{
+	for( int pixel = center_out_x; pixel < center_out_x + center_out_w; pixel += half_src) {
 		int fragment_w = half_src;
 		if(fragment_w + pixel > center_out_x + center_out_w)
 			fragment_w = (center_out_x + center_out_w) - pixel;
-
 //printf("BC_WindowBase::draw_3segment 2 pixel=%d fragment_w=%d\n", pixel, fragment_w);
-		draw_pixmap(src,
-			pixel,
-			y,
-			fragment_w,
-			src->get_h(),
-			quarter_src,
-			0,
-			dst);
+		draw_pixmap(src, pixel, y, fragment_w, src->get_h(), quarter_src, 0, dst);
 	}
 
 }
 
 
-void BC_WindowBase::draw_3segmenth(int x,
-		int y,
-		int w,
-		BC_Pixmap *src,
-		BC_Pixmap *dst)
+void BC_WindowBase::draw_3segmenth(int x, int y, int w, BC_Pixmap *src, BC_Pixmap *dst)
 {
 	if(w <= 0) return;
 	int third_image = src->get_w() / 3;
@@ -1439,61 +1323,23 @@ void BC_WindowBase::draw_3segmenth(int x,
 //printf("BC_WindowBase::draw_3segment 2 left_out_x=%d left_out_w=%d center_out_x=%d center_out_w=%d right_out_x=%d right_out_w=%d\n",
 //	left_out_x, left_out_w, center_out_x, center_out_w, right_out_x, right_out_w);
 	if(left_out_w > 0)
-	{
-		draw_pixmap(src,
-			left_out_x,
-			y,
-			left_out_w,
-			src->get_h(),
-			left_in_x,
-			0,
-			dst);
-	}
+		draw_pixmap(src, left_out_x, y, left_out_w, src->get_h(), left_in_x, 0, dst);
 
 	if(right_out_w > 0)
-	{
-		draw_pixmap(src,
-			right_out_x,
-			y,
-			right_out_w,
-			src->get_h(),
-			right_in_x,
-			0,
-			dst);
-	}
+		draw_pixmap(src, right_out_x, y, right_out_w, src->get_h(), right_in_x, 0, dst);
 
-	for(int pixel = left_out_x + left_out_w;
-		pixel < right_out_x;
-		pixel += third_image)
-	{
+	for(int pixel = left_out_x + left_out_w; pixel < right_out_x; pixel += third_image) {
 		int fragment_w = third_image;
 		if(fragment_w + pixel > right_out_x)
 			fragment_w = right_out_x - pixel;
 
 //printf("BC_WindowBase::draw_3segment 2 pixel=%d fragment_w=%d\n", pixel, fragment_w);
-		draw_pixmap(src,
-			pixel,
-			y,
-			fragment_w,
-			src->get_h(),
-			third_image,
-			0,
-			dst);
+		draw_pixmap(src, pixel, y, fragment_w, src->get_h(), third_image, 0, dst);
 	}
 
 }
 
-
-
-
-
-
-
-void BC_WindowBase::draw_3segmentv(int x,
-		int y,
-		int h,
-		VFrame *src,
-		BC_Pixmap *dst)
+void BC_WindowBase::draw_3segmentv(int x, int y, int h, VFrame *src, BC_Pixmap *dst)
 {
 	if(h <= 0) return;
 	int third_image = src->get_h() / 3;
@@ -1541,32 +1387,16 @@ void BC_WindowBase::draw_3segmentv(int x,
 
 	if(left_out_h > 0)
 	{
-		draw_bitmap(temp_bitmap,
-			0,
-			x,
-			left_out_y,
-			src->get_w(),
-			left_out_h,
-			0,
-			left_in_y,
-			-1,
-			-1,
-			dst);
+		draw_bitmap(temp_bitmap, 0, x, left_out_y,
+			src->get_w(), left_out_h, 0, left_in_y,
+			-1, -1, dst);
 	}
 
 	if(right_out_h > 0)
 	{
-		draw_bitmap(temp_bitmap,
-			0,
-			x,
-			right_out_y,
-			src->get_w(),
-			right_out_h,
-			0,
-			right_in_y,
-			-1,
-			-1,
-			dst);
+		draw_bitmap(temp_bitmap, 0, x, right_out_y,
+			src->get_w(), right_out_h, 0, right_in_y,
+			-1, -1, dst);
 	}
 
 	for(int pixel = left_out_y + left_out_h;
@@ -1578,17 +1408,9 @@ void BC_WindowBase::draw_3segmentv(int x,
 			fragment_h = right_out_y - pixel;
 
 //printf("BC_WindowBase::draw_3segment 2 pixel=%d fragment_w=%d\n", pixel, fragment_w);
-		draw_bitmap(temp_bitmap,
-			0,
-			x,
-			pixel,
-			src->get_w(),
-			fragment_h,
-			0,
-			third_image,
-			-1,
-			-1,
-			dst);
+		draw_bitmap(temp_bitmap, 0, x, pixel,
+			src->get_w(), fragment_h, 0, third_image,
+			-1, -1, dst);
 	}
 }
 
@@ -1629,56 +1451,27 @@ void BC_WindowBase::draw_3segmentv(int x,
 	}
 
 	if(left_out_h > 0)
-	{
-		draw_pixmap(src,
-			x,
-			left_out_y,
-			src->get_w(),
-			left_out_h,
-			0,
-			left_in_y,
-			dst);
-	}
+		draw_pixmap(src, x, left_out_y, src->get_w(), left_out_h,
+			0, left_in_y, dst);
 
 	if(right_out_h > 0)
-	{
-		draw_pixmap(src,
-			x,
-			right_out_y,
-			src->get_w(),
-			right_out_h,
-			0,
-			right_in_y,
-			dst);
-	}
+		draw_pixmap(src, x, right_out_y, src->get_w(), right_out_h,
+			0, right_in_y, dst);
 
-	for(int pixel = left_out_y + left_out_h;
-		pixel < right_out_y;
-		pixel += third_image)
-	{
+	for(int pixel = left_out_y + left_out_h; pixel < right_out_y; pixel += third_image) {
 		int fragment_h = third_image;
 		if(fragment_h + pixel > right_out_y)
 			fragment_h = right_out_y - pixel;
 
 //printf("BC_WindowBase::draw_3segment 2 pixel=%d fragment_w=%d\n", pixel, fragment_w);
-		draw_pixmap(src,
-			x,
-			pixel,
-			src->get_w(),
-			fragment_h,
-			0,
-			third_image,
-			dst);
+		draw_pixmap(src, x, pixel, src->get_w(), fragment_h,
+			0, third_image, dst);
 	}
 }
 
 
-void BC_WindowBase::draw_9segment(int x,
-		int y,
-		int w,
-		int h,
-		BC_Pixmap *src,
-		BC_Pixmap *dst)
+void BC_WindowBase::draw_9segment(int x, int y, int w, int h,
+		BC_Pixmap *src, BC_Pixmap *dst)
 {
 	if(w <= 0 || h <= 0) return;
 
@@ -1707,48 +1500,21 @@ void BC_WindowBase::draw_9segment(int x,
 	//int in_y4 = src->get_h();
 
 // Segment 1
-	draw_pixmap(src,
-		x + out_x1,
-		y + out_y1,
-		out_x2 - out_x1,
-		out_y2 - out_y1,
-		in_x1,
-		in_y1,
-		dst);
-
+	draw_pixmap(src, x + out_x1, y + out_y1, out_x2 - out_x1, out_y2 - out_y1,
+		in_x1, in_y1, dst);
 
 // Segment 2 * n
-	for(int i = out_x2; i < out_x3; i += in_x3 - in_x2)
-	{
-		if(out_x3 - i > 0)
-		{
+	for(int i = out_x2; i < out_x3; i += in_x3 - in_x2) {
+		if(out_x3 - i > 0) {
 			int w = MIN(in_x3 - in_x2, out_x3 - i);
-			draw_pixmap(src,
-				x + i,
-				y + out_y1,
-				w,
-				out_y2 - out_y1,
-				in_x2,
-				in_y1,
-				dst);
+			draw_pixmap(src, x + i, y + out_y1, w, out_y2 - out_y1,
+				in_x2, in_y1, dst);
 		}
 	}
 
-
-
-
-
 // Segment 3
-	draw_pixmap(src,
-		x + out_x3,
-		y + out_y1,
-		out_x4 - out_x3,
-		out_y2 - out_y1,
-		in_x3,
-		in_y1,
-		dst);
-
-
+	draw_pixmap(src, x + out_x3, y + out_y1, out_x4 - out_x3, out_y2 - out_y1,
+		in_x3, in_y1, dst);
 
 // Segment 4 * n
 	for(int i = out_y2; i < out_y3; i += in_y3 - in_y2)
@@ -1756,17 +1522,10 @@ void BC_WindowBase::draw_9segment(int x,
 		if(out_y3 - i > 0)
 		{
 			int h = MIN(in_y3 - in_y2, out_y3 - i);
-			draw_pixmap(src,
-				x + out_x1,
-				y + i,
-				out_x2 - out_x1,
-				h,
-				in_x1,
-				in_y2,
-				dst);
+			draw_pixmap(src, x + out_x1, y + i, out_x2 - out_x1, h,
+				in_x1, in_y2, dst);
 		}
 	}
-
 
 // Segment 5 * n * n
 	for(int i = out_y2; i < out_y3; i += in_y3 - in_y2 /* in_y_third */)
@@ -1780,14 +1539,8 @@ void BC_WindowBase::draw_9segment(int x,
 			{
 				int w = MIN(in_x3 - in_x2 /* in_x_third */, out_x3 - j);
 				if(out_x3 - j > 0)
-					draw_pixmap(src,
-						x + j,
-						y + i,
-						w,
-						h,
-						in_x2,
-						in_y2,
-						dst);
+					draw_pixmap(src, x + j, y + i, w, h,
+						in_x2, in_y2, dst);
 			}
 		}
 	}
@@ -1798,30 +1551,14 @@ void BC_WindowBase::draw_9segment(int x,
 		if(out_y3 - i > 0)
 		{
 			int h = MIN(in_y3 - in_y2, out_y3 - i);
-			draw_pixmap(src,
-				x + out_x3,
-				y + i,
-				out_x4 - out_x3,
-				h,
-				in_x3,
-				in_y2,
-				dst);
+			draw_pixmap(src, x + out_x3, y + i, out_x4 - out_x3, h,
+				in_x3, in_y2, dst);
 		}
 	}
 
-
-
-
 // Segment 7
-	draw_pixmap(src,
-		x + out_x1,
-		y + out_y3,
-		out_x2 - out_x1,
-		out_y4 - out_y3,
-		in_x1,
-		in_y3,
-		dst);
-
+	draw_pixmap(src, x + out_x1, y + out_y3, out_x2 - out_x1, out_y4 - out_y3,
+		in_x1, in_y3, dst);
 
 // Segment 8 * n
 	for(int i = out_x2; i < out_x3; i += in_x3 - in_x2)
@@ -1829,28 +1566,14 @@ void BC_WindowBase::draw_9segment(int x,
 		if(out_x3 - i > 0)
 		{
 			int w = MIN(in_x3 - in_y2, out_x3 - i);
-			draw_pixmap(src,
-				x + i,
-				y + out_y3,
-				w,
-				out_y4 - out_y3,
-				in_x2,
-				in_y3,
-				dst);
+			draw_pixmap(src, x + i, y + out_y3, w, out_y4 - out_y3,
+				in_x2, in_y3, dst);
 		}
 	}
 
-
-
 // Segment 9
-	draw_pixmap(src,
-		x + out_x3,
-		y + out_y3,
-		out_x4 - out_x3,
-		out_y4 - out_y3,
-		in_x3,
-		in_y3,
-		dst);
+	draw_pixmap(src, x + out_x3, y + out_y3, out_x4 - out_x3, out_y4 - out_y3,
+		in_x3, in_y3, dst);
 }
 
 

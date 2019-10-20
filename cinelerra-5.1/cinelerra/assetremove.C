@@ -32,13 +32,7 @@ AssetRemoveWindow::AssetRemoveWindow(MWindow *mwindow)
  : BC_Window(_(PROGRAM_NAME ": Remove assets"),
 	mwindow->gui->get_abs_cursor_x(1),
 	mwindow->gui->get_abs_cursor_y(1),
-	320,
-	400,
-	-1,
-	-1,
-	0,
-	0,
-	1)
+	xS(320), yS(400), -1, -1, 0, 0, 1)
 {
 	this->mwindow = mwindow;
 	data = 0;
@@ -54,7 +48,7 @@ AssetRemoveWindow::~AssetRemoveWindow()
 
 void AssetRemoveWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int x = xS(10), y = yS(10);
 	int margin = mwindow->theme->widget_border;
 
 	data = new ArrayList<BC_ListBoxItem*>;

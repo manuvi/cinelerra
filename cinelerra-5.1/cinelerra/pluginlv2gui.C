@@ -151,7 +151,7 @@ void PluginLV2Client_OptPanel::update()
 		vals.append(opt->item_value);
 	}
 	const char *cols[] = { "option", "value", };
-	const int col1_w = 150;
+	const int col1_w = xS(150);
 	int wids[] = { col1_w, get_w()-col1_w };
 	BC_ListBox::update(&items[0], &cols[0], &wids[0], sizeof(items)/sizeof(items[0]),
 		get_xposition(), get_yposition(), get_highlighted_item());
@@ -174,7 +174,7 @@ int PluginLV2ClientPot::handle_event()
 }
 
 PluginLV2ClientSlider::PluginLV2ClientSlider(PluginLV2ClientWindow *gui, int x, int y)
- : BC_FSlider(x, y, 0, gui->get_w()-x-20, gui->get_w()-x-20, 0.f, 0.f, 0.f)
+ : BC_FSlider(x, y, 0, gui->get_w()-x-xS(20), gui->get_w()-x-xS(20), 0.f, 0.f, 0.f)
 {
 	this->gui = gui;
 }
@@ -190,7 +190,7 @@ int PluginLV2ClientSlider::handle_event()
 }
 
 PluginLV2ClientWindow::PluginLV2ClientWindow(PluginLV2Client *client)
- : PluginClientWindow(client, 500, 300, 500, 300, 1)
+ : PluginClientWindow(client, xS(500), yS(300), xS(500), yS(300), 1)
 {
 	this->client = client;
 	selected = 0;
@@ -211,31 +211,32 @@ PluginLV2ClientWindow::~PluginLV2ClientWindow()
 void PluginLV2ClientWindow::create_objects()
 {
 	BC_Title *title;
-	int x = 10, y = 10, x1;
+	int xs8 = xS(8), xs10 = xS(10), ys10 = yS(10);
+	int x = xs10, y = ys10, x1;
 	add_subwindow(title = new BC_Title(x, y, client->title));
-	x1 = get_w() - BC_GenericButton::calculate_w(this, _("UI")) - 8;
+	x1 = get_w() - BC_GenericButton::calculate_w(this, _("UI")) - xs8;
 	add_subwindow(client_ui = new PluginLV2ClientUI(this, x1, y));
-	y += title->get_h() + 10;
+	y += title->get_h() + ys10;
 	add_subwindow(varbl = new BC_Title(x, y, ""));
-	add_subwindow(range = new BC_Title(x+160, y, ""));
-	x1 = get_w() - BC_GenericButton::calculate_w(this, _("Reset")) - 8;
+	add_subwindow(range = new BC_Title(x+xS(160), y, ""));
+	x1 = get_w() - BC_GenericButton::calculate_w(this, _("Reset")) - xs8;
 	add_subwindow(reset = new PluginLV2ClientReset(this, x1, y));
-	y += title->get_h() + 10;
-	x1 = get_w() - BC_GenericButton::calculate_w(this, _("Apply")) - 8;
+	y += title->get_h() + ys10;
+	x1 = get_w() - BC_GenericButton::calculate_w(this, _("Apply")) - xs8;
 	add_subwindow(apply = new PluginLV2ClientApply(this, x1, y));
-	add_subwindow(text = new PluginLV2ClientText(this, x, y, x1-x - 8));
-	y += title->get_h() + 10;
+	add_subwindow(text = new PluginLV2ClientText(this, x, y, x1-x - xs8));
+	y += title->get_h() + ys10;
 	add_subwindow(pot = new PluginLV2ClientPot(this, x, y));
-	x1 = x + pot->get_w() + 10;
-	add_subwindow(slider = new PluginLV2ClientSlider(this, x1, y+10));
-	y += pot->get_h() + 10;
+	x1 = x + pot->get_w() + xs10;
+	add_subwindow(slider = new PluginLV2ClientSlider(this, x1, y+ys10));
+	y += pot->get_h() + ys10;
 
 	client->load_configuration();
 	client->config.update();
 
 	int panel_x = x, panel_y = y;
-	int panel_w = get_w()-10 - panel_x;
-	int panel_h = get_h()-10 - panel_y;
+	int panel_w = get_w()-xs10 - panel_x;
+	int panel_h = get_h()-ys10 - panel_y;
 	panel = new PluginLV2Client_OptPanel(this, panel_x, panel_y, panel_w, panel_h);
 	add_subwindow(panel);
 	panel->update();
@@ -251,19 +252,20 @@ void PluginLV2ClientWindow::create_objects()
 int PluginLV2ClientWindow::resize_event(int w, int h)
 {
 	int x1;
-	x1 = w - client_ui->get_w() - 8;
+	int xs8 = xS(8), xs10 = xS(10), ys10 = yS(10);
+	x1 = w - client_ui->get_w() - xs8;
 	client_ui->reposition_window(x1, client_ui->get_y());
-	x1 = w - reset->get_w() - 8;
+	x1 = w - reset->get_w() - xs8;
 	reset->reposition_window(x1, reset->get_y());
-	x1 = w - apply->get_w() - 8;
+	x1 = w - apply->get_w() - xs8;
 	apply->reposition_window(x1, apply->get_y());
-	text->reposition_window(text->get_x(), text->get_y(), x1-text->get_x() - 8);
-	x1 = pot->get_x() + pot->get_w() + 10;
-	int w1 = w - slider->get_x() - 20;
+	text->reposition_window(text->get_x(), text->get_y(), x1-text->get_x() - xs8);
+	x1 = pot->get_x() + pot->get_w() + xs10;
+	int w1 = w - slider->get_x() - xS(20);
 	slider->set_pointer_motion_range(w1);
 	slider->reposition_window(x1, slider->get_y(), w1, slider->get_h());
 	int panel_x = panel->get_x(), panel_y = panel->get_y();
-	panel->reposition_window(panel_x, panel_y, w-10-panel_x, h-10-panel_y);
+	panel->reposition_window(panel_x, panel_y, w-xs10-panel_x, h-ys10-panel_y);
 	return 1;
 }
 

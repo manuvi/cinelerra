@@ -36,7 +36,7 @@
 
 
 MotionHVWindow::MotionHVWindow(MotionHVMain *plugin)
- : PluginClientWindow(plugin, 600, 650, 600, 650, 0)
+ : PluginClientWindow(plugin, xS(600), yS(650), xS(600), yS(650), 0)
 {
 	this->plugin = plugin;
 }
@@ -47,8 +47,10 @@ MotionHVWindow::~MotionHVWindow()
 
 void MotionHVWindow::create_objects()
 {
-	int x1 = 10, x = 10, y = 10;
-	int x2 = 310;
+	int xs10 = xS(10), xs20 = xS(20), xs310 = xS(310);
+	int ys10 = yS(10), ys20 = yS(20), ys30 = yS(30), ys40 = yS(40), ys50 = yS(50);
+	int x1 = xs10, x = xs10, y = ys10;
+	int x2 = xs310;
 	BC_Title *title;
 
 
@@ -62,17 +64,17 @@ void MotionHVWindow::create_objects()
 		this,
 		x2,
 		y));
-	y += 50;
+	y += ys50;
 
 	add_subwindow(title = new BC_Title(x1,
 		y,
 		_("Translation search radius:\n(W/H Percent of image)")));
 	add_subwindow(global_range_w = new GlobalRange(plugin,
-		x1 + title->get_w() + 10,
+		x1 + title->get_w() + xs10,
 		y,
 		&plugin->config.global_range_w));
 	add_subwindow(global_range_h = new GlobalRange(plugin,
-		x1 + title->get_w() + 10 + global_range_w->get_w(),
+		x1 + title->get_w() + xs10 + global_range_w->get_w(),
 		y,
 		&plugin->config.global_range_h));
 
@@ -80,19 +82,19 @@ void MotionHVWindow::create_objects()
 		y,
 		_("Rotation search radius:\n(Degrees)")));
 	add_subwindow(rotation_range = new RotationRange(plugin,
-		x2 + title->get_w() + 10,
+		x2 + title->get_w() + xs10,
 		y));
 
-	y += 50;
+	y += ys50;
 	add_subwindow(title = new BC_Title(x1,
 		y,
 		_("Translation block size:\n(W/H Percent of image)")));
 	add_subwindow(global_block_w = new BlockSize(plugin,
-		x1 + title->get_w() + 10,
+		x1 + title->get_w() + xs10,
 		y,
 		&plugin->config.global_block_w));
 	add_subwindow(global_block_h = new BlockSize(plugin,
-		x1 + title->get_w() + 10 + global_block_w->get_w(),
+		x1 + title->get_w() + xs10 + global_block_w->get_w(),
 		y,
 		&plugin->config.global_block_h));
 
@@ -100,148 +102,148 @@ void MotionHVWindow::create_objects()
 // 		y,
 // 		_("Rotation block size:\n(W/H Percent of image)")));
 // 	add_subwindow(rotation_block_w = new BlockSize(plugin,
-// 		x2 + title->get_w() + 10,
+// 		x2 + title->get_w() + xs10,
 // 		y,
 // 		&plugin->config.rotation_block_w));
 // 	add_subwindow(rotation_block_h = new BlockSize(plugin,
-// 		x2 + title->get_w() + 10 + rotation_block_w->get_w(),
+// 		x2 + title->get_w() + xs10 + rotation_block_w->get_w(),
 // 		y,
 // 		&plugin->config.rotation_block_h));
 
-// 	y += 50;
+// 	y += ys50;
 // 	add_subwindow(title = new BC_Title(x1, y, _("Translation search steps:")));
 // 	add_subwindow(global_search_positions = new GlobalSearchPositions(plugin,
-// 		x1 + title->get_w() + 10,
+// 		x1 + title->get_w() + xs10,
 // 		y,
-// 		80));
+// 		xs80));
 // 	global_search_positions->create_objects();
 //
 // 	add_subwindow(title = new BC_Title(x2, y, _("Rotation search steps:")));
 // 	add_subwindow(rotation_search_positions = new RotationSearchPositions(plugin,
-// 		x2 + title->get_w() + 10,
+// 		x2 + title->get_w() + xs10,
 // 		y,
-// 		80));
+// 		xs80));
 // 	rotation_search_positions->create_objects();
 
-	y += 50;
+	y += ys50;
 	add_subwindow(title = new BC_Title(x, y, _("Translation direction:")));
 	add_subwindow(track_direction = new TrackDirection(plugin,
 		this,
-		x + title->get_w() + 10,
+		x + title->get_w() + xs10,
 		y));
 	track_direction->create_objects();
 
-	y += 40;
-	add_subwindow(title = new BC_Title(x, y + 10, _("Block X:")));
+	y += ys40;
+	add_subwindow(title = new BC_Title(x, y + ys10, _("Block X:")));
 	add_subwindow(block_x = new MotionHVBlockX(plugin,
 		this,
-		x + title->get_w() + 10,
+		x + title->get_w() + xs10,
 		y));
 	add_subwindow(block_x_text = new MotionHVBlockXText(plugin,
 		this,
-		x + title->get_w() + 10 + block_x->get_w() + 10,
-		y + 10));
+		x + title->get_w() + xs10 + block_x->get_w() + xs10,
+		y + ys10));
 
 	add_subwindow(title = new BC_Title(x2, y, _("Rotation center:")));
 	add_subwindow(rotation_center = new RotationCenter(plugin,
-		x2 + title->get_w() + 10,
+		x2 + title->get_w() + xs10,
 		y));
 
 
 
 	int y1 = y;
-	y += 50;
-	add_subwindow(title = new BC_Title(x2, y + 10, _("Maximum angle offset:")));
+	y += ys50;
+	add_subwindow(title = new BC_Title(x2, y + ys10, _("Maximum angle offset:")));
 	add_subwindow(rotate_magnitude = new MotionHVRMagnitude(plugin,
-		x2 + title->get_w() + 10,
+		x2 + title->get_w() + xs10,
 		y));
 
-	y += 40;
-	add_subwindow(title = new BC_Title(x2, y + 10, _("Rotation settling speed:")));
+	y += ys40;
+	add_subwindow(title = new BC_Title(x2, y + ys10, _("Rotation settling speed:")));
 	add_subwindow(rotate_return_speed = new MotionHVRReturnSpeed(plugin,
-		x2 + title->get_w() + 10,
+		x2 + title->get_w() + xs10,
 		y));
 
 
 
 	y = y1;
-	y += 40;
-	add_subwindow(title = new BC_Title(x, y + 10, _("Block Y:")));
+	y += ys40;
+	add_subwindow(title = new BC_Title(x, y + ys10, _("Block Y:")));
 	add_subwindow(block_y = new MotionHVBlockY(plugin,
 		this,
-		x + title->get_w() + 10,
+		x + title->get_w() + xs10,
 		y));
 	add_subwindow(block_y_text = new MotionHVBlockYText(plugin,
 		this,
-		x + title->get_w() + 10 + block_y->get_w() + 10,
-		y + 10));
+		x + title->get_w() + xs10 + block_y->get_w() + xs10,
+		y + ys10));
 
-	y += 50;
-	add_subwindow(title = new BC_Title(x, y + 10, _("Maximum absolute offset:")));
+	y += ys50;
+	add_subwindow(title = new BC_Title(x, y + ys10, _("Maximum absolute offset:")));
 	add_subwindow(magnitude = new MotionHVMagnitude(plugin,
-		x + title->get_w() + 10,
+		x + title->get_w() + xs10,
 		y));
 
-	y += 40;
-	add_subwindow(title = new BC_Title(x, y + 10, _("MotionHV settling speed:")));
+	y += ys40;
+	add_subwindow(title = new BC_Title(x, y + ys10, _("MotionHV settling speed:")));
 	add_subwindow(return_speed = new MotionHVReturnSpeed(plugin,
-		x + title->get_w() + 10,
+		x + title->get_w() + xs10,
 		y));
 
 
 
-	y += 40;
+	y += ys40;
 	add_subwindow(vectors = new MotionHVDrawVectors(plugin,
 		this,
 		x,
 		y));
 
 
-	y += 40;
+	y += ys40;
 	add_subwindow(track_single = new TrackSingleFrame(plugin,
 		this,
 		x,
 		y));
-	add_subwindow(title = new BC_Title(x + track_single->get_w() + 20,
+	add_subwindow(title = new BC_Title(x + track_single->get_w() + xs20,
 		y,
 		_("Frame number:")));
 	add_subwindow(track_frame_number = new TrackFrameNumber(plugin,
 		this,
-		x + track_single->get_w() + title->get_w() + 20,
+		x + track_single->get_w() + title->get_w() + xs20,
 		y));
 	if(plugin->config.tracking_object != MotionHVScan::TRACK_SINGLE)
 		track_frame_number->disable();
 
-	y += 20;
+	y += ys20;
 	add_subwindow(track_previous = new TrackPreviousFrame(plugin,
 		this,
 		x,
 		y));
 
-	y += 20;
+	y += ys20;
 	add_subwindow(previous_same = new PreviousFrameSameBlock(plugin,
 		this,
 		x,
 		y));
 
-	y += 40;
+	y += ys40;
 	y1 = y;
 	add_subwindow(title = new BC_Title(x, y, _("Master layer:")));
 	add_subwindow(master_layer = new MasterLayer(plugin,
 		this,
-		x + title->get_w() + 10,
+		x + title->get_w() + xs10,
 		y));
 	master_layer->create_objects();
-	y += 30;
+	y += ys30;
 
 
 	add_subwindow(title = new BC_Title(x, y, _("Action:")));
 	add_subwindow(action_type = new ActionType(plugin,
 		this,
-		x + title->get_w() + 10,
+		x + title->get_w() + xs10,
 		y));
 	action_type->create_objects();
-	y += 30;
+	y += ys30;
 
 
 
@@ -249,7 +251,7 @@ void MotionHVWindow::create_objects()
 	add_subwindow(title = new BC_Title(x, y, _("Calculation:")));
 	add_subwindow(tracking_type = new TrackingType(plugin,
 		this,
-		x + title->get_w() + 10,
+		x + title->get_w() + xs10,
 		y));
 	tracking_type->create_objects();
 
@@ -656,10 +658,7 @@ MotionHVBlockXText::MotionHVBlockXText(MotionHVMain *plugin,
 	MotionHVWindow *gui,
 	int x,
 	int y)
- : BC_TextBox(x,
- 	y,
-	75,
-	1,
+ : BC_TextBox(x, y, xS(75), 1,
 	(float)plugin->config.block_x)
 {
 	this->plugin = plugin;
@@ -682,10 +681,7 @@ MotionHVBlockYText::MotionHVBlockYText(MotionHVMain *plugin,
 	MotionHVWindow *gui,
 	int x,
 	int y)
- : BC_TextBox(x,
- 	y,
-	75,
-	1,
+ : BC_TextBox(x, y, xS(75), 1,
 	(float)plugin->config.block_y)
 {
 	this->plugin = plugin;
@@ -777,7 +773,7 @@ TrackFrameNumber::TrackFrameNumber(MotionHVMain *plugin,
 	MotionHVWindow *gui,
 	int x,
 	int y)
- : BC_TextBox(x, y, 100, 1, plugin->config.track_frame)
+ : BC_TextBox(x, y, xS(100), 1, plugin->config.track_frame)
 {
 	this->plugin = plugin;
 	this->gui = gui;
@@ -893,7 +889,7 @@ int MasterLayer::calculate_w(MotionHVWindow *gui)
 	int result = 0;
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(0)));
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(1)));
-	return result + 50;
+	return result + xS(50);
 }
 
 
@@ -965,7 +961,7 @@ int ActionType::calculate_w(MotionHVWindow *gui)
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(MotionHVScan::STABILIZE)));
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(MotionHVScan::STABILIZE_PIXEL)));
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(MotionHVScan::NOTHING)));
-	return result + 50;
+	return result + xS(50);
 }
 
 
@@ -1029,7 +1025,7 @@ int TrackingType::calculate_w(MotionHVWindow *gui)
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(MotionHVScan::CALCULATE)));
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(MotionHVScan::SAVE)));
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(MotionHVScan::LOAD)));
-	return result + 50;
+	return result + xS(50);
 }
 
 
@@ -1086,6 +1082,6 @@ int TrackDirection::calculate_w(MotionHVWindow *gui)
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(1, 0)));
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(0, 1)));
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(0, 0)));
-	return result + 50;
+	return result + xS(50);
 }
 

@@ -38,7 +38,7 @@ C41Config::C41Config()
 	fix_min_r = fix_min_g = fix_min_b = fix_light = 0.;
 	fix_gamma_g = fix_gamma_b = fix_coef1 = fix_coef2 = 0.;
 	min_col = max_col = min_row = max_row = 0;
-	window_w = 500; window_h = 510;
+	window_w = xS(500); window_h = yS(510);
 }
 
 void C41Config::copy_from(C41Config &src)
@@ -123,7 +123,7 @@ int C41Enable::handle_event()
 
 // C41TextBox
 C41TextBox::C41TextBox(C41Effect *plugin, float *value, int x, int y)
- : BC_TextBox(x, y, 160, 1, *value)
+ : BC_TextBox(x, y, xS(160), 1, *value)
 {
 	this->plugin = plugin;
 	this->boxValue = value;
@@ -187,7 +187,7 @@ int C41BoxButton::handle_event()
 
 
 C41Slider::C41Slider(C41Effect *plugin, int *output, int x, int y, int is_row)
- : BC_ISlider(x, y, 0, 200, 200, 0, is_row ?
+ : BC_ISlider(x, y, 0, xS(200), yS(200), 0, is_row ?
 	plugin->get_edl()->session->output_h :
 	plugin->get_edl()->session->output_w , *output)
 {
@@ -210,7 +210,7 @@ int C41Slider::update(int v)
 	EDLSession *session = plugin->get_edl()->session;
 	int max = is_row ? session->output_h : session->output_w;
 	bclamp(v, 0, max);
-	if( this->max != max ) return BC_ISlider::update(200, v, 0, this->max = max);
+	if( this->max != max ) return BC_ISlider::update(xS(200), v, 0, this->max = max);
 	if( v != get_value() ) return BC_ISlider::update(v);
 	return 1;
 }
@@ -226,147 +226,149 @@ LOAD_CONFIGURATION_MACRO(C41Effect, C41Config)
 C41Window::C41Window(C41Effect *plugin)
  : PluginClientWindow(plugin,
 	plugin->config.window_w, plugin->config.window_h,
-	500, 510, 1)
+	xS(500), yS(510), 1)
 {
 }
 
 void C41Window::create_objects()
 {
-	int x = 10, y = 10;
+	int xs10 = xS(10), xs20 = xS(20), xs40 = xS(40), xs80 = xS(80);
+	int ys10 = yS(10), ys20 = yS(20), ys25 = yS(25), ys30 = yS(30), ys40 = yS(40), ys60 = yS(60);
+	int x = xs10, y = ys10;
 	C41Effect *plugin = (C41Effect *)client;
 	add_subwindow(active = new C41Enable(plugin,
 		&plugin->config.active, x, y, _("Activate processing")));
-	y += 40;
+	y += ys40;
 
 	add_subwindow(compute_magic = new C41Enable(plugin,
 		&plugin->config.compute_magic, x, y, _("Compute negfix values")));
-	y += 20;
+	y += ys20;
 
-	add_subwindow(new BC_Title(x + 20, y, _("(uncheck for faster rendering)")));
-	y += 40;
+	add_subwindow(new BC_Title(x + xs20, y, _("(uncheck for faster rendering)")));
+	y += ys40;
 
 	add_subwindow(new BC_Title(x, y, _("Computed negfix values:")));
-	y += 30;
+	y += ys30;
 
 	add_subwindow(new BC_Title(x, y, _("Min/Max R:")));
-	add_subwindow(min_r = new BC_Title(x + 80, y, "0.0000 / 0.0000"));
-	y += 30;
+	add_subwindow(min_r = new BC_Title(x + xs80, y, "0.0000 / 0.0000"));
+	y += ys30;
 
 	add_subwindow(new BC_Title(x, y, _("Min/Max G:")));
-	add_subwindow(min_g = new BC_Title(x + 80, y, "0.0000 / 0.0000"));
-	y += 30;
+	add_subwindow(min_g = new BC_Title(x + xs80, y, "0.0000 / 0.0000"));
+	y += ys30;
 
 	add_subwindow(new BC_Title(x, y, _("Min/Max B:")));
-	add_subwindow(min_b = new BC_Title(x + 80, y, "0.0000 / 0.0000"));
-	y += 30;
+	add_subwindow(min_b = new BC_Title(x + xs80, y, "0.0000 / 0.0000"));
+	y += ys30;
 
 	add_subwindow(new BC_Title(x, y, _("Light:")));
-	add_subwindow(light = new BC_Title(x + 80, y, "0.0000"));
-	y += 30;
+	add_subwindow(light = new BC_Title(x + xs80, y, "0.0000"));
+	y += ys30;
 
 	add_subwindow(new BC_Title(x, y, _("Gamma G:")));
-	add_subwindow(gamma_g = new BC_Title(x + 80, y, "0.0000"));
-	y += 30;
+	add_subwindow(gamma_g = new BC_Title(x + xs80, y, "0.0000"));
+	y += ys30;
 
 	add_subwindow(new BC_Title(x, y, _("Gamma B:")));
-	add_subwindow(gamma_b = new BC_Title(x + 80, y, "0.0000"));
-	y += 30;
+	add_subwindow(gamma_b = new BC_Title(x + xs80, y, "0.0000"));
+	y += ys30;
 
 	add_subwindow(new BC_Title(x, y, _("Contrast:")));
-	add_subwindow(coef1 = new BC_Title(x + 80, y, "0.0000"));
-	y += 30;
+	add_subwindow(coef1 = new BC_Title(x + xs80, y, "0.0000"));
+	y += ys30;
 
 	add_subwindow(new BC_Title(x, y, _("Brightness:")));
-	add_subwindow(coef2 = new BC_Title(x + 80, y, "0.0000"));
-	y += 30;
+	add_subwindow(coef2 = new BC_Title(x + xs80, y, "0.0000"));
+	y += ys30;
 
 	add_subwindow(lock = new C41Button(plugin, this, x, y));
-	y += 30;
+	y += ys30;
 
 #define BOX_COL 120
 	add_subwindow(new BC_Title(x, y, _("Box col:")));
-	add_subwindow(box_col_min = new BC_Title(x + 80, y, "0"));
+	add_subwindow(box_col_min = new BC_Title(x + xs80, y, "0"));
 	add_subwindow(box_col_max = new BC_Title(x + BOX_COL, y, "0"));
-	y += 30;
+	y += ys30;
 
 	add_subwindow(new BC_Title(x, y, _("Box row:")));
-	add_subwindow(box_row_min = new BC_Title(x + 80, y, "0"));
+	add_subwindow(box_row_min = new BC_Title(x + xs80, y, "0"));
 	add_subwindow(box_row_max = new BC_Title(x + BOX_COL, y, "0"));
-	y += 30;
+	y += ys30;
 
 	add_subwindow(boxlock = new C41BoxButton(plugin, this, x, y));
 
-	y = 10;
-	x = 250;
+	y = ys10;
+	x = xS(250);
 	add_subwindow(show_box = new C41Enable(plugin,
 		&plugin->config.show_box, x, y, _("Show active area")));
-	y += 40;
+	y += ys40;
 
 	add_subwindow(postproc = new C41Enable(plugin,
 		&plugin->config.postproc, x, y, _("Postprocess")));
-	y += 60;
+	y += ys60;
 
 	add_subwindow(new BC_Title(x, y, _("negfix values to apply:")));
-	y += 30;
+	y += ys30;
 
 	add_subwindow(new BC_Title(x, y, _("Min R:")));
 	add_subwindow(fix_min_r = new C41TextBox(plugin,
-		&plugin->config.fix_min_r, x + 80, y));
-	y += 30;
+		&plugin->config.fix_min_r, x + xs80, y));
+	y += ys30;
 
 	add_subwindow(new BC_Title(x, y, _("Min G:")));
 	add_subwindow(fix_min_g = new C41TextBox(plugin,
-		&plugin->config.fix_min_g, x + 80, y));
-	y += 30;
+		&plugin->config.fix_min_g, x + xs80, y));
+	y += ys30;
 
 	add_subwindow(new BC_Title(x, y, _("Min B:")));
 	add_subwindow(fix_min_b = new C41TextBox(plugin,
-		&plugin->config.fix_min_b, x + 80, y));
-	y += 30;
+		&plugin->config.fix_min_b, x + xs80, y));
+	y += ys30;
 
 	add_subwindow(new BC_Title(x, y, _("Light:")));
 	add_subwindow(fix_light = new C41TextBox(plugin,
-		 &plugin->config.fix_light, x + 80, y));
-	y += 30;
+		 &plugin->config.fix_light, x + xs80, y));
+	y += ys30;
 
 	add_subwindow(new BC_Title(x, y, _("Gamma G:")));
 	add_subwindow(fix_gamma_g = new C41TextBox(plugin,
-		 &plugin->config.fix_gamma_g, x + 80, y));
-	y += 30;
+		 &plugin->config.fix_gamma_g, x + xs80, y));
+	y += ys30;
 
 	add_subwindow(new BC_Title(x, y, _("Gamma B:")));
 	add_subwindow(fix_gamma_b = new C41TextBox(plugin,
-		 &plugin->config.fix_gamma_b, x + 80, y));
-	y += 30;
+		 &plugin->config.fix_gamma_b, x + xs80, y));
+	y += ys30;
 
 	add_subwindow(new BC_Title(x, y, _("Contrast:")));
 	add_subwindow(fix_coef1 = new C41TextBox(plugin,
-		 &plugin->config.fix_coef1, x + 80, y));
-	y += 30;
+		 &plugin->config.fix_coef1, x + xs80, y));
+	y += ys30;
 
 	add_subwindow(new BC_Title(x, y, _("Brightness:")));
 	add_subwindow(fix_coef2 = new C41TextBox(plugin,
-		 &plugin->config.fix_coef2, x + 80, y));
-	y += 30;
+		 &plugin->config.fix_coef2, x + xs80, y));
+	y += ys30;
 
-	x += 40;
-	add_subwindow(new BC_Title(x - 40, y, _("Col:")));
+	x += xs40;
+	add_subwindow(new BC_Title(x - xs40, y, _("Col:")));
 	add_subwindow(min_col = new C41Slider(plugin,
 		 &plugin->config.min_col, x, y, 0));
-	y += 25;
+	y += ys25;
 
 	add_subwindow(max_col = new C41Slider(plugin,
 		 &plugin->config.max_col, x, y, 0));
-	y += 25;
+	y += ys25;
 
-	add_subwindow(new BC_Title(x - 40, y, _("Row:")));
+	add_subwindow(new BC_Title(x - xs40, y, _("Row:")));
 	add_subwindow(min_row = new C41Slider(plugin,
 		 &plugin->config.min_row, x, y, 1));
-	y += 25;
+	y += ys25;
 
 	add_subwindow(max_row = new C41Slider(plugin,
 		 &plugin->config.max_row, x, y, 1));
-	y += 25;
+	y += ys25;
 
 	update_magic();
 	show_window(1);

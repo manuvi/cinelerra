@@ -47,8 +47,6 @@ void AboutPrefs::create_objects()
 {
 	lock_window("AboutPrefs::create_objects");
 	int x, y;
-
-
 	BC_Resources *resources = BC_WindowBase::get_resources();
 
 // 	add_subwindow(new BC_Title(mwindow->theme->preferencestitle_x,
@@ -99,12 +97,12 @@ void AboutPrefs::create_objects()
 			about.append(new BC_ListBoxItem(msg));
 		}
 		BC_ListBox *listbox;
-		add_subwindow(listbox = new BC_ListBox(x, y, 450, 280,
+		add_subwindow(listbox = new BC_ListBox(x, y, xS(450), yS(280),
 			LISTBOX_TEXT, &about, 0, 0, 1));
-		y += listbox->get_h() + get_text_height(LARGEFONT) + 10;
+		y += listbox->get_h() + get_text_height(LARGEFONT) + yS(10);
 	}
 	else
-		y += 300 + get_text_height(LARGEFONT) + 10;
+		y += yS(300) + get_text_height(LARGEFONT) + yS(10);
 
 	set_font(LARGEFONT);
 	set_color(resources->text_default);
@@ -130,21 +128,16 @@ void AboutPrefs::create_objects()
 	draw_text(x, y, REPOMAINTXT);
 #endif
 
-	x = get_w() - mwindow->theme->about_bg->get_w() - 10;
+	x = get_w() - mwindow->theme->about_bg->get_w() - xS(10);
 	y = mwindow->theme->preferencesoptions_y;
 	BC_Pixmap *temp_pixmap = new BC_Pixmap(this,
 		mwindow->theme->about_bg,
 		PIXMAP_ALPHA);
-	draw_pixmap(temp_pixmap,
-		x,
-		y);
-
+	draw_pixmap(temp_pixmap, x, y);
 	delete temp_pixmap;
 
-
-	x += mwindow->theme->about_bg->get_w() + 10;
+	x += mwindow->theme->about_bg->get_w() + xS(10);
 	y += get_text_height(LARGEFONT) * 2;
-
 
 	flash();
 	flush();

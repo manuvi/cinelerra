@@ -24,15 +24,9 @@
 #include "file.h"
 
 
-BitsPopup::BitsPopup(BC_WindowBase *parent_window,
-	int x,
-	int y,
-	int *output,
-	int use_ulaw,
-	int use_adpcm,
-	int use_float,
-	int use_32linear,
-	int use_8linear)
+BitsPopup::BitsPopup(BC_WindowBase *parent_window, int x, int y, int *output,
+		int use_ulaw, int use_adpcm, int use_float, int use_32linear,
+		int use_8linear)
 {
 	this->parent_window = parent_window;
 	this->output = output;
@@ -79,17 +73,8 @@ int BitsPopup::get_h()
 }
 
 BitsPopupMenu::BitsPopupMenu(BitsPopup *popup, int x, int y)
- : BC_ListBox(x,
- 	y,
-	120,
-	100,
-	LISTBOX_TEXT,
-	&popup->bits_items,
-	0,
-	0,
-	1,
-	0,
-	1)
+ : BC_ListBox(x, y, xS(120), yS(100), LISTBOX_TEXT,
+	&popup->bits_items, 0, 0, 1, 0, 1)
 {
 	this->popup = popup;
 }
@@ -102,7 +87,7 @@ int BitsPopupMenu::handle_event()
 }
 
 BitsPopupText::BitsPopupText(BitsPopup *popup, int x, int y)
- : BC_TextBox(x, y, 120, 1, File::bitstostr(*popup->output))
+ : BC_TextBox(x, y, xS(120), 1, File::bitstostr(*popup->output))
 {
 	this->popup = popup;
 }

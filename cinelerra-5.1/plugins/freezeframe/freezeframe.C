@@ -75,7 +75,7 @@ void FreezeFrameConfig::interpolate(FreezeFrameConfig &prev,
 
 
 FreezeFrameWindow::FreezeFrameWindow(FreezeFrameMain *client)
- : PluginClientWindow(client, 260, 100, 260, 100, 0)
+ : PluginClientWindow(client, xS(260), yS(100), xS(260), yS(100), 0)
 {
 	this->client = client;
 }
@@ -86,7 +86,7 @@ FreezeFrameWindow::~FreezeFrameWindow()
 
 void FreezeFrameWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int x = xS(10), y = yS(10);
 	add_tool(enabled = new FreezeFrameToggle(client,
 		&client->config.enabled,
 		x,
@@ -94,7 +94,7 @@ void FreezeFrameWindow::create_objects()
 		_("Enabled")));
 // Try using extra effect for the line double since it doesn't
 // change the overhead.
-// 	y += 30;
+// 	y += yS(30);
 // 	add_tool(line_double = new FreezeFrameToggle(client,
 // 		&client->config.line_double,
 // 		x,

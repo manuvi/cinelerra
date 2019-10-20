@@ -27,10 +27,10 @@
 
 GammaWindow::GammaWindow(GammaMain *client)
  : PluginClientWindow(client,
-	400,
-	380,
-	400,
-	380,
+	xS(400),
+	yS(380),
+	xS(400),
+	yS(380),
 	0)
 {
 	this->client = client;
@@ -38,56 +38,58 @@ GammaWindow::GammaWindow(GammaMain *client)
 
 void GammaWindow::create_objects()
 {
-	int x = 10, y = 10, x1 = x;
+	int xs10 = xS(10), xs100 = xS(100), xs110 = xS(110), xs190 = xS(190);
+	int ys10 = yS(10), ys180 = yS(180);
+	int x = xs10, y = ys10, x1 = x;
 	add_subwindow(histogram = new BC_SubWindow(x,
 		y,
 		get_w() - x * 2,
-		get_h() - 180,
+		get_h() - ys180,
 		WHITE));
-	y += histogram->get_h() + 10;
+	y += histogram->get_h() + ys10;
 
 	BC_Title *title;
 	add_tool(title = new BC_Title(x, y, _("Maximum:")));
-	x += title->get_w() + 10;
+	x += title->get_w() + xs10;
 	x1 = x; // save x to align the two sliders
 	add_tool(max_slider = new MaxSlider(client,
 		this,
 		x,
 		y,
-		190));
-	x += max_slider->get_w() + 10;
+		xs190));
+	x += max_slider->get_w() + xs10;
 	add_tool(max_text = new MaxText(client,
 		this,
 		x,
 		y,
-		100));
-	y += max_text->get_h() + 10;
-	x = 10;
+		xs100));
+	y += max_text->get_h() + ys10;
+	x = xs10;
 	add_tool(automatic = new GammaAuto(client, x, y));
-	y += automatic->get_h() + 10;
+	y += automatic->get_h() + ys10;
 	add_tool(title = new BC_Title(x, y, _("Gamma:")));
-	x += title->get_w() + 10;
+	x += title->get_w() + xs10;
 	x = x1; // recover x of the "MaxSlider" to align the "GammaSlider"
 	add_tool(gamma_slider = new GammaSlider(client,
 		this,
 		x,
 		y,
-		190));
-	x += gamma_slider->get_w() + 10;
+		xs190));
+	x += gamma_slider->get_w() + xs10;
 	add_tool(gamma_text = new GammaText(client,
 		this,
 		x,
 		y,
-		100));
-	y += gamma_text->get_h() + 10;
-	x = 10;
+		xs100));
+	y += gamma_text->get_h() + ys10;
+	x = xs10;
 
 	add_tool(plot = new GammaPlot(client, x, y));
-	y += plot->get_h() + 10;
+	y += plot->get_h() + ys10;
 
 	add_tool(new GammaColorPicker(client, this, x, y));
 
-	add_tool(reset = new GammaReset(client, this, get_w()-110, y));
+	add_tool(reset = new GammaReset(client, this, get_w()-xs110, y));
 
 	show_window();
 	flush();

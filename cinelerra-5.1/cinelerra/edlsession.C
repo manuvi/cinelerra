@@ -44,8 +44,9 @@ EDLSession::EDLSession(EDL *edl)
 	for(int i = 0; i < MAXCHANNELS; i++)
 		achannel_positions[i] = 0;
 	assetlist_format = ASSETS_ICONS;
+	int xs100 = xS(100);
 	for(int i = 0; i < ASSET_COLUMNS; i++)
-		asset_columns[i] = 100;
+		asset_columns[i] = xs100;
 	auto_conf = new AutoConf;
 	awindow_folder = AW_MEDIA_FOLDER;
 	aspect_w = 4;  aspect_h = 3;
@@ -58,8 +59,8 @@ EDLSession::EDLSession(EDL *edl)
 	clipboard_length = 0; // unused
 	color_model = BC_RGBA8888;
 	interlace_mode = ILACE_MODE_UNDETECTED;
-	crop_x1 = 0; crop_x2 = 320;
-	crop_y1 = 0; crop_y2 = 240;
+	crop_x1 = 0; crop_x2 = xS(320);
+	crop_y1 = 0; crop_y2 = yS(240);
 	eyedrop_radius = 0;
 	ruler_x1 = ruler_y1 = 0.0;
 	ruler_x2 = ruler_y2 = 0.0;

@@ -54,13 +54,13 @@
 #include <string.h>
 
 
-#define WIDTH 640
+#define WIDTH xS(640)
 // full height
-#define HEIGHT0 585
+#define HEIGHT0 yS(585)
 // add tracks dialog
-#define HEIGHT1 240
+#define HEIGHT1 yS(240)
 // offset for folder panel
-#define HEIGHT2 440
+#define HEIGHT2 yS(440)
 
 New::New(MWindow *mwindow)
 {
@@ -318,7 +318,11 @@ NewWindow::~NewWindow()
 
 void NewWindow::create_objects()
 {
-	int x = 10, y = 10, x1, y1;
+	int xs10 = xS(10), xs20 = xS(20);
+	int ys5 = yS(5), ys10 = yS(10), ys20 = yS(20), ys30 = yS(30);
+	int xs2 = xS(2), xs64 = xS(64), xs115 = xS(115), xs150 = xS(150);
+	int ys40 = yS(40);
+	int x = xs10, y = ys10, x1, y1;
 	BC_TextBox *textbox;
 	BC_Title *title;
 
@@ -328,160 +332,152 @@ void NewWindow::create_objects()
 	add_subwindow( new BC_Title(x, y, new_thread->load_mode == LOADMODE_REPLACE ?
 			_("Parameters for the new project:") :
 			_("Parameters for additional tracks:") ) );
-	y += 20;
+	y += ys20;
 
-	format_presets = new NewPresets(mwindow,
-		this,
-		x,
-		y);
+	format_presets = new NewPresets(mwindow, this, x, y);
 	format_presets->create_objects();
 	x = format_presets->x;
 	y = format_presets->y;
 
-	y += 40;
+	y += ys40;
 	y1 = y;
 	add_subwindow(new BC_Title(x, y, _("Audio"), LARGEFONT));
-	y += 30;
+	y += ys30;
 
 	x1 = x;
 	add_subwindow(new BC_Title(x1, y, _("Tracks:")));
-	x1 += 100;
+	int xs100 = xS(100);
+	x1 += xs100;
 	add_subwindow(atracks = new NewATracks(this, "", x1, y));
 	x1 += atracks->get_w();
 	add_subwindow(new NewATracksTumbler(this, x1, y));
-	y += atracks->get_h() + 5;
+	y += atracks->get_h() + ys5;
 
 	if( new_thread->load_mode == LOADMODE_REPLACE ) {
 		x1 = x;
 		add_subwindow(new BC_Title(x1, y, _("Channels:")));
-		x1 += 100;
+		x1 += xs100;
 		add_subwindow(achannels = new NewAChannels(this, "", x1, y));
 		x1 += achannels->get_w();
 		add_subwindow(new NewAChannelsTumbler(this, x1, y));
-		y += achannels->get_h() + 5;
+		y += achannels->get_h() + ys5;
 
 		x1 = x;
 		add_subwindow(new BC_Title(x1, y, _("Samplerate:")));
-		x1 += 100;
+		x1 += xs100;
 		add_subwindow(sample_rate = new NewSampleRate(this, "", x1, y));
 		x1 += sample_rate->get_w();
 		add_subwindow(new SampleRatePulldown(mwindow, sample_rate, x1, y));
 	}
 
-	x += 250;
+	x += xS(250);
 	y = y1;
 	add_subwindow(new BC_Title(x, y, _("Video"), LARGEFONT));
-	y += 30;
+	y += ys30;
 	x1 = x;
 	add_subwindow(new BC_Title(x1, y, _("Tracks:")));
-	x1 += 115;
+	x1 += xs115;
 	add_subwindow(vtracks = new NewVTracks(this, "", x1, y));
 	x1 += vtracks->get_w();
 	add_subwindow(new NewVTracksTumbler(this, x1, y));
-	y += vtracks->get_h() + 5;
+	y += vtracks->get_h() + ys5;
 
 	if( new_thread->load_mode == LOADMODE_REPLACE ) {
 // 		x1 = x;
 //	 	add_subwindow(new BC_Title(x1, y, _("Channels:")));
-// 		x1 += 100;
+// 		x1 += xs100;
 // 		add_subwindow(vchannels = new NewVChannels(this, "", x1, y));
 // 		x1 += vchannels->get_w();
 // 		add_subwindow(new NewVChannelsTumbler(this, x1, y));
-// 		y += vchannels->get_h() + 5;
+// 		y += vchannels->get_h() + ys5;
 		x1 = x;
 		add_subwindow(new BC_Title(x1, y, _("Framerate:")));
-		x1 += 115;
+		x1 += xs115;
 		add_subwindow(frame_rate = new NewFrameRate(this, "", x1, y));
 		x1 += frame_rate->get_w();
 		add_subwindow(new FrameRatePulldown(mwindow, frame_rate, x1, y));
-		y += frame_rate->get_h() + 5;
+		y += frame_rate->get_h() + ys5;
 	}
 //	x1 = x;
 //	add_subwindow(new BC_Title(x1, y, _("Canvas size:")));
-// 	x1 += 100;
+// 	x1 += xs100;
 // 	add_subwindow(canvas_w_text = new NewTrackW(this, x1, y));
-// 	x1 += canvas_w_text->get_w() + 2;
+// 	x1 += canvas_w_text->get_w() + xs2;
 // 	add_subwindow(new BC_Title(x1, y, "x"));
-// 	x1 += 10;
+// 	x1 += xs10;
 // 	add_subwindow(canvas_h_text = new NewTrackH(this, x1, y));
 // 	x1 += canvas_h_text->get_w();
 // 	add_subwindow(new FrameSizePulldown(mwindow,
-// 		canvas_w_text,
-// 		canvas_h_text,
-// 		x1,
-// 		y));
-//	x1 += 100;
+// 		canvas_w_text, canvas_h_text, x1, y));
+//	x1 += xs100;
 //	add_subwindow(new NewCloneToggle(mwindow, this, x1, y));
-//	y += canvas_h_text->get_h() + 5;
+//	y += canvas_h_text->get_h() + ys5;
 
 	x1 = x;
 	add_subwindow(new BC_Title(x1, y, new_thread->load_mode == LOADMODE_REPLACE ?
 			_("Canvas size:") : _("Track size:")));
-	x1 += 115;
+	x1 += xs115;
 	add_subwindow(output_w_text = new NewOutputW(this, x1, y));
-	x1 += output_w_text->get_w() + 2;
+	x1 += output_w_text->get_w() + xs2;
 	add_subwindow(new BC_Title(x1, y, "x"));
-	x1 += 10;
+	x1 += xs10;
 	add_subwindow(output_h_text = new NewOutputH(this, x1, y));
 	x1 += output_h_text->get_w();
 	FrameSizePulldown *pulldown;
 	add_subwindow(pulldown = new FrameSizePulldown(mwindow->theme,
-		output_w_text,
-		output_h_text,
-		x1,
-		y));
-	x1 += pulldown->get_w() + 10;
+		output_w_text, output_h_text, x1, y));
+	x1 += pulldown->get_w() + xs10;
 	add_subwindow(new NewSwapExtents(mwindow, this, x1, y));
-	y += output_h_text->get_h() + 5;
+	y += output_h_text->get_h() + ys5;
 
 	if( new_thread->load_mode == LOADMODE_REPLACE ) {
 		x1 = x;
 		add_subwindow(new BC_Title(x1, y, _("Aspect ratio:")));
-		x1 += 115;
+		x1 += xs115;
 		add_subwindow(aspect_w_text = new NewAspectW(this, "", x1, y));
-		x1 += aspect_w_text->get_w() + 2;
+		x1 += aspect_w_text->get_w() + xs2;
 		add_subwindow(new BC_Title(x1, y, ":"));
-		x1 += 10;
+		x1 += xs10;
 		add_subwindow(aspect_h_text = new NewAspectH(this, "", x1, y));
 		x1 += aspect_h_text->get_w();
 		add_subwindow(new AspectPulldown(mwindow,
 			aspect_w_text, aspect_h_text, x1, y));
 
 		x1 = aspect_w_text->get_x();
-		y += aspect_w_text->get_h() + 5;
+		y += aspect_w_text->get_h() + ys5;
 		add_subwindow(new NewAspectAuto(this, x1, y));
-		y += 40;
+		y += ys40;
 		add_subwindow(title = new BC_Title(x, y, _("Color model:")));
 		x1 = x + title->get_w();
-		y1 = y;  y += title->get_h() + 10;
+		y1 = y;  y += title->get_h() + ys10;
 		add_subwindow(title = new BC_Title(x, y, _("Interlace mode:")));
 		int x2 = x + title->get_w();
-		int y2 = y;  y += title->get_h() + 10;
+		int y2 = y;  y += title->get_h() + ys10;
 		if( x1 < x2 ) x1 = x2;
-		x1 += 20;
-		add_subwindow(textbox = new BC_TextBox(x1, y1, 150, 1, ""));
+		x1 += xs20;
+		add_subwindow(textbox = new BC_TextBox(x1, y1, xs150, 1, ""));
 		add_subwindow(color_model = new ColormodelPulldown(mwindow,
 			textbox, &new_edl->session->color_model, x1+textbox->get_w(), y1));
-		add_subwindow(textbox = new BC_TextBox(x1, y2, 150, 1, ""));
+		add_subwindow(textbox = new BC_TextBox(x1, y2, xs150, 1, ""));
 		add_subwindow(interlace_pulldown = new InterlacemodePulldown(mwindow,
 			textbox, &new_edl->session->interlace_mode,
 			(ArrayList<BC_ListBoxItem*>*)&mwindow->interlace_project_modes,
 			x1+textbox->get_w(), y2));
 
-		x = 20;  y = HEIGHT2;
+		x = xs20;  y = HEIGHT2;
 		add_subwindow(title = new BC_Title(x, y, _("Create project folder in:")));
-		x1 = x;  y += title->get_h() + 5;
-		add_subwindow(folder = new BC_TextBox(x1, y, get_w()-x1-64, 1, ""));
-		x1 += folder->get_w() + 10;
+		x1 = x;  y += title->get_h() + ys5;
+		add_subwindow(folder = new BC_TextBox(x1, y, get_w()-x1-xs64, 1, ""));
+		x1 += folder->get_w() + xs10;
 		add_subwindow(recent_folder = new BC_RecentList("FOLDER", mwindow->defaults, folder));
 		recent_folder->load_items("PROJECT");
 		x1 = recent_folder->get_x() + recent_folder->get_w();
 		add_subwindow(new BrowseButton(mwindow->theme, this, folder, x1, y, "",
                         _("Project Directory"), _("Project Directory Path:"), 1));
-		y += folder->get_h() + 10;  x1 = x;
+		y += folder->get_h() + ys10;  x1 = x;
 		add_subwindow(title = new BC_Title(x1, y, _("Project Name:")));
-		x1 += title->get_w() + 10;
-		add_subwindow(name = new BC_TextBox(x1, y, get_w()-x1-64, 1, ""));
+		x1 += title->get_w() + xs10;
+		add_subwindow(name = new BC_TextBox(x1, y, get_w()-x1-xs64, 1, ""));
 	}
 
 	add_subwindow(new BC_OKButton(this,
@@ -533,7 +529,7 @@ EDL* NewPresets::get_edl()
 
 
 NewATracks::NewATracks(NewWindow *nwindow, const char *text, int x, int y)
- : BC_TextBox(x, y, 90, 1, text)
+ : BC_TextBox(x, y, xS(90), 1, text)
 {
 	this->nwindow = nwindow;
 }
@@ -566,7 +562,7 @@ int NewATracksTumbler::handle_down_event()
 
 
 NewAChannels::NewAChannels(NewWindow *nwindow, const char *text, int x, int y)
- : BC_TextBox(x, y, 90, 1, text)
+ : BC_TextBox(x, y, xS(90), 1, text)
 {
 	this->nwindow = nwindow;
 }
@@ -600,7 +596,7 @@ int NewAChannelsTumbler::handle_down_event()
 
 
 NewSampleRate::NewSampleRate(NewWindow *nwindow, const char *text, int x, int y)
- : BC_TextBox(x, y, 90, 1, text)
+ : BC_TextBox(x, y, xS(90), 1, text)
 {
 	this->nwindow = nwindow;
 }
@@ -613,7 +609,7 @@ int NewSampleRate::handle_event()
 
 
 SampleRatePulldown::SampleRatePulldown(MWindow *mwindow, BC_TextBox *output, int x, int y)
- : BC_ListBox(x, y, 100, 200, LISTBOX_TEXT,
+ : BC_ListBox(x, y, xS(100), xS(200), LISTBOX_TEXT,
 	&mwindow->theme->sample_rates, 0, 0, 1, 0, 1)
 {
 	this->mwindow = mwindow;
@@ -629,7 +625,7 @@ int SampleRatePulldown::handle_event()
 
 
 NewVTracks::NewVTracks(NewWindow *nwindow, const char *text, int x, int y)
- : BC_TextBox(x, y, 90, 1, text)
+ : BC_TextBox(x, y, xS(90), 1, text)
 {
 	this->nwindow = nwindow;
 }
@@ -663,7 +659,7 @@ int NewVTracksTumbler::handle_down_event()
 
 
 NewVChannels::NewVChannels(NewWindow *nwindow, const char *text, int x, int y)
- : BC_TextBox(x, y, 90, 1, text)
+ : BC_TextBox(x, y, xS(90), 1, text)
 {
 	this->nwindow = nwindow;
 }
@@ -697,7 +693,7 @@ int NewVChannelsTumbler::handle_down_event()
 
 
 NewFrameRate::NewFrameRate(NewWindow *nwindow, const char *text, int x, int y)
- : BC_TextBox(x, y, 90, 1, text)
+ : BC_TextBox(x, y, xS(90), 1, text)
 {
 	this->nwindow = nwindow;
 }
@@ -711,7 +707,7 @@ int NewFrameRate::handle_event()
 
 FrameRatePulldown::FrameRatePulldown(MWindow *mwindow,
 	BC_TextBox *output, int x, int y)
- : BC_ListBox(x, y, 150, 250, LISTBOX_TEXT,
+ : BC_ListBox(x, y, xS(150), yS(250), LISTBOX_TEXT,
 	&mwindow->theme->frame_rates, 0, 0, 1, 0, 1)
 {
 	this->mwindow = mwindow;
@@ -727,7 +723,7 @@ int FrameRatePulldown::handle_event()
 
 FrameSizePulldown::FrameSizePulldown(Theme *theme,
 		BC_TextBox *output_w, BC_TextBox *output_h, int x, int y)
- : BC_ListBox(x, y, 180, 250, LISTBOX_TEXT,
+ : BC_ListBox(x, y, xS(180), yS(250), LISTBOX_TEXT,
 	&theme->frame_sizes, 0, 0, 1, 0, 1)
 {
 	this->theme = theme;
@@ -760,7 +756,7 @@ int FrameSizePulldown::handle_event()
 
 
 NewOutputW::NewOutputW(NewWindow *nwindow, int x, int y)
- : BC_TextBox(x, y, 70, 1, nwindow->new_edl->session->output_w)
+ : BC_TextBox(x, y, xS(70), 1, nwindow->new_edl->session->output_w)
 {
 	this->nwindow = nwindow;
 }
@@ -773,7 +769,7 @@ int NewOutputW::handle_event()
 
 
 NewOutputH::NewOutputH(NewWindow *nwindow, int x, int y)
- : BC_TextBox(x, y, 70, 1, nwindow->new_edl->session->output_h)
+ : BC_TextBox(x, y, xS(70), 1, nwindow->new_edl->session->output_h)
 {
 	this->nwindow = nwindow;
 }
@@ -786,7 +782,7 @@ int NewOutputH::handle_event()
 
 
 NewAspectW::NewAspectW(NewWindow *nwindow, const char *text, int x, int y)
- : BC_TextBox(x, y, 70, 1, text)
+ : BC_TextBox(x, y, xS(70), 1, text)
 {
 	this->nwindow = nwindow;
 }
@@ -799,7 +795,7 @@ int NewAspectW::handle_event()
 
 
 NewAspectH::NewAspectH(NewWindow *nwindow, const char *text, int x, int y)
- : BC_TextBox(x, y, 70, 1, text)
+ : BC_TextBox(x, y, xS(70), 1, text)
 {
 	this->nwindow = nwindow;
 }
@@ -813,7 +809,7 @@ int NewAspectH::handle_event()
 
 AspectPulldown::AspectPulldown(MWindow *mwindow,
 		BC_TextBox *output_w, BC_TextBox *output_h, int x, int y)
- : BC_ListBox(x, y, 100, 200, LISTBOX_TEXT,
+ : BC_ListBox(x, y, xS(100), yS(200), LISTBOX_TEXT,
 	&mwindow->theme->aspect_ratios, 0, 0, 1, 0, 1)
 {
 	this->mwindow = mwindow;
@@ -853,7 +849,7 @@ ColormodelItem::ColormodelItem(const char *text, int value)
 
 ColormodelPulldown::ColormodelPulldown(MWindow *mwindow,
 		BC_TextBox *output_text, int *output_value, int x, int y)
- : BC_ListBox(x, y, 200, 150, LISTBOX_TEXT,
+ : BC_ListBox(x, y, xS(200), yS(150), LISTBOX_TEXT,
 	(ArrayList<BC_ListBoxItem*>*)&mwindow->colormodels, 0, 0, 1, 0, 1)
 {
 	this->mwindow = mwindow;
@@ -896,7 +892,7 @@ InterlacemodePulldown::InterlacemodePulldown(MWindow *mwindow,
 		ArrayList<BC_ListBoxItem*> *data,
 		int x,
 		int y)
- : BC_ListBox(x, y, 200, 150, LISTBOX_TEXT, data, 0, 0, 1, 0, 1)
+ : BC_ListBox(x, y, xS(200), xS(150), LISTBOX_TEXT, data, 0, 0, 1, 0, 1)
 {
 	this->mwindow = mwindow;
 	this->output_text = output_text;

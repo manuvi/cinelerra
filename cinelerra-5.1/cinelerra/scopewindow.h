@@ -43,8 +43,8 @@
 #define HISTOGRAM_MAX 110
 #define FLOAT_MAX 1.1
 
-#define MIN_SCOPE_W 320
-#define MIN_SCOPE_H 320
+#define MIN_SCOPE_W xS(640)
+#define MIN_SCOPE_H yS(320)
 
 
 

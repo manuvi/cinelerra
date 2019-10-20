@@ -184,10 +184,10 @@ int SwapFramesReset::handle_event()
 
 SwapFramesWindow::SwapFramesWindow(SwapFrames *plugin)
  : PluginClientWindow(plugin,
-	260,
-	135,
-	260,
-	135,
+	xS(260),
+	yS(135),
+	xS(260),
+	yS(135),
 	0)
 {
 	this->plugin = plugin;
@@ -195,23 +195,25 @@ SwapFramesWindow::SwapFramesWindow(SwapFrames *plugin)
 
 void SwapFramesWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int xs10 = xS(10);
+	int ys5 = yS(5), ys10 = yS(10), ys35 = yS(35);
+	int x = xs10, y = ys10;
 	add_subwindow(on = new SwapFramesOn(plugin, x, y));
-	y += on->get_h() + 5;
+	y += on->get_h() + ys5;
 	BC_Bar *bar;
-	add_subwindow(bar = new BC_Bar(x, y, get_w() - x * 2));
-	y += bar->get_h() + 5;
+	add_subwindow(bar = new BC_Bar(x, y, get_w() - x * xS(2)));
+	y += bar->get_h() + ys5;
 	add_subwindow(swap_even = new SwapFramesEven(plugin,
 		this,
 		x,
 		y));
-	y += swap_even->get_h() + 5;
+	y += swap_even->get_h() + ys5;
 	add_subwindow(swap_odd = new SwapFramesOdd(plugin,
 		this,
 		x,
 		y));
 
-	y += 35;
+	y += ys35;
 	add_subwindow(reset = new SwapFramesReset(plugin, this, x, y));
 
 	show_window();

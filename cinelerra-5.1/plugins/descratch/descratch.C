@@ -474,7 +474,7 @@ NEW_WINDOW_MACRO(DeScratchMain, DeScratchWindow)
 
 
 DeScratchWindow::DeScratchWindow(DeScratchMain *plugin)
- : PluginClientWindow(plugin, 512, 270, 512, 270, 0)
+ : PluginClientWindow(plugin, xS(512), yS(270), xS(512), yS(270), 0)
 {
 	this->plugin = plugin;
 }
@@ -485,7 +485,9 @@ DeScratchWindow::~DeScratchWindow()
 
 void DeScratchWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int xs10 = xS(10), xs15 = xS(15), xs16 = xS(16);
+	int ys10 = yS(10), ys15 = yS(15), ys30 = yS(30);
+	int x = xs10, y = ys10;
 	plugin->load_configuration();
 	DeScratchConfig &config = plugin->config;
 
@@ -493,75 +495,75 @@ void DeScratchWindow::create_objects()
 	add_tool(title = new BC_Title(x, y, _("DeScratch:")));
 
 	int w1 = DeScratchReset::calculate_w(this, _("Reset"));
-	add_tool(reset = new DeScratchReset(this, get_w()-w1-15, y));
+	add_tool(reset = new DeScratchReset(this, get_w()-w1-xs15, y));
 
-	y += title->get_h() + 15;
+	y += title->get_h() + ys15;
 	int x1 = x, x2 = get_w()/2;
 	add_tool(title = new BC_Title(x1=x, y, _("threshold:")));
-	x1 += title->get_w()+16;
-	add_tool(threshold = new DeScratchISlider(this, x1, y, x2-x1-10, 0,64, &config.threshold));
+	x1 += title->get_w()+xs16;
+	add_tool(threshold = new DeScratchISlider(this, x1, y, x2-x1-xs10, 0,64, &config.threshold));
 	add_tool(title = new BC_Title(x1=x2, y, _("asymmetry:")));
-	x1 += title->get_w()+16;
-	add_tool(asymmetry = new DeScratchFSlider(this, x1, y, get_w()-x1-15, 0,100., &config.asymmetry));
-	y += threshold->get_h() + 10;
+	x1 += title->get_w()+xs16;
+	add_tool(asymmetry = new DeScratchFSlider(this, x1, y, get_w()-x1-xs15, 0,100., &config.asymmetry));
+	y += threshold->get_h() + ys10;
 
 	add_tool(title = new BC_Title(x1=x, y, _("Mode:")));
-	x1 += title->get_w()+16;
+	x1 += title->get_w()+xs16;
 	add_tool(title = new BC_Title(x1, y, _("y:")));
-	w1 = title->get_w()+16;
+	w1 = title->get_w()+xs16;
 	add_tool(y_mode = new DeScratchMode(this, (x1+=w1), y, &config.mode_y));
-	y_mode->create_objects();  x1 += y_mode->get_w()+16;
+	y_mode->create_objects();  x1 += y_mode->get_w()+xs16;
 	add_tool(title = new BC_Title(x1, y, _("u:")));
 	add_tool(u_mode = new DeScratchMode(this, (x1+=w1), y, &config.mode_u));
-	u_mode->create_objects();  x1 += u_mode->get_w()+16;
+	u_mode->create_objects();  x1 += u_mode->get_w()+xs16;
 	add_tool(title = new BC_Title(x1, y, _("v:")));
 	add_tool(v_mode = new DeScratchMode(this, (x1+=w1), y, &config.mode_v));
 	v_mode->create_objects();
-	y += y_mode->get_h() + 10;
+	y += y_mode->get_h() + ys10;
 
 	add_tool(title = new BC_Title(x1=x, y, _("width:")));
-	w1 = title->get_w()+16;  x1 += w1;
+	w1 = title->get_w()+xs16;  x1 += w1;
 	add_tool(title = new BC_Title(x1, y, _("min:")));
-	x1 += title->get_w()+16;
-	add_tool(min_width = new DeScratchISlider(this, x1, y, x2-x1-10, 1,16, &config.min_width));
+	x1 += title->get_w()+xs16;
+	add_tool(min_width = new DeScratchISlider(this, x1, y, x2-x1-xs10, 1,16, &config.min_width));
 	add_tool(title = new BC_Title(x1=x2, y, _("max:")));
-	x1 += title->get_w()+16;
-	add_tool(max_width = new DeScratchISlider(this, x1, y, get_w()-x1-15, 1,16, &config.max_width));
-	y += min_width->get_h() + 10;
+	x1 += title->get_w()+xs16;
+	add_tool(max_width = new DeScratchISlider(this, x1, y, get_w()-x1-xs15, 1,16, &config.max_width));
+	y += min_width->get_h() + ys10;
 
 	add_tool(title = new BC_Title(x1=x, y, _("len:")));
-	w1 = title->get_w()+16;  x1 += w1;
+	w1 = title->get_w()+xs16;  x1 += w1;
 	add_tool(title = new BC_Title(x1, y, _("min:")));
-	x1 += title->get_w()+16;
-	add_tool(min_len = new DeScratchFSlider(this, x1, y, x2-x1-10, 0.0,100.0, &config.min_len));
+	x1 += title->get_w()+xs16;
+	add_tool(min_len = new DeScratchFSlider(this, x1, y, x2-x1-xs10, 0.0,100.0, &config.min_len));
 	add_tool(title = new BC_Title(x1=x2, y, _("max:")));
-	x1 += title->get_w()+16;
-	add_tool(max_len = new DeScratchFSlider(this, x1, y, get_w()-x1-15, 0.0,100.0, &config.max_len));
-	y += min_len->get_h() + 10;
+	x1 += title->get_w()+xs16;
+	add_tool(max_len = new DeScratchFSlider(this, x1, y, get_w()-x1-xs15, 0.0,100.0, &config.max_len));
+	y += min_len->get_h() + ys10;
 
 	add_tool(title = new BC_Title(x1=x, y, _("len:")));
-	w1 = title->get_w()+16;  x1 += w1;
+	w1 = title->get_w()+xs16;  x1 += w1;
 	add_tool(title = new BC_Title(x1, y, _("blur:")));
-	x1 += title->get_w()+16;
-	add_tool(blur_len = new DeScratchISlider(this, x1, y, x2-x1-10, 0,8, &config.blur_len));
+	x1 += title->get_w()+xs16;
+	add_tool(blur_len = new DeScratchISlider(this, x1, y, x2-x1-xs10, 0,8, &config.blur_len));
 	add_tool(title = new BC_Title(x1=x2, y, _("gap:")));
-	x1 += title->get_w()+16;
-	add_tool(gap_len = new DeScratchFSlider(this, x1, y, get_w()-x1-15, 0.0,100.0, &config.gap_len));
-	y += blur_len->get_h() + 10;
+	x1 += title->get_w()+xs16;
+	add_tool(gap_len = new DeScratchFSlider(this, x1, y, get_w()-x1-xs15, 0.0,100.0, &config.gap_len));
+	y += blur_len->get_h() + ys10;
 
 	add_tool(title = new BC_Title(x1=x, y, _("max angle:")));
-	w1 = title->get_w()+16;  x1 += w1;
-	add_tool(max_angle = new DeScratchFSlider(this, x1, y, x2-x1-10, 0.0,15.0, &config.max_angle));
+	w1 = title->get_w()+xs16;  x1 += w1;
+	add_tool(max_angle = new DeScratchFSlider(this, x1, y, x2-x1-xs10, 0.0,15.0, &config.max_angle));
 	add_tool(title = new BC_Title(x1=x2, y, _("fade:")));
-	x1 += title->get_w()+16;
-	add_tool(ffade = new DeScratchFSlider(this, x1, y, get_w()-x1-15, 0.0,100.0, &config.ffade));
-	y += max_angle->get_h() + 10;
+	x1 += title->get_w()+xs16;
+	add_tool(ffade = new DeScratchFSlider(this, x1, y, get_w()-x1-xs15, 0.0,100.0, &config.ffade));
+	y += max_angle->get_h() + ys10;
 
 	add_tool(title = new BC_Title(x1=x, y, _("border:")));
-	x1 += title->get_w()+16;
-	add_tool(border = new DeScratchISlider(this, x1, y, x2-x1-10, 0,16, &config.border));
+	x1 += title->get_w()+xs16;
+	add_tool(border = new DeScratchISlider(this, x1, y, x2-x1-xs10, 0,16, &config.border));
 	add_tool(mark = new DeScratchMark(this, x1=x2, y));
-	x1 += mark->get_w() + 10;
+	x1 += mark->get_w() + xs10;
 	add_tool(edge_only = new DeScratchEdgeOnly(this, x1, y));
 
 	show_window();
@@ -607,7 +609,7 @@ int DeScratchModeItem::handle_event()
 }
 
 DeScratchMode::DeScratchMode(DeScratchWindow *win, int x, int y, int *value)
- : BC_PopupMenu(x, y, 100, "", 1)
+ : BC_PopupMenu(x, y, xS(100), "", 1)
 {
 	this->win = win;
 	this->value = value;

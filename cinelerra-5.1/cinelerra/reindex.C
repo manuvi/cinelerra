@@ -68,7 +68,7 @@ void ReIndex::run()
 }
 
 ReIndexWindow::ReIndexWindow(char *display = "")
- : BC_Window(display, MEGREY, _(PROGRAM_NAME ": Redraw Indexes"), 340, 140, 340, 140)
+ : BC_Window(display, MEGREY, _(PROGRAM_NAME ": Redraw Indexes"), xS(340), yS(140), xS(340), yS(140)
 {
 }
 
@@ -84,14 +84,14 @@ ReIndexWindow::create_objects()
 	BC_SubWindow *subwindow;
 
 	add_subwindow(subwindow = new BC_SubWindow(0, 0, w, h, MEGREY));
-	subwindow->add_subwindow(new BC_Title(5, 5, _("Redraw all indexes for the current project?")));
+	subwindow->add_subwindow(new BC_Title(xS(5), yS(5), _("Redraw all indexes for the current project?")));
 	subwindow->add_subwindow(ok = new ReIndexOkButton(this));
 	subwindow->add_subwindow(cancel = new ReIndexCancelButton(this));
 	unlock_window();
 }
 
 ReIndexOkButton::ReIndexOkButton(ReIndexWindow *window)
- : BC_Button(5, 80, _("Yes"))
+ : BC_Button(xS(5), yS(80), _("Yes"))
 {
 	this->window = window;
 }
@@ -108,7 +108,7 @@ ReIndexOkButton::keypress_event()
 }
 
 ReIndexCancelButton::ReIndexCancelButton(ReIndexWindow *window)
- : BC_Button(140, 80, _("No"))
+ : BC_Button(xS(140), yS(80), _("No"))
 {
 	this->window = window;
 }

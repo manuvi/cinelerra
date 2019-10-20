@@ -76,15 +76,6 @@ int VFrame::get_texture_components()
 }
 
 
-
-
-
-
-
-
-
-
-
 void VFrame::to_texture()
 {
 #ifdef HAVE_GL

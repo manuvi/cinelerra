@@ -249,8 +249,7 @@ void BC_Meter::get_divisions()
 		{
 // Create tick mark
 			current_pixel = (pixels - METER_MARGIN * 2 - 2) *
-				(current - min) /
-				(max - min) + 2;
+				(current - min) / (max - min) + 2;
 			tick_pixels.append(current_pixel);
 
 // Create titles in selected positions
@@ -260,9 +259,7 @@ void BC_Meter::get_divisions()
 				(current - min > 4 && max - current > 4 && !(current % 5)))
 			{
 				int title_pixel = (pixels -
-					METER_MARGIN * 2) *
-					(current - min) /
-					(max - min);
+					METER_MARGIN * 2) * (current - min) / (max - min);
 				sprintf(string, "%ld", labs(current));
 				new_string = new char[strlen(string) + 1];
 				strcpy(new_string, string);
@@ -346,11 +343,11 @@ void BC_Meter::draw_titles(int flush)
 // Tick marks
 			int tick_y = pixels - tick_pixels.values[i] - METER_MARGIN;
 			set_color(get_resources()->meter_font_color);
-			draw_line(get_title_w() - 10 - 1, tick_y, get_title_w() - 1, tick_y);
+			draw_line(get_title_w() - xS(10) - 1, tick_y, get_title_w() - 1, tick_y);
 			if(get_resources()->meter_3d)
 			{
 				set_color(BLACK);
-				draw_line(get_title_w() - 10, tick_y + 1, get_title_w(), tick_y + 1);
+				draw_line(get_title_w() - xS(10), tick_y + 1, get_title_w(), tick_y + 1);
 			}
 		}
 
@@ -531,12 +528,8 @@ void BC_Meter::draw_face(int flush)
 
 
 						draw_pixmap(images[image_number],
-							x + x1,
-							get_h() - pixel - in_span,
-							in_w,
-							in_span + 1,
-							in_x,
-							in_y);
+							x + x1, get_h() - pixel - in_span,
+							in_w, in_span + 1, in_x, in_y);
 					}
 				}
 			}
@@ -552,25 +545,18 @@ void BC_Meter::draw_face(int flush)
 
 	if(downmix) {
 		if(orientation == METER_HORIZ)
-			draw_pixmap(images[METER_DOWNMIX],
-				0,
-				0);
+			draw_pixmap(images[METER_DOWNMIX], 0, 0);
 		else
-			draw_pixmap(images[METER_DOWNMIX],
-				x,
+			draw_pixmap(images[METER_DOWNMIX], x,
 				get_h() - images[METER_DOWNMIX]->get_h()-1);
 	}
 
 	if(over_timer)
 	{
 		if(orientation == METER_HORIZ)
-			draw_pixmap(images[METER_OVER],
-				20,
-				2);
+			draw_pixmap(images[METER_OVER], xS(20), yS(2));
 		else
-			draw_pixmap(images[METER_OVER],
-				x,
-				get_h() - 100);
+			draw_pixmap(images[METER_OVER], x, get_h() - yS(100));
 
 		over_timer--;
 	}

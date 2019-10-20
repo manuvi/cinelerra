@@ -211,7 +211,7 @@ DenoiseFFTSamples::DenoiseFFTSamples(DenoiseFFTEffect *plugin,
 	int x,
 	int y,
 	char *text)
- : BC_PopupMenu(x, y, 100, text, 1)
+ : BC_PopupMenu(x, y, xS(140), text, 1)
 {
 	this->plugin = plugin;
 }
@@ -227,10 +227,10 @@ int DenoiseFFTSamples::handle_event()
 
 DenoiseFFTWindow::DenoiseFFTWindow(DenoiseFFTEffect *plugin)
  : PluginClientWindow(plugin,
- 	300,
-	130,
-	300,
-	130,
+	xS(300),
+	yS(130),
+	xS(300),
+	yS(130),
 	0)
 {
 	this->plugin = plugin;
@@ -238,19 +238,21 @@ DenoiseFFTWindow::DenoiseFFTWindow(DenoiseFFTEffect *plugin)
 
 void DenoiseFFTWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int xs10 = xS(10), xs100 = xS(100), xs130 = xS(130);
+	int ys10 = yS(10), ys20 = yS(20);
+	int x = xs10, y = ys10;
 
 	add_subwindow(new BC_Title(x, y, _("Denoise power:")));
-	add_subwindow(level = new DenoiseFFTLevel(plugin, x + 130, y));
-	y += level->get_h() + 10;
+	add_subwindow(level = new DenoiseFFTLevel(plugin, x + xs130, y));
+	y += level->get_h() + ys10;
 	add_subwindow(new BC_Title(x, y, _("Number of samples for reference:")));
-	y += 20;
+	y += ys20;
 	add_subwindow(new BC_Title(x, y, _("The keyframe is the start of the reference")));
-	y += 20;
+	y += ys20;
 
 	char string[BCTEXTLEN];
 	sprintf(string, "%d\n", plugin->config.samples);
-	add_subwindow(samples = new DenoiseFFTSamples(plugin, x + 100, y, string));
+	add_subwindow(samples = new DenoiseFFTSamples(plugin, x + xs100, y, string));
 	for(int i = WINDOW_SIZE; i < 0x100000; )
 	{
 		sprintf(string, "%d", i);

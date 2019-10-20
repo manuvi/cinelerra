@@ -72,7 +72,7 @@ void _1080to480Config::interpolate(_1080to480Config &prev,
 
 
 _1080to480Window::_1080to480Window(_1080to480Main *client)
- : PluginClientWindow(client, 200, 100, 0, 0, 1)
+ : PluginClientWindow(client, xS(200), yS(100), 0, 0, 1)
 {
 	this->client = client;
 }
@@ -84,10 +84,10 @@ _1080to480Window::~_1080to480Window()
 
 void _1080to480Window::create_objects()
 {
-	int x = 10, y = 10;
+	int x = xS(10), y = yS(10);
 
 	add_tool(odd_first = new _1080to480Option(client, this, 1, x, y, _("Odd field first")));
-	y += 25;
+	y += yS(25);
 	add_tool(even_first = new _1080to480Option(client, this, 0, x, y, _("Even field first")));
 
 	show_window();

@@ -35,7 +35,7 @@
 
 
 ColorBalanceWindow::ColorBalanceWindow(ColorBalanceMain *client)
- : PluginClientWindow(client, 400, 210, 400, 210, 0)
+ : PluginClientWindow(client, xS(400), yS(210), xS(400), yS(210), 0)
 {
 	this->client = client;
 }
@@ -46,37 +46,39 @@ ColorBalanceWindow::~ColorBalanceWindow()
 
 void ColorBalanceWindow::create_objects()
 {
-	int x = 10, y = 10;
-	int clrBtn_w = 50;
-	int x1 = 400 - clrBtn_w - 10; // (window_width - clrBtn_width - margin_rx)
+	int xs10 = xS(10), xs70 = xS(70), xs280 = xS(280), xs400 = xS(400);
+	int ys10 = yS(10), ys15 = yS(15), ys25 = yS(25);
+	int x = xs10, y = ys10;
+	int clrBtn_w = xS(50);
+	int x1 = xs400 - clrBtn_w - xs10; // (window_width - clrBtn_width - margin_rx)
 
 	add_tool(new BC_Title(x, y, _("Color Balance")));
-	y += 25;
+	y += ys25;
 	add_tool(new BC_Title(x, y, _("Cyan")));
-	add_tool(cyan = new ColorBalanceSlider(client, &(client->config.cyan), x + 70, y));
-	add_tool(new BC_Title(x + 280, y, _("Red")));
+	add_tool(cyan = new ColorBalanceSlider(client, &(client->config.cyan), x + xs70, y));
+	add_tool(new BC_Title(x + xs280, y, _("Red")));
 	add_subwindow(cyanClr = new ColorBalanceSliderClr(client, this, x1, y, clrBtn_w, 1));
 
-	y += 25;
+	y += ys25;
 	add_tool(new BC_Title(x, y, _("Magenta")));
-	add_tool(magenta = new ColorBalanceSlider(client, &(client->config.magenta), x + 70, y));
-	add_tool(new BC_Title(x + 280, y, _("Green")));
+	add_tool(magenta = new ColorBalanceSlider(client, &(client->config.magenta), x + xs70, y));
+	add_tool(new BC_Title(x + xs280, y, _("Green")));
 	add_subwindow(magentaClr = new ColorBalanceSliderClr(client, this, x1, y, clrBtn_w, 2));
 
-	y += 25;
+	y += ys25;
 	add_tool(new BC_Title(x, y, _("Yellow")));
-	add_tool(yellow = new ColorBalanceSlider(client, &(client->config.yellow), x + 70, y));
-	add_tool(new BC_Title(x + 280, y, _("Blue")));
+	add_tool(yellow = new ColorBalanceSlider(client, &(client->config.yellow), x + xs70, y));
+	add_tool(new BC_Title(x + xs280, y, _("Blue")));
 	add_subwindow(yellowClr = new ColorBalanceSliderClr(client, this, x1, y, clrBtn_w, 3));
 
-	y += 25;
+	y += ys25;
 	add_tool(preserve = new ColorBalancePreserve(client, x, y));
-	y += preserve->get_h() + 10;
+	y += preserve->get_h() + ys10;
 	add_tool(lock_params = new ColorBalanceLock(client, x, y));
 
-	y += lock_params->get_h() + 15;
+	y += lock_params->get_h() + ys15;
 	add_tool(new ColorBalanceReset(client, this, x, y));
-	add_tool(new ColorBalanceWhite(client, this, int(400 / 2), y));
+	add_tool(new ColorBalanceWhite(client, this, int(xS(400) / 2), y));
 
 	show_window();
 	flush();
@@ -106,7 +108,7 @@ void ColorBalanceWindow::update_gui(int clear)
 
 ColorBalanceSlider::ColorBalanceSlider(ColorBalanceMain *client,
 	float *output, int x, int y)
- : BC_ISlider(x, y, 0, 200, 200, -1000, 1000, (int)*output)
+ : BC_ISlider(x, y, 0, xS(200), yS(200), -1000, 1000, (int)*output)
 {
 	this->client = client;
 	this->output = output;

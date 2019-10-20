@@ -150,7 +150,7 @@ int BC_MenuItem::activate_submenu()
 			&new_y,
 			&tempwin);
 		submenu->popup_menu = menu_popup->popup_menu;
-		submenu->activate_menu(new_x + 5, new_y, menu_popup->w - 10, h, 0, 0);
+		submenu->activate_menu(new_x + xS(5), new_y, menu_popup->w - xS(10), h, 0, 0);
 		highlighted = 1;
 	}
 	return 0;
@@ -311,13 +311,13 @@ int BC_MenuItem::draw()
 	if(!strcmp(text, "-"))
 	{
 		menu_popup->get_popup()->set_color(DKGREY);
-		menu_popup->get_popup()->draw_line(5, y + h / 2, menu_popup->get_w() - 5, y + h / 2);
+		menu_popup->get_popup()->draw_line(xS(5), y + h / 2, menu_popup->get_w() - xS(5), y + h / 2);
 		menu_popup->get_popup()->set_color(LTGREY);
-		menu_popup->get_popup()->draw_line(5, y + h / 2 + 1, menu_popup->get_w() - 5, y + h / 2 + 1);
+		menu_popup->get_popup()->draw_line(xS(5), y + h / 2 + 1, menu_popup->get_w() - xS(5), y + h / 2 + 1);
 	}
 	else
 	{
-		int offset = 0;
+		int xoffset = 0, yoffset = 0;
 		if(highlighted)
 		{
 			int y = this->y;
@@ -351,7 +351,7 @@ int BC_MenuItem::draw()
 						resources->menu_down,
 						resources->menu_light);
 				}
-				offset = 1;
+				xoffset = xS(1);  yoffset = yS(1);
 			}
 			else
 // Highlighted
@@ -385,23 +385,23 @@ int BC_MenuItem::draw()
 		  }
 		if(checked)
 		{
-//			menu_popup->get_popup()->draw_check(10 + offset, y + 2 + offset);
+//			menu_popup->get_popup()->draw_check(xS(10) + xoffset, y + 2 + yoffset);
 			menu_popup->get_popup()->draw_pixmap(menu_popup->check,
-				offset,
-				y + (this->h - menu_popup->check->get_h()) / 2 + offset);
+				xoffset,
+				y + (this->h - menu_popup->check->get_h()) / 2 + yoffset);
 			menu_popup->get_popup()->set_font(MEDIUMFONT);
-			menu_popup->get_popup()->draw_text(menu_popup->check->get_w() + offset,
-				y + h - text_line - 2 + offset,
+			menu_popup->get_popup()->draw_text(menu_popup->check->get_w() + xoffset,
+				y + h - text_line - 2 + yoffset,
 				text);
-			menu_popup->get_popup()->draw_text(menu_popup->get_key_x() + offset,
-				y + h - text_line - 2 + offset,
+			menu_popup->get_popup()->draw_text(menu_popup->get_key_x() + xoffset,
+				y + h - text_line - 2 + yoffset,
 				hotkey_text);
 		}
 		else
 		{
 			menu_popup->get_popup()->set_font(MEDIUMFONT);
-			menu_popup->get_popup()->draw_text(10 + offset, y + h - text_line - 2 + offset, text);
-			menu_popup->get_popup()->draw_text(menu_popup->get_key_x() + offset, y + h - text_line - 2 + offset, hotkey_text);
+			menu_popup->get_popup()->draw_text(xS(10) + xoffset, y + h - text_line - 2 + yoffset, text);
+			menu_popup->get_popup()->draw_text(menu_popup->get_key_x() + xoffset, y + h - text_line - 2 + yoffset, hotkey_text);
 		}
 	}
 	return 0;

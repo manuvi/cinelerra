@@ -30,10 +30,10 @@
 
 DotWindow::DotWindow(DotMain *client)
  : PluginClientWindow(client,
-	300,
-	170,
-	300,
-	170,
+	xS(300),
+	yS(170),
+	xS(300),
+	yS(170),
 	0)
 {
 	this->client = client;
@@ -45,7 +45,7 @@ DotWindow::~DotWindow()
 
 void DotWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int x = xS(10), y = yS(10);
 	add_subwindow(new BC_Title(x, y,
 		_("DotTV from EffectTV\n"
 		"Copyright (C) 2001 FUKUCHI Kentarou")

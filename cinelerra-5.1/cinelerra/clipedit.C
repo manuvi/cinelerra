@@ -131,11 +131,13 @@ void ClipEdit::create_clip(EDL *clip, int x, int y)
 	start();
 }
 
+#define CEW_W xS(400)
+#define CEW_H yS(350)
 
 ClipEditWindow::ClipEditWindow(MWindow *mwindow, ClipEdit *thread)
  : BC_Window(_(PROGRAM_NAME ": Clip Info"),
-	thread->x -400/2, thread->y - 350/2,
-	400, 350, 400, 430, 0, 0, 1)
+	thread->x - CEW_W/2, thread->y - CEW_H/2,
+	CEW_W, CEW_H, CEW_W, CEW_H, 0, 0, 1)
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
@@ -148,31 +150,33 @@ ClipEditWindow::~ClipEditWindow()
 
 void ClipEditWindow::create_objects()
 {
+	int xs10 = xS(10);
+	int ys5 = yS(5), ys10 = yS(10);
 	lock_window("ClipEditWindow::create_objects");
 	this->create_it = thread->create_it;
 
-	int x = 10, y = 10;
+	int x = xs10, y = ys10;
 	int x1 = x;
 	BC_TextBox *textbox;
 	BC_Title *title;
 
 	add_subwindow(title = new BC_Title(x1, y, _("Title:")));
-	y += title->get_h() + 5;
+	y += title->get_h() + ys5;
 	add_subwindow(titlebox = new ClipEditTitle(this, x1, y, get_w() - x1 * 2));
 
 	int end = strlen(titlebox->get_text());
 	titlebox->set_selection(0, end, end);
 
-	y += titlebox->get_h() + 10;
+	y += titlebox->get_h() + ys10;
 	add_subwindow(title = new BC_Title(x1, y, _("Comments:")));
-	y += title->get_h() + 5;
+	y += title->get_h() + ys5;
 	add_subwindow(textbox = new ClipEditComments(this,
 		x1,
 		y,
 		get_w() - x1 * 2,
 		BC_TextBox::pixels_to_rows(this,
 			MEDIUMFONT,
-			get_h() - 10 - BC_OKButton::calculate_h() - y)));
+			get_h() - ys10 - BC_OKButton::calculate_h() - y)));
 
 
 

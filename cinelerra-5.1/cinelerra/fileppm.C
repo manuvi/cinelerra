@@ -195,7 +195,8 @@ int FilePPM::get_best_colormodel(Asset *asset, int driver)
 
 PPMConfigVideo::PPMConfigVideo(BC_WindowBase *gui, Asset *asset)
  : BC_Window(_(PROGRAM_NAME ": Video Compression"),
- 	gui->get_abs_cursor_x(1), gui->get_abs_cursor_y(1), 200, 100)
+	gui->get_abs_cursor_x(1), gui->get_abs_cursor_y(1),
+	xS(200), yS(100))
 {
 	this->gui = gui;
 	this->asset = asset;
@@ -204,7 +205,7 @@ PPMConfigVideo::PPMConfigVideo(BC_WindowBase *gui, Asset *asset)
 void PPMConfigVideo::create_objects()
 {
 	lock_window("PPMConfigVideo::create_objects");
-	int x = 10, y = 10;
+	int x = xS(10), y = yS(10);
 	add_subwindow(new BC_Title(x, y, _("PPM, RGB raw only")));
 	add_subwindow(new BC_OKButton(this));
 	show_window(1);

@@ -210,10 +210,10 @@ int DecimateConfig::equivalent(DecimateConfig *config)
 
 DecimateWindow::DecimateWindow(Decimate *plugin)
  : PluginClientWindow(plugin,
-	210,
-	160,
-	200,
-	160,
+	xS(210),
+	yS(160),
+	xS(200),
+	yS(160),
 	0)
 {
 	this->plugin = plugin;
@@ -226,7 +226,8 @@ DecimateWindow::~DecimateWindow()
 
 void DecimateWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int ys30 = yS(30);
+	int x = xS(10), y = yS(10);
 
 	frame_rates.append(new BC_ListBoxItem("1"));
 	frame_rates.append(new BC_ListBoxItem("5"));
@@ -244,24 +245,24 @@ void DecimateWindow::create_objects()
 
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x, y, _("Input frames per second:")));
-	y += 30;
+	y += ys30;
 	add_subwindow(rate = new DecimateRate(plugin,
 		this,
 		x,
 		y));
 	add_subwindow(rate_menu = new DecimateRateMenu(plugin,
 		this,
-		x + rate->get_w() + 5,
+		x + rate->get_w() + xS(5),
 		y));
-	y += 30;
+	y += ys30;
 	add_subwindow(title = new BC_Title(x, y, _("Last frame dropped: ")));
 	add_subwindow(last_dropped = new BC_Title(x + title->get_w() + 5, y, ""));
 
-// 	y += 30;
+// 	y += ys30;
 // 	add_subwindow(difference = new DecimateDifference(plugin,
 // 		x,
 // 		y));
-// 	y += 30;
+// 	y += ys30;
 // 	add_subwindow(avg_difference = new DecimateAvgDifference(plugin,
 // 		x,
 // 		y));
@@ -285,10 +286,7 @@ DecimateRate::DecimateRate(Decimate *plugin,
 	DecimateWindow *gui,
 	int x,
 	int y)
- : BC_TextBox(x,
-	y,
-	90,
-	1,
+ : BC_TextBox(x, y, xS(90), 1,
 	(float)plugin->config.input_rate)
 {
 	this->plugin = plugin;
@@ -345,8 +343,8 @@ DecimateRateMenu::DecimateRateMenu(Decimate *plugin,
 	int y)
  : BC_ListBox(x,
  	y,
-	100,
-	200,
+	xS(100),
+	yS(200),
 	LISTBOX_TEXT,
 	&gui->frame_rates,
 	0,

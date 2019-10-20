@@ -54,11 +54,12 @@ PerformancePrefs::~PerformancePrefs()
 
 void PerformancePrefs::create_objects()
 {
+	int xs5 = xS(5), xs10 = xS(10);
+	int ys5 = yS(5), ys10 = yS(10), ys20 = yS(20), ys30 = yS(30), ys35 = yS(35);
 	int x, y;
-	int xmargin1;
-	int xmargin2 = 180;
-	int xmargin3 = 260;
-	int xmargin4 = 420;
+	int xmargin2 = xS(180);
+	int xmargin3 = xS(260);
+	int xmargin4 = xS(420);
 	char string[BCTEXTLEN];
 	BC_Resources *resources = BC_WindowBase::get_resources();
 	BC_WindowBase *win;
@@ -67,70 +68,70 @@ void PerformancePrefs::create_objects()
 	node_list = 0;
 	generate_node_list();
 
-	xmargin1 = x = mwindow->theme->preferencesoptions_x;
+	int xmargin1 = x = mwindow->theme->preferencesoptions_x;
 	y = mwindow->theme->preferencesoptions_y;
 
 	int y0 = y;
-	win = add_subwindow(new BC_Title(x, y + 5, _("Cache size (MB):"), MEDIUMFONT, resources->text_default));
+	win = add_subwindow(new BC_Title(x, y + ys5, _("Cache size (MB):"), MEDIUMFONT, resources->text_default));
 	maxw = win->get_w();
 	int x1 = x + xmargin4;
-	win = add_subwindow(new BC_Title(x1, y + 5, _("Use HW Device:")));
-	x1 += win->get_w() + 5;
+	win = add_subwindow(new BC_Title(x1, y + ys5, _("Use HW Device:")));
+	x1 += win->get_w() + xs5;
 	PrefsUseHWDev *use_hw_dev = new PrefsUseHWDev(pwindow, this, x1, y);
 	use_hw_dev->create_objects();
 
-	int y1 = y += 30;
-	win = add_subwindow(new BC_Title(x, y + 5, _("Seconds to preroll renders:")));
+	int y1 = y += ys30;
+	win = add_subwindow(new BC_Title(x, y + ys5, _("Seconds to preroll renders:")));
 	if((curw = win->get_w()) > maxw)
 		maxw = curw;
-	maxw += x + 5;
+	maxw += x + xs5;
 
 	cache_size = new CICacheSize(maxw, y0, pwindow, this);
 	cache_size->create_objects();
 
-	add_subwindow(new BC_Title(x, y + 5, _("Seconds to preroll renders:")));
+	add_subwindow(new BC_Title(x, y + ys5, _("Seconds to preroll renders:")));
 	PrefsRenderPreroll *preroll = new PrefsRenderPreroll(pwindow, this, maxw, y1);
 	preroll->create_objects();
-	y += 30;
+	y += ys30;
 
 	x1 = x + xmargin4;
-	BC_Title *smp_title = new BC_Title(x1, y + 5, _("Project SMP cpus:"));
+	BC_Title *smp_title = new BC_Title(x1, y + ys5, _("Project SMP cpus:"));
 	add_subwindow(smp_title);
-	x1 += smp_title->get_w() + 5;
+	x1 += smp_title->get_w() + xs5;
 	PrefsProjectSMP *proj_smp = new PrefsProjectSMP(pwindow, this, x1, y);
 	proj_smp->create_objects();
 
 	PrefsForceUniprocessor *force_1cpu = new PrefsForceUniprocessor(pwindow, x, y);
 	add_subwindow(force_1cpu);
-	y += 30;
+	y += ys30;
 
 // Background rendering
-	add_subwindow(new BC_Bar(5, y, 	get_w() - 10));
-	y += 5;
+	add_subwindow(new BC_Bar(xs5, y, get_w() - xs10));
+	y += ys5;
 
 
 	add_subwindow(new BC_Title(x, y, _("Background Rendering (Video only)"), LARGEFONT, resources->text_default));
-	y1 = y += 30;
+	y1 = y += ys30;
 
 	win = add_subwindow(new PrefsUseBRender(pwindow, x, y));
 
-	y += win->get_h() + 10;
+	y += win->get_h() + ys10;
 	win = add_subwindow(new BC_Title(x, y, _("Frames per background rendering job:")));
-	y += win->get_h() + 5;
+	y += win->get_h() + ys5;
 	PrefsBRenderFragment *brender_fragment = new PrefsBRenderFragment(pwindow, this,
 		x + xmargin3, y);
 	brender_fragment->create_objects();
-	y += brender_fragment->get_h() + 5;
+	y += brender_fragment->get_h() + ys5;
 	win = add_subwindow(new BC_Title(x, y, _("Frames to preroll background:")));
-	y += win->get_h() + 5;
+	y += win->get_h() + ys5;
 	PrefsBRenderPreroll *bpreroll = new PrefsBRenderPreroll(pwindow, this,
-		x + xmargin3, y + 5);
+		x + xmargin3, y + ys5);
 	bpreroll->create_objects();
-	y += bpreroll->get_h() + 20;
+	y += bpreroll->get_h() + ys20;
 
 	x += xmargin4;
 	add_subwindow(new BC_Title(x, y1, _("Output for background rendering:")));
-	y1 += 20;
+	y1 += ys20;
 	brender_tools = new FormatTools(mwindow, this,
 			pwindow->thread->preferences->brender_asset);
 	brender_tools->create_objects(x, y1,
@@ -148,46 +149,46 @@ void PerformancePrefs::create_objects()
 
 
 // Renderfarm
-	add_subwindow(new BC_Bar(5, y, get_w() - 10));
-	y += 5;
+	add_subwindow(new BC_Bar(xs5, y, get_w() - xs10));
+	y += ys5;
 	add_subwindow(new BC_Title(x, y, _("Render Farm"), LARGEFONT, resources->text_default));
 	x1 = get_w() - BC_GenericButton::calculate_w(this, _("Reset rates")) - x;
 	add_subwindow(new PrefsRenderFarmReset(pwindow, this, x1, y));
 	x1 = x + xmargin4;
 	BC_Title *node_title = new BC_Title(x1, y, _("Nodes:"));
 	add_subwindow(node_title);
-	x1 += node_title->get_w() + 15;
+	x1 += node_title->get_w() + xS(15);
 	sprintf(string, _(MASTER_NODE_FRAMERATE_TEXT),
 		pwindow->thread->preferences->local_rate);
 	add_subwindow(master_rate = new BC_Title(x1, y, string));
-	add_subwindow(node_list = new PrefsRenderFarmNodes(pwindow, this, x + xmargin4, y+=25));
-	add_subwindow(new PrefsRenderFarm(pwindow, x, y+=5));
-	add_subwindow(new BC_Title(x, y+=30, _("Hostname:")));
+	add_subwindow(node_list = new PrefsRenderFarmNodes(pwindow, this, x + xmargin4, y+=yS(25)));
+	add_subwindow(new PrefsRenderFarm(pwindow, x, y+=ys5));
+	add_subwindow(new BC_Title(x, y+=ys30, _("Hostname:")));
 	add_subwindow(new BC_Title(x + xmargin3, y, _("Port:")));
-	add_subwindow(edit_node = new PrefsRenderFarmEditNode(pwindow, this, x, y+=25));
+	add_subwindow(edit_node = new PrefsRenderFarmEditNode(pwindow, this, x, y+=yS(25)));
 	edit_port = new PrefsRenderFarmPort(pwindow, this, x+xmargin3, y);
 	edit_port->create_objects();
 
-	add_subwindow(new PrefsRenderFarmReplaceNode(pwindow, this, x, y+=30));
+	add_subwindow(new PrefsRenderFarmReplaceNode(pwindow, this, x, y+=ys30));
 	add_subwindow(new PrefsRenderFarmNewNode(pwindow, this, x+xmargin2, y));
-	add_subwindow(new PrefsRenderFarmSortNodes(pwindow, this, x, y+=30));
+	add_subwindow(new PrefsRenderFarmSortNodes(pwindow, this, x, y+=ys30));
 	add_subwindow(new PrefsRenderFarmDelNode(pwindow, this, x+xmargin2, y));
-	add_subwindow(new BC_Title(x, y+=35, _("Client Watchdog Timeout:")));
-	renderfarm_watchdog = new PrefsRenderFarmWatchdog(pwindow, this, x+xmargin3, y-5);
+	add_subwindow(new BC_Title(x, y+=ys35, _("Client Watchdog Timeout:")));
+	renderfarm_watchdog = new PrefsRenderFarmWatchdog(pwindow, this, x+xmargin3, y-ys5);
 	renderfarm_watchdog->create_objects();
-	add_subwindow(new BC_Title(x, y+=35, _("Total jobs to create:")));
+	add_subwindow(new BC_Title(x, y+=ys35, _("Total jobs to create:")));
 	PrefsRenderFarmJobs *jobs = new PrefsRenderFarmJobs(pwindow, this,
-		x + xmargin3, y-5);
+		x + xmargin3, y-ys5);
 	jobs->create_objects();
-	y += jobs->get_h() + 5;
+	y += jobs->get_h() + ys5;
 	win = add_subwindow(new BC_Title(x, y,
 		_("(overridden if new file at each label is checked)")));
-//	y += win->get_h() + 5;
+//	y += win->get_h() + ys5;
 // 	add_subwindow(new PrefsRenderFarmVFS(pwindow, this, x, y));
 // 	add_subwindow(new BC_Title(x, y,
 // 		_("Filesystem prefix on remote nodes:")));
 // 	add_subwindow(new PrefsRenderFarmMountpoint(pwindow, this, x + xmargin3, y));
-// 	y += 30;
+// 	y += ys30;
 }
 
 void PerformancePrefs::generate_node_list()
@@ -290,7 +291,7 @@ PrefsBRenderFragment::PrefsBRenderFragment(PreferencesWindow *pwindow,
 	PerformancePrefs *subwindow, int x, int y)
  : BC_TumbleTextBox(subwindow,
  	(int64_t)pwindow->thread->preferences->brender_fragment,
-	(int64_t)1, (int64_t)65535, x, y, 100)
+	(int64_t)1, (int64_t)65535, x, y, xS(100))
 {
 	this->pwindow = pwindow;
 }
@@ -306,7 +307,7 @@ CICacheSize::CICacheSize(int x, int y,
  	(int64_t)pwindow->thread->preferences->cache_size / 0x100000,
 	(int64_t)MIN_CACHE_SIZE / 0x100000,
 	(int64_t)MAX_CACHE_SIZE / 0x100000,
-	x, y, 100)
+	x, y, xS(100))
 {
 	this->pwindow = pwindow;
 	set_increment(1);
@@ -324,7 +325,7 @@ int CICacheSize::handle_event()
 
 PrefsUseHWDev::PrefsUseHWDev(PreferencesWindow *pwindow,
 		PerformancePrefs *subwindow, int x, int y)
- : BC_PopupTextBox(subwindow,0,0,x,y,100,80,LISTBOX_TEXT)
+ : BC_PopupTextBox(subwindow,0,0,x,y,xS(100),yS(80),LISTBOX_TEXT)
 {
 	this->pwindow = pwindow;
 }
@@ -357,16 +358,10 @@ int PrefsUseHWDev::handle_event()
 }
 
 PrefsRenderPreroll::PrefsRenderPreroll(PreferencesWindow *pwindow,
-		PerformancePrefs *subwindow,
-		int x,
-		int y)
+		PerformancePrefs *subwindow, int x, int y)
  : BC_TumbleTextBox(subwindow,
  	(float)pwindow->thread->preferences->render_preroll,
-	(float)0,
-	(float)100,
-	x,
-	y,
-	100)
+	0.f, 100.f, x, y, xS(100))
 {
 	this->pwindow = pwindow;
 	set_increment(0.1);
@@ -387,11 +382,7 @@ PrefsBRenderPreroll::PrefsBRenderPreroll(PreferencesWindow *pwindow,
 		int y)
  : BC_TumbleTextBox(subwindow,
  	(int64_t)pwindow->thread->preferences->brender_preroll,
-	(int64_t)0,
-	(int64_t)100,
-	x,
-	y,
-	100)
+	(int64_t)0, (int64_t)100, x, y, xS(100))
 {
 	this->pwindow = pwindow;
 }
@@ -463,11 +454,7 @@ PrefsRenderFarmPort::PrefsRenderFarmPort(PreferencesWindow *pwindow,
 	int y)
  : BC_TumbleTextBox(subwindow,
  	(int64_t)pwindow->thread->preferences->renderfarm_port,
-	(int64_t)1,
-	(int64_t)65535,
-	x,
-	y,
-	100)
+	(int64_t)1, (int64_t)65535, x, y, xS(100))
 {
 	this->pwindow = pwindow;
 }
@@ -486,11 +473,11 @@ int PrefsRenderFarmPort::handle_event()
 
 PrefsRenderFarmNodes::PrefsRenderFarmNodes(PreferencesWindow *pwindow,
 	PerformancePrefs *subwindow, int x, int y)
- : BC_ListBox(x, y, 340, 230, LISTBOX_TEXT, 0,0,0,1, 0,0, LISTBOX_MULTIPLE)
+ : BC_ListBox(x, y, xS(340), yS(230), LISTBOX_TEXT, 0,0,0,1, 0,0, LISTBOX_MULTIPLE)
 {
 	for( int i=0; i<PerformancePrefs::TOTAL_COLUMNS; ++i ) {
 		titles[i] = _(default_titles[i]);
-		widths[i] = default_widths[i];
+		widths[i] = xS(default_widths[i]);
 	}
 	update(subwindow->nodes, titles, widths, PerformancePrefs::TOTAL_COLUMNS,
 		0, 0, -1, 0, 0);
@@ -542,7 +529,7 @@ int PrefsRenderFarmNodes::selection_changed()
 
 
 PrefsRenderFarmEditNode::PrefsRenderFarmEditNode(PreferencesWindow *pwindow, PerformancePrefs *subwindow, int x, int y)
- : BC_TextBox(x, y, 240, 1, "")
+ : BC_TextBox(x, y, xS(240), 1, "")
 {
 	this->pwindow = pwindow;
 	this->subwindow = subwindow;
@@ -687,7 +674,7 @@ PrefsProjectSMP::PrefsProjectSMP(PreferencesWindow *pwindow,
 		PerformancePrefs *subwindow, int x, int y)
  : BC_TumbleTextBox(subwindow,
 	(int64_t)pwindow->thread->preferences->project_smp,
-	(int64_t)1, (int64_t)100, x, y, 100)
+	(int64_t)1, (int64_t)100, x, y, xS(100))
 {
 	this->pwindow = pwindow;
 }
@@ -707,7 +694,7 @@ PrefsRenderFarmJobs::PrefsRenderFarmJobs(PreferencesWindow *pwindow,
 		int y)
  : BC_TumbleTextBox(subwindow,
  	(int64_t)pwindow->thread->preferences->renderfarm_job_count,
-	(int64_t)1, (int64_t)100, x, y, 100)
+	(int64_t)1, (int64_t)100, x, y, xS(100))
 {
 	this->pwindow = pwindow;
 }
@@ -723,7 +710,7 @@ int PrefsRenderFarmJobs::handle_event()
 
 PrefsRenderFarmMountpoint::PrefsRenderFarmMountpoint(PreferencesWindow *pwindow,
 		PerformancePrefs *subwindow, int x, int y)
- : BC_TextBox(x, y, 100, 1,
+ : BC_TextBox(x, y, xS(100), 1,
 	pwindow->thread->preferences->renderfarm_mountpoint)
 {
 	this->pwindow = pwindow;
@@ -759,7 +746,7 @@ PrefsRenderFarmWatchdog::PrefsRenderFarmWatchdog(PreferencesWindow *pwindow,
 		PerformancePrefs *subwindow, int x, int y)
  : BC_TumbleTextBox(subwindow,
 	(int64_t)pwindow->thread->preferences->renderfarm_watchdog_timeout,
-	(int64_t)0, (int64_t)1000, x, y, 100)
+	(int64_t)0, (int64_t)1000, x, y, xS(100))
 {
 	this->pwindow = pwindow;
 	set_increment(15);

@@ -132,7 +132,7 @@ AudioScopeWindowSize::AudioScopeWindowSize(AudioScope *plugin,
 	char *text)
  : BC_PopupMenu(x,
 	y,
-	80,
+	xS(80),
 	text)
 {
 	this->plugin = plugin;
@@ -273,7 +273,7 @@ AudioScopeMode::AudioScopeMode(AudioScope *plugin,
 	int y)
  : BC_PopupMenu(x,
 	y,
-	180,
+	xS(180),
 	mode_to_text(plugin->config.mode))
 {
 	this->plugin = plugin;
@@ -341,8 +341,8 @@ AudioScopeWindow::AudioScopeWindow(AudioScope *plugin)
  : PluginClientWindow(plugin,
 	plugin->w,
 	plugin->h,
-	320,
-	320,
+	xS(320),
+	yS(320),
 	1)
 {
 	this->plugin = plugin;
@@ -632,8 +632,8 @@ AudioScope::AudioScope(PluginServer *server)
 {
 	reset();
 	timer = new Timer;
-	w = 640;
-	h = 480;
+	w = xS(640);
+	h = yS(480);
 }
 
 AudioScope::~AudioScope()

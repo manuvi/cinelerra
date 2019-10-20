@@ -164,10 +164,11 @@ int AssetPopupInfo::handle_event()
 	popup->gui->get_abs_cursor(cur_x, cur_y);
 	int n = mwindow->session->drag_assets->size();
 	if( n > 0 ) {
+		int xs30 = xS(30), ys30 = yS(30);
 		for( int i=0; i<n; ++i ) {
 			AssetEdit *asset_edit = mwindow->awindow->get_asset_editor();
 			asset_edit->edit_asset(
-				mwindow->session->drag_assets->values[i], cur_x-30*i, cur_y-30*i);
+				mwindow->session->drag_assets->values[i], cur_x-xs30*i, cur_y-ys30*i);
 		}
 	}
 	else if( mwindow->session->drag_clips->size() ) {
@@ -573,11 +574,13 @@ void AssetCopyDialog::handle_close_event(int result)
 	copy_window = 0;
 }
 
+#define ACW_W xS(500)
+#define ACW_H yS(200)
 
 AssetCopyWindow::AssetCopyWindow(AssetCopyDialog *copy_dialog)
  : BC_Window(_(PROGRAM_NAME ": Copy File List"),
-	copy_dialog->x - 500/2, copy_dialog->y - 200/2,
-	500, 200, 500, 200, 1, 0, 1)
+	copy_dialog->x - ACW_W/2, copy_dialog->y - ACW_H/2,
+	ACW_W, ACW_H, ACW_W, ACW_H, 1, 0, 1)
 {
 	this->copy_dialog = copy_dialog;
 }
@@ -590,11 +593,13 @@ void AssetCopyWindow::create_objects()
 {
 	lock_window("AssetCopyWindow::create_objects");
 	BC_Title *title;
-	int x = 10, y = 10, pad = 5;
+	int xs10 = xS(10);
+	int ys5 = yS(5), ys10 = yS(10);
+	int x = xs10, y = ys10;
 	add_subwindow(title = new BC_Title(x, y, _("List of asset paths:")));
-	y += title->get_h() + pad;
+	y += title->get_h() + ys5;
 	int text_w = get_w() - x - 10;
-	int text_h = get_h() - y - BC_OKButton::calculate_h() - pad;
+	int text_h = get_h() - y - BC_OKButton::calculate_h() - ys5;
 	int text_rows = BC_TextBox::pixels_to_rows(this, MEDIUMFONT, text_h);
 	char *text = copy_dialog->text;
 	int len = strlen(text) + BCTEXTLEN;
@@ -608,9 +613,9 @@ void AssetCopyWindow::create_objects()
 
 int AssetCopyWindow::resize_event(int w, int h)
 {
-	int fx = file_list->get_x(), fy = file_list->get_y(), pad = 5;
-	int text_w = w - fx - 10;
-	int text_h = h - fy - BC_OKButton::calculate_h() - pad;
+	int fx = file_list->get_x(), fy = file_list->get_y();
+	int text_w = w - fx - xS(10);
+	int text_h = h - fy - BC_OKButton::calculate_h() - yS(5);
 	int text_rows = BC_TextBox::pixels_to_rows(this, MEDIUMFONT, text_h);
 	file_list->reposition_window(fx, fy, text_w, text_rows);
 	return 0;
@@ -701,10 +706,13 @@ void AssetPasteDialog::start(int x, int y)
 	BC_DialogThread::start();
 }
 
+#define APW_W xS(500)
+#define APW_H yS(200)
+
 AssetPasteWindow::AssetPasteWindow(AssetPasteDialog *paste_dialog)
  : BC_Window(_(PROGRAM_NAME ": Paste File List"),
-	paste_dialog->x - 500/2, paste_dialog->y - 200/2,
-	500, 200, 500, 200, 1, 0, 1)
+	paste_dialog->x - APW_W/2, paste_dialog->y - APW_H/2,
+	APW_W, APW_H, APW_W, APW_H, 1, 0, 1)
 {
 	this->paste_dialog = paste_dialog;
 }
@@ -717,11 +725,13 @@ void AssetPasteWindow::create_objects()
 {
 	lock_window("AssetPasteWindow::create_objects()");
 	BC_Title *title;
-	int x = 10, y = 10, pad = 5;
+	int xs10 = xS(10);
+	int ys5 = yS(5), ys10 = yS(10);
+	int x = xs10, y = ys10;
 	add_subwindow(title = new BC_Title(x, y, _("Enter list of asset paths:")));
-	y += title->get_h() + pad;
-	int text_w = get_w() - x - 10;
-	int text_h = get_h() - y - BC_OKButton::calculate_h() - pad;
+	y += title->get_h() + ys5;
+	int text_w = get_w() - x - xs10;
+	int text_h = get_h() - y - BC_OKButton::calculate_h() - ys5;
 	int text_rows = BC_TextBox::pixels_to_rows(this, MEDIUMFONT, text_h);
 	file_list = new BC_ScrollTextBox(this, x, y, text_w, text_rows, (char*)0, 65536);
 	file_list->create_objects();
@@ -733,9 +743,9 @@ void AssetPasteWindow::create_objects()
 
 int AssetPasteWindow::resize_event(int w, int h)
 {
-	int fx = file_list->get_x(), fy = file_list->get_y(), pad = 5;
-	int text_w = w - fx - 10;
-	int text_h = h - fy - BC_OKButton::calculate_h() - pad;
+	int fx = file_list->get_x(), fy = file_list->get_y();
+	int text_w = w - fx - xS(10);
+	int text_h = h - fy - BC_OKButton::calculate_h() - yS(5);
 	int text_rows = BC_TextBox::pixels_to_rows(this, MEDIUMFONT, text_h);
 	file_list->reposition_window(fx, fy, text_w, text_rows);
 	return 0;

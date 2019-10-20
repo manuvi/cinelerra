@@ -32,8 +32,8 @@
 // Dialog for record file format.
 
 
-#define RECORD_WINDOW_WIDTH 410
-#define RECORD_WINDOW_HEIGHT 360
+#define RECORD_WINDOW_WIDTH xS(410)
+#define RECORD_WINDOW_HEIGHT yS(360)
 
 
 class RecordWindow : public BC_Window

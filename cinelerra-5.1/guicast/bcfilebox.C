@@ -38,13 +38,8 @@
 #include <sys/stat.h>
 
 
-
-
-
-
-
 BC_FileBoxRecent::BC_FileBoxRecent(BC_FileBox *filebox, int x, int y)
- : BC_ListBox(x, y, 250,
+ : BC_ListBox(x, y, xS(250),
 		filebox->get_text_height(MEDIUMFONT) * FILEBOX_HISTORY_SIZE +
 		BC_ScrollBar::get_span(SCROLL_HORIZ) +
 		LISTBOX_MARGIN * 2, LISTBOX_TEXT, &filebox->recent_dirs,
@@ -63,15 +58,6 @@ int BC_FileBoxRecent::handle_event()
 	}
 	return 1;
 }
-
-
-
-
-
-
-
-
-
 
 
 BC_FileBoxListBox::BC_FileBoxListBox(int x, int y, BC_FileBox *filebox)
@@ -174,7 +160,7 @@ int BC_FileBoxListBox::evaluate_query(char *string)
 
 
 BC_FileBoxTextBox::BC_FileBoxTextBox(int x, int y, BC_FileBox *filebox)
- : BC_TextBox(x, y, filebox->get_w() - x - 20, 1,
+ : BC_TextBox(x, y, filebox->get_w() - x - xS(20), 1,
 	filebox->want_directory ?  filebox->directory : filebox->filename)
 {
 	this->filebox = filebox;
@@ -224,7 +210,7 @@ int BC_FileBoxDirectoryText::handle_event()
 
 
 BC_FileBoxSearchText::BC_FileBoxSearchText(int x, int y, BC_FileBox *filebox)
- : BC_TextBox(x, y, filebox->get_w() - x - 40, 1, "")
+ : BC_TextBox(x, y, filebox->get_w() - x - xS(40), 1, "")
 {
 	this->filebox = filebox;
 }
@@ -237,7 +223,7 @@ int BC_FileBoxSearchText::handle_event()
 
 
 BC_FileBoxFilterText::BC_FileBoxFilterText(int x, int y, BC_FileBox *filebox)
- : BC_TextBox(x, y, filebox->get_w() - x - 50, 1, filebox->get_resources()->filebox_filter)
+ : BC_TextBox(x, y, filebox->get_w() - x - xS(50), 1, filebox->get_resources()->filebox_filter)
 {
 	this->filebox = filebox;
 }
@@ -250,7 +236,7 @@ int BC_FileBoxFilterText::handle_event()
 
 
 BC_FileBoxFilterMenu::BC_FileBoxFilterMenu(int x, int y, BC_FileBox *filebox)
- : BC_ListBox(x, y, filebox->get_w() - 30, 120,
+ : BC_ListBox(x, y, filebox->get_w() - xS(30), yS(120),
 	LISTBOX_TEXT, &filebox->filter_list, 0, 0, 1, 0, 1)
 {
 	this->filebox = filebox;
@@ -462,7 +448,7 @@ BC_FileBox::BC_FileBox(int x, int y, const char *init_path,
  : BC_Window(title, x, y,
  	BC_WindowBase::get_resources()->filebox_w,
 	BC_WindowBase::get_resources()->filebox_h,
-	400, 300, 1, 0, 1)
+	xS(400), yS(300), 1, 0, 1)
 {
 	fs = new FileSystem;
 // 	if(want_directory)
@@ -540,8 +526,7 @@ BC_FileBox::BC_FileBox(int x, int y, const char *init_path,
 
 	if(h_padding == -1)
 	{
-		h_padding = BC_WindowBase::get_resources()->ok_images[0]->get_h() -
-			20;
+		h_padding = BC_WindowBase::get_resources()->ok_images[0]->get_h() - yS(20);
 	}
 	this->h_padding = h_padding;
 	delete_thread = new BC_DeleteThread(this);
@@ -568,10 +553,12 @@ BC_FileBox::~BC_FileBox()
 
 void BC_FileBox::create_objects()
 {
+	int xs5 = xS(5), xs10 = xS(10), xs20 = xS(20);
+	int ys5 = yS(5), ys10 = yS(10);
 	lock_window("BC_FileBox::create_objects");
-	int x = 10, y = 10;
+	int x = xs10, y = ys10;
 	BC_Resources *resources = BC_WindowBase::get_resources();
-	int directory_title_margin = MAX(20,
+	int directory_title_margin = MAX(xs20,
 		resources->filebox_text_images[0]->get_h());
 
 // Directories aren't filtered in FileSystem so skip this
@@ -597,52 +584,52 @@ void BC_FileBox::create_objects()
 
 	add_subwindow(new BC_Title(x, y, caption));
 
-	x = get_w() - resources->filebox_icons_images[0]->get_w() - 10;
+	x = get_w() - resources->filebox_icons_images[0]->get_w() - xs10;
 
 	add_subwindow(icon_button = new BC_FileBoxIcons(x, y, this));
-	x -= resources->filebox_text_images[0]->get_w() + 5;
+	x -= resources->filebox_text_images[0]->get_w() + xs5;
 
 	add_subwindow(text_button = new BC_FileBoxText(x, y, this));
-	x -= resources->filebox_newfolder_images[0]->get_w() + 5;
+	x -= resources->filebox_newfolder_images[0]->get_w() + xs5;
 
 	add_subwindow(folder_button = new BC_FileBoxNewfolder(x, y, this));
-	x -= resources->filebox_delete_images[0]->get_w() + 5;
+	x -= resources->filebox_delete_images[0]->get_w() + xs5;
 
 	add_subwindow(rename_button = new BC_FileBoxRename(x, y, this));
-	x -= resources->filebox_delete_images[0]->get_w() + 5;
+	x -= resources->filebox_delete_images[0]->get_w() + xs5;
 
 	add_subwindow(delete_button = new BC_FileBoxDelete(x, y, this));
-	x -= resources->filebox_reload_images[0]->get_w() + 5;
+	x -= resources->filebox_reload_images[0]->get_w() + xs5;
 
 	add_subwindow(reload_button = new BC_FileBoxReload(x, y, this));
-	x -= resources->filebox_updir_images[0]->get_w() + 5;
+	x -= resources->filebox_updir_images[0]->get_w() + xs5;
 
 	add_subwindow(updir_button = new BC_FileBoxUpdir(x, y, this));
-	x -= resources->filebox_szfmt_images[0]->get_w() + 5;
+	x -= resources->filebox_szfmt_images[0]->get_w() + xs5;
 
 	add_subwindow(szfmt_button = new BC_FileBoxSizeFormat(x, y, this));
 
-	x = 10;
-	y += directory_title_margin + 3;
+	x = xs10;
+	y += directory_title_margin + yS(3);
 
 	add_subwindow(recent_popup = new BC_FileBoxRecent(this, x, y));
 	BC_Title *dir_title;
 	add_subwindow(dir_title = new BC_Title(x, y, _("Directory:")));
-	int x1 = x + dir_title->get_w() + 10, w1 = get_w()-x1 - recent_popup->get_w()-20;
+	int x1 = x + dir_title->get_w() + xs10, w1 = get_w()-x1 - recent_popup->get_w()-xs20;
 	add_subwindow(directory_title = new BC_FileBoxDirectoryText(x1, y, w1, this));
-	x1 += directory_title->get_w() + 8;
-	recent_popup->reposition_window(x1, y, directory_title->get_w(), 200);
+	x1 += directory_title->get_w() + xS(8);
+	recent_popup->reposition_window(x1, y, directory_title->get_w(), yS(200));
 
-	x = 10;
-	y += directory_title->get_h() + 5;
+	x = xs10;
+	y += directory_title->get_h() + ys5;
 
 	BC_Title *search_title;
 	add_subwindow(search_title = new BC_Title(x, y, _("Search:")));
-	x += search_title->get_w() + 10;
+	x += search_title->get_w() + xs10;
 	add_subwindow(search_text = new BC_FileBoxSearchText(x, y, this));
 
-	x = 10;
-	y += search_text->get_h() + 5;
+	x = xs10;
+	y += search_text->get_h() + ys5;
 
 	int newest_id = 0, newest = -1;
 	for(int i = 0; i < FILEBOX_HISTORY_SIZE; i++) {
@@ -668,19 +655,19 @@ void BC_FileBox::create_objects()
 
 	listbox = 0;
 	create_listbox(x, y, get_display_mode());
-	y += listbox->get_h() + 10;
+	y += listbox->get_h() + ys10;
 	add_subwindow(file_title = new BC_Title(x, y, _("File:")));
-	x1 = x + file_title->get_w() + 10;
+	x1 = x + file_title->get_w() + xs10;
 	add_subwindow(textbox = new BC_FileBoxTextBox(x1, y, this));
-	y += textbox->get_h() + 10;
+	y += textbox->get_h() + ys10;
 
 	if(!want_directory) {
 		add_subwindow(filter_title = new BC_Title(x, y, _("Specify filter:")));
-		int x1 = x + filter_title->get_w() + 10;
+		int x1 = x + filter_title->get_w() + xs10;
 		add_subwindow(filter_text = new BC_FileBoxFilterText(x1, y, this));
 		add_subwindow(filter_popup =
 			new BC_FileBoxFilterMenu(x1 + filter_text->get_w(), y, this));
-		y += filter_text->get_h() + 10;
+		y += filter_text->get_h() + ys10;
 	}
 	y_margin = y;
 
@@ -698,12 +685,12 @@ void BC_FileBox::create_objects()
 
 int BC_FileBox::get_listbox_w()
 {
-	return get_w() - 20;
+	return get_w() - xS(20);
 }
 
 int BC_FileBox::get_listbox_h(int y)
 {
-	int result = get_h() - y - h_padding - 10;
+	int result = get_h() - y - h_padding - yS(10);
 	if(want_directory)
 		result -= BC_WindowBase::get_resources()->dirbox_margin;
 	else
@@ -734,13 +721,13 @@ int BC_FileBox::resize_event(int w, int h)
 // 	cancel_button->reposition_window(w - (get_w() - cancel_button->get_x()),
 // 		h - (get_h() - cancel_button->get_y()));
 	if(usethis_button)
-		usethis_button->reposition_window(w / 2 - 50,
+		usethis_button->reposition_window(w / 2 - xS(50),
 			h - (get_h() - usethis_button->get_y()));
 
 
 	if(filter_popup) filter_popup->reposition_window(w - (get_w() - filter_popup->get_x()),
 		h - (get_h() - filter_popup->get_y()),
-		w - 30,
+		w - xS(30),
 		0);
 
 	if(filter_title) filter_title->reposition_window(filter_title->get_x(),
@@ -751,15 +738,15 @@ int BC_FileBox::resize_event(int w, int h)
 		1);
 	directory_title->reposition_window(
 		directory_title->get_x(), directory_title->get_y(),
-		get_w()-directory_title->get_x() - recent_popup->get_w()-20, 1);
+		get_w()-directory_title->get_x() - recent_popup->get_w()-xS(20), 1);
 	recent_popup->reposition_window(
-		directory_title->get_x() + directory_title->get_w() + 8,
+		directory_title->get_x() + directory_title->get_w() + xS(8),
 		directory_title->get_y(),
-		directory_title->get_w() + recent_popup->get_w(), 200);
+		directory_title->get_w() + recent_popup->get_w(), xS(200));
 	search_text->reposition_window(
 		search_text->get_x(),
 		search_text->get_y(),
-		get_w() - search_text->get_x() -  40,
+		get_w() - search_text->get_x() -  xS(40),
 		1);
 	file_title->reposition_window(file_title->get_x(),
 		h - (get_h() - file_title->get_y()));
@@ -785,8 +772,8 @@ int BC_FileBox::resize_event(int w, int h)
 	get_resources()->filebox_w = get_w();
 	get_resources()->filebox_h = get_h();
 	y_margin = filter_text ?
-		filter_text->get_y() + filter_text->get_h() + 10 :
-		textbox->get_y() + textbox->get_h() + 10 ;
+		filter_text->get_y() + filter_text->get_h() + yS(10) :
+		textbox->get_y() + textbox->get_h() + yS(10) ;
 	flush();
 	return 1;
 }

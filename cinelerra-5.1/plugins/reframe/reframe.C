@@ -150,7 +150,7 @@ int ReFrame::process_loop(VFrame *buffer)
 
 
 ReFrameOutput::ReFrameOutput(ReFrame *plugin, int x, int y)
- : BC_TextBox(x, y, 150, 1, (float)plugin->scale)
+ : BC_TextBox(x, y, xS(150), 1, (float)plugin->scale)
 {
 	this->plugin = plugin;
 }
@@ -167,10 +167,10 @@ ReFrameWindow::ReFrameWindow(ReFrame *plugin, int x, int y)
  : BC_Window(plugin->plugin_title(),
  	x,
 	y,
-	230,
-	160,
-	230,
-	160,
+	xS(230),
+	yS(160),
+	xS(230),
+	yS(160),
 	0,
 	0,
 	1)
@@ -185,10 +185,10 @@ ReFrameWindow::~ReFrameWindow()
 
 void ReFrameWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int x = xS(10), y = yS(10);
 	lock_window("ReFrameWindow::create_objects");
 	add_subwindow(new BC_Title(x, y, _("Scale factor:")));
-	y += 20;
+	y += yS(20);
 	add_subwindow(new ReFrameOutput(plugin, x, y));
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));

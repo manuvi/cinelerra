@@ -35,10 +35,10 @@
 
 GainWindow::GainWindow(Gain *gain)
  : PluginClientWindow(gain,
-	230,
-	60,
-	230,
-	60,
+	xS(230),
+	yS(60),
+	xS(230),
+	yS(60),
 	0)
 {
 	this->gain = gain;
@@ -50,9 +50,11 @@ GainWindow::~GainWindow()
 
 void GainWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int xs10 = xS(10);
+	int ys10 = yS(10), ys20 = yS(20);
+	int x = xs10, y = ys10;
 	add_tool(new BC_Title(5, y, _("Level:")));
-	y += 20;
+	y += ys20;
 	add_tool(level = new GainLevel(gain, x, y));
 	show_window();
 	flush();
@@ -69,8 +71,8 @@ GainLevel::GainLevel(Gain *gain, int x, int y)
  : BC_FSlider(x,
  	y,
 	0,
-	200,
-	200,
+	xS(200),
+	yS(200),
 	INFINITYGAIN,
 	40,
 	gain->config.level)

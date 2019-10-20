@@ -425,13 +425,7 @@ void RenderFarmClientThread::read_asset(int socket_fd, Asset *asset)
 
 	BC_Hash defaults;
 	defaults.load_string((char*)string1);
-	asset->load_defaults(&defaults,
-		0,
-		1,
-		1,
-		1,
-		1,
-		1);
+	asset->load_defaults(&defaults, 0, 1, 1, 1, 1, 1);
 
 //printf("RenderFarmClientThread::read_asset %d\n", __LINE__);
 //asset->dump();

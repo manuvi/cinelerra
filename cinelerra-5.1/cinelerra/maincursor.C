@@ -126,9 +126,10 @@ void MainCursor::draw(int do_plugintoggles)
 			mwindow->edl->session->sample_rate /
 			zoom_sample -
 			view_start));
-		if(pixel1 < -10) pixel1 = -10;
-		if(pixel2 > pane->canvas->get_w() + 10)
-			pixel2 = pane->canvas->get_w() + 10;
+		int xs10 = xS(10);
+		if(pixel1 < -xs10) pixel1 = -xs10;
+		if(pixel2 > pane->canvas->get_w() + xs10)
+			pixel2 = pane->canvas->get_w() + xs10;
 		if(pixel2 < pixel1) pixel2 = pixel1;
 //printf("MainCursor::draw 2\n");
 	}

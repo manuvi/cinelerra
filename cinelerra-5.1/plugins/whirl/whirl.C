@@ -289,7 +289,7 @@ void WhirlConfig::interpolate(WhirlConfig &prev,
 
 
 WhirlWindow::WhirlWindow(WhirlEffect *plugin)
- : PluginClientWindow(plugin, 280, 195, 280, 195, 0)
+ : PluginClientWindow(plugin, xS(280), yS(195), xS(280), yS(195), 0)
 {
 	this->plugin = plugin;
 }
@@ -298,33 +298,34 @@ WhirlWindow::WhirlWindow(WhirlEffect *plugin)
 
 void WhirlWindow::create_objects()
 {
-	int x = 10, y = 10;
-	int x1 = 0; int clrBtn_w = 50;
-	int defaultBtn_w = 100;
+	int xs10 = xS(10), xs50 = xS(50), xs100 = xS(100);
+	int ys10 = yS(10), ys20 = yS(20), ys30 = yS(30), ys35 = yS(35);
+	int x = xs10, y = ys10;
+	int x1 = 0; int clrBtn_w = xs50;
+	int defaultBtn_w = xs100;
 
 	add_subwindow(new BC_Title(x, y, _("Radius")));
-	y += 20;
+	y += ys20;
 	add_subwindow(radius = new WhirlRadius(plugin, x, y));
-	x1 = x + radius->get_w() + 10;
+	x1 = x + radius->get_w() + xs10;
 	add_subwindow(radiusClr = new WhirlSliderClr(plugin, this, x1, y, clrBtn_w, RESET_RADIUS));
 
-	y += 30;
+	y += ys30;
 	add_subwindow(new BC_Title(x, y, _("Pinch")));
-	y += 20;
+	y += ys20;
 	add_subwindow(pinch = new WhirlPinch(plugin, x, y));
 	add_subwindow(pinchClr = new WhirlSliderClr(plugin, this, x1, y, clrBtn_w, RESET_PINCH));
 
-	y += 30;
+	y += ys30;
 	add_subwindow(new BC_Title(x, y, _("Angle")));
-	y += 20;
+	y += ys20;
 	add_subwindow(angle = new WhirlAngle(plugin, x, y));
 	add_subwindow(angleClr = new WhirlSliderClr(plugin, this, x1, y, clrBtn_w, RESET_ANGLE));
 
-	y += 35;
+	y += ys35;
 	add_subwindow(reset = new WhirlReset(plugin, this, x, y));
 	add_subwindow(default_settings = new WhirlDefaultSettings(plugin, this,
-		(280 - 10 - defaultBtn_w), y, defaultBtn_w));
-
+		(xS(280) - xs10 - defaultBtn_w), y, defaultBtn_w));
 	show_window();
 	flush();
 }
@@ -364,8 +365,8 @@ WhirlAngle::WhirlAngle(WhirlEffect *plugin, int x, int y)
  : BC_FSlider(x,
 	   	y,
 		0,
-		200,
-		200,
+		xS(200),
+		yS(200),
 		(float)0,
 		(float)360,
 		plugin->config.angle)
@@ -386,8 +387,8 @@ WhirlPinch::WhirlPinch(WhirlEffect *plugin, int x, int y)
  : BC_FSlider(x,
 	   	y,
 		0,
-		200,
-		200,
+		xS(200),
+		yS(200),
 		(float)0,
 		(float)MAXPINCH,
 		plugin->config.pinch)
@@ -408,8 +409,8 @@ WhirlRadius::WhirlRadius(WhirlEffect *plugin, int x, int y)
  : BC_FSlider(x,
 	   	y,
 		0,
-		200,
-		200,
+		xS(200),
+		yS(200),
 		(float)0,
 		(float)MAXRADIUS,
 		plugin->config.radius)
@@ -880,8 +881,8 @@ void WhirlUnit::process_package(LoadPackage *package)
 	double pinch = plugin->config.pinch / MAXPINCH;
   	double cx, cy;
     int ix, iy;
-	double cen_x = (double)(w - 1) / 2.0;
-	double cen_y = (double)(h - 1) / 2.0;
+	double cen_x = (double)(w-1) / 2.0;
+	double cen_y = (double)(h-1) / 2.0;
 	double radius = MAX(w, h);
 	double radius3 = plugin->config.radius / MAXRADIUS;
   	double radius2 = radius * radius * radius3;

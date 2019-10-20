@@ -2861,12 +2861,8 @@ void BC_TumbleTextBox::reposition_window(int x, int y)
 	this->x = x;
 	this->y = y;
 
-	textbox->reposition_window(x,
- 		y,
-		text_w,
-		1);
-	tumbler->reposition_window(x + textbox->get_w(),
-		y);
+	textbox->reposition_window(x, y, text_w, 1);
+	tumbler->reposition_window(x + textbox->get_w(), y);
 //	if(flush) parent_window->flush();
 }
 

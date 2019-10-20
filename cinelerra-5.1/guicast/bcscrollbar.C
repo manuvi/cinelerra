@@ -144,7 +144,7 @@ void BC_ScrollBar::draw(int flush)
 
 //printf("BC_ScrollBar::draw 1 %d %d\n", selection_status, highlight_status == SCROLL_BACKARROW);
 // Too small to draw anything
-			if(get_w() < get_arrow_pixels() * 2 + 5)
+			if(get_w() < get_arrow_pixels() * 2 + xS(5))
 			{
 				draw_3segmenth(0,
 					0,
@@ -244,7 +244,7 @@ void BC_ScrollBar::draw(int flush)
 
 		case SCROLL_VERT:
 // Too small to draw anything
-			if(get_h() < get_arrow_pixels() * 2 + 5)
+			if(get_h() < get_arrow_pixels() * 2 + yS(5))
 			{
 				draw_3segmentv(0,
 					0,

@@ -26,17 +26,8 @@
 class TestWindow : public BC_Window
 {
 public:
-	TestWindow() : BC_Window("test",
-				0,
-				0,
-				640,
-				480)
-	{
-	}
+	TestWindow() : BC_Window("test", 0, 0, 640, 480) {}
 };
-
-
-
 
 typedef struct
 {

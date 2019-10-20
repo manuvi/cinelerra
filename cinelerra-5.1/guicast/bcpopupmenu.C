@@ -37,8 +37,8 @@
 #define TOTAL_IMAGES 3
 
 
-#define TRIANGLE_W 10
-#define TRIANGLE_H 10
+#define TRIANGLE_W xS(10)
+#define TRIANGLE_H yS(10)
 
 
 BC_PopupMenu::BC_PopupMenu(int x, int y, int w, const char *text,
@@ -118,8 +118,8 @@ int BC_PopupMenu::initialize()
 	}
 	else {
 // Move outside window if no title
-		x = -10;  y = -10;
-		w = 10;   h = 10;
+		x = -TRIANGLE_W;  y = -TRIANGLE_H;
+		w = TRIANGLE_W;   h = TRIANGLE_H;
 	}
 
 	BC_SubWindow::initialize();
@@ -293,7 +293,7 @@ int BC_PopupMenu::menu_activate()
 				w, h, 0, 1);
 		}
 		else
-			menu_popup->activate_menu(x+3, y+3, w, h, 0, 1);
+			menu_popup->activate_menu(x+xS(3), y+yS(3), w, h, 0, 1);
 		popup_down = 1;
 		if( use_title ) draw_title(1);
 	}

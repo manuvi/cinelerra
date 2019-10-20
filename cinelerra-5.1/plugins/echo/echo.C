@@ -76,7 +76,7 @@ void EchoConfig::interpolate(EchoConfig &prev, EchoConfig &next,
 
 
 EchoWindow::EchoWindow(Echo *plugin)
- : PluginClientWindow(plugin, 250, 100, 250, 100, 0)
+ : PluginClientWindow(plugin, xS(250), yS(100), xS(250), yS(100), 0)
 {
 	this->plugin = plugin;
 }
@@ -141,16 +141,18 @@ int EchoOffset::handle_event()
 
 void EchoWindow::create_objects()
 {
-	int x = 170, y = 10;
-	add_subwindow(level_title=new EchoTitle(5, y + 10, _("Level: "),
+	int xs5 = xS(5), xs35 = xS(35);
+	int ys10 = yS(10), ys25 = yS(25);
+	int x = xS(170), y = yS(10);
+	add_subwindow(level_title=new EchoTitle(xs5, y + ys10, _("Level: "),
 		plugin->db.fromdb(plugin->config.level)));
-	add_subwindow(level = new EchoLevel(this, x, y)); y += 25;
-	add_subwindow(atten_title=new EchoTitle(5, y + 10, _("Atten: "),
+	add_subwindow(level = new EchoLevel(this, x, y)); y += ys25;
+	add_subwindow(atten_title=new EchoTitle(xs5, y + ys10, _("Atten: "),
 		plugin->db.fromdb(plugin->config.atten)));
-	add_subwindow(atten = new EchoAtten(this, x + 35, y)); y += 25;
-	add_subwindow(offset_title=new EchoTitle(5, y + 10, _("Offset: "),
+	add_subwindow(atten = new EchoAtten(this, x + xs35, y)); y += ys25;
+	add_subwindow(offset_title=new EchoTitle(xs5, y + ys10, _("Offset: "),
 		(int)plugin->config.offset));
-	add_subwindow(offset = new EchoOffset(this, x, y)); y += 25;
+	add_subwindow(offset = new EchoOffset(this, x, y)); y += ys25;
 	show_window();
 }
 

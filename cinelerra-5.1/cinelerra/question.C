@@ -27,15 +27,14 @@
 
 #include "ctype.h"
 
-#define WIDTH 375
-#define HEIGHT 160
+#define WIDTH xS(375)
+#define HEIGHT yS(160)
 
 QuestionWindow::QuestionWindow(MWindow *mwindow)
  : BC_Window(_(PROGRAM_NAME ": Question"),
  	mwindow->gui->get_abs_cursor_x(1) - WIDTH / 2,
 	mwindow->gui->get_abs_cursor_y(1) - HEIGHT / 2,
-	WIDTH,
-	HEIGHT)
+	WIDTH, HEIGHT)
 {
 	this->mwindow = mwindow;
 }
@@ -47,13 +46,13 @@ QuestionWindow::~QuestionWindow()
 void QuestionWindow::create_objects(const char *string, int use_cancel)
 {
 	lock_window("QuestionWindow::create_objects");
-	int x = 10, y = 10;
-	add_subwindow(new BC_Title(10, 10, string));
-	y += 30;
+	int x = xS(10), y = yS(10);
+	add_subwindow(new BC_Title(x, y, string));
+	y += yS(30);
 	add_subwindow(new QuestionYesButton(mwindow, this, x, y));
 	x += get_w() / 2;
 	add_subwindow(new QuestionNoButton(mwindow, this, x, y));
-	x = get_w() - 100;
+	x = get_w() - xS(100);
 	if(use_cancel) add_subwindow(new BC_CancelButton(x, y));
 	unlock_window();
 }

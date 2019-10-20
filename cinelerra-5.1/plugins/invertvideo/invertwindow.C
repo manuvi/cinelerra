@@ -38,9 +38,11 @@ InvertWindow::~InvertWindow()
 
 int InvertWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int xs10 = xS(10);
+	int ys10 = yS(10), ys20 = yS(20), ys30 = yS(30), ys35 = yS(35);
+	int x = xs10, y = ys10;
 	add_tool(new BC_Title(x, y, _("Invert")));
-	y += 20;
+	y += ys20;
 	add_tool(invert = new InvertToggle(client, &(client->invert), x, y));
 }
 

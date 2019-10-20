@@ -93,7 +93,7 @@ void SoundLevelConfig::interpolate(SoundLevelConfig &prev,
 
 
 SoundLevelDuration::SoundLevelDuration(SoundLevelEffect *plugin, int x, int y)
- : BC_FSlider(x, y, 0, 180, 180, 0.0, 10.0, plugin->config.duration)
+ : BC_FSlider(x, y, 0, xS(180), yS(180), 0.0, 10.0, plugin->config.duration)
 {
 	this->plugin = plugin;
 	set_precision(0.1);
@@ -110,10 +110,10 @@ int SoundLevelDuration::handle_event()
 
 SoundLevelWindow::SoundLevelWindow(SoundLevelEffect *plugin)
  : PluginClientWindow(plugin,
-	350,
-	120,
-	350,
-	120,
+	xS(350),
+	yS(120),
+	xS(350),
+	yS(120),
 	0)
 {
 	this->plugin = plugin;
@@ -121,18 +121,20 @@ SoundLevelWindow::SoundLevelWindow(SoundLevelEffect *plugin)
 
 void SoundLevelWindow::create_objects()
 {
+	int xs10 = xS(10), xs150 = xS(150);
+	int ys10 = yS(10), ys35 = yS(35);
 //printf("SoundLevelWindow::create_objects 1\n");
-	int x = 10, y = 10;
+	int x = xs10, y = ys10;
 
 
 	add_subwindow(new BC_Title(x, y, _("Duration (seconds):")));
-	add_subwindow(duration = new SoundLevelDuration(plugin, x + 150, y));
-	y += 35;
+	add_subwindow(duration = new SoundLevelDuration(plugin, x + xs150, y));
+	y += ys35;
 	add_subwindow(new BC_Title(x, y, _("Max soundlevel (dB):")));
-	add_subwindow(soundlevel_max = new BC_Title(x + 150, y, "0.0"));
-	y += 35;
+	add_subwindow(soundlevel_max = new BC_Title(x + xs150, y, "0.0"));
+	y += ys35;
 	add_subwindow(new BC_Title(x, y, _("RMS soundlevel (dB):")));
-	add_subwindow(soundlevel_rms = new BC_Title(x + 150, y, "0.0"));
+	add_subwindow(soundlevel_rms = new BC_Title(x + xs150, y, "0.0"));
 
 	show_window();
 	flush();

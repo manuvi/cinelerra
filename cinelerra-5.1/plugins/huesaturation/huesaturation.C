@@ -227,31 +227,33 @@ int HueSliderClr::handle_event()
 
 
 HueWindow::HueWindow(HueEffect *plugin)
- : PluginClientWindow(plugin, 370, 140, 370, 140, 0)
+ : PluginClientWindow(plugin, xS(370), yS(140), xS(370), yS(140), 0)
 {
 	this->plugin = plugin;
 }
 void HueWindow::create_objects()
 {
-	int x = 10, y = 10, x1 = 100;
-	int x2 = 0; int clrBtn_w = 50;
+	int xs10 = xS(10), xs50 = xS(50), xs100 = xS(100), xs200 = xS(200);
+	int ys10 = yS(10), ys30 = yS(30), ys40 = yS(40);
+	int x = xs10, y = ys10, x1 = xs100;
+	int x2 = 0; int clrBtn_w = xs50;
 
 	add_subwindow(new BC_Title(x, y, _("Hue:")));
-	add_subwindow(hue = new HueSlider(plugin, x1, y, 200));
-	x2 = x1 + hue->get_w() + 10;
+	add_subwindow(hue = new HueSlider(plugin, x1, y, xs200));
+	x2 = x1 + hue->get_w() + xs10;
 	add_subwindow(hueClr = new HueSliderClr(plugin, this, x2, y, clrBtn_w, RESET_HUV));
 
-	y += 30;
+	y += ys30;
 	add_subwindow(new BC_Title(x, y, _("Saturation:")));
-	add_subwindow(saturation = new SaturationSlider(plugin, x1, y, 200));
+	add_subwindow(saturation = new SaturationSlider(plugin, x1, y, xs200));
 	add_subwindow(satClr = new HueSliderClr(plugin, this, x2, y, clrBtn_w, RESET_SAT));
 
-	y += 30;
+	y += ys30;
 	add_subwindow(new BC_Title(x, y, _("Value:")));
-	add_subwindow(value = new ValueSlider(plugin, x1, y, 200));
+	add_subwindow(value = new ValueSlider(plugin, x1, y, xs200));
 	add_subwindow(valClr = new HueSliderClr(plugin, this, x2, y, clrBtn_w, RESET_VAL));
 
-	y += 40;
+	y += ys40;
 	add_subwindow(reset = new HueReset(plugin, this, x, y));
 	show_window();
 	flush();

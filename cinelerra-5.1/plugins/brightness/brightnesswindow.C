@@ -33,7 +33,7 @@
 
 
 BrightnessWindow::BrightnessWindow(BrightnessMain *client)
- : PluginClientWindow(client, 370, 155, 370, 155, 0)
+ : PluginClientWindow(client, xS(370), yS(155), xS(370), yS(155), 0)
 {
 	this->client = client;
 }
@@ -44,20 +44,22 @@ BrightnessWindow::~BrightnessWindow()
 
 void BrightnessWindow::create_objects()
 {
-	int x = 10, y = 10, x1 = x + 90;
-	int x2 = 0; int clrBtn_w = 50;
+	int xs10 = xS(10);
+	int ys10 = yS(10), ys25 = yS(25), ys30 = yS(30), ys35 = yS(35);
+	int x = xs10, y = ys10, x1 = x + xS(90);
+	int x2 = 0; int clrBtn_w = xS(50);
 
 	add_tool(new BC_Title(x, y, _("Brightness/Contrast")));
-	y += 25;
+	y += ys25;
 	add_tool(new BC_Title(x, y,_("Brightness:")));
 	add_tool(brightness = new BrightnessSlider(client,
 		&(client->config.brightness),
 		x1,
 		y,
 		1));
-	x2 = x1 + brightness->get_w() + 10;
+	x2 = x1 + brightness->get_w() + xs10;
 	add_subwindow(brightnessClr = new BrightnessSliderClr(client, this, x2, y, clrBtn_w, 1));
-	y += 25;
+	y += ys25;
 	add_tool(new BC_Title(x, y, _("Contrast:")));
 	add_tool(contrast = new BrightnessSlider(client,
 		&(client->config.contrast),
@@ -66,12 +68,12 @@ void BrightnessWindow::create_objects()
 		0));
 
 	add_subwindow(contrastClr = new BrightnessSliderClr(client, this, x2, y, clrBtn_w, 0));
-	y += 30;
+	y += ys30;
 	add_tool(luma = new BrightnessLuma(client,
 		x,
 		y));
 
-	y += 35;
+	y += ys35;
 	add_subwindow(reset = new BrightnessReset(client, this, x, y));
 
 	show_window();
@@ -103,8 +105,8 @@ BrightnessSlider::BrightnessSlider(BrightnessMain *client,
  : BC_FSlider(x,
  	y,
 	0,
-	200,
-	200,
+	xS(200),
+	yS(200),
 	-100,
 	100,
 	(int)*output)

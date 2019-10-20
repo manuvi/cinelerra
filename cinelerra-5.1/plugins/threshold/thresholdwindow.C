@@ -25,8 +25,8 @@
 #include "threshold.h"
 #include "thresholdwindow.h"
 
-#define COLOR_W 100
-#define COLOR_H 30
+#define COLOR_W xS(100)
+#define COLOR_H yS(30)
 
 
 
@@ -428,7 +428,7 @@ int ThresholdHighColorThread::handle_new_color(int output, int alpha)
 
 
 ThresholdWindow::ThresholdWindow(ThresholdMain *plugin)
-: PluginClientWindow(plugin, 450, 450, 450, 450, 1)
+: PluginClientWindow(plugin, xS(450), yS(450), xS(450), yS(450), 1)
 {
 	this->plugin = plugin;
 	this->min = 0;
@@ -449,46 +449,48 @@ ThresholdWindow::~ThresholdWindow()
 
 void ThresholdWindow::create_objects()
 {
-	int x = 10;
-	int y = 10;
+	int xs10 = xS(10), xs30 = xS(30), xs100 = xS(100);
+	int ys10 = yS(10), ys160 = yS(160);
+	int x = xs10;
+	int y = ys10;
 	add_subwindow(canvas = new ThresholdCanvas(plugin,
 		this,
 		x,
 		y,
-		get_w() - x - 10,
-		get_h() - 160));
+		get_w() - x - xs10,
+		get_h() - ys160));
 	canvas->draw();
-	y += canvas->get_h() + 10;
+	y += canvas->get_h() + ys10;
 
 	add_subwindow(plot = new ThresholdPlot(plugin, x, y));
-	y += plot->get_h() + 10;
+	y += plot->get_h() + ys10;
 
 
 	add_subwindow(low_color = new ThresholdLowColorButton(plugin, this, x, y));
-	low_color_x = x + 10;
-	low_color_y = y + low_color->get_h() + 10;
-	x += low_color->get_w() + 10;
+	low_color_x = x + xs10;
+	low_color_y = y + low_color->get_h() + ys10;
+	x += low_color->get_w() + xs10;
 
 	add_subwindow(mid_color = new ThresholdMidColorButton(plugin, this, x, y));
-	mid_color_x = x + 10;
-	mid_color_y = y + mid_color->get_h() + 10;
-	x += mid_color->get_w() + 10;
+	mid_color_x = x + xs10;
+	mid_color_y = y + mid_color->get_h() + ys10;
+	x += mid_color->get_w() + xs10;
 
 	add_subwindow(high_color = new ThresholdHighColorButton(plugin, this, x, y));
-	high_color_x = x + 10;
-	high_color_y = y + high_color->get_h() + 10;
+	high_color_x = x + xs10;
+	high_color_y = y + high_color->get_h() + ys10;
 
-	y += low_color->get_h() + COLOR_H + 10 + 10;
+	y += low_color->get_h() + COLOR_H + ys10 + ys10;
 
-	x = 30;
+	x = xs30;
 	BC_Title * min_title;
 	add_subwindow(min_title = new BC_Title(x, y, _("Min:")));
-	x += min_title->get_w() + 10;
+	x += min_title->get_w() + xs10;
 	min = new ThresholdMin(plugin,
 		this,
 		x,
 		y,
-		100);
+		xs100);
 	min->create_objects();
 	min->set_increment(0.1);
 
@@ -496,12 +498,12 @@ void ThresholdWindow::create_objects()
 	x = mid_color->get_x() + mid_color->get_w() / 2;
 	BC_Title * max_title;
 	add_subwindow(max_title = new BC_Title(x, y, _("Max:")));
-	x += max_title->get_w() + 10;
+	x += max_title->get_w() + xs10;
 	max = new ThresholdMax(plugin,
 		this,
 		x,
 		y,
-		100);
+		xs100);
 	max->create_objects();
 	max->set_increment(0.1);
 

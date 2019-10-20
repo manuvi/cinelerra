@@ -77,7 +77,7 @@ void RecordTransport::create_objects()
 	x += end_button->get_w();  x_end = max(x, x_end);
 	y_end = max(y + end_button->get_h(), y_end);
 #endif
-        x_end += 10;  y_end += 10;
+        x_end += xS(10);  y_end += yS(10);
 }
 
 void RecordTransport::reposition_window(int x, int y)
@@ -112,7 +112,7 @@ void RecordTransport::reposition_window(int x, int y)
 	x += end_button->get_w();  x_end = max(x, x_end);
 	y_end = max(y + end_button->get_h(), y_end);
 #endif
-        x_end += 10;  y_end += 10;
+        x_end += xS(10);  y_end += yS(10);
 }
 
 int RecordTransport::get_h()

@@ -35,14 +35,8 @@
 
 
 
-BC_Slider::BC_Slider(int x,
-		int y,
-		int pixels,
-		int pointer_motion_range,
-		VFrame **images,
-		int show_number,
-		int vertical,
-		int use_caption)
+BC_Slider::BC_Slider(int x, int y, int pixels, int pointer_motion_range, VFrame **images,
+		int show_number, int vertical, int use_caption)
  : BC_SubWindow(x, y, 0, 0, -1)
 {
 	this->images = images;
@@ -66,8 +60,7 @@ BC_Slider::BC_Slider(int x,
 
 BC_Slider::~BC_Slider()
 {
-	for(int i = 0; i < SLIDER_IMAGES; i++)
-	{
+	for(int i = 0; i < SLIDER_IMAGES; i++) {
 		if(pixmaps[i]) delete pixmaps[i];
 	}
 	if(pixmaps) delete [] pixmaps;
@@ -75,8 +68,7 @@ BC_Slider::~BC_Slider()
 
 int BC_Slider::initialize()
 {
-	if(!images)
-	{
+	if(!images) {
 		this->images = vertical ?
 			BC_WindowBase::get_resources()->vertical_slider_data :
 			BC_WindowBase::get_resources()->horizontal_slider_data;
@@ -84,8 +76,7 @@ int BC_Slider::initialize()
 
 	set_images(images);
 
-	if(vertical)
-	{
+	if(vertical) {
 		w = images[SLIDER_BG_UP]->get_w();
 		h = pixels;
 	}
@@ -175,7 +166,7 @@ void BC_Slider::show_value_tooltip()
 //printf("BC_Slider::show_value_tooltip %s\n", get_caption());
 	set_tooltip(get_caption());
 	keypress_tooltip_timer = 2000;
-	show_tooltip(50);
+	show_tooltip(xS(50));
 }
 
 
@@ -399,28 +390,10 @@ void BC_Slider::set_pointer_motion_range(int value)
 }
 
 
-
-
-
-BC_ISlider::BC_ISlider(int x,
-			int y,
-			int vertical,
-			int pixels,
-			int pointer_motion_range,
-			int64_t minvalue,
-			int64_t maxvalue,
-			int64_t value,
-			int use_caption,
-			VFrame **data,
-			int *output)
- : BC_Slider(x,
-		y,
-		pixels,
-		pointer_motion_range,
-		data,
-		1,
-		vertical,
-		use_caption)
+BC_ISlider::BC_ISlider(int x, int y, int vertical, int pixels, int pointer_motion_range,
+			int64_t minvalue, int64_t maxvalue, int64_t value, int use_caption,
+			VFrame **data, int *output)
+ : BC_Slider(x, y, pixels, pointer_motion_range, data, 1, vertical, use_caption)
 {
 	this->minvalue = minvalue;
 	this->maxvalue = maxvalue;
@@ -572,30 +545,10 @@ int BC_ISlider::handle_event()
 }
 
 
-
-
-
-
-
-
-BC_FSlider::BC_FSlider(int x,
-			int y,
-			int vertical,
-			int pixels,
-			int pointer_motion_range,
-			float minvalue,
-			float maxvalue,
-			float value,
-			int use_caption,
+BC_FSlider::BC_FSlider(int x, int y, int vertical, int pixels, int pointer_motion_range,
+			float minvalue, float maxvalue, float value, int use_caption,
 			VFrame **data)
- : BC_Slider(x,
-		y,
-		pixels,
-		pointer_motion_range,
-		data,
-		1,
-		vertical,
-		use_caption)
+ : BC_Slider(x, y, pixels, pointer_motion_range, data, 1, vertical, use_caption)
 {
 	this->minvalue = minvalue;
 	this->maxvalue = maxvalue;
@@ -734,12 +687,7 @@ int BC_FSlider::update_selection(int cursor_x, int cursor_y)
 	if(value < minvalue) value = minvalue;
 	button_pixel = value_to_pixel();
 // printf("BC_FSlider::update_selection 1 %d %d %d %d %f %f\n",
-// pointer_motion_range,
-// min_pixel,
-// max_pixel,
-// cursor_x,
-// precision,
-// value);
+// pointer_motion_range, min_pixel, max_pixel, cursor_x, precision, value);
 
 	if(old_value != value)
 	{
@@ -760,26 +708,10 @@ void BC_FSlider::set_pagination(float small_change, float big_change)
 }
 
 
-BC_PercentageSlider::BC_PercentageSlider(int x,
-			int y,
-			int vertical,
-			int pixels,
-			int pointer_motion_range,
-			float minvalue,
-			float maxvalue,
-			float value,
-			int use_caption,
-			VFrame **data)
- : BC_FSlider(x,
-			y,
-			vertical,
-			pixels,
-			pointer_motion_range,
-			minvalue,
-			maxvalue,
-			value,
-			use_caption,
-			data)
+BC_PercentageSlider::BC_PercentageSlider(int x, int y, int vertical, int pixels, int pointer_motion_range,
+		float minvalue, float maxvalue, float value, int use_caption,
+		VFrame **data)
+ : BC_FSlider(x, y, vertical, pixels, pointer_motion_range, minvalue, maxvalue, value, use_caption, data)
 {
 }
 

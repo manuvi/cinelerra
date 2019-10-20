@@ -97,7 +97,7 @@ void YUVShiftConfig::interpolate(YUVShiftConfig &prev,
 #define MAXVALUE 100
 
 YUVShiftLevel::YUVShiftLevel(YUVShiftEffect *plugin, int *output, int x, int y)
- : BC_ISlider(x, y, 0, 200, 200, -MAXVALUE, MAXVALUE, *output)
+ : BC_ISlider(x, y, 0, xS(200), yS(200), -MAXVALUE, MAXVALUE, *output)
 {
 	this->plugin = plugin;
 	this->output = output;
@@ -152,47 +152,49 @@ int YUVShiftSliderClr::handle_event()
 
 
 YUVShiftWindow::YUVShiftWindow(YUVShiftEffect *plugin)
- : PluginClientWindow(plugin, 320, 230, 320, 230, 0)
+ : PluginClientWindow(plugin, xS(320), yS(230), xS(320), yS(230), 0)
 {
 	this->plugin = plugin;
 }
 
 void YUVShiftWindow::create_objects()
 {
-	int x = 10, y = 10, x1 = 50;
-	int x2 = 0; int clrBtn_w = 50;
+	int xs10 = xS(10), xs50 = xS(50);
+	int ys10 = yS(10), ys30 = yS(30), ys40 = yS(40);
+	int x = xs10, y = ys10, x1 = xs50;
+	int x2 = 0; int clrBtn_w = xs50;
 
 	add_subwindow(new BC_Title(x, y, _("Y_dx:")));
 	add_subwindow(y_dx = new YUVShiftLevel(plugin, &plugin->config.y_dx, x1, y));
-	x2 = x1 + y_dx->get_w() + 10;
+	x2 = x1 + y_dx->get_w() + xs10;
 	add_subwindow(y_dxClr = new YUVShiftSliderClr(plugin, this, x2, y, clrBtn_w, RESET_Y_DX));
 
-	y += 30;
+	y += ys30;
 	add_subwindow(new BC_Title(x, y, _("Y_dy:")));
 	add_subwindow(y_dy = new YUVShiftLevel(plugin, &plugin->config.y_dy, x1, y));
 	add_subwindow(y_dyClr = new YUVShiftSliderClr(plugin, this, x2, y, clrBtn_w, RESET_Y_DY));
 
-	y += 30;
+	y += ys30;
 	add_subwindow(new BC_Title(x, y, _("U_dx:")));
 	add_subwindow(u_dx = new YUVShiftLevel(plugin, &plugin->config.u_dx, x1, y));
 	add_subwindow(u_dxClr = new YUVShiftSliderClr(plugin, this, x2, y, clrBtn_w, RESET_U_DX));
 
-	y += 30;
+	y += ys30;
 	add_subwindow(new BC_Title(x, y, _("U_dy:")));
 	add_subwindow(u_dy = new YUVShiftLevel(plugin, &plugin->config.u_dy, x1, y));
 	add_subwindow(u_dyClr = new YUVShiftSliderClr(plugin, this, x2, y, clrBtn_w, RESET_U_DY));
 
-	y += 30;
+	y += ys30;
 	add_subwindow(new BC_Title(x, y, _("V_dx:")));
 	add_subwindow(v_dx = new YUVShiftLevel(plugin, &plugin->config.v_dx, x1, y));
 	add_subwindow(v_dxClr = new YUVShiftSliderClr(plugin, this, x2, y, clrBtn_w, RESET_V_DX));
 
-	y += 30;
+	y += ys30;
 	add_subwindow(new BC_Title(x, y, _("V_dy:")));
 	add_subwindow(v_dy = new YUVShiftLevel(plugin, &plugin->config.v_dy, x1, y));
 	add_subwindow(v_dyClr = new YUVShiftSliderClr(plugin, this, x2, y, clrBtn_w, RESET_V_DY));
 
-	y += 40;
+	y += ys40;
 	add_subwindow(reset = new YUVShiftReset(plugin, this, x, y));
 
 	show_window();

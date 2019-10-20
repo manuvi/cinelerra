@@ -537,8 +537,7 @@ int MWindow::move_left(int64_t distance)
 {
 	TimelinePane *pane = gui->get_focused_pane();
 	if(!distance)
-		distance = pane->canvas->get_w() /
-			10;
+		distance = pane->canvas->get_w() / 10;
 	edl->local_session->view_start[pane->number] -= distance;
 	samplemovement(edl->local_session->view_start[pane->number],
 		pane->number);
@@ -549,8 +548,7 @@ int MWindow::move_right(int64_t distance)
 {
 	TimelinePane *pane = gui->get_focused_pane();
 	if(!distance)
-		distance = pane->canvas->get_w() /
-			10;
+		distance = pane->canvas->get_w() / 10;
 	edl->local_session->view_start[pane->number] += distance;
 	samplemovement(edl->local_session->view_start[pane->number],
 		pane->number);

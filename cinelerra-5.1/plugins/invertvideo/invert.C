@@ -157,25 +157,21 @@ int InvertVideoEnable::handle_event()
 
 
 InvertVideoWindow::InvertVideoWindow(InvertVideoEffect *plugin)
- : PluginClientWindow(plugin,
-	260,
-	130,
-	260,
-	130,
-	0)
+ : PluginClientWindow(plugin, xS(200), yS(130), xS(200), yS(130), 0)
 {
 	this->plugin = plugin;
 }
 
 void InvertVideoWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int ys30 = yS(30);
+	int x = xS(10), y = yS(10);
 	add_subwindow(r = new InvertVideoEnable(plugin, &plugin->config.r, x, y, _("Invert R")));
-	y += 30;
+	y += ys30;
 	add_subwindow(g = new InvertVideoEnable(plugin, &plugin->config.g, x, y, _("Invert G")));
-	y += 30;
+	y += ys30;
 	add_subwindow(b = new InvertVideoEnable(plugin, &plugin->config.b, x, y, _("Invert B")));
-	y += 30;
+	y += ys30;
 	add_subwindow(a = new InvertVideoEnable(plugin, &plugin->config.a, x, y, _("Invert A")));
 
 	show_window();

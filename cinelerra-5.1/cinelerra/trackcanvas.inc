@@ -24,8 +24,8 @@
 
 class TrackCanvas;
 
-#define HANDLE_W 8
-#define HANDLE_H 8
+#define HANDLE_W xS(8)
+#define HANDLE_H yS(8)
 
 // draw mode:
 // NO_DRAW used in MWindowGUI/TimelinePane update to disable canvas update

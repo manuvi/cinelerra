@@ -190,8 +190,8 @@ YUVLevel::YUVLevel(YUVEffect *plugin, float *output, int x, int y)
  : BC_FSlider(x,
 			y,
 			0,
-			200,
-			200,
+			xS(200),
+			yS(200),
 			-MAXVALUE,
 			MAXVALUE,
 			*output)
@@ -249,32 +249,34 @@ int YUVSliderClr::handle_event()
 
 
 YUVWindow::YUVWindow(YUVEffect *plugin)
- : PluginClientWindow(plugin, 310, 135, 310, 135, 0)
+ : PluginClientWindow(plugin, xS(310), yS(135), xS(310), yS(135), 0)
 {
 	this->plugin = plugin;
 }
 
 void YUVWindow::create_objects()
 {
-	int x = 10, y = 10, x1 = 40;
-	int x2 = 0; int clrBtn_w = 50;
+	int xs10 = xS(10), xs40 = xS(40), xs50 = xS(50);
+	int ys10 = yS(10), ys30 = yS(30), ys35 = yS(35);
+	int x = xs10, y = ys10, x1 = xs40;
+	int x2 = 0; int clrBtn_w = xs50;
 
 	add_subwindow(new BC_Title(x, y, _("Y:")));
 	add_subwindow(this->y = new YUVLevel(plugin, &plugin->config.y, x1, y));
-	x2 = x1 + this->y->get_w() + 10;
+	x2 = x1 + this->y->get_w() + xs10;
 	add_subwindow(yClr = new YUVSliderClr(plugin, this, x2, y, clrBtn_w, RESET_Y_SLIDER));
 
-	y += 30;
+	y += ys30;
 	add_subwindow(new BC_Title(x, y, _("U:")));
 	add_subwindow(u = new YUVLevel(plugin, &plugin->config.u, x1, y));
 	add_subwindow(uClr = new YUVSliderClr(plugin, this, x2, y, clrBtn_w, RESET_U_SLIDER));
 
-	y += 30;
+	y += ys30;
 	add_subwindow(new BC_Title(x, y, _("V:")));
 	add_subwindow(v = new YUVLevel(plugin, &plugin->config.v, x1, y));
 	add_subwindow(vClr = new YUVSliderClr(plugin, this, x2, y, clrBtn_w, RESET_V_SLIDER));
 
-	y += 35;
+	y += ys35;
 	add_subwindow(reset = new YUVReset(plugin, this, x, y));
 
 	show_window();

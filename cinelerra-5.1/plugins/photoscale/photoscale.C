@@ -39,10 +39,10 @@
 
 PhotoScaleWindow::PhotoScaleWindow(PhotoScaleMain *plugin)
  : PluginClientWindow(plugin,
-	250,
-	200,
-	250,
-	200,
+	xS(250),
+	yS(200),
+	xS(250),
+	yS(200),
 	0)
 {
 	this->plugin = plugin;
@@ -54,7 +54,7 @@ PhotoScaleWindow::~PhotoScaleWindow()
 
 void PhotoScaleWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int x = xS(10), y = yS(10);
 	BC_Title *title;
 
 	int x2 = x + BC_Title::calculate_w(this, _("Height:")) + plugin->get_theme()->widget_border;
@@ -69,7 +69,7 @@ void PhotoScaleWindow::create_objects()
 		this,
 		x2,
 		y,
-		100,
+		xS(100),
 		&(plugin->config.width)));
 
 	y += output_size[0]->get_h() + plugin->get_theme()->widget_border;
@@ -79,7 +79,7 @@ void PhotoScaleWindow::create_objects()
 		this,
 		x2,
 		y,
-		100,
+		xS(100),
 		&(plugin->config.height)));
 
 	FrameSizePulldown *pulldown;
@@ -231,8 +231,8 @@ int PhotoScaleSwapExtents::handle_event()
 
 PhotoScaleConfig::PhotoScaleConfig()
 {
-	width = 640;
-	height = 480;
+	width = xS(640);
+	height = yS(480);
 	use_file = 1;
 }
 

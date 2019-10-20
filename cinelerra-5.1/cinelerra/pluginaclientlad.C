@@ -179,11 +179,7 @@ int PluginACLientToggle::handle_event()
 
 
 PluginACLientILinear::PluginACLientILinear(PluginAClientLAD *plugin,
-	int x,
-	int y,
-	LADSPA_Data *output,
-	int min,
-	int max)
+		int x, int y, LADSPA_Data *output, int min, int max)
  : BC_IPot(x, y, (int)(*output), min, max)
 {
 	this->plugin = plugin;
@@ -199,11 +195,7 @@ int PluginACLientILinear::handle_event()
 
 
 PluginACLientFLinear::PluginACLientFLinear(PluginAClientLAD *plugin,
-	int x,
-	int y,
-	LADSPA_Data *output,
-	float min,
-	float max)
+	int x, int y, LADSPA_Data *output, float min, float max)
  : BC_FPot(x, y, *output, min, max)
 {
 	this->plugin = plugin;
@@ -242,8 +234,8 @@ int PluginACLientFreq::handle_event()
 
 
 PluginAClientWindow::PluginAClientWindow(PluginAClientLAD *plugin)
- : PluginClientWindow(plugin, 500, plugin->config.total_ports * 30 + 60,
-	500, plugin->config.total_ports * 30 + 60, 0)
+ : PluginClientWindow(plugin, xS(500), plugin->config.total_ports * yS(30) + yS(60),
+	xS(500), plugin->config.total_ports * yS(30) + yS(60), 0)
 {
 	this->plugin = plugin;
 }
@@ -258,10 +250,8 @@ void PluginAClientWindow::create_objects()
 	PluginServer *server = plugin->server;
 	char string[BCTEXTLEN];
 	int current_port = 0;
-	int x = 10;
-	int y = 10;
-	int x2 = 300;
-	int x3 = 335;
+	int x = xS(10), y = yS(10);
+	int x2 = xS(300), x3 = xS(335);
 	int title_vmargin = 5;
 	int max_w = 0;
 	const LADSPA_Descriptor *lad_desc = server->lad_descriptor;
@@ -274,8 +264,8 @@ void PluginAClientWindow::create_objects()
 		if(w > max_w) max_w = w;
 	}
 
-	x2 = max_w + 20;
-	x3 = max_w + 55;
+	x2 = max_w + xS(20);
+	x3 = max_w + xS(55);
 	for(int i = 0; i < port_count; i++) {
 		if( !LADSPA_IS_PORT_INPUT(port_desc[i]) ) continue;
 		if( !LADSPA_IS_PORT_CONTROL(port_desc[i]) ) continue;
@@ -331,14 +321,14 @@ void PluginAClientWindow::create_objects()
 			break; }
 		}
 		current_port++;
-		y += 30;
+		y += yS(30);
 //printf("PluginAClientWindow::create_objects 2\n");
 	}
 
-	y += 10;
+	y += yS(10);
 	sprintf(string, _("Author: %s"), lad_desc->Maker);
 	add_subwindow(new BC_Title(x, y, string));
-	y += 20;
+	y += yS(20);
 	sprintf(string, _("License: %s"), lad_desc->Copyright);
 	add_subwindow(new BC_Title(x, y, string));
 	show_window(1);

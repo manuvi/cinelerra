@@ -44,8 +44,8 @@ Synth::Synth(PluginServer *server)
  : PluginAClient(server)
 {
 	reset();
-	window_w = 640;
-	window_h = 480;
+	window_w = xS(640);
+	window_h = yS(480);
 }
 
 
@@ -531,8 +531,8 @@ SynthWindow::SynthWindow(Synth *synth)
  : PluginClientWindow(synth,
 	synth->window_w,
 	synth->window_h,
-	400,
-	350,
+	xS(400),
+	yS(350),
 	1)
 {
 	this->synth = synth;
@@ -590,66 +590,68 @@ void SynthWindow::create_objects()
 	harmonicmenu->add_item(new SynthFreqOdd(synth));
 	harmonicmenu->add_item(new SynthFreqPrime(synth));
 
-	int x = 10, y = 30;
+	int xs10 = xS(10), xs20 = xS(20), xs50 = xS(50), xs70 = xS(70), xs75 = xS(75), xs240 = xS(240), xs265 = xS(265);
+	int ys10 = yS(10), ys20 = yS(20), ys30 = yS(30), ys40 = yS(40), ys220 = yS(220);
+	int x = xs10, y = ys30;
 
 	add_subwindow(new BC_Title(x, y, _("Waveform")));
-	x += 240;
+	x += xs240;
 	add_subwindow(new BC_Title(x, y, _("Wave Function")));
-	y += 20;
-	x = 10;
-	add_subwindow(canvas = new SynthCanvas(synth, this, x, y, 230, 160));
+	y += ys20;
+	x = xs10;
+	add_subwindow(canvas = new SynthCanvas(synth, this, x, y, xS(230), yS(160)));
 	canvas->update();
 
-	x += 240;
+	x += xs240;
 	char string[BCTEXTLEN];
 	waveform_to_text(string, synth->config.wavefunction);
 
 	add_subwindow(waveform = new SynthWaveForm(synth, x, y, string));
 	waveform->create_objects();
-	y += 30;
-	int x1 = x + waveform->get_w() + 10;
+	y += ys30;
+	int x1 = x + waveform->get_w() + xs10;
 
 
 	add_subwindow(new BC_Title(x, y, _("Base Frequency:")));
-	y += 30;
+	y += ys30;
 	add_subwindow(base_freq = new SynthBaseFreq(synth, this, x, y));
 	base_freq->update((float)synth->config.base_freq[0]);
 	x += base_freq->get_w() + synth->get_theme()->widget_border;
-	add_subwindow(freqpot = new SynthFreqPot(synth, this, x, y - 10));
+	add_subwindow(freqpot = new SynthFreqPot(synth, this, x, y - ys10));
 	base_freq->freq_pot = freqpot;
 	freqpot->freq_text = base_freq;
 	x -= base_freq->get_w() + synth->get_theme()->widget_border;
-	y += 40;
+	y += ys40;
 	add_subwindow(new BC_Title(x, y, _("Wetness:")));
-	add_subwindow(wetness = new SynthWetness(synth, x + 70, y - 10));
+	add_subwindow(wetness = new SynthWetness(synth, x + xs70, y - ys10));
 
-	y += 40;
+	y += ys40;
 	add_subwindow(new SynthClear(synth, x, y));
 
 
-	x = 50;
-	y = 220;
+	x = xs50;
+	y = ys220;
 	add_subwindow(new BC_Title(x, y, _("Level")));
-	x += 75;
+	x += xs75;
 	add_subwindow(new BC_Title(x, y, _("Phase")));
-	x += 75;
+	x += xs75;
 	add_subwindow(new BC_Title(x, y, _("Harmonic")));
 
 
 
-	y += 20; x = 10;
-	add_subwindow(osc_subwindow = new BC_SubWindow(x, y, 265, get_h() - y));
-	x += 265;
+	y += ys20; x = xs10;
+	add_subwindow(osc_subwindow = new BC_SubWindow(x, y, xs265, get_h() - y));
+	x += xs265;
 	add_subwindow(osc_scroll = new OscScroll(synth, this, x, y, get_h() - y));
 
 
-	x += 20;
+	x += xs20;
 	add_subwindow(new SynthAddOsc(synth, this, x, y));
-	y += 30;
+	y += ys30;
 	add_subwindow(new SynthDelOsc(synth, this, x, y));
 
 // Create keyboard
-	y = 30;
+	y = ys30;
 
 #include "white_up_png.h"
 #include "white_hi_png.h"
@@ -1482,7 +1484,7 @@ int SynthClear::handle_event()
 
 
 SynthWaveForm::SynthWaveForm(Synth *synth, int x, int y, char *text)
- : BC_PopupMenu(x, y, 120, text)
+ : BC_PopupMenu(x, y, xS(120), text)
 {
 	this->synth = synth;
 }
@@ -1566,7 +1568,7 @@ int SynthFreqPot::handle_event()
 
 
 SynthBaseFreq::SynthBaseFreq(Synth *synth, SynthWindow *window, int x, int y)
- : BC_TextBox(x, y, 100, 1, (float)0)
+ : BC_TextBox(x, y, xS(100), 1, (float)0)
 {
 	this->synth = synth;
 	this->window = window;

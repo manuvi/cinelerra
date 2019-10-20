@@ -1453,7 +1453,7 @@ void MWindow::tile_mixers()
 	int bw = lt + BC_DisplayInfo::get_right_border();  // borders
 	int bh = top + BC_DisplayInfo::get_bottom_border();
 	int zx = 0, zy = 0;  // window origins
-	int mw = 10+10, mh = 10+10; // canvas margins
+	int mw = xS(10+10), mh = yS(10+10); // canvas margins
 	int rsz = 0, n = 0, dz = 0;
 	int ow = edl->session->output_w, oh = edl->session->output_h;
 	for( int i=0; i<zwindows.size(); ++i ) {
@@ -1465,7 +1465,7 @@ void MWindow::tile_mixers()
 		int mx = x2 - zw, my = y2 - zh;
 		if( xx > mx ) xx = mx;
 		if( yy > my ) yy = my;
-		xx += lt + dz;  yy += top + dz;
+		xx += lt + xS(dz);  yy += top + yS(dz);
 		zwindow->reposition(xx,yy, ww,hh);
 		if( zwindow->running() ) {
 			ZWindowGUI *gui = (ZWindowGUI *)zwindow->get_gui();

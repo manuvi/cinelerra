@@ -77,9 +77,9 @@ BC_Window* ColorPicker::new_gui()
 	strcpy(window_title, _(PROGRAM_NAME ": "));
 	strcat(window_title, title ? title : _("Color Picker"));
 	BC_DisplayInfo display_info;
-	int x = display_info.get_abs_cursor_x() + 25;
-	int y = display_info.get_abs_cursor_y() - 100;
-	int w = 540, h = 330;
+	int x = display_info.get_abs_cursor_x() + xS(25);
+	int y = display_info.get_abs_cursor_y() - yS(100);
+	int w = xS(540), h = yS(330);
 	if( ok_cancel )
 		h += bmax(BC_OKButton::calculate_h(),BC_CancelButton::calculate_h());
 	int root_w = display_info.get_root_w(), root_h = display_info.get_root_h();
@@ -148,7 +148,9 @@ ColorWindow::~ColorWindow()
 
 void ColorWindow::create_objects()
 {
-	int x0 = 10, y0 = 10;
+	int xs5 = xS(5), xs10 = xS(10), xs15 = xS(15);
+	int ys10 = yS(10), ys15 = yS(15), ys25 = yS(25), ys40 = yS(40);
+	int x0 = xs10, y0 = ys10;
 	lock_window("ColorWindow::create_objects");
 	change_values();
 
@@ -156,69 +158,69 @@ void ColorWindow::create_objects()
 	add_tool(wheel = new PaletteWheel(this, x, y));
 	wheel->create_objects();
 
-	x += 180;  add_tool(wheel_value = new PaletteWheelValue(this, x, y));
+	x += xS(180);  add_tool(wheel_value = new PaletteWheelValue(this, x, y));
 	wheel_value->create_objects();
 	x = x0;
-	y += 180;  add_tool(output = new PaletteOutput(this, x, y));
+	y += yS(180);  add_tool(output = new PaletteOutput(this, x, y));
 	output->create_objects();
-	y += output->get_h() + 20;
+	y += output->get_h() + yS(20);
 
 	load_history();  int x1 = x;
 	add_tool(hex_btn = new PaletteHexButton(this, x1, y));
 	char hex[BCSTRLEN];  sprintf(hex,"%06x",thread->output);
-	x1 += hex_btn->get_w() + 5;
+	x1 += hex_btn->get_w() + xs5;
 	add_tool(hex_box = new PaletteHex(this, x1, y, hex));
-	x1 += hex_box->get_w() + 15;
+	x1 += hex_box->get_w() + xs15;
 	add_tool(grab_btn = new PaletteGrabButton(this, x1, y));
-	y += hex_box->get_h() + 15;
-	add_tool(history = new PaletteHistory(this, 10, y));
+	y += hex_box->get_h() + ys15;
+	add_tool(history = new PaletteHistory(this, xs10, y));
 
-	x += 240;
+	x += xS(240);
 	add_tool(new BC_Title(x, y =y0, C_("H:"), SMALLFONT));
-	add_tool(new BC_Title(x, y+=25, C_("S:"), SMALLFONT));
-	add_tool(new BC_Title(x, y+=25, D_("colorpicker_value#V:"), SMALLFONT));
-	add_tool(new BC_Title(x, y+=40, C_("R:"), SMALLFONT));
-	add_tool(new BC_Title(x, y+=25, C_("G:"), SMALLFONT));
-	add_tool(new BC_Title(x, y+=25, C_("B:"), SMALLFONT));
-	add_tool(new BC_Title(x, y+=40, C_("Y:"), SMALLFONT));
-	add_tool(new BC_Title(x, y+=25, C_("U:"), SMALLFONT));
-	add_tool(new BC_Title(x, y+=25, D_("colorpicker_Cr#V:"), SMALLFONT));
+	add_tool(new BC_Title(x, y+=ys25, C_("S:"), SMALLFONT));
+	add_tool(new BC_Title(x, y+=ys25, D_("colorpicker_value#V:"), SMALLFONT));
+	add_tool(new BC_Title(x, y+=ys40, C_("R:"), SMALLFONT));
+	add_tool(new BC_Title(x, y+=ys25, C_("G:"), SMALLFONT));
+	add_tool(new BC_Title(x, y+=ys25, C_("B:"), SMALLFONT));
+	add_tool(new BC_Title(x, y+=ys40, C_("Y:"), SMALLFONT));
+	add_tool(new BC_Title(x, y+=ys25, C_("U:"), SMALLFONT));
+	add_tool(new BC_Title(x, y+=ys25, D_("colorpicker_Cr#V:"), SMALLFONT));
 	if( thread->do_alpha )
-		add_tool(new BC_Title(x, y+=40, C_("A:"), SMALLFONT));
-	x += 24;
+		add_tool(new BC_Title(x, y+=ys40, C_("A:"), SMALLFONT));
+	x += xS(24);
 	add_tool(hue = new PaletteHue(this, x, y= y0));
-	add_tool(sat = new PaletteSat(this, x, y+=25));
-	add_tool(val = new PaletteVal(this, x, y+=25));
-	add_tool(red = new PaletteRed(this, x, y+=40));
-	add_tool(grn = new PaletteGrn(this, x, y+=25));
-	add_tool(blu = new PaletteBlu(this, x, y+=25));
-	add_tool(lum = new PaletteLum(this, x, y+=40));
-	add_tool(c_r = new PaletteCr (this, x, y+=25));
-	add_tool(c_b = new PaletteCb (this, x, y+=25));
+	add_tool(sat = new PaletteSat(this, x, y+=ys25));
+	add_tool(val = new PaletteVal(this, x, y+=ys25));
+	add_tool(red = new PaletteRed(this, x, y+=ys40));
+	add_tool(grn = new PaletteGrn(this, x, y+=ys25));
+	add_tool(blu = new PaletteBlu(this, x, y+=ys25));
+	add_tool(lum = new PaletteLum(this, x, y+=ys40));
+	add_tool(c_r = new PaletteCr (this, x, y+=ys25));
+	add_tool(c_b = new PaletteCb (this, x, y+=ys25));
 	if( thread->do_alpha )
-		add_tool(alpha = new PaletteAlpha(this, x, y+=40));
+		add_tool(alpha = new PaletteAlpha(this, x, y+=ys40));
 
-	x += hue->get_w() + 10;
+	x += hue->get_w() + xs10;
 	hsv_h = new PaletteHSV(this, x,y= y0, hsv.h, 0, 360);
 	hsv_h->create_objects();  hsv_h->set_tooltip(_("Hue"));
-	hsv_s = new PaletteHSV(this, x,y+=25, hsv.s, 0, 1);
+	hsv_s = new PaletteHSV(this, x,y+=ys25, hsv.s, 0, 1);
 	hsv_s->create_objects();  hsv_s->set_tooltip(_("Saturation"));
-	hsv_v = new PaletteHSV(this, x,y+=25, hsv.v, 0, 1);
+	hsv_v = new PaletteHSV(this, x,y+=ys25, hsv.v, 0, 1);
 	hsv_v->create_objects();  hsv_v->set_tooltip(_("Value"));
-	rgb_r = new PaletteRGB(this, x,y+=40, rgb.r, 0, 1);
+	rgb_r = new PaletteRGB(this, x,y+=ys40, rgb.r, 0, 1);
 	rgb_r->create_objects();  rgb_r->set_tooltip(_("Red"));
-	rgb_g = new PaletteRGB(this, x,y+=25, rgb.g, 0, 1);
+	rgb_g = new PaletteRGB(this, x,y+=ys25, rgb.g, 0, 1);
 	rgb_g->create_objects();  rgb_g->set_tooltip(_("Green"));
-	rgb_b = new PaletteRGB(this, x,y+=25, rgb.b, 0, 1);
+	rgb_b = new PaletteRGB(this, x,y+=ys25, rgb.b, 0, 1);
 	rgb_b->create_objects();  rgb_b->set_tooltip(_("Blue"));
-	yuv_y = new PaletteYUV(this, x,y+=40, yuv.y, 0, 1);
+	yuv_y = new PaletteYUV(this, x,y+=ys40, yuv.y, 0, 1);
 	yuv_y->create_objects();  yuv_y->set_tooltip(_("Luminance"));
-	yuv_u = new PaletteYUV(this, x,y+=25, yuv.u, 0, 1);
+	yuv_u = new PaletteYUV(this, x,y+=ys25, yuv.u, 0, 1);
 	yuv_u->create_objects();  yuv_u->set_tooltip(_("Blue Luminance Difference"));
-	yuv_v = new PaletteYUV(this, x,y+=25, yuv.v, 0, 1);
+	yuv_v = new PaletteYUV(this, x,y+=ys25, yuv.v, 0, 1);
 	yuv_v->create_objects();  yuv_v->set_tooltip(_("Red Luminance Difference"));
 	if( thread->do_alpha ) {
-		aph_a = new PaletteAPH(this, x,y+=40, aph, 0, 1);
+		aph_a = new PaletteAPH(this, x,y+=ys40, aph, 0, 1);
 		aph_a->create_objects();  aph_a->set_tooltip(_("Alpha"));
 	}
 	if( thread->ok_cancel ) {
@@ -380,7 +382,7 @@ void ColorWindow::update_rgb_hex(const char *hex)
 
 
 PaletteWheel::PaletteWheel(ColorWindow *window, int x, int y)
- : BC_SubWindow(x, y, 170, 170)
+ : BC_SubWindow(x, y, xS(170), yS(170))
 {
 	this->window = window;
 	oldhue = 0;
@@ -493,27 +495,15 @@ void PaletteWheel::create_objects()
 			}
 		}
 	}
-//printf("PaletteWheel::create_objects 1\n");
 
 	draw_vframe(&frame,
-		0,
-		0,
-		get_w(),
-		get_h(),
-		0,
-		0,
-		get_w(),
-		get_h(),
-		0);
-//printf("PaletteWheel::create_objects 1\n");
+		0, 0, get_w(), get_h(),
+		0, 0, get_w(), get_h(), 0);
 
 	oldhue = window->hsv.h;
 	oldsaturation = window->hsv.s;
-//printf("PaletteWheel::create_objects 1\n");
 	draw(oldhue, oldsaturation);
-//printf("PaletteWheel::create_objects 1\n");
 	flash();
-//printf("PaletteWheel::create_objects 2\n");
 }
 
 float PaletteWheel::torads(float angle)
@@ -563,7 +553,7 @@ int PaletteWheel::draw(float hue, float saturation)
 
 	set_inverse();
 	set_color(WHITE);
-	draw_circle(x - 5, y - 5, 10, 10);
+	draw_circle(x - xS(5), y - yS(5), xS(10), yS(10));
 	set_opaque();
 	return 0;
 }
@@ -577,7 +567,7 @@ int PaletteWheel::get_angle(float x1, float y1, float x2, float y2)
 }
 
 PaletteWheelValue::PaletteWheelValue(ColorWindow *window, int x, int y)
- : BC_SubWindow(x, y, 40, 170, BLACK)
+ : BC_SubWindow(x, y, xS(40), yS(170), BLACK)
 {
 	this->window = window;
 	button_down = 0;
@@ -649,7 +639,6 @@ int PaletteWheelValue::draw(float hue, float saturation, float value)
 			row[j * 3 + 2] = b;
 		}
 	}
-
 	draw_3d_border(0, 0, get_w(), get_h(), 1);
 	draw_vframe(frame, 2, 2, get_w() - 4, get_h() - 4,
 		2, 2, get_w() - 4, get_h() - 4, 0);
@@ -662,7 +651,7 @@ int PaletteWheelValue::draw(float hue, float saturation, float value)
 }
 
 PaletteOutput::PaletteOutput(ColorWindow *window, int x, int y)
- : BC_SubWindow(x, y, 180, 30, BLACK)
+ : BC_SubWindow(x, y, xS(180), yS(30), BLACK)
 {
 	this->window = window;
 }
@@ -691,7 +680,7 @@ int PaletteOutput::draw()
 }
 
 PaletteHue::PaletteHue(ColorWindow *window, int x, int y)
- : BC_ISlider(x, y, 0, 150, 200, 0, 359, (int)(window->hsv.h), 0)
+ : BC_ISlider(x, y, 0, xS(150), xS(200), 0, 359, (int)(window->hsv.h), 0)
 {
 	this->window = window;
 }
@@ -708,7 +697,7 @@ int PaletteHue::handle_event()
 }
 
 PaletteSat::PaletteSat(ColorWindow *window, int x, int y)
- : BC_FSlider(x, y, 0, 150, 200, 0, 1.0, window->hsv.s, 0)
+ : BC_FSlider(x, y, 0, xS(150), xS(200), 0, 1.0, window->hsv.s, 0)
 {
 	this->window = window;
 	set_precision(0.01);
@@ -727,7 +716,7 @@ int PaletteSat::handle_event()
 
 
 PaletteVal::PaletteVal(ColorWindow *window, int x, int y)
- : BC_FSlider(x, y, 0, 150, 200, 0, 1.0, window->hsv.v, 0)
+ : BC_FSlider(x, y, 0, xS(150), xS(200), 0, 1.0, window->hsv.v, 0)
 {
 	this->window = window;
 	set_precision(0.01);
@@ -746,7 +735,7 @@ int PaletteVal::handle_event()
 
 
 PaletteRed::PaletteRed(ColorWindow *window, int x, int y)
- : BC_FSlider(x, y, 0, 150, 200, 0, 1, window->rgb.r, 0)
+ : BC_FSlider(x, y, 0, xS(150), xS(200), 0, 1, window->rgb.r, 0)
 {
 	this->window = window;
 	set_precision(0.01);
@@ -764,7 +753,7 @@ int PaletteRed::handle_event()
 }
 
 PaletteGrn::PaletteGrn(ColorWindow *window, int x, int y)
- : BC_FSlider(x, y, 0, 150, 200, 0, 1, window->rgb.g, 0)
+ : BC_FSlider(x, y, 0, xS(150), xS(200), 0, 1, window->rgb.g, 0)
 {
 	this->window = window;
 	set_precision(0.01);
@@ -782,7 +771,7 @@ int PaletteGrn::handle_event()
 }
 
 PaletteBlu::PaletteBlu(ColorWindow *window, int x, int y)
- : BC_FSlider(x, y, 0, 150, 200, 0, 1, window->rgb.b, 0)
+ : BC_FSlider(x, y, 0, xS(150), xS(200), 0, 1, window->rgb.b, 0)
 {
 	this->window = window;
 	set_precision(0.01);
@@ -800,7 +789,7 @@ int PaletteBlu::handle_event()
 }
 
 PaletteAlpha::PaletteAlpha(ColorWindow *window, int x, int y)
- : BC_FSlider(x, y, 0, 150, 200, 0, 1, window->aph, 0)
+ : BC_FSlider(x, y, 0, xS(150), xS(200), 0, 1, window->aph, 0)
 {
 	this->window = window;
 	set_precision(0.01);
@@ -819,7 +808,7 @@ int PaletteAlpha::handle_event()
 }
 
 PaletteLum::PaletteLum(ColorWindow *window, int x, int y)
- : BC_FSlider(x, y, 0, 150, 200, 0, 1, window->yuv.y, 0)
+ : BC_FSlider(x, y, 0, xS(150), xS(200), 0, 1, window->yuv.y, 0)
 {
 	this->window = window;
 	set_precision(0.01);
@@ -837,7 +826,7 @@ int PaletteLum::handle_event()
 }
 
 PaletteCr::PaletteCr(ColorWindow *window, int x, int y)
- : BC_FSlider(x, y, 0, 150, 200, 0, 1, window->yuv.u, 0)
+ : BC_FSlider(x, y, 0, xS(150), xS(200), 0, 1, window->yuv.u, 0)
 {
 	this->window = window;
 	set_precision(0.01);
@@ -855,7 +844,7 @@ int PaletteCr::handle_event()
 }
 
 PaletteCb::PaletteCb(ColorWindow *window, int x, int y)
- : BC_FSlider(x, y, 0, 150, 200, 0, 1, window->yuv.v, 0)
+ : BC_FSlider(x, y, 0, xS(150), xS(200), 0, 1, window->yuv.v, 0)
 {
 	this->window = window;
 	set_precision(0.01);
@@ -989,7 +978,7 @@ int ColorWindow::alpha8()
 
 PaletteNum::PaletteNum(ColorWindow *window, int x, int y,
 	float &output, float min, float max)
- : BC_TumbleTextBox(window, output, min, max, x, y, 64)
+ : BC_TumbleTextBox(window, output, min, max, x, y, xS(64))
 {
 	this->window = window;
 	this->output = &output;
@@ -1035,7 +1024,7 @@ int PaletteAPH::handle_event()
 }
 
 PaletteHexButton::PaletteHexButton(ColorWindow *window, int x, int y)
- : BC_GenericButton(x, y, 50, "#")
+ : BC_GenericButton(x, y, xS(50), "#")
 {
 	this->window = window;
 	set_tooltip(_("hex rgb color"));
@@ -1051,7 +1040,7 @@ int PaletteHexButton::handle_event()
 }
 
 PaletteHex::PaletteHex(ColorWindow *window, int x, int y, const char *hex)
- : BC_TextBox(x, y, 100, 1, hex)
+ : BC_TextBox(x, y, xS(100), 1, hex)
 {
 	this->window = window;
 }
@@ -1104,7 +1093,7 @@ int PaletteGrabButton::handle_event()
 }
 
 PaletteHistory::PaletteHistory(ColorWindow *window, int x, int y)
- : BC_SubWindow(x,y, 200, 24)
+ : BC_SubWindow(x,y, xS(200), yS(24))
 {
 	this->window = window;
 	button_down = 0;

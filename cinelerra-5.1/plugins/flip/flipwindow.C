@@ -30,7 +30,7 @@
 
 
 FlipWindow::FlipWindow(FlipMain *client)
- : PluginClientWindow(client, 250, 100, 250, 100, 0)
+ : PluginClientWindow(client, xS(250), yS(100), xS(250), yS(100), 0)
 {
 	this->client = client;
 }
@@ -41,13 +41,13 @@ FlipWindow::~FlipWindow()
 
 void FlipWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int x = xS(10), y = yS(10);
 	add_tool(flip_vertical = new FlipToggle(client,
 		&(client->config.flip_vertical),
 		_("Vertical"),
 		x,
 		y));
-	y += 30;
+	y += yS(30);
 	add_tool(flip_horizontal = new FlipToggle(client,
 		&(client->config.flip_horizontal),
 		_("Horizontal"),

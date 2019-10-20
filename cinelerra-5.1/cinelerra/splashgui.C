@@ -47,8 +47,8 @@ void SplashGUI::create_objects()
 	draw_vframe(bg, 0, 0);
 	flash();
 	show_window();
-	operation = new BC_Title(5,
-			get_h() - get_text_height(MEDIUMFONT) - 5,
+	operation = new BC_Title(xS(5),
+			get_h() - get_text_height(MEDIUMFONT) - yS(5),
 			_("Loading..."), MEDIUMFONT, GREEN);
 	add_subwindow(operation);
 	unlock_window();

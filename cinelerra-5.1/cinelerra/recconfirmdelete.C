@@ -32,9 +32,9 @@
 
 RecConfirmDelete::RecConfirmDelete(MWindow *mwindow)
  : BC_Window(_(PROGRAM_NAME ": Confirm"),
- 	mwindow->gui->get_abs_cursor_x(1),
+	mwindow->gui->get_abs_cursor_x(1),
 	mwindow->gui->get_abs_cursor_y(1),
- 	320, 100)
+	xS(320), yS(100))
 {
 }
 
@@ -46,12 +46,12 @@ void RecConfirmDelete::create_objects(char *string)
 {
 	lock_window("RecConfirmDelete::create_objects");
 	char string2[256];
-	int x = 10, y = 10;
+	int x = xS(10), y = yS(10);
 	sprintf(string2, _("Delete this file and %s?"), string);
 	add_subwindow(new BC_Title(x, y, string2));
-	y += 30;
+	y += yS(30);
 	add_subwindow(new BC_OKButton(x, y));
-	x = get_w() - 100;
+	x = get_w() - xS(100);
 	add_subwindow(new BC_CancelButton(x, y));
 	unlock_window();
 }

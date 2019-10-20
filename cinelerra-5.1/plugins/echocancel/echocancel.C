@@ -133,7 +133,7 @@ int EchoCancelLevel::handle_event()
 
 
 EchoCancelMode::EchoCancelMode(EchoCancel *plugin, int x, int y)
- : BC_PopupMenu(x, y, 120, to_text(plugin->config.mode))
+ : BC_PopupMenu(x, y, xS(120), to_text(plugin->config.mode))
 {
 	this->plugin = plugin;
 }
@@ -195,7 +195,7 @@ int EchoCancelHistory::handle_event()
 
 
 EchoCancelWindowSize::EchoCancelWindowSize(EchoCancel *plugin, int x, int y, const char *text)
- : BC_PopupMenu(x, y, 80, text)
+ : BC_PopupMenu(x, y, xS(120), text)
 {
 	this->plugin = plugin;
 }
@@ -410,7 +410,7 @@ void EchoCancelCanvas::draw_overlay()
 
 
 EchoCancelWindow::EchoCancelWindow(EchoCancel *plugin)
- : PluginClientWindow(plugin, plugin->w, plugin->h, 320, 320, 1)
+ : PluginClientWindow(plugin, plugin->w, plugin->h, xS(680), yS(480), 1)
 {
 	this->plugin = plugin;
 	probe_x = probe_y = -1;
@@ -626,8 +626,8 @@ EchoCancel::EchoCancel(PluginServer *server)
 {
 	reset();
 	timer = new Timer;
-	w = 640;
-	h = 480;
+	w = xS(640);
+	h = yS(480);
 }
 
 EchoCancel::~EchoCancel()

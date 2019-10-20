@@ -826,7 +826,7 @@ BinFolderTargetPatterns::~BinFolderTargetPatterns()
 {
 	delete [] text;
 }
- 
+
 void BinFolderTargetPatterns::save_xml(FileXML *file) {}
 void BinFolderTargetPatterns::load_xml(FileXML *file) {}
 
@@ -1458,10 +1458,10 @@ void BinFolderList::create_objects()
 	list_titles[FOLDER_COLUMN_TARGET] = _("Target");
 	list_titles[FOLDER_COLUMN_OP]     = _("Op");
 	list_titles[FOLDER_COLUMN_VALUE]  = _("Value");
-	list_width[FOLDER_COLUMN_ENABLE]  = 80;
-	list_width[FOLDER_COLUMN_TARGET]  = 80;
-	list_width[FOLDER_COLUMN_OP]      = 50;
-	list_width[FOLDER_COLUMN_VALUE]   = 180;
+	list_width[FOLDER_COLUMN_ENABLE]  = xS(80);
+	list_width[FOLDER_COLUMN_TARGET]  = xS(80);
+	list_width[FOLDER_COLUMN_OP]      = xS(50);
+	list_width[FOLDER_COLUMN_VALUE]   = xS(180);
 	load_defaults(mwindow->defaults);
 	create_list();
 	add_subwindow(enabled_popup = new BinFolderEnabledPopup(this));
@@ -1524,11 +1524,11 @@ int BinFolderList::selection_changed()
 				break;
 			case FOLDER_COLUMN_VALUE: {
 				modify_target->close_window();
-				int cw = filter->target->type == FOLDER_TARGET_PATTERNS ? 400 : 320;
-				int ch = filter->target->type == FOLDER_TARGET_PATTERNS ? 300 : 120;
+				int cw = xS(filter->target->type == FOLDER_TARGET_PATTERNS ? 400 : 320);
+				int ch = yS(filter->target->type == FOLDER_TARGET_PATTERNS ? 300 : 120);
 				int cx, cy;  get_abs_cursor(cx, cy);
-				if( (cx-=cw/2) < 50 ) cx = 50;
-				if( (cy-=ch/2) < 50 ) cy = 50;
+				if( (cx-=cw/2) < xS(50) ) cx = xS(50);
+				if( (cy-=ch/2) < yS(50) ) cy = yS(50);
 				modify_target->start(filter->target, cx, cy, cw, ch);
 				break; }
 			}
@@ -1671,7 +1671,7 @@ int BinFolderApplyFilter::handle_event()
 
 NewFolderGUI::NewFolderGUI(NewFolderThread *thread, int x, int y, int w, int h)
  : BC_Window(_(PROGRAM_NAME ": New folder"),
-		x, y, w, h, -1, -1, 0, 0, 1)
+		x, y, xS(w), yS(h), -1, -1, 0, 0, 1)
 {
 	this->thread = thread;
 }
@@ -1682,13 +1682,15 @@ NewFolderGUI::~NewFolderGUI()
 
 void NewFolderGUI::create_objects()
 {
+	int xs10 = xS(10);
+	int ys5 = yS(5), ys10 = yS(10);
 	lock_window("NewFolderGUI::create_objects");
-	int x = 10, y = 10;
+	int x = xs10, y = ys10;
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x, y, _("Folder name:")));
-	y += title->get_h() + 5;
+	y += title->get_h() + ys5;
 	const char *text = !thread->is_clips ? _("media bin") : _("clip bin");
-	add_subwindow(text_box = new BC_TextBox(x, y, 300, 1, text));
+	add_subwindow(text_box = new BC_TextBox(x, y, xS(300), 1, text));
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
 	show_window();
@@ -1743,7 +1745,7 @@ void NewFolderThread::handle_close_event(int result)
 }
 
 ModifyFolderGUI::ModifyFolderGUI(ModifyFolderThread *thread, int x, int y, int w, int h)
- : BC_Window(_(PROGRAM_NAME ": Modify folder"), x, y, w, h, 320, 200, 1, 0, 1)
+ : BC_Window(_(PROGRAM_NAME ": Modify folder"), x, y, w, h, xS(320), yS(200), 1, 0, 1)
 {
 	this->thread = thread;
 }
@@ -1771,28 +1773,30 @@ void ModifyFolderGUI::async_update_filters()
 
 void ModifyFolderGUI::create_objects()
 {
+	int xs10 = xS(10), xs15 = xS(15);
+	int ys10 = yS(10), ys30 = yS(30);
 	lock_window("ModifyFolderGUI::create_objects");
 	modify_folder_xatom = create_xatom("CWINDOWGUI_UPDATE_FILTERS");
-	int x = 10, y = 10;
+	int x = xs10, y = ys10;
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x, y, _("Enter the name of the folder:")));
 	const char *text = !thread->folder->is_clips ? _("Media") : _("Clips");
 	int tw = BC_Title::calculate_w(this, text, LARGEFONT);
-	int x0 = get_w() - 50 - tw;
+	int x0 = get_w() - xS(50) - tw;
 	add_subwindow(text_title = new BC_Title(x0, y, text, LARGEFONT, YELLOW));
-	y += title->get_h() + 10;
-	add_subwindow(text_box = new BC_TextBox(x, y, 300, 1, thread->folder->title));
-	y += text_box->get_h() + 10;
-	int lh = get_h() - y - BC_OKButton::calculate_h() - 30;
-	int lw = get_w() - x - 160;
+	y += title->get_h() + ys10;
+	add_subwindow(text_box = new BC_TextBox(x, y, xS(300), 1, thread->folder->title));
+	y += text_box->get_h() + ys10;
+	int lh = get_h() - y - BC_OKButton::calculate_h() - ys30;
+	int lw = get_w() - x - xS(160);
 	add_subwindow(folder_list =
 		new BinFolderList(thread->folder, thread->agui->mwindow, this, x, y, lw, lh));
 	folder_list->create_objects();
-	int x1 = x + folder_list->get_w() + 15, y1 = y;
+	int x1 = x + folder_list->get_w() + xs15, y1 = y;
 	add_subwindow(add_filter = new BinFolderAddFilter(folder_list, x1, y1));
-	y1 += add_filter->get_h() + 10;
+	y1 += add_filter->get_h() + ys10;
 	add_subwindow(del_filter = new BinFolderDelFilter(folder_list, x1, y1));
-	y1 += del_filter->get_h() + 10;
+	y1 += del_filter->get_h() + ys10;
 	add_subwindow(apply_filter = new BinFolderApplyFilter(folder_list, x1, y1));
 	add_subwindow(ok_button = new BC_OKButton(this));
 	add_subwindow(cancel_button = new BC_CancelButton(this));
@@ -1810,10 +1814,10 @@ int ModifyFolderGUI::resize_event(int w, int h)
 	text_title->reposition_window(tx, ty);
 	int lx = folder_list->get_x();
 	int ly = folder_list->get_y();
-	int lh = h - ly - BC_OKButton::calculate_h() - 30;
-	int lw = w - lx - 160;
+	int lh = h - ly - BC_OKButton::calculate_h() - yS(30);
+	int lw = w - lx - xS(160);
 	folder_list->reposition_window(lx, ly, lw, lh);
-	int x1 = lx + lw + 15;
+	int x1 = lx + lw + xS(15);
 	add_filter->reposition_window(x1, add_filter->get_y());
 	del_filter->reposition_window(x1, del_filter->get_y());
 	apply_filter->reposition_window(x1,apply_filter->get_y());
@@ -1936,7 +1940,7 @@ void ModifyTargetThread::handle_close_event(int result)
 
 ModifyTargetGUI::ModifyTargetGUI(ModifyTargetThread *thread, int allow_resize)
  : BC_Window(_(PROGRAM_NAME ": Modify target"),
-		thread->wx, thread->wy, thread->ww, thread->wh,
+		thread->wx, thread->wy, xS(thread->ww), yS(thread->wh),
 		-1, -1, allow_resize, 0, 1)
 {
 	this->thread = thread;
@@ -1948,10 +1952,12 @@ ModifyTargetGUI::~ModifyTargetGUI()
 
 void ModifyTargetGUI::create_objects(BC_TextBox *&text_box)
 {
+	int xs10 = xS(10), xs20 = xS(20);
+	int ys10 = yS(10);
 	lock_window("ModifyTargetGUI::create_objects");
-	int x = 10, y = 10;
+	int x = xs10, y = ys10;
 	const char *text = thread->target->filter->value->get_text();
-	add_subwindow(text_box = new BC_TextBox(x, y, get_w()-20, 1, text));
+	add_subwindow(text_box = new BC_TextBox(x, y, get_w()-xs20, 1, text));
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
 	show_window();
@@ -1978,16 +1984,18 @@ ModifyTargetPatternsGUI::~ModifyTargetPatternsGUI()
 
 void ModifyTargetPatternsGUI::create_objects()
 {
+	int xs10 = xS(10), xs20 = xS(20);
+	int ys10 = yS(10), ys20 = yS(20);
 	lock_window("ModifyTargetPatternsGUI::create_objects");
 	BinFolderTargetPatterns *target = (BinFolderTargetPatterns *)thread->target;
-	int x = 10, y = 10;
+	int x = xs10, y = ys10;
 	int text_font = MEDIUMFONT;
 	text_rowsz = get_text_ascent(text_font)+1 + get_text_descent(text_font)+1;
-	int th = get_h() - y - BC_OKButton::calculate_h() - 20;
+	int th = get_h() - y - BC_OKButton::calculate_h() - ys20;
 	int rows = th / text_rowsz;
 	int text_len = strlen(target->text);
 	if( text_len < BCTEXTLEN ) text_len = BCTEXTLEN;
-	scroll_text_box = new BC_ScrollTextBox(this, x, y, get_w()-20, rows,
+	scroll_text_box = new BC_ScrollTextBox(this, x, y, get_w()-xs20, rows,
 		target->text, 2*text_len);
 	scroll_text_box->create_objects();
 	add_subwindow(ok_button = new BC_OKButton(this));
@@ -1998,10 +2006,12 @@ void ModifyTargetPatternsGUI::create_objects()
 
 int ModifyTargetPatternsGUI::resize_event(int w, int h)
 {
+	int xs20 = xS(20);
+	int ys20 = yS(20);
 	int tx = scroll_text_box->get_x();
 	int ty = scroll_text_box->get_y();
-	int th = h - ty - BC_OKButton::calculate_h() - 20;
-	int tw = w - 20;
+	int th = h - ty - BC_OKButton::calculate_h() - ys20;
+	int tw = w - xs20;
 	int rows = th / text_rowsz;
 	scroll_text_box->reposition_window(tx, ty, tw, rows);
 	ok_button->resize_event(w, h);

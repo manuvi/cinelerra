@@ -20,6 +20,7 @@
  */
 
 #include "bcdisplayinfo.h"
+#include "bcresources.h"
 #include "bcwindow.h"
 #include <string.h>
 

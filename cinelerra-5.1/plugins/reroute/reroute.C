@@ -176,7 +176,7 @@ const char* RerouteConfig::output_to_text(int output_track)
 
 
 RerouteWindow::RerouteWindow(Reroute *plugin)
- : PluginClientWindow(plugin, 300, 160, 0, 0, 1)
+ : PluginClientWindow(plugin, xS(300), yS(160), 0, 0, 1)
 {
 	this->plugin = plugin;
 }
@@ -187,18 +187,20 @@ RerouteWindow::~RerouteWindow()
 
 void RerouteWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int xs5 = xS(5), xs10 = xS(10);
+	int ys10 = yS(10), ys30 = yS(30);
+	int x = xs10, y = ys10;
 
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x, y, _("Target track:")));
 
-	int col2 = title->get_w() + 5;
+	int col2 = title->get_w() + xs5;
 	add_subwindow(output = new RerouteOutput(plugin,
 		x + col2,
 		y));
 	output->create_objects();
 
-	y += 30;
+	y += ys30;
 	add_subwindow(title = new BC_Title(x, y, _("Operation:")));
 	add_subwindow(operation = new RerouteOperation(plugin,
 		x + col2,
@@ -221,7 +223,7 @@ RerouteOperation::RerouteOperation(Reroute *plugin,
 	int y)
  : BC_PopupMenu(x,
  	y,
-	150,
+	xS(150),
 	RerouteConfig::operation_to_text(plugin->config.operation),
 	1)
 {
@@ -270,7 +272,7 @@ RerouteOutput::RerouteOutput(Reroute *plugin,
 	int y)
  : BC_PopupMenu(x,
  	y,
-	100,
+	xS(100),
 	RerouteConfig::output_to_text(plugin->config.output_track),
 	1)
 {

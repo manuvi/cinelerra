@@ -111,7 +111,7 @@ void AVC1394Transport::create_objects()
 	window->add_subwindow(end_button = new AVC1394GUISeekEnd(mwindow, avc, x, y));
 	x += end_button->get_w();
 
-	x_end = x + 10;
+	x_end = x + xS(10);
 
 }
 
@@ -156,7 +156,7 @@ void AVC1394Transport::reposition_window(int x, int y)
 	x += fforward_button->get_w();
 	end_button->reposition_window(x, y);
 
-	x_end = x + 10;
+	x_end = x + xS(10);
 }
 
 

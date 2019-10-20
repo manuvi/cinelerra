@@ -113,13 +113,7 @@ int BC_Tumbler::set_images(VFrame **data)
 int BC_Tumbler::draw_face(int flush)
 {
 	draw_top_background(parent_window, 0, 0, w, h);
-	pixmap->draw_pixmap(images[status],
-			0,
-			0,
-			w,
-			h,
-			0,
-			0);
+	pixmap->draw_pixmap(images[status], 0, 0, w, h, 0, 0);
 	flash(flush);
 	return 0;
 }
@@ -259,8 +253,6 @@ int BC_Tumbler::cursor_motion_event()
 }
 
 
-
-
 BC_ITumbler::BC_ITumbler(BC_TextBox *textbox, int64_t min, int64_t max, int x, int y)
  : BC_Tumbler(x, y)
 {
@@ -305,14 +297,6 @@ void BC_ITumbler::set_boundaries(int64_t min, int64_t max)
 	this->min = min;
 	this->max = max;
 }
-
-
-
-
-
-
-
-
 
 
 BC_FTumbler::BC_FTumbler(BC_TextBox *textbox,

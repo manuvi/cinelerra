@@ -37,11 +37,11 @@
 #define ICON_TOP         1
 
 // White space around text
-#define LISTBOX_MARGIN   4
+#define LISTBOX_MARGIN   xS(4)
 // Distance from sides of window
-#define LISTBOX_BORDER   2
-#define ICON_MARGIN      2
-#define LISTBOX_INDENT   18
+#define LISTBOX_BORDER   xS(2)
+#define ICON_MARGIN      xS(2)
+#define LISTBOX_INDENT   xS(18)
 
 // Justification for popup listbox
 #define LISTBOX_LEFT     0

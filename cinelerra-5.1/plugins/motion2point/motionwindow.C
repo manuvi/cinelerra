@@ -37,7 +37,7 @@
 
 
 MotionWindow::MotionWindow(MotionMain2 *plugin)
- : PluginClientWindow(plugin, 680, 660, 680, 660, 0)
+ : PluginClientWindow(plugin, xS(680), yS(660), xS(680), yS(660), 0)
 {
 	this->plugin = plugin;
 }
@@ -48,8 +48,10 @@ MotionWindow::~MotionWindow()
 
 void MotionWindow::create_objects()
 {
+	int xs10 = xS(10), xs20 = xS(20), xs120 = xS(120);
+	int ys10 = yS(10), ys20 = yS(20), ys30 = yS(30), ys40  = yS(40), ys50 = yS(50);
 	int x1[] = { 10, get_w()/2 };
-	int x = 10, y = 10, y1 = 10;
+	int x = xs10, y = ys10, y1 = ys10;
 	BC_Title *title;
 
 
@@ -67,88 +69,88 @@ void MotionWindow::create_objects()
 			y,
 			&plugin->config.global[i],
 			global_title[i]));
-		y += 50;
+		y += yS(50);
 
 		add_subwindow(title = new BC_Title(x1[i],
 			y,
 			_("Translation search radius:\n(W/H Percent of image)")));
 		add_subwindow(global_range_w[i] = new MotionPot(plugin,
-			x1[i] + title->get_w() + 10,
+			x1[i] + title->get_w() + xs10,
 			y,
 			&plugin->config.global_range_w[i],
 			MIN_RADIUS,
 			MAX_RADIUS));
 		add_subwindow(global_range_h[i] = new MotionPot(plugin,
-			x1[i] + title->get_w() + 10 + global_range_w[i]->get_w(),
+			x1[i] + title->get_w() + xs10 + global_range_w[i]->get_w(),
 			y,
 			&plugin->config.global_range_h[i],
 			MIN_RADIUS,
 			MAX_RADIUS));
 
-		y += 50;
+		y += ys50;
 
 		add_subwindow(title = new BC_Title(x1[i],
 			y,
 			_("Translation search offset:\n(X/Y Percent of image)")));
 		add_subwindow(global_origin_x[i] = new MotionPot(plugin,
-			x1[i] + title->get_w() + 10,
+			x1[i] + title->get_w() + xs10,
 			y,
 			&plugin->config.global_origin_x[i],
 			MIN_ORIGIN,
 			MAX_ORIGIN));
 		add_subwindow(global_origin_y[i] = new MotionPot(plugin,
-			x1[i] + title->get_w() + 10 + global_origin_x[i]->get_w(),
+			x1[i] + title->get_w() + xs10 + global_origin_x[i]->get_w(),
 			y,
 			&plugin->config.global_origin_y[i],
 			MIN_ORIGIN,
 			MAX_ORIGIN));
 
-		y += 50;
+		y += ys50;
 		add_subwindow(title = new BC_Title(x1[i],
 			y,
 			_("Translation block size:\n(W/H Percent of image)")));
 		add_subwindow(global_block_w[i] = new MotionPot(plugin,
-			x1[i] + title->get_w() + 10,
+			x1[i] + title->get_w() + xs10,
 			y,
 			&plugin->config.global_block_w[i],
 			MIN_BLOCK,
 			MAX_BLOCK));
 		add_subwindow(global_block_h[i] = new MotionPot(plugin,
-			x1[i] + title->get_w() + 10 + global_block_w[i]->get_w(),
+			x1[i] + title->get_w() + xs10 + global_block_w[i]->get_w(),
 			y,
 			&plugin->config.global_block_h[i],
 			MIN_BLOCK,
 			MAX_BLOCK));
 
 
-		y += 40;
-		add_subwindow(title = new BC_Title(x1[i], y + 10, _("Block X:")));
+		y += ys40;
+		add_subwindow(title = new BC_Title(x1[i], y + ys10, _("Block X:")));
 		add_subwindow(block_x[i] = new MotionBlockX(plugin,
 			this,
-			x1[i] + title->get_w() + 10,
+			x1[i] + title->get_w() + xs10,
 			y,
 			i));
 		add_subwindow(block_x_text[i] = new MotionBlockXText(plugin,
 			this,
-			x1[i] + title->get_w() + 10 + block_x[i]->get_w() + 10,
-			y + 10,
+			x1[i] + title->get_w() + xs10 + block_x[i]->get_w() + xs10,
+			y + ys10,
 			i));
 
-		y += 40;
-		add_subwindow(title = new BC_Title(x1[i], y + 10, _("Block Y:")));
+		y += ys40;
+		add_subwindow(title = new BC_Title(x1[i], y + ys10, _("Block Y:")));
 		add_subwindow(block_y[i] = new MotionBlockY(plugin,
 			this,
-			x1[i] + title->get_w() + 10,
+			x1[i] + title->get_w() + xs10,
 			y,
 			i));
 		add_subwindow(block_y_text[i] = new MotionBlockYText(plugin,
 			this,
-			x1[i] + title->get_w() + 10 + block_y[i]->get_w() + 10,
-			y + 10,
+			x1[i] + title->get_w() + xs10 + block_y[i]->get_w() + xs10,
+			y + ys10,
 			i));
 
 
-		y += 40;
+		y += ys40;
 		add_subwindow(vectors[i] = new MotionDrawVectors(plugin,
 			this,
 			x1[i],
@@ -157,82 +159,80 @@ void MotionWindow::create_objects()
 	}
 
 
-	y += 30;
+	y += ys30;
 	add_subwindow(new BC_Bar(x, y, get_w() - x * 2));
-	y += 10;
+	y += ys10;
 	add_subwindow(title = new BC_Title(x, y, _("Search steps:")));
 	add_subwindow(global_search_positions = new GlobalSearchPositions(plugin,
-		x + title->get_w() + 10,
-		y,
-		80));
+		x + title->get_w() + xs10, y, xs120));
 	global_search_positions->create_objects();
 
-	y += 30;
+	y += ys30;
 	add_subwindow(title = new BC_Title(x, y, _("Search directions:")));
 	add_subwindow(tracking_direction = new TrackingDirection(plugin,
 		this,
-		x + title->get_w() + 10,
+		x + title->get_w() + xs10,
 		y));
 	tracking_direction->create_objects();
 
-	y += 30;
-	add_subwindow(title = new BC_Title(x, y + 10, _("Maximum absolute offset:")));
+	y += ys30;
+	add_subwindow(title = new BC_Title(x, y + ys10, _("Maximum absolute offset:")));
 	add_subwindow(magnitude = new MotionMagnitude(plugin,
-		x + title->get_w() + 10,
+		x + title->get_w() + xs10,
 		y));
 
-	y += 40;
-	add_subwindow(title = new BC_Title(x, y + 10, _("Settling speed:")));
+	y += ys40;
+	add_subwindow(title = new BC_Title(x, y + ys10, _("Settling speed:")));
 	add_subwindow(return_speed = new MotionReturnSpeed(plugin,
-		x + title->get_w() + 10,
+		x + title->get_w() + xs10,
 		y));
 
 
-	y += 40;
+	y += ys40;
 	add_subwindow(track_single = new TrackSingleFrame(plugin,
 		this,
 		x,
 		y));
-	add_subwindow(title = new BC_Title(x + track_single->get_w() + 20,
+	add_subwindow(title = new BC_Title(x + track_single->get_w() + xs20,
 		y,
 		_("Frame number:")));
 	add_subwindow(track_frame_number = new TrackFrameNumber(plugin,
 		this,
-		x + track_single->get_w() + title->get_w() + 20,
+		x + track_single->get_w() + title->get_w() + xs20,
 		y));
 	if(plugin->config.tracking_object != MotionScan::TRACK_SINGLE)
 		track_frame_number->disable();
 
-	y += 20;
+	y += ys20;
 	add_subwindow(track_previous = new TrackPreviousFrame(plugin,
 		this,
 		x,
 		y));
 
-	y += 20;
+	y += ys20;
 	add_subwindow(previous_same = new PreviousFrameSameBlock(plugin,
 		this,
 		x,
 		y));
 
-	y += 40;
+	y += ys40;
 	y1 = y;
 	add_subwindow(title = new BC_Title(x, y, _("Master layer:")));
 	add_subwindow(master_layer = new MasterLayer(plugin,
 		this,
-		x + title->get_w() + 10,
+		x + title->get_w() + xs10,
 		y));
 	master_layer->create_objects();
-	y += 30;
+	y += ys30;
 
 
 	add_subwindow(title = new BC_Title(x, y, _("Action:")));
 	add_subwindow(action = new Action(plugin,
 		this,
-		x + title->get_w() + 10,
+		x + title->get_w() + xs10,
 		y));
 	action->create_objects();
-	y += 30;
+	y += ys30;
 
 
 
@@ -240,7 +240,7 @@ void MotionWindow::create_objects()
 	add_subwindow(title = new BC_Title(x, y, _("Calculation:")));
 	add_subwindow(calculation = new Calculation(plugin,
 		this,
-		x + title->get_w() + 10,
+		x + title->get_w() + xs10,
 		y));
 	calculation->create_objects();
 
@@ -486,10 +486,7 @@ MotionBlockXText::MotionBlockXText(MotionMain2 *plugin,
 	int x,
 	int y,
 	int number)
- : BC_TextBox(x,
- 	y,
-	75,
-	1,
+ : BC_TextBox(x, y, xS(75), 1,
 	(float)plugin->config.block_x[number])
 {
 	this->plugin = plugin;
@@ -514,10 +511,7 @@ MotionBlockYText::MotionBlockYText(MotionMain2 *plugin,
 	int x,
 	int y,
 	int number)
- : BC_TextBox(x,
- 	y,
-	75,
-	1,
+ : BC_TextBox(x, y, xS(75), 1,
 	(float)plugin->config.block_y[number])
 {
 	this->plugin = plugin;
@@ -612,7 +606,7 @@ TrackFrameNumber::TrackFrameNumber(MotionMain2 *plugin,
 	MotionWindow *gui,
 	int x,
 	int y)
- : BC_TextBox(x, y, 100, 1, plugin->config.track_frame)
+ : BC_TextBox(x, y, xS(100), 1, plugin->config.track_frame)
 {
 	this->plugin = plugin;
 	this->gui = gui;
@@ -728,7 +722,7 @@ int MasterLayer::calculate_w(MotionWindow *gui)
 	int result = 0;
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(0)));
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(1)));
-	return result + 50;
+	return result + xS(80);
 }
 
 
@@ -807,7 +801,7 @@ int Action::calculate_w(MotionWindow *gui)
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(MotionScan::STABILIZE)));
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(MotionScan::STABILIZE_PIXEL)));
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(MotionScan::NOTHING)));
-	return result + 50;
+	return result + xS(80);
 }
 
 
@@ -877,7 +871,7 @@ int Calculation::calculate_w(MotionWindow *gui)
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(MotionScan::CALCULATE)));
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(MotionScan::SAVE)));
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(MotionScan::LOAD)));
-	return result + 50;
+	return result + xS(80);
 }
 
 
@@ -934,6 +928,6 @@ int TrackingDirection::calculate_w(MotionWindow *gui)
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(1, 0)));
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(0, 1)));
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(0, 0)));
-	return result + 50;
+	return result + xS(80);
 }
 

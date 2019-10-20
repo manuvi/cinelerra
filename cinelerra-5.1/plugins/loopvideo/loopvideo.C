@@ -100,10 +100,10 @@ LoopVideoConfig::LoopVideoConfig()
 
 LoopVideoWindow::LoopVideoWindow(LoopVideo *plugin)
  : PluginClientWindow(plugin,
-	210,
-	160,
-	200,
-	160,
+	xS(210),
+	yS(160),
+	xS(200),
+	yS(160),
 	0)
 {
 	this->plugin = plugin;
@@ -115,10 +115,12 @@ LoopVideoWindow::~LoopVideoWindow()
 
 void LoopVideoWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int xs10 = xS(10);
+	int ys10 = yS(10), ys20 = yS(20);
+	int x = xs10, y = ys10;
 
 	add_subwindow(new BC_Title(x, y, _("Frames to loop:")));
-	y += 20;
+	y += ys20;
 	add_subwindow(frames = new LoopVideoFrames(plugin,
 		x,
 		y));
@@ -141,7 +143,7 @@ LoopVideoFrames::LoopVideoFrames(LoopVideo *plugin,
 	int y)
  : BC_TextBox(x,
 	y,
-	100,
+	xS(100),
 	1,
 	plugin->config.frames)
 {

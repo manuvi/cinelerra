@@ -24,8 +24,8 @@
 #include "language.h"
 #include "perspective.h"
 
-#define PERSPECTIVE_WIDTH 400
-#define PERSPECTIVE_HEIGHT 600
+#define PERSPECTIVE_WIDTH xS(400)
+#define PERSPECTIVE_HEIGHT yS(600)
 
 REGISTER_PLUGIN(PerspectiveMain)
 
@@ -33,9 +33,9 @@ REGISTER_PLUGIN(PerspectiveMain)
 PerspectiveConfig::PerspectiveConfig()
 {
 	x1 = 0;    y1 = 0;
-	x2 = 100;  y2 = 0;
-	x3 = 100;  y3 = 100;
-	x4 = 0;    y4 = 100;
+	x2 = xS(100);  y2 = 0;
+	x3 = xS(100);  y3 = yS(100);
+	x4 = 0;    y4 = yS(100);
 	mode = AffineEngine::PERSPECTIVE;
 	smoothing = AffineEngine::AF_DEFAULT;
 	window_w = PERSPECTIVE_WIDTH;
@@ -120,63 +120,65 @@ PerspectiveWindow::~PerspectiveWindow()
 
 void PerspectiveWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int xs10 = xS(10), xs20 = xS(20), xs80 = xS(80), xs100 = xS(100), xs120 = xS(120);
+	int ys5 = yS(5), ys10 = yS(10), ys30 = yS(30), ys40 = yS(40);
+	int x = xs10, y = ys10;
 
 	add_subwindow(canvas = new PerspectiveCanvas(this,
-		x, y, get_w() - 20, get_h() - 290));
+		x, y, get_w() - xs20, get_h() - yS(290)));
 	canvas->set_cursor(CROSS_CURSOR, 0, 0);
-	y += canvas->get_h() + 10;
+	y += canvas->get_h() + ys10;
 	add_subwindow(new BC_Title(x, y, _("Current X:")));
-	x += 80;
+	x += xs80;
 	this->x = new PerspectiveCoord(this,
 		x, y, plugin->get_current_x(), 1);
 	this->x->create_objects();
-	x += 140;
+	x += xS(140);
 	add_subwindow(new BC_Title(x, y, _("Y:")));
-	x += 20;
+	x += xs20;
 	this->y = new PerspectiveCoord(this,
 		x, y, plugin->get_current_y(), 0);
 	this->y->create_objects();
-	x = 10;   y += 30;
+	x = xs10;   y += ys30;
 	add_subwindow(mode_perspective = new PerspectiveMode(this,
 		x, y, AffineEngine::PERSPECTIVE, _("Perspective")));
-	x += 120;
+	x += xs120;
 	add_subwindow(mode_sheer = new PerspectiveMode(this,
 		x, y, AffineEngine::SHEER, _("Sheer")));
-	x += 100;
+	x += xs100;
 	add_subwindow(affine = new PerspectiveAffine(this, x, y));
 	affine->create_objects();
-	x = 10;  y += 30;
+	x = xs10;  y += ys30;
 	add_subwindow(mode_stretch = new PerspectiveMode(this,
 		x, y, AffineEngine::STRETCH, _("Stretch")));
-	x += 120;
+	x += xs120;
 	add_subwindow(new PerspectiveReset(this, x, y));
 	update_canvas();
 
-	x = 10;   y += 30;
+	x = xs10;   y += ys30;
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x, y, _("Zoom view:")));
-	int x1 = x + title->get_w() + 10, w1 = get_w() - x1 - 10;
+	int x1 = x + title->get_w() + xs10, w1 = get_w() - x1 - xs10;
 	add_subwindow(zoom_view = new PerspectiveZoomView(this, x1, y, w1));
-	y += 30;
+	y += ys30;
 
 	add_subwindow(new BC_Title(x, y, _("Perspective direction:")));
-	x += 170;
+	x += xS(170);
 	add_subwindow(forward = new PerspectiveDirection(this,
 		x, y, 1, _("Forward")));
-	x += 100;
+	x += xs100;
 	add_subwindow(reverse = new PerspectiveDirection(this,
 		x, y, 0, _("Reverse")));
-	x = 10;  y += 40;
+	x = xs10;  y += ys40;
 	add_subwindow(title = new BC_Title(x, y, _("Alt/Shift:")));
-	add_subwindow(new BC_Title(x+100, y, _("Button1 Action:")));
-	y += title->get_h() + 5;
+	add_subwindow(new BC_Title(x+xs100, y, _("Button1 Action:")));
+	y += title->get_h() + ys5;
 	add_subwindow(new BC_Title(x, y,
 		"  0 / 0\n"
 		"  0 / 1\n"
 		"  1 / 0\n"
 		"  1 / 1"));
-	add_subwindow(new BC_Title(x+100, y,
+	add_subwindow(new BC_Title(x+xs100, y,
 	      _("Translate endpoint\n"
 		"Zoom image\n"
 		"Translate image\n"
@@ -515,10 +517,11 @@ int PerspectiveCanvas::cursor_motion_event()
 
 PerspectiveCoord::PerspectiveCoord(PerspectiveWindow *gui,
 	int x, int y, float value, int is_x)
- : BC_TumbleTextBox(gui, value, (float)-100, (float)200, x, y, 100)
+ : BC_TumbleTextBox(gui, value, -100.f, 200.f, x, y, xS(70))
 {
 	this->gui = gui;
 	this->is_x = is_x;
+	set_precision(2);
 }
 
 int PerspectiveCoord::handle_event()
@@ -598,7 +601,7 @@ int PerspectiveAffineItem::handle_event()
 }
 
 PerspectiveAffine::PerspectiveAffine(PerspectiveWindow *gui, int x, int y)
- : BC_PopupMenu(x, y, 100, "", 1)
+ : BC_PopupMenu(x, y, xS(100), "", 1)
 {
 	this->gui = gui;
 	affine_modes[AffineEngine::AF_DEFAULT]     = _("default");

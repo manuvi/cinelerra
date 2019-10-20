@@ -46,7 +46,9 @@ PluginPrefs::~PluginPrefs()
 void PluginPrefs::create_objects()
 {
 	char string[1024];
-	int x = 5, y = 5;
+	int xs5 = xS(5), xs10 = xS(10), xs20 = xS(20), xs30 = xS(30);
+	int ys5 = yS(5), ys10 = yS(10), ys20 = yS(20), ys30 = yS(30);
+	int x = xs5, y = ys5;
 
 // 	add_border(get_resources()->get_bg_shadow1(),
 // 		get_resources()->get_bg_shadow2(),
@@ -55,32 +57,24 @@ void PluginPrefs::create_objects()
 // 		get_resources()->get_bg_light1());
 
 	add_subwindow(new BC_Title(x, y, _("Plugin Set"), LARGEFONT, BLACK));
-	y += 35;
+	y += ys35;
 	add_subwindow(new BC_Title(x, y, _("Look for global plugins here"), MEDIUMFONT, BLACK));
-	y += 20;
-	add_subwindow(ipathtext = new PluginGlobalPathText(x, y, pwindow, pwindow->thread->preferences->global_plugin_dir));
-	add_subwindow(ipath = new BrowseButton(mwindow,
-		this,
-		ipathtext,
-		215,
-		y,
-		pwindow->thread->preferences->global_plugin_dir,
-		_("Global Plugin Path"),
-		_("Select the directory for plugins"),
+	y += ys20;
+	add_subwindow(ipathtext = new PluginGlobalPathText(x, y,
+			pwindow, pwindow->thread->preferences->global_plugin_dir));
+	add_subwindow(ipath = new BrowseButton(mwindow, this, ipathtext,
+		xS(215), y, pwindow->thread->preferences->global_plugin_dir,
+		_("Global Plugin Path"), _("Select the directory for plugins"),
 		1));
 
 	y += 35;
 	add_subwindow(new BC_Title(x, y, _("Look for personal plugins here"), MEDIUMFONT, BLACK));
 	y += 20;
-	add_subwindow(lpathtext = new PluginLocalPathText(x, y, pwindow, pwindow->thread->preferences->local_plugin_dir));
-	add_subwindow(lpath = new BrowseButton(mwindow,
-		this,
-		lpathtext,
-		215,
-		y,
-		pwindow->thread->preferences->local_plugin_dir,
-		_("Personal Plugin Path"),
-		_("Select the directory for plugins"),
+	add_subwindow(lpathtext = new PluginLocalPathText(x, y,
+			pwindow, pwindow->thread->preferences->local_plugin_dir));
+	add_subwindow(lpath = new BrowseButton(mwindow, this, lpathtext,
+		xS(215), y, pwindow->thread->preferences->local_plugin_dir,
+		_("Personal Plugin Path"), _("Select the directory for plugins"),
 		1));
 
 }
@@ -89,7 +83,7 @@ void PluginPrefs::create_objects()
 
 
 PluginGlobalPathText::PluginGlobalPathText(int x, int y, PreferencesWindow *pwindow, char *text)
- : BC_TextBox(x, y, 200, 1, text)
+ : BC_TextBox(x, y, xS(200), 1, text)
 {
 	this->pwindow = pwindow;
 }
@@ -106,7 +100,7 @@ int PluginGlobalPathText::handle_event()
 
 
 PluginLocalPathText::PluginLocalPathText(int x, int y, PreferencesWindow *pwindow, char *text)
- : BC_TextBox(x, y, 200, 1, text)
+ : BC_TextBox(x, y, xs(200), 1, text)
 {
 	this->pwindow = pwindow;
 }

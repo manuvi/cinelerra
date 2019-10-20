@@ -59,6 +59,7 @@ public:
 	int get_screen() { return scrnum; }
 	int get_xinerama_screens();
 	int xinerama_geometry(int screen, int &x, int &y, int &w, int &h);
+	int xinerama_big_screen();
 #ifdef HAVE_GL
 	int gl_fb_config();
 	int gl_probe(Window win);

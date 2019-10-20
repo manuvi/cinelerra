@@ -27,7 +27,7 @@
 
 // configuration window
 GreyCStorationWindow::GreyCStorationWindow(GreyCStorationMain *client)
- : PluginClientWindow(client, 300, 180, 300, 180, 0)
+ : PluginClientWindow(client, xS(300), yS(180), xS(300), yS(180), 0)
 {
 	this->client = client;
 }
@@ -39,21 +39,23 @@ GreyCStorationWindow::~GreyCStorationWindow()
 // controls in window
 void GreyCStorationWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int xs10 = xS(10);
+	int ys10 = yS(10), ys30 = yS(30);
+	int x = xs10, y = ys10;
 	BC_Title *title;
-	add_subwindow(title = new BC_Title(x, y + 10, _("Amplitude:")));
+	add_subwindow(title = new BC_Title(x, y + ys10, _("Amplitude:")));
 	add_tool(greycamp_slider = new GreyCAmpSlider(client, &(client->config.amplitude), x+title->get_w(), y));
 
-	y += 30;
-	add_subwindow(title = new BC_Title(x, y + 10, _("Sharpness:")));
+	y += ys30;
+	add_subwindow(title = new BC_Title(x, y + ys10, _("Sharpness:")));
 	add_tool(greycsharp_slider = new GreyCSharpSlider(client, &(client->config.sharpness), x+title->get_w(), y));
 
-	y += 30;
-	add_subwindow(title = new BC_Title(x, y + 10, _("Anisotropy:")));
+	y += ys30;
+	add_subwindow(title = new BC_Title(x, y + ys10, _("Anisotropy:")));
 	add_tool(greycani_slider = new GreyCAniSlider(client, &(client->config.anisotropy), x+title->get_w(), y));
 
-	y += 30;
-	add_subwindow(title = new BC_Title(x, y + 10, _("Noise scale:")));
+	y += ys30;
+	add_subwindow(title = new BC_Title(x, y + ys10, _("Noise scale:")));
 	add_tool(greycnoise_slider = new GreyCNoiseSlider(client, &(client->config.noise_scale), x+title->get_w(), y));
 
 
@@ -71,7 +73,7 @@ int GreyCStorationWindow::close_event()
 // amp slider implementation
 
 GreyCAmpSlider::GreyCAmpSlider(GreyCStorationMain *client, float *output, int x, int y)
- : BC_ISlider(x, y, 0, 200, 200, 0, 255, //MAX
+ : BC_ISlider(x, y, 0, xS(200), yS(200), 0, 255, //MAX
 	(int)*output, 0, 0, 0)
 {
 	this->client = client;
@@ -91,7 +93,7 @@ int GreyCAmpSlider::handle_event()
 
 
 GreyCSharpSlider::GreyCSharpSlider(GreyCStorationMain *client, float *output, int x, int y)
- : BC_FSlider(x, y, 0, 200, 200, 0.0f, 1.0f, //MAX
+ : BC_FSlider(x, y, 0, xS(200), yS(200), 0.0f, 1.0f, //MAX
 	(float)*output, 0, 0)
 {
 	this->client = client;
@@ -113,7 +115,7 @@ int GreyCSharpSlider::handle_event()
 
 
 GreyCAniSlider::GreyCAniSlider(GreyCStorationMain *client, float *output, int x, int y)
- : BC_FSlider(x, y, 0, 200, 200, 0.0f, 1.0f, //MAX
+ : BC_FSlider(x, y, 0, xS(200), yS(200), 0.0f, 1.0f, //MAX
 	(float)*output, 0, 0)
 {
 	this->client = client;
@@ -135,7 +137,7 @@ int GreyCAniSlider::handle_event()
 // noise scale
 
 GreyCNoiseSlider::GreyCNoiseSlider(GreyCStorationMain *client, float *output, int x, int y)
- : BC_FSlider(x, y, 0, 200, 200, 0.0f, 10.0f, //MAX
+ : BC_FSlider(x, y, 0, xS(200), yS(200), 0.0f, 10.0f, //MAX
 	(float)*output, 0, 0)
 {
 	this->client = client;

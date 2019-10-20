@@ -25,20 +25,9 @@
 #include "language.h"
 
 
-
-
-
 BC_DeleteFile::BC_DeleteFile(BC_FileBox *filebox, int x, int y)
  : BC_Window(filebox->get_delete_title(),
- 	x,
-	y,
-	320,
-	480,
-	0,
-	0,
-	0,
-	0,
-	1)
+	x, y, xS(320), yS(480), 0, 0, 0, 0, 1)
 {
 	this->filebox = filebox;
 	data = 0;
@@ -51,7 +40,7 @@ BC_DeleteFile::~BC_DeleteFile()
 
 void BC_DeleteFile::create_objects()
 {
-	int x = 10, y = 10;
+	int x = xS(10), y = yS(10);
 	data = new ArrayList<BC_ListBoxItem*>;
 	int i = 1;
 	char *path;
@@ -67,15 +56,11 @@ void BC_DeleteFile::create_objects()
 
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x, y, _("Really delete the following files?")));
-	y += title->get_h() + 5;
+	y += title->get_h() + yS(5);
 	BC_DeleteList *list;
-	add_subwindow(list = new BC_DeleteList(filebox,
-		x,
-		y,
-		get_w() - x * 2,
-		get_h() - y - BC_OKButton::calculate_h() - 20,
-		data));
-	y += list->get_h() + 5;
+	add_subwindow(list = new BC_DeleteList(filebox, x, y,
+		get_w() - x * 2, get_h() - y - BC_OKButton::calculate_h() - xS(20), data));
+	y += list->get_h() + yS(5);
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
 	show_window();
@@ -83,32 +68,13 @@ void BC_DeleteFile::create_objects()
 }
 
 
-
-
-
 BC_DeleteList::BC_DeleteList(BC_FileBox *filebox,
-	int x,
-	int y,
-	int w,
-	int h,
+	int x, int y, int w, int h,
 	ArrayList<BC_ListBoxItem*> *data)
- : BC_ListBox(x,
- 	y,
-	w,
-	h,
-	LISTBOX_TEXT,
-	data)
+ : BC_ListBox(x, y, w, h, LISTBOX_TEXT, data)
 {
 	this->filebox = filebox;
 }
-
-
-
-
-
-
-
-
 
 
 BC_DeleteThread::BC_DeleteThread(BC_FileBox *filebox)
@@ -135,11 +101,4 @@ BC_Window* BC_DeleteThread::new_gui()
 	result->create_objects();
 	return result;
 }
-
-
-
-
-
-
-
 

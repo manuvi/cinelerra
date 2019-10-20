@@ -44,7 +44,7 @@ struct fifo_struct {
 };
 
 SvgWin::SvgWin(SvgMain *client)
- : PluginClientWindow(client, 420, 210, 420, 210, 1)
+ : PluginClientWindow(client, xS(420), yS(210), xS(420), yS(210), 1)
 {
 	this->client = client;
 	this->editing = 0;
@@ -56,19 +56,21 @@ SvgWin::~SvgWin()
 
 void SvgWin::create_objects()
 {
+	int xs10 = xS(10), xs15 = xS(15);
+	int ys5 = yS(5), ys10 = yS(10), ys20 = yS(20), ys15 = yS(15);
 	BC_Title *title;
-	int x0 = 10, y = 10;
+	int x0 = xs10, y = ys10;
 
 	add_tool(title = new BC_Title(x0, y, _("Out X:")));
-	int x1 = x0 + title->get_w() + 10;
+	int x1 = x0 + title->get_w() + xs10;
 	out_x = new SvgCoord(this, client, x1, y, &client->config.out_x);
 	out_x->create_objects();
-	int x2 = x1 + out_x->get_w() + 15;
+	int x2 = x1 + out_x->get_w() + xs15;
 	add_tool(title = new BC_Title(x2, y, _("Out W:")));
-	int x3 = x2 + title->get_w() + 10;
+	int x3 = x2 + title->get_w() + xs10;
 	out_w = new SvgCoord(this, client, x3, y, &client->config.out_w);
 	out_w->create_objects();
-	y += out_x->get_h() + 5;
+	y += out_x->get_h() + ys5;
 
 	add_tool(new BC_Title(x0, y, _("Out Y:")));
 	out_y = new SvgCoord(this, client, x1, y, &client->config.out_y);
@@ -76,17 +78,17 @@ void SvgWin::create_objects()
 	add_tool(title = new BC_Title(x2, y, _("Out H:")));
 	out_h = new SvgCoord(this, client, x3, y, &client->config.out_h);
 	out_h->create_objects();
-	y += out_y->get_h() + 20;
+	y += out_y->get_h() + ys20;
 
 	add_tool(title = new BC_Title(x0, y, _("DPI:")));
         dpi = new DpiValue(this, client, x1, y, &client->config.dpi);
         dpi->create_objects();
 	add_tool(dpi_button = new DpiButton(this, client, x2, y));
 	dpi_button->create_objects();
-        y += dpi->get_h() + 20;
+        y += dpi->get_h() + ys20;
 
 	add_tool(svg_file_title = new BC_Title(x0, y, client->config.svg_file));
-	y += svg_file_title->get_h() + 5;
+	y += svg_file_title->get_h() + ys5;
 	struct stat st;
 	int64_t ms_time = stat(client->config.svg_file, &st) ? 0 :
 		st.st_mtim.tv_sec*1000 + st.st_mtim.tv_nsec/1000000;
@@ -96,12 +98,12 @@ void SvgWin::create_objects()
 		ctime_r(&tm ,mtime);
 	}
 	add_tool(svg_file_mstime = new BC_Title(x0, y, mtime));
-	y += svg_file_mstime->get_h() + 15;
+	y += svg_file_mstime->get_h() + ys15;
 
-	y = get_h() - NewSvgButton::calculate_h() - 5;
+	y = get_h() - NewSvgButton::calculate_h() - ys5;
 	add_tool(new_svg_button = new NewSvgButton(client, this, x0, y));
-	y = get_h() - EditSvgButton::calculate_h() - 5;
-	add_tool(edit_svg_button = new EditSvgButton(client, this, x0+300, y));
+	y = get_h() - EditSvgButton::calculate_h() - ys5;
+	add_tool(edit_svg_button = new EditSvgButton(client, this, x0+xS(300), y));
 
 	show_window();
 	flush();
@@ -142,7 +144,7 @@ void SvgWin::update_gui(SvgConfig &config)
 }
 
 SvgCoord::SvgCoord(SvgWin *win, SvgMain *client, int x, int y, float *value)
- : BC_TumbleTextBox(win, *value, (float)0, (float)3000, x, y, 100)
+ : BC_TumbleTextBox(win, *value, (float)0, (float)3000, x, y, xS(100))
 {
 //printf("SvgWidth::SvgWidth %f\n", client->config.w);
 	this->client = client;

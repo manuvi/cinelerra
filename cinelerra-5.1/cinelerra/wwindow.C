@@ -73,7 +73,8 @@ int WWindow::wait_result()
 }
 
 WWindowGUI::WWindowGUI(WWindow *thread, int x, int y)
- : BC_Window(_(PROGRAM_NAME ": Warning"), x, y, 640, 100, 640, 100, 0, 0, 1)
+ : BC_Window(_(PROGRAM_NAME ": Warning"), x, y,
+		xS(640), yS(100), xS(640), yS(100), 0, 0, 1)
 {
 	this->thread = thread;
 }
@@ -81,13 +82,13 @@ WWindowGUI::WWindowGUI(WWindow *thread, int x, int y)
 void WWindowGUI::create_objects()
 {
 	lock_window("WWindowGUI::create_objects");
-	int x = 10, y = 10;
-	add_subwindow(new BC_TextBox(x, y, get_w()-50, 3, thread->warn_text));
-	y = get_h() - 30;
+	int x = xS(10), y = yS(10);
+	add_subwindow(new BC_TextBox(x, y, get_w()-xS(50), 3, thread->warn_text));
+	y = get_h() - yS(30);
 	if( thread->do_warning )
 		add_subwindow(new WDisable(this, x, y));
-	y = get_h() - BC_CancelButton::calculate_h() - 10;
-	x = get_w() - BC_CancelButton::calculate_w() - 10;
+	y = get_h() - BC_CancelButton::calculate_h() - yS(10);
+	x = get_w() - BC_CancelButton::calculate_w() - xS(10);
 	add_subwindow(new BC_CancelButton(x, y));
 	show_window();
 	unlock_window();

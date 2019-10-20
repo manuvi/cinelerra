@@ -366,8 +366,23 @@ BC_Resources::BC_Resources()
 {
 	synchronous = 0;
 	vframe_shm = 0;
-	double default_scale = 1.0; // display_size/1000.;
-	char *env = getenv("BC_FONT_DEBUG");
+	double default_scale = 1;
+	char *env = getenv("BC_SCALE");
+	if( !env ) {
+		BC_DisplayInfo info;
+		int wx, wy, ww, wh;
+		int cins = info.xinerama_big_screen();
+		if( !info.xinerama_geometry(cins, wx, wy, ww, wh) ) {
+			x_scale = ww / 1920.;
+			y_scale = wh / 1080.;
+			default_scale = bmin(x_scale, y_scale);
+		}
+	}
+	else {
+		if( (default_scale = atof(env)) <= 0 ) default_scale = 1;
+		x_scale = y_scale = default_scale;
+	}
+	env = getenv("BC_FONT_DEBUG");
 	font_debug = env ? atoi(env) : 0;
 	env = getenv("BC_FONT_SCALE");
 	font_scale = env ? atof(env) : default_scale;
@@ -732,7 +747,7 @@ new_vframes(10,default_vscroll_data,
 	listbox_title_overlap = 0;
 	listbox_title_margin = 0;
 	listbox_title_color = BLACK;
-	listbox_title_hotspot = 5;
+	listbox_title_hotspot = xS(5);
 
 	listbox_border1 = DKGREY;
 	listbox_border2_hi = RED;
@@ -748,7 +763,7 @@ new_vframes(10,default_vscroll_data,
 	pan_data = 0;
 	pan_text_color = YELLOW;
 
-	generic_button_margin = 15;
+	generic_button_margin = xS(15);
 	draw_clock_background=1;
 
 	use_shm = -1;
@@ -800,9 +815,9 @@ new_vframes(10,default_vscroll_data,
 	popupmenu_images = 0;
 
 
-	popupmenu_margin = 10;
+	popupmenu_margin = xS(10);
 	popupmenu_btnup = 1;
-	popupmenu_triangle_margin = 10;
+	popupmenu_triangle_margin = xS(10);
 
 	min_menu_w = 0;
 	menu_title_text = BLACK;
@@ -841,24 +856,24 @@ new_vframes(10,default_vscroll_data,
 	tooltips_enabled = 1;
 	textbox_focus_policy = 0;
 
-	filebox_margin = 110;
-	dirbox_margin = 90;
+	filebox_margin = yS(110);
+	dirbox_margin = yS(90);
 	filebox_mode = LISTBOX_TEXT;
 	sprintf(filebox_filter, "*");
-	filebox_w = 640;
-	filebox_h = 480;
+	filebox_w = xS(640);
+	filebox_h = yS(480);
 	filebox_columntype[0] = FILEBOX_NAME;
 	filebox_columntype[1] = FILEBOX_SIZE;
 	filebox_columntype[2] = FILEBOX_DATE;
 	filebox_columntype[3] = FILEBOX_EXTENSION;
-	filebox_columnwidth[0] = 200;
-	filebox_columnwidth[1] = 100;
-	filebox_columnwidth[2] = 100;
-	filebox_columnwidth[3] = 100;
+	filebox_columnwidth[0] = xS(200);
+	filebox_columnwidth[1] = xS(100);
+	filebox_columnwidth[2] = xS(100);
+	filebox_columnwidth[3] = xS(100);
 	dirbox_columntype[0] = FILEBOX_NAME;
 	dirbox_columntype[1] = FILEBOX_DATE;
-	dirbox_columnwidth[0] = 200;
-	dirbox_columnwidth[1] = 100;
+	dirbox_columnwidth[0] = xS(200);
+	dirbox_columnwidth[1] = xS(100);
 
 	filebox_text_images = default_filebox_text_images;
 	filebox_icons_images = default_filebox_icons_images;
@@ -880,8 +895,8 @@ new_vframes(10,default_vscroll_data,
 
 	pot_images = default_pot_images;
 	pot_offset = 2;
-	pot_x1 = pot_images[0]->get_w() / 2 - pot_offset;
-	pot_y1 = pot_images[0]->get_h() / 2 - pot_offset;
+	pot_x1 = pot_images[0]->get_w() / 2 - xS(pot_offset);
+	pot_y1 = pot_images[0]->get_h() / 2 - yS(pot_offset);
 	pot_r = pot_x1;
 	pot_needle_color = BLACK;
 
@@ -891,7 +906,7 @@ new_vframes(10,default_vscroll_data,
 	ymeter_images = 0;
 	meter_font = SMALLFONT_3D;
 	meter_font_color = RED;
-	meter_title_w = 20;
+	meter_title_w = xS(20);
 	meter_3d = 1;
 	medium_7segment = default_medium_7segment;
 
@@ -907,11 +922,8 @@ new_vframes(10,default_vscroll_data,
 	use_xft = 0;
 #endif
 
-
-	drag_radius = 10;
+	drag_radius = xS(10);
 	recursive_resizing = 1;
-
-
 }
 
 void BC_Resources::del_vframes(VFrame *vframes[], int n)

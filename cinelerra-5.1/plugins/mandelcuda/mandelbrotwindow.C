@@ -33,7 +33,7 @@
 #include "theme.h"
 
 MandelbrotWindow::MandelbrotWindow(Mandelbrot *plugin)
- : PluginClientWindow(plugin, 180, 130, 180, 130, 0)
+ : PluginClientWindow(plugin, xS(180), yS(130), xS(180), yS(130), 0)
 {
 	this->plugin = plugin; 
 	press_x = press_y = 0;
@@ -47,7 +47,7 @@ MandelbrotWindow::~MandelbrotWindow()
 
 void MandelbrotWindow::create_objects()
 {
-	int x = 10, y = 10, pad = 5;
+	int x = xS(10), y = yS(10), pad = xS(5);
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x,y, _("Mandelbrot:"), MEDIUMFONT, YELLOW));
 	y += title->get_h() + pad;

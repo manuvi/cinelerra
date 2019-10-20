@@ -79,8 +79,8 @@ void CPanel::create_objects()
 	y += operation[CWINDOW_TOOL_WINDOW]->get_h();
 	subwindow->add_subwindow(operation[CWINDOW_TITLESAFE] = new CPanelTitleSafe(mwindow, this, x, y));
 	y += operation[CWINDOW_TITLESAFE]->get_h();
-	x += (w - BC_Slider::get_span(1)) / 2;  y += 15;
-	subwindow->add_subwindow(cpanel_zoom = new CPanelZoom(mwindow, this, x, y, h-y-20));
+	x += (w - BC_Slider::get_span(1)) / 2;  y += yS(15);
+	subwindow->add_subwindow(cpanel_zoom = new CPanelZoom(mwindow, this, x, y, h-y-yS(20)));
 }
 
 void CPanel::reposition_buttons(int x, int y, int h)
@@ -95,9 +95,9 @@ void CPanel::reposition_buttons(int x, int y, int h)
 		y += operation[i]->get_h();
 	}
 	x += (w - BC_Slider::get_span(1)) / 2;
-	y += 15;
+	y += yS(15);
 	h = this->h - this->y;
-	cpanel_zoom->reposition_window(x, y, w, h-y-20);
+	cpanel_zoom->reposition_window(x, y, w, h-y-yS(20));
 	cpanel_zoom->set_pointer_motion_range(h);
 }
 

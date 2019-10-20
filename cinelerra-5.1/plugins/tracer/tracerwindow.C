@@ -36,11 +36,11 @@
 #include "theme.h"
 #include "track.h"
 
-#define COLOR_W 50
-#define COLOR_H 30
+#define COLOR_W xS(50)
+#define COLOR_H yS(30)
 
 TracerNum::TracerNum(TracerWindow *gui, int x, int y, float output)
- : BC_TumbleTextBox(gui, output, -32767.0f, 32767.0f, x, y, 120)
+ : BC_TumbleTextBox(gui, output, -32767.0f, 32767.0f, x, y, xS(120))
 {
 	this->gui = gui;
 	set_increment(1);
@@ -85,7 +85,7 @@ int TracerPointY::handle_event()
 }
 
 TracerWindow::TracerWindow(Tracer *plugin)
- : PluginClientWindow(plugin, 400, 420, 400, 420, 0)
+ : PluginClientWindow(plugin, xS(400), yS(420), xS(400), yS(420), 0)
 {
 	this->plugin = plugin;
 	this->title_x = 0;    this->point_x = 0;
@@ -108,7 +108,7 @@ TracerWindow::~TracerWindow()
 
 void TracerWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int x = xS(10), y = yS(10);
 	int margin = plugin->get_theme()->widget_border;
 	int hot_point = plugin->config.selected;
 	add_subwindow(title_x = new BC_Title(x, y, _("X:")));
@@ -129,35 +129,35 @@ void TracerWindow::create_objects()
 	add_subwindow(del_point = new TracerDelPoint(this, plugin, x1, y));
 	x1 += del_point->get_w() + margin;
 	add_subwindow(point_dn = new TracerPointDn(this, x1, y));
-	y += point_y->get_h() + margin + 10;
+	y += point_y->get_h() + margin + yS(10);
 
 	add_subwindow(drag = new TracerDrag(this, x, y));
 	if( plugin->config.drag ) {
 		if( !grab(plugin->server->mwindow->cwindow->gui) )
 			eprintf("drag enabled, but compositor already grabbed\n");
 	}
-	x1 = x + drag->get_w() + margin + 20;
+	x1 = x + drag->get_w() + margin + xS(20);
 	add_subwindow(draw = new TracerDraw(this, x1, y));
-	x1 += draw->get_w() + margin + 20;
+	x1 += draw->get_w() + margin + xS(20);
 	add_subwindow(fill = new TracerFill(this, x1, y));
-	x1 += drag->get_w() + margin + 20;
-	int y1 = y + 3;
+	x1 += drag->get_w() + margin + xS(20);
+	int y1 = y + yS(3);
 	add_subwindow(reset = new TracerReset(this, plugin, x1, y1));
 	y1 += reset->get_h() + margin;
 	add_subwindow(invert = new TracerInvert(this, plugin, x1, y1));
-	y += drag->get_h() + margin + 15;
+	y += drag->get_h() + margin + yS(15);
 
-	x1 = x + 80;
+	x1 = x + xS(80);
 	add_subwindow(title_r = new BC_Title(x, y, _("Feather:")));
-	add_subwindow(feather = new TracerFeather(this, x1, y, 150));
+	add_subwindow(feather = new TracerFeather(this, x1, y, xS(150)));
 	y += feather->get_h() + margin;
 	add_subwindow(title_s = new BC_Title(x, y, _("Radius:")));
-	add_subwindow(radius = new TracerRadius(this, x1, y, 150));
-	y += radius->get_h() + margin + 5;
+	add_subwindow(radius = new TracerRadius(this, x1, y, xS(150)));
+	y += radius->get_h() + margin + yS(5);
 
 	add_subwindow(point_list = new TracerPointList(this, plugin, x, y));
 	point_list->update(plugin->config.selected);
-	y += point_list->get_h() + 10;
+	y += point_list->get_h() + yS(10);
 
 	add_subwindow(new BC_Title(x, y, _(
 		"Btn1: select/drag point\n"
@@ -355,12 +355,12 @@ void TracerWindow::done_event(int result)
 }
 
 TracerPointList::TracerPointList(TracerWindow *gui, Tracer *plugin, int x, int y)
- : BC_ListBox(x, y, 360, 130, LISTBOX_TEXT)
+ : BC_ListBox(x, y, xS(360), yS(130), LISTBOX_TEXT)
 {
 	this->gui = gui;
 	this->plugin = plugin;
-	titles[PT_X] = _("X");    widths[PT_X] = 90;
-	titles[PT_Y] = _("Y");    widths[PT_Y] = 90;
+	titles[PT_X] = _("X");    widths[PT_X] = xS(90);
+	titles[PT_Y] = _("Y");    widths[PT_Y] = yS(90);
 }
 TracerPointList::~TracerPointList()
 {
@@ -595,7 +595,7 @@ int TracerRadius::handle_event()
 }
 
 TracerNewPoint::TracerNewPoint(TracerWindow *gui, Tracer *plugin, int x, int y)
- : BC_GenericButton(x, y, 80, _("New"))
+ : BC_GenericButton(x, y, xS(80), _("New"))
 {
 	this->gui = gui;
 	this->plugin = plugin;
@@ -612,7 +612,7 @@ int TracerNewPoint::handle_event()
 }
 
 TracerDelPoint::TracerDelPoint(TracerWindow *gui, Tracer *plugin, int x, int y)
- : BC_GenericButton(x, y, 80, C_("Del"))
+ : BC_GenericButton(x, y, xS(80), C_("Del"))
 {
 	this->gui = gui;
 	this->plugin = plugin;

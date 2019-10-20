@@ -61,6 +61,8 @@ InterfacePrefs::~InterfacePrefs()
 
 void InterfacePrefs::create_objects()
 {
+	int xs4 = xS(4), xs5 = xS(5), xs10 = xS(10), xs30 = xS(30);
+	int ys5 = yS(5), ys10 = yS(10), ys20 = yS(20), ys30 = yS(30), ys35 = yS(35);
 	BC_Resources *resources = BC_WindowBase::get_resources();
 	int margin = mwindow->theme->widget_border;
 	char string[BCTEXTLEN];
@@ -70,143 +72,143 @@ void InterfacePrefs::create_objects()
 
 	add_subwindow(new BC_Title(x, y, _("Editing:"), LARGEFONT,
 		resources->text_default));
-	y += 35;
+	y += ys35;
 
 	int x2 = get_w()/2, y2 = y;
 	x = x2;
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x, y, _("Keyframe reticle:")));
-	y += title->get_h() + 5;
+	y += title->get_h() + ys5;
 	keyframe_reticle = new KeyframeReticle(pwindow, this, x, y,
 		&pwindow->thread->preferences->keyframe_reticle);
 	add_subwindow(keyframe_reticle);
 	keyframe_reticle->create_objects();
 
-	y += 30;
+	y += ys30;
 	add_subwindow(title = new BC_Title(x, y, _("Snapshot path:")));
-	y += title->get_h() + 5;
-	add_subwindow(snapshot_path = new SnapshotPathText(pwindow, this, x, y, get_w()-x-30));
+	y += title->get_h() + ys5;
+	add_subwindow(snapshot_path = new SnapshotPathText(pwindow, this, x, y, get_w()-x-xs30));
 
 	x = x0;  y = y2;
 	add_subwindow(title = new BC_Title(x, y, _("Clicking on edit boundaries does what:")));
-	y += title->get_h() + 10;
+	y += title->get_h() + ys10;
 	add_subwindow(new BC_Title(x, y, _("Button 1:")));
-	int x1 = x + 100;
+	int x1 = x + xS(100);
 
 	ViewBehaviourText *text;
-	add_subwindow(text = new ViewBehaviourText(x1, y - 5,
+	add_subwindow(text = new ViewBehaviourText(x1, y - ys5,
 		behavior_to_text(pwindow->thread->edl->session->edit_handle_mode[0]),
 			pwindow,
 			&(pwindow->thread->edl->session->edit_handle_mode[0])));
 	text->create_objects();
-	y += 30;
+	y += ys30;
 	add_subwindow(new BC_Title(x, y, _("Button 2:")));
 	add_subwindow(text = new ViewBehaviourText(x1,
-		y - 5,
+		y - ys5,
 		behavior_to_text(pwindow->thread->edl->session->edit_handle_mode[1]),
 			pwindow,
 			&(pwindow->thread->edl->session->edit_handle_mode[1])));
 	text->create_objects();
-	y += 30;
+	y += ys30;
 	add_subwindow(new BC_Title(x, y, _("Button 3:")));
-	add_subwindow(text = new ViewBehaviourText(x1, y - 5,
+	add_subwindow(text = new ViewBehaviourText(x1, y - ys5,
 		behavior_to_text(pwindow->thread->edl->session->edit_handle_mode[2]),
 			pwindow,
 			&(pwindow->thread->edl->session->edit_handle_mode[2])));
 	text->create_objects();
-	y += text->get_h() + 30;
+	y += text->get_h() + ys30;
 
 	x = x0;
-	add_subwindow(new BC_Bar(5, y, 	get_w() - 10));
-	y += 5;
+	add_subwindow(new BC_Bar(xs5, y, get_w() - xs10));
+	y += ys5;
 	add_subwindow(new BC_Title(x, y, _("Operation:"), LARGEFONT,
 		resources->text_default));
 
 	int y1 = y;
-	y += 15;
+	y += yS(15);
 
 	AndroidRemote *android_remote = new AndroidRemote(pwindow, x2, y);
 	add_subwindow(android_remote);
-	y += android_remote->get_h() + 10;
+	y += android_remote->get_h() + ys10;
 	add_subwindow(title = new BC_Title(x2, y, _("Port:")));
 	int x3 = x2 + title->get_w() + margin;
 	AndroidPort *android_port = new AndroidPort(pwindow, x3, y);
 	add_subwindow(android_port);
-	y += title->get_h() + 10;
+	y += title->get_h() + ys10;
 	add_subwindow(title = new BC_Title(x2, y, _("PIN:")));
 	AndroidPIN *android_pin = new AndroidPIN(pwindow, x3, y);
 	add_subwindow(android_pin);
-	y += title->get_h() + 20;
+	y += title->get_h() + ys20;
 
 	ShBtnPrefs *shbtn_prefs = new ShBtnPrefs(pwindow, this, x2, y);
 	add_subwindow(shbtn_prefs);
-	y += shbtn_prefs->get_h() + 20;
+	y += shbtn_prefs->get_h() + ys20;
 
 	add_subwindow(reload_plugins = new PrefsReloadPlugins(pwindow, this, x2, y));
-	y += reload_plugins->get_h() + 10;
+	y += reload_plugins->get_h() + ys10;
 
 	add_subwindow(title = new BC_Title(x2, y, _("Default LV2_PATH:")));
-	y += title->get_h() + 10;
-	PrefsLV2PathText *lv2_path_text = new PrefsLV2PathText(pwindow, this, x2, y, get_w()-x2-30);
+	y += title->get_h() + ys10;
+	PrefsLV2PathText *lv2_path_text = new PrefsLV2PathText(pwindow, this, x2, y, get_w()-x2-xs30);
 	add_subwindow(lv2_path_text);
-	y += 30;
+	y += xs30;
 
 	y2 = y;
-	x = x0;  y = y1 + 35;
+	x = x0;  y = y1 + ys35;
 	add_subwindow(file_probes = new PrefsFileProbes(pwindow, this, x, y));
-	y += 30;
+	y += ys30;
 
 	PrefsTrapSigSEGV *trap_segv = new PrefsTrapSigSEGV(this, x, y);
 	add_subwindow(trap_segv);
-	x1 = x + trap_segv->get_w() + 10;
+	x1 = x + trap_segv->get_w() + xs10;
 	add_subwindow(new BC_Title(x1, y, _("(must be root)"), MEDIUMFONT, RED));
-	y += 30;
+	y += ys30;
 
 	PrefsTrapSigINTR *trap_intr = new PrefsTrapSigINTR(this, x, y);
 	add_subwindow(trap_intr);
 	add_subwindow(new BC_Title(x1, y, _("(must be root)"), MEDIUMFONT, RED));
-	y += 30;
+	y += ys30;
 
 	yuv420p_dvdlace = new PrefsYUV420P_DVDlace(pwindow, this, x, y);
 	add_subwindow(yuv420p_dvdlace);
-	y += 30;
+	y += ys30;
 
-	add_subwindow(title = new BC_Title(x1=x, y + 5, _("Min DB for meter:")));
-	x1 += title->get_w() + 4;
+	add_subwindow(title = new BC_Title(x1=x, y + ys5, _("Min DB for meter:")));
+	x1 += title->get_w() + xs4;
 	sprintf(string, "%d", pwindow->thread->edl->session->min_meter_db);
 	add_subwindow(min_db = new MeterMinDB(pwindow, string, x1, y));
-	x1 += min_db->get_w() + 4;
-	add_subwindow(title = new BC_Title(x1, y + 5, _("Max:")));
-	x1 += title->get_w() + 4;
+	x1 += min_db->get_w() + xs4;
+	add_subwindow(title = new BC_Title(x1, y + ys5, _("Max:")));
+	x1 += title->get_w() + xs4;
 	sprintf(string, "%d", pwindow->thread->edl->session->max_meter_db);
 	add_subwindow(max_db = new MeterMaxDB(pwindow, string, x1, y));
-	y += 30;
+	y += ys30;
 
 	StillImageUseDuration *use_stduration = new StillImageUseDuration(pwindow,
 		pwindow->thread->edl->session->si_useduration, x, y);
 	add_subwindow(use_stduration);
-	x1 = x + use_stduration->get_w() + 10;
+	x1 = x + use_stduration->get_w() + xs10;
 	StillImageDuration *stduration = new StillImageDuration(pwindow, x1, y);
 	add_subwindow(stduration);
-	x1 += stduration->get_w() + 10;
+	x1 += stduration->get_w() + xs10;
 	add_subwindow(new BC_Title(x1, y, _("Seconds")));
-	y += 30;
+	y += ys30;
 
 	PrefsAutostartLV2UI *autostart_lv2ui = new PrefsAutostartLV2UI(x, y,pwindow);
 	add_subwindow(autostart_lv2ui);
-	y += autostart_lv2ui->get_h() + 10;
+	y += autostart_lv2ui->get_h() + ys10;
 
 	if( y2 > y ) y = y2;
 	x = x0;
-	add_subwindow(new BC_Bar(5, y, 	get_w() - 10));
-	y += 5;
+	add_subwindow(new BC_Bar(xs5, y, get_w() - xs10));
+	y += ys5;
 
 	add_subwindow(new BC_Title(x, y, _("Index files:"), LARGEFONT, resources->text_default));
-	y += 30;
+	y += ys30;
 
-	add_subwindow(new BC_Title(x, y + 5,
+	add_subwindow(new BC_Title(x, y + ys5,
 		_("Index files go here:"), MEDIUMFONT, resources->text_default));
-	x1 = x + 230;
+	x1 = x + xS(230);
 	add_subwindow(ipathtext = new IndexPathText(x1, y, pwindow,
 		pwindow->thread->preferences->index_directory));
 	x1 +=  ipathtext->get_w();
@@ -214,23 +216,23 @@ void InterfacePrefs::create_objects()
 		pwindow->thread->preferences->index_directory,
 		_("Index Path"), _("Select the directory for index files"), 1));
 
-	y += 30;
-	add_subwindow(new BC_Title(x, y + 5, _("Size of index file in KB:"),
+	y += ys30;
+	add_subwindow(new BC_Title(x, y + ys5, _("Size of index file in KB:"),
 		MEDIUMFONT, resources->text_default));
 	sprintf(string, "%jd", pwindow->thread->preferences->index_size/1024);
-	add_subwindow(isize = new IndexSize(x + 230, y, pwindow, string));
-	add_subwindow(new ScanCommercials(pwindow, 400,y));
+	add_subwindow(isize = new IndexSize(x + xS(230), y, pwindow, string));
+	add_subwindow(new ScanCommercials(pwindow, xS(400),y));
 
-	y += 30;
-	add_subwindow(new BC_Title(x, y + 5, _("Number of index files to keep:"),
+	y += ys30;
+	add_subwindow(new BC_Title(x, y + ys5, _("Number of index files to keep:"),
 		MEDIUMFONT, resources->text_default));
 	sprintf(string, "%ld", (long)pwindow->thread->preferences->index_count);
-	add_subwindow(icount = new IndexCount(x + 230, y, pwindow, string));
-	add_subwindow(del_indexes = new DeleteAllIndexes(mwindow, pwindow, 400, y,
+	add_subwindow(icount = new IndexCount(x + xS(230), y, pwindow, string));
+	add_subwindow(del_indexes = new DeleteAllIndexes(mwindow, pwindow, xS(400), y,
 		_("Delete existing indexes"), "[*.idx][*.toc][*.mkr]"));
-	y += 30;
+	y += ys30;
 	add_subwindow(ffmpeg_marker_files = new IndexFFMPEGMarkerFiles(this, x, y));
-	add_subwindow(del_clipngs = new DeleteAllIndexes(mwindow, pwindow, 400, y,
+	add_subwindow(del_clipngs = new DeleteAllIndexes(mwindow, pwindow, xS(400), y,
 		_("Delete clip thumbnails"), "clip_*.png"));
 }
 
@@ -248,7 +250,7 @@ const char* InterfacePrefs::behavior_to_text(int mode)
 }
 
 IndexPathText::IndexPathText(int x, int y, PreferencesWindow *pwindow, char *text)
- : BC_TextBox(x, y, 240, 1, text)
+ : BC_TextBox(x, y, xS(240), 1, text)
 {
 	this->pwindow = pwindow;
 }
@@ -265,7 +267,7 @@ int IndexPathText::handle_event()
 
 
 IndexSize::IndexSize(int x, int y, PreferencesWindow *pwindow, char *text)
- : BC_TextBox(x, y, 100, 1, text)
+ : BC_TextBox(x, y, xS(100), 1, text)
 {
 	this->pwindow = pwindow;
 }
@@ -321,7 +323,7 @@ int IndexFFMPEGMarkerFiles::handle_event()
 
 ViewBehaviourText::ViewBehaviourText(int x, int y, const char *text, PreferencesWindow *pwindow,
 	int *output)
- : BC_PopupMenu(x, y, 250, text)
+ : BC_PopupMenu(x, y, xS(250), text)
 {
 	this->output = output;
 }
@@ -364,7 +366,7 @@ int ViewBehaviourItem::handle_event()
 
 
 MeterMinDB::MeterMinDB(PreferencesWindow *pwindow, char *text, int x, int y)
- : BC_TextBox(x, y, 50, 1, text)
+ : BC_TextBox(x, y, xS(50), 1, text)
 {
 	this->pwindow = pwindow;
 }
@@ -378,7 +380,7 @@ int MeterMinDB::handle_event()
 
 
 MeterMaxDB::MeterMaxDB(PreferencesWindow *pwindow, char *text, int x, int y)
- : BC_TextBox(x, y, 50, 1, text)
+ : BC_TextBox(x, y, xS(50), 1, text)
 {
 	this->pwindow = pwindow;
 }
@@ -420,7 +422,7 @@ int AndroidRemote::handle_event()
 }
 
 AndroidPIN::AndroidPIN(PreferencesWindow *pwindow, int x, int y)
- : BC_TextBox(x, y, 240, 1, pwindow->thread->preferences->android_pin)
+ : BC_TextBox(x, y, xS(240), 1, pwindow->thread->preferences->android_pin)
 {
 	this->pwindow = pwindow;
 }
@@ -435,7 +437,7 @@ int AndroidPIN::handle_event()
 
 
 AndroidPort::AndroidPort(PreferencesWindow *pwindow, int x, int y)
- : BC_TextBox(x, y, 72, 1, pwindow->thread->preferences->android_port)
+ : BC_TextBox(x, y, xS(72), 1, pwindow->thread->preferences->android_port)
 {
 	this->pwindow = pwindow;
 }
@@ -486,7 +488,7 @@ int StillImageUseDuration::handle_event()
 }
 
 StillImageDuration::StillImageDuration(PreferencesWindow *pwindow, int x, int y)
- : BC_TextBox(x, y, 70, 1, pwindow->thread->edl->session->si_duration)
+ : BC_TextBox(x, y, xS(70), 1, pwindow->thread->edl->session->si_duration)
 {
 	this->pwindow = pwindow;
 }
@@ -519,7 +521,7 @@ int HairlineItem::handle_event()
 
 KeyframeReticle::KeyframeReticle(PreferencesWindow *pwindow,
 	InterfacePrefs *iface_prefs, int x, int y, int *output)
- : BC_PopupMenu(x, y, 220, hairline_to_string(*output))
+ : BC_PopupMenu(x, y, xS(220), hairline_to_string(*output))
 {
 	this->pwindow = pwindow;
 	this->iface_prefs = iface_prefs;

@@ -97,7 +97,9 @@
 #include <GL/glx.h>
 #endif
 
-
+// scaled x,y unit
+#define xS(v) (BC_WindowBase::get_resources()->x_scale*(v))
+#define yS(v) (BC_WindowBase::get_resources()->y_scale*(v))
 
 #ifdef HAVE_GL
 //typedef void* GLXContext;

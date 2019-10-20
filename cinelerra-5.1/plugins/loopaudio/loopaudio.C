@@ -103,10 +103,10 @@ LoopAudioConfig::LoopAudioConfig()
 
 LoopAudioWindow::LoopAudioWindow(LoopAudio *plugin)
  : PluginClientWindow(plugin,
-	210,
-	160,
-	200,
-	160,
+	xS(210),
+	yS(160),
+	xS(200),
+	yS(160),
 	0)
 {
 	this->plugin = plugin;
@@ -118,10 +118,12 @@ LoopAudioWindow::~LoopAudioWindow()
 
 void LoopAudioWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int xs10 = xS(10);
+	int ys10 = yS(10), ys20 = yS(20);
+	int x = xs10, y = ys10;
 
 	add_subwindow(new BC_Title(x, y, _("Samples to loop:")));
-	y += 20;
+	y += ys20;
 	add_subwindow(samples = new LoopAudioSamples(plugin,
 		x,
 		y));
@@ -142,7 +144,7 @@ LoopAudioSamples::LoopAudioSamples(LoopAudio *plugin,
 	int y)
  : BC_TextBox(x,
 	y,
-	100,
+	xS(100),
 	1,
 	plugin->config.samples)
 {

@@ -28,7 +28,7 @@
 
 
 FormatPopup::FormatPopup(int x, int y, int do_audio, int do_video, int use_brender)
- : BC_ListBox(x, y, 200, 200, LISTBOX_TEXT, 0, 0, 0, 1, 0, 1)
+ : BC_ListBox(x, y, xS(200), yS(200), LISTBOX_TEXT, 0, 0, 0, 1, 0, 1)
 {
 	this->do_audio = do_audio;
 	this->do_video = do_video;
@@ -104,7 +104,7 @@ int FormatPopup::handle_event()
 
 
 FFMPEGPopup::FFMPEGPopup(int x, int y)
- : BC_ListBox(x, y, 100, 200, LISTBOX_TEXT, 0, 0, 0, 1, 0, 1)
+ : BC_ListBox(x, y, xS(100), yS(200), LISTBOX_TEXT, 0, 0, 0, 1, 0, 1)
 {
 	set_tooltip(_("Set ffmpeg file type"));
 }

@@ -81,8 +81,8 @@ void RotateFrame::rotate(VFrame *output,
 
 	if(angle != 0)
 	{
-        if(angle == 90 || angle == 180 || angle == 270)
-            rotate_rightangle(input,
+	if(angle == 90 || angle == 180 || angle == 270)
+		rotate_rightangle(input,
 				output,
 				(int)angle);
 		else
@@ -101,22 +101,15 @@ void RotateFrame::rotate(VFrame *output,
 	this->last_angle = angle;
 }
 
-int RotateFrame::get_rightdimensions(VFrame *frame,
-	int &diameter,
-	int &in_x1,
-	int &in_y1,
-	int &in_x2,
-	int &in_y2,
-	int &out_x1,
-	int &out_y1,
-	int &out_x2,
-	int &out_y2)
+int RotateFrame::get_rightdimensions(VFrame *frame, int &diameter,
+	int &in_x1, int &in_y1, int &in_x2, int &in_y2,
+	int &out_x1, int &out_y1, int &out_x2, int &out_y2)
 {
-    diameter = frame->get_w() < frame->get_h() ? frame->get_w() : frame->get_h();
-    out_x1 = in_x1 = frame->get_w() / 2 - diameter / 2;
-    out_x2 = in_x2 = in_x1 + diameter - 1;
-    out_y1 = in_y1 = frame->get_h() / 2 - diameter / 2;
-    out_y2 = in_y2 = in_y1 + diameter - 1;
+	diameter = frame->get_w() < frame->get_h() ? frame->get_w() : frame->get_h();
+	out_x1 = in_x1 = frame->get_w() / 2 - diameter / 2;
+	out_x2 = in_x2 = in_x1 + diameter - 1;
+	out_y1 = in_y1 = frame->get_h() / 2 - diameter / 2;
+	out_y2 = in_y2 = in_y1 + diameter - 1;
 	return 0;
 }
 
@@ -129,107 +122,75 @@ int RotateFrame::get_rightdimensions(VFrame *frame,
 	int height = output->get_h(); \
 	int width = output->get_w(); \
  \
-	switch(angle) \
-	{ \
+	switch(angle) { \
 		case 90: \
-			get_rightdimensions(input, \
-				diameter,  \
-				in_x1,  \
-				in_y1,  \
-				in_x2,  \
-				in_y2,  \
-				out_x1,  \
-				out_y1,  \
-				out_x2,  \
-				out_y2); \
-            while(in_x2 > in_x1) \
-            { \
-            	diameter = in_x2 - in_x1; \
-                for(int i = 0; i < diameter; i++) \
-                { \
-                    type temp_pixel[components]; \
+			get_rightdimensions(input, diameter,  \
+				in_x1, in_y1, in_x2, in_y2,  \
+				out_x1, out_y1, out_x2, out_y2); \
+			while(in_x2 > in_x1) { \
+				diameter = in_x2 - in_x1; \
+				for(int i = 0; i < diameter; i++) { \
+					type temp_pixel[components]; \
 					for(int j = 0; j < components; j++) \
 					{ \
 						temp_pixel[j] = input_rows[in_y1 + i][in_x2 * components + j]; \
- \
-                    	output_rows[in_y1 + i][in_x2 * components + j]   = input_rows[in_y1][(in_x1 + i) * components + j]; \
-                    	output_rows[in_y1][(in_x1 + i) * components + j] = input_rows[in_y2 - i][in_x1 * components + j]; \
-                    	output_rows[in_y2 - i][in_x1 * components + j]   = input_rows[in_y2][(in_x2 - i) * components + j]; \
-                    	output_rows[in_y2][(in_x2 - i) * components + j] = temp_pixel[j]; \
+						output_rows[in_y1 + i][in_x2 * components + j]   = input_rows[in_y1][(in_x1 + i) * components + j]; \
+						output_rows[in_y1][(in_x1 + i) * components + j] = input_rows[in_y2 - i][in_x1 * components + j]; \
+						output_rows[in_y2 - i][in_x1 * components + j]   = input_rows[in_y2][(in_x2 - i) * components + j]; \
+						output_rows[in_y2][(in_x2 - i) * components + j] = temp_pixel[j]; \
 					} \
-                } \
+				} \
  \
-                in_x2--; \
-                in_x1++; \
-                in_y2--; \
-                in_y1++; \
-            } \
+				in_x2--; in_x1++; in_y2--; in_y1++; \
+			} \
 			break; \
  \
-        case 180: \
-        	for(int i = 0, j = height - 1; i < j; i++, j--) \
-            { \
-            	for(int k = 0, l = width - 1; k < width; k++, l--) \
-                { \
-                    type temp_pixel[components]; \
-					for(int m = 0; m < components; m++) \
-					{ \
-                		temp_pixel[m] = input_rows[j][k * components + m]; \
-                    	output_rows[j][k * components + m] = input_rows[i][l * components + m]; \
-                    	output_rows[i][l * components + m] = temp_pixel[m]; \
+		case 180: \
+			for(int i = 0, j = height - 1; i < j; i++, j--) { \
+				for(int k = 0, l = width - 1; k < width; k++, l--) { \
+					type temp_pixel[components]; \
+					for(int m = 0; m < components; m++) { \
+						temp_pixel[m] = input_rows[j][k * components + m]; \
+						output_rows[j][k * components + m] = input_rows[i][l * components + m]; \
+						output_rows[i][l * components + m] = temp_pixel[m]; \
 					} \
-                } \
-            } \
+				} \
+			} \
 			break; \
  \
 		case 270: \
-			get_rightdimensions(input, \
-				diameter,  \
-				in_x1,  \
-				in_y1,  \
-				in_x2,  \
-				in_y2,  \
-				out_x1,  \
-				out_y1,  \
-				out_x2,  \
-				out_y2); \
+			get_rightdimensions(input, diameter,  \
+				in_x1, in_y1, in_x2, in_y2,  \
+				out_x1, out_y1, out_x2, out_y2); \
  \
-            while(in_x2 > in_x1) \
-            { \
-            	diameter = in_x2 - in_x1; \
-                for(int i = 0; i < diameter; i++) \
-                { \
-                    type temp_pixel[components]; \
-					for(int j = 0; j < components; j++) \
-					{ \
-                    	temp_pixel[j] = input_rows[in_y1 + i][in_x1 * components + j]; \
-                    	output_rows[in_y1 + i][in_x1 * components + j]   = input_rows[in_y1][(in_x2 - i) * components + j]; \
-                    	output_rows[in_y1][(in_x2 - i) * components + j] = input_rows[in_y2 - i][in_x2 * components + j]; \
-                    	output_rows[in_y2 - i][in_x2 * components + j]   = input_rows[in_y2][(in_x1 + i) * components + j]; \
-                    	output_rows[in_y2][(in_x1 + i) * components + j] = temp_pixel[j]; \
+			while(in_x2 > in_x1) { \
+				diameter = in_x2 - in_x1; \
+				for(int i = 0; i < diameter; i++) { \
+					type temp_pixel[components]; \
+					for(int j = 0; j < components; j++) { \
+						temp_pixel[j] = input_rows[in_y1 + i][in_x1 * components + j]; \
+						output_rows[in_y1 + i][in_x1 * components + j]   = input_rows[in_y1][(in_x2 - i) * components + j]; \
+						output_rows[in_y1][(in_x2 - i) * components + j] = input_rows[in_y2 - i][in_x2 * components + j]; \
+						output_rows[in_y2 - i][in_x2 * components + j]   = input_rows[in_y2][(in_x1 + i) * components + j]; \
+						output_rows[in_y2][(in_x1 + i) * components + j] = temp_pixel[j]; \
 					} \
-                } \
+				} \
  \
-                in_x2--; \
-                in_x1++; \
-                in_y2--; \
-                in_y1++; \
-            } \
+				in_x2--; in_x1++; in_y2--; in_y1++; \
+			} \
 			break; \
 	} \
 }
 
 
-int RotateFrame::rotate_rightangle(VFrame *input,
-	VFrame *output,
-	int angle)
+int RotateFrame::rotate_rightangle(VFrame *input, VFrame *output, int angle)
 {
 	int in_x1 = 0;
-    int in_y1 = 0;
-    int in_x2 = input->get_w();
-    int in_y2 = input->get_h();
+	int in_y1 = 0;
+	int in_x2 = input->get_w();
+	int in_y2 = input->get_h();
 	int out_x1, out_y1, out_x2, out_y2;
-    int diameter;
+	int diameter;
 
 	output->clear_frame();
 	switch(output->get_color_model())

@@ -29,7 +29,7 @@
 
 
 ScaleRatioWin::ScaleRatioWin(ScaleRatioMain *client)
- : PluginClientWindow(client, 400, 320, 400, 320, 0)
+ : PluginClientWindow(client, xS(400), yS(320), xS(400), yS(320), 0)
 {
 	this->client = client;
 }
@@ -40,96 +40,98 @@ ScaleRatioWin::~ScaleRatioWin()
 
 void ScaleRatioWin::create_objects()
 {
-	int x = 10, y = 10;
-	int x0 = x, x1 = x0 + 50;
+	int xs10 = xS(10), xs50 = xS(50);
+	int ys5 = yS(5), ys8 = yS(8), ys10 = yS(10), ys30 = yS(30);
+	int x = xs10, y = ys10;
+	int x0 = x, x1 = x0 + xs50;
 	int y0 = y;
 	client->load_configuration();
 
 	add_tool(new BC_Title(x0, y0, _("In R:")));
 	add_tool(in_r = new ScaleRatioRatio(this, client, x1, y0, &client->config.in_r));
 	in_r->create_objects();
-	y0 += in_r->get_th() + 10;
+	y0 += in_r->get_th() + ys10;
 
 	add_tool(new BC_Title(x0, y0, _("In W:")));
 	in_w = new ScaleRatioCoord(this, client, x1, y0, 0, &client->config.in_w);
 	in_w->create_objects();
-	y0 += in_w->get_h() + 8;
+	y0 += in_w->get_h() + ys8;
 
 	add_tool(new BC_Title(x0, y0, _("In H:")));
 	in_h = new ScaleRatioCoord(this, client, x1, y0, 0, &client->config.in_h);
 	in_h->create_objects();
 
 	x0 = get_w()/2;  y0 = y;
-	x1 = x0 + 50;
+	x1 = x0 + xs50;
 
 	add_tool(new BC_Title(x0, y0, _("Out R:")));
 	add_tool(out_r = new ScaleRatioRatio(this, client, x1, y0, &client->config.out_r));
 	out_r->create_objects();
-	y0 += out_r->get_th() + 10;
+	y0 += out_r->get_th() + ys10;
 
 	add_tool(new BC_Title(x0, y0, _("Out W:")));
 	out_w = new ScaleRatioCoord(this, client, x1, y0, 0, &client->config.out_w);
 	out_w->create_objects();
-	y0 += out_w->get_h() + 8;
+	y0 += out_w->get_h() + ys8;
 
 	add_tool(new BC_Title(x0, y0, _("Out H:")));
 	out_h = new ScaleRatioCoord(this, client, x1, y0, 0, &client->config.out_h);
 	out_h->create_objects();
-	y0 += out_h->get_h() + 8;
+	y0 += out_h->get_h() + ys8;
 
-	y = y0 + 5;
+	y = y0 + ys5;
 	add_tool(apply_button = new ScaleRatioApply(this, x, y));
-	int x2 = x + apply_button->get_w() + 50;
+	int x2 = x + apply_button->get_w() + xs50;
 	add_tool(type_popup = new ScaleRatioType(this, x2, y, &client->config.type));
 	type_popup->create_objects();
-	y += apply_button->get_h() + 30;
+	y += apply_button->get_h() + ys30;
 
 	x0 = x;  y0 = y;
-	x1 = x0 + 50;
+	x1 = x0 + xs50;
 
 	add_tool(new BC_Title(x0, y0, _("Src X:")));
 	src_x = new ScaleRatioCoord(this, client, x1, y0, 1, &client->config.src_x);
 	src_x->create_objects();
-	y0 += 30;
+	y0 += ys30;
 
 	add_tool(new BC_Title(x0, y0, _("Src Y:")));
 	src_y = new ScaleRatioCoord(this, client, x1, y0, 1, &client->config.src_y);
 	src_y->create_objects();
-	y0 += 30;
+	y0 += ys30;
 
 
 	add_tool(new BC_Title(x0, y0, _("Src W:")));
 	src_w = new ScaleRatioCoord(this, client, x1, y0, 0, &client->config.src_w);
 	src_w->create_objects();
-	y0 += 30;
+	y0 += ys30;
 
 	add_tool(new BC_Title(x0, y0, _("Src H:")));
 	src_h = new ScaleRatioCoord(this, client, x1, y0, 0, &client->config.src_h);
 	src_h->create_objects();
-	y0 += 30;
+	y0 += ys30;
 
 	x0 = get_w()/2;
-	x1 = x0 + 50;
+	x1 = x0 + xs50;
 	y0 = y;
 	add_tool(new BC_Title(x0, y0, _("Dst X:")));
 	dst_x = new ScaleRatioCoord(this, client, x1, y0, 1, &client->config.dst_x);
 	dst_x->create_objects();
-	y0 += 30;
+	y0 += ys30;
 
 	add_tool(new BC_Title(x0, y0, _("Dst Y:")));
 	dst_y = new ScaleRatioCoord(this, client, x1, y0, 1, &client->config.dst_y);
 	dst_y->create_objects();
-	y0 += 30;
+	y0 += ys30;
 
 	add_tool(new BC_Title(x0, y0, _("Dst W:")));
 	dst_w = new ScaleRatioCoord(this, client, x1, y0, 0, &client->config.dst_w);
 	dst_w->create_objects();
-	y0 += 30;
+	y0 += ys30;
 
 	add_tool(new BC_Title(x0, y0, _("Dst H:")));
 	dst_h = new ScaleRatioCoord(this, client, x1, y0, 0, &client->config.dst_h);
 	dst_h->create_objects();
-	y0 += 30;
+	y0 += ys30;
 
 	show_window();
 	flush();
@@ -139,7 +141,7 @@ void ScaleRatioWin::create_objects()
 
 ScaleRatioCoord::ScaleRatioCoord(ScaleRatioWin *win,
 	ScaleRatioMain *client, int x, int y, int s, float *value)
- : BC_TumbleTextBox(win, (int)*value, (int)-10000*s, (int)10000, x, y, 100)
+ : BC_TumbleTextBox(win, (int)*value, (int)-10000*s, (int)10000, x, y, xS(100))
 {
 	this->client = client;
 	this->win = win;
@@ -159,7 +161,7 @@ int ScaleRatioCoord::handle_event()
 
 
 ScaleRatioTumbler::ScaleRatioTumbler(ScaleRatioRatio *ratio, int value, int x, int y)
- : BC_TumbleTextBox(ratio->win, value, 0, 10000, x, y, 45)
+ : BC_TumbleTextBox(ratio->win, value, 0, 10000, x, y, xS(45))
 {
 	this->ratio = ratio;
 }
@@ -176,7 +178,7 @@ int ScaleRatioTumbler::handle_event()
 
 ScaleRatioRatio::ScaleRatioRatio(ScaleRatioWin *win,
 	ScaleRatioMain *client, int x, int y, float *value)
- : BC_TextBox(x, y, 100, 1, *value)
+ : BC_TextBox(x, y, xS(100), 1, *value)
 {
 	this->client = client;
 	this->win = win;
@@ -208,12 +210,12 @@ void ScaleRatioRatio::create_objects()
 	int tx = BC_TextBox::get_x();
 	int ty = BC_TextBox::get_y();
 	int x = tx;
-	int y = ty + BC_TextBox::get_h() + 5;
+	int y = ty + BC_TextBox::get_h() + yS(5);
 	float faw = 0, fah = 0;
 	MWindow::create_aspect_ratio(faw, fah, *value*1000000, 1000000);
 	aw = new ScaleRatioTumbler(this, faw, x, y);
 	aw->create_objects();
-	x += aw->get_w() + 5;
+	x += aw->get_w() + xS(5);
 	ah = new ScaleRatioTumbler(this, fah, x, y);
 	ah->create_objects();
 	x += ah->get_w();
@@ -253,7 +255,7 @@ int ScaleRatioTypeItem::handle_event()
 
 
 ScaleRatioType::ScaleRatioType(ScaleRatioWin *win, int x, int y, int *value)
- : BC_PopupMenu(x, y, 180, "", 1)
+ : BC_PopupMenu(x, y, xS(180), "", 1)
 {
 	this->win = win;
 	this->value = value;

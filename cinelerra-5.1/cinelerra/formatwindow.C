@@ -26,9 +26,8 @@
 
 
 FormatAWindow::FormatAWindow(Asset *asset, int *dither)
- : BC_Window(_(PROGRAM_NAME ": File format"), 410,
- 	(asset->format == FILE_WAV) ? 115 : 185,
-	0, 0)
+ : BC_Window(_(PROGRAM_NAME ": File format"), xS(410),
+	yS((asset->format == FILE_WAV) ? 115 : 185), 0, 0)
 { this->asset = asset; this->dither = dither; }
 
 FormatAWindow::~FormatAWindow()
@@ -40,42 +39,42 @@ void FormatAWindow::create_objects()
 	lock_window("FormatAWindow::create_objects");
 	int x;
 	int init_x;
-	int y = 10;
+	int y = yS(10);
 	File file;
-	x = init_x = 10;
+	x = init_x = xS(10);
 
 	add_subwindow(new BC_Title(x, y, _("Set parameters for this audio format:")));
-	y += 30;
+	y += yS(30);
 	add_subwindow(new BC_Title(x, y, _("Bits:")));
-	x += 45;
+	x += yS(45);
 	add_subwindow(new FormatBits(x, y, asset));
-	x += 100;
+	x += xS(100);
 	add_subwindow(new FormatDither(x, y, this->dither));
 
 	if(asset->format == FILE_PCM)
 	{
-		x += 90;
+		x += xS(90);
 		add_subwindow(new FormatSigned(x, y, asset));
 	}
-	y += 40;
+	y += yS(40);
 	x = init_x;
 
 	if(asset->format == FILE_PCM)
 	{
 		add_subwindow(new BC_Title(x, y, _("Byte order:")));
-		y += 25;
+		y += yS(25);
 		add_subwindow(new BC_Title(x, y, _("HiLo:"), SMALLFONT));
-		add_subwindow(hilo_button = new FormatHILO(x + 30, y, asset));
-		x += 50;
+		add_subwindow(hilo_button = new FormatHILO(x + xS(30), y, asset));
+		x += xS(50);
 		add_subwindow(new BC_Title(x, y, _("LoHi:"), SMALLFONT));
-		add_subwindow(lohi_button = new FormatLOHI(x + 30, y, hilo_button, asset));
+		add_subwindow(lohi_button = new FormatLOHI(x + xS(30), y, hilo_button, asset));
 		hilo_button->lohi = lohi_button;
-		y += 30;
+		y += yS(30);
 	}
 
 	x = init_x;
 
-	add_subwindow(new BC_OKButton(x + 170, y));
+	add_subwindow(new BC_OKButton(x + xS(170), y));
 	unlock_window();
 }
 
@@ -88,8 +87,11 @@ int FormatAWindow::close_event()
 
 
 FormatVWindow::FormatVWindow(Asset *asset, int recording)
- : BC_Window(_(PROGRAM_NAME ": File format"), 410, 115, 0, 0)
-{ this->asset = asset; this->recording = recording; }
+ : BC_Window(_(PROGRAM_NAME ": File format"), xS(410), yS(115), 0, 0)
+{
+	this->asset = asset;
+	this->recording = recording;
+}
 
 FormatVWindow::~FormatVWindow()
 {
@@ -98,28 +100,28 @@ FormatVWindow::~FormatVWindow()
 void FormatVWindow::create_objects()
 {
 	lock_window("FormatVWindow::create_objects");
-	int x, y = 10;
+	int x, y = yS(10);
 	int init_x;
 
-	init_x = x = 10;
+	init_x = x = xS(10);
 
 	if(asset->format == FILE_JPEG_LIST)
 	{
 		add_subwindow(new BC_Title(x, y, _("Set parameters for this video format:")));
-		y += 30;
+		y += yS(30);
 		add_subwindow(new BC_Title(x, y, _("Quality:")));
-		x += 70;
+		x += xS(70);
 		add_subwindow(new FormatQuality(x, y, asset, asset->quality));
-		y += 40;
+		y += yS(40);
 		x = init_x;
 	}
 	else
 	{
 		add_subwindow(new BC_Title(x, y, _("Video is not supported in this format.")));
-		y += 40;
+		y += yS(40);
 	}
 
-	add_subwindow(new BC_OKButton(x + 170, y));
+	add_subwindow(new BC_OKButton(x + xS(170), y));
 	unlock_window();
 }
 
@@ -130,7 +132,7 @@ int FormatVWindow::close_event()
 
 
 FormatQuality::FormatQuality(int x, int y, Asset *asset, int default_)
- : BC_ISlider(x, y, 0, 100, 100, 0, 100, default_, 1)
+ : BC_ISlider(x, y, 0, xS(100), xS(100), 0, 100, default_, 1)
 {
 	this->asset = asset;
 }

@@ -72,17 +72,7 @@ void FileFLAC::get_parameters(BC_WindowBase *parent_window,
 
 int FileFLAC::check_sig(Asset *asset, char *test)
 {
-	if(test[0] == 'f' &&
-		test[1] == 'L' &&
-		test[2] == 'a' &&
-		test[3] == 'C')
-	{
-		return 1;
-	}
-	else
-	{
-		return 0;
-	}
+	return test[0]=='f' && test[1]=='L' && test[2]=='a' && test[3]=='C' ? 1 : 0;
 }
 
 int FileFLAC::reset_parameters_derived()
@@ -223,10 +213,7 @@ int FileFLAC::open_file(int rd, int wr)
 		FLAC__stream_encoder_set_channels(flac_encode, asset->channels);
 		FLAC__stream_encoder_set_bits_per_sample(flac_encode, asset->bits);
 		FLAC__stream_encoder_set_sample_rate(flac_encode, asset->sample_rate);
-		FLAC__stream_encoder_init_file(flac_encode,
-			asset->path,
-			0,
-			0);
+		FLAC__stream_encoder_init_file(flac_encode, asset->path, 0, 0);
 	}
 
 	return result;
@@ -348,26 +335,11 @@ int FileFLAC::read_samples(double *buffer, int64_t len)
 }
 
 
-
-
-
-
-
-
-
-
 FLACConfigAudio::FLACConfigAudio(BC_WindowBase *parent_window,
 	Asset *asset)
  : BC_Window(_(PROGRAM_NAME ": Audio Compression"),
- 	parent_window->get_abs_cursor_x(1),
- 	parent_window->get_abs_cursor_y(1),
-	350,
-	170,
-	-1,
-	-1,
-	0,
-	0,
-	1)
+	parent_window->get_abs_cursor_x(1), parent_window->get_abs_cursor_y(1),
+	xS(350), yS(170), -1, -1, 0, 0, 1)
 {
 	this->parent_window = parent_window;
 	this->asset = asset;
@@ -379,7 +351,7 @@ FLACConfigAudio::~FLACConfigAudio()
 
 void FLACConfigAudio::create_objects()
 {
-	int x = 10, y = 10;
+	int x = xS(10), y = yS(10);
 	lock_window("FLACConfigAudio::create_objects");
 	bits_popup = new BitsPopup(this, x, y, &asset->bits, 0, 0, 0, 0, 0);
 	bits_popup->create_objects();

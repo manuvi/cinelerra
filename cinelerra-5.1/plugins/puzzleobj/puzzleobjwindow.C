@@ -26,7 +26,7 @@
 #include "theme.h"
 
 PuzzleObjWindow::PuzzleObjWindow(PuzzleObj *plugin)
- : PluginClientWindow(plugin, 320, 100, 320, 100, 0)
+ : PluginClientWindow(plugin, xS(320), yS(100), xS(320), yS(100), 0)
 {
 	this->plugin = plugin; 
 	pixels = 0;
@@ -41,18 +41,20 @@ PuzzleObjWindow::~PuzzleObjWindow()
 
 void PuzzleObjWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int xs10 = xS(10), xs50 = xS(50), xs80 = xS(80), xs180 = xS(180);
+	int ys10 = yS(10);
+	int x = xs10, y = ys10;
 	BC_Title *title = new BC_Title(x, y, _("PuzzleObj"));
 	add_subwindow(title);
-	y += title->get_h() + 10;
-	int x1 = x + 80;
+	y += title->get_h() + ys10;
+	int x1 = x + xs80;
 	add_subwindow(pixels_title = new BC_Title(x,y,_("Pixels:")));
 	add_subwindow(pixels = new PuzzleObjISlider(this,
-			x1,y,180, 1,1000, &plugin->config.pixels));
-	y += pixels->get_h() + 10;
+			x1,y,xs180, 1,1000, &plugin->config.pixels));
+	y += pixels->get_h() + ys10;
 	add_subwindow(iterations_title = new BC_Title(x,y,_("Iterations:")));
 	add_subwindow(iterations = new PuzzleObjISlider(this,
-			x1,y,180, 0,50, &plugin->config.iterations));
+			x1,y,xs180, 0,50, &plugin->config.iterations));
 	show_window(1);
 }
 

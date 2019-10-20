@@ -49,7 +49,7 @@ REGISTER_PLUGIN(TimeStretch)
 
 
 TimeStretchFraction::TimeStretchFraction(TimeStretch *plugin, int x, int y)
- : BC_TextBox(x, y, 100, 1, (float)(1.0 / plugin->scale))
+ : BC_TextBox(x, y, xS(100), 1, (float)(1.0 / plugin->scale))
 {
 	this->plugin = plugin;
 }
@@ -118,12 +118,12 @@ int TimeStretchTime::handle_event()
 
 TimeStretchWindow::TimeStretchWindow(TimeStretch *plugin, int x, int y)
  : BC_Window(_(PROGRAM_NAME ": Time stretch"),
- 				x - 160,
-				y - 75,
- 				320,
-				200,
-				320,
-				200,
+				x - xS(160),
+				y - yS(75),
+				xS(320),
+				yS(200),
+				xS(320),
+				yS(200),
 				0,
 				0,
 				1)
@@ -138,7 +138,7 @@ TimeStretchWindow::~TimeStretchWindow()
 
 void TimeStretchWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int x = xS(10), y = yS(10);
 
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x, y, _("Fraction of original speed:")));

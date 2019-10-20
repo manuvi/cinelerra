@@ -140,8 +140,8 @@ SphereCamSlider::SphereCamSlider(SphereCamMain *client,
  : BC_FSlider(x, 
  	y, 
 	0, 
-	gui->get_w() / 2 - client->get_theme()->widget_border * 3 - 100, 
-	gui->get_w() / 2 - client->get_theme()->widget_border * 3 - 100, 
+	gui->get_w() / 2 - client->get_theme()->widget_border * xS(3) - xS(100),
+	gui->get_w() / 2 - client->get_theme()->widget_border * xS(3) - xS(100),
 	min, 
 	max, 
 	*output)
@@ -168,7 +168,7 @@ SphereCamText::SphereCamText(SphereCamMain *client,
 	float *output, 
 	int x, 
 	int y)
- : BC_TextBox(x, y, 100, 1, *output)
+ : BC_TextBox(x, y, xS(100), 1, *output)
 {
 	this->gui = gui;
 	this->client = client;
@@ -238,7 +238,7 @@ int SphereCamMode::calculate_w(SphereCamGUI *gui)
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(SphereCamConfig::EQUIRECT)));
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(SphereCamConfig::DO_NOTHING)));
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(SphereCamConfig::ALIGN)));
-	return result + 50;
+	return result + xS(50);
 }
 
 int SphereCamMode::from_text(char *text)
@@ -270,7 +270,7 @@ const char* SphereCamMode::to_text(int mode)
 
 
 SphereCamGUI::SphereCamGUI(SphereCamMain *client)
- : PluginClientWindow(client, 640, 600, 640, 600, 0)
+ : PluginClientWindow(client, xS(640), yS(600), xS(640), yS(600), 0)
 {
 	this->client = client;
 }

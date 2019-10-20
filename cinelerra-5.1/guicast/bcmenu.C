@@ -46,11 +46,7 @@ BC_Menu::~BC_Menu()
 }
 
 int BC_Menu::initialize(BC_WindowBase *top_level,
-		BC_MenuBar *menu_bar,
-		int x,
-		int y,
-		int w,
-		int h)
+		BC_MenuBar *menu_bar, int x, int y, int w, int h)
 {
 	this->x = x;
 	this->y = y;
@@ -309,7 +305,7 @@ int BC_Menu::draw_title(int flash, int flush)
 
 	menu_bar->set_color(resources->menu_title_text);
 	menu_bar->set_font(MEDIUMFONT);
-	menu_bar->draw_text(x + 10 + text_offset,
+	menu_bar->draw_text(x + xS(10) + text_offset,
 		h / 2 + menu_bar->get_text_ascent(MEDIUMFONT) / 2 + 1 + text_offset,
 		text);
 	if(flash) menu_bar->flash(flush);

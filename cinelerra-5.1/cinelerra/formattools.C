@@ -112,6 +112,7 @@ void FormatTools::create_objects(
 		int brender,
 		int horizontal_layout)
 {
+	int ys10 = yS(10);
 	int x = init_x;
 	int y = init_y;
 	int ylev = init_y;
@@ -136,7 +137,7 @@ void FormatTools::create_objects(
 		window->add_subwindow(path_textbox = new FormatPathText(px, y, this));
 		px += path_textbox->get_w() + 5;
 		path_recent = new BC_RecentList("PATH", mwindow->defaults,
-					path_textbox, 10, px, y, 300, 100);
+					path_textbox, 10, px, y, xS(300), yS(100));
 		window->add_subwindow(path_recent);
 		path_recent->load_items(File::formattostr(asset->format));
 		px += path_recent->get_w();
@@ -145,32 +146,32 @@ void FormatTools::create_objects(
 			_("Output to file"), _("Select a file to write to:"), 0));
 
 // Set w for user.
-		w = MAX(w, 305);
-		y += path_textbox->get_h() + 10;
+		w = MAX(w, xS(305));
+		y += path_textbox->get_h() + ys10;
 	}
 	else
 	{
-//		w = x + 305;
-		w = 305;
+//		w = x + xS(305);
+		w = xS(305);
 	}
 
 	x = init_x;
 	window->add_subwindow(format_title = new BC_Title(x, y, _("File Format:")));
 	x += format_title->get_w() + margin;
-	window->add_subwindow(format_text = new BC_TextBox(x, y, 160, 1,
+	window->add_subwindow(format_text = new BC_TextBox(x, y, xS(160), 1,
 		File::formattostr(asset->format)));
 	x += format_text->get_w() + margin;
 //printf("FormatTools::create_objects %d %p\n", __LINE__, window);
 	window->add_subwindow(format_button = new FormatFormat(x, y, this));
 	format_button->create_objects();
 	x += format_button->get_w() + 5;
-	window->add_subwindow(ffmpeg_type = new FFMpegType(x, y, 70, 1, asset->fformat));
+	window->add_subwindow(ffmpeg_type = new FFMpegType(x, y, xS(70), 1, asset->fformat));
 	FFMPEG::set_asset_format(asset, mwindow->edl, asset->fformat);
 	x += ffmpeg_type->get_w();
 	window->add_subwindow(format_ffmpeg = new FormatFFMPEG(x, y, this));
 	format_ffmpeg->create_objects();
 	x = init_x;
-	y += format_button->get_h() + 10;
+	y += format_button->get_h() + ys10;
 	if( do_audio ) {
 		window->add_subwindow(audio_title = new BC_Title(x, y, _("Audio:"), LARGEFONT,
 			BC_WindowBase::get_resources()->audiovideo_color));
@@ -182,7 +183,7 @@ void FormatTools::create_objects(
 		}
 		x = init_x;
 		ylev = y;
-		y += aparams_button->get_h() + 10;
+		y += aparams_button->get_h() + ys10;
 
 //printf("FormatTools::create_objects 6\n");
 		aparams_thread = new FormatAThread(this);
@@ -191,7 +192,7 @@ void FormatTools::create_objects(
 //printf("FormatTools::create_objects 7\n");
 	if( do_video ) {
 		if( horizontal_layout && do_audio ) {
-			x += 370;
+			x += xS(370);
 			y = ylev;
 		}
 
@@ -214,7 +215,7 @@ void FormatTools::create_objects(
 		}
 
 //printf("FormatTools::create_objects 10\n");
-		y += 10;
+		y += ys10;
 		vparams_thread = new FormatVThread(this);
 	}
 
@@ -224,7 +225,7 @@ void FormatTools::create_objects(
 	if( file_per_label ) {
 		labeled_files = new FormatFilePerLabel(this, x, y, file_per_label);
 		window->add_subwindow(labeled_files);
-		y += labeled_files->get_h() + 10;
+		y += labeled_files->get_h() + ys10;
 	}
 
 //printf("FormatTools::create_objects 12\n");
@@ -442,6 +443,8 @@ void FormatTools::set_w(int w)
 
 void FormatTools::reposition_window(int &init_x, int &init_y)
 {
+	int xs10 = xS(10), xs80 = xS(80);
+	int ys10 = yS(10);
 	int x = init_x;
 	int y = init_y;
 
@@ -449,43 +452,43 @@ void FormatTools::reposition_window(int &init_x, int &init_y)
 	{
 		int px = x;
 		path_textbox->reposition_window(px, y);
-		px += path_textbox->get_w() + 5;
+		px += path_textbox->get_w() + xS(5);
 		path_recent->reposition_window(px, y);
-		px += path_recent->get_w() + 8;
+		px += path_recent->get_w() + xS(8);
 		path_button->reposition_window(px, y);
-		y += path_textbox->get_h() + 10;
+		y += path_textbox->get_h() + ys10;
 	}
 
 	format_title->reposition_window(x, y);
-	x += 90;
+	x += xS(90);
 	format_text->reposition_window(x, y);
 	x += format_text->get_w();
 	format_button->reposition_window(x, y);
 
 	x = init_x;
-	y += format_button->get_h() + 10;
+	y += format_button->get_h() + ys10;
 
 	if(do_audio)
 	{
 		audio_title->reposition_window(x, y);
-		x += 80;
+		x += xs80;
 		aparams_button->reposition_window(x, y);
-		x += aparams_button->get_w() + 10;
+		x += aparams_button->get_w() + xs10;
 		if(prompt_audio) audio_switch->reposition_window(x, y);
 
 		x = init_x;
-		y += aparams_button->get_h() + 10;
+		y += aparams_button->get_h() + ys10;
 	}
 
 
 	if(do_video)
 	{
 		video_title->reposition_window(x, y);
-		x += 80;
+		x += xs80;
 		if(prompt_video_compression)
 		{
 			vparams_button->reposition_window(x, y);
-			x += vparams_button->get_w() + 10;
+			x += vparams_button->get_w() + xs10;
 		}
 
 		if(prompt_video)
@@ -498,13 +501,13 @@ void FormatTools::reposition_window(int &init_x, int &init_y)
 			y += vparams_button->get_h();
 		}
 
-		y += 10;
+		y += ys10;
 		x = init_x;
 	}
 
 	if( file_per_label ) {
 		labeled_files->reposition_window(x, y);
-		y += labeled_files->get_h() + 10;
+		y += labeled_files->get_h() + ys10;
 	}
 
 	init_y = y;
@@ -658,7 +661,7 @@ void FormatVThread::run()
 
 FormatPathText::FormatPathText(int x, int y, FormatTools *format)
  : BC_TextBox(x, y, format->w - x -
-		2*format->mwindow->theme->get_image_set("wrench")[0]->get_w() - 20, 1,
+		2*format->mwindow->theme->get_image_set("wrench")[0]->get_w() - xS(20), 1,
 	format->asset->path)
 {
 	this->format = format;

@@ -115,7 +115,7 @@ void LensConfig::boundaries()
 
 LensSlider::LensSlider(LensMain *plugin, LensGUI *gui,
 	LensText *text, float *output, int x, int y, float min, float max)
- : BC_FSlider(x, y, 0, 200, 200, min, max, *output)
+ : BC_FSlider(x, y, 0, xS(200), yS(200), min, max, *output)
 {
 	this->gui = gui;
 	this->plugin = plugin;
@@ -161,7 +161,7 @@ int LensSlider::handle_event()
 
 LensText::LensText(LensMain *plugin, LensGUI *gui,
 	LensSlider *slider, float *output, int x, int y)
- : BC_TextBox(x, y, 100, 1, *output)
+ : BC_TextBox(x, y, xS(100), 1, *output)
 {
 	this->gui = gui;
 	this->plugin = plugin;
@@ -260,7 +260,7 @@ int LensMode::calculate_w(LensGUI *gui)
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(LensConfig::SPHERICAL_SHRINK)));
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(LensConfig::RECTILINEAR_STRETCH)));
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(LensConfig::RECTILINEAR_SHRINK)));
-	return result + 50;
+	return result + xS(50);
 }
 
 int LensMode::from_text(char *text)
@@ -385,7 +385,7 @@ int LensInterpItem::handle_event()
 }
 
 LensInterp::LensInterp(LensMain *plugin, int x, int y)
- : BC_PopupMenu(x, y, 120, "")
+ : BC_PopupMenu(x, y, xS(120), "")
 {
 	this->plugin = plugin;
 }
@@ -434,7 +434,7 @@ int LensReset::handle_event()
 
 
 LensGUI::LensGUI(LensMain *plugin)
- : PluginClientWindow(plugin, 350, 550, 350, 550, 0)
+ : PluginClientWindow(plugin, xS(350), yS(556), xS(350), yS(556), 0)
 {
 	this->plugin = plugin;
 }
@@ -446,8 +446,10 @@ LensGUI::~LensGUI()
 
 void LensGUI::create_objects()
 {
-	int x = 10;
-	int y = 10;
+	int xs5 = xS(5), xs10 = xS(10);
+	int ys5 = yS(5), ys10 = yS(10);
+	int x = xs10;
+	int y = ys10;
 	int x1;
 	BC_Title *title = 0;
 	LensToggle *toggle;
@@ -460,104 +462,104 @@ void LensGUI::create_objects()
 		case 3: add_tool(title = new BC_Title(x, y, _("A Field of View:"))); break;
 		}
 
-		y += title->get_h() + 5;
+		y += title->get_h() + ys5;
 		add_tool(fov_slider[i] = new LensSlider(plugin, this,
 			0, &plugin->config.fov[i], x, y, 0.0001, 1.0));
-		x1 = x + fov_slider[i]->get_w() + 5;
+		x1 = x + fov_slider[i]->get_w() + xs5;
 		add_tool(fov_text[i] = new LensText(plugin, this,
 			fov_slider[i], &plugin->config.fov[i], x1, y));
 		fov_slider[i]->text = fov_text[i];
-		y += fov_text[i]->get_h() + 5;
+		y += fov_text[i]->get_h() + ys5;
 	}
 
 	add_tool(toggle = new LensToggle(plugin, &plugin->lock, x, y, _("Lock")));
-	y += toggle->get_h() + 10;
+	y += toggle->get_h() + ys10;
 
 	BC_Bar *bar;
 	add_tool(bar = new BC_Bar(x, y, get_w() - x * 2));
-	y += bar->get_h() + 5;
+	y += bar->get_h() + ys5;
 
 	add_tool(title = new BC_Title(x, y, _("Aspect Ratio:")));
-	y += title->get_h() + 5;
+	y += title->get_h() + ys5;
 	add_tool(aspect_slider = new LensSlider(plugin, this,
 		0, &plugin->config.aspect, x, y, 0.333, 3.0));
-	x1 = x + aspect_slider->get_w() + 5;
+	x1 = x + aspect_slider->get_w() + xs5;
 	add_tool(aspect_text = new LensText(plugin, this,
 		aspect_slider, &plugin->config.aspect, x1, y));
 	aspect_slider->text = aspect_text;
-	y += aspect_text->get_h() + 5;
+	y += aspect_text->get_h() + ys5;
 
 	add_tool(title = new BC_Title(x, y, _("Radius:")));
-	y += title->get_h() + 5;
+	y += title->get_h() + ys5;
 	add_tool(radius_slider = new LensSlider(plugin, this,
 		0, &plugin->config.radius, x, y, 0.333, 3.0));
-	x1 = x + radius_slider->get_w() + 5;
+	x1 = x + radius_slider->get_w() + xs5;
 	add_tool(radius_text = new LensText(plugin, this,
 		radius_slider, &plugin->config.radius, x1, y));
 	radius_slider->text = radius_text;
-	y += radius_text->get_h() + 5;
+	y += radius_text->get_h() + ys5;
 
 	add_tool(title = new BC_Title(x, y, _("Center X:")));
-	y += title->get_h() + 5;
+	y += title->get_h() + ys5;
 	add_tool(centerx_slider = new LensSlider(plugin, this,
 		0, &plugin->config.center_x, x, y, 0.0, 99.0));
-	x1 = x + centerx_slider->get_w() + 5;
+	x1 = x + centerx_slider->get_w() + xs5;
 	add_tool(centerx_text = new LensText(plugin, this,
 		centerx_slider, &plugin->config.center_x, x1, y));
 	centerx_slider->text = centerx_text;
 	centerx_slider->set_precision(1.0);
-	y += centerx_text->get_h() + 5;
+	y += centerx_text->get_h() + ys5;
 
 
 	add_tool(title = new BC_Title(x, y, _("Center Y:")));
-	y += title->get_h() + 5;
+	y += title->get_h() + ys5;
 	add_tool(centery_slider = new LensSlider(plugin, this,
 		0, &plugin->config.center_y, x, y, 0.0, 99.0));
-	x1 = x + centery_slider->get_w() + 5;
+	x1 = x + centery_slider->get_w() + xs5;
 	add_tool(centery_text = new LensText(plugin, this,
 		centery_slider, &plugin->config.center_y, x1, y));
 	centery_slider->text = centery_text;
 	centery_slider->set_precision(1.0);
-	y += centery_text->get_h() + 10;
+	y += centery_text->get_h() + ys10;
 
 	add_tool(bar = new BC_Bar(x, y, get_w() - x * 2));
-	y += bar->get_h() + 5;
+	y += bar->get_h() + ys5;
 
 
 // 	add_tool(reverse = new LensToggle(plugin,
 // 		&plugin->config.reverse, x, y, _("Reverse")));
-// 	y += reverse->get_h() + 5;
+// 	y += reverse->get_h() + ys5;
 	add_tool(draw_guides = new LensToggle(plugin,
 		&plugin->config.draw_guides, x, y, _("Draw center")));
-	y += draw_guides->get_h() + 5;
+	y += draw_guides->get_h() + ys5;
 
 
 	add_tool(title = new BC_Title(x, y, _("Mode:")));
 	add_tool(mode = new LensMode(plugin, this,
-		x + title->get_w() + 5, y));
+		x + title->get_w() + xs5, y));
 	mode->create_objects();
-	y += mode->get_h() + 5;
+	y += mode->get_h() + ys5;
 
 	add_tool(title = new BC_Title(x, y, _("Interp:")));
-	x1 = x + title->get_w() + 5;
+	x1 = x + title->get_w() + xs5;
 	add_tool(interp = new LensInterp(plugin, x1, y));
 	interp->create_objects();
-	y += interp->get_h() + 5;
+	y += interp->get_h() + ys5;
 
 	add_tool(reset = new LensReset(plugin, this, x, y));
-	y += reset->get_h() + 5;
+	y += reset->get_h() + ys5;
 
 // 	add_tool(title = new BC_Title(x, y, _("Preset:")));
 // 	add_tool(presets = new LensPresets(plugin, this,
-// 		x + title->get_w() + 5, y, get_w() - x - title->get_w() - 50));
+// 		x + title->get_w() + xs5, y, get_w() - x - title->get_w() - xS(50)));
 // 	presets->create_objects();
-// 	y += presets->get_h() + 5;
+// 	y += presets->get_h() + ys5;
 //
 // 	add_tool(save_preset = new LensSavePreset(plugin, this, x, y));
 // 	add_tool(preset_text = new LensPresetText(plugin, this,
-// 		x + save_preset->get_w() + 5, y,
-// 		get_w() - x - save_preset->get_w() - 10));
-// 	y += preset_text->get_h() + 5;
+// 		x + save_preset->get_w() + xs5, y,
+// 		get_w() - x - save_preset->get_w() - xs10));
+// 	y += preset_text->get_h() + ys5;
 // 	add_tool(delete_preset = new LensDeletePreset(plugin, this, x, y));
 
 	show_window();

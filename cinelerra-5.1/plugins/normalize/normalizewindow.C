@@ -24,16 +24,8 @@
 #include "normalizewindow.h"
 
 NormalizeWindow::NormalizeWindow(int x, int y)
- : BC_Window(_(PROGRAM_NAME ": Normalize"),
- 				x - 160,
-				y - 75,
- 				320,
-				150,
-				320,
-				150,
-				0,
-				0,
-				1)
+ : BC_Window(_(PROGRAM_NAME ": Normalize"), x - xS(160), y - yS(75),
+		xS(320), yS(150), xS(320), yS(150), 0, 0, 1)
 {
 }
 
@@ -43,15 +35,17 @@ NormalizeWindow::~NormalizeWindow()
 
 void NormalizeWindow::create_objects(float *db_over, int *separate_tracks)
 {
-	int x = 10, y = 10;
+	int xs10 = xS(10);
+	int ys10 = yS(10), ys20 = yS(20), ys30 = yS(30);
+	int x = xs10, y = ys10;
 	this->db_over = db_over;
 	this->separate_tracks = separate_tracks;
 
 	lock_window("NormalizeWindow::create_objects");
 	add_subwindow(new BC_Title(x, y, _("Enter the DB to overload by:")));
-	y += 20;
+	y += ys20;
 	add_subwindow(new NormalizeWindowOverload(x, y, this->db_over));
-	y += 30;
+	y += ys30;
 	add_subwindow(new NormalizeWindowSeparate(x, y, this->separate_tracks));
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
@@ -66,7 +60,7 @@ int NormalizeWindow::close_event()
 }
 
 NormalizeWindowOverload::NormalizeWindowOverload(int x, int y, float *db_over)
- : BC_TextBox(x, y, 200, 1, *db_over)
+ : BC_TextBox(x, y, xS(200), 1, *db_over)
 {
 	this->db_over = db_over;
 }

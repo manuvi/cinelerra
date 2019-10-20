@@ -293,7 +293,7 @@ void ResourcePixmap::draw_title(TrackCanvas *canvas,
 // coords relative to pixmap
 	int64_t total_x = edit_x - pixmap_x, total_w = edit_w;
 	int64_t x = total_x, w = total_w;
-	int left_margin = 10;
+	int left_margin = xS(10);
 
 	if( x < 0 ) { w -= -x; x = 0; }
 	if( w > pixmap_w ) w -= w - pixmap_w;
@@ -316,7 +316,7 @@ void ResourcePixmap::draw_title(TrackCanvas *canvas,
 	text_x = MAX(left_margin, text_x);
 //printf("ResourcePixmap::draw_title 1 %d\n", text_x);
 	canvas->draw_text(text_x, // 2,
-		canvas->get_text_ascent(mwindow->theme->title_font) + 2,
+		canvas->get_text_ascent(mwindow->theme->title_font) + yS(2),
 		title, strlen(title), this);
 }
 
@@ -664,7 +664,7 @@ void ResourcePixmap::draw_subttl_resource(TrackCanvas *canvas, Edit *edit, int x
 {
 	SEdit *sedit = (SEdit *)edit;
 	char *text = sedit->get_text();
-	if( !*text || w < 10 ) return;
+	if( !*text || w < xS(10) ) return;
 	int center_pixel = canvas->resource_h() / 2;
 	if( edit->track->show_titles() )
 		center_pixel += mwindow->theme->get_image("title_bg_data")->get_h();
@@ -678,7 +678,7 @@ void ResourcePixmap::draw_subttl_resource(TrackCanvas *canvas, Edit *edit, int x
 	canvas->set_color(color);
 	int ch = canvas->get_text_height(font);
 	int hh = canvas->get_text_height(font,text) + ch/2;
-	int y1 = y_max - hh - 10;
+	int y1 = y_max - hh - yS(10);
 	if( y1 < 0 ) y1 = 0;
 	canvas->draw_text(x1, y1, text, -1, this);
 }

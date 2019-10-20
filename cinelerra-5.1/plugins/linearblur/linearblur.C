@@ -135,10 +135,10 @@ void LinearBlurConfig::interpolate(LinearBlurConfig &prev,
 
 LinearBlurWindow::LinearBlurWindow(LinearBlurMain *plugin)
  : PluginClientWindow(plugin,
-	280,
-	320,
-	280,
-	320,
+	xS(280),
+	yS(320),
+	xS(280),
+	yS(320),
 	0)
 {
 	this->plugin = plugin;
@@ -150,40 +150,42 @@ LinearBlurWindow::~LinearBlurWindow()
 
 void LinearBlurWindow::create_objects()
 {
-	int x = 10, y = 10;
-	int x1 = 0; int clrBtn_w = 50;
-	int defaultBtn_w = 100;
+	int xs10 = xS(10), xs50 = xS(50), xs100 = xS(100);
+	int ys10 = yS(10), ys20 = yS(20), ys30 = yS(30), ys40 = yS(40);
+	int x = xs10, y = ys10;
+	int x1 = 0; int clrBtn_w = xs50;
+	int defaultBtn_w = xs100;
 
 	add_subwindow(new BC_Title(x, y, _("Length:")));
-	y += 20;
+	y += ys20;
 	add_subwindow(radius = new LinearBlurSize(plugin, x, y, &plugin->config.radius, 0, 100));
-	x1 = x + radius->get_w() + 10;
+	x1 = x + radius->get_w() + xs10;
 	add_subwindow(radiusClr = new LinearBlurSliderClr(plugin, this, x1, y, clrBtn_w, RESET_RADIUS));
 
-	y += 30;
+	y += ys30;
 	add_subwindow(new BC_Title(x, y, _("Angle:")));
-	y += 20;
+	y += ys20;
 	add_subwindow(angle = new LinearBlurSize(plugin, x, y, &plugin->config.angle, -180, 180));
 	add_subwindow(angleClr = new LinearBlurSliderClr(plugin, this, x1, y, clrBtn_w, RESET_ANGLE));
 
-	y += 30;
+	y += ys30;
 	add_subwindow(new BC_Title(x, y, _("Steps:")));
-	y += 20;
+	y += ys20;
 	add_subwindow(steps = new LinearBlurSize(plugin, x, y, &plugin->config.steps, 1, 200));
 	add_subwindow(stepsClr = new LinearBlurSliderClr(plugin, this, x1, y, clrBtn_w, RESET_STEPS));
 
-	y += 30;
+	y += ys30;
 	add_subwindow(r = new LinearBlurToggle(plugin, x, y, &plugin->config.r, _("Red")));
-	y += 30;
+	y += ys30;
 	add_subwindow(g = new LinearBlurToggle(plugin, x, y, &plugin->config.g, _("Green")));
-	y += 30;
+	y += ys30;
 	add_subwindow(b = new LinearBlurToggle(plugin, x, y, &plugin->config.b, _("Blue")));
-	y += 30;
+	y += ys30;
 	add_subwindow(a = new LinearBlurToggle(plugin, x, y, &plugin->config.a, _("Alpha")));
-	y += 40;
+	y += ys40;
 	add_subwindow(reset = new LinearBlurReset(plugin, this, x, y));
 	add_subwindow(default_settings = new LinearBlurDefaultSettings(plugin, this,
-		(280 - 10 - defaultBtn_w), y, defaultBtn_w));
+		(xS(280) - xs10 - defaultBtn_w), y, defaultBtn_w));
 
 	show_window();
 	flush();
@@ -253,7 +255,7 @@ LinearBlurSize::LinearBlurSize(LinearBlurMain *plugin,
 	int *output,
 	int min,
 	int max)
- : BC_ISlider(x, y, 0, 200, 200, min, max, *output)
+ : BC_ISlider(x, y, 0, xS(200), yS(200), min, max, *output)
 {
 	this->plugin = plugin;
 	this->output = output;

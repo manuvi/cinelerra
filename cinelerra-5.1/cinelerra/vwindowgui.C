@@ -68,11 +68,7 @@ VWindowGUI::VWindowGUI(MWindow *mwindow, VWindow *vwindow)
 	mwindow->session->vwindow_y,
 	mwindow->session->vwindow_w,
 	mwindow->session->vwindow_h,
-	100,
-	100,
-	1,
-	1,
-	0) // Hide it
+	xS(100), yS(100), 1, 1, 0) // Hide it
 {
 	this->mwindow = mwindow;
 	this->vwindow = vwindow;
@@ -717,13 +713,8 @@ void VWindowEditing::panel_set_labels_follow_edits(int v) {}
 
 
 VWindowSource::VWindowSource(MWindow *mwindow, VWindowGUI *vwindow, int x, int y)
- : BC_PopupTextBox(vwindow,
- 	&vwindow->sources,
-	"",
-	x,
-	y,
-	200,
-	200)
+ : BC_PopupTextBox(vwindow, &vwindow->sources, "",
+	x, y, xS(200), yS(200))
 {
 	this->mwindow = mwindow;
 	this->vwindow = vwindow;

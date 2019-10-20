@@ -231,7 +231,7 @@ int ParametricMagnitude::handle_event()
 ParametricMode::ParametricMode(ParametricEQ *plugin, int x, int y, int band)
  : BC_PopupMenu(x,
 		y,
-		150,
+		xS(150),
 		mode_to_text(plugin->config.band[band].mode))
 {
 //printf("ParametricMode::ParametricMode %d %d\n", band, plugin->config.band[band].mode);
@@ -311,10 +311,10 @@ ParametricBandGUI::~ParametricBandGUI()
 }
 
 
-#define X1 10
-#define X2 60
-#define X3 110
-#define X4 160
+#define X1 xS(10)
+#define X2 xS(60)
+#define X3 xS(110)
+#define X4 xS(160)
 
 
 void ParametricBandGUI::create_objects()
@@ -360,7 +360,7 @@ int ParametricWetness::handle_event()
 
 
 ParametricSize::ParametricSize(ParametricWindow *window, ParametricEQ *plugin, int x, int y)
- : BC_PopupMenu(x, y, 100, "4096", 1)
+ : BC_PopupMenu(x, y, xS(100), "4096", 1)
 {
 	this->plugin = plugin;
 	this->window = window;
@@ -401,10 +401,10 @@ void ParametricSize::update(int size)
 
 ParametricWindow::ParametricWindow(ParametricEQ *plugin)
  : PluginClientWindow(plugin,
-	350,
-	400,
-	350,
-	400,
+	xS(350),
+	yS(400),
+	xS(350),
+	yS(400),
 	0)
 {
 	this->plugin = plugin;
@@ -418,7 +418,7 @@ ParametricWindow::~ParametricWindow()
 
 void ParametricWindow::create_objects()
 {
-	int y = 35;
+	int y = yS(35);
 SET_TRACE
 
 	add_subwindow(new BC_Title(X1, 10, _("Freq")));
@@ -427,37 +427,37 @@ SET_TRACE
 	add_subwindow(new BC_Title(X4, 10, _("Mode")));
 	for(int i = 0; i < BANDS; i++)
 	{
-		bands[i] = new ParametricBandGUI(plugin, this, 10, y, i);
+		bands[i] = new ParametricBandGUI(plugin, this, xS(10), y, i);
 		bands[i]->create_objects();
-		y += 50;
+		y += yS(50);
 	}
 
 SET_TRACE
 	BC_Title *title;
 	int x = plugin->get_theme()->widget_border;
-	add_subwindow(title = new BC_Title(x, y + 10, _("Wetness:")));
+	add_subwindow(title = new BC_Title(x, y + yS(10), _("Wetness:")));
 	x += title->get_w() + plugin->get_theme()->widget_border;
 	add_subwindow(wetness = new ParametricWetness(plugin,
 		x,
 		y));
 	x += wetness->get_w() + plugin->get_theme()->widget_border;
 
-	add_subwindow(title = new BC_Title(x, y + 10, _("Window:")));
+	add_subwindow(title = new BC_Title(x, y + yS(10), _("Window:")));
 	x += title->get_w() + plugin->get_theme()->widget_border;
 	add_subwindow(size = new ParametricSize(this,
 		plugin,
 		x,
-		y + 10));
+		y + yS(10)));
 	size->create_objects();
 	size->update(plugin->config.window_size);
 
 
 
-	y += 50;
-	int canvas_x = 30;
+	y += yS(50);
+	int canvas_x = xS(30);
 	int canvas_y = y;
-	int canvas_w = get_w() - canvas_x - 10;
-	int canvas_h = get_h() - canvas_y - 30;
+	int canvas_w = get_w() - canvas_x - xS(10);
+	int canvas_h = get_h() - canvas_y - yS(30);
 	add_subwindow(canvas = new BC_SubWindow(canvas_x,
 		canvas_y,
 		canvas_w,
@@ -472,10 +472,10 @@ SET_TRACE
 	for(int i = 0; i <= MAJOR_DIVISIONS; i++)
 	{
 		int y1 = canvas_y + canvas_h - i * (canvas_h / MAJOR_DIVISIONS) - 2;
-		int y2 = y1 + 3;
-		int x1 = canvas_x - 25;
-		int x2 = canvas_x - 10;
-		int x3 = canvas_x - 2;
+		int y2 = y1 + yS(3);
+		int x1 = canvas_x - xS(25);
+		int x2 = canvas_x - xS(10);
+		int x3 = canvas_x - xS(2);
 
 		char string[BCTEXTLEN];
 		if(i == 0)
@@ -495,7 +495,7 @@ SET_TRACE
 			for(int j = 1; j < MINOR_DIVISIONS; j++)
 			{
 				int y3 = y1 - j * (canvas_h / MAJOR_DIVISIONS) / MINOR_DIVISIONS;
-				int x4 = x3 - 5;
+				int x4 = x3 - xS(5);
 				set_color(BLACK);
 				draw_line(x4 + 1, y3 + 1, x3 + 1, y3 + 1);
 				set_color(RED);
@@ -511,12 +511,12 @@ SET_TRACE
 	{
 		int freq = Freq::tofreq(i * TOTALFREQS / MAJOR_DIVISIONS);
 		int x1 = canvas_x + i * canvas_w / MAJOR_DIVISIONS;
-		int y1 = canvas_y + canvas_h + 20;
+		int y1 = canvas_y + canvas_h + yS(20);
 		char string[BCTEXTLEN];
 		sprintf(string, "%d", freq);
 		int x2 = x1 - get_text_width(SMALLFONT, string);
-		int y2 = y1 - 10;
-		int y3 = y2 - 5;
+		int y2 = y1 - yS(10);
+		int y3 = y2 - yS(5);
 		int y4 = canvas_y + canvas_h;
 
 		set_color(BLACK);
@@ -537,7 +537,7 @@ SET_TRACE
 					exp(-(double)j * 0.7) *
 					(canvas_w / MAJOR_DIVISIONS));
 				set_color(BLACK);
-				draw_line(x3 + 1, y4 + 1, x3 + 1, y3 + 1);
+				draw_line(x3+1, y4+1, x3+1, y3+1);
 				set_color(RED);
 				draw_line(x3, y4, x3, y3);
 			}

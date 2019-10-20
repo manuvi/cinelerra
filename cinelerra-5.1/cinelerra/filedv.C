@@ -633,27 +633,13 @@ int FileDV::write_frames(VFrame ***frames, int len)
 					for(int i = 0; i < asset->height; i++)
 						cmodel_buf[i] = data + asset->width * 2 * i;
 
-					BC_CModels::transfer(cmodel_buf,
-						row_pointers,
-						cmodel_buf[0],
-						cmodel_buf[1],
-						cmodel_buf[2],
-						row_pointers[0],
-						row_pointers[1],
-						row_pointers[2],
-						0,
-						0,
-						asset->width,
-						asset->height,
-						0,
-						0,
-						asset->width,
-						asset->height,
-						temp_frame->get_color_model(),
-						BC_YUV422,
-						0,
-						asset->width,
-						asset->width);
+					BC_CModels::transfer(cmodel_buf, row_pointers,
+						cmodel_buf[0], cmodel_buf[1], cmodel_buf[2],
+						row_pointers[0], row_pointers[1], row_pointers[2],
+						0, 0, asset->width, asset->height,
+						0, 0, asset->width, asset->height,
+						temp_frame->get_color_model(), BC_YUV422, 0,
+						asset->width, asset->width);
 
 					dv_encode_full_frame(encoder, cmodel_buf,
 						e_dv_color_yuv, video_buffer);
@@ -868,27 +854,13 @@ TRACE("FileDV::read_frame 69")
 
 TRACE("FileDV::read_frame 70")
 
-			BC_CModels::transfer(row_pointers,
-				temp_pointers,
-				row_pointers[0],
-				row_pointers[1],
-				row_pointers[2],
-				temp_pointers[0],
-				temp_pointers[1],
-				temp_pointers[2],
-				0,
-				0,
-				asset->width,
-				asset->height,
-				0,
-				0,
-				asset->width,
-				asset->height,
-				BC_YUV422,
-				frame->get_color_model(),
-				0,
-				asset->width,
-				asset->width);
+			BC_CModels::transfer(row_pointers, temp_pointers,
+				row_pointers[0], row_pointers[1], row_pointers[2],
+				temp_pointers[0], temp_pointers[1], temp_pointers[2],
+				0, 0, asset->width, asset->height,
+				0, 0, asset->width, asset->height,
+				BC_YUV422, frame->get_color_model(), 0,
+				asset->width, asset->width);
 
 			//for(int i = 0; i < asset->height; i++)
 			//	delete[] temp_pointers[i];
@@ -925,21 +897,16 @@ int FileDV::get_best_colormodel(Asset *asset, int driver)
 	{
 		case PLAYBACK_X11:
 			return BC_RGB888;
-			break;
 		case PLAYBACK_X11_XV:
 			return BC_YUV422;
-			break;
 		case PLAYBACK_DV1394:
 		case PLAYBACK_FIREWIRE:
 			return BC_COMPRESSED;
-			break;
 		case VIDEO4LINUX2:
 		case VIDEO4LINUX2JPEG:
 			return BC_YUV422;
-			break;
 		case CAPTURE_FIREWIRE:
 			return BC_COMPRESSED;
-			break;
 	}
 	return BC_RGB888;
 }
@@ -959,30 +926,11 @@ int FileDV::get_audio_offset(int64_t pos)
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 DVConfigAudio::DVConfigAudio(BC_WindowBase *parent_window, Asset *asset)
  : BC_Window(_(PROGRAM_NAME ": Audio Compression"),
 	parent_window->get_abs_cursor_x(1),
 	parent_window->get_abs_cursor_y(1),
-	350, 250)
+	xS(350), yS(250))
 {
 	this->parent_window = parent_window;
 	this->asset = asset;
@@ -996,7 +944,7 @@ DVConfigAudio::~DVConfigAudio()
 void DVConfigAudio::create_objects()
 {
 	lock_window("DVConfigAudio::create_objects");
-	add_tool(new BC_Title(10, 10, _("There are no audio options for this format")));
+	add_tool(new BC_Title(xS(10), yS(10), _("There are no audio options for this format")));
 	add_subwindow(new BC_OKButton(this));
 	unlock_window();
 }
@@ -1012,7 +960,7 @@ DVConfigVideo::DVConfigVideo(BC_WindowBase *parent_window, Asset *asset)
  : BC_Window(_(PROGRAM_NAME ": Video Compression"),
 	parent_window->get_abs_cursor_x(1),
 	parent_window->get_abs_cursor_y(1),
-	350, 250)
+	xS(350), yS(250))
 {
 	this->parent_window = parent_window;
 	this->asset = asset;
@@ -1026,7 +974,7 @@ DVConfigVideo::~DVConfigVideo()
 void DVConfigVideo::create_objects()
 {
 	lock_window("DVConfigVideo::create_objects");
-	add_tool(new BC_Title(10, 10, _("There are no video options for this format")));
+	add_tool(new BC_Title(xS(10), yS(10), _("There are no video options for this format")));
 	add_subwindow(new BC_OKButton(this));
 	unlock_window();
 }

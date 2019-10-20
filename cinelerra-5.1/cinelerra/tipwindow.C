@@ -117,7 +117,7 @@ void TipWindow::prev_tip()
 
 TipWindowGUI::TipWindowGUI(MWindow *mwindow, TipWindow *thread, int x, int y)
  : BC_Window(_(PROGRAM_NAME ": Tip of the day"), x, y,
-		640, 100, 640, 100, 0, 0, 1)
+		xS(640), yS(100), xS(640), yS(100), 0, 0, 1)
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
@@ -126,20 +126,21 @@ TipWindowGUI::TipWindowGUI(MWindow *mwindow, TipWindow *thread, int x, int y)
 void TipWindowGUI::create_objects()
 {
 	lock_window("TipWindowGUI::create_objects");
-	int x = 10, y = 10;
+	int xs10 = xS(10), ys10 = yS(10), ys30 = yS(30);
+	int x = xs10, y = ys10;
 	add_subwindow(tip_text = new BC_Title(x, y, thread->get_current_tip(1)));
-	y = get_h() - 30;
+	y = get_h() - ys30;
 	BC_CheckBox *checkbox;
 	add_subwindow(checkbox = new TipDisable(mwindow, this, x, y));
 	BC_Button *button;
-	y = get_h() - TipClose::calculate_h(mwindow) - 10;
-	x = get_w() - TipClose::calculate_w(mwindow) - 10;
+	y = get_h() - TipClose::calculate_h(mwindow) - ys10;
+	x = get_w() - TipClose::calculate_w(mwindow) - xs10;
 	add_subwindow(button = new TipClose(mwindow, this, x, y));
-	x -= TipNext::calculate_w(mwindow) + 10;
+	x -= TipNext::calculate_w(mwindow) + xs10;
 	add_subwindow(button = new TipNext(mwindow, this, x, y));
-	x -= TipPrev::calculate_w(mwindow) + 10;
+	x -= TipPrev::calculate_w(mwindow) + xs10;
 	add_subwindow(button = new TipPrev(mwindow, this, x, y));
-	x += button->get_w() + 10;
+	x += button->get_w() + xs10;
 
 	show_window();
 	raise_window();

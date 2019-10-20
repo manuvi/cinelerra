@@ -353,7 +353,7 @@ int DenoiseMJPEGDelay::handle_event()
 
 
 DenoiseMJPEGWindow::DenoiseMJPEGWindow(DenoiseMJPEG *plugin)
- : PluginClientWindow(plugin, 250, 350, 0, 0, 1)
+ : PluginClientWindow(plugin, xS(250), yS(350), 0, 0, 1)
 {
 	this->plugin = plugin;
 }
@@ -361,7 +361,9 @@ DenoiseMJPEGWindow::DenoiseMJPEGWindow(DenoiseMJPEG *plugin)
 
 void DenoiseMJPEGWindow::create_objects()
 {
-	int x1 = 10, y1 = 20, x2 = 140, x3 = 180, y2 = 10, margin = 30, margin2 = 25;
+	int xs10 = xS(10), xs25 = xS(25), xs30 = xS(30), xs140 = xS(140), xs180 = xS(180);
+	int ys10 = yS(10), ys20 = yS(20);
+	int x1 = xs10, y1 = ys20, x2 = xs140, x3 = xs180, y2 = ys10, margin = xs30, margin2 = xs25;
 	add_subwindow(new BC_Title(x1, y1, _("Search radius:")));
 	add_subwindow(radius = new DenoiseMJPEGRadius(plugin, x2, y2));
 	y1 += margin;

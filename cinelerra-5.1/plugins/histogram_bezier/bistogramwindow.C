@@ -32,7 +32,7 @@
 #include <string.h>
 
 HistogramWindow::HistogramWindow(HistogramMain *plugin)
- : PluginClientWindow(plugin, 440, 480, 440, 480, 0)
+ : PluginClientWindow(plugin, xS(440), yS(480), xS(440), yS(480), 0)
 {
 	this->plugin = plugin;
 	max_picon = 0;
@@ -56,7 +56,9 @@ static VFramePng min_picon_image(min_picon_png);
 
 void HistogramWindow::create_objects()
 {
-	int x = 10, y = 10, x1 = 10;
+	int xs10 = xS(10), xs15 = xS(15), xs20 = xS(20), xs80 = xS(80), xs100 = xS(100), xs120 = xS(120), xs150 = xS(150);
+	int ys6 = yS(6), ys10 =  yS(10), ys20 = yS(20), ys30 = yS(30), ys40 = yS(40), ys170 = yS(170);
+	int x = xs10, y = ys10, x1 = xs10;
 	BC_Title *title = 0;
 
 	max_picon = create_pixmap(&max_picon_image);
@@ -64,40 +66,40 @@ void HistogramWindow::create_objects()
 	min_picon = create_pixmap(&min_picon_image);
 	add_subwindow(mode_v = new HistogramMode(plugin, x, y,
 		HISTOGRAM_VALUE, _("Value")));
-	x += 80;
+	x += xs80;
 	add_subwindow(mode_r = new HistogramMode(plugin, x, y,
 		HISTOGRAM_RED, _("Red")));
-	x += 80;
+	x += xs80;
 	add_subwindow(mode_g = new HistogramMode(plugin, x, y,
 		HISTOGRAM_GREEN, _("Green")));
-	x += 80;
+	x += xs80;
 	add_subwindow(mode_b = new HistogramMode(plugin, x, y,
 		HISTOGRAM_BLUE, _("Blue")));
-// 	x += 80;
+// 	x += xs80;
 // 	add_subwindow(mode_a = new HistogramMode(plugin, x, y,
 // 		HISTOGRAM_ALPHA, _("Alpha")));
 
-	x = get_w() - HistogramClear::calculate_w(this, _("Clear")) - 15;
+	x = get_w() - HistogramClear::calculate_w(this, _("Clear")) - xs15;
 	add_subwindow(clear = new HistogramClear(plugin, x, y, _("Clear")));
 
 	x = x1;
-	y += 30;
+	y += ys30;
 	add_subwindow(title = new BC_Title(x, y, _("Input X:")));
-	x += title->get_w() + 10;
+	x += title->get_w() + xs10;
 	input_x = new HistogramInputText(plugin, this, x, y, 1);
 	input_x->create_objects();
 
-	x += input_x->get_w() + 10;
+	x += input_x->get_w() + xs10;
 	add_subwindow(title = new BC_Title(x, y, _("Input Y:")));
-	x += title->get_w() + 10;
+	x += title->get_w() + xs10;
 	input_y = new HistogramInputText(plugin, this, x, y, 0);
 	input_y->create_objects();
 
-	y += 30;
+	y += ys30;
 	x = x1;
 
 	canvas_w = get_w() - x - x;
-	canvas_h = get_h() - y - 170;
+	canvas_h = get_h() - y - ys170;
 	title1_x = x;
 	title2_x = x + (int)(canvas_w * -HIST_MIN_INPUT / FLOAT_RANGE);
 	title3_x = x + (int)(canvas_w * (1.0 - HIST_MIN_INPUT) / FLOAT_RANGE);
@@ -113,45 +115,45 @@ void HistogramWindow::create_objects()
 	add_subwindow(new BC_Title(title3_x - get_text_width(MEDIUMFONT, "100"), y, "100%"));
 	add_subwindow(new BC_Title(title4_x - get_text_width(MEDIUMFONT, "110"), y, "110%"));
 
-	y += 20;
+	y += ys20;
 	add_subwindow(title = new BC_Title(x, y, _("Output min:")));
-	x += title->get_w() + 10;
+	x += title->get_w() + xs10;
 	output_min = new HistogramOutputText(plugin, this,
 		x, y, &plugin->config.output_min[plugin->mode]);
 	output_min->create_objects();
-	x += output_min->get_w() + 10;
+	x += output_min->get_w() + xs10;
 	add_subwindow(new BC_Title(x, y, _("Output Max:")));
-	x += title->get_w() + 10;
+	x += title->get_w() + xs10;
 	output_max = new HistogramOutputText(plugin, this,
 		x, y, &plugin->config.output_max[plugin->mode]);
 	output_max->create_objects();
 
 	x = x1;
-	y += 30;
+	y += ys30;
 
 	add_subwindow(output = new HistogramSlider(plugin, this,
-		x, y, get_w() - 20, 30, 0));
+		x, y, get_w() - xs20, ys30, 0));
 	output->update();
-	y += 40;
+	y += ys40;
 
 
 	add_subwindow(automatic = new HistogramAuto(plugin, x, y));
 
-	x += 120;
+	x += xs120;
 	add_subwindow(new HistogramReset(plugin, x, y));
-	x += 100;
+	x += xs100;
 	add_subwindow(new BC_Title(x, y, _("Threshold:")));
-	x += 100;
+	x += xs100;
 	threshold = new HistogramOutputText(plugin, this,
 		x, y, &plugin->config.threshold);
 	threshold->create_objects();
 	x = x1;
-	y += 40;
+	y += ys40;
 	add_subwindow(split = new HistogramSplit(plugin, x, y));
-	y += 6;
-	x += 150;
+	y += ys6;
+	x += xs150;
 	add_subwindow(new BC_Title(x,y, _("Interpolation:")));
-	x += 120;
+	x += xs120;
 	add_subwindow(smoothModeChoser = new HistogramSmoothMode(plugin, this, x, y));
 	smoothModeChoser->create_objects();
 
@@ -744,7 +746,7 @@ HistogramOutputText::HistogramOutputText(HistogramMain *plugin,
 	HistogramWindow *gui, int x, int y, float *output)
  : BC_TumbleTextBox(gui, output ? (float)*output : 0.0,
 		(float)HIST_MIN_INPUT, (float)HIST_MAX_INPUT,
-		x, y, 60)
+		x, y, xS(60))
 {
 	this->plugin = plugin;
 	this->output = output;
@@ -769,7 +771,7 @@ HistogramInputText::HistogramInputText(HistogramMain *plugin,
 	HistogramWindow *gui, int x, int y, int do_x)
  : BC_TumbleTextBox(gui, 0.0,
 		(float)HIST_MIN_INPUT, (float)HIST_MAX_INPUT,
-		x, y, 60)
+		x, y, xS(60))
 {
 	this->do_x = do_x;
 	this->plugin = plugin;
@@ -828,7 +830,7 @@ void HistogramInputText::update()
 
 HistogramSmoothMode::HistogramSmoothMode(HistogramMain*plugin,
 	HistogramWindow *gui, int x, int y)
- : BC_PopupMenu(x, y, 120, to_text(plugin->config.smoothMode), 1)
+ : BC_PopupMenu(x, y, xS(120), to_text(plugin->config.smoothMode), 1)
 {
 	this->plugin = plugin;
 	this->gui = gui;

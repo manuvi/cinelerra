@@ -514,27 +514,13 @@ int FileTIFF::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 				new VFrame(asset->width, asset->height, color_model, 0);
 		}
 
-		BC_CModels::transfer(tiff_unit->temp->get_rows(),
-			frame->get_rows(),
-			tiff_unit->temp->get_y(),
-			tiff_unit->temp->get_u(),
-			tiff_unit->temp->get_v(),
-			frame->get_y(),
-			frame->get_u(),
-			frame->get_v(),
-			0,
-			0,
-			frame->get_w(),
-			frame->get_h(),
-			0,
-			0,
-			frame->get_w(),
-			frame->get_h(),
-			frame->get_color_model(),
-			color_model,
-			0,
-			frame->get_w(),
-			frame->get_w());
+		BC_CModels::transfer(tiff_unit->temp->get_rows(), frame->get_rows(),
+			tiff_unit->temp->get_y(), tiff_unit->temp->get_u(), tiff_unit->temp->get_v(),
+			frame->get_y(), frame->get_u(), frame->get_v(),
+			0, 0, frame->get_w(), frame->get_h(),
+			0, 0, frame->get_w(), frame->get_h(),
+			frame->get_color_model(), color_model,
+			0, frame->get_w(), frame->get_w());
 		for(int i = 0; i < asset->height; i++)
 		{
 			TIFFWriteScanline(stream, tiff_unit->temp->get_rows()[i], i, 0);
@@ -551,12 +537,6 @@ FrameWriterUnit* FileTIFF::new_writer_unit(FrameWriter *writer)
 {
 	return new FileTIFFUnit(this, writer);
 }
-
-
-
-
-
-
 
 
 FileTIFFUnit::FileTIFFUnit(FileTIFF *file, FrameWriter *writer)
@@ -586,8 +566,7 @@ TIFFConfigVideo::TIFFConfigVideo(BC_WindowBase *parent_window, Asset *asset)
  : BC_Window(_(PROGRAM_NAME ": Video Compression"),
  	parent_window->get_abs_cursor_x(1),
  	parent_window->get_abs_cursor_y(1),
-	400,
-	200)
+	xS(400), yS(200))
 {
 	this->parent_window = parent_window;
 	this->asset = asset;
@@ -600,16 +579,16 @@ TIFFConfigVideo::~TIFFConfigVideo()
 void TIFFConfigVideo::create_objects()
 {
 	lock_window("TIFFConfigVideo::create_objects");
-	int x = 10, y = 10;
+	int x = xS(10), y = yS(10);
 
 	add_subwindow(new BC_Title(x, y, _("Colorspace:")));
 	TIFFColorspace *menu1;
-	add_subwindow(menu1 = new TIFFColorspace(this, x + 150, y, 200));
+	add_subwindow(menu1 = new TIFFColorspace(this, x + xS(150), y, xS(200)));
 	menu1->create_objects();
-	y += 40;
+	y += yS(40);
 	add_subwindow(new BC_Title(x, y, _("Compression:")));
 	TIFFCompression *menu2;
-	add_subwindow(menu2 = new TIFFCompression(this, x + 150, y, 200));
+	add_subwindow(menu2 = new TIFFCompression(this, x + xS(150), y, xS(200)));
 	menu2->create_objects();
 
 	add_subwindow(new BC_OKButton(this));
@@ -622,10 +601,6 @@ int TIFFConfigVideo::close_event()
 	set_done(0);
 	return 1;
 }
-
-
-
-
 
 
 TIFFColorspace::TIFFColorspace(TIFFConfigVideo *gui, int x, int y, int w)

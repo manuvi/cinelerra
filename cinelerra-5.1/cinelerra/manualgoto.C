@@ -27,6 +27,9 @@
 #include "mwindowgui.h"
 #include "keys.h"
 
+#define MGT_W xS(250)
+#define MGT_H yS(80)
+
 ManualGoto::ManualGoto(MWindow *mwindow, EditPanel *panel)
  : BC_DialogThread()
 {
@@ -43,8 +46,8 @@ ManualGoto::~ManualGoto()
 BC_Window *ManualGoto::new_gui()
 {
 	BC_DisplayInfo dpy_info;
- 	int x = dpy_info.get_abs_cursor_x() - 250 / 2;
-	int y = dpy_info.get_abs_cursor_y() - 80 / 2;
+	int x = dpy_info.get_abs_cursor_x() - MGT_W / 2;
+	int y = dpy_info.get_abs_cursor_y() - MGT_H / 2;
 	gotowindow = new ManualGotoWindow(this, x, y);
 	gotowindow->create_objects();
 	double position = panel->get_position();
@@ -72,7 +75,7 @@ void ManualGoto::handle_done_event(int result)
 
 ManualGotoWindow::ManualGotoWindow(ManualGoto *mango, int x, int y)
  : BC_Window(_(PROGRAM_NAME ": Goto position"), x, y,
-	250, 80, 250, 80, 0, 0, 1)
+	MGT_W, MGT_H, MGT_W, MGT_H, 0, 0, 1)
 {
 	this->mango = mango;
 }
@@ -118,22 +121,22 @@ void ManualGotoWindow::update_position(double position)
 void ManualGotoWindow::create_objects()
 {
 	lock_window("ManualGotoWindow::create_objects");
-	int x = 76, y = 5;
+	int x = xS(76), y = yS(5);
 
 	BC_Title *title = new BC_Title(x - 2, y, _("hour  min     sec     msec"), SMALLFONT);
 	add_subwindow(title);  y += title->get_h() + 3;
 
-	signtitle = new BC_Title(x - 17, y, "=", LARGEFONT);
+	signtitle = new BC_Title(x - xS(17), y, "=", LARGEFONT);
 	add_subwindow(signtitle);
-	hours = new ManualGotoNumber(this, x, y, 16, 9, "%i");
+	hours = new ManualGotoNumber(this, x, y, xS(16), 9, "%i");
 	add_subwindow(hours);    x += hours->get_w() + 4;
-	minutes = new ManualGotoNumber(this, x, y, 26, 59, "%02i");
+	minutes = new ManualGotoNumber(this, x, y, xS(26), 59, "%02i");
 	add_subwindow(minutes);  x += minutes->get_w() + 4;
-	seconds = new ManualGotoNumber(this, x, y, 26, 59, "%02i");
+	seconds = new ManualGotoNumber(this, x, y, xS(26), 59, "%02i");
 	add_subwindow(seconds);  x += seconds->get_w() + 4;
-	msecs = new ManualGotoNumber(this, x, y, 34, 999, "%03i");
+	msecs = new ManualGotoNumber(this, x, y, xS(34), 999, "%03i");
 	add_subwindow(msecs);
-	y += hours->get_h() + 10;
+	y += hours->get_h() + yS(10);
 
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));

@@ -78,8 +78,7 @@ FeatherEditsWindow::FeatherEditsWindow(MWindow *mwindow, long feather_samples)
  : BC_Window(_(PROGRAM_NAME ": Feather Edits"),
  	mwindow->gui->get_abs_cursor_x(),
 	mwindow->gui->get_abs_cursor_y(),
-	340,
-	140)
+	xS(340), yS(140))
 {
 	this->feather_samples = feather_samples;
 }
@@ -91,9 +90,10 @@ FeatherEditsWindow::~FeatherEditsWindow()
 
 int FeatherEditsWindow::create_objects(int audio, int video)
 {
+	int xs10 = xS(10);
+	int ys10 = yS(10), ys20 = yS(20);
 	lock_window("FeatherEditsWindow::create_objects");
-	int x = 10;
-	int y = 10;
+	int x = xs10, y = ys10;
 	this->audio = audio;
 	this->video = video;
 
@@ -102,12 +102,12 @@ int FeatherEditsWindow::create_objects(int audio, int video)
 	else
 		add_subwindow(new BC_Title(x, y, _("Feather by how many frames:")));
 
-	y += 20;
+	y += ys20;
 	char string[1024];
 	sprintf(string, "%d", feather_samples);
 	add_subwindow(text = new FeatherEditsTextBox(this, string, x, y));
 
-	y += 20;
+	y += ys20;
 	add_subwindow(new BC_OKButton(x, y));
 	add_subwindow(new BC_CancelButton(x, y));
 	return 0;
@@ -115,7 +115,7 @@ int FeatherEditsWindow::create_objects(int audio, int video)
 }
 
 FeatherEditsTextBox::FeatherEditsTextBox(FeatherEditsWindow *window, char *text, int x, int y)
- : BC_TextBox(x, y, 100, 1, text)
+ : BC_TextBox(x, y, xS(100), 1, text)
 {
 	this->window = window;
 }
@@ -125,3 +125,4 @@ int FeatherEditsTextBox::handle_event()
 	window->feather_samples = atol(get_text());
 	return 0;
 }
+

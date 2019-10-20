@@ -279,12 +279,15 @@ TrackPopupUserTitle::~TrackPopupUserTitle()
 	delete dialog_thread;
 }
 
+#define TTW_W xS(300)
+#define TTW_H yS(130)
+
 int TrackPopupUserTitle::handle_event()
 {
 	if( popup->edit ) {
 		dialog_thread->close_window();
-		int wx = mwindow->gui->get_abs_cursor_x(0) - 400 / 2;
-		int wy = mwindow->gui->get_abs_cursor_y(0) - 500 / 2;
+		int wx = mwindow->gui->get_abs_cursor_x(0) - TTW_W / 2;
+		int wy = mwindow->gui->get_abs_cursor_y(0) - TTW_H / 2;
 		dialog_thread->start(wx, wy);
 	}
 	return 1;
@@ -350,7 +353,7 @@ void TrackUserTitleDialogThread::handle_done_event(int result)
 TrackPopupUserTitleWindow::TrackPopupUserTitleWindow(MWindow *mwindow,
 		TrackPopup *popup, int wx, int wy)
  : BC_Window(_(PROGRAM_NAME ": Set edit title"), wx, wy,
-	300, 130, 300, 130, 0, 0, 1)
+	TTW_W, TTW_H, TTW_W, TTW_H, 0, 0, 1)
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
@@ -364,9 +367,9 @@ TrackPopupUserTitleWindow::~TrackPopupUserTitleWindow()
 void TrackPopupUserTitleWindow::create_objects()
 {
 	lock_window("TrackPopupUserTitleWindow::create_objects");
-	int x = 10, y = 10, x1;
+	int x = xS(10), y = yS(10), x1;
 	BC_Title *title = new BC_Title(x1=x, y, _("User title:"));
-	add_subwindow(title);  x1 += title->get_w() + 10;
+	add_subwindow(title);  x1 += title->get_w() + xS(10);
 	title_text = new TrackPopupUserTitleText(this, mwindow, x1, y, new_text);
 	add_subwindow(title_text);
 
@@ -382,7 +385,7 @@ void TrackPopupUserTitleWindow::create_objects()
 
 TrackPopupUserTitleText::TrackPopupUserTitleText(TrackPopupUserTitleWindow *window,
 	MWindow *mwindow, int x, int y, const char *text)
- : BC_TextBox(x, y, window->get_w()-x-15, 1, text)
+ : BC_TextBox(x, y, window->get_w()-x-xS(15), 1, text)
 {
 	this->window = window;
 	this->mwindow = mwindow;
@@ -451,9 +454,9 @@ TrackTitleColorPicker::~TrackTitleColorPicker()
 }
 void TrackTitleColorPicker::create_objects(ColorWindow *gui)
 {
-	int y = gui->get_h() - BC_CancelButton::calculate_h() + 10;
-	int x = gui->get_w() - BC_CancelButton::calculate_w() - 10;
-	x -= BC_GenericButton::calculate_w(gui, _("default")) + 15;
+	int y = gui->get_h() - BC_CancelButton::calculate_h() + yS(10);
+	int x = gui->get_w() - BC_CancelButton::calculate_w() - xS(10);
+	x -= BC_GenericButton::calculate_w(gui, _("default")) + xS(15);
 	gui->add_subwindow(new TrackTitleColorDefault(this, x, y));
 }
 
@@ -488,6 +491,9 @@ void TrackTitleColorPicker::handle_done_event(int result)
 }
 
 
+#define TPW_W xS(300)
+#define TPW_H yS(220)
+
 TrackPopupShow::TrackPopupShow(MWindow *mwindow, TrackPopup *popup)
  : BC_MenuItem(_("Show edit"))
 {
@@ -505,8 +511,8 @@ int TrackPopupShow::handle_event()
 {
 	if( popup->edit ) {
 		dialog_thread->close_window();
-		int wx = mwindow->gui->get_abs_cursor_x(0) - 400 / 2;
-		int wy = mwindow->gui->get_abs_cursor_y(0) - 500 / 2;
+		int wx = mwindow->gui->get_abs_cursor_x(0) - TPW_W / 2;
+		int wy = mwindow->gui->get_abs_cursor_y(0) - TPW_H / 2;
 		dialog_thread->start(wx, wy);
 	}
 	return 1;
@@ -545,7 +551,7 @@ void TrackShowDialogThread::handle_close_event(int result)
 TrackPopupShowWindow::TrackPopupShowWindow(MWindow *mwindow,
 		TrackPopup *popup, int wx, int wy)
  : BC_Window(_(PROGRAM_NAME ": Show edit"), wx, wy,
-	300, 220, 300, 220, 0, 0, 1)
+	TPW_W, TPW_H, TPW_W, TPW_H, 0, 0, 1)
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
@@ -558,15 +564,15 @@ TrackPopupShowWindow::~TrackPopupShowWindow()
 void TrackPopupShowWindow::create_objects()
 {
 	lock_window("TrackPopupShowWindow::create_objects");
-	int x = 10, y = 10;
+	int x = xS(10), y = yS(10);
 	BC_Title *title;
 	char text[BCTEXTLEN];
 	Edit *edit = popup->edit;
 	Track *track = edit->track;
 	sprintf(text, _("Track %d:"), mwindow->edl->tracks->number_of(track)+1);
 	add_subwindow(title = new BC_Title(x, y, text));
-	int x1 = x + title->get_w() + 10;
-	int tw = get_w() - x1 - 20;
+	int x1 = x + title->get_w() + xS(10);
+	int tw = get_w() - x1 - xS(20);
 	truncate_text(text, track->title, tw);
 	add_subwindow(new BC_Title(x1, y, text));
 	y += title->get_h() + 5;
@@ -598,7 +604,7 @@ void TrackPopupShowWindow::create_objects()
 			time_format, sample_rate, frame_rate, frames_per_foot),
 		Units::totext(text_length, length,
 			time_format, sample_rate, frame_rate, frames_per_foot));
-	show_text = new TrackPopupShowText(this, mwindow, x+15, y+10, text);
+	show_text = new TrackPopupShowText(this, mwindow, x+xS(15), y+yS(10), text);
 	add_subwindow(show_text);
 	add_tool(new BC_OKButton(this));
 
@@ -610,7 +616,7 @@ void TrackPopupShowWindow::create_objects()
 
 TrackPopupShowText::TrackPopupShowText(TrackPopupShowWindow *window,
 	MWindow *mwindow, int x, int y, const char *text)
- : BC_TextBox(x, y, 250, 4, text)
+ : BC_TextBox(x, y, xS(250), 4, text)
 {
 	this->window = window;
 	this->mwindow = mwindow;

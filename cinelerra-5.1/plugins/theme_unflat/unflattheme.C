@@ -47,8 +47,6 @@
 #include "vwindowgui.h"
 
 
-
-
 PluginClient* new_plugin(PluginServer *server)
 {
 	return new UNFLATTHEMEMain(server);
@@ -72,12 +70,6 @@ Theme* UNFLATTHEMEMain::new_theme()
 	theme->set_data(_binary_theme_unflat_data_start);
 	return theme;
 }
-
-
-
-
-
-
 
 
 UNFLATTHEME::UNFLATTHEME()
@@ -119,7 +111,7 @@ void UNFLATTHEME::initialize()
 	resources->popup_title_text = 0xbfbfbf;
 	resources->menu_item_text = 0xbfbfbf;
 	resources->menu_highlighted_fontcolor = WHITE;
-	resources->generic_button_margin = 30;
+	resources->generic_button_margin = xS(30);
 	resources->pot_needle_color = resources->text_default;
 	resources->pot_offset = 1;
 	resources->progress_text = resources->text_default;
@@ -130,13 +122,13 @@ void UNFLATTHEME::initialize()
 	resources->menu_down = 0x4b4b4b;
 	resources->menu_up = 0x4b4b4b;
 	resources->menu_shadow = 0x202020;
-	resources->popupmenu_margin = 15;
-	resources->popupmenu_triangle_margin = 15;
+	resources->popupmenu_margin = xS(15);
+	resources->popupmenu_triangle_margin = xS(15);
 
 	resources->listbox_title_color = 0xbfbfbf;
 
-	resources->listbox_title_margin = 20;
-	resources->listbox_title_hotspot = 20;
+	resources->listbox_title_margin = xS(20);
+	resources->listbox_title_hotspot = xS(20);
 	resources->listbox_border1 = 0x1a1a1a;
 	resources->listbox_border2 = 0x333333;
 	resources->listbox_border3 = 0x333333;
@@ -146,7 +138,7 @@ void UNFLATTHEME::initialize()
 	resources->listbox_bg = 0;
 	resources->listbox_text = 0xbfbfbf;
 
-	resources->filebox_margin = 130;
+	resources->filebox_margin = yS(130);
 	resources->file_color = 0xbfbfbf;
 	resources->directory_color = 0xa0a0ff;
 
@@ -389,7 +381,7 @@ void UNFLATTHEME::initialize()
 	resources->bar_data = new_image("bar", "bar.png");
 	resources->check = new_image("check", "check.png");
 
-	resources->min_menu_w = 96;
+	resources->min_menu_w = xS(96);
 	resources->menu_popup_bg = new_image("menu_popup_bg.png");
 	resources->menu_item_bg = new_image_set(3,
 		"menuitem_up.png",
@@ -521,7 +513,7 @@ void UNFLATTHEME::initialize()
 			"vscroll_right_up.png",
 			"vscroll_right_hi.png",
 			"vscroll_right_dn.png");
-	resources->scroll_minhandle = 20;
+	resources->scroll_minhandle = xS(20);
 
 
 	new_button("prevtip.png", "tipbutton_up.png", "tipbutton_hi.png", "tipbutton_dn.png", "prev_tip");
@@ -539,17 +531,17 @@ void UNFLATTHEME::initialize()
 
 	preferences_category_overlap = 0;
 	preferencescategory_x = 0;
-	preferencescategory_y = 5;
-	preferencestitle_x = 5;
-	preferencestitle_y = 10;
-	preferencesoptions_x = 5;
+	preferencescategory_y = yS(5);
+	preferencestitle_x = xS(5);
+	preferencestitle_y = yS(10);
+	preferencesoptions_x = xS(5);
 	preferencesoptions_y = 0;
 
 // MWindow
 	message_normal = resources->text_default;
 	audio_color = GREEN;
-	mtransport_margin = 10;
-	toggle_margin = 10;
+	mtransport_margin = xS(10);
+	toggle_margin = xS(10);
 
 	new_button("pane.png", "pane_up.png", "pane_hi.png", "pane_dn.png", "pane");
 	new_image_set("xpane", 3, "xpane_up.png", "xpane_hi.png", "xpane_dn.png");
@@ -600,23 +592,21 @@ void UNFLATTHEME::initialize()
 
 	setformat_w = get_image("setformat_bg")->get_w();
 	setformat_h = get_image("setformat_bg")->get_h();
-	setformat_x1 = 15;
-	setformat_x2 = 110;
+	setformat_x1 = xS(15);
+	setformat_x2 = xS(110);
+	setformat_x3 = xS(315);
+	setformat_x4 = xS(425);
+	setformat_y1 = yS(20);
+	setformat_y2 = yS(85);
+	setformat_y3 = yS(125);
+	setformat_margin = xS(30);
+	setformat_channels_x = xS(25);
+	setformat_channels_y = yS(242);
+	setformat_channels_w = xS(250);
+	setformat_channels_h = yS(250);
 
-	setformat_x3 = 315;
-	setformat_x4 = 425;
-	setformat_y1 = 20;
-	setformat_y2 = 85;
-	setformat_y3 = 125;
-	setformat_margin = 30;
-	setformat_channels_x = 25;
-	setformat_channels_y = 242;
-	setformat_channels_w = 250;
-	setformat_channels_h = 250;
-
-	loadfile_pad = get_image_set("loadmode_new")[0]->get_h() + 10;
-	browse_pad = 20;
-
+	loadfile_pad = get_image_set("loadmode_new")[0]->get_h() + yS(10);
+	browse_pad = yS(20);
 
 	new_toggle("playpatch.png",
 		"playpatch_up.png",
@@ -845,8 +835,6 @@ void UNFLATTHEME::initialize()
 	new_button("stop.png", transport_up, transport_hi, transport_dn, "stop");
 	new_button("stop.png", transport_up, transport_hi, transport_dn, "stoprec");
 
-
-
 // CWindow icons
 	new_image("cwindow_inactive", "cwindow_inactive.png");
 	new_image("cwindow_active", "cwindow_active.png");
@@ -864,10 +852,6 @@ void UNFLATTHEME::initialize()
 		"preferencesbutton_up.png",
 		"preferencesbutton_uphi.png",
 		"preferencesbutton_dnlo.png");
-
-
-
-
 
 	new_image_set("color3way_point",
 		3,
@@ -928,7 +912,7 @@ void UNFLATTHEME::initialize()
 	recordgui_variable_color = RED;
 
 	channel_position_color = MEYELLOW;
-	resources->meter_title_w = 25;
+	resources->meter_title_w = xS(25);
 
         // (asset) edit info text color
         edit_font_color = YELLOW;
@@ -967,18 +951,17 @@ void UNFLATTHEME::build_overlays()
 void UNFLATTHEME::draw_rwindow_bg(RecordGUI *gui)
 {
 // 	int y;
-// 	int margin = 50;
-// 	int margin2 = 80;
-// 	gui->draw_9segment(recordgui_batch_x - margin,
-// 		0,
+// 	int margin = xS(50);
+// 	int margin2 = xS(80);
+// 	gui->draw_9segment(recordgui_batch_x - margin, 0,
 // 		mwindow->session->rwindow_w - recordgui_status_x + margin,
 // 		recordgui_buttons_y,
 // 		rgui_batch);
 // 	gui->draw_3segmenth(recordgui_options_x - margin2,
-// 		recordgui_buttons_y - 5,
+// 		recordgui_buttons_y - yS(5),
 // 		mwindow->session->rwindow_w - recordgui_options_x + margin2,
 // 		rgui_controls);
-// 	y = recordgui_buttons_y - 5 + rgui_controls->get_h();
+// 	y = recordgui_buttons_y - yS(5) + rgui_controls->get_h();
 // 	gui->draw_9segment(0,
 // 		y,
 // 		mwindow->session->rwindow_w,
@@ -988,25 +971,19 @@ void UNFLATTHEME::draw_rwindow_bg(RecordGUI *gui)
 
 void UNFLATTHEME::draw_rmonitor_bg(RecordMonitorGUI *gui)
 {
-// 	int margin = 45;
-// 	int panel_w = 300;
+// 	int margin = xS(45);
+// 	int panel_w = xS(300);
 // 	int x = rmonitor_meter_x - margin;
 // 	int w = mwindow->session->rmonitor_w - x;
 // 	if(w < rmonitor_meters->get_w()) w = rmonitor_meters->get_w();
-// 	gui->clear_box(0,
-// 		0,
+// 	gui->clear_box(0, 0,
 // 		mwindow->session->rmonitor_w,
 // 		mwindow->session->rmonitor_h);
-// 	gui->draw_9segment(x,
-// 		0,
+// 	gui->draw_9segment(x, 0,
 // 		w,
 // 		mwindow->session->rmonitor_h,
 // 		rmonitor_meters);
 }
-
-
-
-
 
 
 void UNFLATTHEME::draw_mwindow_bg(MWindowGUI *gui)
@@ -1020,31 +997,28 @@ void UNFLATTHEME::draw_mwindow_bg(MWindowGUI *gui)
 	x += 9 * get_image("play")->get_w();
 	x += mtransport_margin;                                       // the control buttons
 
+	int xs2 = xS(2);
 	gui->draw_vframe(get_image("panel_divider"),
-		x - toggle_margin / 2 - pdw / 2 + 2,
+		x - toggle_margin / 2 - pdw / 2 + xs2,
 		mbuttons_y - 1);
 	x += 2 * get_image("arrow")->get_w() + toggle_margin;           // the mode buttons
 
 	gui->draw_vframe(get_image("panel_divider"),
-		x - toggle_margin / 2 - pdw / 2 + 2,
+		x - toggle_margin / 2 - pdw / 2 + xs2,
 		mbuttons_y - 1);
 
 	x += 3 * get_image("autokeyframe")->get_w() + toggle_margin;    // the state toggle buttons
 	gui->draw_vframe(get_image("panel_divider"),
-		x - toggle_margin / 2 - pdw / 2 + 2,
+		x - toggle_margin / 2 - pdw / 2 + xs2,
 		mbuttons_y - 1);
 
 // Clock
-	gui->draw_3segmenth(0,
-		mbuttons_y - 1 + get_image("mbutton_bg")->get_h(),
-		get_image("patchbay_bg")->get_w(),
-		get_image("clock_bg"));
+	gui->draw_3segmenth(0, mbuttons_y - 1 + get_image("mbutton_bg")->get_h(),
+		get_image("patchbay_bg")->get_w(), get_image("clock_bg"));
 
 // Patchbay
-	gui->draw_3segmentv(patchbay_x,
-		patchbay_y,
-		patchbay_h,
-		get_image("patchbay_bg"));
+	gui->draw_3segmentv(patchbay_x, patchbay_y,
+		patchbay_h, get_image("patchbay_bg"));
 
 // Track canvas
 	gui->set_color(BLACK);
@@ -1054,17 +1028,13 @@ void UNFLATTHEME::draw_mwindow_bg(MWindowGUI *gui)
 		mcanvas_h - BC_ScrollBar::get_span(SCROLL_HORIZ) - mtimebar_h);
 
 // Timebar
-	gui->draw_3segmenth(mtimebar_x,
-		mtimebar_y,
-		mtimebar_w,
-		get_image("timebar_bg"));
+	gui->draw_3segmenth(mtimebar_x, mtimebar_y,
+		mtimebar_w, get_image("timebar_bg"));
 
 // Zoombar
 	gui->set_color(0x333333);
-	gui->draw_box(mzoom_x,
-		mzoom_y,
-		mwindow->session->mwindow_w,
-		25);
+	gui->draw_box(mzoom_x, mzoom_y,
+		mwindow->session->mwindow_w, yS(25));
 
 // Scrollbar filler
 //	gui->draw_vframe(get_image("mscroll_filler"),
@@ -1072,10 +1042,8 @@ void UNFLATTHEME::draw_mwindow_bg(MWindowGUI *gui)
 //		mcanvas_y + mcanvas_h - BC_ScrollBar::get_span(SCROLL_HORIZ));
 
 // Status
-	gui->draw_3segmenth(mzoom_x,
-		mzoom_y,
-		mzoom_w,
-		get_image("statusbar"));
+	gui->draw_3segmenth(mzoom_x, mzoom_y,
+		mzoom_w, get_image("statusbar"));
 
 
 }
@@ -1088,21 +1056,16 @@ void UNFLATTHEME::draw_cwindow_bg(CWindowGUI *gui)
 
 	if(mwindow->edl->session->cwindow_meter)
 	{
-		gui->draw_3segmenth(cstatus_x,
-			ccomposite_h,
-			cmeter_x - widget_border - cstatus_x,
-			get_image("cbuttons_right"));
-		gui->draw_9segment(cmeter_x - widget_border,
-			0,
+		gui->draw_3segmenth(cstatus_x, ccomposite_h,
+			cmeter_x - widget_border - cstatus_x, get_image("cbuttons_right"));
+		gui->draw_9segment(cmeter_x - widget_border, 0,
 			mwindow->session->cwindow_w - cmeter_x + widget_border,
-			mwindow->session->cwindow_h,
-			get_image("cmeter_bg"));
+			mwindow->session->cwindow_h, get_image("cmeter_bg"));
 	}
 	else
 	{
-		gui->draw_3segmenth(cstatus_x,
-			ccomposite_h,
-			cmeter_x - widget_border - cstatus_x + 100,
+		gui->draw_3segmenth(cstatus_x, ccomposite_h,
+			cmeter_x - widget_border - cstatus_x + xS(100),
 			get_image("cbuttons_right"));
 	}
 }
@@ -1115,29 +1078,22 @@ void UNFLATTHEME::draw_vwindow_bg(VWindowGUI *gui)
 		get_image("vbuttons_left"));
 	if(mwindow->edl->session->vwindow_meter)
 	{
-		gui->draw_3segmenth(vdivision_x,
-			vcanvas_h,
-			vmeter_x - widget_border - vdivision_x,
-			get_image("cbuttons_right"));
-		gui->draw_9segment(vmeter_x - widget_border,
-			0,
+		gui->draw_3segmenth(vdivision_x, vcanvas_h,
+			vmeter_x - widget_border - vdivision_x, get_image("cbuttons_right"));
+		gui->draw_9segment(vmeter_x - widget_border, 0,
 			mwindow->session->vwindow_w - vmeter_x + widget_border,
-			mwindow->session->vwindow_h,
-			get_image("cmeter_bg"));
+			mwindow->session->vwindow_h, get_image("cmeter_bg"));
 	}
 	else
 	{
-		gui->draw_3segmenth(vdivision_x,
-			vcanvas_h,
-			vmeter_x - widget_border - vdivision_x + 100,
+		gui->draw_3segmenth(vdivision_x, vcanvas_h,
+			vmeter_x - widget_border - vdivision_x + xS(100),
 			get_image("cbuttons_right"));
 	}
 
 // Clock border
-	gui->draw_3segmenth(vtime_x - 20,
-		vtime_y - 1,
-		vtime_w + 40,
-		get_image("vclock"));
+	gui->draw_3segmenth(vtime_x - xS(20), vtime_y - 1,
+		vtime_w + xS(40), get_image("vclock"));
 }
 
 

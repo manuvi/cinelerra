@@ -1315,29 +1315,22 @@ void TrackCanvas::draw_highlight_rectangle(int x, int y, int w, int h)
 
 	if (x + w <= 0)
 	{
-		draw_triangle_left(0, y + h /6, h * 2/3, h * 2/3, BLACK, GREEN, YELLOW, RED, BLUE);
+		draw_triangle_left(0, y + h /6,
+			h * 2/3, h * 2/3, BLACK, GREEN, YELLOW, RED, BLUE);
 		return;
 	} else
 	if (x >= get_w())
 	{
-		draw_triangle_right(get_w() - h * 2/3, y + h /6, h * 2/3, h * 2/3, BLACK, GREEN, YELLOW, RED, BLUE);
+		draw_triangle_right(get_w() - h * 2/3, y + h /6,
+			h * 2/3, h * 2/3, BLACK, GREEN, YELLOW, RED, BLUE);
 		return;
 	}
 
 // Fix bug in heroines & cvs version as of 22.8.2005:
 // If we grab when zoomed in and zoom out while dragging, when edit gets really narrow strange things start happening
 	if (w >= 0 && w < 3) {x -= w /2; w = 3;};
-	if(x < -10)
-	{
-		w += x - -10;
-		x = -10;
-	}
-
-	if(y < -10)
-	{
-		h += y - -10;
-		y = -10;
-	}
+	if(x < -10) { w += x - -10;  x = -10; }
+	if(y < -10) { h += y - -10;  y = -10; }
 
 	w = MIN(w, get_w() + 20);
 	h = MIN(h, get_h() + 20);
@@ -1393,16 +1386,8 @@ void TrackCanvas::draw_highlight_insertion(int x, int y, int w, int h)
 // Fix bug in heroines & cvs version as of 22.8.2005:
 // If we grab when zoomed in and zoom out while dragging, when edit gets really narrow strange things start happening
 	if (w >= 0 && w < 3) {x -= w /2; w = 3;};
-	if(x < -10)
-	{
-		w += x - -10;
-		x = -10;
-	}
-	if(y < -10)
-	{
-		h += y - -10;
-		y = -10;
-	}
+	if(x < -10) { w += x - -10;  x = -10; }
+	if(y < -10) { h += y - -10;  y = -10; }
 	w = MIN(w, get_w() + 20);
 	h = MIN(h, get_h() + 20);
 	set_color(mwindow->preferences->highlight_inverse);
@@ -1443,7 +1428,7 @@ void TrackCanvas::get_handle_coords(Edit *edit, int64_t &x, int64_t &y, int64_t 
 void TrackCanvas::get_transition_coords(Edit *edit,
 		int64_t &x, int64_t &y, int64_t &w, int64_t &h)
 {
-	int transition_w = 30, transition_h = 30;
+	int transition_w = xS(30), transition_h = yS(30);
 	int has_titles = edit->track->show_titles();
 	int has_assets = edit->track->show_assets();
 	double title_bg_h = mwindow->theme->get_image("title_bg_data")->get_h();
@@ -1801,7 +1786,7 @@ void TrackCanvas::draw_plugins()
 						toggle_x = MIN(get_w() - right_margin, toggle_x);
 
 // On toggle
-						toggle_x -= PluginOn::calculate_w(mwindow) + 10;
+						toggle_x -= PluginOn::calculate_w(mwindow) + xS(10);
 						if(toggle_x > min_x)
 						{
 							if(current_on >= plugin_on_toggles.total)
@@ -1821,7 +1806,7 @@ void TrackCanvas::draw_plugins()
 						if(plugin->plugin_type == PLUGIN_STANDALONE)
 						{
 // Show
-							toggle_x -= PluginShow::calculate_w(mwindow) + 10;
+							toggle_x -= PluginShow::calculate_w(mwindow) + xS(10);
 							if(toggle_x > min_x)
 							{
 								if(current_show >= plugin_show_toggles.total)
@@ -1836,7 +1821,7 @@ void TrackCanvas::draw_plugins()
 								}
 								current_show++;
 							}
-							toggle_x -= PluginPresetEdit::calculate_w(mwindow) + 10;
+							toggle_x -= PluginPresetEdit::calculate_w(mwindow) + xS(10);
 							if(toggle_x > min_x)
 							{
 								if(current_preset >= preset_edit_buttons.total)
@@ -1991,19 +1976,19 @@ void TrackCanvas::draw_drag_handle()
 		edit_dimensions(edit, x, y, w, h);
 		if( y+h < 0 || y >= get_h() ) continue;
 		int edge_x = !drag_handle ? x : x + w;
-		int edge_y = y + h/2, k = 10;
+		int edge_y = y + h/2, xs10 = xS(10), ys10 = yS(10);
 		if( edge_x >= 0 && edge_x < get_w() ) {
 			if( !can_drag ) {
-				draw_line(edge_x-k,edge_y-k, edge_x+k,edge_y+k);
-				draw_line(edge_x-k,edge_y+k, edge_x+k,edge_y-k);
+				draw_line(edge_x-xs10,edge_y-ys10, edge_x+xs10,edge_y+ys10);
+				draw_line(edge_x-xs10,edge_y+ys10, edge_x+xs10,edge_y-ys10);
 			}
 			else if( !drag_handle ) {
-				draw_line(edge_x+k,edge_y-k, edge_x,edge_y);
-				draw_line(edge_x+k,edge_y+k, edge_x,edge_y);
+				draw_line(edge_x+xs10,edge_y-ys10, edge_x,edge_y);
+				draw_line(edge_x+xs10,edge_y+ys10, edge_x,edge_y);
 			}
 			else {
-				draw_line(edge_x,edge_y, edge_x-k,edge_y-k);
-				draw_line(edge_x,edge_y, edge_x-k,edge_y+k);
+				draw_line(edge_x,edge_y, edge_x-xs10,edge_y-ys10);
+				draw_line(edge_x,edge_y, edge_x-xs10,edge_y+ys10);
 			}
 		}
 		edge_x += delta;
@@ -3688,8 +3673,8 @@ int TrackCanvas::draw_hairline(Auto *auto_keyframe, int color, int show)
 	}
 	if( show ) {
 		int font = MEDIUMFONT;
-		int tw = get_text_width(font, text)  + TOOLTIP_MARGIN * 2;
-		int th = get_text_height(font, text) + TOOLTIP_MARGIN * 2;
+		int tw = get_text_width(font, text)  + xS(TOOLTIP_MARGIN) * 2;
+		int th = get_text_height(font, text) + yS(TOOLTIP_MARGIN) * 2;
 		set_color(get_resources()->tooltip_bg_color);
 		ax += HANDLE_W/2;
 		ay += center_pixel + HANDLE_W/2;
@@ -3697,8 +3682,8 @@ int TrackCanvas::draw_hairline(Auto *auto_keyframe, int color, int show)
 		set_color(BLACK);
 		draw_rectangle(ax, ay, tw, th);
 		set_font(font);
-		ax += TOOLTIP_MARGIN;
-		ay += TOOLTIP_MARGIN + get_text_ascent(font);
+		ax += xS(TOOLTIP_MARGIN);
+		ay += yS(TOOLTIP_MARGIN) + get_text_ascent(font);
 		draw_text(ax, ay, text);
 	}
 	return 0;
@@ -3709,13 +3694,7 @@ void TrackCanvas::draw_overlays()
 	int new_cursor, update_cursor, rerender;
 
 // Move background pixmap to foreground pixmap
-	draw_pixmap(background_pixmap,
-		0,
-		0,
-		get_w(),
-		get_h(),
-		0,
-		0);
+	draw_pixmap(background_pixmap, 0, 0, get_w(), get_h(), 0, 0);
 
 // In/Out points
 	draw_inout_points();
