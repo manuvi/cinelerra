@@ -84,13 +84,8 @@ int ConfirmSave::test_files(MWindow *mwindow, ArrayList<char*> *paths)
 }
 
 
-
-
-
-
-#define CSW_W 320
-#define CSW_H 120
-
+#define CSW_W xS(400)
+#define CSW_H yS(150)
 
 ConfirmSaveWindow::ConfirmSaveWindow(MWindow *mwindow,
 	ArrayList<BC_ListBoxItem*> *list)
@@ -143,9 +138,4 @@ int ConfirmSaveWindow::resize_event(int w, int h)
 		h - y - BC_OKButton::calculate_h() - ys10);
 	return 1;
 }
-
-
-
-
-
 

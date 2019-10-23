@@ -33,9 +33,9 @@ REGISTER_PLUGIN(PerspectiveMain)
 PerspectiveConfig::PerspectiveConfig()
 {
 	x1 = 0;    y1 = 0;
-	x2 = xS(100);  y2 = 0;
-	x3 = xS(100);  y3 = yS(100);
-	x4 = 0;    y4 = yS(100);
+	x2 = 100;  y2 = 0;
+	x3 = 100;  y3 = 100;
+	x4 = 0;    y4 = 100;
 	mode = AffineEngine::PERSPECTIVE;
 	smoothing = AffineEngine::AF_DEFAULT;
 	window_w = PERSPECTIVE_WIDTH;

@@ -71,10 +71,10 @@ void DelayVideoConfig::interpolate(DelayVideoConfig &prev,
 
 DelayVideoWindow::DelayVideoWindow(DelayVideo *plugin)
  : PluginClientWindow(plugin,
-	xS(210),
-	yS(120),
-	xS(210),
-	yS(120),
+	xS(190),
+	yS(70),
+	xS(190),
+	yS(70),
 	0)
 {
 	this->plugin = plugin;

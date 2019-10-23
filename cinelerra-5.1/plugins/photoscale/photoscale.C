@@ -40,9 +40,9 @@
 PhotoScaleWindow::PhotoScaleWindow(PhotoScaleMain *plugin)
  : PluginClientWindow(plugin,
 	xS(250),
-	yS(200),
+	yS(140),
 	xS(250),
-	yS(200),
+	yS(140),
 	0)
 {
 	this->plugin = plugin;

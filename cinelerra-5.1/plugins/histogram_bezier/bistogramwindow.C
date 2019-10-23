@@ -32,7 +32,7 @@
 #include <string.h>
 
 HistogramWindow::HistogramWindow(HistogramMain *plugin)
- : PluginClientWindow(plugin, xS(440), yS(480), xS(440), yS(480), 0)
+ : PluginClientWindow(plugin, xS(480), yS(480), xS(480), yS(480), 0)
 {
 	this->plugin = plugin;
 	max_picon = 0;
@@ -830,7 +830,7 @@ void HistogramInputText::update()
 
 HistogramSmoothMode::HistogramSmoothMode(HistogramMain*plugin,
 	HistogramWindow *gui, int x, int y)
- : BC_PopupMenu(x, y, xS(120), to_text(plugin->config.smoothMode), 1)
+ : BC_PopupMenu(x, y, xS(180), to_text(plugin->config.smoothMode), 1)
 {
 	this->plugin = plugin;
 	this->gui = gui;

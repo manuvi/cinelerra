@@ -42,8 +42,10 @@ AppearancePrefs::AppearancePrefs(MWindow *mwindow, PreferencesWindow *pwindow)
 	frames = 0;
 	hex = 0;
 	feet = 0;
+	layout_scale = 0;
 	thumbnails = 0;
 	thumbnail_size = 0;
+	vicon_size = 0;
 }
 
 AppearancePrefs::~AppearancePrefs()
@@ -54,8 +56,10 @@ AppearancePrefs::~AppearancePrefs()
 	delete frames;
 	delete hex;
 	delete feet;
+	delete layout_scale;
 	delete thumbnails;
 	delete thumbnail_size;
+	delete vicon_size;
 }
 
 
@@ -92,6 +96,11 @@ void AppearancePrefs::create_objects()
 
 	int x2 = x1 + xS(160), y2 = y;
 	y = y1;
+
+	add_subwindow(new BC_Title(x1, y, _("Layout Scale:")));
+	layout_scale = new ViewLayoutScale(pwindow, this, x2, y);
+	layout_scale->create_objects();
+	y += layout_scale->get_h() + ys5;
 	add_subwindow(new BC_Title(x1, y, _("View thumbnail size:")));
 	thumbnail_size = new ViewThumbnailSize(pwindow, this, x2, y);
 	thumbnail_size->create_objects();
@@ -419,6 +428,24 @@ int ViewPluginIconItem::handle_event()
 	popup->set_text(get_text());
 	strcpy(popup->pwindow->thread->preferences->plugin_icons, get_text());
 	popup->handle_event();
+	return 1;
+}
+
+ViewLayoutScale::ViewLayoutScale(PreferencesWindow *pwindow,
+		AppearancePrefs *aprefs, int x, int y)
+ : BC_TumbleTextBox(aprefs,
+	pwindow->thread->preferences->layout_scale,
+	0.f, 10.f, x, y, xS(80), 2)
+{
+	this->pwindow = pwindow;
+	this->aprefs = aprefs;
+	set_increment(0.1);
+}
+
+int ViewLayoutScale::handle_event()
+{
+	float v = atof(get_text());
+	pwindow->thread->preferences->layout_scale = v;
 	return 1;
 }
 

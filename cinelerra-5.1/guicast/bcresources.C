@@ -362,27 +362,17 @@ VFrame *BC_Resources::default_vscroll_data[10] = { 0, };
 VFrame *BC_Resources::default_hscroll_data[10] = { 0, };
 VFrame *BC_Resources::default_icon_img = 0;
 
-BC_Resources::BC_Resources()
+BC_Resources::BC_Resources(float x_scale, float y_scale)
 {
+	BC_WindowBase::resources = this;
 	synchronous = 0;
 	vframe_shm = 0;
-	double default_scale = 1;
-	char *env = getenv("BC_SCALE");
-	if( !env ) {
-		BC_DisplayInfo info;
-		int wx, wy, ww, wh;
-		int cins = info.xinerama_big_screen();
-		if( !info.xinerama_geometry(cins, wx, wy, ww, wh) ) {
-			x_scale = ww / 1920.;
-			y_scale = wh / 1080.;
-			default_scale = bmin(x_scale, y_scale);
-		}
-	}
-	else {
-		if( (default_scale = atof(env)) <= 0 ) default_scale = 1;
-		x_scale = y_scale = default_scale;
-	}
-	env = getenv("BC_FONT_DEBUG");
+	if( x_scale <= 0 ) x_scale = 1;
+	if( y_scale <= 0 ) y_scale = x_scale;
+	this->x_scale = x_scale;
+	this->y_scale = y_scale;
+	float default_scale = bmin(x_scale, y_scale);
+	const char *env = getenv("BC_FONT_DEBUG");
 	font_debug = env ? atoi(env) : 0;
 	env = getenv("BC_FONT_SCALE");
 	font_scale = env ? atof(env) : default_scale;

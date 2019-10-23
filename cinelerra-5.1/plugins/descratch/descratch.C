@@ -486,7 +486,7 @@ DeScratchWindow::~DeScratchWindow()
 void DeScratchWindow::create_objects()
 {
 	int xs10 = xS(10), xs15 = xS(15), xs16 = xS(16);
-	int ys10 = yS(10), ys15 = yS(15), ys30 = yS(30);
+	int ys10 = yS(10), ys15 = yS(15);
 	int x = xs10, y = ys10;
 	plugin->load_configuration();
 	DeScratchConfig &config = plugin->config;

@@ -42,15 +42,7 @@ InterpolatePixelsOffset::InterpolatePixelsOffset(InterpolatePixelsWindow *window
 	int x,
 	int y,
 	int *output)
- : BC_ISlider(x,
- 	y,
-	0,
-	xS(50),
-	yS(50),
-	0,
-	1,
-	*output,
-	0)
+ : BC_ISlider(x, y, 0, xS(50), yS(50), 0, 1, *output, 0)
 {
 	this->window = window;
 	this->output = output;
@@ -74,11 +66,7 @@ int InterpolatePixelsOffset::handle_event()
 
 InterpolatePixelsWindow::InterpolatePixelsWindow(InterpolatePixelsMain *client)
  : PluginClientWindow(client,
-	xS(200),
-	yS(100),
-	xS(200),
-	yS(100),
-	0)
+	xS(200), yS(70), xS(200), yS(70), 0)
 {
 	this->client = client;
 }
@@ -89,7 +77,7 @@ InterpolatePixelsWindow::~InterpolatePixelsWindow()
 
 void InterpolatePixelsWindow::create_objects()
 {
-	int xs5 = xS(5), xs10 = xS(10), xs50 = xS(50);
+	int xs5 = xS(5), xs10 = xS(10);
 	int ys5 = yS(5), ys10 = yS(10);
 	int x = xs10, y = ys10;
 

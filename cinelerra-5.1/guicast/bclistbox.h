@@ -29,6 +29,8 @@
 #include "bctoggle.h"
 #include "bccolors.h"
 
+#define BCPOPUPLISTBOX_W xS(25)
+#define BCPOPUPLISTBOX_H yS(25)
 
 class BC_ListBoxYScroll;
 class BC_ListBoxXScroll;

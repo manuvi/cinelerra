@@ -102,10 +102,10 @@ ReverseVideoConfig::ReverseVideoConfig()
 
 ReverseVideoWindow::ReverseVideoWindow(ReverseVideo *plugin)
  : PluginClientWindow(plugin,
-	xS(210),
-	yS(160),
-	xS(200),
-	yS(160),
+	xS(160),
+	yS(40),
+	xS(160),
+	yS(40),
 	0)
 {
 	this->plugin = plugin;

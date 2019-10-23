@@ -10,7 +10,7 @@
 
 
 SignalStatus::SignalStatus(BC_WindowBase *wdw, int x, int y)
- : BC_SubWindow(x, y, 100, 35)
+ : BC_SubWindow(x, y, xS(100), yS(35))
 {
 	this->wdw = wdw;
 	dvb_input = 0;

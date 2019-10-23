@@ -1304,6 +1304,7 @@ AWindowGUI::AWindowGUI(MWindow *mwindow, AWindow *awindow)
 	vicon_audio = 0;
 	vicon_drawing = AVICON_FULL_PLAY;
 	play_off = 0;
+	tip_info = 0;
 	displayed_folder = AW_NO_FOLDER;
 	new_folder_thread = 0;
 	modify_folder_thread = 0;

@@ -69,6 +69,7 @@ Preferences::Preferences()
 	trap_sigsegv = 1;
 	trap_sigintr = 1;
 	awindow_picon_h = 50;
+	layout_scale = 0; // auto scale
 	vicon_size = 50;
 	vicon_color_mode = VICON_COLOR_MODE_LOW;
 	theme[0] = 0;
@@ -180,6 +181,7 @@ void Preferences::copy_from(Preferences *that)
 	keyframe_reticle = that->keyframe_reticle;
 	perpetual_session = that->perpetual_session;
 	awindow_picon_h = that->awindow_picon_h;
+	layout_scale = that->layout_scale;
 	vicon_size = that->vicon_size;
 	vicon_color_mode = that->vicon_color_mode;
 	strcpy(theme, that->theme);
@@ -329,6 +331,7 @@ int Preferences::load_defaults(BC_Hash *defaults)
 	trap_sigintr = defaults->get("TRAP_SIGINTR", trap_sigintr);
 
 	awindow_picon_h = defaults->get("AWINDOW_PICON_H", awindow_picon_h);
+	layout_scale = defaults->get("LAYOUT_SCALE",layout_scale);
 	vicon_size = defaults->get("VICON_SIZE",vicon_size);
 	vicon_color_mode = defaults->get("VICON_COLOR_MODE",vicon_color_mode);
 	strcpy(theme, _(DEFAULT_THEME));
@@ -478,6 +481,7 @@ int Preferences::save_defaults(BC_Hash *defaults)
 	defaults->update("TRAP_SIGSEGV", trap_sigsegv);
 	defaults->update("TRAP_SIGINTR", trap_sigintr);
 	defaults->update("AWINDOW_PICON_H", awindow_picon_h);
+	defaults->update("LAYOUT_SCALE",layout_scale);
 	defaults->update("VICON_SIZE",vicon_size);
 	defaults->update("VICON_COLOR_MODE",vicon_color_mode);
 	defaults->update("THEME", theme);

@@ -47,6 +47,7 @@ public:
 	TimeFormatFrames *frames;
 	TimeFormatFeet *feet;
 	TimeFormatSeconds *seconds;
+	ViewLayoutScale *layout_scale;
 	ViewThumbnails *thumbnails;
 	ViewThumbnailSize *thumbnail_size;
 	ViewViconSize *vicon_size;
@@ -168,6 +169,16 @@ public:
 	ViewPluginIconItem(ViewPluginIcons *popup, const char *text);
 	int handle_event();
 	ViewPluginIcons *popup;
+};
+
+class ViewLayoutScale : public BC_TumbleTextBox
+{
+public:
+	ViewLayoutScale(PreferencesWindow *pwindow,
+		AppearancePrefs *aprefs, int x, int y);
+	int handle_event();
+	AppearancePrefs *aprefs;
+	PreferencesWindow *pwindow;
 };
 
 class ViewThumbnails : public BC_CheckBox

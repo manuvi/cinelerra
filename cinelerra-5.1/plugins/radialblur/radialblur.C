@@ -126,10 +126,10 @@ void RadialBlurConfig::interpolate(RadialBlurConfig &prev,
 
 RadialBlurWindow::RadialBlurWindow(RadialBlurMain *plugin)
  : PluginClientWindow(plugin,
-	xS(280),
-	yS(370),
-	xS(280),
-	yS(370),
+	xS(250),
+	yS(380),
+	xS(250),
+	yS(380),
 	0)
 {
 	this->plugin = plugin;
@@ -182,7 +182,7 @@ void RadialBlurWindow::create_objects()
 	y += ys40;
 	add_subwindow(reset = new RadialBlurReset(plugin, this, x, y));
 	add_subwindow(default_settings = new RadialBlurDefaultSettings(plugin, this,
-		(280 - 10 - defaultBtn_w), y, defaultBtn_w));
+		(xS(250) - xS(10) - defaultBtn_w), y, defaultBtn_w));
 
 	show_window();
 	flush();

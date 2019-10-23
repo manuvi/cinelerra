@@ -1780,12 +1780,13 @@ int BC_ListBox::get_scrollbars()
 
 int BC_ListBox::get_w()
 {
-	return is_popup ? button_images[0]->get_w() + xS(1) : popup_w;
+	return is_popup ? BCPOPUPLISTBOX_W : popup_w;
 }
 int BC_ListBox::get_h()
 {
-	return is_popup ? button_images[0]->get_h() + yS(1) : popup_h;
+	return is_popup ? BCPOPUPLISTBOX_H : popup_h;
 }
+
 int BC_ListBox::gui_tooltip(const char *text)
 {
 	return is_popup && gui ? gui->show_tooltip(text, gui->get_w(),0, -1,-1) : -1;

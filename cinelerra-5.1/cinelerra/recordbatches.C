@@ -39,7 +39,7 @@ load_defaults(ChannelDB * channeldb, Record * record)
 	for(int i = 0; i < BATCH_COLUMNS; i++) {
 		batch_titles[i] = _(default_batch_titles[i]);
 		sprintf(string, "BATCH_COLUMNWIDTH_%d", i);
-		column_widths[i] = defaults->get(string, default_columnwidth[i]);
+		column_widths[i] = defaults->get(string, xS(default_columnwidth[i]));
 	}
 	int total_batches = defaults->get("TOTAL_BATCHES", 1);
 	if(total_batches < 1) total_batches = 1;
@@ -335,7 +335,7 @@ set_row_color(int row, int color)
 
 RecordBatchesGUI::Dir::
 Dir(RecordBatches &batches, const char *dir, int x, int y)
- : BC_TextBox(x, y, 200, 1, dir),
+ : BC_TextBox(x, y, xS(200), 1, dir),
    batches(batches),
    directory(batches.default_directory)
 {
@@ -380,7 +380,7 @@ load_dirs(const char *dir)
 
 RecordBatchesGUI::Path::
 Path(RecordBatches &batches, int x, int y)
- : BC_TextBox(x, y, 200, 1, batches.get_editing_batch()->asset->path),
+ : BC_TextBox(x, y, xS(200), 1, batches.get_editing_batch()->asset->path),
    batches(batches)
 {
 }
@@ -437,7 +437,7 @@ RecordBatchesGUI::Source::
 Source(BC_Window *win, RecordBatches &batches, int x, int y)
  : BC_PopupTextBox(win, &sources,
 		 batches.get_editing_batch()->get_source_text(),
-		 x, y, 200, 200),
+		 x, y, xS(200), yS(200)),
    batches(batches)
 {
 }
@@ -452,7 +452,7 @@ handle_event()
 
 RecordBatchesGUI::News::
 News(RecordBatches &batches, int x, int y)
- : BC_TextBox(x, y, 200, 1, batches.get_editing_batch()->news),
+ : BC_TextBox(x, y, xS(200), 1, batches.get_editing_batch()->news),
    batches(batches)
 {
 }

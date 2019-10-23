@@ -43,9 +43,9 @@ static const char *pattern_text[] =
 IVTCWindow::IVTCWindow(IVTCMain *client)
  : PluginClientWindow(client,
 	xS(210),
-	yS(230),
+	yS(200),
 	xS(210),
-	yS(230),
+	yS(200),
 	0)
 {
 	this->client = client;

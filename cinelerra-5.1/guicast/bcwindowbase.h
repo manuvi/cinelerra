@@ -203,6 +203,8 @@ public:
 	virtual int grab_event(XEvent *event) { return 0; };
 	virtual void create_objects() { return; };
 
+	static void init_resources(float scale);
+	static void finit_resources();
 	int get_window_type() { return window_type; }
 // Wait until event loop is running
 	void init_wait();
@@ -729,7 +731,7 @@ private:
 // Whether the window has the focus
 	int has_focus;
 
-	static BC_Resources resources;
+	static BC_Resources *resources;
 
 #ifndef SINGLE_THREAD
 // Array of repeaters for multiple repeating objects.

@@ -35,6 +35,7 @@ class ViewTheme;
 class ViewThemeItem;
 class ViewPluginIcons;
 class ViewPluginIconItem;
+class ViewLayoutScale;
 class ViewThumbnails;
 class ViewThumbnailSize;
 class ViewViconSize;

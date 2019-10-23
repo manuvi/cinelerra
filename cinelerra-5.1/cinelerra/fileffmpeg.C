@@ -1649,7 +1649,9 @@ FFOptionsAudioDialog::~FFOptionsAudioDialog()
 
 void FFOptionsAudioDialog::update_options(const char *options)
 {
+	aud_config->lock_window("FFOptionsAudioDialog::update_options");
 	aud_config->audio_options->update(options);
+	aud_config->unlock_window();
 }
 
 FFOptionsVideoDialog::FFOptionsVideoDialog(FFMPEGConfigVideo *vid_config)
@@ -1664,7 +1666,9 @@ FFOptionsVideoDialog::~FFOptionsVideoDialog()
 
 void FFOptionsVideoDialog::update_options(const char *options)
 {
+	vid_config->lock_window("FFOptionsVideoDialog::update_options");
 	vid_config->video_options->update(options);
+	vid_config->unlock_window();
 }
 
 

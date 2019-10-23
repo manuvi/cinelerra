@@ -29,6 +29,6 @@ class TimeEntryTumbler;
 class SecTumbler;
 class TimeTextBox;
 
-#define DEFAULT_TIMEW 200
+#define DEFAULT_TIMEW xS(200)
 
 #endif

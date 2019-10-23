@@ -28,9 +28,9 @@
 EdgeWindow::EdgeWindow(Edge *plugin)
  : PluginClientWindow(plugin,
 	xS(320),
-	yS(120),
+	yS(70),
 	xS(320),
-	yS(120),
+	yS(70),
 	0)
 {
 	this->plugin = plugin;

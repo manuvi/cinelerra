@@ -183,12 +183,7 @@ const char* OverlayConfig::output_to_text(int output_layer)
 
 
 OverlayWindow::OverlayWindow(Overlay *plugin)
- : PluginClientWindow(plugin,
-	xS(300),
-	yS(160),
-	xS(300),
-	yS(160),
-	0)
+ : PluginClientWindow(plugin, xS(300), yS(100), xS(300), yS(100), 0)
 {
 	this->plugin = plugin;
 }

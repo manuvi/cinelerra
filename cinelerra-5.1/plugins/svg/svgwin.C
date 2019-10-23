@@ -1,4 +1,3 @@
-
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
@@ -212,7 +211,9 @@ void NewSvgButton::run()
 		}
 		new_window = new NewSvgWindow(client, window, directory);
 		new_window->create_objects();
+		new_window->lock_window("NewSvgButton::run");
 		new_window->update_filter("*.svg");
+		new_window->unlock_window();
 		result = new_window->run_window();
 		const char *filepath = new_window->get_path(0);
 		strcpy(filename, filepath ? filepath : "" );
@@ -340,9 +341,9 @@ void EditSvgButton::run()
 			if( ret != sizeof(fifo_buf) ) continue;
 			switch( fifo_buf.action ) {
 			case 1: break;
-			case 2: printf(_("Inkscape has exited\n"));
+			case 2: // printf(_("Inkscape has exited\n"));
 				break;
-			case 3: printf(_("Plugin window has closed\n"));
+			case 3: // printf(_("Plugin window has closed\n"));
 				done = 1;
 				break;
 			}
@@ -432,7 +433,7 @@ NewSvgWindow::~NewSvgWindow() {}
 
 
 DpiValue::DpiValue(SvgWin *win, SvgMain *client, int x, int y, float *value)
- : BC_TumbleTextBox(win, *value, (float)10, (float)1000, x, y, 100)
+ : BC_TumbleTextBox(win, *value, 10.f, 1000.f, x, y, xS(100), 2)
 {
 //printf("SvgWidth::SvgWidth %f\n", client->config.w);
 	this->client = client;

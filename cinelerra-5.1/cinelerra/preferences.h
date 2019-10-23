@@ -95,6 +95,7 @@ public:
 // media thumbnail size
 	int awindow_picon_h;
 	int vicon_size, vicon_color_mode;
+	float layout_scale;
 // Title of theme
 	char theme[BCTEXTLEN];
 // plugin icon set

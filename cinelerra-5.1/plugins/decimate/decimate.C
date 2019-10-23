@@ -211,9 +211,9 @@ int DecimateConfig::equivalent(DecimateConfig *config)
 DecimateWindow::DecimateWindow(Decimate *plugin)
  : PluginClientWindow(plugin,
 	xS(210),
-	yS(160),
+	yS(100),
 	xS(200),
-	yS(160),
+	yS(100),
 	0)
 {
 	this->plugin = plugin;

@@ -239,7 +239,7 @@ int HistEqPlot::handle_event()
 }
 
 HistEqBlend::HistEqBlend(HistEqWindow *gui, HistEqMain *plugin, int x, int y)
- : BC_FSlider(x, y, 0, xS(150), yS(200), 0, xS(1.0), plugin->config.blend, 0)
+ : BC_FSlider(x, y, 0, xS(150), yS(200), 0, 1.0, plugin->config.blend, 0)
 {
         this->gui = gui;
         this->plugin = plugin;
@@ -258,7 +258,7 @@ int HistEqBlend::handle_event()
 
 
 HistEqGain::HistEqGain(HistEqWindow *gui, HistEqMain *plugin, int x, int y)
- : BC_FSlider(x, y, 0, xS(150), yS(200), 0, xS(1.0), plugin->config.gain, 0)
+ : BC_FSlider(x, y, 0, xS(150), yS(200), 0, 1.0, plugin->config.gain, 0)
 {
         this->gui = gui;
         this->plugin = plugin;

@@ -237,6 +237,7 @@ int PreferencesThread::apply_settings()
 	if( strcmp(preferences->theme, mwindow->preferences->theme) ||
 	    strcmp(preferences->plugin_icons, mwindow->preferences->plugin_icons) ||
 	    preferences->awindow_picon_h != mwindow->preferences->awindow_picon_h ||
+	    preferences->layout_scale != mwindow->preferences->layout_scale ||
 	    preferences->vicon_size != mwindow->preferences->vicon_size ||
 	    preferences->vicon_color_mode != mwindow->preferences->vicon_color_mode )
 		mwindow->restart_status = -1;  // reconstruct/restart program

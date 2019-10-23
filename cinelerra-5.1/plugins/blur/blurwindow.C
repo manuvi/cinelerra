@@ -31,9 +31,9 @@
 
 BlurWindow::BlurWindow(BlurMain *client)
  : PluginClientWindow(client,
-	xS(200),
+	xS(210),
 	yS(360),
-	xS(200),
+	xS(210),
 	yS(360),
 	0)
 {

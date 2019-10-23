@@ -201,7 +201,7 @@ void MainSession::default_window_positions(int window_config)
 	int border_bottom = display_info.get_bottom_border();
 
 	int dual_head = screens > 1 ? 1 : 0;
-	int left_w = 0, right_w = root_w;
+	int left_w = 0, left_h = 0, right_w = 0;
 	int xin_screens = display_info.get_xinerama_screens();
 	if( xin_screens > 1 ) {
 		dual_head = 1;
@@ -210,7 +210,7 @@ void MainSession::default_window_positions(int window_config)
 			if( display_info.xinerama_geometry(s, x, y, w, h) )
 				continue;
 			if( !y && !x ) {
-				left_w = w;
+				left_w = w;  left_h = h;
 				break;
 			}
 		}
@@ -229,14 +229,13 @@ void MainSession::default_window_positions(int window_config)
 				root_w = right_w;
 			}
 			else {
-			// use same aspect ratio to compute left height
 				root_w = left_w;
-				root_h = (root_w*root_h) / right_w;
+				root_h = left_h;
 			}
 		}
 	}
 // Wider than 16:9, narrower than dual head
-	if( screens < 2 && (float)root_w / root_h > 1.8 ) {
+	else if( screens < 2 && (float)root_w / root_h > 1.8 ) {
 		dual_head = 1;
 		switch( root_h ) {
 		case 600:  right_w = 800;   break;
@@ -432,7 +431,7 @@ int MainSession::load_defaults(BC_Hash *defaults)
 //printf("MainSession::load_defaults 1\n");
 
 // Other windows
-	afolders_w = defaults->get("ABINS_W", 200);
+	afolders_w = defaults->get("ABINS_W", xS(200));
 
 	bwindow_w = defaults->get("BWINDOW_W", bwindow_w);
 	bwindow_h = defaults->get("BWINDOW_H", bwindow_h);
@@ -470,19 +469,19 @@ int MainSession::load_defaults(BC_Hash *defaults)
 
 	cwindow_controls = defaults->get("CWINDOW_CONTROLS", cwindow_controls);
 
-	plugindialog_w = defaults->get("PLUGINDIALOG_W", 510);
-	plugindialog_h = defaults->get("PLUGINDIALOG_H", 415);
-//	presetdialog_w = defaults->get("PRESETDIALOG_W", 510);
-//	presetdialog_h = defaults->get("PRESETDIALOG_H", 415);
-	keyframedialog_w = defaults->get("KEYFRAMEDIALOG_W", 320);
-	keyframedialog_h = defaults->get("KEYFRAMEDIALOG_H", 415);
-	keyframedialog_column1 = defaults->get("KEYFRAMEDIALOG_COLUMN1", 150);
-	keyframedialog_column2 = defaults->get("KEYFRAMEDIALOG_COLUMN2", 100);
+	plugindialog_w = defaults->get("PLUGINDIALOG_W", xS(510));
+	plugindialog_h = defaults->get("PLUGINDIALOG_H", yS(415));
+//	presetdialog_w = defaults->get("PRESETDIALOG_W", xS(510));
+//	presetdialog_h = defaults->get("PRESETDIALOG_H", yS(415));
+	keyframedialog_w = defaults->get("KEYFRAMEDIALOG_W", xS(320));
+	keyframedialog_h = defaults->get("KEYFRAMEDIALOG_H", yS(415));
+	keyframedialog_column1 = defaults->get("KEYFRAMEDIALOG_COLUMN1", xS(150));
+	keyframedialog_column2 = defaults->get("KEYFRAMEDIALOG_COLUMN2", xS(100));
 	keyframedialog_all = defaults->get("KEYFRAMEDIALOG_ALL", 0);
-	menueffect_w = defaults->get("MENUEFFECT_W", 580);
-	menueffect_h = defaults->get("MENUEFFECT_H", 350);
-	transitiondialog_w = defaults->get("TRANSITIONDIALOG_W", 320);
-	transitiondialog_h = defaults->get("TRANSITIONDIALOG_H", 512);
+	menueffect_w = defaults->get("MENUEFFECT_W", xS(580));
+	menueffect_h = defaults->get("MENUEFFECT_H", yS(350));
+	transitiondialog_w = defaults->get("TRANSITIONDIALOG_W", xS(320));
+	transitiondialog_h = defaults->get("TRANSITIONDIALOG_H", yS(512));
 
 	current_tip = defaults->get("CURRENT_TIP", current_tip);
 	actual_frame_rate = defaults->get("ACTUAL_FRAME_RATE", (float)-1);

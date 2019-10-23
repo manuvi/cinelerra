@@ -121,6 +121,25 @@ public:
 
 long cin_timezone;
 
+static float get_layout_scale()
+{
+	char config_path[BCTEXTLEN];
+	sprintf(config_path,"%s/%s", File::get_config_path(), CONFIG_FILE);
+	FILE *fp = fopen(config_path,"r");
+	if( !fp ) return 0;
+	float scale = 0;
+	char line[BCTEXTLEN];
+	line[BCTEXTLEN-1] = 0;
+	while( fgets(line, BCTEXTLEN-1, fp) ) {
+		if( !strncmp(line, "LAYOUT_SCALE ",12+1) ) {
+			scale = atof(line+12);
+			break;
+		}
+	}
+	fclose(fp);
+	return scale;
+}
+
 int main(int argc, char *argv[])
 {
 // handle command line arguments first
@@ -258,7 +277,10 @@ int main(int argc, char *argv[])
 		}
 	}
 
-
+	float scale = operation == DO_GUI ?
+		get_layout_scale() : 1;
+	// runs XInitThreads
+	BC_WindowBase::init_resources(scale);
 
 	if( operation == DO_GUI ||
 	    operation == DO_DEAMON || operation == DO_DEAMON_FG ||
@@ -401,6 +423,7 @@ DISABLE_BUFFER
 
 	filenames.remove_all_objects();
 	Units::finit();
+	BC_WindowBase::finit_resources();
 
 	time_t et; time(&et);
 	long dt = et - st;

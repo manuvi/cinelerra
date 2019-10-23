@@ -70,7 +70,7 @@ BC_ResizeCall::BC_ResizeCall(int w, int h)
 
 
 int BC_WindowBase::shm_completion_event = -1;
-BC_Resources BC_WindowBase::resources;
+BC_Resources *BC_WindowBase::resources = 0;
 Window XGroupLeader = 0;
 
 Mutex BC_KeyboardHandlerLock::keyboard_listener_mutex("keyboard_listener",0);
@@ -473,7 +473,7 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window, const char *title
 // This must be done before fonts to know if antialiasing is available.
 		init_colors();
 // get the resources
-		if(resources.use_shm < 0) resources.initialize_display(this);
+		if(resources->use_shm < 0) resources->initialize_display(this);
 		x_correction = BC_DisplayInfo::get_left_border();
 		y_correction = BC_DisplayInfo::get_top_border();
 
@@ -486,7 +486,7 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window, const char *title
 		if(this->y < 0) this->y = 0;
 
 		if(this->bg_color == -1)
-			this->bg_color = resources.get_bg_color();
+			this->bg_color = resources->get_bg_color();
 
 // printf("bcwindowbase 1 %s\n", title);
 // if(window_type == MAIN_WINDOW) sleep(1);
@@ -576,7 +576,7 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window, const char *title
 			KeyPressMask | KeyReleaseMask;
 
 		if(this->bg_color == -1)
-			this->bg_color = resources.get_bg_color();
+			this->bg_color = resources->get_bg_color();
 		attr.background_pixel = top_level->get_color(bg_color);
 		attr.colormap = top_level->cmap;
 		if(top_level->is_hourglass)
@@ -1031,12 +1031,12 @@ if( debug && event->type != ClientMessage ) {
 			drag_y1 = cursor_y - get_resources()->drag_radius;
 			drag_y2 = cursor_y + get_resources()->drag_radius;
 
-			if((long)(button_time3 - button_time1) < resources.double_click * 2)
+			if((long)(button_time3 - button_time1) < resources->double_click * 2)
 			{
 				triple_click = 1;
 				button_time3 = button_time2 = button_time1 = 0;
 			}
-			if((long)(button_time3 - button_time2) < resources.double_click)
+			if((long)(button_time3 - button_time2) < resources->double_click)
 			{
 				double_click = 1;
 //				button_time3 = button_time2 = button_time1 = 0;
@@ -2295,21 +2295,21 @@ int BC_WindowBase::init_gc()
 
 int BC_WindowBase::init_fonts()
 {
-	if( !(smallfont = XLoadQueryFont(display, _(resources.small_font))) )
-		if( !(smallfont = XLoadQueryFont(display, _(resources.small_font2))) )
+	if( !(smallfont = XLoadQueryFont(display, _(resources->small_font))) )
+		if( !(smallfont = XLoadQueryFont(display, _(resources->small_font2))) )
 			smallfont = XLoadQueryFont(display, "fixed");
-	if( !(mediumfont = XLoadQueryFont(display, _(resources.medium_font))) )
-		if( !(mediumfont = XLoadQueryFont(display, _(resources.medium_font2))) )
+	if( !(mediumfont = XLoadQueryFont(display, _(resources->medium_font))) )
+		if( !(mediumfont = XLoadQueryFont(display, _(resources->medium_font2))) )
 			mediumfont = XLoadQueryFont(display, "fixed");
-	if( !(largefont = XLoadQueryFont(display, _(resources.large_font))) )
-		if( !(largefont = XLoadQueryFont(display, _(resources.large_font2))) )
+	if( !(largefont = XLoadQueryFont(display, _(resources->large_font))) )
+		if( !(largefont = XLoadQueryFont(display, _(resources->large_font2))) )
 			largefont = XLoadQueryFont(display, "fixed");
-	if( !(bigfont = XLoadQueryFont(display, _(resources.big_font))) )
-		if( !(bigfont = XLoadQueryFont(display, _(resources.big_font2))) )
+	if( !(bigfont = XLoadQueryFont(display, _(resources->big_font))) )
+		if( !(bigfont = XLoadQueryFont(display, _(resources->big_font2))) )
 			bigfont = XLoadQueryFont(display, "fixed");
 
-	if((clockfont = XLoadQueryFont(display, _(resources.clock_font))) == NULL)
-		if((clockfont = XLoadQueryFont(display, _(resources.clock_font2))) == NULL)
+	if((clockfont = XLoadQueryFont(display, _(resources->clock_font))) == NULL)
+		if((clockfont = XLoadQueryFont(display, _(resources->clock_font2))) == NULL)
 			clockfont = XLoadQueryFont(display, "fixed");
 
 	init_xft();
@@ -2319,19 +2319,19 @@ int BC_WindowBase::init_fonts()
 		int n;
 
 // FIXME: should check the m,d,n values
-		smallfontset = XCreateFontSet(display, resources.small_fontset, &m, &n, &d);
+		smallfontset = XCreateFontSet(display, resources->small_fontset, &m, &n, &d);
 		if( !smallfontset )
 			smallfontset = XCreateFontSet(display, "fixed,*", &m, &n, &d);
-		mediumfontset = XCreateFontSet(display, resources.medium_fontset, &m, &n, &d);
+		mediumfontset = XCreateFontSet(display, resources->medium_fontset, &m, &n, &d);
 		if( !mediumfontset )
 			mediumfontset = XCreateFontSet(display, "fixed,*", &m, &n, &d);
-		largefontset = XCreateFontSet(display, resources.large_fontset, &m, &n, &d);
+		largefontset = XCreateFontSet(display, resources->large_fontset, &m, &n, &d);
 		if( !largefontset )
 			largefontset = XCreateFontSet(display, "fixed,*", &m, &n, &d);
-		bigfontset = XCreateFontSet(display, resources.big_fontset, &m, &n, &d);
+		bigfontset = XCreateFontSet(display, resources->big_fontset, &m, &n, &d);
 		if( !bigfontset )
 			bigfontset = XCreateFontSet(display, "fixed,*", &m, &n, &d);
-		clockfontset = XCreateFontSet(display, resources.clock_fontset, &m, &n, &d);
+		clockfontset = XCreateFontSet(display, resources->clock_fontset, &m, &n, &d);
 		if( !clockfontset )
 			clockfontset = XCreateFontSet(display, "fixed,*", &m, &n, &d);
 		if(clockfontset && bigfontset && largefontset && mediumfontset && smallfontset) {
@@ -2355,54 +2355,54 @@ void BC_WindowBase::init_xft()
 static Mutex xft_init_lock("BC_WindowBase::xft_init_lock", 0);
 xft_init_lock.lock("BC_WindowBase::init_xft");
 	if(!(smallfont_xft =
-		(resources.small_font_xft[0] == '-' ?
-			xftFontOpenXlfd(display, screen, resources.small_font_xft) :
-			xftFontOpenName(display, screen, resources.small_font_xft))) )
+		(resources->small_font_xft[0] == '-' ?
+			xftFontOpenXlfd(display, screen, resources->small_font_xft) :
+			xftFontOpenName(display, screen, resources->small_font_xft))) )
 		if(!(smallfont_xft =
-			xftFontOpenXlfd(display, screen, resources.small_font_xft2)))
+			xftFontOpenXlfd(display, screen, resources->small_font_xft2)))
 			smallfont_xft = xftFontOpenXlfd(display, screen, "fixed");
 	if(!(mediumfont_xft =
-		(resources.medium_font_xft[0] == '-' ?
-			xftFontOpenXlfd(display, screen, resources.medium_font_xft) :
-			xftFontOpenName(display, screen, resources.medium_font_xft))) )
+		(resources->medium_font_xft[0] == '-' ?
+			xftFontOpenXlfd(display, screen, resources->medium_font_xft) :
+			xftFontOpenName(display, screen, resources->medium_font_xft))) )
 		if(!(mediumfont_xft =
-			xftFontOpenXlfd(display, screen, resources.medium_font_xft2)))
+			xftFontOpenXlfd(display, screen, resources->medium_font_xft2)))
 			mediumfont_xft = xftFontOpenXlfd(display, screen, "fixed");
 	if(!(largefont_xft =
-		(resources.large_font_xft[0] == '-' ?
-			xftFontOpenXlfd(display, screen, resources.large_font_xft) :
-			xftFontOpenName(display, screen, resources.large_font_xft))) )
+		(resources->large_font_xft[0] == '-' ?
+			xftFontOpenXlfd(display, screen, resources->large_font_xft) :
+			xftFontOpenName(display, screen, resources->large_font_xft))) )
 		if(!(largefont_xft =
-			xftFontOpenXlfd(display, screen, resources.large_font_xft2)))
+			xftFontOpenXlfd(display, screen, resources->large_font_xft2)))
 			largefont_xft = xftFontOpenXlfd(display, screen, "fixed");
 	if(!(bigfont_xft =
-		(resources.big_font_xft[0] == '-' ?
-			xftFontOpenXlfd(display, screen, resources.big_font_xft) :
-			xftFontOpenName(display, screen, resources.big_font_xft))) )
+		(resources->big_font_xft[0] == '-' ?
+			xftFontOpenXlfd(display, screen, resources->big_font_xft) :
+			xftFontOpenName(display, screen, resources->big_font_xft))) )
 		if(!(bigfont_xft =
-			xftFontOpenXlfd(display, screen, resources.big_font_xft2)))
+			xftFontOpenXlfd(display, screen, resources->big_font_xft2)))
 			bigfont_xft = xftFontOpenXlfd(display, screen, "fixed");
 	if(!(clockfont_xft =
-		(resources.clock_font_xft[0] == '-' ?
-			xftFontOpenXlfd(display, screen, resources.clock_font_xft) :
-			xftFontOpenName(display, screen, resources.clock_font_xft))) )
+		(resources->clock_font_xft[0] == '-' ?
+			xftFontOpenXlfd(display, screen, resources->clock_font_xft) :
+			xftFontOpenName(display, screen, resources->clock_font_xft))) )
 		clockfont_xft = xftFontOpenXlfd(display, screen, "fixed");
 
 
 	if(!(bold_smallfont_xft =
-		(resources.small_b_font_xft[0] == '-' ?
-			xftFontOpenXlfd(display, screen, resources.small_b_font_xft) :
-			xftFontOpenName(display, screen, resources.small_b_font_xft))) )
+		(resources->small_b_font_xft[0] == '-' ?
+			xftFontOpenXlfd(display, screen, resources->small_b_font_xft) :
+			xftFontOpenName(display, screen, resources->small_b_font_xft))) )
 		bold_smallfont_xft = xftFontOpenXlfd(display, screen, "fixed");
 	if(!(bold_mediumfont_xft =
-		(resources.medium_b_font_xft[0] == '-' ?
-			xftFontOpenXlfd(display, screen, resources.medium_b_font_xft) :
-			xftFontOpenName(display, screen, resources.medium_b_font_xft))) )
+		(resources->medium_b_font_xft[0] == '-' ?
+			xftFontOpenXlfd(display, screen, resources->medium_b_font_xft) :
+			xftFontOpenName(display, screen, resources->medium_b_font_xft))) )
 		bold_mediumfont_xft = xftFontOpenXlfd(display, screen, "fixed");
 	if(!(bold_largefont_xft =
-		(resources.large_b_font_xft[0] == '-' ?
-			xftFontOpenXlfd(display, screen, resources.large_b_font_xft) :
-			xftFontOpenName(display, screen, resources.large_b_font_xft))) )
+		(resources->large_b_font_xft[0] == '-' ?
+			xftFontOpenXlfd(display, screen, resources->large_b_font_xft) :
+			xftFontOpenName(display, screen, resources->large_b_font_xft))) )
 		bold_largefont_xft = xftFontOpenXlfd(display, screen, "fixed");
 
 	if( !smallfont_xft || !mediumfont_xft || !largefont_xft || !bigfont_xft ||
@@ -2410,14 +2410,14 @@ xft_init_lock.lock("BC_WindowBase::init_xft");
 	    !clockfont_xft ) {
 		printf("BC_WindowBase::init_fonts: no xft fonts found:"
 			" %s=%p\n %s=%p\n %s=%p\n %s=%p\n %s=%p\n %s=%p\n %s=%p\n %s=%p\n",
-			resources.small_font_xft, smallfont_xft,
-			resources.medium_font_xft, mediumfont_xft,
-			resources.large_font_xft, largefont_xft,
-			resources.big_font_xft, bigfont_xft,
-			resources.clock_font_xft, clockfont_xft,
-			resources.small_b_font_xft, bold_smallfont_xft,
-			resources.medium_b_font_xft, bold_mediumfont_xft,
-			resources.large_b_font_xft, bold_largefont_xft);
+			resources->small_font_xft, smallfont_xft,
+			resources->medium_font_xft, mediumfont_xft,
+			resources->large_font_xft, largefont_xft,
+			resources->big_font_xft, bigfont_xft,
+			resources->clock_font_xft, clockfont_xft,
+			resources->small_b_font_xft, bold_smallfont_xft,
+			resources->medium_b_font_xft, bold_mediumfont_xft,
+			resources->large_b_font_xft, bold_largefont_xft);
 		get_resources()->use_xft = 0;
 		exit(1);
 	}
@@ -3622,12 +3622,12 @@ int BC_WindowBase::get_color_model()
 
 BC_Resources* BC_WindowBase::get_resources()
 {
-	return &BC_WindowBase::resources;
+	return BC_WindowBase::resources;
 }
 
 BC_Synchronous* BC_WindowBase::get_synchronous()
 {
-	return BC_WindowBase::resources.get_synchronous();
+	return BC_WindowBase::resources->get_synchronous();
 }
 
 int BC_WindowBase::get_bg_color()
@@ -4283,6 +4283,32 @@ int BC_WindowBase::set_icon(VFrame *data)
 	return 0;
 }
 
+void BC_WindowBase::init_resources(float scale)
+{
+	if( resources ) return;
+	XInitThreads();
+	const char *env = getenv("BC_SCALE");
+	if( env ) scale = atof(env);
+	float x_scale = 1, y_scale = 1;
+	if( scale <= 0 ) {
+		BC_DisplayInfo info;
+		int wx, wy, ww, wh;
+		int cins = info.xinerama_big_screen();
+		if( !info.xinerama_geometry(cins, wx, wy, ww, wh) ) {
+			if( (x_scale = ww/1920.) < 1 ) x_scale = 1;
+			if( (y_scale = wh/1080.) < 1 ) y_scale = 1;
+		}
+	}
+	else
+		x_scale = y_scale = scale;
+	// constructor sets BC_WindowBase::resources
+	new BC_Resources(x_scale, y_scale);
+}
+void BC_WindowBase::finit_resources()
+{
+	delete resources;  resources = 0;
+}
+
 int BC_WindowBase::set_w(int w)
 {
 	this->w = w;
@@ -4297,7 +4323,6 @@ int BC_WindowBase::set_h(int h)
 
 int BC_WindowBase::load_defaults(BC_Hash *defaults)
 {
-	BC_Resources *resources = get_resources();
 	char string[BCTEXTLEN];
 	int newest_id = - 1;
 	for(int i = 0; i < FILEBOX_HISTORY_SIZE; i++)
@@ -4330,7 +4355,6 @@ int BC_WindowBase::load_defaults(BC_Hash *defaults)
 
 int BC_WindowBase::save_defaults(BC_Hash *defaults)
 {
-	BC_Resources *resources = get_resources();
 	char string[BCTEXTLEN];
 	for(int i = 0; i < FILEBOX_HISTORY_SIZE; i++)
 	{

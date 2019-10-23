@@ -100,10 +100,10 @@ LoopVideoConfig::LoopVideoConfig()
 
 LoopVideoWindow::LoopVideoWindow(LoopVideo *plugin)
  : PluginClientWindow(plugin,
-	xS(210),
-	yS(160),
-	xS(200),
-	yS(160),
+	xS(160),
+	yS(70),
+	xS(160),
+	yS(70),
 	0)
 {
 	this->plugin = plugin;

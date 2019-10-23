@@ -28,10 +28,8 @@ class ErrorBox : public BC_Window
 {
 public:
 	ErrorBox(const char *title,
-		int x = (int)BC_INFINITY,
-		int y = (int)BC_INFINITY,
-		int w = 400,
-		int h = 120);
+		int x = (int)BC_INFINITY, int y = (int)BC_INFINITY,
+		int w = xS(400), int h = yS(120));
 	virtual ~ErrorBox();
 
 	void create_objects(const char *text);

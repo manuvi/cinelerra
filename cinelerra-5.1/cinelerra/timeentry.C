@@ -88,7 +88,7 @@ void TimeEntry::create_objects()
 	char string[BCTEXTLEN];
 
 	if(output_day) {
-		day_text = new DayText(this, x, y, 50,
+		day_text = new DayText(this, x, y, xS(50),
 			day_table, TOTAL_DAYS, day_table[*output_day]);
 		gui->add_subwindow(day_text);
 		x += day_text->get_w();

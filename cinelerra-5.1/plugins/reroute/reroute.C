@@ -176,7 +176,7 @@ const char* RerouteConfig::output_to_text(int output_track)
 
 
 RerouteWindow::RerouteWindow(Reroute *plugin)
- : PluginClientWindow(plugin, xS(300), yS(160), 0, 0, 1)
+ : PluginClientWindow(plugin, xS(300), yS(70), 0, 0, 1)
 {
 	this->plugin = plugin;
 }
@@ -223,7 +223,7 @@ RerouteOperation::RerouteOperation(Reroute *plugin,
 	int y)
  : BC_PopupMenu(x,
  	y,
-	xS(150),
+	xS(180),
 	RerouteConfig::operation_to_text(plugin->config.operation),
 	1)
 {

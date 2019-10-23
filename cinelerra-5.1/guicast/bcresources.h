@@ -55,7 +55,8 @@ typedef struct
 class BC_Resources
 {
 public:
-	BC_Resources(); // The window parameter is used to get the display information initially
+// The window parameter is used to get the display information initially
+	BC_Resources(float x_scale, float y_scale);
 	~BC_Resources();
 
         friend class BC_WindowBase;
