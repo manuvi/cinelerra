@@ -465,7 +465,7 @@ int PitchScale::handle_event()
 
 
 PitchSize::PitchSize(PitchWindow *window, PitchEffect *plugin, int x, int y)
- : BC_PopupMenu(x, y, xS(100), "4096", 1)
+ : BC_PopupMenu(x, y, xS(110), "4096", 1)
 {
 	this->plugin = plugin;
 }

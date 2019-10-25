@@ -28,11 +28,9 @@
 #include "guicast.h"
 #include "mutex.h"
 #include "pluginaclient.h"
+#include "synthesizer.inc"
 #include "vframe.inc"
 
-
-class Synth;
-class SynthWindow;
 
 // Frequency table for piano
 float keyboard_freqs[] =
@@ -109,12 +107,11 @@ float keyboard_freqs[] =
 
 #define MAX_FREQS 16
 #define TOTALOSCILLATORS 1
-#define OSCILLATORHEIGHT 40
 #define TOTALNOTES ((int)(sizeof(keyboard_freqs) / sizeof(float)))
 #define MIDDLE_C 24
 #define FIRST_TITLE (MIDDLE_C - 12)
 #define LAST_TITLE (MIDDLE_C + 12)
-#define MARGIN 10
+#define MARGIN yS(10)
 
 #define SINE 0
 #define SAWTOOTH 1

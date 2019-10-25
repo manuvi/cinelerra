@@ -93,10 +93,10 @@ void TimeStretchRTConfig::boundaries()
 
 TimeStretchRTWindow::TimeStretchRTWindow(TimeStretchRT *plugin)
  : PluginClientWindow(plugin,
-	xS(210),
-	yS(200),
-	xS(200),
-	yS(210),
+	xS(180),
+	yS(160),
+	xS(180),
+	yS(160),
 	0)
 {
 	this->plugin = plugin;

@@ -85,9 +85,9 @@ void RemoveGapsConfig::boundaries()
 RemoveGapsWindow::RemoveGapsWindow(RemoveGaps *plugin)
  : PluginClientWindow(plugin,
 	xS(320),
-	yS(160),
+	yS(100),
 	xS(320),
-	yS(160),
+	yS(100),
 	0)
 {
 	this->plugin = plugin;

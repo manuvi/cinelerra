@@ -79,6 +79,17 @@ VFrame* BC_Theme::new_image(const char *path)
 	return new_image("", path);
 }
 
+VFrame* BC_Theme::new_image1(const char *title, const char *path)
+{
+	VFrame *existing_image = title[0] ? get_image(title, 0) : 0;
+	if( existing_image ) return existing_image;
+
+	BC_ThemeSet *result = new BC_ThemeSet(1, 0, title);
+	result->data[0] = new VFramePng(get_image_data(path), 1.);
+	add_image_set(result);
+	return result->data[0];
+}
+
 // These create image sets which are stored in the image_sets table.
 VFrame** BC_Theme::new_image_set(const char *title, int total, va_list *args)
 {

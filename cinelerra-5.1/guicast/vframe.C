@@ -824,6 +824,8 @@ int VFramePng::read_png(const unsigned char *data, long sz, double xscale, doubl
 		return 1;
 	}
 	int ww = w * xscale, hh = h * yscale;
+	if( ww < 1 ) ww = 1;
+	if( hh < 1 ) hh = 1;
 	if( ww != w || hh != h ) {
 		VFrame vframe(*this);
 		reallocate(NULL, -1, 0, 0, 0, ww, hh, color_model, -1);

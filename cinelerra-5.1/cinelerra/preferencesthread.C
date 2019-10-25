@@ -52,7 +52,9 @@
 #include "playbackengine.h"
 #include "playbackprefs.h"
 #include "preferences.h"
+#include "record.h"
 #include "recordprefs.h"
+#include "render.h"
 #include "shbtnprefs.h"
 #include "theme.h"
 #include "trackcanvas.h"
@@ -100,10 +102,12 @@ PreferencesThread::PreferencesThread(MWindow *mwindow)
 	this->mwindow = mwindow;
 	window = 0;
 	thread_running = 0;
+	confirm_dialog = 0;
 }
 
 PreferencesThread::~PreferencesThread()
 {
+	delete confirm_dialog;
 	close_window();
 }
 
@@ -362,6 +366,23 @@ int PreferencesThread::apply_settings()
 	}
 
 	return 0;
+}
+
+const char *PreferencesThread::busy()
+{
+	if( mwindow->render->thread->running() )
+		return _("render");
+        Record *record = mwindow->gui->record;
+	if( record->capturing || record->recording || record->writing_file )
+		return _("record");
+	return 0;
+}
+
+void PreferencesThread::confirm_update(const char *reason, int close)
+{
+	delete confirm_dialog;
+	confirm_dialog = new PreferencesConfirmDialog(this, reason, close);
+	confirm_dialog->start();
 }
 
 const char* PreferencesThread::category_to_text(int category)
@@ -630,8 +651,13 @@ PreferencesApply::PreferencesApply(MWindow *mwindow, PreferencesThread *thread)
 }
 int PreferencesApply::handle_event()
 {
-	thread->apply_settings();
-	mwindow->save_defaults();
+	const char *reason = thread->busy();
+	if( reason )
+		thread->confirm_update(reason, 0);
+	else {
+		thread->apply_settings();
+		mwindow->save_defaults();
+	}
 	return 1;
 }
 int PreferencesApply::resize_event(int w, int h)
@@ -649,24 +675,69 @@ PreferencesOK::PreferencesOK(MWindow *mwindow, PreferencesThread *thread)
 	this->mwindow = mwindow;
 	this->thread = thread;
 }
+PreferencesOK::~PreferencesOK()
+{
+}
+
 int PreferencesOK::keypress_event()
 {
-	if(get_keypress() == RETURN)
-	{
-		thread->window->set_done(0);
-		return 1;
-	}
+	if( get_keypress() == RETURN )
+		return handle_event();
 	return 0;
 }
+
 int PreferencesOK::handle_event()
 {
-	thread->window->set_done(0);
+	const char *reason = mwindow->restart() ? _("restart") : thread->busy();
+	if( reason )
+		thread->confirm_update(reason, 1);
+	else
+		thread->window->set_done(0);
 	return 1;
 }
 int PreferencesOK::resize_event(int w, int h)
 {
 	reposition_window(xS(10), h-get_h()-yS(10));
 	return 1;
+}
+
+
+PreferencesConfirmDialog::PreferencesConfirmDialog(PreferencesThread *thread,
+		const char *reason, int close)
+{
+	this->thread = thread;
+	this->close = close;
+	sprintf(query, _("Busy: %s in progress. Are you sure?"), reason);
+}
+PreferencesConfirmDialog::~PreferencesConfirmDialog()
+{
+}
+BC_Window *PreferencesConfirmDialog::new_gui()
+{
+	qwindow = new PreferencesConfirmWindow(this);
+	qwindow->create_objects(query, 0);
+	return qwindow;
+}
+void PreferencesConfirmDialog::handle_done_event(int result)
+{
+	if( !result ) return; // no
+	if( !close ) {
+		thread->window->lock_window("PreferencesConfirmDialog::handle_done_event");
+		thread->apply_settings();
+		thread->mwindow->save_defaults();
+		thread->window->unlock_window();
+	}
+	else
+		thread->window->set_done(0);
+}
+
+PreferencesConfirmWindow::PreferencesConfirmWindow(PreferencesConfirmDialog *dialog)
+ : QuestionWindow(dialog->thread->mwindow)
+{
+	this->dialog = dialog;
+}
+PreferencesConfirmWindow::~PreferencesConfirmWindow()
+{
 }
 
 

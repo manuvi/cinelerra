@@ -103,6 +103,8 @@ public:
 // Decompresses image and puts on images table before returning it.
 	VFrame* new_image(const char *title, const char *path);
 	VFrame* new_image(const char *path);
+// xy_scale = 1
+	VFrame* new_image1(const char *title, const char *path);
 
 
 // These retrieve images based on case sensitive title

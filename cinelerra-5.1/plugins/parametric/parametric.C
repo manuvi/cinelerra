@@ -360,7 +360,7 @@ int ParametricWetness::handle_event()
 
 
 ParametricSize::ParametricSize(ParametricWindow *window, ParametricEQ *plugin, int x, int y)
- : BC_PopupMenu(x, y, xS(100), "4096", 1)
+ : BC_PopupMenu(x, y, xS(120), "4096", 1)
 {
 	this->plugin = plugin;
 	this->window = window;

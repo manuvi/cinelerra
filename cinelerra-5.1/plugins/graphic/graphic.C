@@ -699,7 +699,7 @@ int GraphicReset::handle_event()
 
 
 GraphicSize::GraphicSize(GraphicGUI *window, GraphicEQ *plugin, int x, int y)
- : BC_PopupMenu(x, y, xS(100), "4096", 1)
+ : BC_PopupMenu(x, y, xS(120), "4096", 1)
 {
 	this->plugin = plugin;
 	this->window = window;

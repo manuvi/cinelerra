@@ -222,6 +222,7 @@ Render::Render(MWindow *mwindow)
 
 Render::~Render()
 {
+	stop_operation();
 	close_window();
 	delete package_lock;
 	delete counter_lock;

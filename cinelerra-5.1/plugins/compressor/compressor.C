@@ -1342,7 +1342,7 @@ int CompressorTrigger::button_press_event()
 CompressorInput::CompressorInput(CompressorEffect *plugin, int x, int y)
  : BC_PopupMenu(x,
 	y,
-	xS(100),
+	xS(120),
 	CompressorInput::value_to_text(plugin->config.input),
 	1)
 {

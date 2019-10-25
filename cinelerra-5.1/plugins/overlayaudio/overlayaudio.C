@@ -185,10 +185,10 @@ const char* OverlayAudioConfig::mode_to_text(int mode)
 
 OverlayAudioWindow::OverlayAudioWindow(OverlayAudio *plugin)
  : PluginClientWindow(plugin,
-	xS(400),
-	yS(100),
-	xS(400),
-	yS(100),
+	xS(300),
+	yS(70),
+	xS(300),
+	yS(70),
 	0)
 {
 	this->plugin = plugin;

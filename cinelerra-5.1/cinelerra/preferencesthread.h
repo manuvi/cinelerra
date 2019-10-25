@@ -27,6 +27,7 @@
 #include "guicast.h"
 #include "mutex.inc"
 #include "mwindow.inc"
+#include "question.h"
 #include "preferences.inc"
 #include "preferencesthread.inc"
 
@@ -58,6 +59,10 @@ public:
 	int apply_settings();
 	const char* category_to_text(int category);
 	int text_to_category(const char *category);
+
+	const char *busy();
+	void confirm_update(const char *reason, int close);
+	PreferencesConfirmDialog *confirm_dialog;
 
 	int current_dialog;
 	int thread_running;
@@ -175,12 +180,39 @@ class PreferencesOK : public BC_GenericButton
 {
 public:
 	PreferencesOK(MWindow *mwindow, PreferencesThread *thread);
+	~PreferencesOK();
 	int keypress_event();
 	int handle_event();
 	int resize_event(int w, int h);
 	MWindow *mwindow;
 	PreferencesThread *thread;
+	PreferencesConfirmDialog *confirm_dialog;
 };
+
+class PreferencesConfirmDialog : public BC_DialogThread
+{
+public:
+	PreferencesConfirmDialog(PreferencesThread *thread,
+		const char *reason, int close);
+	~PreferencesConfirmDialog();
+	BC_Window *new_gui();
+	void handle_done_event(int result);
+
+	PreferencesThread *thread;
+	PreferencesConfirmWindow *qwindow;
+	char query[BCTEXTLEN];
+	int close;
+};
+
+class PreferencesConfirmWindow : public QuestionWindow
+{
+public:
+	PreferencesConfirmWindow(PreferencesConfirmDialog *dialog);
+	~PreferencesConfirmWindow();
+
+	PreferencesConfirmDialog *dialog;
+};
+
 
 class PreferencesCancel : public BC_GenericButton
 {

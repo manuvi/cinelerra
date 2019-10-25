@@ -1281,16 +1281,16 @@ void BlueDotTheme::build_bg_data()
 	channel_position_data = new VFramePng(get_image_data("channel_position.png"));
 
 // Track bitmaps
-	new_image("resource1024", "resource1024.png");
-	new_image("resource512", "resource512.png");
-	new_image("resource256", "resource256.png");
-	new_image("resource128", "resource128.png");
-	new_image("resource64", "resource64.png");
-	new_image("resource32", "resource32.png");
+	new_image1("resource1024", "resource1024.png");
+	new_image1("resource512", "resource512.png");
+	new_image1("resource256", "resource256.png");
+	new_image1("resource128", "resource128.png");
+	new_image1("resource64", "resource64.png");
+	new_image1("resource32", "resource32.png");
 //Graphic Copied from default. Improve!!
-	new_image("plugin_bg_data", "plugin_bg.png");
-	new_image("title_bg_data", "title_bg.png");
-	new_image("vtimebar_bg_data", "vwindow_timebar.png");
+	new_image1("plugin_bg_data", "plugin_bg.png");
+	new_image1("title_bg_data", "title_bg.png");
+	new_image1("vtimebar_bg_data", "vwindow_timebar.png");
 }
 
 

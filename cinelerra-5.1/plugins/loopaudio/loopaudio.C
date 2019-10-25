@@ -103,10 +103,10 @@ LoopAudioConfig::LoopAudioConfig()
 
 LoopAudioWindow::LoopAudioWindow(LoopAudio *plugin)
  : PluginClientWindow(plugin,
-	xS(210),
-	yS(160),
-	xS(200),
-	yS(160),
+	xS(180),
+	yS(65),
+	xS(180),
+	yS(65),
 	0)
 {
 	this->plugin = plugin;

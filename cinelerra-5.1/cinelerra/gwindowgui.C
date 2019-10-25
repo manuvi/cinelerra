@@ -268,6 +268,7 @@ void GWindowGUI::create_objects()
 			}
 			if( !vframe ) {
 				int wh = toggle->get_h() - yS(4);
+				if( wh < 1 ) wh = 1;
 				GWindowColorButton *color_button =
 					new GWindowColorButton(toggle, get_w()-wh-ys10, y+yS(2), wh, color);
 				add_tool(color_button);

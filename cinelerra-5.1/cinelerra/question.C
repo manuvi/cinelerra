@@ -28,7 +28,7 @@
 #include "ctype.h"
 
 #define WIDTH xS(375)
-#define HEIGHT yS(160)
+#define HEIGHT yS(120)
 
 QuestionWindow::QuestionWindow(MWindow *mwindow)
  : BC_Window(_(PROGRAM_NAME ": Question"),

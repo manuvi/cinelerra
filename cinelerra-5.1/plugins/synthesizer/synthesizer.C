@@ -255,9 +255,7 @@ double Synth::solve_eqn(double *output,
 			for(sample = 0; sample < length; sample++)
 			{
 				output[sample] += sin((x + phase_offset) /
-					period *
-					2 *
-					M_PI) * power;
+					period * 2 * M_PI) * power;
 				x += step;
 			}
 			break;
@@ -327,25 +325,18 @@ double Synth::get_oscillator_point(float x,
 	{
 		case DC:
 			return power;
-			break;
 		case SINE:
 			return sin((x + config->phase) * config->freq_factor * 2 * M_PI) * power;
-			break;
 		case SAWTOOTH:
 			return function_sawtooth((x + config->phase) * config->freq_factor) * power;
-			break;
 		case SQUARE:
 			return function_square((x + config->phase) * config->freq_factor) * power;
-			break;
 		case TRIANGLE:
 			return function_triangle((x + config->phase) * config->freq_factor) * power;
-			break;
 		case PULSE:
 			return function_pulse((x + config->phase) * config->freq_factor) * power;
-			break;
 		case NOISE:
 			return function_noise() * power;
-			break;
 	}
 	return 0;
 }
@@ -425,11 +416,7 @@ int Synth::overlay_synth(double freq,
 {
 	double normalize_constant = 1.0 / get_total_power();
 	for(int i = 0; i < config.oscillator_config.total; i++)
-		solve_eqn(output,
-			length,
-			freq,
-			normalize_constant,
-			i);
+		solve_eqn(output, length, freq, normalize_constant, i);
 	return length;
 }
 
@@ -501,39 +488,9 @@ void Synth::delete_freqs()
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 SynthWindow::SynthWindow(Synth *synth)
- : PluginClientWindow(synth,
-	synth->window_w,
-	synth->window_h,
-	xS(400),
-	yS(350),
-	1)
+ : PluginClientWindow(synth, synth->window_w, synth->window_h,
+		xS(400), yS(350), 1)
 {
 	this->synth = synth;
 	white_key[0] = 0;
@@ -675,9 +632,9 @@ void SynthWindow::create_objects()
 	black_key[4] = new VFramePng(black_checkedhi_png);
 
 
-	add_subwindow(note_subwindow = new BC_SubWindow(x1,
+	add_subwindow(note_subwindow = new BC_SubWindow(x1+xS(20),
 		y,
-		get_w() - x1,
+		get_w() - (x1+xS(20)),
 		white_key[0]->get_h() + MARGIN +
 		get_text_height(MEDIUMFONT) + MARGIN +
 		get_text_height(MEDIUMFONT) + MARGIN));
@@ -687,14 +644,12 @@ void SynthWindow::create_objects()
 		note_subwindow->get_y() + note_subwindow->get_h(),
 		note_subwindow->get_w()));
 
-	add_subwindow(momentary = new SynthMomentary(this,
-		x1,
+	add_subwindow(momentary = new SynthMomentary(this, x1,
 		note_scroll->get_y() + note_scroll->get_h() + MARGIN,
 		_("Momentary notes")));
 
 
-	add_subwindow(note_instructions = new BC_Title(
-		x1,
+	add_subwindow(note_instructions = new BC_Title( x1,
 		momentary->get_y() + momentary->get_h() + MARGIN,
 		_("Ctrl or Shift to select multiple notes.")));
 
@@ -987,7 +942,7 @@ void SynthWindow::update_oscillators()
 		{
 			gui = oscillators.values[i];
 
-			gui->title->reposition_window(gui->title->get_x(), y + 15);
+			gui->title->reposition_window(gui->title->get_x(), y + yS(15));
 
 			gui->level->reposition_window(gui->level->get_x(), y);
 			gui->level->update(config->level);
@@ -1026,10 +981,7 @@ int SynthWindow::waveform_to_text(char *text, int waveform)
 
 
 SynthMomentary::SynthMomentary(SynthWindow *window, int x, int y, char *text)
- : BC_CheckBox(x,
-	y,
-	window->synth->config.momentary_notes,
-	text)
+ : BC_CheckBox(x, y, window->synth->config.momentary_notes, text)
 {
 	this->window = window;
 }
@@ -1044,15 +996,8 @@ int SynthMomentary::handle_event()
 
 
 
-SynthNote::SynthNote(SynthWindow *window,
-	VFrame **images,
-	int number,
-	int x,
-	int y)
- : BC_Toggle(x,
- 	y,
-	images,
-	window->synth->freq_exists(keyboard_freqs[number]))
+SynthNote::SynthNote(SynthWindow *window, VFrame **images, int number, int x, int y)
+ : BC_Toggle(x, y, images, window->synth->freq_exists(keyboard_freqs[number]))
 {
 	this->window = window;
 	this->number = number;
@@ -1237,11 +1182,6 @@ int SynthNote::draw_face(int flash, int flush)
 }
 
 
-
-
-
-
-
 SynthOscGUI::SynthOscGUI(SynthWindow *window, int number)
 {
 	this->window = window;
@@ -1260,7 +1200,7 @@ void SynthOscGUI::create_objects(int y)
 {
 	char text[BCTEXTLEN];
 	sprintf(text, "%d:", number + 1);
-	window->osc_subwindow->add_subwindow(title = new BC_Title(10, y + 15, text));
+	window->osc_subwindow->add_subwindow(title = new BC_Title(xS(10), y+yS(15), text));
 
 	window->osc_subwindow->add_subwindow(level = new SynthOscGUILevel(window->synth, this, y));
 	window->osc_subwindow->add_subwindow(phase = new SynthOscGUIPhase(window->synth, this, y));
@@ -1271,11 +1211,9 @@ void SynthOscGUI::create_objects(int y)
 
 
 SynthOscGUILevel::SynthOscGUILevel(Synth *synth, SynthOscGUI *gui, int y)
- : BC_FPot(50,
- 	y,
+ : BC_FPot(xS(50), y,
 	synth->config.oscillator_config.values[gui->number]->level,
-	INFINITYGAIN,
-	0)
+	INFINITYGAIN, 0)
 {
 	this->synth = synth;
 	this->gui = gui;
@@ -1297,11 +1235,9 @@ int SynthOscGUILevel::handle_event()
 
 
 SynthOscGUIPhase::SynthOscGUIPhase(Synth *synth, SynthOscGUI *gui, int y)
- : BC_IPot(125,
- 	y,
+ : BC_IPot(xS(125), y,
 	(int64_t)(synth->config.oscillator_config.values[gui->number]->phase * 360),
-	0,
-	360)
+	0, 360)
 {
 	this->synth = synth;
 	this->gui = gui;
@@ -1323,11 +1259,9 @@ int SynthOscGUIPhase::handle_event()
 
 
 SynthOscGUIFreq::SynthOscGUIFreq(Synth *synth, SynthOscGUI *gui, int y)
- : BC_IPot(200,
- 	y,
+ : BC_IPot(xS(200), y,
 	(int64_t)(synth->config.oscillator_config.values[gui->number]->freq_factor),
-	1,
-	100)
+	1, 100)
 {
 	this->synth = synth;
 	this->gui = gui;
@@ -1345,11 +1279,6 @@ int SynthOscGUIFreq::handle_event()
 	synth->send_configure_change();
 	return 1;
 }
-
-
-
-
-
 
 
 SynthAddOsc::SynthAddOsc(Synth *synth, SynthWindow *window, int x, int y)
@@ -1372,7 +1301,6 @@ int SynthAddOsc::handle_event()
 }
 
 
-
 SynthDelOsc::SynthDelOsc(Synth *synth, SynthWindow *window, int x, int y)
  : BC_GenericButton(x, y, _("Delete"))
 {
@@ -1393,18 +1321,11 @@ int SynthDelOsc::handle_event()
 }
 
 
-OscScroll::OscScroll(Synth *synth,
-	SynthWindow *window,
-	int x,
-	int y,
-	int h)
- : BC_ScrollBar(x,
- 	y,
-	SCROLL_VERT,
-	h,
+OscScroll::OscScroll(Synth *synth, SynthWindow *window,
+		int x, int y, int h)
+ : BC_ScrollBar(x, y, SCROLL_VERT, h,
 	synth->config.oscillator_config.total * OSCILLATORHEIGHT,
-	0,
-	window->osc_subwindow->get_h())
+	0, window->osc_subwindow->get_h())
 {
 	this->synth = synth;
 	this->window = window;
@@ -1422,18 +1343,11 @@ int OscScroll::handle_event()
 
 
 
-NoteScroll::NoteScroll(Synth *synth,
-	SynthWindow *window,
-	int x,
-	int y,
-	int w)
- : BC_ScrollBar(x,
- 	y,
-	SCROLL_HORIZ,
-	w,
+NoteScroll::NoteScroll(Synth *synth, SynthWindow *window,
+		int x, int y, int w)
+ : BC_ScrollBar(x, y, SCROLL_HORIZ, w,
 	window->white_key[0]->get_w() * TOTALNOTES * 7 / 12 + window->white_key[0]->get_w(),
-	0,
-	window->note_subwindow->get_w())
+	0, window->note_subwindow->get_w())
 {
 	this->synth = synth;
 	this->window = window;
@@ -1448,18 +1362,6 @@ int NoteScroll::handle_event()
 	window->update_notes();
 	return 1;
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 SynthClear::SynthClear(Synth *synth, int x, int y)
@@ -1477,10 +1379,6 @@ int SynthClear::handle_event()
 	synth->update_gui();
 	return 1;
 }
-
-
-
-
 
 
 SynthWaveForm::SynthWaveForm(Synth *synth, int x, int y, char *text)
@@ -1526,11 +1424,7 @@ int SynthWaveFormItem::handle_event()
 
 
 SynthWetness::SynthWetness(Synth *synth, int x, int y)
- : BC_FPot(x,
-		y,
-		synth->config.wetness,
-		INFINITYGAIN,
-		0)
+ : BC_FPot(x, y, synth->config.wetness, INFINITYGAIN, 0)
 {
 	this->synth = synth;
 }
@@ -1595,17 +1489,9 @@ int SynthBaseFreq::handle_event()
 
 
 
-SynthCanvas::SynthCanvas(Synth *synth,
-	SynthWindow *window,
-	int x,
-	int y,
-	int w,
-	int h)
- : BC_SubWindow(x,
- 	y,
-	w,
-	h,
-	BLACK)
+SynthCanvas::SynthCanvas(Synth *synth, SynthWindow *window,
+		int x, int y, int w, int h)
+ : BC_SubWindow(x, y, w, h, BLACK)
 {
 	this->synth = synth;
 	this->window = window;
@@ -1638,12 +1524,6 @@ int SynthCanvas::update()
 	flash();
 	return 0;
 }
-
-
-
-
-
-
 
 
 // ======================= level calculations
@@ -2016,7 +1896,8 @@ int SynthFreqFibonacci::handle_event()
 	for(int i = 0; i < synth->config.oscillator_config.total; i++)
 	{
 		synth->config.oscillator_config.values[i]->freq_factor = last_value1 + last_value2;
-		if(synth->config.oscillator_config.values[i]->freq_factor > 100) synth->config.oscillator_config.values[i]->freq_factor = 100;
+		if(synth->config.oscillator_config.values[i]->freq_factor > 100)
+			synth->config.oscillator_config.values[i]->freq_factor = 100;
 		last_value1 = last_value2;
 		last_value2 = synth->config.oscillator_config.values[i]->freq_factor;
 	}

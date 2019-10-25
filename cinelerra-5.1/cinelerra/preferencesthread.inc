@@ -22,9 +22,18 @@
 #ifndef PREFERENCESTHREAD_INC
 #define PREFERENCESTHREAD_INC
 
-class PreferencesDialog;
-class PreferencesMenuItem;
+class PreferencesMenuitem;
 class PreferencesThread;
+class PreferencesDialog;
+class PreferencesCategory;
+class PreferencesButton;
 class PreferencesWindow;
+class PreferencesButton;
+class PreferencesCategory;
+class PreferencesApply;
+class PreferencesOK;
+class PreferencesConfirmDialog;
+class PreferencesConfirmWindow;
+class PreferencesCancel;
 
 #endif

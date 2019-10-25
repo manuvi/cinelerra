@@ -27,6 +27,6 @@
 class Synth;
 class SynthOscillator;
 
-
+#define OSCILLATORHEIGHT yS(40)
 
 #endif

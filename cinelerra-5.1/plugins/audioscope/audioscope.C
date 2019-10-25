@@ -132,7 +132,7 @@ AudioScopeWindowSize::AudioScopeWindowSize(AudioScope *plugin,
 	char *text)
  : BC_PopupMenu(x,
 	y,
-	xS(80),
+	xS(110),
 	text)
 {
 	this->plugin = plugin;

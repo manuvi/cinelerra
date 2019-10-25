@@ -3,7 +3,7 @@
 #include "language.h"
 
 yuv411Window::yuv411Window(yuv411Main *client)
- : PluginClientWindow(client, xS(250), yS(255), xS(250), yS(255), 0)
+ : PluginClientWindow(client, xS(260), yS(230), xS(260), yS(230), 0)
 {
 	this->client = client;
 }
@@ -15,7 +15,7 @@ yuv411Window::~yuv411Window()
 void yuv411Window::create_objects()
 {
 	int xs10 = xS(10), xs90 = xS(90);
-	int ys10 = yS(10), ys30 = yS(30), ys35 = yS(35);
+	int ys10 = yS(10), ys30 = yS(30);
 	int x = xs10, y = ys10, x1=xs90;
 	add_tool(avg_vertical = new yuv411Toggle(client,
 		&(client->config.avg_vertical),
@@ -44,7 +44,7 @@ void yuv411Window::create_objects()
 	add_subwindow(new BC_Title(x, y, _("Bias:")));
 	add_subwindow(bias=new yuv411Bias(client,x1,y));
 	y += ys30;
-	add_subwindow(reset = new yuv411Reset(client, this, x, y+ys35));
+	add_subwindow(reset = new yuv411Reset(client, this, x, y+ys10));
 	show_window();
 	flush();
 
@@ -87,7 +87,7 @@ int yuv411Toggle::handle_event()
 }
 
 yuv411Offset::yuv411Offset(yuv411Main *client, int x, int y)
- :  BC_FSlider(x, y, 0, xS(100), yS(100), (float)0, (float)2,
+ :  BC_FSlider(x+xS(60), y, 0, xS(100), yS(100), (float)0, (float)2,
             (float)client->config.offset)
 {
 	this->client = client;
@@ -101,7 +101,7 @@ int yuv411Offset::handle_event()
 }
 
 yuv411Thresh::yuv411Thresh(yuv411Main *client, int x, int y)
- :  BC_FSlider(x, y, 0, xS(100), yS(100), (float)1, (float)100,
+ :  BC_FSlider(x+xS(60), y, 0, xS(100), yS(100), (float)1, (float)100,
             (float)client->config.thresh)
 {
 	this->client = client;
@@ -115,7 +115,7 @@ int yuv411Thresh::handle_event()
 }
 
 yuv411Bias::yuv411Bias(yuv411Main *client, int x, int y)
- :  BC_FSlider(x, y, 0, xS(100), yS(100), (float)0, (float)25,
+ :  BC_FSlider(x+xS(60), y, 0, xS(100), yS(100), (float)0, (float)25,
             (float)client->config.bias)
 {
 	this->client = client;
