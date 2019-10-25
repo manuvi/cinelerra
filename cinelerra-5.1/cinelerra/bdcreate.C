@@ -478,7 +478,7 @@ BC_Window* CreateBD_Thread::new_gui()
 	int scr_x = mwindow->gui->get_screen_x(0, -1);
 	int scr_w = mwindow->gui->get_screen_w(0, -1);
 	int scr_h = mwindow->gui->get_screen_h(0, -1);
-	int w = xS(500), h = yS(290);
+	int w = xS(560), h = yS(290);
 	int x = scr_x + scr_w/2 - w/2, y = scr_h/2 - h/2;
 
 	gui = new CreateBD_GUI(this, x, y, w, h);
@@ -739,7 +739,7 @@ CreateBD_GUI::~CreateBD_GUI()
 
 void CreateBD_GUI::create_objects()
 {
-	int xs10 = xS(10), xs30 = xS(30), xs35 = xS(35);
+	int xs10 = xS(10), xs35 = xS(35);
 	int xs160 = xS(160), xs170 = xS(170);
 	int ys5 = yS(5), ys10 = yS(10);
 	lock_window("CreateBD_GUI::create_objects");
@@ -782,7 +782,7 @@ void CreateBD_GUI::create_objects()
 	add_subwindow(standard);
 	standard->create_objects();
 	standard->set_text(bd_formats[thread->use_standard].name);
-	x0 -= xs30;
+	x0 -= xS(60);
 	title = new BC_Title(x0, y, _("Scale:"), MEDIUMFONT, YELLOW);
 	add_subwindow(title);
 	x1 = x0+title->get_w()+padx;
@@ -1023,7 +1023,7 @@ int CreateBD_FormatItem::handle_event()
 
 
 CreateBD_Format::CreateBD_Format(CreateBD_GUI *gui, int x, int y)
- : BC_PopupMenu(x, y, xS(180), bd_formats[gui->thread->use_standard].name, 1)
+ : BC_PopupMenu(x, y, xS(200), bd_formats[gui->thread->use_standard].name, 1)
 {
 	this->gui = gui;
 }
@@ -1078,7 +1078,7 @@ int CreateBD_ScaleItem::handle_event()
 
 
 CreateBD_Scale::CreateBD_Scale(CreateBD_GUI *gui, int x, int y)
- : BC_PopupMenu(x, y, xS(100), "", 1)
+ : BC_PopupMenu(x, y, xS(140), "", 1)
 {
 	this->gui = gui;
 }

@@ -926,9 +926,9 @@ void SUV::build_bg_data()
 	new_image1("resource128", "resource128.png");
 	new_image1("resource64", "resource64.png");
 	new_image1("resource32", "resource32.png");
-	new_image1("plugin_bg_data", "plugin_bg.png");
-	new_image1("title_bg_data", "title_bg.png");
-	new_image1("vtimebar_bg_data", "vwindow_timebar.png");
+	new_image("plugin_bg_data", "plugin_bg.png");
+	new_image("title_bg_data", "title_bg.png");
+	new_image("vtimebar_bg_data", "vwindow_timebar.png");
 }
 
 

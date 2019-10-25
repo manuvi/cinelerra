@@ -102,12 +102,10 @@ PreferencesThread::PreferencesThread(MWindow *mwindow)
 	this->mwindow = mwindow;
 	window = 0;
 	thread_running = 0;
-	confirm_dialog = 0;
 }
 
 PreferencesThread::~PreferencesThread()
 {
-	delete confirm_dialog;
 	close_window();
 }
 
@@ -378,13 +376,6 @@ const char *PreferencesThread::busy()
 	return 0;
 }
 
-void PreferencesThread::confirm_update(const char *reason, int close)
-{
-	delete confirm_dialog;
-	confirm_dialog = new PreferencesConfirmDialog(this, reason, close);
-	confirm_dialog->start();
-}
-
 const char* PreferencesThread::category_to_text(int category)
 {
 	PlaybackConfig *playback_config = edl->session->playback_config;
@@ -434,19 +425,17 @@ PreferencesWindow::PreferencesWindow(MWindow *mwindow,
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
-	dialog = 0;
 	category = 0;
+	dialog = 0;
+	confirm_dialog = 0;
 }
 
 PreferencesWindow::~PreferencesWindow()
 {
 	lock_window("PreferencesWindow::~PreferencesWindow");
 	delete category;
-
-
-	if(dialog) delete dialog;
-
-
+	delete dialog;
+	delete confirm_dialog;
 	for(int i = 0; i < categories.total; i++)
 		delete categories.values[i];
 	unlock_window();
@@ -515,6 +504,13 @@ void PreferencesWindow::update_rates()
 		dialog->update_rates();
 	}
 	unlock_window();
+}
+
+void PreferencesWindow::confirm_update(const char *reason, int close)
+{
+	delete confirm_dialog;
+	confirm_dialog = new PreferencesConfirmDialog(thread, reason, close);
+	confirm_dialog->start();
 }
 
 
@@ -653,7 +649,7 @@ int PreferencesApply::handle_event()
 {
 	const char *reason = thread->busy();
 	if( reason )
-		thread->confirm_update(reason, 0);
+		thread->window->confirm_update(reason, 0);
 	else {
 		thread->apply_settings();
 		mwindow->save_defaults();
@@ -690,7 +686,7 @@ int PreferencesOK::handle_event()
 {
 	const char *reason = mwindow->restart() ? _("restart") : thread->busy();
 	if( reason )
-		thread->confirm_update(reason, 1);
+		thread->window->confirm_update(reason, 1);
 	else
 		thread->window->set_done(0);
 	return 1;
@@ -711,6 +707,7 @@ PreferencesConfirmDialog::PreferencesConfirmDialog(PreferencesThread *thread,
 }
 PreferencesConfirmDialog::~PreferencesConfirmDialog()
 {
+	close_window();
 }
 BC_Window *PreferencesConfirmDialog::new_gui()
 {
@@ -720,7 +717,7 @@ BC_Window *PreferencesConfirmDialog::new_gui()
 }
 void PreferencesConfirmDialog::handle_done_event(int result)
 {
-	if( !result ) return; // no
+	if( result != 2 ) return; // not yes
 	if( !close ) {
 		thread->window->lock_window("PreferencesConfirmDialog::handle_done_event");
 		thread->apply_settings();

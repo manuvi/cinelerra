@@ -1,11 +1,14 @@
 #include "bcdisplayinfo.h"
+#include "edl.h"
+#include "edlsession.h"
 #include "yuv411win.h"
 #include "language.h"
 
 yuv411Window::yuv411Window(yuv411Main *client)
- : PluginClientWindow(client, xS(260), yS(230), xS(260), yS(230), 0)
+ : PluginClientWindow(client, xS(260), yS(250), xS(260), yS(250), 0)
 {
 	this->client = client;
+	colormodel = -1;
 }
 
 yuv411Window::~yuv411Window()
@@ -44,13 +47,21 @@ void yuv411Window::create_objects()
 	add_subwindow(new BC_Title(x, y, _("Bias:")));
 	add_subwindow(bias=new yuv411Bias(client,x1,y));
 	y += ys30;
-	add_subwindow(reset = new yuv411Reset(client, this, x, y+ys10));
+	int y1 = get_h() - yuv411Reset::calculate_h() - yS(20);
+	add_subwindow(reset = new yuv411Reset(client, this, x, y1+ys10));
 	show_window();
 	flush();
 
 	yuv_warning = new BC_Title(x, y, _("Warning: colormodel not YUV"),MEDIUMFONT,RED);
 	add_subwindow(yuv_warning);
-	yuv_warning->hide_window();
+	EDL *edl = client->get_edl();
+	colormodel = edl->session->color_model;
+	switch( colormodel ) {
+	case BC_YUV888:
+	case BC_YUVA8888:
+		yuv_warning->hide_window();
+		break;
+	}
 }
 
 void yuv411Window::update()
@@ -180,5 +191,4 @@ void yuv411Window::show_warning(int warn)
 	else
 		yuv_warning->hide_window();
 }
-
 

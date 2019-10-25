@@ -161,7 +161,7 @@ int yuv411Main::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	load_configuration();
 	int w = input_ptr->get_w();
 	int h = input_ptr->get_h();
-	int colormodel = input_ptr->get_color_model();
+	colormodel = input_ptr->get_color_model();
 
 	if( input_ptr == output_ptr ||
 	    ( config.avg_vertical && config.int_horizontal ) ) {
@@ -187,11 +187,7 @@ int yuv411Main::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		break;
 	}
 
-	if( this->colormodel != colormodel ) {
-		this->colormodel = colormodel;
-		send_render_gui(this);
-	}
-
+	send_render_gui(this);
 	return 0;
 }
 
@@ -221,19 +217,23 @@ void yuv411Main::update_gui()
 void yuv411Main::render_gui(void *data)
 {
 	if(thread) {
-		thread->window->lock_window();
 		yuv411Window *window = (yuv411Window *)thread->window;
 		yuv411Main *client = (yuv411Main *)data;
-		switch( client->colormodel ) {
-		case BC_YUV888:
-		case BC_YUVA8888:
-			window->show_warning(0);
-			break;
-		default:
-			window->show_warning(1);
-			break;
+		if( window->colormodel != client->colormodel ) {
+			int warn = 1;
+			switch( client->colormodel ) {
+			case BC_YUV888:
+			case BC_YUVA8888:
+				warn = 0;
+				break;
+			}
+			if( warn == window->yuv_warning->is_hidden() ) {
+				window->lock_window("yuv411Main::render_gui");
+				window->show_warning(warn);
+				window->colormodel = client->colormodel;
+				window->unlock_window();
+			}
 		}
-		window->unlock_window();
 	}
 }
 

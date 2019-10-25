@@ -614,7 +614,7 @@ BC_Window* CreateDVD_Thread::new_gui()
 	int scr_x = mwindow->gui->get_screen_x(0, -1);
 	int scr_w = mwindow->gui->get_screen_w(0, -1);
 	int scr_h = mwindow->gui->get_screen_h(0, -1);
-	int w = xS(520), h = yS(280);
+	int w = xS(560), h = yS(280);
 	int x = scr_x + scr_w/2 - w/2, y = scr_h/2 - h/2;
 
 	gui = new CreateDVD_GUI(this, x, y, w, h);
@@ -881,7 +881,7 @@ CreateDVD_GUI::~CreateDVD_GUI()
 
 void CreateDVD_GUI::create_objects()
 {
-	int xs10 = xS(10), xs30 = xS(30), xs35 = xS(35), xs170 = xS(170);
+	int xs10 = xS(10), xs35 = xS(35), xs170 = xS(170);
 	int ys5 = yS(5), ys10 = yS(10);
 	lock_window("CreateDVD_GUI::create_objects");
 	int pady = BC_TextBox::calculate_h(this, MEDIUMFONT, 0, 1) + ys5;
@@ -922,7 +922,7 @@ void CreateDVD_GUI::create_objects()
 	standard = new CreateDVD_Format(this, title->get_w() + padx, y);
 	add_subwindow(standard);
 	standard->create_objects();
-	x0 -= xs30;
+	x0 -= xS(60);
 	title = new BC_Title(x0, y, _("Scale:"), MEDIUMFONT, YELLOW);
 	add_subwindow(title);
 	x1 = x0+title->get_w()+padx;
@@ -1205,7 +1205,7 @@ int CreateDVD_ScaleItem::handle_event()
 
 
 CreateDVD_Scale::CreateDVD_Scale(CreateDVD_GUI *gui, int x, int y)
- : BC_PopupMenu(x, y, xS(100), "", 1)
+ : BC_PopupMenu(x, y, xS(140), "", 1)
 {
 	this->gui = gui;
 }

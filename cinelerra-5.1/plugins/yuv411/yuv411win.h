@@ -35,6 +35,7 @@ public:
 	yuv411Thresh *thresh;
 	yuv411Bias *bias;
 	BC_Title *yuv_warning;
+	int colormodel;
 	yuv411Reset *reset;
 };
 

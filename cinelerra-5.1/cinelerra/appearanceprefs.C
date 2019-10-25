@@ -184,7 +184,7 @@ void AppearancePrefs::create_objects()
 	int clr_alpha = pwindow->thread->edl->session->cwindow_clear_alpha;
         add_subwindow(cwdw_bg_color = new Composer_BG_Color(pwindow,
 		x2, y, xS(80), yS(24), clr_color, clr_alpha));
-	draw_3d_border(x2-2,y-2, 80+4,24+4, 1);
+	draw_3d_border(x2-2,y-2, xS(80)+4,xS(24)+4, 1);
 	cwdw_bg_color->create_objects();
 	y += ys35;
 
@@ -714,7 +714,7 @@ const char *YuvColorSpace::color_space[] = {
 };
 
 YuvColorSpace::YuvColorSpace(int x, int y, PreferencesWindow *pwindow)
- : BC_PopupMenu(x, y, xS(100),
+ : BC_PopupMenu(x, y, xS(120),
 	_(color_space[pwindow->thread->preferences->yuv_color_space]), 1)
 {
 	this->pwindow = pwindow;

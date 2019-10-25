@@ -61,8 +61,6 @@ public:
 	int text_to_category(const char *category);
 
 	const char *busy();
-	void confirm_update(const char *reason, int close);
-	PreferencesConfirmDialog *confirm_dialog;
 
 	int current_dialog;
 	int thread_running;
@@ -127,15 +125,15 @@ public:
 	int set_current_dialog(int number);
 	int update_framerate();
 	void update_rates();
+	void confirm_update(const char *reason, int close);
 	void show_dialog() { dialog->show_window(0); }
 	MWindow *mwindow;
 	PreferencesThread *thread;
 	ArrayList<BC_ListBoxItem*> categories;
 	PreferencesCategory *category;
 	PreferencesButton *category_button[CATEGORIES];
-
-private:
 	PreferencesDialog *dialog;
+	PreferencesConfirmDialog *confirm_dialog;
 };
 
 class PreferencesButton : public BC_GenericButton
