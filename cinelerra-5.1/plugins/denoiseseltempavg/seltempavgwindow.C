@@ -258,7 +258,7 @@ SelTempAvgMethodRadial::SelTempAvgMethodRadial(SelTempAvgMain *client,
 }
 int SelTempAvgMethodRadial::handle_event()
 {
-	int result = get_value();
+	int result = type;
 	client->config.method = result;
 
 	gui->method_none->update(client->config.method       == SelTempAvgConfig::METHOD_NONE);

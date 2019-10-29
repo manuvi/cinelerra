@@ -379,7 +379,7 @@ int ClipPasteToFolder::handle_event()
 		}
 		else {
 			char *cp = strchr(string, '\n');
-			if( cp-string < 32 ) *cp = 0;
+			if( cp && cp-string < 32 ) *cp = 0;
 			else if( len > 32 ) string[32] = 0;
 			eprintf("paste buffer is not EDL:\n%s", string);
 		}

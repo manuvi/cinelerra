@@ -60,7 +60,7 @@ void DeInterlaceWindow::create_objects()
 	add_tool(status = new BC_Title(x, y, string));
 	flash();
 	show_window();
-	set_mode(client->config.mode,0);
+	set_mode(client->config.mode, 1);
 }
 
 void DeInterlaceWindow::get_status_string(char *string, int changed_rows)
@@ -127,11 +127,13 @@ int DeInterlaceWindow::set_mode(int mode, int recursive)
 
 			add_subwindow(threshold = new DeInterlaceThreshold(client, x + xS(150), y));
 			add_subwindow(threshold->title_caption=new BC_Title(x+xS(150), y + yS(50), _("Threshold")));
+			threshold->show_window(0);
 			adaptive->update(client->config.adaptive?BC_Toggle::TOGGLE_CHECKED:0);
 			break;
 		case DEINTERLACE_BOBWEAVE:
 			add_subwindow(threshold = new DeInterlaceThreshold(client, x + xS(150), y));
 			add_subwindow(threshold->title_caption=new BC_Title(x+xS(150), y + yS(50), _("Bob Threshold")));
+			threshold->show_window(0);
 			break;
 		case DEINTERLACE_NONE:
 		case DEINTERLACE_KEEP:
