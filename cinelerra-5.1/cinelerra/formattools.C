@@ -386,8 +386,9 @@ void FormatTools::update_extension()
 		if(need_extension)
 		{
 			char *ptr1 = ptr;
-			extension_ptr = asset->format != FILE_FFMPEG ?
-				extensions.get(0) : asset->fformat;
+// change "qt" to "mov" since ffmpeg does not know qt
+			extension_ptr = asset->format != FILE_FFMPEG ? extensions.get(0) :
+				!strcmp(asset->fformat, "qt") ? "mov" : asset->fformat ;
 			while(*extension_ptr != 0 && *extension_ptr != '/')
 				*ptr1++ = *extension_ptr++;
 			*ptr1 = 0;
@@ -770,7 +771,7 @@ int FormatFFMPEG::handle_event()
 {
 	BC_ListBoxItem *selection = get_selection(0, 0);
 	if( selection ) {
-		char *text = get_selection(0, 0)->get_text();
+		const char *text = get_selection(0, 0)->get_text();
 		format->ffmpeg_type->update(text);
 		format->asset->ff_audio_options[0] = 0;
 		format->asset->ff_video_options[0] = 0;

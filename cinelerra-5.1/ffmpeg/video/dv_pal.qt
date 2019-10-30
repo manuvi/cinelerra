@@ -1,0 +1,4 @@
+mov dvvideo
+pixel_format=yuv420p
+field_order=bb
+# 720x576, 25 fps

@@ -233,8 +233,7 @@ SelTempAvgOffsetRadial::SelTempAvgOffsetRadial(SelTempAvgMain *client, SelTempAv
 }
 int SelTempAvgOffsetRadial::handle_event()
 {
-	int result = get_value();
-	client->config.offsetmode = result;
+	client->config.offsetmode = type;
 
 	gui->offset_fixed->update(client->config.offsetmode == SelTempAvgConfig::OFFSETMODE_FIXED);
 	gui->offset_restartmarker->update(client->config.offsetmode == SelTempAvgConfig::OFFSETMODE_RESTARTMARKERSYS);

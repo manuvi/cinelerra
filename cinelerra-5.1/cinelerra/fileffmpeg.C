@@ -476,8 +476,8 @@ FFMPEGConfigAudio::FFMPEGConfigAudio(BC_WindowBase *parent_window, Asset *asset,
 
 FFMPEGConfigAudio::~FFMPEGConfigAudio()
 {
-	delete ff_options_dialog;
 	lock_window("FFMPEGConfigAudio::~FFMPEGConfigAudio");
+	delete ff_options_dialog;
 	delete preset_popup;
 	presets.remove_all_objects();
 	unlock_window();
@@ -1540,7 +1540,7 @@ int FFOptionsWindow::resize_event(int w, int h)
 	int y0 = units->get_y();
 	text->reposition_window(x0,y0, x1-x0-xs8);
 	panel_w = get_w()-xs10 - panel_x;
-	panel_h = get_h()-ys10 - panel_y;
+	panel_h = get_h()-ys10 - panel_y - BC_OKButton::calculate_h();
 	panel->reposition_window(panel_x,panel_y, panel_w, panel_h);
 	return 1;
 }

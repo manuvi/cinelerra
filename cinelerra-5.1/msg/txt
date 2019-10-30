@@ -8,6 +8,12 @@ Cinfinity icons selected in Preferences Sam (CC BY 3.0,
 Cakewalk and Neophyte themes by Olaf Wolff (CC BY 4.0,
   https://creativecommons.org/licenses/by/4.0/)
 .
+October 2019 New Features of note:
+  Scaling for any size monitor now available in Preferences.
+  New Shape Wipe video transitions have been contributed.
+  Russian translation contributions for better coverage.
+  Insertion Strategy icons added back in for ease of use.
+  Several additional ffmpeg opts files contributed for use.
 September 2019 New Features of note:
   Crop & Position new plugin now available.
   New "Load recent" in File pulldown, for recently used media.
