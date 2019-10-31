@@ -75,6 +75,7 @@ $(opencv)/build: $(opencv).src
 	cd $@ && cmake \
   -DCMAKE_BUILD_TYPE=RELEASE \
   -DWITH_IPP=OFF \
+  -DWITH_LAPACK=OFF \
   -DBUILD_SHARED_LIBS=OFF \
   -DINSTALL_C_EXAMPLES=OFF \
   -DINSTALL_PYTHON_EXAMPLES=OFF \
@@ -83,7 +84,6 @@ $(opencv)/build: $(opencv).src
   -DCMAKE_INSTALL_PREFIX=/usr/local \
   -DOPENCV_EXTRA_MODULES_PATH="$(opencv)_contrib/modules/"
 
-LFLAGS += -llapack -lcblas
 LFLAGS += -Wl,--start-group
 LFLAGS += $(shell find $(opencv_prefix)/lib* -name "libopencv_*.a" 2> /dev/null)
 #opencv4 breaks SIFT/SURF findobj
@@ -96,6 +96,7 @@ $(opencv)/build: $(opencv).src
 	cd $@ && cmake \
   -DCMAKE_BUILD_TYPE=RELEASE \
   -DWITH_IPP=OFF \
+  -DWITH_LAPACK=OFF \
   -DBUILD_SHARED_LIBS=ON \
   -DINSTALL_C_EXAMPLES=ON \
   -DINSTALL_PYTHON_EXAMPLES=ON \
@@ -104,7 +105,6 @@ $(opencv)/build: $(opencv).src
   -DCMAKE_INSTALL_PREFIX=/usr/local \
   -DOPENCV_EXTRA_MODULES_PATH="$(opencv)_contrib/modules/"
 
-LFLAGS += -llapack -lcblas
 SYSLIB := $(lastword $(wildcard /usr/lib /usrlib32 /usr/lib64))
 CVLIBS := $(dir (shell find $(opencv_prefix) -name libopencv_core.a))
 LFLAGS += -L$(CVLIBS) $(patsubst $(CVLIBS)/lib%.so,-l%,$(wildcard $(CVLIBS)/libopencv_*.so))
