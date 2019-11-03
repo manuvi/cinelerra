@@ -84,9 +84,6 @@ public:
 // Called by == operators, Edit::equivalent output
 // to test title and keyframe of transition.
 	virtual int identical(Plugin *that);
-// Called by render_gui.  Only need the track, position, and pluginset
-// to determine a corresponding GUI.
-	int identical_location(Plugin *that);
 	virtual void synchronize_params(Edit *edit);
 // Used by Edits::insert_edits and Plugin::shift to shift plugin keyframes
 	void shift_keyframes(int64_t position);
@@ -140,7 +137,7 @@ public:
 	int plugin_type;
 // In and out aren't used anymore.
 	int in, out;
-	int show, on;
+	int show, on, gui_id;
 	PluginSet *plugin_set;
 
 // Data for the plugin is stored here.  Default keyframe always exists.

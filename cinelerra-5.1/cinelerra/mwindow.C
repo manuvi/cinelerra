@@ -2635,7 +2635,7 @@ void MWindow::create_objects(int want_gui,
 
 	if(debug) printf("MWindow::create_objects %d total_time=%d\n", __LINE__, (int)timer.get_difference());
 
-	plugin_guis = new ArrayList<PluginServer*>;
+	plugin_guis = new PluginGUIs(this);
 	dead_plugins = new ArrayList<PluginServer*>;
 	keyframe_threads = new ArrayList<KeyFrameThread*>;
 
@@ -3171,9 +3171,6 @@ void MWindow::show_keyframe_gui(Plugin *plugin)
 }
 
 
-
-
-
 void MWindow::show_plugin(Plugin *plugin)
 {
 	int done = 0;
@@ -3429,7 +3426,6 @@ void MWindow::update_plugin_guis(int do_keyframe_guis)
 				}
 
 				if(!got_it) plugin->show = 0;
-
 				plugin = (Plugin*)plugin->next;
 			}
 		}
@@ -3445,45 +3441,34 @@ void MWindow::update_plugin_guis(int do_keyframe_guis)
 
 int MWindow::plugin_gui_open(Plugin *plugin)
 {
-	int result = 0;
+	int gui_id = plugin->gui_id;
+	if( gui_id < 0 ) return 0;
 	plugin_gui_lock->lock("MWindow::plugin_gui_open");
-	for(int i = 0; i < plugin_guis->total; i++)
-	{
-		if(plugin_guis->get(i)->plugin->identical_location(plugin))
-		{
-			result = 1;
-			break;
-		}
-	}
+	PluginServer *plugin_server = plugin_guis->gui_server(gui_id);
+	int result = plugin_server ? 1 : 0;
 	plugin_gui_lock->unlock();
 	return result;
 }
 
 void MWindow::render_plugin_gui(void *data, Plugin *plugin)
 {
+	int gui_id = plugin->gui_id;
+	if( gui_id < 0 ) return;
 	plugin_gui_lock->lock("MWindow::render_plugin_gui");
-	for(int i = 0; i < plugin_guis->total; i++)
-	{
-		if(plugin_guis->get(i)->plugin->identical_location(plugin))
-		{
-			plugin_guis->get(i)->render_gui(data);
-			break;
-		}
-	}
+	PluginServer *plugin_server = plugin_guis->gui_server(gui_id);
+	if( plugin_server )
+		plugin_server->render_gui(data);
 	plugin_gui_lock->unlock();
 }
 
 void MWindow::render_plugin_gui(void *data, int size, Plugin *plugin)
 {
+	int gui_id = plugin->gui_id;
+	if( gui_id < 0 ) return;
 	plugin_gui_lock->lock("MWindow::render_plugin_gui");
-	for(int i = 0; i < plugin_guis->total; i++)
-	{
-		if(plugin_guis->get(i)->plugin->identical_location(plugin))
-		{
-			plugin_guis->get(i)->render_gui(data, size);
-			break;
-		}
-	}
+	PluginServer *plugin_server = plugin_guis->gui_server(gui_id);
+	if( plugin_server )
+		plugin_server->render_gui(data, size);
 	plugin_gui_lock->unlock();
 }
 

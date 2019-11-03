@@ -74,6 +74,18 @@ public:
 	~PluginObj() { if( dlobj ) unload(dlobj); }
 };
 
+class PluginGUIs : public ArrayList<PluginServer*>
+{
+	int next_id;
+	MWindow *mwindow;
+public:
+	PluginGUIs(MWindow *mwindow);
+	~PluginGUIs();
+
+	void append(PluginServer *server);
+	PluginServer *gui_server(int gui_id);
+};
+
 class PluginServer
 {
 	PluginObj *plugin_obj;
@@ -419,7 +431,7 @@ public:
 	EDL *edl;
 	Preferences *preferences;
 	MenuEffectPrompt *prompt;
-	int gui_on;
+	int gui_on, gui_id;
 
 	VFrame *temp_frame;
 

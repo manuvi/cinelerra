@@ -49,6 +49,7 @@ Plugin::Plugin(EDL *edl, Track *track, const char *title)
 	out = 1;
 	show = 0;
 	on = 1;
+	gui_id = -1;
 	keyframes = new KeyFrames(edl, track);
 	keyframes->create_objects();
 }
@@ -66,6 +67,7 @@ Plugin::Plugin(EDL *edl, PluginSet *plugin_set, const char *title)
 	out = 1;
 	show = 0;
 	on = 1;
+	gui_id = -1;
 	keyframes = new KeyFrames(edl, track);
 	keyframes->create_objects();
 }
@@ -137,6 +139,7 @@ void Plugin::copy_base(Edit *edit)
 	this->out = plugin->out;
 	this->show = plugin->show;
 	this->on = plugin->on;
+	this->gui_id = plugin->gui_id;
 // Should reconfigure this based on where the first track is now.
 	this->shared_location = plugin->shared_location;
 	strcpy(this->title, plugin->title);
@@ -293,19 +296,6 @@ int Plugin::identical(Plugin *that)
 	return (this->on == that->on &&
 		((KeyFrame*)keyframes->default_auto)->identical(
 			((KeyFrame*)that->keyframes->default_auto)));
-}
-
-int Plugin::identical_location(Plugin *that)
-{
-	if(!plugin_set || !plugin_set->track) return 0;
-	if(!that->plugin_set || !that->plugin_set->track) return 0;
-
-	if(plugin_set->track->number_of() == that->plugin_set->track->number_of() &&
-		plugin_set->get_number() == that->plugin_set->get_number() &&
-		startproject == that->startproject) return 1;
-
-	return 0;
-
 }
 
 int Plugin::keyframe_exists(KeyFrame *ptr)
@@ -594,8 +584,8 @@ void Plugin::shift(int64_t difference)
 
 void Plugin::dump(FILE *fp)
 {
-	fprintf(fp,"    PLUGIN: type=%d title=\"%s\" on=%d track=%d plugin=%d\n",
-		plugin_type, title, on, shared_location.module, shared_location.plugin);
+	fprintf(fp,"    PLUGIN: type=%d title=\"%s\" on=%d track=%d plugin=%d gui_id=%d\n",
+		plugin_type, title, on, shared_location.module, shared_location.plugin, gui_id);
 	fprintf(fp,"    startproject %jd length %jd\n", startproject, length);
 
 	keyframes->dump(fp);

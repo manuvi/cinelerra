@@ -23,6 +23,7 @@
 #define PLUGINSERVER_INC
 
 class PluginObj;
+class PluginGUIs;
 class PluginServer;
 
 #define PLUGIN_FFMPEG_ID 0

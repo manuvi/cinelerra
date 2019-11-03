@@ -80,6 +80,7 @@ void PluginServer::init()
 	modules = new ArrayList<Module*>;
 	nodes = new ArrayList<VirtualNode*>;
 	tip = 0;
+	gui_id = -1;
 }
 
 PluginServer::PluginServer()
@@ -641,6 +642,32 @@ void PluginServer::process_buffer(Samples **buffer,
 }
 
 
+PluginGUIs::PluginGUIs(MWindow *mwindow)
+{
+	this->mwindow = mwindow;
+	this->next_id = 0;
+}
+PluginGUIs::~PluginGUIs()
+{
+}
+
+void PluginGUIs::append(PluginServer *server)
+{
+	server->gui_id = next_id++;
+	ArrayList<PluginServer*>::append(server);
+}
+
+PluginServer *PluginGUIs::gui_server(int gui_id)
+{
+	for( int i=0; i<size(); ++i ) {
+		PluginServer *plugin_server = get(i);
+		if( plugin_server->gui_id == gui_id )
+			return plugin_server;
+	}
+	return 0;
+}
+
+
 void PluginServer::send_render_gui(void *data)
 {
 //printf("PluginServer::send_render_gui 1 %p\n", attachmentpoint);
@@ -929,8 +956,11 @@ void PluginServer::raise_window()
 void PluginServer::show_gui()
 {
 	if(!plugin_open) return;
-	if(plugin) client->total_len = plugin->length;
-	if(plugin) client->source_start = plugin->startproject;
+	if( plugin ) {
+		plugin->gui_id = gui_id;
+		client->total_len = plugin->length;
+		client->source_start = plugin->startproject;
+	}
 	if(video)
 	{
 		client->source_position = Units::to_int64(
@@ -952,6 +982,7 @@ void PluginServer::show_gui()
 void PluginServer::hide_gui()
 {
 	if(!plugin_open) return;
+	if( plugin ) plugin->gui_id = -1;
 	if(client->defaults) client->save_defaults();
 	client->hide_gui();
 }

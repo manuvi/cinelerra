@@ -599,7 +599,7 @@ public:
 	static ArrayList<PluginServer*> *plugindb;
 // Currently visible plugins
 	int64_t plugin_visibility;
-	ArrayList<PluginServer*> *plugin_guis;
+	PluginGUIs *plugin_guis;
 // GUI Plugins to delete
 	ArrayList<PluginServer*> *dead_plugins;
 // Keyframe editors
