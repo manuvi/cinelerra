@@ -397,7 +397,7 @@ int DeInterlaceMain::process_buffer(VFrame *frame,
 			deinterlace_swap(frame, frame, 0);
 			break;
 	}
-	send_render_gui(&changed_rows);
+//	send_render_gui(&changed_rows);
 	return 0;
 }
 

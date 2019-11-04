@@ -155,9 +155,9 @@ int ThresholdMain::process_buffer(VFrame *frame,
 		get_framerate(),
 		use_opengl);
 
-	if(use_opengl) return run_opengl();
-
 	send_render_gui(frame);
+
+	if(use_opengl) return run_opengl();
 
 	if(!threshold_engine)
 		threshold_engine = new ThresholdEngine(this);

@@ -3220,6 +3220,8 @@ SET_TRACE
 		}
 	}
 	plugin_gui_lock->unlock();
+// update show/gui_id
+	sync_parameters(CHANGE_PARAMS);
 //printf("MWindow::show_plugin %d\n", __LINE__);
 SET_TRACE
 //sleep(1);
@@ -3251,6 +3253,8 @@ void MWindow::hide_plugin(Plugin *plugin, int lock)
 		}
 	}
 	if(lock) plugin_gui_lock->unlock();
+// update show/gui_id
+	sync_parameters(CHANGE_PARAMS);
 }
 
 void MWindow::delete_plugin(PluginServer *plugin)

@@ -446,9 +446,6 @@ int HistogramMain::process_buffer(VFrame *frame,
 		frame_rate,
 		use_opengl);
 
-// Apply histogram in hardware
-	if(use_opengl) return run_opengl();
-
 	this->input = frame;
 	this->output = frame;
 	if( !engine )
@@ -494,12 +491,11 @@ int HistogramMain::process_buffer(VFrame *frame,
 // config.gamma[HISTOGRAM_BLUE],
 // config.high_input[HISTOGRAM_BLUE]);
 
-
+// Apply histogram in hardware
+	if(use_opengl) return run_opengl();
 
 // Apply histogram
 	engine->process_packages(HistogramEngine::APPLY, input, 0);
-
-
 	return 0;
 }
 

@@ -139,7 +139,7 @@ void Plugin::copy_base(Edit *edit)
 	this->out = plugin->out;
 	this->show = plugin->show;
 	this->on = plugin->on;
-	this->gui_id = plugin->gui_id;
+// dont copy gui_id, it will be a duplicate ref
 // Should reconfigure this based on where the first track is now.
 	this->shared_location = plugin->shared_location;
 	strcpy(this->title, plugin->title);
@@ -178,6 +178,7 @@ void Plugin::synchronize_params(Edit *edit)
 	this->in = plugin->in;
 	this->out = plugin->out;
 	this->show = plugin->show;
+	this->gui_id = plugin->gui_id;
 	this->on = plugin->on;
 	strcpy(this->title, plugin->title);
 	copy_keyframes(plugin);

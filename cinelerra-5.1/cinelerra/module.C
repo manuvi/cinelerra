@@ -272,10 +272,9 @@ int Module::test_plugins()
 			(!attachment && use_plugin)) return 1;
 
 // Plugin not the same
-		if(plugin &&
-			attachment &&
-			attachment->plugin &&
-			!plugin->identical(attachment->plugin)) return 1;
+		if( plugin && attachment && attachment->plugin && (
+			plugin->gui_id != attachment->plugin->gui_id ||
+			!plugin->identical(attachment->plugin) ) ) return 1;
 	}
 
 	return 0;

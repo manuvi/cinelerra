@@ -44,13 +44,6 @@ PluginSet::~PluginSet()
 }
 
 
-PluginSet& PluginSet::operator=(PluginSet& plugins)
-{
-printf("PluginSet::operator= 1\n");
-	copy_from(&plugins);
-	return *this;
-}
-
 void PluginSet::copy_from(PluginSet *src)
 {
 	while(last) delete last;
@@ -59,6 +52,8 @@ void PluginSet::copy_from(PluginSet *src)
 		Plugin *new_plugin;
 		append(new_plugin = (Plugin*)create_edit());
 		new_plugin->copy_from(current);
+// update gui_id when copying edl
+		new_plugin->gui_id = current->gui_id;
 	}
 	this->record = src->record;
 }

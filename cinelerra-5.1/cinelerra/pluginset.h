@@ -41,7 +41,6 @@ public:
 	virtual ~PluginSet();
 
 	virtual void synchronize_params(PluginSet *plugin_set);
-	virtual PluginSet& operator=(PluginSet& plugins);
 	virtual Plugin* create_plugin() { return 0; };
 // Returns the point to restart background rendering at.
 // -1 means nothing changed.

@@ -437,28 +437,22 @@ int GammaMain::process_buffer(VFrame *frame,
 		frame_rate,
 		use_opengl);
 
-	if(use_opengl)
-	{
+	int plot = config.plot;
+	if( config.automatic ) {
+		calculate_max(frame);
+		plot = 1; // Always plot to set the slider
+	}
+	if( plot ) {
+		send_render_gui(this);
+	}
+
+	if(use_opengl) {
 // Aggregate
 		if(next_effect_is(_("Histogram")))
 			return 0;
 		if(next_effect_is(_("Color Balance")))
 			return 0;
-
-
 		return run_opengl();
-	}
-	else
-	if(config.automatic)
-	{
-		calculate_max(frame);
-// Always plot to set the slider
-		send_render_gui(this);
-	}
-	else
-	if(config.plot)
-	{
-		send_render_gui(this);
 	}
 
 	if(!engine) engine = new GammaEngine(this);
