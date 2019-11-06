@@ -41,6 +41,8 @@
 #include "mainsession.h"
 #include "trackcanvas.h"
 #include "transportque.h"
+#include "videodevice.h"
+#include "vdevicex11.h"
 #include "vrender.h"
 
 
@@ -412,11 +414,7 @@ void PlaybackEngine::run()
 // Start tracking after arming so the tracking position doesn't change.
 // The tracking for a single frame command occurs during PAUSE
 			init_tracking();
-			if( !command->single_frame() ) {
-				EDL *edl = command->get_edl();
-				if( edl && edl->tracks->playable_video_tracks() )
-					clear_output();
-			}
+			clear_borders();
 // Dispatch the command
 			start_render_engine();
 			break;
@@ -425,13 +423,22 @@ void PlaybackEngine::run()
 	}
 }
 
-void PlaybackEngine::clear_output()
+void PlaybackEngine::clear_borders()
 {
-	BC_WindowBase *cwdw = output->get_canvas();
-	if( !cwdw ) return;
-	cwdw->lock_window("PlaybackEngine::clear_output");
-	output->clear();
-	cwdw->unlock_window();
+	EDL *edl = command->get_edl();
+	if( render_engine ) {
+		PlaybackConfig *config = edl->session->playback_config;
+		if( config->vconfig->driver == PLAYBACK_X11_GL ) {
+			VDeviceBase *vdriver = render_engine->video->get_output_base();
+			((VDeviceX11*)vdriver)->clear_output();
+			return;
+		}
+	}
+	BC_WindowBase *window = output->get_canvas();
+	if( !window ) return;
+	window->lock_window("PlaybackEngine::clear_output");
+	output->clear_borders(edl);
+	window->unlock_window();
 }
 
 void PlaybackEngine::stop_playback(int wait_tracking)

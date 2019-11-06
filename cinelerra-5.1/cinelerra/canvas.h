@@ -86,7 +86,7 @@ public:
 	virtual void toggle_controls() {}
 	virtual int get_cwindow_controls() { return 0; }
 	virtual int get_fullscreen();
-	virtual int get_clear_color() { return 0; }
+	virtual int get_clear_color();
 	virtual void set_fullscreen(int value);
 
 	int cursor_leave_event_base(BC_WindowBase *caller);
@@ -123,6 +123,7 @@ public:
 // Updates the stores
 	virtual void update_zoom(int x, int y, float zoom) {};
 	void check_boundaries(EDL *edl, int &x, int &y, float &zoom);
+	void clear_borders(EDL *edl);
 	void update_scrollbars(int flush);
 // Get scrollbar positions relative to output.
 // No correction is done if output is smaller than canvas

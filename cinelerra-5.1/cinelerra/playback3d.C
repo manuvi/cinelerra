@@ -728,7 +728,11 @@ void Playback3D::draw_output(Playback3DCommand *command, int flip_y)
 		if(!command->is_cleared)
 		{
 // If we get here, the virtual console was not used.
-			color_frame(command, 0,0,0,0);
+			int color = command->canvas->get_clear_color();
+			int r = (color>>16) & 0xff; // always rgb
+			int g = (color>>8) & 0xff;
+			int b = (color>>0) & 0xff;
+			color_frame(command, r/255.f, g/255.f, b/255.f, 0.f);
 		}
 
 // Texture
@@ -802,11 +806,14 @@ void Playback3D::clear_output_sync(Playback3DCommand *command)
 // Using pbuffer for refresh frame.
 		if( command->frame ) {
 			command->frame->enable_opengl();
+			command->frame->set_opengl_state(VFrame::SCREEN);
 			color = command->frame->get_clear_color();
 			alpha = command->frame->get_clear_alpha();
 			int color_model = command->canvas->mwindow->edl->session->color_model;
 			is_yuv = BC_CModels::is_yuv(color_model);
 		}
+		else
+			color = command->canvas->get_clear_color();
 		int a = alpha;
 		int r = (color>>16) & 0xff;
 		int g = (color>>8) & 0xff;

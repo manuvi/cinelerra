@@ -39,7 +39,7 @@ case "$dir" in
 #  dnf group install "Development Tools"
 #  ... lzma-sdk-devel libtool ...
 "fedora")
-  dnf install groups "Development Tools"
+  dnf group install "Development Tools"
   dnf -y --best --allowerasing \
     install nasm yasm libavc1394-devel libusbx-devel flac-devel \
     libjpeg-devel libdv-devel libdvdnav-devel libdvdread-devel \
@@ -51,7 +51,7 @@ case "$dir" in
     libpng-devel bzip2-devel zlib-devel kernel-headers libavc1394 \
     festival-devel libdc1394-devel libiec61883-devel esound-devel \
     flac-devel libsndfile-devel libtheora-devel linux-firmware \
-    ivtv-firmware libvorbis-devel texinfo xz-devel lzma-devel cmake git \
+    ivtv-firmware libvorbis-devel texinfo xz-devel cmake git \
     ctags patch gcc-c++ perl-XML-XPath libtiff-devel python dvdauthor \
     gettext-devel inkscape udftools autoconf automake numactl-devel \
     jbigkit-devel libvdpau-devel libva-devel gtk2-devel mesa-vdpau-drivers

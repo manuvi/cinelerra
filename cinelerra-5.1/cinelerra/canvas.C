@@ -898,17 +898,61 @@ void Canvas::update_refresh(VideoDevice *device, VFrame *output_frame)
 
 void Canvas::clear(int flash)
 {
-	BC_WindowBase *cwdw = get_canvas();
-	if( !cwdw )  return;
-	cwdw->set_bg_color(get_clear_color());
-	cwdw->clear_box(0,0, cwdw->get_w(), cwdw->get_h());
-	if( flash ) cwdw->flash();
+	BC_WindowBase *window = get_canvas();
+	if( !window ) return;
+	window->set_bg_color(get_clear_color());
+	window->clear_box(0,0, window->get_w(), window->get_h());
+	if( flash ) window->flash();
 }
 
+void Canvas::clear_borders(EDL *edl)
+{
+	BC_WindowBase *window = get_canvas();
+	if( !window ) return;
+
+	int window_w = window->get_w();
+	int window_h = window->get_h();
+	float output_x1,output_y1, output_x2,output_y2;
+	float canvas_x1,canvas_y1, canvas_x2,canvas_y2;
+	get_transfers(edl,
+		output_x1, output_y1, output_x2, output_y2,
+		canvas_x1, canvas_y1, canvas_x2, canvas_y2);
+	int color = get_clear_color();
+	window->set_color(color);
+
+	if( canvas_y1 > 0 ) {
+		window->draw_box(0, 0, window_w, canvas_y1);
+		window->flash(0, 0, window_w, canvas_y1);
+	}
+
+	if( canvas_y2 < window_h ) {
+		window->draw_box(0, canvas_y2, window_w, window_h-canvas_y2);
+		window->flash(0, canvas_y2, window_w, window_h-canvas_y2);
+	}
+
+	if( canvas_x1 > 0 ) {
+		window->draw_box(0, canvas_y1, canvas_x1, canvas_y2-canvas_y1);
+		window->flash(0, canvas_y1, canvas_x1, canvas_y2-canvas_y1);
+	}
+
+	if( canvas_x2 < window_w ) {
+		window->draw_box(canvas_x2, canvas_y1,
+			window_w-canvas_x2, canvas_y2-canvas_y1);
+		window->flash(canvas_x2, canvas_y1,
+			window_w-canvas_x2, canvas_y2-canvas_y1);
+	}
+}
+
+int Canvas::get_clear_color()
+{
+	BC_WindowBase *cwdw = get_canvas();
+	if( !cwdw ) return 0;
+	return cwdw->get_bg_color();
+}
 
 CanvasOutput::CanvasOutput(Canvas *canvas,
     int x, int y, int w, int h)
- : BC_SubWindow(x, y, w, h, BLACK)
+ : BC_SubWindow(x, y, w, h, canvas->get_clear_color())
 {
 	this->canvas = canvas;
 }
@@ -950,7 +994,7 @@ int CanvasOutput::keypress_event()
 
 
 CanvasFullScreen::CanvasFullScreen(Canvas *canvas, int w, int h)
- : BC_FullScreen(canvas->subwindow, w, h, BLACK, 0, 0, 0)
+ : BC_FullScreen(canvas->subwindow, w, h, canvas->get_clear_color(), 0, 0, 0)
 {
 	this->canvas = canvas;
 }

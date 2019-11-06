@@ -3535,7 +3535,7 @@ int CWindowCanvas::get_cwindow_controls()
 int CWindowCanvas::get_clear_color()
 {
 	int color = mwindow->edl->session->cwindow_clear_color;
-	if( color < 0 ) color = get_canvas()->get_bg_color();
+	if( color < 0 ) color = Canvas::get_clear_color();
 	return color;
 }
 

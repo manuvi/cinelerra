@@ -283,35 +283,8 @@ void VDeviceX11::new_output_buffer(VFrame **result, int file_colormodel, EDL *ed
 				delete bitmap;        bitmap = 0;
 				delete output_frame;  output_frame = 0;
 // Clear borders if size changed
-				if( size_change ) {
-//printf("VDeviceX11::new_output_buffer %d w=%d h=%d "
-// "canvas_x1=%d canvas_y1=%d canvas_x2=%d canvas_y2=%d\n",
-// __LINE__, // (int)output->w, (int)output->h,
-// (int)canvas_x1, (int)canvas_y1, (int)canvas_x2, (int)canvas_y2);
-					window->set_color(BLACK);
-
-					if( canvas_y1 > 0 ) {
-						window->draw_box(0, 0, output->w, canvas_y1);
-						window->flash(0, 0, output->w, canvas_y1);
-					}
-
-					if( canvas_y2 < output->h ) {
-						window->draw_box(0, canvas_y2, output->w, output->h - canvas_y2);
-						window->flash(0, canvas_y2, output->w, output->h - canvas_y2);
-					}
-
-					if( canvas_x1 > 0 ) {
-						window->draw_box(0, canvas_y1, canvas_x1, canvas_y2 - canvas_y1);
-						window->flash(0, canvas_y1, canvas_x1, canvas_y2 - canvas_y1);
-					}
-
-					if( canvas_x2 < output->w ) {
-						window->draw_box(canvas_x2, canvas_y1,
-							output->w - canvas_x2, canvas_y2 - canvas_y1);
-						window->flash(canvas_x2, canvas_y1,
-							output->w - canvas_x2, canvas_y2 - canvas_y1);
-					}
-				}
+				if( size_change )
+					output->clear_borders(edl);
 			}
 		}
 
@@ -546,6 +519,7 @@ int VDeviceX11::write_buffer(VFrame *output_channels, EDL *edl)
 void VDeviceX11::clear_output()
 {
 	is_cleared = 1;
+// clear front and back buffers
 	output->mwindow->playback_3d->clear_output(output, 0);
 	output->mwindow->playback_3d->clear_output(output, output_frame);
 }
