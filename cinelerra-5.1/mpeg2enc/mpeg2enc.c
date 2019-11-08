@@ -222,7 +222,8 @@ static void init()
 	init_idct();
 	init_motion();
 	init_predict_hv();
-	init_quantizer_hv();
+	int use_sse = chroma_format==CHROMA420 ? 1 : 0;
+	init_quantizer_hv(use_sse);
 	init_transform_hv();
 
 /* round picture dimensions to nZearest multiple of 16 or 32 */

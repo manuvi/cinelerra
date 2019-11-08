@@ -360,5 +360,5 @@ void putseq()
 //printf("putseq 7\n");
 	}
 	putseqend();
-  	if(verbose) fprintf(stderr, "\nDone.  Be sure to visit heroinewarrior.com for updates.\n");
+	if(verbose) fprintf(stderr, "\nDone.\n");
 }

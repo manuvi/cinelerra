@@ -45,6 +45,7 @@ global predcomp_00_mmx
 		
 
 
+SECTION .text
 align 32
 predcomp_00_mmx:
 	push ebp					; save frame pointer

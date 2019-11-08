@@ -51,6 +51,7 @@ twos:
 			dw	2
 			dw	2
 
+SECTION .text
 align 32
 dist2_mmx:
 	push ebp			; save frame pointer
@@ -597,4 +598,4 @@ bd2top22:
 		dec       edi
 		jg        bd2top22
 		jmp       d2exit
-				
+

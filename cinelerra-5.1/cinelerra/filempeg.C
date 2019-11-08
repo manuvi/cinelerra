@@ -622,9 +622,16 @@ int FileMPEG::open_file(int rd, int wr)
 			sprintf(string, " -F %d", frame_rate_code);
 			strncat(mjpeg_command, string, sizeof(mjpeg_command));
 
+			sprintf(string, " -H"); /* Maximize high-frequency resolution */
+			strncat(mjpeg_command, string, sizeof(mjpeg_command));
 
-
-
+			if(asset->vmpeg_preset == 3) /* no constrains for mpeg2 generic */
+			{
+				sprintf(string, " --no-constraints");
+				strncat(mjpeg_command, string, sizeof(mjpeg_command));
+				sprintf(string, " -V 500");
+				strncat(mjpeg_command, string, sizeof(mjpeg_command));
+			}
 
 			strncat(mjpeg_command,
 				asset->vmpeg_progressive ? " -I 0" : " -I 1",
@@ -1898,6 +1905,8 @@ void MPEGConfigVideo::create_objects()
 	add_subwindow(cmodel = new MPEGColorModel(x1, y, this));
 	cmodel->create_objects();
 	y += yS(30);
+	add_subwindow(derivative = new MPEGDerivative(x1, y, this));
+	derivative->create_objects();
 
 	update_cmodel_objs();
 
@@ -1916,7 +1925,6 @@ int MPEGConfigVideo::close_event()
 void MPEGConfigVideo::delete_cmodel_objs()
 {
 	delete preset;
-	delete derivative;
 	delete bitrate;
 	delete fixed_bitrate;
 	delete quant;
@@ -1934,7 +1942,6 @@ void MPEGConfigVideo::delete_cmodel_objs()
 void MPEGConfigVideo::reset_cmodel()
 {
 	preset = 0;
-	derivative = 0;
 	bitrate = 0;
 	fixed_bitrate = 0;
 	quant = 0;
@@ -1969,8 +1976,7 @@ void MPEGConfigVideo::update_cmodel_objs()
 
 	add_subwindow(title = new BC_Title(x, y + ys5, _("Derivative:")));
 	titles.append(title);
-	add_subwindow(derivative = new MPEGDerivative(x1, y, this));
-	derivative->create_objects();
+	derivative->reposition_window(x1, y);
 	y += ys30;
 
 	add_subwindow(title = new BC_Title(x, y + ys5, _("Bitrate:")));
@@ -2028,6 +2034,14 @@ void MPEGDerivative::create_objects()
 int MPEGDerivative::handle_event()
 {
 	gui->asset->vmpeg_derivative = string_to_derivative(get_text());
+	if( gui->asset->vmpeg_derivative == 1 ) {
+		gui->asset->vmpeg_cmodel = BC_YUV420P;
+		char *text = MPEGColorModel::cmodel_to_string(gui->asset->vmpeg_cmodel);
+		gui->cmodel->set_text(text);
+	}
+	gui->cmodel->create_objects();
+	gui->update_cmodel_objs();
+	gui->show_window(1);
 	return 1;
 };
 
@@ -2197,8 +2211,10 @@ MPEGColorModel::MPEGColorModel(int x, int y, MPEGConfigVideo *gui)
 
 void MPEGColorModel::create_objects()
 {
+	while( total_items() > 0 ) del_item(0);
 	add_item(new BC_MenuItem(cmodel_to_string(BC_YUV420P)));
-	add_item(new BC_MenuItem(cmodel_to_string(BC_YUV422P)));
+	if( gui->asset->vmpeg_derivative == 2 )
+		add_item(new BC_MenuItem(cmodel_to_string(BC_YUV422P)));
 }
 
 int MPEGColorModel::handle_event()
@@ -2207,7 +2223,7 @@ int MPEGColorModel::handle_event()
 	gui->update_cmodel_objs();
 	gui->show_window(1);
 	return 1;
-};
+}
 
 int MPEGColorModel::string_to_cmodel(char *string)
 {

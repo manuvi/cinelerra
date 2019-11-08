@@ -660,7 +660,7 @@ int quant_non_intra_hv( pict_data_s *picture,
 							int mquant, int *nonsat_mquant);
 void iquant_intra ( int16_t *src, int16_t *dst, int dc_prec, int mquant);
 void iquant_non_intra (int16_t *src, int16_t *dst, int mquant);
-void init_quantizer_hv();
+void init_quantizer_hv(int use_sse);
 int  next_larger_quant_hv( pict_data_s *picture, int quant );
 
 extern int (*pquant_non_intra)(pict_data_s *picture, int16_t *src, int16_t *dst,

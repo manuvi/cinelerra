@@ -25,6 +25,7 @@
 ;                  unsigned char *cur,
 ;                  int lx, short *blk)
 
+SECTION .text
 align 32
 global sub_pred_mmx
 sub_pred_mmx:

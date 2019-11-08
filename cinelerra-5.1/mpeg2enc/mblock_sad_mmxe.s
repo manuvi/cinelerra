@@ -48,6 +48,7 @@ global dist1_00_mmxe
 ; mm6 = temp
 
 
+SECTION .text
 align 32
 dist1_00_mmxe:
 	push ebp					; save frame pointer

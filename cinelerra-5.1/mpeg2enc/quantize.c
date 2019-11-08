@@ -57,7 +57,7 @@ static void iquant_non_intra_m1(int16_t *src, int16_t *dst, uint16_t *quant_mat)
   Currently just setting up MMX routines if available...
  */
 
-void init_quantizer_hv()
+void init_quantizer_hv(int use_sse)
 {
 #ifdef X86_CPU
   int flags;
@@ -86,7 +86,8 @@ void init_quantizer_hv()
 		{
 			if(verbose) fprintf( stderr, "EXTENDED MMX");
 			pquant_weight_coeff_sum = quant_weight_coeff_sum_mmx;
-			piquant_non_intra_m1 = iquant_non_intra_m1_sse;
+			if( use_sse )
+				piquant_non_intra_m1 = iquant_non_intra_m1_sse;
 		}
 		else
 		{

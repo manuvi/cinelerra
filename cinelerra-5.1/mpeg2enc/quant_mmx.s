@@ -63,8 +63,6 @@ align 32
 quant_buf:	resw 64
 		
 SECTION .text
-		
-
 align 32
 quantize_ni_mmx:
 	push ebp				; save frame pointer

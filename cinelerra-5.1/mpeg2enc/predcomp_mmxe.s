@@ -44,6 +44,7 @@ global predcomp_00_mmxe
 ;;; mm0 = zero mask for src...
 		
 
+SECTION .text
 align 32
 predcomp_00_mmxe:
 	push ebp					; save frame pointer

@@ -52,6 +52,7 @@ global mblockq_sad1_REF
 ; mm6 = temp
 ; mm7 = temp						
 
+SECTION .text
 align 32
 mblockq_dist1_REF:
 	push ebp					; save frame pointer
