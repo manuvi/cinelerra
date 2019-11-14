@@ -58,24 +58,17 @@ public:
 	void start_single();
 	void stop_single();
 
-	void start_fullscreen();
-	void stop_fullscreen();
-
 // Don't call from inside the canvas
 	void create_canvas();
 
-
-
 // Processing or video playback changed.
 	virtual void status_event() {};
-
 
 	virtual void reset_camera() {}
 	virtual void reset_projector() {}
 	virtual void camera_keyframe() {}
 	virtual void projector_keyframe() {}
 	virtual void zoom_resize_window(float percentage) {}
-	virtual void zoom_auto() {}
 	virtual int cursor_leave_event() { return 0; }
 	virtual int cursor_enter_event() { return 0; }
 	virtual int button_release_event() { return 0; }
@@ -86,8 +79,9 @@ public:
 	virtual void toggle_controls() {}
 	virtual int get_cwindow_controls() { return 0; }
 	virtual int get_fullscreen();
-	virtual int get_clear_color();
 	virtual void set_fullscreen(int value);
+	virtual int get_clear_color();
+	virtual int use_fullscreen(int on);
 
 	int cursor_leave_event_base(BC_WindowBase *caller);
 	int cursor_enter_event_base(BC_WindowBase *caller);
@@ -121,15 +115,17 @@ public:
 	virtual void reset_translation() {};
 	virtual void close_source() {};
 // Updates the stores
-	virtual void update_zoom(int x, int y, float zoom) {};
+	virtual void update_zoom(int x, int y, float zoom) {}
 	void check_boundaries(EDL *edl, int &x, int &y, float &zoom);
 	void clear_borders(EDL *edl);
-	void update_scrollbars(int flush);
+	void update_scrollbars(EDL *edl, int flush);
 // Get scrollbar positions relative to output.
 // No correction is done if output is smaller than canvas
-	virtual int get_xscroll() { return 0; };
-	virtual int get_yscroll() { return 0; };
-	virtual float get_zoom() { return 0; };
+	virtual int get_xscroll() { return 0; }
+	virtual int get_yscroll() { return 0; }
+	virtual float get_zoom() { return 0; }
+	virtual float get_auto_zoom(EDL *edl);
+	virtual void zoom_auto();
 // Updates the refresh_frame
 	void update_refresh(VideoDevice *device, VFrame *output_frame);
 // Redraws the refresh_frame
@@ -138,23 +134,16 @@ public:
 
 // Get top left offset of canvas relative to output.
 // Normally negative.  Can be positive if output is smaller than canvas.
-	float get_x_offset(EDL *edl,
-		int single_channel,
-		float zoom_x,
-		float conformed_w,
-		float conformed_h);
-	float get_y_offset(EDL *edl,
-		int single_channel,
-		float zoom_y,
-		float conformed_w,
-		float conformed_h);
-	void get_zooms(EDL *edl,
-		int single_channel,
-		float &zoom_x,
-		float &zoom_y,
-		float &conformed_w,
-		float &conformed_h);
+	float get_x_offset(EDL *edl, int single_channel, float zoom_x,
+			float conformed_w, float conformed_h);
+	float get_y_offset(EDL *edl, int single_channel, float zoom_y,
+			float conformed_w, float conformed_h);
 
+	void get_zooms(EDL *edl, int single_channel,
+			float &zoom_x, float &zoom_y,
+			float &conformed_w, float &conformed_h);
+	void set_zoom(EDL *edl, float zoom);
+	void set_zoom(EDL *edl, float zoom, float cx, float cy);
 
 // Convert coord from output to canvas position, including
 // x and y scroll offsets
@@ -196,28 +185,25 @@ public:
 // refreshes.
 	VFrame *refresh_frame;
 // Results from last get_scrollbars
-	int w_needed;
-	int h_needed;
-	int w_visible;
-	int h_visible;
+	int w_needed, h_needed;
+	int w_visible, h_visible;
 // For cases where video is not enabled on the canvas but processing is
 // occurring for a single frame, this causes the status to update.
 	int is_processing;
 	int is_fullscreen;
 // Cursor is inside video surface
 	int cursor_inside;
-	int view_x;
-	int view_y;
-	int view_w;
-	int view_h;
-	int scr_w0;
+	int view_x, view_y, view_w, view_h;
 	int root_w, root_h;
+	int scr_w0;
 
 	MWindow *mwindow;
 
 private:
-	void get_scrollbars(EDL *edl,
-		int &canvas_x, int &canvas_y, int &canvas_w, int &canvas_h);
+	int get_scrollbars(EDL *edl);
+	void start_fullscreen();
+	void stop_fullscreen();
+
 // Lock access to the canvas pointer.
 	Condition *canvas_lock;
 };

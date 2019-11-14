@@ -91,13 +91,6 @@ void MWindow::add_audio_track_entry(int above, Track *dst)
 	restart_brender();
 	gui->update(1, NORMAL_DRAW, 0, 0, 1, 0, 0);
 	gui->activate_timeline();
-
-//	gui->get_scrollbars(0);
-//	gui->canvas->draw();
-//	gui->patchbay->update();
-//	gui->cursor->draw(1);
-//	gui->canvas->flash();
-//	gui->canvas->activate();
 	cwindow->refresh_frame(CHANGE_EDL);
 }
 
@@ -111,12 +104,6 @@ void MWindow::add_video_track_entry(Track *dst)
 
 	gui->update(1, NORMAL_DRAW, 0, 0, 1, 0, 0);
 	gui->activate_timeline();
-//	gui->get_scrollbars(0);
-//	gui->canvas->draw();
-//	gui->patchbay->update();
-//	gui->cursor->draw(1);
-//	gui->canvas->flash();
-//	gui->canvas->activate();
 	cwindow->refresh_frame(CHANGE_EDL);
 	save_backup();
 }
@@ -131,12 +118,6 @@ void MWindow::add_subttl_track_entry(Track *dst)
 
 	gui->update(1, NORMAL_DRAW, 0, 0, 1, 0, 0);
 	gui->activate_timeline();
-//	gui->get_scrollbars(0);
-//	gui->canvas->draw();
-//	gui->patchbay->update();
-//	gui->cursor->draw(1);
-//	gui->canvas->flash();
-//	gui->canvas->activate();
 	cwindow->refresh_frame(CHANGE_EDL);
 	save_backup();
 }

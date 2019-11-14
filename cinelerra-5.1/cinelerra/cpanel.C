@@ -387,7 +387,8 @@ int CPanelZoom::handle_event()
 	double zoom = pow(10.,value);
 	switch( mwindow->edl->session->cwindow_operation ) {
 	case CWINDOW_ZOOM:
-		gui->subwindow->zoom_canvas(zoom, 1);
+		gui->subwindow->canvas->set_zoom(mwindow->edl, zoom);
+		gui->subwindow->update_canvas();
 		break;
 	case CWINDOW_CAMERA:
 		aidx = AUTOMATION_CAMERA_Z;

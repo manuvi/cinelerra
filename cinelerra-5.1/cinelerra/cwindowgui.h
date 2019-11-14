@@ -68,8 +68,7 @@ public:
 
 	void create_objects();
 	int resize_event(int w, int h);
-	void zoom_canvas(double value, int update_menu);
-	float get_auto_zoom();
+	void update_canvas(int redraw=1);
 
 // Events for the fullscreen canvas fall through to here.
 	int button_press_event();
@@ -286,6 +285,8 @@ public:
 	int get_xscroll();
 	int get_yscroll();
 	float get_zoom();
+	void zoom_auto();
+	int do_scroll(EDL *edl, float cursor_x, float cursor_y);
 	int do_eyedrop(int &rerender, int button_press, int draw);
 	int do_mask(int &redraw,
 		int &rerender,
@@ -318,7 +319,9 @@ public:
 	void reset_camera();
 	void reset_projector();
 	void draw_crophandle(int x, int y);
-	void zoom_auto();
+	int use_fullscreen(int on);
+	void start_fullscreen();
+	void stop_fullscreen();
 
 // Draw the camera/projector overlay in different colors.
 	void draw_outlines(int do_camera);

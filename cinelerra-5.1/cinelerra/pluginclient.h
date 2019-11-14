@@ -161,8 +161,91 @@ public:
 	virtual int translation_event();
 	virtual int close_event();
 	virtual void done_event(int result) {}
+// A listener for PluginParam events
+	virtual void param_updated();
 
 	PluginClient *client;
+};
+
+// A GUI helper
+class PluginFPot : public BC_FPot
+{
+public:
+    PluginFPot(PluginParam *param, int x, int y);
+    int handle_event();
+        PluginParam *param;
+};
+
+class PluginIPot : public BC_IPot
+{
+public:
+    PluginIPot(PluginParam *param, int x, int y);
+    int handle_event();
+        PluginParam *param;
+};
+
+class PluginQPot : public BC_QPot
+{
+public:
+    PluginQPot(PluginParam *param, int x, int y);
+    int handle_event();
+        PluginParam *param;
+};
+
+class PluginText : public BC_TextBox
+{
+public:
+    PluginText(PluginParam *param, int x, int y, int value);
+    PluginText(PluginParam *param, int x, int y, float value);
+    int handle_event();
+        PluginParam *param;
+};
+
+class PluginParam
+{
+public:
+    PluginParam(PluginClient *plugin,
+        PluginClientWindow *gui,
+        int x1,
+        int x2,
+        int x3,
+        int y,
+        int text_w,
+        int *output_i,
+        float *output_f, // floating point output
+        int *output_q, // frequency output
+        const char *title,
+        float min,
+        float max);
+    ~PluginParam();
+
+    void initialize();
+    void update(int skip_text, int skip_pot);
+// set the number of fractional digits
+    void set_precision(int digits);
+
+// 2 possible outputs
+    float *output_f;
+    PluginFPot *fpot;
+
+    int *output_i;
+    PluginIPot *ipot;
+
+    int *output_q;
+    PluginQPot *qpot;
+
+    char *title;
+    PluginText *text;
+    PluginClientWindow *gui;
+    PluginClient *plugin;
+    int x1;
+    int x2;
+    int x3;
+    int y;
+    int text_w;
+    float min;
+    float max;
+    int precision;
 };
 
 

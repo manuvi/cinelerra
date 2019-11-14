@@ -228,7 +228,7 @@ void CWindow::update(int dir, int overlays, int tool_window, int operation, int 
 		gui->timebar->update(1);
 
 	double zoom = !mwindow->edl->session->cwindow_scrollbars ?
-		0 :mwindow->edl->session->cwindow_zoom;
+		0 : mwindow->edl->session->cwindow_zoom;
 	gui->zoom_panel->update(zoom);
 
 	gui->canvas->update_zoom(mwindow->edl->session->cwindow_xscroll,
@@ -328,10 +328,7 @@ int CWindowRemoteHandler::remote_process_key(RemoteControl *remote_control, int 
 		break;
 	case 'f': {
 		Canvas *canvas = mwindow_gui->mwindow->cwindow->gui->canvas;
-		if( !canvas->get_fullscreen() )
-			canvas->start_fullscreen();
-		else
-			canvas->stop_fullscreen();
+		canvas->use_fullscreen(canvas->get_fullscreen() ? 0 : 1);
 		return 1; }
 	default:
 		return -1;

@@ -65,8 +65,9 @@ public:
 	ZWindowCanvas(MWindow *mwindow, ZWindowGUI *gui,
 		int x, int y, int w, int h);
 
-	void draw_refresh(int flush = 1);
 	void close_source();
+	void draw_refresh(int flush = 1);
+	float get_auto_zoom();
 
 	MWindow *mwindow;
 	ZWindowGUI *gui;

@@ -100,14 +100,10 @@ int ZWindowGUI::keypress_event()
 	int result = 1;
 	switch( key ) {
 	case 'f':
-		if( canvas->get_fullscreen() )
-			canvas->stop_fullscreen();
-		else
-			canvas->start_fullscreen();
+		canvas->use_fullscreen(canvas->get_fullscreen() ? 0 : 1);
 		break;
 	case ESC:
-		if( canvas->get_fullscreen() )
-			canvas->stop_fullscreen();
+		canvas->use_fullscreen(0);
 		break;
 	default:
 		mwindow->gui->lock_window("ZWindowGUI::keypress_event");
@@ -246,5 +242,19 @@ void ZWindowCanvas::draw_refresh(int flush)
 
 	if( dirty )
 		cvs->flash(flush);
+}
+
+float ZWindowCanvas::get_auto_zoom()
+{
+	EDL *edl = gui->zwindow->edl;
+	if( !edl ) edl = mwindow->edl;
+	float conformed_w, conformed_h;
+	edl->calculate_conformed_dimensions(0, conformed_w, conformed_h);
+	BC_WindowBase *window = get_canvas();
+	int cw = window ? window->get_w() : w;
+	int ch = window ? window->get_h() : h;
+	float zoom_x = cw / conformed_w;
+	float zoom_y = ch / conformed_h;
+	return zoom_x < zoom_y ? zoom_x : zoom_y;
 }
 

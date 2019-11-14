@@ -94,8 +94,6 @@ public:
 	VWindowOutPoint *out_point;
 	char loaded_title[BCTEXTLEN];
 	int highlighted;
-private:
-	void get_scrollbars(int &canvas_x, int &canvas_y, int &canvas_w, int &canvas_h);
 };
 
 
@@ -122,6 +120,8 @@ public:
 	int need_overlays();
 	void draw_overlays();
 	void close_source();
+	void zoom_auto();
+	int use_fullscreen(int on);
 
 	MWindow *mwindow;
 	VWindowGUI *gui;

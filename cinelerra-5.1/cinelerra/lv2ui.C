@@ -14,6 +14,7 @@ int main(int ac, char **av)
 const char *cp = getenv("BUG");
 static int zbug = !cp ? 0 : atoi(cp);  volatile int bug = zbug;
 while( bug ) usleep(10000);
+	BC_WindowBase::init_resources(1);
 	BC_Signals signals;
 	if( getenv("BC_TRAP_LV2_SEGV") ) {
 		signals.initialize("/tmp/lv2ui_%d.dmp");

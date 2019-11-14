@@ -22,8 +22,15 @@
 #ifndef PLUGINCLIENT_INC
 #define PLUGINCLIENT_INC
 
-class PluginClient;
-class PluginClientThread;
+class PluginClientAuto;
 class PluginClientWindow;
+class PluginFPot;
+class PluginIPot;
+class PluginQPot;
+class PluginText;
+class PluginParam;
+class PluginClientThread;
+class PluginClientFrame;
+class PluginClient;
 
 #endif

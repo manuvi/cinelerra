@@ -1829,10 +1829,7 @@ int Record::remote_process_key(RemoteControl *remote_control, int key)
 		break;
 	case 'f': {
 		Canvas *canvas = record_monitor->window->canvas;
-		if( !canvas->get_fullscreen() )
-			canvas->start_fullscreen();
-		else
-			canvas->stop_fullscreen();
+		canvas->use_fullscreen(canvas->get_fullscreen() ? 0 : 1);
 		break; }
 	default:
 		return -1;

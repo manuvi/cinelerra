@@ -607,7 +607,7 @@ $(OBJDIR)/%.o:		%.C
 
 #lv2
 ifneq ($(WANT_LV2),no)
-GTK2_INCS := `pkg-config --cflags gtk+-2.0`
+GTK2_INCS := `pkg-config --cflags gtk+-2.0` -Wno-deprecated-declarations
 GTK2_LIBS := `pkg-config --libs gtk+-2.0`
 
 $(OBJDIR)/pluginlv2ui.o:	pluginlv2ui.C

@@ -166,6 +166,7 @@ private:
 	BC_Capture *capture_bitmap;
 // Set when OpenGL rendering has cleared the frame buffer before write_buffer
 	int is_cleared;
+	int opened;
 };
 
 #endif

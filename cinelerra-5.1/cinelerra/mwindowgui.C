@@ -150,102 +150,6 @@ MWindowGUI::~MWindowGUI()
 	delete y_divider;
 }
 
-#if 0
-void MWindowGUI::get_scrollbars(int flush)
-{
-	//int64_t h_needed = mwindow->edl->get_tracks_height(mwindow->theme);
-	//int64_t w_needed = mwindow->edl->get_tracks_width();
-	int need_xscroll = 0;
-	int need_yscroll = 0;
-	view_w = mwindow->theme->mcanvas_w;
-	view_h = mwindow->theme->mcanvas_h;
-
-// Scrollbars are constitutive
-	need_xscroll = need_yscroll = 1;
-	view_h = mwindow->theme->mcanvas_h;
-	view_w = mwindow->theme->mcanvas_w;
-
-// 	for(int i = 0; i < 2; i++)
-// 	{
-// 		if(w_needed > view_w)
-// 		{
-// 			need_xscroll = 1;
-// 			view_h = mwindow->theme->mcanvas_h - SCROLL_SPAN;
-// 		}
-// 		else
-// 			need_xscroll = 0;
-//
-// 		if(h_needed > view_h)
-// 		{
-// 			need_yscroll = 1;
-// 			view_w = mwindow->theme->mcanvas_w - SCROLL_SPAN;
-// 		}
-// 		else
-// 			need_yscroll = 0;
-// 	}
-//printf("MWindowGUI::get_scrollbars 1\n");
-
-	if(canvas && (view_w != canvas->get_w() || view_h != canvas->get_h()))
-	{
-		canvas->reposition_window(mwindow->theme->mcanvas_x,
-			mwindow->theme->mcanvas_y,
-			view_w,
-			view_h);
-	}
-
-	if(need_xscroll)
-	{
-		if(!samplescroll)
-			add_subwindow(samplescroll = new SampleScroll(mwindow,
-				this,
-				mwindow->theme->mhscroll_x,
-				mwindow->theme->mhscroll_y,
-				mwindow->theme->mhscroll_w));
-		else
-			samplescroll->resize_event();
-
-		samplescroll->set_position(0);
-	}
-	else
-	{
-		if(samplescroll) delete samplescroll;
-		samplescroll = 0;
-		mwindow->edl->local_session->view_start = 0;
-	}
-
-
-	if(need_yscroll)
-	{
-//printf("MWindowGUI::get_scrollbars 1.1 %p %p\n", this, canvas);
-		if(!trackscroll)
-			add_subwindow(trackscroll = new TrackScroll(mwindow,
-				this,
-				mwindow->theme->mvscroll_x,
-				mwindow->theme->mvscroll_y,
-				mwindow->theme->mvscroll_h));
-		else
-			trackscroll->resize_event();
-
-
-//printf("MWindowGUI::get_scrollbars 1.2\n");
-		trackscroll->update_length(mwindow->edl->get_tracks_height(mwindow->theme),
-			mwindow->edl->local_session->track_start,
-			view_h,
-			0);
-//printf("MWindowGUI::get_scrollbars 1.3\n");
-	}
-	else
-	{
-		if(trackscroll) delete trackscroll;
-		trackscroll = 0;
-		mwindow->edl->local_session->track_start = 0;
-	}
-
-	if(flush) this->flush();
-
-}
-#endif // 0
-
 void MWindowGUI::create_objects()
 {
 	lock_window("MWindowGUI::create_objects");
@@ -287,26 +191,6 @@ void MWindowGUI::create_objects()
 		mwindow->theme->mcanvas_w,
 		mwindow->theme->mcanvas_h);
 	pane[TOP_LEFT_PANE]->create_objects();
-
-// 	add_subwindow(timebar = new MTimeBar(mwindow,
-// 		this,
-// 		mwindow->theme->mtimebar_x,
-//  		mwindow->theme->mtimebar_y,
-// 		mwindow->theme->mtimebar_w,
-// 		mwindow->theme->mtimebar_h));
-// 	timebar->create_objects();
-
-//	if(debug) printf("MWindowGUI::create_objects %d\n", __LINE__);
-//	add_subwindow(patchbay = new PatchBay(mwindow, this));
-//	patchbay->create_objects();
-
-//	if(debug) printf("MWindowGUI::create_objects %d\n", __LINE__);
-//	get_scrollbars(0);
-
-//	if(debug) printf("MWindowGUI::create_objects %d\n", __LINE__);
-//	mwindow->gui->add_subwindow(canvas = new TrackCanvas(mwindow, this));
-//	canvas->create_objects();
-
 
 	if(debug) printf("MWindowGUI::create_objects %d\n", __LINE__);
 	add_subwindow(zoombar = new ZoomBar(mwindow, this));

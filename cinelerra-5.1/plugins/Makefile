@@ -36,6 +36,7 @@ DIRS = $(OPENCV_OBJS) \
 	burn \
 	C41 \
 	cdripper \
+	chorus \
 	chromakey \
 	chromakeyhsv \
 	color3way \
@@ -64,6 +65,7 @@ DIRS = $(OPENCV_OBJS) \
 	echo \
 	echocancel \
 	fieldframe \
+	flanger \
 	flash \
 	flip \
 	framefield \
@@ -141,6 +143,7 @@ DIRS = $(OPENCV_OBJS) \
 	titler \
 	tracer \
 	translate \
+	tremolo \
 	unsharp \
 	videoscope \
 	wave \

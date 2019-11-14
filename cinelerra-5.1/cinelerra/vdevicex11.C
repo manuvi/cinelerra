@@ -52,6 +52,7 @@ VDeviceX11::VDeviceX11(VideoDevice *device, Canvas *output)
 {
 	reset_parameters();
 	this->output = output;
+	opened = 0;
 }
 
 VDeviceX11::~VDeviceX11()
@@ -91,7 +92,7 @@ int VDeviceX11::open_input()
 	capture_bitmap->bars_on(SCREENCAP_PIXELS, SCREENCAP_COLOR,
 		device->input_x, device->input_y,
 		device->in_config->w, device->in_config->h);
-
+	opened = 1;
 	return 0;
 }
 
@@ -106,6 +107,7 @@ int VDeviceX11::open_output()
 		else
 			output->start_single();
 	}
+	opened = 1;
 	output->unlock_canvas();
 	return 0;
 }
@@ -126,6 +128,7 @@ int VDeviceX11::output_visible()
 
 int VDeviceX11::close_all()
 {
+	if( !opened ) return 1;
 	if( output ) {
 		BC_WindowBase *window =
 			output->lock_canvas("VDeviceX11::close_all");
@@ -146,12 +149,12 @@ int VDeviceX11::close_all()
 	delete bitmap;          bitmap = 0;
 	delete output_frame;    output_frame = 0;
 	delete capture_bitmap;  capture_bitmap = 0;
+	opened = 0;
 
 	if( output )
 		output->unlock_canvas();
 
 	reset_parameters();
-
 	return 0;
 }
 

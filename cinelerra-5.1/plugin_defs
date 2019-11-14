@@ -127,6 +127,7 @@ plugin_dirs += audio
 audio := \
 	audioscope \
 	cdripper \
+	chorus \
 	compressor \
 	dcoffset \
 	delayaudio \
@@ -136,6 +137,7 @@ audio := \
 	echo \
 	echocancel \
 	freeverb \
+	flanger \
 	gain \
 	graphic \
 	interpolateaudio \
@@ -155,6 +157,7 @@ audio := \
 	synthesizer \
 	timestretch \
 	timestretchrt \
+	tremolo \
 	vocoder \
 
 plugin_dirs += opencv

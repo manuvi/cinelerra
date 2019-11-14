@@ -3660,6 +3660,7 @@ void MWindow::update_project(int load_mode)
 			zwindow->set_title(mixer->title);
 			zwindow->start();
 		}
+		cwindow->gui->canvas->set_zoom(edl, 0);
 	}
 	update_vwindow();
 
@@ -3669,6 +3670,7 @@ void MWindow::update_project(int load_mode)
 	Track *track = cwindow->calculate_affected_track();
 	cwindow->mask_track_id = track ? track->get_id() : -1;
 	cwindow->gui->tool_panel->raise_tool();
+	cwindow->gui->update_canvas(0);
 	cwindow->gui->unlock_window();
 
 	if(debug) PRINT_TRACE

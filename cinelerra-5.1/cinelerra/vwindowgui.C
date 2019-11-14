@@ -365,16 +365,13 @@ int VWindowGUI::keypress_event()
 		break;
 	case 'f':
 		unlock_window();
-		if( canvas->get_fullscreen() )
-			canvas->stop_fullscreen();
-		else
-			canvas->start_fullscreen();
+		canvas->use_fullscreen(canvas->get_fullscreen() ? 0 : 1);
 		lock_window("VWindowGUI::keypress_event 1");
 		break;
 	case ESC:
 		unlock_window();
 		if( canvas->get_fullscreen() )
-			canvas->stop_fullscreen();
+			canvas->use_fullscreen(0);
 		lock_window("VWindowGUI::keypress_event 2");
 		break;
 	case KEY_F1:
@@ -815,6 +812,13 @@ void VWindowCanvas::zoom_resize_window(float percentage)
 	gui->resize_event(new_w, new_h);
 }
 
+void VWindowCanvas::zoom_auto()
+{
+	EDL *edl = gui->vwindow->get_edl();
+	if(!edl) edl = mwindow->edl;
+	set_zoom(edl, 0);
+}
+
 void VWindowCanvas::close_source()
 {
 	gui->vwindow->interrupt_playback(1);
@@ -829,8 +833,9 @@ void VWindowCanvas::draw_refresh(int flush)
 	if( !get_canvas()->get_video_on() ) {
 		int cw = get_canvas()->get_w(), ch = get_canvas()->get_h();
 		get_canvas()->clear_box(0, 0, cw, ch);
-		int ow = get_output_w(edl), oh = get_output_h(edl);
-		if( ow > 0 && oh > 0 && refresh_frame && edl ) {
+		int ow = edl ? get_output_w(edl) : 0;
+		int oh = edl ? get_output_h(edl) : 0;
+		if( ow > 0 && oh > 0 && refresh_frame ) {
 			float in_x1, in_y1, in_x2, in_y2;
 			float out_x1, out_y1, out_x2, out_y2;
 			get_transfers(edl,
@@ -871,5 +876,16 @@ void VWindowCanvas::draw_overlays()
 		get_canvas()->draw_rectangle(1, 1, get_canvas()->get_w() - 2, get_canvas()->get_h() - 2);
 		get_canvas()->set_opaque();
 	}
+}
+
+int VWindowCanvas::use_fullscreen(int on)
+{
+	if( Canvas::use_fullscreen(on) ) {
+		gui->lock_window("VWindowCanvas::use_fullscreen");
+		zoom_auto();
+		draw_refresh(1);
+		gui->unlock_window();
+	}
+	return 1;
 }
 

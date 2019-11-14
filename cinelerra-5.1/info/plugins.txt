@@ -585,6 +585,7 @@ L_Bode frequency shifter (CV): Controls the frequency shift applied to
 		the input signal, in KHz.
 L_Chebyshev distortion: Interesting distortion effect that is seeded
 		from incoming signal envelope.
+Chorus:		Adds a chorus effect to the audio.
 L_Comb Filter:	Controls the distance between the filters peaks.
 L_Comb Splitter:	Divides the input up into two parts with frequency
 		peaks at f Hz intervals, skewed by f/2 Hz between
@@ -646,6 +647,7 @@ L_Fast Lookahead limiter: A limiter with an attack time of 5ms. It adds
 		get the minimum amount of distortion.
 L_Fast overdrive: Compresses the extreme peaks to make a sound
 		similar to an overdriven amplifier.
+Flanger:	Adds a flanger effect to the audio.
 L_Flanger:	Digital flanger implementation.  Uses excursion,
 		controlled bandwidth modulation function, which
 		makes the modulation less repetitive and noticable.
@@ -785,6 +787,7 @@ Synthesizer:	Generate synthesizer sounds; to set key data, turn
 L_Tape Delay Simulation: Models the tape motion and some smear effect.
 Time Stretch RT: Change the speed of an audio signal without
 		affecting its pitch.
+Tremolo:	Applies a tremolo effect to the audio.
 #L_Transient mangler:
 #L_Triple band parametric with shelves:
 #L_Valve rectifier:
