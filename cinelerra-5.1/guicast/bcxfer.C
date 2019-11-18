@@ -176,12 +176,17 @@ void BC_CModels::transfer(unsigned char **output_rows, unsigned char **input_row
 	int in_colormodel, int out_colormodel, int bg_color,
 	int in_rowspan, int out_rowspan)
 {
-	BC_Xfer xfer(output_rows, input_rows,
-		out_yp, out_up, out_vp, in_yp, in_up, in_vp,
-		in_x, in_y, in_w, in_h, out_x, out_y, out_w, out_h,
-		in_colormodel, out_colormodel, bg_color,0xff, in_rowspan, out_rowspan);
-	if( xfer.xfer() )
-		printf("BC_CModels::transfer failed: %d to %d\n", in_colormodel, out_colormodel);
+	int ret = 1;
+	if( in_w > 0 && in_h > 0 && out_w > 0 && out_h > 0 ) {
+		BC_Xfer xfer(output_rows, input_rows,
+			out_yp, out_up, out_vp, in_yp, in_up, in_vp,
+			in_x, in_y, in_w, in_h, out_x, out_y, out_w, out_h,
+			in_colormodel, out_colormodel, bg_color,0xff, in_rowspan, out_rowspan);
+		ret = xfer.xfer();
+	}
+	if( ret )
+		printf("BC_CModels::transfer failed:%d %d(%dx%d) to %d(%dx%d)\n", __LINE__,
+			in_colormodel, in_w, in_h, out_colormodel, out_w, out_h);
 }
 
 void BC_CModels::transfer(
@@ -191,12 +196,17 @@ void BC_CModels::transfer(
 		int in_x, int in_y, int in_w, int in_h, int in_rowspan,
 	int bg_color)
 {
-	BC_Xfer xfer(
-		output_ptrs, out_colormodel, out_x, out_y, out_w, out_h, out_rowspan,
-		input_ptrs, in_colormodel, in_x, in_y, in_w, in_h, in_rowspan,
-		bg_color,0xff);
-	if( xfer.xfer() )
-		printf("BC_CModels::transfer failed: %d to %d\n", in_colormodel, out_colormodel);
+	int ret = 1;
+	if( in_w > 0 && in_h > 0 && out_w > 0 && out_h > 0 ) {
+		BC_Xfer xfer(
+			output_ptrs, out_colormodel, out_x, out_y, out_w, out_h, out_rowspan,
+			input_ptrs, in_colormodel, in_x, in_y, in_w, in_h, in_rowspan,
+			bg_color,0xff);
+		ret = xfer.xfer();
+	}
+	if( ret )
+		printf("BC_CModels::transfer failed:%d %d(%dx%d) to %d(%dx%d)\n", __LINE__,
+			in_colormodel, in_w, in_h, out_colormodel, out_w, out_h);
 }
 
 // color is rgb
@@ -205,10 +215,17 @@ int BC_CModels::init_color(int color, int alpha,
 		unsigned char *out_yp, unsigned char *out_up, unsigned char *out_vp,
 		int out_x, int out_y, int out_w, int out_h, int out_rowspan)
 {
-	BC_Xfer xfer(output_rows, 0, out_yp,out_up,out_vp, 0,0,0,
-		0,0,0,0, out_x,out_y,out_w,out_h, BC_TRANSPARENCY,
-		out_colormodel, color,alpha, 0, out_rowspan);
-	return xfer.xfer();
+	int ret = 1;
+	if( out_w > 0 && out_h > 0 ) {
+		BC_Xfer xfer(output_rows, 0, out_yp,out_up,out_vp, 0,0,0,
+			0,0,0,0, out_x,out_y,out_w,out_h, BC_TRANSPARENCY,
+			out_colormodel, color,alpha, 0, out_rowspan);
+		ret = xfer.xfer();
+	}
+	if( ret )
+		printf("BC_CModels::init_color failed:%d(%dx%d)\n",
+			out_colormodel, out_w, out_h);
+	return ret;
 }
 
 // specialized functions

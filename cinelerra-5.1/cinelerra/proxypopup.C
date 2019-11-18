@@ -266,7 +266,7 @@ ProxyPopupProjectRemove::~ProxyPopupProjectRemove()
 int ProxyPopupProjectRemove::handle_event()
 {
 	popup->gui->collect_assets();
-	mwindow->remove_assets_from_project(1, 1,
+	mwindow->remove_assets_from_project(1, 1, 1,
 		mwindow->session->drag_assets,
 		mwindow->session->drag_clips);
 	return 1;

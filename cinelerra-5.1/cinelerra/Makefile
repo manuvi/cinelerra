@@ -98,6 +98,7 @@ OBJS := $(OVERLAYS) \
 	$(OBJDIR)/commonrender.o \
 	$(OBJDIR)/confirmquit.o \
 	$(OBJDIR)/confirmsave.o \
+	$(OBJDIR)/convert.o \
 	$(OBJDIR)/cpanel.o \
 	$(OBJDIR)/cplayback.o \
 	$(OBJDIR)/ctimebar.o \

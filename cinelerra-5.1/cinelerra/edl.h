@@ -230,6 +230,7 @@ public:
 	void paste_edits(EDL *clip, Track *first_track, double position, int overwrite,
 		int edit_edits, int edit_labels, int edit_autos, int edit_plugins);
 	void paste_edits(EDL *clip, Track *first_track, double position, int overwrite);
+	void replace_assets(ArrayList<Indexable*> &orig_idxbls, ArrayList<Asset*> &new_assets);
 // resequence group ids starting at next_id
 	int regroup(int next_id);
 
@@ -238,8 +239,9 @@ public:
 	void get_shared_tracks(Track *track, ArrayList<SharedLocation*> *module_locations,
 		int omit_recordable, int data_type);
 
-    int get_tracks_height(Theme *theme);
-    int64_t get_tracks_width();
+	int get_tracks_height(Theme *theme);
+	int64_t get_tracks_width();
+
 // Return dimensions for canvas if smaller dimensions has zoom of 1
 	void calculate_conformed_dimensions(int single_channel, float &w, float &h);
 // Get the total output size scaled to aspect ratio

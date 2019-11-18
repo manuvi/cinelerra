@@ -11,4 +11,4 @@ color_primaries=bt709
 profile=baseline
 preset=medium
 flags=+cgop
-x264opts keyint=25:min-keyint=4:qpmin=3:qpmax=33:qp_step=4:merange=8
+x264-params keyint=25:min-keyint=4:qpmin=3:qpmax=33:qp_step=4:merange=8

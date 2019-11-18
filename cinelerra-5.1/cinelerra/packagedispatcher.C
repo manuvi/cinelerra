@@ -327,6 +327,11 @@ int64_t PackageDispatcher::get_progress_max()
 				total_allocated * default_asset->sample_rate);
 }
 
+RenderPackage *PackageDispatcher::get_package(int number)
+{
+	return packages[number];
+}
+
 int PackageDispatcher::get_total_packages()
 {
 	return total_allocated;

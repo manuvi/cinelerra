@@ -27,6 +27,7 @@
 #include "clip.h"
 #include "clipedit.h"
 #include "commercials.h"
+#include "convert.h"
 #include "cplayback.h"
 #include "ctimebar.h"
 #include "cwindow.h"
@@ -2441,6 +2442,44 @@ void MWindow::rescale_proxy(EDL *clip, int orig_scale, int new_scale)
 void MWindow::add_proxy(ArrayList<Indexable*> *orig_assets, ArrayList<Indexable*> *proxy_assets)
 {
 	edl->add_proxy(orig_assets, proxy_assets);
+}
+
+void MWindow::start_convert(Asset *format_asset, const char *suffix,
+		float beep, int remove_originals)
+{
+	if( !convert_render )
+		convert_render = new ConvertRender(this, suffix);
+	convert_render->set_format(format_asset);
+	int found = convert_render->find_convertable_assets(edl);
+	if( convert_render->needed_idxbls.size() > 0 )
+		convert_render->start_convert(beep, remove_originals);
+	else if( found > 0 )
+		finish_convert(remove_originals);
+	else {
+		eprintf(_("No convertable assets found"));
+	}
+}
+
+void MWindow::finish_convert(int remove_originals)
+{
+	gui->lock_window("MWindow::finish_convert");
+	undo_before();
+	edl->replace_assets(
+		convert_render->orig_idxbls,
+		convert_render->orig_copies);
+	if( remove_originals ) {
+		remove_assets_from_project(0, 0, 0,
+			&convert_render->orig_idxbls, 0);
+	}
+	save_backup();
+	undo_after(_("convert"), LOAD_ALL);
+
+	update_plugin_guis();
+	gui->update(1, FORCE_REDRAW, 1, 1, 1, 1, 0);
+	cwindow->update(1, 0, 0, 0, 1);
+	awindow->gui->async_update_assets();
+	cwindow->refresh_frame(CHANGE_EDL);
+	gui->unlock_window();
 }
 
 void MWindow::cut_commercials()

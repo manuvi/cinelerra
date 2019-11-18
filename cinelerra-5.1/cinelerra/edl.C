@@ -2119,3 +2119,21 @@ void EDL::paste_edits(EDL *clip, Track *first_track, double position, int overwr
 		session->plugins_follow_edits);
 }
 
+void EDL::replace_assets(ArrayList<Indexable*> &orig_idxbls, ArrayList<Asset*> &new_assets)
+{
+	for( Track *track=tracks->first; track; track=track->next ) {
+		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
+			Indexable *idxbl = (Indexable *)edit->asset;
+			if( !idxbl ) continue;
+			int i = orig_idxbls.size();
+			while( --i>=0 && strcmp(orig_idxbls[i]->path, idxbl->path) );
+			if( i < 0 ) continue;
+			edit->asset = assets->update((Asset*)new_assets[i]);
+		}
+	}
+	if( !parent_edl ) {
+		for( int j=0,n=clips.size(); j<n; ++j )
+			clips[j]->replace_assets(orig_idxbls, new_assets);
+	}
+}
+

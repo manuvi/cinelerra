@@ -931,7 +931,7 @@ void EDLSession::dump()
 		"    video_tracks=%d frame_rate=%f output_w=%d output_h=%d aspect_w=%f aspect_h=%f\n"
 		"    decode subtitles=%d subtitle_number=%d label_cells=%d program_no=%d\n"
 		"    proxy scale=%d\n disabled_scale=%d, use_scaler=%d, auto_scale=%d\n"
-		"    proxy_beep=%d render_beep=%d\n",
+		"    proxy_beep=%f render_beep=%f\n",
 		audio_tracks, audio_channels, sample_rate, video_tracks,
 		frame_rate, output_w, output_h, aspect_w, aspect_h,
 		decode_subtitles, subtitle_number, label_cells, program_no,

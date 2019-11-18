@@ -3085,7 +3085,9 @@ int CWindowCanvas::test_zoom(int &redraw)
 			if( EQUIV(zoom, my_zoom_table[idx]) ) continue;
 			if( zoom < my_zoom_table[idx] ) break;
 		}
-		zoom = idx < total_zooms ? my_zoom_table[idx] : 1.1 * zoom;
+		float zoom11 = 1.1f * zoom;
+		zoom = idx < total_zooms ? my_zoom_table[idx] : zoom11;
+		if( zoom > zoom11 ) zoom = zoom11;
 		break; }
 	case WHEEL_DOWN: {
 		int idx = total_zooms;
@@ -3093,7 +3095,9 @@ int CWindowCanvas::test_zoom(int &redraw)
 			if( EQUIV(my_zoom_table[idx], zoom) ) continue;
 			if( my_zoom_table[idx] < zoom ) break;
 		}
-		zoom = idx >= 0 ? my_zoom_table[idx] : 0.9 * zoom;
+		float zoom09 = 0.9f * zoom;
+		zoom = idx >= 0 ? my_zoom_table[idx] : zoom09;
+		if( zoom < zoom09 ) zoom = zoom09;
 		break; }
 	case MIDDLE_BUTTON:
 		if( gui->shift_down() ) {
@@ -3259,7 +3263,7 @@ int CWindowCanvas::button_press_event()
 			break;
 
 		case CWINDOW_ZOOM:
-			test_zoom(redraw);
+			result = test_zoom(redraw);
 			break;
 
 		case CWINDOW_CROP:

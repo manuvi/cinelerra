@@ -172,8 +172,8 @@ public:
         int proxy_use_scaler;
 // automatically rescale assets when loaded
         int proxy_auto_scale;
-// beep when proxy/render done
-        int proxy_beep, render_beep;
+// beep gain when proxy/render done
+        float proxy_beep, render_beep;
 //	int playback_strategy;
 // Play audio in realtime priority
 	int real_time_playback;

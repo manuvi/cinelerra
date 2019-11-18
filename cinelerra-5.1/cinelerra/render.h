@@ -179,7 +179,7 @@ public:
 // Background compression must be disabled when direct frame copying and reenabled afterwards
 	int direct_frame_copying;
 // beep on done
-	int beep;
+	float beep;
 
 	Preferences *preferences;
 	VFrame *compressed_output;
@@ -289,7 +289,7 @@ public:
 };
 
 
-class RenderBeepOnDone : public BC_CheckBox
+class RenderBeepOnDone : public BC_FPot
 {
 public:
 	RenderBeepOnDone(RenderWindow *rwindow, int x, int y);

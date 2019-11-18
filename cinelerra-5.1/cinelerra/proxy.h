@@ -112,7 +112,7 @@ public:
 	int orig_scale, new_scale;
 	int use_scaler, auto_scale;
 	int orig_w, orig_h;
-	int beep;
+	float beep;
 	char *size_text[MAX_SIZES];
 	int size_factors[MAX_SIZES];
 	int total_sizes;
@@ -138,7 +138,7 @@ public:
 	ProxyWindow *pwindow;
 };
 
-class ProxyBeepOnDone : public BC_CheckBox
+class ProxyBeepOnDone : public BC_FPot
 {
 public:
 	ProxyBeepOnDone(ProxyWindow *pwindow, int x, int y);

@@ -41,9 +41,10 @@ static struct bd_format {
 } bd_formats[] = {
 // framerates are frames, not fields, per second, *=not standard
 	{ "1920x1080 29.97i",	1920,1080, 29.97,  1, ILACE_MODE_TOP_FIRST },
-	{ "1920x1080 29.97p*",	1920,1080, 29.97,  1, ILACE_MODE_NOTINTERLACED },
+	{ "1920x1080 29.97p*",	1920,1080, 29.97,  1, ILACE_MODE_FAKE_INTERLACE },
 	{ "1920x1080 24p",	1920,1080, 24.,    1, ILACE_MODE_NOTINTERLACED },
 	{ "1920x1080 25i",	1920,1080, 25.,    1, ILACE_MODE_TOP_FIRST },
+	{ "1920x1080 25p*",     1920,1080, 25.,    1, ILACE_MODE_FAKE_INTERLACE },
 	{ "1920x1080 23.976p",	1920,1080, 23.976, 1, ILACE_MODE_NOTINTERLACED },
 	{ "1440x1080 29.97i",	1440,1080, 29.97, -1, ILACE_MODE_TOP_FIRST },
 	{ "1440x1080 25i",	1440,1080, 25.,	  -1, ILACE_MODE_TOP_FIRST },
@@ -51,6 +52,8 @@ static struct bd_format {
 	{ "1440x1080 23.976p",	1440,1080, 23.976,-1, ILACE_MODE_NOTINTERLACED },
 	{ "1280x720  59.94p",	1280,720,  59.94,  1, ILACE_MODE_NOTINTERLACED },
 	{ "1280x720  50p",	1280,720,  50.,    1, ILACE_MODE_NOTINTERLACED },
+	{ "1280x720  29.97p*",  1280,720,  29.97,  1, ILACE_MODE_NOTINTERLACED },
+	{ "1280x720  25p*",     1280,720,  25.,    1, ILACE_MODE_NOTINTERLACED },
 	{ "1280x720  24p",	1280,720,  24.,    1, ILACE_MODE_NOTINTERLACED },
 	{ "1280x720  23.976p",	1280,720,  23.976, 1, ILACE_MODE_NOTINTERLACED },
 	{ "720x576   25i",	 720,576,  25.,    0, ILACE_MODE_BOTTOM_FIRST },
@@ -320,21 +323,17 @@ int CreateBD_Thread::create_bd_jobs(ArrayList<BatchRenderJob*> *jobs, const char
 	asset->ff_audio_bitrate = bd_kaudio_rate * 1000;
 
 	asset->video_data = 1;
-	strcpy(asset->vcodec, "bluray.m2ts");
+	const char *vcodec = "bluray.m2ts";
+	switch( asset->interlace_mode ) {
+	case ILACE_MODE_TOP_FIRST:    vcodec = "bluray_tff.m2ts";  break;
+	case ILACE_MODE_BOTTOM_FIRST: vcodec = "bluray_bff.m2ts";  break;
+	case ILACE_MODE_FAKE_INTERLACE : vcodec = "bluray_fakeinterlace.m2ts";  break;
+	}
+	strcpy(asset->vcodec, vcodec);
 	//mwindow->defaults->get("DEFAULT_BLURAY_VCODEC", asset->vcodec);
 	FFMPEG::set_option_path(option_path, "video/%s", asset->vcodec);
 	FFMPEG::load_options(option_path, asset->ff_video_options,
 		 sizeof(asset->ff_video_options));
-	const char *opts = 0;
-	switch( asset->interlace_mode ) {
-	case ILACE_MODE_TOP_FIRST:    opts = ":tff\n";  break;
-	case ILACE_MODE_BOTTOM_FIRST: opts = ":bff\n";  break;
-	}
-	if( opts ) {
-		int len = strlen(asset->ff_video_options);
-		char *cp = asset->ff_video_options + len-1;
-		strncpy(cp, opts, sizeof(asset->ff_video_options)-len);
-	}
 	asset->ff_video_bitrate = vid_bitrate;
 	asset->ff_video_quality = -1;
 	return 0;

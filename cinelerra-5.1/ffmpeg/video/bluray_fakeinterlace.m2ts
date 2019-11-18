@@ -5,11 +5,11 @@ level=41
 bf=2
 #
 # bluray does not do 1080p, this flags interlaced, but renders progressive
-# fake-interlaced=1
+fake-interlaced=1
+#
 slices=4
 sar=1:1
 cin_pix_fmt=yuv420p
-#
 refs=3
 color_range=mpeg
 colorspace=bt709

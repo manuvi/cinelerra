@@ -167,7 +167,7 @@ void ProxyDialog::handle_close_event(int result)
 {
 	if( result ) return;
 	if( !File::renders_video(asset) ) {
-		eprintf("Specified format does not render video");
+		eprintf(_("Specified format does not render video"));
 		return;
 	}
 	mwindow->edl->session->proxy_auto_scale = auto_scale;
@@ -178,11 +178,16 @@ void ProxyDialog::handle_close_event(int result)
 	mwindow->gui->unlock_window();
 	asset->save_defaults(mwindow->defaults, "PROXY_", 1, 1, 0, 0, 0); 
 	result = mwindow->to_proxy(asset, new_scale, use_scaler);
-	if( result >= 0 && beep && new_scale != 1 ) {
-		static struct { double freq, secs, gain; }
-		    tone[2] = { { 2000., 1.5, 0.5 }, { 4000., 0.25, 0.5 } };
-		int i = result > 0 ? 0 : 1;
-		mwindow->beep(tone[i].freq, tone[i].secs, tone[i].gain);
+	if( result >= 0 && beep > 0 && new_scale != 1 ) {
+		if( !result ) {
+			mwindow->beep(4000., 0.5, beep);
+			usleep(250000);
+			mwindow->beep(1000., 0.5, beep);
+			usleep(250000);
+			mwindow->beep(4000., 0.5, beep);
+		}
+		else
+			mwindow->beep(2000., 2.0, beep);
 	}
 }
 
@@ -347,7 +352,7 @@ printf("proxy: failed=%d canceled=%d\n", failed, progress->is_cancelled());
 	delete progress;  progress = 0;
 
 	if( failed && !canceled ) {
-		eprintf("Error making proxy.");
+		eprintf(_("Error making proxy."));
 	}
 	return !failed && !canceled ? 0 : 1;
 }
@@ -374,6 +379,7 @@ void ProxyWindow::create_objects()
 {
 	lock_window("ProxyWindow::create_objects");
 	int margin = mwindow->theme->widget_border;
+	int lmargin = margin + xS(10);
 
 	dialog->use_scaler = mwindow->edl->session->proxy_use_scaler;
 	dialog->orig_scale = mwindow->edl->session->proxy_scale;
@@ -387,7 +393,7 @@ void ProxyWindow::create_objects()
 		dialog->orig_h *= dialog->orig_scale;
 	}
 
-	int x = margin;
+	int x = lmargin;
 	int y = margin+yS(10);
 	add_subwindow(use_scaler = new ProxyUseScaler(this, x, y));
 	y += use_scaler->get_h() + margin;
@@ -405,28 +411,30 @@ void ProxyWindow::create_objects()
 	add_subwindow(tumbler = new ProxyTumbler(mwindow, this, x, y));
 	y += tumbler->get_h() + margin;
 
-	x = margin;
+	x = lmargin;
 	add_subwindow(text = new BC_Title(x, y, _("New media dimensions: ")));
 	x += text->get_w() + margin;
 	add_subwindow(new_dimensions = new BC_Title(x, y, ""));
 	y += new_dimensions->get_h() + margin;
 
-	x = margin;
+	x = lmargin;
 	add_subwindow(text = new BC_Title(x, y, _("Active Scale: ")));
 	x += text->get_w() + margin;
 	add_subwindow(active_scale = new BC_Title(x, y, ""));
 	y += active_scale->get_h() + margin;
 
-	x = margin;  y += yS(25);
+	x = lmargin;  y += yS(25);
 	format_tools = new ProxyFormatTools(mwindow, this, dialog->asset);
 	format_tools->create_objects(x, y, 0, 1, 0, 0, 0, 1, 0, 1, // skip the path
 		0, 0);
 
-	x = margin;
+	x = lmargin;
 	add_subwindow(auto_scale = new ProxyAutoScale(this, x, y));
 	y += auto_scale->get_h() + margin;
 	add_subwindow(beep_on_done = new ProxyBeepOnDone(this, x, y));
-	y += beep_on_done->get_h() + margin;
+	x += beep_on_done->get_w() + margin + xS(10);
+	add_subwindow(new BC_Title(x, y+yS(10), _("Beep on done volume")));
+//	y += beep_on_done->get_h() + margin;
 
 	update();
 
@@ -518,14 +526,14 @@ int ProxyAutoScale::handle_event()
 }
 
 ProxyBeepOnDone::ProxyBeepOnDone(ProxyWindow *pwindow, int x, int y)
- : BC_CheckBox(x, y, pwindow->dialog->beep, _("Beep on done"))
+ : BC_FPot(x, y, pwindow->dialog->beep*100.f, 0.f, 100.f)
 {
 	this->pwindow = pwindow;
 }
 
 int ProxyBeepOnDone::handle_event()
 {
-	pwindow->dialog->beep = get_value();
+	pwindow->dialog->beep = get_value()/100.f;
 	pwindow->update();
 	return 1;
 }

@@ -955,8 +955,8 @@ void RenderThread::run()
 			render_frames, render_time, render_rate);
 	}
 
-	if( render->mode == Render::INTERACTIVE && render->beep )
-		mwindow->beep(3000., 1.5, 0.5);
+	if( render->mode == Render::INTERACTIVE && render->beep > 0 )
+		mwindow->beep(3000., 1.5, render->beep);
 
 	if( script ) {
 		if( !render->result )
@@ -1057,6 +1057,8 @@ void RenderWindow::create_objects()
 	x1 = x2 + xs20;
 	render->beep = mwindow->edl->session->render_beep;
 	add_subwindow(beep_on_done = new RenderBeepOnDone(this, x1, y1));
+	y1 += beep_on_done->get_h();
+	add_subwindow(new BC_Title(x1, y1, _("Beep on done volume")));
 
 	renderprofile = new RenderProfile(mwindow, this, x, y, 1);
 	renderprofile->create_objects();
@@ -1212,14 +1214,14 @@ int RenderFormat::handle_event()
 }
 
 RenderBeepOnDone::RenderBeepOnDone(RenderWindow *rwindow, int x, int y)
- : BC_CheckBox(x, y, rwindow->render->beep, _("Beep on done"))
+ : BC_FPot(x, y, rwindow->render->beep*100.f, 0.f, 100.f)
 {
 	this->rwindow = rwindow;
 }
 
 int RenderBeepOnDone::handle_event()
 {
-	rwindow->render->beep = get_value();
+	rwindow->render->beep = get_value()/100.f;
 	return 1;
 }
 

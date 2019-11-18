@@ -1031,7 +1031,8 @@ AVHWDeviceType FFVideoStream::decode_hw_activate()
 	const char *hw_dev = ffmpeg->opt_hw_dev;
 	if( !hw_dev ) hw_dev = getenv("CIN_HW_DEV");
 	if( !hw_dev ) hw_dev = ffmpeg->ff_hw_dev();
-	if( hw_dev && *hw_dev && strcmp(_("none"), hw_dev) ) {
+	if( hw_dev && *hw_dev &&
+	    strcmp("none", hw_dev) && strcmp(_("none"), hw_dev) ) {
 		type = av_hwdevice_find_type_by_name(hw_dev);
 		if( type == AV_HWDEVICE_TYPE_NONE ) {
 			fprintf(stderr, "Device type %s is not supported.\n", hw_dev);

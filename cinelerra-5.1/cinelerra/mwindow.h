@@ -39,6 +39,7 @@
 #include "channel.inc"
 #include "channeldb.inc"
 #include "commercials.inc"
+#include "convert.inc"
 #include "cwindow.inc"
 #include "bchash.inc"
 #include "devicedvbinput.inc"
@@ -465,8 +466,7 @@ public:
 // Asset removal from caches
 	void reset_caches();
 	void remove_asset_from_caches(Asset *asset);
-	void remove_assets_from_project(int push_undo /* = 0 */,
-		int redraw /* 1 */,
+	void remove_assets_from_project(int push_undo, int redraw, int delete_indexes,
 		ArrayList<Indexable*> *drag_assets /* mwindow->session->drag_assets */,
 		ArrayList<EDL*> *drag_clips /* mwindow->session->drag_clips */);
 	void remove_assets_from_disk();
@@ -542,6 +542,11 @@ public:
 // Send new EDL to caches
 	void age_caches();
 	int optimize_assets();            // delete unused assets from the cache and assets
+// render edl assets to specified format, then replace in edl
+	void start_convert(Asset *format_asset, const char *suffix,
+			float beep, int remove_originals);
+	void finish_convert(int remove_originals);
+	ConvertRender *convert_render;
 
 	void select_point(double position);
 	int set_loop_boundaries();         // toggle loop playback and set boundaries for loop playback

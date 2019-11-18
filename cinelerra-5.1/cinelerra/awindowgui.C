@@ -1899,7 +1899,7 @@ int AWindowGUI::keypress_event()
 			return 1;
 		}
 		unlock_window();
-		mwindow->remove_assets_from_project(1, 1,
+		mwindow->remove_assets_from_project(1, 1, 1,
 			mwindow->session->drag_assets,
 			mwindow->session->drag_clips);
 		lock_window("AWindowGUI::keypress_event 2");

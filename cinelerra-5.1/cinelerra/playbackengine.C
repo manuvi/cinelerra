@@ -426,9 +426,9 @@ void PlaybackEngine::run()
 void PlaybackEngine::clear_borders()
 {
 	EDL *edl = command->get_edl();
-	if( render_engine ) {
-		PlaybackConfig *config = edl->session->playback_config;
-		if( config->vconfig->driver == PLAYBACK_X11_GL ) {
+	PlaybackConfig *config = edl->session->playback_config;
+	if( config->vconfig->driver == PLAYBACK_X11_GL ) {
+		if( render_engine && render_engine->video ) {
 			VDeviceBase *vdriver = render_engine->video->get_output_base();
 			((VDeviceX11*)vdriver)->clear_output();
 			return;

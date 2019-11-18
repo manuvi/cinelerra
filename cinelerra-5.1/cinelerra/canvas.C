@@ -165,7 +165,7 @@ float Canvas::get_x_offset(EDL *edl, int single_channel,
 	int canvas_h = get_canvas()->get_h(), out_h = canvas_h;
 	float conformed_ratio = conformed_w/conformed_h;
 	if( (float)out_w/out_h > conformed_ratio )
-		out_w = out_h * conformed_ratio + 0.5;
+		out_w = out_h * conformed_ratio + 0.5f;
 	float ret = out_w >= canvas_w ? 0 : -0.5f*(canvas_w - out_w) / zoom_x;
 	return ret;
 }

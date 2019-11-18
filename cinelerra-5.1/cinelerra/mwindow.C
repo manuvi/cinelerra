@@ -27,6 +27,7 @@
 #include "awindowgui.h"
 #include "awindow.h"
 #include "batchrender.h"
+#include "bccmodels.h"
 #include "bcdisplayinfo.h"
 #include "bcprogressbox.h"
 #include "bcsignals.h"
@@ -40,9 +41,9 @@
 #include "channelinfo.h"
 #include "clip.h"
 #include "clipedls.h"
-#include "bccmodels.h"
 #include "commercials.h"
 #include "confirmsave.h"
+#include "convert.h"
 #include "cplayback.h"
 #include "ctimebar.h"
 #include "cwindowgui.h"
@@ -225,6 +226,7 @@ MWindow::MWindow()
 	create_bd = 0;
 	create_dvd = 0;
 	batch_render = 0;
+	convert_render = 0;
 	render = 0;
 	edl = 0;
 	gui = 0;
@@ -265,6 +267,7 @@ MWindow::~MWindow()
 	delete create_dvd;      create_dvd = 0;
 	delete shuttle;         shuttle = 0;
 	delete batch_render;    batch_render = 0;
+	delete convert_render;  convert_render = 0;
 	delete render;          render = 0;
 	delete mixers_align;    mixers_align = 0;
 	commit_commercial();
@@ -4078,44 +4081,50 @@ void MWindow::remove_asset_from_caches(Asset *asset)
 }
 
 
-void MWindow::remove_assets_from_project(int push_undo, int redraw,
+void MWindow::remove_assets_from_project(int push_undo, int redraw, int delete_indexes,
 		ArrayList<Indexable*> *drag_assets, ArrayList<EDL*> *drag_clips)
 {
 	awindow->gui->close_view_popup();
 
-	for(int i = 0; i < drag_assets->total; i++) {
-		Indexable *indexable = drag_assets->get(i);
-		if(indexable->is_asset) remove_asset_from_caches((Asset*)indexable);
-	}
-
 // Remove from VWindow.
-	for(int i = 0; i < session->drag_clips->total; i++) {
-		for(int j = 0; j < vwindows.size(); j++) {
-			VWindow *vwindow = vwindows[j];
-			if( !vwindow->is_running() ) continue;
-			if(session->drag_clips->get(i) == vwindow->get_edl()) {
-				vwindow->gui->lock_window("MWindow::remove_assets_from_project 1");
-				vwindow->delete_source(1, 1);
-				vwindow->gui->unlock_window();
+	if( drag_clips ) {
+		for(int i = 0; i < drag_clips->total; i++) {
+			for(int j = 0; j < vwindows.size(); j++) {
+				VWindow *vwindow = vwindows[j];
+				if( !vwindow->is_running() ) continue;
+				if(drag_clips->get(i) == vwindow->get_edl()) {
+					vwindow->gui->lock_window("MWindow::remove_assets_from_project 1");
+					vwindow->delete_source(1, 1);
+					vwindow->gui->unlock_window();
+				}
 			}
 		}
 	}
 
-	for(int i = 0; i < drag_assets->size(); i++) {
-		for(int j = 0; j < vwindows.size(); j++) {
-			VWindow *vwindow = vwindows[j];
-			if( !vwindow->is_running() ) continue;
-			if(drag_assets->get(i) == vwindow->get_source()) {
-				vwindow->gui->lock_window("MWindow::remove_assets_from_project 2");
-				vwindow->delete_source(1, 1);
-				vwindow->gui->unlock_window();
+	if( drag_assets ) {
+		for(int i = 0; i < drag_assets->size(); i++) {
+			for(int j = 0; j < vwindows.size(); j++) {
+				VWindow *vwindow = vwindows[j];
+				if( !vwindow->is_running() ) continue;
+				if(drag_assets->get(i) == vwindow->get_source()) {
+					vwindow->gui->lock_window("MWindow::remove_assets_from_project 2");
+					vwindow->delete_source(1, 1);
+					vwindow->gui->unlock_window();
+				}
 			}
 		}
-	}
 
-	for(int i = 0; i < drag_assets->size(); i++) {
-		Indexable *indexable = drag_assets->get(i);
-		remove_indexfile(indexable);
+		for(int i = 0; i < drag_assets->total; i++) {
+			Indexable *indexable = drag_assets->get(i);
+			if(indexable->is_asset) remove_asset_from_caches((Asset*)indexable);
+		}
+
+		if( delete_indexes ) {
+			for(int i = 0; i < drag_assets->size(); i++) {
+				Indexable *indexable = drag_assets->get(i);
+				remove_indexfile(indexable);
+			}
+		}
 	}
 
 //printf("MWindow::rebuild_indices 1 %s\n", indexable->path);
@@ -4140,10 +4149,8 @@ void MWindow::remove_assets_from_project(int push_undo, int redraw,
 
 void MWindow::remove_assets_from_disk()
 {
-	remove_assets_from_project(1,
-		1,
-		session->drag_assets,
-		session->drag_clips);
+	remove_assets_from_project(1, 1, 1,
+		session->drag_assets, session->drag_clips);
 
 // Remove from disk
 	for(int i = 0; i < session->drag_assets->total; i++)

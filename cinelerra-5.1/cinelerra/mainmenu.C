@@ -28,6 +28,7 @@
 #include "bdcreate.h"
 #include "cache.h"
 #include "channelinfo.h"
+#include "convert.h"
 #include "cplayback.h"
 #include "cropvideo.h"
 #include "cwindow.h"
@@ -218,6 +219,9 @@ void MainMenu::create_objects()
 	ProxyMenuItem *proxy;
 	settingsmenu->add_item(proxy = new ProxyMenuItem(mwindow));
 	proxy->create_objects();
+	ConvertMenuItem *convert;
+	settingsmenu->add_item(convert = new ConvertMenuItem(mwindow));
+	convert->create_objects();
 	mwindow->preferences_thread = preferences->thread;
 	settingsmenu->add_item(cursor_on_frames = new CursorOnFrames(mwindow));
 	settingsmenu->add_item(labels_follow_edits = new LabelsFollowEdits(mwindow));
