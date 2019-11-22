@@ -19,4 +19,4 @@ b-pyramid=strict
 bufsize=30000000
 maxrate=40000000
 refs=3
-x264opts cabac=1:keyint=24
+x264-params cabac=1:keyint=24

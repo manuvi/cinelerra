@@ -5,4 +5,4 @@ b=2500k
 profile=high
 # use framerate for 1 keyframe/sec, needed for seeks
 keyint_min=24
-x264opts keyint=24
+x264-params keyint=24

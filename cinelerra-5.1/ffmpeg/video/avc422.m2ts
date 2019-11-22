@@ -12,4 +12,4 @@ profile=high422
 preset=medium
 pixel_format=yuv422p
 flags=+cgop
-x264opts keyint=25:min-keyint=4:qpmin=3:qpmax=33:qp_step=4:merange=8
+x264-params keyint=25:min-keyint=4:qpmin=3:qpmax=33:qp_step=4:merange=8

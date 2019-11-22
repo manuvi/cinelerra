@@ -166,7 +166,7 @@ EDL *ConvertRender::convert_edl(EDL *edl, Indexable *idxbl)
 	char path[BCTEXTLEN];
 	FileSystem fs;  fs.extract_name(path, copy_asset->path);
 	strcpy(copy_edl->local_session->clip_title, path);
-	strcpy(copy_edl->local_session->clip_notes, _("Convert clip"));
+	strcpy(copy_edl->local_session->clip_notes, _("Transcode clip"));
 	int64_t video_frames = idxbl->get_video_frames();
 	double frame_rate = idxbl->get_frame_rate();
 	double video_length = video_frames / frame_rate;
@@ -318,18 +318,18 @@ void ConvertRender::run()
 		create_copy(i);
 
 	canceled = progress->is_cancelled();
-printf("convert: failed=%d canceled=%d\n", failed, canceled);
+printf(_("convert: failed=%d canceled=%d\n"), failed, canceled);
 	double elapsed_time = progress_timer->get_scaled_difference(1);
 
 	char elapsed[BCSTRLEN], text[BCSTRLEN];
 	Units::totext(elapsed, elapsed_time, TIME_HMS2);
-	printf("ConvertRender::run: done in %s\n", elapsed);
+	printf(_("TranscodeRender::run: done in %s\n"), elapsed);
 	if( canceled )
-		strcpy(text, _("convert cancelled"));
+		strcpy(text, _("transcode cancelled"));
 	else if( failed )
-		strcpy(text, _("convert failed"));
+		strcpy(text, _("transcode failed"));
 	else
-		sprintf(text, _("convert %d files, render time %s"),
+		sprintf(text, _("transcode %d files, render time %s"),
 			needed_copies.size(), elapsed);
 // stop progress bar
 	stop_progress(text);
@@ -338,7 +338,7 @@ printf("convert: failed=%d canceled=%d\n", failed, canceled);
 		mwindow->finish_convert(remove_originals);
 	}
 	else if( !canceled ) {
-		eprintf(_("Error making convert."));
+		eprintf(_("Error making transcode."));
 	}
 
 	if( !canceled && beep > 0 ) {
@@ -372,7 +372,7 @@ void ConvertRender::start_progress()
 	int64_t total_samples = total_len * format_asset->sample_rate;
 	mwindow->gui->lock_window("Render::start_progress");
 	progress = mwindow->mainprogress->
-		start_progress(_("Convert files..."), total_samples);
+		start_progress(_("Transcode files..."), total_samples);
 	mwindow->gui->unlock_window();
 	convert_progress = new ConvertProgress(mwindow, this);
 	convert_progress->start();
@@ -489,7 +489,7 @@ void ConvertRender::create_copy(int i)
 }
 
 ConvertWindow::ConvertWindow(MWindow *mwindow, ConvertDialog *dialog, int x, int y)
- : BC_Window(_(PROGRAM_NAME ": Convert settings"), x, y, WIDTH, HEIGHT,
+ : BC_Window(_(PROGRAM_NAME ": Transcode settings"), x, y, WIDTH, HEIGHT,
 		-1, -1, 0, 0, 1)
 {
 	this->mwindow = mwindow;
@@ -580,7 +580,7 @@ void ConvertFormatTools::update_format()
 
 
 ConvertMenuItem::ConvertMenuItem(MWindow *mwindow)
- : BC_MenuItem(_("Convert..."),  _("Alt-e"), 'e')
+ : BC_MenuItem(_("Transcode..."),  _("Alt-e"), 'e')
 {
 	this->mwindow = mwindow;
 	set_alt();
@@ -610,7 +610,7 @@ ConvertDialog::ConvertDialog(MWindow *mwindow)
 	this->mwindow = mwindow;
 	gui = 0;
 	asset = new Asset;
-	strcpy(suffix, ".convert");
+	strcpy(suffix, ".transcode");
 // quicker than some, not as good as others
 	asset->format = FILE_FFMPEG;
 	strcpy(asset->fformat, "mp4");

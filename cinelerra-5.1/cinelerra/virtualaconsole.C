@@ -196,60 +196,40 @@ if(debug) printf("VirtualAConsole::process_buffer %d\n", __LINE__);
 		!interrupt)
 	{
 // speed parameters
+		float speed = renderengine->command->get_speed();
 // length compensated for speed
 		int real_output_len = 0;
-// output sample
-		double sample;
-		int k;
 		double *audio_out_packed[MAX_CHANNELS];
 		int audio_channels = renderengine->get_edl()->session->audio_channels;
 
-		for(int i = 0, j = 0;
-			i < audio_channels;
-			i++)
-		{
-			audio_out_packed[j++] = arender->audio_out[i]->get_data();
-		}
-		for(int i = 0;
-			i < audio_channels;
-			i++)
-		{
-			int in, out;
+		for( int i=0; i<audio_channels; ++i )
+			audio_out_packed[i] = arender->audio_out[i]->get_data();
 
+		for( int i=0; i<audio_channels; ++i ) {
 			double *current_buffer = audio_out_packed[i];
-
 // Time stretch the fragment to the real_output size
-			if(renderengine->command->get_speed() > 1)
-			{
-// Number of samples in real output buffer for each to sample rendered.
-				int interpolate_len = (int)renderengine->command->get_speed();
-				for(in = 0, out = 0; in < len; )
-				{
-					sample = 0;
-					for(k = 0; k < interpolate_len; k++)
-					{
-						sample += current_buffer[in++];
-					}
-
-					sample /= renderengine->command->get_speed();
+			if( speed > 1 ) {
+				int out = 0;
+				for( int in=0; in<len; ) {
+// samples in real output buffer for each to sample rendered.
+					int end = (out+1) * speed;
+					if( end > len ) end = len;
+					int k = end - in;
+					double sample = 0;
+					while( in < end ) sample += current_buffer[in++];
+					if( k > 0 ) sample /= k;
 					current_buffer[out++] = sample;
 				}
 				real_output_len = out;
 			}
-			else
-			if(renderengine->command->get_speed() < 1)
-			{
-// number of samples to skip
-				int interpolate_len = (int)(1.0 / renderengine->command->get_speed());
-				real_output_len = len * interpolate_len;
-
-				for(in = len - 1, out = real_output_len - 1; in >= 0; )
-				{
-					for(k = 0; k < interpolate_len; k++)
-					{
-						current_buffer[out--] = current_buffer[in];
-					}
-					in--;
+			else if( speed < 1 ) {
+				int end = len / speed;
+				real_output_len = end;
+				for( int in=len, out=end; --in>=0; ) {
+// samples rendered in real output buffer sample.
+					int start = in / speed;
+					double v = current_buffer[in];
+					while( --out >= start ) current_buffer[out] = v;
 				}
 			}
 			else
@@ -257,51 +237,21 @@ if(debug) printf("VirtualAConsole::process_buffer %d\n", __LINE__);
 		}
 
 // Wait until video is ready
-		if(arender->first_buffer)
-		{
+		if( arender->first_buffer ) {
 			renderengine->first_frame_lock->lock("VirtualAConsole::process_buffer");
 			arender->first_buffer = 0;
 		}
-		if(!renderengine->audio->get_interrupted())
-		{
+		if( !renderengine->audio->get_interrupted() ) {
 			renderengine->audio->write_buffer(audio_out_packed, audio_channels,
 				real_output_len);
 		}
 
-		if(renderengine->audio->get_interrupted()) interrupt = 1;
+		if( renderengine->audio->get_interrupted() )
+			interrupt = 1;
 	}
-
-if(debug) printf("VirtualAConsole::process_buffer %d\n", __LINE__);
-
-
-
-
 
 	return result;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 int VirtualAConsole::init_rendering(int duplicate)

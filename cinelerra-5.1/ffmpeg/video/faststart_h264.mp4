@@ -9,4 +9,4 @@ level=41
 bf=8
 refs=4
 # use framerate for 1 keyframe/sec, needed for seeks
-x264opts cabac=1:me_range=24:bframes=8:keyint=60:keyint_min=25:qpmin=0:qpmax=69:qpstep=4
+x264-params cabac=1:me_range=24:bframes=8:keyint=60:keyint_min=25:qpmin=0:qpmax=69:qpstep=4

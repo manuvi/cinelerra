@@ -109,10 +109,6 @@ public:
 	Samples *transition_temp;
 // Temporary buffer for rendering speed curve
 	Samples *speed_temp;
-// Previous buffers for rendering speed curve
-#define SPEED_OVERLAP 4
-	double prev_head[SPEED_OVERLAP];
-	double prev_tail[SPEED_OVERLAP];
 
 // Pointer to an asset for the resampler
 	Asset *asset;

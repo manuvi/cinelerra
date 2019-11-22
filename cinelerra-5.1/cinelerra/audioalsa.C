@@ -579,7 +579,7 @@ int AudioALSA::write_buffer(char *buffer, int size)
 				done = 1;
 		}
 		else {
-			printf("AudioALSA::write_buffer err %d(%s) at sample %jd\n",
+			printf(_("AudioALSA::write_buffer err %d(%s) at sample %jd\n"),
 				ret, snd_strerror(ret), device->current_position());
 			Timer::delay(50);
 //			snd_pcm_resume(get_output());

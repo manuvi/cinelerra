@@ -15,5 +15,4 @@ colorspace=bt709
 color_trc=bt709
 color_primaries=bt709
 flags=+cgop
-# must be last for bdcreate.C
-x264opts keyint=25:min-keyint=4:qpmin=3:qpmax=33:qp_step=4:merange=8
+x264-params keyint=25:min-keyint=4:qpmin=3:qpmax=33:qp_step=4:merange=8

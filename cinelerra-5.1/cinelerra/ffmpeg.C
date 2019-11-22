@@ -2372,7 +2372,7 @@ int FFMPEG::open_decoder()
 	}
 	if( bad_time && !(fflags & FF_BAD_TIMES) ) {
 		fflags |= FF_BAD_TIMES;
-		printf("FFMPEG::open_decoder: some stream have bad times: %s\n",
+		printf(_("FFMPEG::open_decoder: some stream have bad times: %s\n"),
 			fmt_ctx->url);
 	}
 	ff_unlock();
