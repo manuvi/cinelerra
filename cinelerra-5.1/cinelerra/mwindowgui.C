@@ -2291,7 +2291,7 @@ int FFMpegToggle::handle_event()
 	set_tooltip(ffmpeg_early_probe ? FFMPEG_EARLY_TIP : FFMPEG_LATE_TIP);
 	mwindow->preferences->set_file_probe_armed("FFMPEG_Early", ffmpeg_early_probe);
 	mwindow->preferences->set_file_probe_armed("FFMPEG_Late", !ffmpeg_early_probe);
-
+	mwindow->update_preferences(mwindow->preferences);
 	mwindow->show_warning(&mwindow->preferences->warn_indexes,
 		_("Changing the base codecs may require rebuilding indexes."));
 	return 1;

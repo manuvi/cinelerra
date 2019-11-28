@@ -72,74 +72,11 @@ AModuleResample::~AModuleResample()
 		delete nested_output[i];
 }
 
-int AModuleResample::read_samples(Samples *buffer, int64_t start, int64_t len)
+int AModuleResample::read_samples(Samples *buffer,
+		int64_t start, int64_t len, int direction)
 {
-	int result = 0;
-
-
-	if(module->asset)
-	{
-// Files only read going forward.
-		if(get_direction() == PLAY_REVERSE)
-		{
-			start -= len;
-		}
-
-//printf("AModuleResample::read_samples start=%jd len=%jd\n", start, len);
-		module->file->set_audio_position(start);
-		module->file->set_channel(module->channel);
-		result = module->file->read_samples(buffer, len);
-
-// Reverse buffer so resampling filter renders forward.
-		if(get_direction() == PLAY_REVERSE)
-			Resample::reverse_buffer(buffer->get_data(), len);
-	}
-	else
-	if(module->nested_edl)
-	{
-
-
-// Nested EDL generates reversed buffer.
-		for(int i = 0; i < module->nested_edl->session->audio_channels; i++)
-		{
-			if(nested_allocation < len)
-			{
-				delete nested_output[i];
-				nested_output[i] = 0;
-			}
-
-			if(!nested_output[i])
-			{
-				nested_output[i] = new Samples(len);
-			}
-		}
-
-
-		result = module->nested_renderengine->arender->process_buffer(
-			nested_output,
-			len,
-			start);
-// printf("AModuleResample::read_samples buffer=%p module=%p len=%d\n",
-// buffer,
-// module,
-// len);
-		memcpy(buffer->get_data(),
-			nested_output[module->channel]->get_data(),
-			len * sizeof(double));
-
-	}
-	return result;
+	return module->read_samples(buffer, start, len, direction);
 }
-
-
-
-
-
-
-
-
-
-
 
 AModule::AModule(RenderEngine *renderengine,
 	CommonRender *commonrender,
@@ -148,6 +85,7 @@ AModule::AModule(RenderEngine *renderengine,
  : Module(renderengine, commonrender, plugin_array, track)
 {
 	data_type = TRACK_AUDIO;
+	channel = 0;
 	transition_temp = 0;
 	speed_temp = 0;
 	bzero(nested_output, sizeof(Samples*) * MAX_CHANNELS);
@@ -169,6 +107,52 @@ AModule::~AModule()
 	for(int i = 0; i < MAX_CHANNELS; i++)
 		delete nested_output[i];
 	delete resample;
+}
+
+int AModule::read_samples(Samples *buffer, int64_t start, int64_t len, int direction)
+{
+	if( len < 0 ) return 1;
+	double *buffer_data = buffer->get_data();
+// if start < 0, zero fill prefix.  if error, zero fill buffer
+	int64_t zeros = len;
+	int result = 0;
+	if( asset ) {
+// Files only read going forward.
+		if( direction == PLAY_REVERSE ) start -= len;
+		int64_t sz = start >= 0 ? len : len + start;
+		if( start < 0 ) start = 0;
+		if( sz > 0 ) {
+			file->set_audio_position(start);
+			file->set_channel(channel);
+			result = file->read_samples(buffer, sz);
+			if( !result && (zeros-=sz) > 0 ) {
+				double *top_data = buffer_data + zeros;
+				memmove(top_data, buffer_data, sz*sizeof(*buffer_data));
+			}
+		}
+		if( !result && direction == PLAY_REVERSE )
+			Resample::reverse_buffer(buffer_data, len);
+	}
+	else if( nested_edl ) {
+		if( nested_allocation < len ) {
+			nested_allocation = len;
+			for( int i=0; i<nested_edl->session->audio_channels; ++i ) {
+				delete nested_output[i];
+				nested_output[i] = new Samples(nested_allocation);
+			}
+		}
+		result = nested_renderengine->arender->
+			process_buffer(nested_output, len, start);
+		if( !result ) {
+			double *sample_data = nested_output[channel]->get_data();
+			int buffer_size = len * sizeof(*buffer_data);
+			memcpy(buffer_data, sample_data, buffer_size);
+			zeros = 0;
+		}
+	}
+	if( zeros > 0 )
+		memset(buffer_data, 0, zeros*sizeof(*buffer_data));
+	return result;
 }
 
 AttachmentPoint* AModule::new_attachment(Plugin *plugin)
@@ -206,258 +190,179 @@ CICache* AModule::get_cache()
 
 
 int AModule::import_samples(AEdit *edit,
-	int64_t start_project,
-	int64_t edit_startproject,
-	int64_t edit_startsource,
-	int direction,
-	int sample_rate,
-	Samples *buffer,
-	int64_t fragment_len)
+	int64_t start_project, int64_t edit_startproject, int64_t edit_startsource,
+	int direction, int sample_rate, Samples *buffer, int64_t fragment_len)
 {
-	const int debug = 0;
 	int result = 0;
-// start in EDL samplerate
-	int64_t start_source = start_project - edit_startproject + edit_startsource;
-// fragment size adjusted for speed curve
-	int64_t speed_fragment_len = fragment_len;
-// boundaries of input fragment required for speed curve
-	double max_position = 0;
-	double min_position = 0;
-
-	double speed_position = edit_startsource;
-// position in source where speed curve starts reading
-	double speed_position1 = speed_position;
-// position in source where speed curve finishes
-	double speed_position2 = speed_position;
-// Need speed curve processing
-	int have_speed = 0;
-// Temporary buffer for rendering speed curve
-	Samples *speed_buffer = buffer;
-
+	if( fragment_len <= 0 )
+		result = 1;
 	if( nested_edl && edit->channel >= nested_edl->session->audio_channels )
-		return 1;
-	this->channel = edit->channel;
+		result = 1;
+	double *buffer_data = buffer->get_data();
+// buffer fragment adjusted for speed curve
+	Samples *speed_buffer = buffer;
+	double *speed_data = speed_buffer->get_data();
+	int64_t speed_fragment_len = fragment_len;
 	int dir = direction == PLAY_FORWARD ? 1 : -1;
+// normal speed source boundaries in EDL samplerate
+	int64_t start_source = start_project - edit_startproject + edit_startsource;
+	double end_source = start_source + dir*speed_fragment_len;
+	double start_position = start_source;
+//	double end_position = end_source;
+// normal speed playback boundaries
+	double min_source = bmin(start_source, end_source);
+	double max_source = bmax(start_source, end_source);
+
+	this->channel = edit->channel;
+	int have_speed = track->has_speed();
 
 // apply speed curve to source position so the timeline agrees with the playback
-	if( track->has_speed() ) {
-// get speed adjusted position from start of edit.
+	if( !result && have_speed ) {
+// get speed adjusted start position from start of edit.
 		FloatAuto *previous = 0, *next = 0;
 		FloatAutos *speed_autos = (FloatAutos*)track->automation->autos[AUTOMATION_SPEED];
-		speed_position += speed_autos->automation_integral(edit_startproject,
+		double source_position = edit_startsource +
+			speed_autos->automation_integral(edit_startproject,
 				start_project-edit_startproject, PLAY_FORWARD);
-		speed_position1 = speed_position;
-
+		min_source = source_position;
+		max_source = source_position;
 // calculate boundaries of input fragment required for speed curve
-		max_position = speed_position;
-		min_position = speed_position;
 		int64_t pos = start_project;
-		for( int64_t i=0; i<fragment_len; ++i,pos+=dir ) {
+		start_position = source_position;
+		for( int64_t i=fragment_len; --i>=0; pos+=dir ) {
 			double speed = speed_autos->get_value(pos, direction, previous, next);
-			speed_position += dir*speed;
-			if(speed_position > max_position) max_position = speed_position;
-			if(speed_position < min_position) min_position = speed_position;
+			source_position += dir*speed;
+			if( source_position > max_source ) max_source = source_position;
+			if( source_position < min_source ) min_source = source_position;
 		}
-
-		speed_position2 = speed_position;
-		if(speed_position2 < speed_position1)
-		{
-			max_position += 1.0;
-//			min_position -= 1.0;
-			speed_fragment_len = (int64_t)(max_position - min_position);
-		}
-		else
-		{
-			max_position += 1.0;
-			speed_fragment_len = (int64_t)(max_position - min_position);
-		}
-
-//printf("AModule::import_samples %d %f %f %f %f\n",
-// __LINE__, min_position, max_position, speed_position1, speed_position2);
-
-// new start of source to read from file
-		start_source = (int64_t)min_position;
-		have_speed = 1;
-
+//		end_position = source_position;
+		speed_fragment_len = (int64_t)(max_source - min_source);
+		start_source = direction == PLAY_FORWARD ? min_source : max_source;
+		if( speed_fragment_len > 0 ) {
 // swap in the temp buffer
-		if(speed_temp && speed_temp->get_allocated() < speed_fragment_len) {
-			delete speed_temp;  speed_temp = 0;
+			if( speed_temp && speed_temp->get_allocated() < speed_fragment_len ) {
+				delete speed_temp;  speed_temp = 0;
+			}
+			if( !speed_temp )
+				speed_temp = new Samples(speed_fragment_len);
+			speed_buffer = speed_temp;
+			speed_data = speed_buffer->get_data();
 		}
-		if(!speed_temp)
-			speed_temp = new Samples(speed_fragment_len);
-		speed_buffer = speed_temp;
 	}
 
-	if( speed_fragment_len == 0 )
-		return 1;
+	int edit_sample_rate = 0;
+	if( speed_fragment_len <= 0 )
+		result = 1;
 
-// Source is a nested EDL
-	if( edit->nested_edl ) {
-		int command = direction == PLAY_REVERSE ?
-			NORMAL_REWIND : NORMAL_FWD;
-		asset = 0;
-
-		if( !nested_edl || nested_edl->id != edit->nested_edl->id ) {
-			nested_edl = edit->nested_edl;
-			if( nested_renderengine ) {
-				delete nested_renderengine;  nested_renderengine = 0;
-			}
-			if( !nested_command )
-				nested_command = new TransportCommand;
-			if( !nested_renderengine ) {
-				nested_command->command = command;
-				nested_command->get_edl()->copy_all(nested_edl);
-				nested_command->change_type = CHANGE_ALL;
-				nested_command->realtime = renderengine->command->realtime;
-				nested_renderengine = new RenderEngine(0, get_preferences(), 0, 1);
-				nested_renderengine->set_acache(get_cache());
-// Must use a private cache for the audio
-// 				if(!cache)
-// 				{
-// 					cache = new CICache(get_preferences());
-// 					private_cache = 1;
-// 				}
-// 				nested_renderengine->set_acache(cache);
-				nested_renderengine->arm_command(nested_command);
-			}
-		}
-if(debug) printf("AModule::import_samples %d speed_fragment_len=%d\n", __LINE__, (int)speed_fragment_len);
-
-// Allocate output buffers for all channels
-		for( int i=0; i<nested_edl->session->audio_channels; ++i ) {
-			if( nested_allocation < speed_fragment_len ) {
-				delete nested_output[i];  nested_output[i] = 0;
-			}
-			if(!nested_output[i])
-				nested_output[i] = new Samples(speed_fragment_len);
-		}
-
-		if( nested_allocation < speed_fragment_len )
-			nested_allocation = speed_fragment_len;
-
-// Update direction command
-		nested_renderengine->command->command = command;
-
-// Render the segment
-		if( !nested_renderengine->arender )
-			bzero(speed_buffer->get_data(), speed_fragment_len * sizeof(double));
-		else if(sample_rate != nested_edl->session->sample_rate) {
-			if( !resample )
-				resample = new AModuleResample(this);
-			result = resample->resample(speed_buffer,
-				speed_fragment_len, nested_edl->session->sample_rate,
-				sample_rate, start_source, direction);
-// Resample reverses to keep it running forward.
-		}
-		else {
-// Render without resampling
-			result = nested_renderengine->arender->process_buffer(
-				nested_output, speed_fragment_len, start_source);
-			memcpy(speed_buffer->get_data(),
-				nested_output[edit->channel]->get_data(),
-				speed_fragment_len * sizeof(double));
-
-// Reverse fragment so ::render can apply transitions going forward.
-			if( direction == PLAY_REVERSE ) {
-				Resample::reverse_buffer(speed_buffer->get_data(), speed_fragment_len);
-			}
-		}
-	}
-	else if( edit->asset ) {
-// Source is an asset
+	if( !result && edit->asset ) {
 		nested_edl = 0;
-		asset = edit->asset;
-		get_cache()->age();
-
 		if( nested_renderengine ) {
 			delete nested_renderengine;  nested_renderengine = 0;
 		}
-
-		if( !(file = get_cache()->check_out( asset, get_edl())) ) {
-// couldn't open source file / skip the edit
+// Source is an asset
+		asset = edit->asset;
+		edit_sample_rate = asset->sample_rate;
+		get_cache()->age();
+		file = get_cache()->check_out(asset, get_edl());
+		if( !file ) {
 			printf(_("AModule::import_samples Couldn't open %s.\n"), asset->path);
 			result = 1;
 		}
+	}
+	else if( !result && edit->nested_edl ) {
+		asset = 0;
+// Source is a nested EDL
+		if( !nested_edl || nested_edl->id != edit->nested_edl->id ) {
+			nested_edl = edit->nested_edl;
+			delete nested_renderengine;
+			nested_renderengine = 0;
+		}
+		edit_sample_rate = nested_edl->session->sample_rate;
+		int command = direction == PLAY_REVERSE ?
+			NORMAL_REWIND : NORMAL_FWD;
+		if( !nested_command ) {
+			nested_command = new TransportCommand;
+			nested_command->command = command;
+			nested_command->get_edl()->copy_all(nested_edl);
+			nested_command->change_type = CHANGE_ALL;
+			nested_command->realtime = renderengine->command->realtime;
+		}
+		if( !nested_renderengine ) {
+			nested_renderengine = new RenderEngine(0, get_preferences(), 0, 1);
+			nested_renderengine->set_acache(get_cache());
+			nested_renderengine->arm_command(nested_command);
+		}
+		nested_renderengine->command->command = command;
+		result = 0;
+	}
+
+	if( !result ) {
+// speed_buffer is (have_speed ? speed_temp : buffer)
+		if( sample_rate != edit_sample_rate ) {
+			if( !resample )
+				resample = new AModuleResample(this);
+			result = resample->resample(speed_buffer,
+				speed_fragment_len, edit_sample_rate,
+				sample_rate, start_source, direction);
+		}
 		else {
-			result = 0;
-
-			if( sample_rate != asset->sample_rate ) {
-// Read through sample rate converter.
-				if( !resample )
-					resample = new AModuleResample(this);
-				result = resample->resample(speed_buffer,
-					speed_fragment_len, asset->sample_rate,
-					sample_rate, start_source, direction);
-// Resample reverses to keep it running forward.
-			}
-			else {
-				file->set_audio_position(start_source);
-				file->set_channel(edit->channel);
-				result = file->read_samples(speed_buffer, speed_fragment_len);
-// Reverse fragment so ::render can apply transitions going forward.
-				if(direction == PLAY_REVERSE)
-					Resample::reverse_buffer(speed_buffer->get_data(), speed_fragment_len);
-			}
-
-			get_cache()->check_in(asset);
-			file = 0;
+			result = read_samples(speed_buffer,
+				start_source, speed_fragment_len, direction);
 		}
 	}
-	else {
-		nested_edl = 0;
-		asset = 0;
-		if( speed_fragment_len > 0 )
-			bzero(speed_buffer->get_data(), speed_fragment_len * sizeof(double));
+	if( asset && file ) {
+		file = 0;
+		get_cache()->check_in(asset);
 	}
-
 // Stretch it to fit the speed curve
 // Need overlapping buffers to get the interpolation to work, but this
 // screws up sequential effects.
-	if( have_speed ) {
-		double *buffer_samples = buffer->get_data();
-		if( speed_fragment_len > 0 ) {
-			FloatAuto *previous = 0;
-			FloatAuto *next = 0;
-			FloatAutos *speed_autos = (FloatAutos*)track->automation->autos[AUTOMATION_SPEED];
-			double *speed_samples = speed_buffer->get_data();
-			int len1 = speed_fragment_len-1;
-			int out_offset = dir>0 ? 0 : fragment_len-1;
-			speed_position = speed_position1;
+	if( !result && have_speed ) {
+		FloatAuto *previous = 0, *next = 0;
+		FloatAutos *speed_autos = (FloatAutos*)track->automation->autos[AUTOMATION_SPEED];
+		int len1 = speed_fragment_len-1;
+		double speed_position = start_position;
+		double pos = start_project;
+// speed		gnuplot> plot "/tmp/x.dat" using($1) with lines
+// speed_position	gnuplot> plot "/tmp/x.dat" using($2) with lines
+//FILE *fp = 0;
+//if( !channel ) { fp = fopen("/tmp/x.dat", "a"); fprintf(fp," %f %f\n",0.,0.); }
+		for( int64_t i=0; i<fragment_len; ++i,pos+=dir ) {
 			int64_t speed_pos = speed_position;
-
-			int64_t pos = start_project;
-			for( int64_t i=0; i<fragment_len; ++i,pos+=dir ) {
-				double speed = speed_autos->get_value(pos,
-					direction, previous, next);
-				double next_position = speed_position + dir*speed;
-				int64_t next_pos = next_position;
+			double speed = speed_autos->get_value(pos,
+				direction, previous, next);
+//if(fp) fprintf(fp," %f %f\n", speed, speed_position);
+			double next_position = speed_position + dir*speed;
+			int64_t next_pos = next_position;
+			int total = abs(next_pos - speed_pos);
+			int k = speed_pos - min_source;
+			if( dir < 0 ) k = len1 - k; // if buffer reversed
+			double sample = speed_data[bclip(k, 0,len1)];
+			if( total > 1 ) {
 				int d = next_pos >= speed_pos ? 1 : -1;
-				int k = speed_pos - start_source;
-				double sample = speed_samples[bclip(k, 0,len1)];
-				int total = abs(next_pos - speed_pos);
-				if( total > 1 ) {
-					for( int j=total; --j>0; ) {
-						k += d;
-						sample += speed_samples[bclip(k, 0,len1)];
-					}
-					sample /= total;
-				}
-#if 0
-				else if( total < 1 ) {
+				for( int j=total; --j>0; ) {
 					k += d;
-					double next_sample = speed_samples[bclip(k, 0,len1)];
-					double v = speed_position - speed_pos;
-					sample = (1.-v) * sample + v * next_sample;
+					sample += speed_data[bclip(k, 0,len1)];
 				}
-#endif
-				buffer_samples[out_offset] = sample;
-				out_offset += dir;
-				speed_position = next_position;
-				speed_pos = next_pos;
+				sample /= total;
 			}
+#if 0
+			else if( total < 1 ) {
+				int d = next_pos >= speed_pos ? 1 : -1;
+				k += d;
+				double next_sample = speed_data[bclip(k, 0,len1)];
+				double v = speed_position - speed_pos;
+				sample = (1.-v) * sample + v * next_sample;
+			}
+#endif
+			buffer_data[i] = sample;
+			speed_position = next_position;
 		}
+//if(fp) fclose(fp);
 	}
 
+	if( result )
+		bzero(buffer_data, fragment_len*sizeof(*buffer_data));
 	return result;
 }
 
@@ -704,10 +609,7 @@ if(debug) printf("AModule::render %d %jd\n", __LINE__, fragment_len);
 				}
 			}
 if(debug) printf("AModule::render %d start_position=%jd end_position=%jd fragment_len=%jd\n",
-__LINE__,
-start_position,
-end_position,
-fragment_len);
+ __LINE__, start_position, end_position, fragment_len);
 
 			if(direction == PLAY_REVERSE)
 			{

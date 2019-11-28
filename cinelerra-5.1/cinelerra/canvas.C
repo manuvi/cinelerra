@@ -767,16 +767,22 @@ void Canvas::clear_borders(EDL *edl)
 {
 	BC_WindowBase *window = get_canvas();
 	if( !window ) return;
-
 	int window_w = window->get_w();
 	int window_h = window->get_h();
+	int color = get_clear_color();
+	window->set_color(color);
+
+	if( !edl ) {
+		window->draw_box(0, 0, window_w, window_h);
+		window->flash(0);
+		return;
+	}
+
 	float output_x1,output_y1, output_x2,output_y2;
 	float canvas_x1,canvas_y1, canvas_x2,canvas_y2;
 	get_transfers(edl,
 		output_x1, output_y1, output_x2, output_y2,
 		canvas_x1, canvas_y1, canvas_x2, canvas_y2);
-	int color = get_clear_color();
-	window->set_color(color);
 
 	if( canvas_y1 > 0 ) {
 		window->draw_box(0, 0, window_w, canvas_y1);

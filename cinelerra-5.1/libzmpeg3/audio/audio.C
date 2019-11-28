@@ -720,9 +720,10 @@ decode_audio(void *output_v, int atyp, int channel, int len)
 //  tell/eof %jd/%d\n", output_position, output_size, aud_pos, end_pos,
 //  demand, demux->tell_byte(), demux->eof());
     if( demux->eof() ) break;
+    int needed_history = len > AUDIO_HISTORY ? len : AUDIO_HISTORY;
     /* if overflowing, shift audio back */
-    if( src->seekable && output_size > AUDIO_HISTORY ) {
-      int diff = demand + output_size - AUDIO_HISTORY;
+    if( src->seekable && output_size > needed_history ) {
+      int diff = demand + output_size - needed_history;
       shift_audio(diff);
     }
     int samples = read_frame(1);
@@ -742,7 +743,7 @@ decode_audio(void *output_v, int atyp, int channel, int len)
   j = track->track_position() - output_position;
   k = output_size - j;
   if( k > len ) k = len;
-  float *out = channel < output_channels ?
+  float *out = j >= 0 && channel < output_channels ?
     output[channel] + j : 0;
 
   /* transmit data in specified format */

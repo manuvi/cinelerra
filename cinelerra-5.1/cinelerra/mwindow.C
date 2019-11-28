@@ -3688,6 +3688,26 @@ void MWindow::update_project(int load_mode)
 	if(debug) PRINT_TRACE
 }
 
+void MWindow::update_preferences(Preferences *prefs)
+{
+	if( prefs != preferences )
+		preferences->copy_from(prefs);
+	if( cwindow->playback_engine )
+		cwindow->playback_engine->preferences->copy_from(prefs);
+	for(int i = 0; i < vwindows.size(); i++) {
+		VWindow *vwindow = vwindows[i];
+		if( !vwindow->is_running() ) continue;
+		if( vwindow->playback_engine )
+			vwindow->playback_engine->preferences->copy_from(prefs);
+	}
+	for(int i = 0; i < zwindows.size(); i++) {
+		ZWindow *zwindow = zwindows[i];
+		if( !zwindow->is_running() ) continue;
+		if( zwindow->zgui->playback_engine )
+			zwindow->zgui->playback_engine->preferences->copy_from(prefs);
+	}
+}
+
 void MWindow::update_vwindow()
 {
 	for( int i=0; i<vwindows.size(); ++i ) {
@@ -3718,8 +3738,9 @@ void MWindow::rebuild_indices()
 //printf("MWindow::rebuild_indices 1 %s\n", indexable->path);
 		remove_indexfile(indexable);
 // Schedule index build
-		IndexState *index_state = indexable->index_state;
-		index_state->index_status = INDEX_NOTTESTED;
+		indexable->index_state->remove_user();
+		indexable->index_state = new IndexState;
+		IndexFile::delete_index_files(preferences, indexable);
 		if( indexable->is_asset ) {
 			Asset *asset = (Asset *)indexable;
 			if( asset->format != FILE_PCM ) {
@@ -3733,6 +3754,9 @@ void MWindow::rebuild_indices()
 		}
 		mainindexes->add_next_asset(0, indexable);
 	}
+// still in render engine
+	sync_parameters(CHANGE_ALL);
+	awindow->gui->async_update_assets();
 	mainindexes->start_build();
 }
 
@@ -4078,8 +4102,15 @@ void MWindow::remove_asset_from_caches(Asset *asset)
 		if( vwindow->playback_engine->video_cache )
 			vwindow->playback_engine->video_cache->delete_entry(asset);
 	}
+	for(int i = 0; i < zwindows.size(); i++) {
+		ZWindow *zwindow = zwindows[i];
+		if( !zwindow->is_running() ) continue;
+		if( zwindow->zgui->playback_engine->audio_cache )
+			zwindow->zgui->playback_engine->audio_cache->delete_entry(asset);
+		if( zwindow->zgui->playback_engine->video_cache )
+			zwindow->zgui->playback_engine->video_cache->delete_entry(asset);
+	}
 }
-
 
 void MWindow::remove_assets_from_project(int push_undo, int redraw, int delete_indexes,
 		ArrayList<Indexable*> *drag_assets, ArrayList<EDL*> *drag_clips)

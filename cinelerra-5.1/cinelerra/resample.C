@@ -34,7 +34,9 @@
 
 Resample::Resample()
 {
-	old = new double[BLACKSIZE];
+	old.allocate(BLACKSIZE, 0);
+	double *old_data = old.get_data();
+	memset(old_data, 0, BLACKSIZE*sizeof(*old_data));
 	resample_init = 0;
 	last_ratio = 0;
 	output_temp = 0;
@@ -51,21 +53,14 @@ Resample::Resample()
 
 Resample::~Resample()
 {
-	delete [] old;
 	delete [] output_temp;
 	delete input;
 }
 
-int Resample::read_samples(Samples *buffer, int64_t start, int64_t len)
+int Resample::read_samples(Samples *buffer, int64_t start, int64_t len, int direction)
 {
 	return 0;
 }
-
-int Resample::get_direction()
-{
-	return direction;
-}
-
 
 void Resample::reset()
 {
@@ -75,26 +70,28 @@ void Resample::reset()
 	input_position = 0;
 }
 
-double Resample::blackman(int i, double offset, double fcn, int l)
+void Resample::blackman(double fcn, int filter_l)
 {
-  /* This algorithm from:
-SIGNAL PROCESSING ALGORITHMS IN FORTRAN AND C
-S.D. Stearns and R.A. David, Prentice-Hall, 1992
-  */
-
-	double bkwn;
-	double wcn = (M_PI * fcn);
-	double dly = l / 2.0;
-	double x = i-offset;
-	if(x < 0) x = 0;
-	else
-	if(x > l) x = l;
-
-	bkwn = 0.42 - 0.5 * cos((x * 2) * M_PI /l) + 0.08 * cos((x * 4) * M_PI /l);
-	if(fabs(x - dly) < 1e-9)
-  		return wcn / M_PI;
-    else
-    	return (sin((wcn * (x - dly))) / (M_PI * (x - dly)) * bkwn);
+	double wcn = M_PI * fcn;
+	double ctr = filter_l / 2.0;
+	double cir = 2*M_PI/filter_l;
+	for( int j=0; j<=2*BPC; ++j ) {
+		double offset = (j-BPC) / (2.*BPC);  // -0.5 ... 0.5
+		for( int i=0; i<=filter_l; ++i ) {
+			double x = i - offset;
+			bclamp(x, 0,filter_l);
+			double v, dx = x - ctr;
+			if( fabs(dx) >= 1e-9 ) {
+				double curve = sin(wcn * dx) / (M_PI * dx);
+				double th = x * cir;
+				double blkmn = 0.42 - 0.5 * cos(th) + 0.08 * cos(2*th);
+				v = blkmn * curve;
+			}
+			else
+				v = fcn;
+			blackfilt[j][i] = v;
+		}
+	}
 }
 
 
@@ -107,147 +104,82 @@ int Resample::get_output_size()
 // {
 // 	memcpy(output, output_temp, size * sizeof(double));
 // // Shift leftover forward
-// 	for(int i = size; i < output_size; i++)
+// 	for( int i = size; i < output_size; i++ )
 // 		output_temp[i - size] = output_temp[i];
 // 	output_size -= size;
 // }
 
 
+// starts odd = (even-1)
+#define FILTER_N (BLACKSIZE-6)
+#define FILTER_L (FILTER_N - (~FILTER_N & 1));
 
-void Resample::resample_chunk(Samples *input_buffer,
-	int64_t in_len,
-	int in_rate,
-	int out_rate)
+void Resample::resample_chunk(Samples *input_buffer, int64_t in_len,
+	int in_rate, int out_rate)
 {
-	double resample_ratio = (double)in_rate / out_rate;
-  	int filter_l;
-	double fcn, intratio;
-	double offset, xvalue;
-	int num_used;
-	int i, j, k;
-	double *input = input_buffer->get_data();
 //printf("Resample::resample_chunk %d in_len=%jd input_size=%d\n",
 // __LINE__, in_len, input_size);
-
-  	intratio = (fabs(resample_ratio - floor(.5 + resample_ratio)) < .0001);
-	fcn = .90 / resample_ratio;
-	if(fcn > .90) fcn = .90;
-	filter_l = BLACKSIZE - 6;
-/* must be odd */
-	if(0 == filter_l % 2 ) --filter_l;
-
-/* if resample_ratio = int, filter_l should be even */
-  	filter_l += (int)intratio;
-
+	double *input = input_buffer->get_data();
+	double resample_ratio = (double)in_rate / out_rate;
+	double fcn = .90 / resample_ratio;
+	if( fcn > .90 ) fcn = .90;
+	int filter_l = FILTER_L;
+// if resample_ratio = int, filter_l should include right edge
+	if( fabs(resample_ratio - floor(.5 + resample_ratio)) < .0001 )
+		++filter_l;
 // Blackman filter initialization must be called whenever there is a
 // sampling ratio change
-	if(!resample_init || last_ratio != resample_ratio)
-	{
+	if( !resample_init || last_ratio != resample_ratio ) {
 		resample_init = 1;
+		last_ratio = resample_ratio;
+		blackman(fcn, filter_l);
 		itime = 0;
-		bzero(old, sizeof(double) * BLACKSIZE);
+	}
 
-// precompute blackman filter coefficients
-    	for (j = 0; j <= 2 * BPC; ++j)
-		{
-			for(j = 0; j <= 2 * BPC; j++)
-			{
-				offset = (double)(j - BPC) / (2 * BPC);
-				for(i = 0; i <= filter_l; i++)
-				{
-					blackfilt[j][i] = blackman(i, offset, fcn, filter_l);
-				}
-			}
+	double filter_l2 = filter_l/2.;
+	int l2 = filter_l2;
+	int64_t end_time = itime + in_len + l2;
+	int64_t out_time = end_time / resample_ratio + 1;
+	int64_t demand = out_time - output_position;
+	if( demand >= output_allocation ) {
+// demand 2**n buffer
+		int64_t new_allocation = output_allocation ? output_allocation : 16384;
+		while( new_allocation < demand ) new_allocation <<= 1;
+		double *new_output = new double[new_allocation];
+		if( output_temp ) {
+			memmove(new_output, output_temp, output_allocation*sizeof(double));
+			delete [] output_temp;
 		}
+		output_temp = new_output;
+		output_allocation = new_allocation;
 	}
 
 // Main loop
-	double *inbuf_old = old;
-	for(k = 0; 1; k++)
-	{
-		double time0;
-		int joff;
-
-		time0 = k * resample_ratio;
-		j = (int)floor(time0 - itime);
-
-//		if(j + filter_l / 2 >= input_size) break;
-		if(j + filter_l / 2 >= in_len) break;
-
-/* blackman filter.  by default, window centered at j+.5(filter_l%2) */
-/* but we want a window centered at time0.   */
-		offset = (time0 - itime - (j + .5 * (filter_l % 2)));
-		joff = (int)floor((offset * 2 * BPC) + BPC + .5);
-		xvalue = 0;
-
-
-		for(i = 0; i <= filter_l; i++)
-		{
-			int j2 = i + j - filter_l / 2;
-//printf("j2=%d\n", j2);
-			double y = ((j2 < 0) ? inbuf_old[BLACKSIZE + j2] : input[j2]);
-
-			xvalue += y * blackfilt[joff][i];
-		}
-
-
-		if(output_allocation <= output_size)
-		{
-			double *new_output = 0;
-			int64_t new_allocation = output_allocation ? (output_allocation * 2) : 16384;
-			new_output = new double[new_allocation];
-			if(output_temp)
-			{
-				bcopy(output_temp, new_output, output_allocation * sizeof(double));
-				delete [] output_temp;
-			}
-
-			output_temp = new_output;
-			output_allocation = new_allocation;
-		}
-
+	double *old_data = old.get_data();
+	double ctr_pos = 0;
+	int otime = 0, last_used = 0;
+	while( output_size < output_allocation ) {
+		double in_pos = otime * resample_ratio;
+// window centered at ctr_pos
+		ctr_pos = in_pos + itime;
+		double pos = ctr_pos - filter_l2;
+		int ipos = floor(pos);
+		last_used = ipos + filter_l;
+		if( last_used >= in_len ) break;
+		double fraction = pos - ipos;
+		int phase = floor(fraction * 2*BPC + .5);
+		int i = ipos, j = filter_l;  // fir filter
+		double xvalue = 0, *filt = blackfilt[phase];
+		for( ; j>=0 && i<0; ++i,--j ) xvalue += *filt++ * old_data[BLACKSIZE + i];
+		for( ; j>=0;        ++i,--j ) xvalue += *filt++ * input[i];
 		output_temp[output_size++] = xvalue;
+		++otime;
 	}
-
-	num_used = MIN(in_len, j + filter_l / 2);
-	itime += num_used - k * resample_ratio;
-	for(i = 0; i < BLACKSIZE; i++)
-		inbuf_old[i] = input[num_used + i - BLACKSIZE];
-
-	last_ratio = resample_ratio;
-
+// move ctr_pos backward by in_len as new itime offset
+// the next read will be in the history, itime is negative
+	itime = ctr_pos - in_len;
+	memmove(old_data, input+in_len-BLACKSIZE, BLACKSIZE*sizeof(double));
 }
-
-int Resample::read_chunk(Samples *input,
-	int64_t len)
-{
-	int fragment = len;
-	if(direction == PLAY_REVERSE &&
-		input_position - len < 0)
-	{
-		fragment = input_position;
-	}
-
-	int result = read_samples(input, input_position, fragment);
-
-	if(direction == PLAY_FORWARD)
-	{
-		input_position += fragment;
-	}
-	else
-	{
-		input_position -= fragment;
-// Mute unused part of buffer
-		if(fragment < len)
-		{
-			bzero(input->get_data() + fragment,
-				(len - fragment) * sizeof(double));
-		}
-	}
-
-	return result;
-}
-
 
 void Resample::reverse_buffer(double *buffer, int64_t len)
 {
@@ -260,76 +192,50 @@ void Resample::reverse_buffer(double *buffer, int64_t len)
 	}
 }
 
+int Resample::set_input_position(int64_t in_pos, int in_dir)
+{
+	reset();
+	input_position = in_pos;
+	direction = in_dir;
+// update old, just before/after input going fwd/rev;
+	int dir = direction == PLAY_FORWARD ? -1 : 1;
+	in_pos += dir * BLACKSIZE;
+	return read_samples(&old, in_pos, BLACKSIZE, in_dir);
+}
 
-int Resample::resample(Samples *output,
-	int64_t out_len,
-	int in_rate,
-	int out_rate,
-	int64_t out_position,
-	int direction)
+int Resample::resample(Samples *output, int64_t out_len,
+		int in_rate, int out_rate, int64_t out_position, int direction)
 {
 	int result = 0;
-
-
-//printf("Resample::resample 1 output_position=%jd out_position=%jd out_len=%jd\n",
-// output_position, out_position, out_len);
-// Changed position
-	if(labs(this->output_position - out_position) > 0 ||
-		direction != this->direction)
-	{
-		reset();
-
-// Compute starting point in input rate.
-		this->input_position = out_position * in_rate / out_rate;
-		this->direction = direction;
+	if( this->output_position != out_position ||
+	    this->direction != direction ) {
+//printf("missed  %jd!=%jd\n", output_position, out_position);
+// starting point in input rate.
+		int64_t in_pos = out_position * in_rate / out_rate;
+		set_input_position(in_pos, direction);
 	}
+//else
+//printf("matched %jd==%jd\n", output_position, out_position);
 
-
+	int dir = direction == PLAY_REVERSE ? -1 : 1;
 	int remaining_len = out_len;
 	double *output_ptr = output->get_data();
-	while(remaining_len > 0 && !result)
-	{
-// Drain output buffer
-		if(output_size)
-		{
-			int fragment_len = output_size;
-			if(fragment_len > remaining_len) fragment_len = remaining_len;
-
-//printf("Resample::resample 1 %d %d\n", remaining_len, output_size);
-			bcopy(output_temp, output_ptr, fragment_len * sizeof(double));
-
-// Shift leftover forward
-			for(int i = fragment_len; i < output_size; i++)
-				output_temp[i - fragment_len] = output_temp[i];
-
-			output_size -= fragment_len;
-			remaining_len -= fragment_len;
-			output_ptr += fragment_len;
+	while( remaining_len > 0 && !result ) {
+		if( output_size ) {
+			int len = bmin(output_size, remaining_len);
+			memmove(output_ptr, output_temp, len*sizeof(double));
+			memmove(output_temp, output_temp+len, (output_size-=len)*sizeof(double));
+			output_ptr += len;  remaining_len -= len;
 		}
-
-// Import new samples
-//printf("Resample::resample 2 %d\n", remaining_len);
-		if(remaining_len > 0)
-		{
-//printf("Resample::resample 3 input_size=%d out_position=%d\n", input_size, out_position);
-			result = read_chunk(input, input_size);
-			resample_chunk(input,
-				input_size,
-				in_rate,
-				out_rate);
+		if( remaining_len > 0 ) {
+			result = read_samples(input, input_position, input_size, direction);
+			if( result ) break;
+			resample_chunk(input, input_size, in_rate, out_rate);
+			input_position += dir * input_size;
 		}
 	}
-
-
-	if(direction == PLAY_FORWARD)
-		this->output_position = out_position + out_len;
-	else
-		this->output_position = out_position - out_len;
-
-//printf("Resample::resample 2 %d %d\n", this->output_position, out_position);
-//printf("Resample::resample 2 %d %d\n", out_len, output_size);
-
-//printf("Resample::resample 2 %d\n", output_size);
+	if( !result )
+		this->output_position = out_position + dir * out_len;
 	return result;
 }
 

@@ -205,31 +205,30 @@ if(debug) printf("VirtualAConsole::process_buffer %d\n", __LINE__);
 		for( int i=0; i<audio_channels; ++i )
 			audio_out_packed[i] = arender->audio_out[i]->get_data();
 
+// Time stretch the fragment to the real_output size
 		for( int i=0; i<audio_channels; ++i ) {
 			double *current_buffer = audio_out_packed[i];
-// Time stretch the fragment to the real_output size
-			if( speed > 1 ) {
-				int out = 0;
-				for( int in=0; in<len; ) {
-// samples in real output buffer for each to sample rendered.
-					int end = (out+1) * speed;
-					if( end > len ) end = len;
-					int k = end - in;
-					double sample = 0;
-					while( in < end ) sample += current_buffer[in++];
-					if( k > 0 ) sample /= k;
+			if( speed > 1 ) {  // buffer gets shorter
+				int in = 0, out = 0;
+				while( in < len ) {
+					int next = (out+1) * speed;
+					if( next > len) next = len;
+					double sample = current_buffer[in];
+					for( int i=in; ++i<next; ) sample += current_buffer[i];
+					int l = next - in;
+					if( l > 1 ) sample /= l;
 					current_buffer[out++] = sample;
+					in = next;
 				}
 				real_output_len = out;
 			}
-			else if( speed < 1 ) {
-				int end = len / speed;
-				real_output_len = end;
-				for( int in=len, out=end; --in>=0; ) {
-// samples rendered in real output buffer sample.
-					int start = in / speed;
-					double v = current_buffer[in];
-					while( --out >= start ) current_buffer[out] = v;
+			else if( speed < 1 ) {  // buffer gets longer
+				real_output_len = len / speed;
+				int in = len, out = real_output_len;
+				while( in > 0 && out > 0 ) {
+					double sample = current_buffer[--in];
+					int next = in / speed;
+					while( out > next ) current_buffer[--out] = sample;
 				}
 			}
 			else

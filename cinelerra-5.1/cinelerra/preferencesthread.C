@@ -252,7 +252,7 @@ int PreferencesThread::apply_settings()
 	}
 
 	mwindow->edl->copy_session(edl, 1);
-	mwindow->preferences->copy_from(preferences);
+	mwindow->update_preferences(preferences);
 
 	BC_Signals::set_catch_segv(mwindow->preferences->trap_sigsegv);
 	BC_Signals::set_catch_intr(mwindow->preferences->trap_sigintr);

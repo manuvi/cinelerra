@@ -28,7 +28,6 @@
 #include "edl.inc"
 #include "filexml.inc"
 #include "mwindow.inc"
-#include "playbackengine.inc"
 #include "renderengine.inc"
 #include "zwindowgui.inc"
 

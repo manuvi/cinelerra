@@ -181,6 +181,7 @@ public:
 		int overwrite);
 // Reset everything for a load
 	void update_project(int load_mode);
+	void update_preferences(Preferences *prefs);
 	void update_vwindow();
 // Fit selected time to horizontal display range
 	void fit_selection();
@@ -230,7 +231,6 @@ public:
 // Cause the project filename on the top of the window to be updated.
 // Not wanted for loading backups.
 		int update_filename = 1);
-
 
 // Print out plugins which are referenced in the EDL but not loaded.
 	void test_plugins(EDL *new_edl, char *path);

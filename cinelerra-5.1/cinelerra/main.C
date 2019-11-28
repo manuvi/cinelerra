@@ -145,6 +145,7 @@ int main(int argc, char *argv[])
 // handle command line arguments first
 	srand(time(0));
 	ArrayList<char*> filenames;
+	filenames.set_array_delete();
 	FileSystem fs;
 
 	time_t st; time(&st);

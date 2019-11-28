@@ -60,6 +60,8 @@ public:
 	int interrupt_index();
 	static void delete_index(Preferences *preferences,
 		Indexable *indexable, const char *suffix=0);
+	static void delete_index_files(Preferences *preferences,
+		Indexable *indexable);
 	static int get_index_filename(char *source_filename,
 		char *index_directory,
 		char *index_filename,

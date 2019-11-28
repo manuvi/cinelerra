@@ -232,6 +232,15 @@ void IndexFile::delete_index(Preferences *preferences,
 	remove_file(index_filename);
 }
 
+void IndexFile::delete_index_files(Preferences *preferences,
+	Indexable *indexable)
+{
+	delete_index(preferences, indexable, ".toc");
+	delete_index(preferences, indexable, ".idx");
+	delete_index(preferences, indexable, ".mkr");
+}
+
+
 int IndexFile::open_file()
 {
 	int result = 0;

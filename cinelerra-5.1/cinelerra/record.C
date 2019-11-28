@@ -474,9 +474,7 @@ void Record::activate_batch(int number)
 
 void Record::delete_index_file(Asset *asset)
 {
-	IndexFile::delete_index(mwindow->preferences, asset, ".toc");
-	IndexFile::delete_index(mwindow->preferences, asset, ".idx");
-	IndexFile::delete_index(mwindow->preferences, asset, ".mkr");
+	IndexFile::delete_index_files(mwindow->preferences, asset);
 }
 
 void Record::delete_batch()

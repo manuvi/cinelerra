@@ -55,7 +55,8 @@ public:
 	~AModuleResample();
 
 // All positions are in source sample rate
-	int read_samples(Samples *buffer, int64_t start, int64_t len);
+	int read_samples(Samples *buffer,
+		int64_t start, int64_t len, int direction);
 
 	AModule *module;
 // output for nested EDL if resampled
@@ -77,21 +78,13 @@ public:
 	CICache* get_cache();
 
 	int import_samples(AEdit *playable_edit,
-		int64_t start_project,
-		int64_t edit_startproject,
-		int64_t edit_startsource,
-		int direction,
-		int sample_rate,
-		Samples *buffer,
-		int64_t fragment_len);
-
-
+		int64_t start_project, int64_t edit_startproject, int64_t edit_startsource,
+		int direction, int sample_rate, Samples *buffer, int64_t fragment_len);
 	int render(Samples *buffer,
-		int64_t input_len,
-		int64_t input_position,
-		int direction,
-		int sample_rate,
-		int use_nudge);
+		int64_t input_len, int64_t input_position, int direction,
+		int sample_rate, int use_nudge);
+	int read_samples(Samples *buffer,
+		int64_t start, int64_t len, int direction);
 	int get_buffer_size();
 
 	AttachmentPoint* new_attachment(Plugin *plugin);
