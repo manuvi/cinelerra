@@ -363,11 +363,12 @@ int VWindowGUI::keypress_event()
 	case 'Z':
 		mwindow->redo_entry(this);
 		break;
-	case 'f':
-		canvas->set_fullscreen(canvas->get_fullscreen() ? 0 : 1);
-		break;
+	case 'f': {
+		int on = canvas->get_fullscreen() ? 0 : 1;
+		canvas->set_fullscreen(on, 1);
+		break; }
 	case ESC:
-		canvas->set_fullscreen(0);
+		canvas->set_fullscreen(0, 1);
 		break;
 	case KEY_F1:
 	case KEY_F2:

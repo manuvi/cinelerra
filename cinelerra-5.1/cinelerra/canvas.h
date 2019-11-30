@@ -80,7 +80,7 @@ public:
 	virtual int get_cwindow_controls() { return 0; }
 	virtual int get_fullscreen();
 	virtual int get_clear_color();
-	virtual int set_fullscreen(int on, int unlock=1);
+	virtual int set_fullscreen(int on, int unlock);
 
 	int cursor_leave_event_base(BC_WindowBase *caller);
 	int cursor_enter_event_base(BC_WindowBase *caller);

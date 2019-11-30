@@ -442,12 +442,13 @@ int CWindowGUI::keypress_event()
 		keyboard_zoomout();
 		result = 1;
 		break;
-	case 'f':
-		canvas->set_fullscreen(canvas->get_fullscreen() ? 0 : 1);
+	case 'f': {
+		int on = canvas->get_fullscreen() ? 0 : 1;
+		canvas->set_fullscreen(on, 1);
 		result = 1;
-		break;
+		break; }
 	case ESC:
-		canvas->set_fullscreen(0);
+		canvas->set_fullscreen(0, 1);
 		result = 1;
 		break;
 	case 'x':
@@ -999,19 +1000,19 @@ void CWindowCanvas::update_zoom(int x, int y, float zoom)
 	mwindow->edl->session->cwindow_scrollbars = use_scrollbars;
 }
 
-int CWindowCanvas::set_fullscreen(int on)
+int CWindowCanvas::set_fullscreen(int on, int unlock)
 {
 	int ret = 0;
 	if( on && !get_fullscreen() ) {
 		last_xscroll = get_xscroll();
 		last_yscroll = get_yscroll();
 		last_zoom = get_zoom();
-		Canvas::set_fullscreen(1);
+		Canvas::set_fullscreen(1, unlock);
 		zoom_auto();
 		ret = 1;
 	}
 	if( !on && get_fullscreen() ) {
-		Canvas::set_fullscreen(0);
+		Canvas::set_fullscreen(0, unlock);
 		gui->zoom_panel->update(get_zoom());
 		update_zoom(last_xscroll, last_yscroll, last_zoom);
 		gui->update_canvas();

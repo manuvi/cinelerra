@@ -132,6 +132,7 @@ void CPanel::set_operation(int value)
 	    operation[CWINDOW_CAMERA]->get_value() ||
 	    operation[CWINDOW_PROJECTOR]->get_value() ) {
 		cpanel_zoom->set_shown(1);
+		subwindow->update_canvas(0);
 	}
 	else
 		cpanel_zoom->set_shown(0);

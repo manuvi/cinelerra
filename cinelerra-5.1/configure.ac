@@ -611,7 +611,7 @@ if test "x$HAVE_VAAPI" = "xyes" -a "x$WANT_VAAPI" != "xno"; then
   CHECK_LIB([vaapi_drm], [va-drm], [vaGetDisplayDRM])
 fi
 if test "x$HAVE_VAAPI" != "xyes" -a "x$WANT_VAAPI" = "xyes"; then
-  AC_MSG_ERROR([requires vappi support.])
+  AC_MSG_ERROR([requires vaapi support.])
 fi
 
 #CHECK_LIB([NVENC], [nvidia-encode], [NvEncodeAPICreateInstance])
@@ -915,7 +915,7 @@ FFMPEG_EXTRA_LDFLAGS=""
 if test "x$WANT_VAAPI" != "xno" -a "x$HAVE_VAAPI" = "xyes"; then
   FFMPEG_EXTRA_LDFLAGS+=' -lva'
   EXTRA_LIBS+=' -lva'
-  WANT_VAPPI="yes"
+  WANT_VAAPI="yes"
   if test "x$HAVE_vaapi_x11" = "xyes"; then
     FFMPEG_EXTRA_LDFLAGS+=' -lva-x11'
     EXTRA_LIBS+=' -lva-x11'

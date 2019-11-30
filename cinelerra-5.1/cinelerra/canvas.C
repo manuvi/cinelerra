@@ -692,19 +692,17 @@ int Canvas::button_press_event_base(BC_WindowBase *caller)
 int Canvas::keypress_event(BC_WindowBase *caller)
 {
 	int key = caller->get_keypress();
-	int on = -1;
 	switch( key ) {
-	case 'f':
-		on = get_fullscreen() ? 0 : 1;
-		break;
+	case 'f': {
+		int on = get_fullscreen() ? 0 : 1;
+		set_fullscreen(on, 1);
+		break; }
 	case ESC:
-		on = 0;
+		set_fullscreen(0, 1);
 		break;
 	default:
 		return 0;
 	}
-	if( on >= 0 )
-		set_fullscreen(on);
 	return 1;
 }
 
@@ -931,7 +929,7 @@ int CanvasSubWindowItem::handle_event()
 {
 // It isn't a problem to delete the canvas from in here because the event
 // dispatcher is the canvas subwindow.
-	canvas->set_fullscreen(0);
+	canvas->set_fullscreen(0, 1);
 	return 1;
 }
 
@@ -1115,7 +1113,7 @@ CanvasFullScreenItem::CanvasFullScreenItem(Canvas *canvas)
 }
 int CanvasFullScreenItem::handle_event()
 {
-	canvas->set_fullscreen(1);
+	canvas->set_fullscreen(1, 1);
 	return 1;
 }
 

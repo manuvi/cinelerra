@@ -98,11 +98,12 @@ int ZWindowGUI::keypress_event()
 	}
 	int result = 1;
 	switch( key ) {
-	case 'f':
-		canvas->set_fullscreen(canvas->get_fullscreen() ? 0 : 1);
-		break;
+	case 'f': {
+		int on = canvas->get_fullscreen() ? 0 : 1;
+		canvas->set_fullscreen(on, 1);
+		break; }
 	case ESC:
-		canvas->set_fullscreen(0);
+		canvas->set_fullscreen(0, 1);
 		break;
 	default:
 		unlock_window();

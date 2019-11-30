@@ -35,9 +35,9 @@ case "$dir" in
     yum -y install /tmp/$yasm
     rm -f /tmp/$yasm
   ;;
-#"fedora30")
+#"fedora3*")
 #  dnf group install "Development Tools"
-#  ... lzma-sdk-devel libtool ...
+#  ... rpm-build lzma-sdk-devel libtool ...
 "fedora")
   dnf group install "Development Tools"
   dnf -y --best --allowerasing \
