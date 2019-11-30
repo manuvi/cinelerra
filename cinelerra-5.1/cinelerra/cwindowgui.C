@@ -443,9 +443,11 @@ int CWindowGUI::keypress_event()
 		result = 1;
 		break;
 	case 'f':
-		unlock_window();
-		canvas->use_fullscreen(canvas->get_fullscreen() ? 0 : 1);
-		lock_window("CWindowGUI::keypress_event 1");
+		canvas->set_fullscreen(canvas->get_fullscreen() ? 0 : 1);
+		result = 1;
+		break;
+	case ESC:
+		canvas->set_fullscreen(0);
 		result = 1;
 		break;
 	case 'x':
@@ -463,12 +465,6 @@ int CWindowGUI::keypress_event()
 		mwindow->clear_entry();
 		mwindow->gui->unlock_window();
 		lock_window("CWindowGUI::keypress_event 3");
-		result = 1;
-		break;
-	case ESC:
-		unlock_window();
-		canvas->use_fullscreen(0);
-		lock_window("CWindowGUI::keypress_event 4");
 		result = 1;
 		break;
 	case LEFT:
@@ -984,6 +980,9 @@ CWindowCanvas::CWindowCanvas(MWindow *mwindow, CWindowGUI *gui)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
+	last_xscroll = 0;
+	last_yscroll = 0;
+	last_zoom = 0;
 }
 
 void CWindowCanvas::status_event()
@@ -1000,15 +999,25 @@ void CWindowCanvas::update_zoom(int x, int y, float zoom)
 	mwindow->edl->session->cwindow_scrollbars = use_scrollbars;
 }
 
-int CWindowCanvas::use_fullscreen(int on)
+int CWindowCanvas::set_fullscreen(int on)
 {
-	if( Canvas::use_fullscreen(on) ) {
-		gui->lock_window("CWindowCanvas::use_fullscreen");
+	int ret = 0;
+	if( on && !get_fullscreen() ) {
+		last_xscroll = get_xscroll();
+		last_yscroll = get_yscroll();
+		last_zoom = get_zoom();
+		Canvas::set_fullscreen(1);
 		zoom_auto();
-		if( !on ) gui->zoom_panel->update(0);
-		gui->unlock_window();
+		ret = 1;
 	}
-	return 1;
+	if( !on && get_fullscreen() ) {
+		Canvas::set_fullscreen(0);
+		gui->zoom_panel->update(get_zoom());
+		update_zoom(last_xscroll, last_yscroll, last_zoom);
+		gui->update_canvas();
+		ret = 1;
+	}
+	return ret;
 }
 
 int CWindowCanvas::get_xscroll()

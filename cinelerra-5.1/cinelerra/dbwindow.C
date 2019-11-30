@@ -951,7 +951,6 @@ DbWindowCanvas(DbWindowGUI *gui, int x, int y, int w, int h)
  : Canvas(gui->dwindow->mwindow, gui, x, y, w, h, w, h, 0)
 {
 	this->gui = gui;
-	this->is_fullscreen = 0;
 }
 
 DbWindowCanvas::

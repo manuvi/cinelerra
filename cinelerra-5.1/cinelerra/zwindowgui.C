@@ -96,22 +96,22 @@ int ZWindowGUI::keypress_event()
 		close_event();
 		return 1;
 	}
-	unlock_window();
 	int result = 1;
 	switch( key ) {
 	case 'f':
-		canvas->use_fullscreen(canvas->get_fullscreen() ? 0 : 1);
+		canvas->set_fullscreen(canvas->get_fullscreen() ? 0 : 1);
 		break;
 	case ESC:
-		canvas->use_fullscreen(0);
+		canvas->set_fullscreen(0);
 		break;
 	default:
+		unlock_window();
 		mwindow->gui->lock_window("ZWindowGUI::keypress_event");
 		result = mwindow->gui->mbuttons->transport->do_keypress(key);
 		mwindow->gui->unlock_window();
+		lock_window("ZWindowGUI::keypress_event 1");
 	}
 
-	lock_window("ZWindowGUI::keypress_event 1");
 	return result;
 }
 

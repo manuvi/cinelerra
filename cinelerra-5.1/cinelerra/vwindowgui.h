@@ -121,7 +121,6 @@ public:
 	void draw_overlays();
 	void close_source();
 	void zoom_auto();
-	int use_fullscreen(int on);
 
 	MWindow *mwindow;
 	VWindowGUI *gui;

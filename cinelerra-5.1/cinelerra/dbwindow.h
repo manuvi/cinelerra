@@ -226,7 +226,6 @@ class DbWindowCanvas : public Canvas
 {
 public:
 	DbWindowGUI *gui;
-	int is_fullscreen;
 
 	DbWindowCanvas(DbWindowGUI *gui, int x, int y, int w, int h);
 	~DbWindowCanvas();
@@ -234,8 +233,6 @@ public:
 	void draw_frame(VFrame *frame, int x, int y, int w, int h);
 	int button_press_event() { return 0; }
 	int keypress_event() { return 0; }
-	int get_fullscreen() { return is_fullscreen; }
-	void set_fullscreen(int value) { is_fullscreen = value; }
 };
 
 class DbWindowVIcon : public VIcon

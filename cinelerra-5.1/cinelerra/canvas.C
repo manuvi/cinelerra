@@ -135,11 +135,6 @@ int Canvas::get_fullscreen()
 	return is_fullscreen;
 }
 
-void Canvas::set_fullscreen(int value)
-{
-	is_fullscreen = value;
-}
-
 // Get dimensions given a zoom
 void Canvas::calculate_sizes(float aspect_ratio,
 		int output_w, int output_h, float zoom,
@@ -576,29 +571,34 @@ void Canvas::stop_video()
 	}
 }
 
-
-int Canvas::use_fullscreen(int on)
+int Canvas::set_fullscreen(int on, int unlock)
 {
+	int ret = 0;
+	BC_WindowBase *window = get_canvas();
+	if( unlock )
+		window->unlock_window();
 	if( on && !get_fullscreen() ) {
 		start_fullscreen();
-		return 1;
+		ret = 1;
 	}
 	if( !on && get_fullscreen() ) {
 		stop_fullscreen();
-		return 1;
+		ret = 1;
 	}
-	return 0;
+	if( unlock )
+		window->lock_window("Canvas::set_fullscreen");
+	return ret;
 }
 
 void Canvas::start_fullscreen()
 {
-	set_fullscreen(1);
+	is_fullscreen = 1;
 	create_canvas();
 }
 
 void Canvas::stop_fullscreen()
 {
-	set_fullscreen(0);
+	is_fullscreen = 0;
 	create_canvas();
 }
 
@@ -661,7 +661,6 @@ void Canvas::create_canvas()
 }
 
 
-
 int Canvas::cursor_leave_event_base(BC_WindowBase *caller)
 {
 	int result = 0;
@@ -693,20 +692,19 @@ int Canvas::button_press_event_base(BC_WindowBase *caller)
 int Canvas::keypress_event(BC_WindowBase *caller)
 {
 	int key = caller->get_keypress();
+	int on = -1;
 	switch( key ) {
 	case 'f':
-		caller->unlock_window();
-		use_fullscreen(get_fullscreen() ? 0 : 1);
-		caller->lock_window("Canvas::keypress_event 1");
+		on = get_fullscreen() ? 0 : 1;
 		break;
 	case ESC:
-		caller->unlock_window();
-		use_fullscreen(0);
-		caller->lock_window("Canvas::keypress_event 2");
+		on = 0;
 		break;
 	default:
 		return 0;
 	}
+	if( on >= 0 )
+		set_fullscreen(on);
 	return 1;
 }
 
@@ -933,9 +931,7 @@ int CanvasSubWindowItem::handle_event()
 {
 // It isn't a problem to delete the canvas from in here because the event
 // dispatcher is the canvas subwindow.
-	canvas->subwindow->unlock_window();
-	canvas->use_fullscreen(0);
-	canvas->subwindow->lock_window("CanvasSubWindowItem::handle_event");
+	canvas->set_fullscreen(0);
 	return 1;
 }
 
@@ -1108,16 +1104,8 @@ int CanvasToggleControls::handle_event()
 
 char* CanvasToggleControls::calculate_text(int cwindow_controls)
 {
-	if(!cwindow_controls)
-		return _("Show controls");
-	else
-		return _("Hide controls");
+	return !cwindow_controls ? _("Show controls") : _("Hide controls");
 }
-
-
-
-
-
 
 
 CanvasFullScreenItem::CanvasFullScreenItem(Canvas *canvas)
@@ -1127,18 +1115,9 @@ CanvasFullScreenItem::CanvasFullScreenItem(Canvas *canvas)
 }
 int CanvasFullScreenItem::handle_event()
 {
-	canvas->subwindow->unlock_window();
-	canvas->use_fullscreen(1);
-	canvas->subwindow->lock_window("CanvasFullScreenItem::handle_event");
+	canvas->set_fullscreen(1);
 	return 1;
 }
-
-
-
-
-
-
-
 
 
 CanvasPopupRemoveSource::CanvasPopupRemoveSource(Canvas *canvas)

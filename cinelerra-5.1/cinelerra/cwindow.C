@@ -327,8 +327,9 @@ int CWindowRemoteHandler::remote_process_key(RemoteControl *remote_control, int 
 	case 'e':
 		break;
 	case 'f': {
-		Canvas *canvas = mwindow_gui->mwindow->cwindow->gui->canvas;
-		canvas->use_fullscreen(canvas->get_fullscreen() ? 0 : 1);
+		CWindowCanvas *canvas = mwindow_gui->mwindow->cwindow->gui->canvas;
+		int on = canvas->get_fullscreen() ? 0 : 1;
+		canvas->Canvas::set_fullscreen(on, 0);
 		return 1; }
 	default:
 		return -1;

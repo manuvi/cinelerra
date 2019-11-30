@@ -1826,8 +1826,9 @@ int Record::remote_process_key(RemoteControl *remote_control, int key)
 		channel_down();
 		break;
 	case 'f': {
-		Canvas *canvas = record_monitor->window->canvas;
-		canvas->use_fullscreen(canvas->get_fullscreen() ? 0 : 1);
+		RecordMonitorCanvas *canvas = record_monitor->window->canvas;
+		int on = canvas->get_fullscreen() ? 0 : 1;
+		canvas->Canvas::set_fullscreen(on, 0);
 		break; }
 	default:
 		return -1;

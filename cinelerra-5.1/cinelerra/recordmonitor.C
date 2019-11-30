@@ -874,6 +874,11 @@ int RecordMonitorCanvas::keypress_event()
 	return 1;
 }
 
+int RecordMonitorCanvas::keypress_event(RecordMonitorGUI *window)
+{
+	return Canvas::keypress_event(window);
+}
+
 
 RecordMonitorFullsize::RecordMonitorFullsize(MWindow *mwindow,
 	RecordMonitorGUI *window)

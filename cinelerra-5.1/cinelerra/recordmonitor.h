@@ -107,7 +107,7 @@ public:
 	void enable_signal_status(int enable);
 
 	MeterPanel *meters;
-	Canvas *canvas;
+	RecordMonitorCanvas *canvas;
 //	RecordTransport *record_transport;
 #ifdef HAVE_FIREWIRE
 	AVC1394Transport *avc1394_transport;
@@ -228,6 +228,7 @@ public:
 	int cursor_enter_event();
 	void reset_translation();
 	int keypress_event();
+	int keypress_event(RecordMonitorGUI *window);
 	int get_output_w();
 	int get_output_h();
 

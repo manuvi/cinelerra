@@ -79,9 +79,8 @@ public:
 	virtual void toggle_controls() {}
 	virtual int get_cwindow_controls() { return 0; }
 	virtual int get_fullscreen();
-	virtual void set_fullscreen(int value);
 	virtual int get_clear_color();
-	virtual int use_fullscreen(int on);
+	virtual int set_fullscreen(int on, int unlock=1);
 
 	int cursor_leave_event_base(BC_WindowBase *caller);
 	int cursor_enter_event_base(BC_WindowBase *caller);

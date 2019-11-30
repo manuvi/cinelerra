@@ -70,6 +70,9 @@ void Resample::reset()
 	input_position = 0;
 }
 
+/* This algorithm from:
+ * SIGNAL PROCESSING ALGORITHMS IN FORTRAN AND C
+ * S.D. Stearns and R.A. David, Prentice-Hall, 1992 */
 void Resample::blackman(double fcn, int filter_l)
 {
 	double wcn = M_PI * fcn;

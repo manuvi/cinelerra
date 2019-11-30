@@ -364,15 +364,10 @@ int VWindowGUI::keypress_event()
 		mwindow->redo_entry(this);
 		break;
 	case 'f':
-		unlock_window();
-		canvas->use_fullscreen(canvas->get_fullscreen() ? 0 : 1);
-		lock_window("VWindowGUI::keypress_event 1");
+		canvas->set_fullscreen(canvas->get_fullscreen() ? 0 : 1);
 		break;
 	case ESC:
-		unlock_window();
-		if( canvas->get_fullscreen() )
-			canvas->use_fullscreen(0);
-		lock_window("VWindowGUI::keypress_event 2");
+		canvas->set_fullscreen(0);
 		break;
 	case KEY_F1:
 	case KEY_F2:
@@ -876,16 +871,5 @@ void VWindowCanvas::draw_overlays()
 		get_canvas()->draw_rectangle(1, 1, get_canvas()->get_w() - 2, get_canvas()->get_h() - 2);
 		get_canvas()->set_opaque();
 	}
-}
-
-int VWindowCanvas::use_fullscreen(int on)
-{
-	if( Canvas::use_fullscreen(on) ) {
-		gui->lock_window("VWindowCanvas::use_fullscreen");
-		zoom_auto();
-		draw_refresh(1);
-		gui->unlock_window();
-	}
-	return 1;
 }
 
