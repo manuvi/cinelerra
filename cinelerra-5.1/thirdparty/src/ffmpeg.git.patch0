@@ -1,0 +1,11 @@
+diff -urN a/fftools/cmdutils.c b/fftools/cmdutils.c
+--- a/fftools/cmdutils.c	2019-12-02 08:48:02.860360597 -0700
++++ b/fftools/cmdutils.c	2019-12-02 08:51:04.603975015 -0700
+@@ -1186,6 +1186,7 @@
+ 
+ void show_banner(int argc, char **argv, const OptionDef *options)
+ {
++    return;
+     int idx = locate_option(argc, argv, options, "version");
+     if (hide_banner || idx)
+         return;

@@ -1,7 +1,7 @@
 diff -urN a/libavcodec/h263dec.c b/libavcodec/h263dec.c
---- a/libavcodec/h263dec.c
-+++ b/libavcodec/h263dec.c
-@@ -684,7 +684,7 @@ frame_end:
+--- a/libavcodec/h263dec.c	2019-12-02 08:48:02.926360820 -0700
++++ b/libavcodec/h263dec.c	2019-12-02 08:52:52.428339509 -0700
+@@ -684,7 +684,7 @@
      if (CONFIG_MPEG4_DECODER && avctx->codec_id == AV_CODEC_ID_MPEG4)
          ff_mpeg4_frame_end(avctx, buf, buf_size);
  

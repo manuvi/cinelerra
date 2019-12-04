@@ -1,8 +1,7 @@
-diff --git a/libavformat/avformat.h b/libavformat/avformat.h
-index 734ae54cac..26d9bbafbc 100644
---- a/libavformat/avformat.h
-+++ b/libavformat/avformat.h
-@@ -485,6 +485,9 @@ typedef struct AVProbeData {
+diff -urN a/libavformat/avformat.h b/libavformat/avformat.h
+--- a/libavformat/avformat.h	2019-12-02 08:48:03.103361418 -0700
++++ b/libavformat/avformat.h	2019-12-02 08:52:16.724218813 -0700
+@@ -485,6 +485,9 @@
                                          The user or muxer can override this through
                                          AVFormatContext.avoid_negative_ts
                                          */
@@ -12,22 +11,20 @@ index 734ae54cac..26d9bbafbc 100644
  
  #define AVFMT_SEEK_TO_PTS   0x4000000 /**< Seeking is based on PTS */
  
-@@ -653,8 +656,8 @@ typedef struct AVInputFormat {
- 
+@@ -654,7 +657,8 @@
      /**
       * Can use flags: AVFMT_NOFILE, AVFMT_NEEDNUMBER, AVFMT_SHOW_IDS,
--     * AVFMT_NOTIMESTAMPS, AVFMT_GENERIC_INDEX, AVFMT_TS_DISCONT, AVFMT_NOBINSEARCH,
+      * AVFMT_NOTIMESTAMPS, AVFMT_GENERIC_INDEX, AVFMT_TS_DISCONT, AVFMT_NOBINSEARCH,
 -     * AVFMT_NOGENSEARCH, AVFMT_NO_BYTE_SEEK, AVFMT_SEEK_TO_PTS.
 +     * AVFMT_NOGENSEARCH, AVFMT_NO_BYTE_SEEK, AVFMT_SEEK_TO_PTS,
 +     * AVFMT_SEEK_NOSTREAMS
       */
      int flags;
  
-diff --git a/libavformat/dv.c b/libavformat/dv.c
-index eb44e0acb6..b23759dd86 100644
---- a/libavformat/dv.c
-+++ b/libavformat/dv.c
-@@ -632,6 +632,7 @@ static int dv_probe(const AVProbeData *p)
+diff -urN a/libavformat/dv.c b/libavformat/dv.c
+--- a/libavformat/dv.c	2019-12-02 08:48:03.107361432 -0700
++++ b/libavformat/dv.c	2019-12-02 08:52:16.724218813 -0700
+@@ -642,6 +642,7 @@
  AVInputFormat ff_dv_demuxer = {
      .name           = "dv",
      .long_name      = NULL_IF_CONFIG_SMALL("DV (Digital Video)"),
@@ -35,11 +32,10 @@ index eb44e0acb6..b23759dd86 100644
      .priv_data_size = sizeof(RawDVContext),
      .read_probe     = dv_probe,
      .read_header    = dv_read_header,
-diff --git a/libavformat/matroskadec.c b/libavformat/matroskadec.c
-index cba2b3d1f8..8427b2c421 100644
---- a/libavformat/matroskadec.c
-+++ b/libavformat/matroskadec.c
-@@ -4059,6 +4059,7 @@ static const AVClass webm_dash_class = {
+diff -urN a/libavformat/matroskadec.c b/libavformat/matroskadec.c
+--- a/libavformat/matroskadec.c	2019-12-02 08:48:03.116361462 -0700
++++ b/libavformat/matroskadec.c	2019-12-02 08:52:16.725218816 -0700
+@@ -4224,6 +4224,7 @@
  AVInputFormat ff_matroska_demuxer = {
      .name           = "matroska,webm",
      .long_name      = NULL_IF_CONFIG_SMALL("Matroska / WebM"),
@@ -47,7 +43,7 @@ index cba2b3d1f8..8427b2c421 100644
      .extensions     = "mkv,mk3d,mka,mks",
      .priv_data_size = sizeof(MatroskaDemuxContext),
      .read_probe     = matroska_probe,
-@@ -4072,6 +4073,7 @@ AVInputFormat ff_matroska_demuxer = {
+@@ -4237,6 +4238,7 @@
  AVInputFormat ff_webm_dash_manifest_demuxer = {
      .name           = "webm_dash_manifest",
      .long_name      = NULL_IF_CONFIG_SMALL("WebM DASH Manifest"),
@@ -55,11 +51,10 @@ index cba2b3d1f8..8427b2c421 100644
      .priv_data_size = sizeof(MatroskaDemuxContext),
      .read_header    = webm_dash_manifest_read_header,
      .read_packet    = webm_dash_manifest_read_packet,
-diff --git a/libavformat/utils.c b/libavformat/utils.c
-index a63d71b0f4..fe6608ade2 100644
---- a/libavformat/utils.c
-+++ b/libavformat/utils.c
-@@ -2472,6 +2472,13 @@ static int seek_frame_internal(AVFormatContext *s, int stream_index,
+diff -urN a/libavformat/utils.c b/libavformat/utils.c
+--- a/libavformat/utils.c	2019-12-02 08:48:03.138361536 -0700
++++ b/libavformat/utils.c	2019-12-02 08:52:16.726218820 -0700
+@@ -2488,6 +2488,13 @@
          return seek_frame_byte(s, stream_index, timestamp, flags);
      }
  
