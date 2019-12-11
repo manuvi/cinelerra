@@ -22,6 +22,7 @@
 #include "bcdisplayinfo.h"
 #include "bchash.h"
 #include "bcsignals.h"
+#include "attachmentpoint.h"
 #include "clip.h"
 #include "condition.h"
 #include "edits.h"
@@ -40,8 +41,9 @@
 #include "pluginclient.h"
 #include "pluginserver.h"
 #include "preferences.h"
+#include "renderengine.h"
 #include "track.h"
-#include "transportque.inc"
+#include "transportque.h"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -50,6 +52,15 @@
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
+
+PluginClientFrame::PluginClientFrame()
+{
+	position = -1;
+}
+
+PluginClientFrame::~PluginClientFrame()
+{
+}
 
 
 PluginClientThread::PluginClientThread(PluginClient *client)
@@ -63,9 +74,7 @@ PluginClientThread::PluginClientThread(PluginClient *client)
 PluginClientThread::~PluginClientThread()
 {
 	join();
-//printf("PluginClientThread::~PluginClientThread %p %d\n", this, __LINE__);
-	delete window;  window = 0;
-//printf("PluginClientThread::~PluginClientThread %p %d\n", this, __LINE__);
+	delete window;
 	delete init_complete;
 }
 
@@ -118,29 +127,6 @@ PluginClient* PluginClientThread::get_client()
 {
 	return client;
 }
-
-
-
-
-
-
-PluginClientFrame::PluginClientFrame(int data_size,
-	int period_n,
-	int period_d)
-{
-	this->data_size = data_size;
-	force = 0;
-	this->period_n = period_n;
-	this->period_d = period_d;
-}
-
-PluginClientFrame::~PluginClientFrame()
-{
-
-}
-
-
-
 
 
 PluginClientWindow::PluginClientWindow(PluginClient *client,
@@ -421,9 +407,6 @@ int PluginText::handle_event()
 }
 
 
-
-
-
 PluginClient::PluginClient(PluginServer *server)
 {
 	reset();
@@ -444,7 +427,6 @@ PluginClient::~PluginClient()
 
 // Virtual functions don't work here.
 	if(defaults) delete defaults;
-	frame_buffer.remove_all_objects();
 	delete update_timer;
 }
 
@@ -553,7 +535,6 @@ int PluginClient::is_multichannel() { return 0; }
 int PluginClient::is_synthesis() { return 0; }
 int PluginClient::is_realtime() { return 0; }
 int PluginClient::is_fileio() { return 0; }
-int PluginClient::delete_buffer_ptrs() { return 0; }
 const char* PluginClient::plugin_title() { return _("Untitled"); }
 
 Theme* PluginClient::new_theme() { return 0; }
@@ -606,90 +587,114 @@ int PluginClient::set_string()
 
 
 
-void PluginClient::begin_process_buffer()
+PluginClientFrames::PluginClientFrames()
 {
-// Delete all unused GUI frames
-	frame_buffer.remove_all_objects();
+	count = 0;
+}
+PluginClientFrames::~PluginClientFrames()
+{
 }
 
-
-void PluginClient::end_process_buffer()
+int PluginClientFrames::fwd_cmpr(PluginClientFrame *a, PluginClientFrame *b)
 {
-	if(frame_buffer.size())
-	{
-		send_render_gui();
+	double d = a->position - b->position;
+	return d < 0 ? -1 : !d ? 0 : 1;
+}
+
+int PluginClientFrames::rev_cmpr(PluginClientFrame *a, PluginClientFrame *b)
+{
+	double d = b->position - a->position;
+	return d < 0 ? -1 : !d ? 0 : 1;
+}
+
+void PluginClientFrames::reset()
+{
+	destroy();
+	count = 0;
+}
+
+void PluginClientFrames::add_gui_frame(PluginClientFrame *frame)
+{
+	append(frame);
+	++count;
+}
+
+void PluginClientFrames::concatenate(PluginClientFrames *frames)
+{
+	concat(*frames);
+	count += frames->count;
+	frames->count = 0;
+}
+
+void PluginClientFrames::sort_position(int dir)
+{
+// enforce order
+	if( dir == PLAY_REVERSE )
+		rev_sort();
+	else
+		fwd_sort();
+}
+
+// pop frames until buffer passes position=pos in direction=dir
+// dir==0, pop frame; pos<0, pop all frames
+// delete past frames, return last popped frame
+PluginClientFrame* PluginClientFrames::get_gui_frame(double pos, int dir)
+{
+	if( dir ) {
+		while( first != last ) {
+			if( pos >= 0 && dir*(first->next->position - pos) > 0 ) break;
+			delete first;  --count;
+		}
 	}
+	PluginClientFrame *frame = first;
+	if( frame ) { remove_pointer(frame);  --count; }
+	return frame;
 }
 
+PluginClientFrame* PluginClient::get_gui_frame(double pos, int dir)
+{
+	return frame_buffer.get_gui_frame(pos, dir);
+}
+PluginClientFrame* PluginClient::next_gui_frame()
+{
+	return frame_buffer.first;
+}
 
 
 void PluginClient::plugin_update_gui()
 {
-
 	update_gui();
-
-// Delete unused GUI frames
-	while(frame_buffer.size() > MAX_FRAME_BUFFER)
-		frame_buffer.remove_object_number(0);
-
 }
 
 void PluginClient::update_gui()
 {
 }
 
-int PluginClient::get_gui_update_frames()
+int PluginClient::pending_gui_frames()
 {
-	if(frame_buffer.size())
-	{
-		PluginClientFrame *frame = frame_buffer.get(0);
-		int total_frames = update_timer->get_difference() *
-			frame->period_d /
-			frame->period_n /
-			1000;
-		if(total_frames) update_timer->subtract(total_frames *
-			frame->period_n *
-			1000 /
-			frame->period_d);
-
-// printf("PluginClient::get_gui_update_frames %d %ld %d %d %d\n",
-// __LINE__,
-// update_timer->get_difference(),
-// frame->period_n * 1000 / frame->period_d,
-// total_frames,
-// frame_buffer.size());
-
-// Add forced frames
-		for(int i = 0; i < frame_buffer.size(); i++)
-			if(frame_buffer.get(i)->force) total_frames++;
-		total_frames = MIN(frame_buffer.size(), total_frames);
-
-
-		return total_frames;
-	}
-	else
-	{
-		return 0;
-	}
-}
-
-PluginClientFrame* PluginClient::get_gui_frame()
-{
-	if(frame_buffer.size())
-	{
-		PluginClientFrame *frame = frame_buffer.get(0);
-		frame_buffer.remove_number(0);
-		return frame;
-	}
-	else
-	{
-		return 0;
-	}
+	PluginClientFrame *frame = frame_buffer.first;
+	if( !frame ) return 0;
+	double tracking_position = get_tracking_position();
+	int direction = get_tracking_direction();
+	int ret = !(direction == PLAY_REVERSE ?
+		frame->position < tracking_position :
+		frame->position > tracking_position);
+	return ret;
 }
 
 void PluginClient::add_gui_frame(PluginClientFrame *frame)
 {
-	frame_buffer.append(frame);
+	frame_buffer.add_gui_frame(frame);
+}
+
+double PluginClient::get_tracking_position()
+{
+	return server->mwindow->get_tracking_position();
+}
+
+int PluginClient::get_tracking_direction()
+{
+	return server->mwindow->get_tracking_direction();
 }
 
 void PluginClient::send_render_gui()
@@ -707,54 +712,56 @@ void PluginClient::send_render_gui(void *data, int size)
 	server->send_render_gui(data, size);
 }
 
-void PluginClient::plugin_render_gui(void *data, int size)
+
+void PluginClient::plugin_reset_gui_frames()
 {
-	render_gui(data, size);
+	if( !thread ) return;
+	BC_WindowBase *window = thread->get_window();
+	if( !window ) return;
+	window->lock_window("PluginClient::plugin_reset_gui_frames");
+	frame_buffer.reset();
+	window->unlock_window();
 }
 
+void PluginClient::plugin_render_gui_frames(PluginClientFrames *frames)
+{
+	if( !thread ) return;
+	BC_WindowBase *window = thread->get_window();
+	if( !window ) return;
+	window->lock_window("PluginClient::render_gui");
+	while( frame_buffer.count > MAX_FRAME_BUFFER )
+		delete get_gui_frame(0, 0);
+// append client frames to gui frame_buffer, consumes frames
+	frame_buffer.concatenate(frames);
+	frame_buffer.sort_position(get_tracking_direction());
+	update_timer->update();
+	window->unlock_window();
+}
 
 void PluginClient::plugin_render_gui(void *data)
 {
 	render_gui(data);
 }
 
+void PluginClient::plugin_render_gui(void *data, int size)
+{
+	render_gui(data, size);
+}
+
 void PluginClient::render_gui(void *data)
 {
-	if(thread)
-	{
-		thread->get_window()->lock_window("PluginClient::render_gui");
-
-// Set all previous frames to draw immediately
-		for(int i = 0; i < frame_buffer.size(); i++)
-			frame_buffer.get(i)->force = 1;
-
-		ArrayList<PluginClientFrame*> *src =
-			(ArrayList<PluginClientFrame*>*)data;
-
-// Shift GUI data to GUI client
-		while(src->size())
-		{
-			this->frame_buffer.append(src->get(0));
-			src->remove_number(0);
-		}
-
-// Start the timer for the current buffer
-		update_timer->update();
-		thread->get_window()->unlock_window();
-	}
+        printf("PluginClient::render_gui %d\n", __LINE__);
 }
 
 void PluginClient::render_gui(void *data, int size)
 {
-	printf("PluginClient::render_gui %d\n", __LINE__);
+        printf("PluginClient::render_gui %d\n", __LINE__);
 }
 
-
-
-
-
-
-
+void PluginClient::reset_gui_frames()
+{
+	server->reset_gui_frames();
+}
 
 int PluginClient::is_audio() { return 0; }
 int PluginClient::is_video() { return 0; }
@@ -1008,7 +1015,6 @@ int PluginClient::get_direction()
 {
 	return direction;
 }
-
 
 int64_t PluginClient::local_to_edl(int64_t position)
 {

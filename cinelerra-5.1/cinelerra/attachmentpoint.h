@@ -32,6 +32,7 @@
 #include "mwindow.inc"
 #include "messages.inc"
 #include "plugin.inc"
+#include "pluginclient.inc"
 #include "pluginserver.inc"
 #include "renderengine.inc"
 #include "sharedlocation.h"
@@ -67,11 +68,9 @@ public:
 	int attach_virtual_plugin(VirtualNode *virtual_plugin);
 	virtual void delete_buffer_vector() {};
 
-// return 0 if ready to render
-// check all the virtual plugins for waiting status
-// all virtual plugins attached to this must be waiting for a render
-//	int sort(VirtualNode *virtual_plugin);
 // Called by plugin server to render GUI with data.
+	void reset_gui_frames(PluginServer *server);
+	void render_gui_frames(PluginClientFrames *frames, PluginServer *server);
 	void render_gui(void *data, PluginServer *server);
 	void render_gui(void *data, int size, PluginServer *server);
 	int gui_open();

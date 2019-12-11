@@ -211,6 +211,7 @@ public:
 	GraphicGUIFrame(int window_size, int sample_rate);
 	virtual ~GraphicGUIFrame();
 	double *data;
+	int data_size;
 // Maximum of window in frequency domain
 	double freq_max;
 // Maximum of window in time domain

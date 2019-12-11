@@ -569,70 +569,32 @@ void ParametricWindow::update_canvas()
 
 	canvas->clear_box(0, 0, canvas->get_w(), canvas->get_h());
 
-
-
 // Draw spectrogram
-	int total_frames = plugin->get_gui_update_frames();
-	ParametricGUIFrame *frame = (ParametricGUIFrame*)plugin->get_gui_frame();
-
-	if(frame)
-	{
-		delete plugin->last_frame;
-		plugin->last_frame = frame;
-	}
-	else
-	{
-		frame = plugin->last_frame;
-	}
-
+	double tracking_position = plugin->get_tracking_position();
+	ParametricGUIFrame *frame = (ParametricGUIFrame *)
+		plugin->get_gui_frame(tracking_position, 1);
 // Draw most recent frame
-	if(frame)
-	{
+	if( frame ) {
+		int y1 = 0, y2 = 0;
 		canvas->set_color(MEGREY);
-		int y1 = 0;
-		int y2 = 0;
-		for(int i = 0; i < canvas->get_w(); i++)
-		{
+
+		for(int i = 0; i < canvas->get_w(); i++) {
 			int freq = Freq::tofreq(i * TOTALFREQS / canvas->get_w());
 			int index = (int64_t)freq * (int64_t)frame->window_size / 2 / niquist;
-			if(index < frame->window_size / 2)
-			{
+			if(index < frame->window_size / 2) {
 				double magnitude = frame->data[index] /
-					frame->freq_max *
-					frame->time_max;
+					frame->freq_max * frame->time_max;
 				y2 = (int)(canvas->get_h() -
 					(DB::todb(magnitude) - INFINITYGAIN) *
-					canvas->get_h() /
-					-INFINITYGAIN);
+					canvas->get_h() / -INFINITYGAIN);
 				CLAMP(y2, 0, canvas->get_h() - 1);
 				if(i > 0)
-				{
 					canvas->draw_line(i - 1, y1, i, y2);
-				}
 				y1 = y2;
 			}
 		}
-
-		total_frames--;
+		delete frame;
 	}
-
-
-
-
-
-
-// Delete remaining frames
-	while(total_frames > 0)
-	{
-		PluginClientFrame *frame = plugin->get_gui_frame();
-
-		if(frame) delete frame;
-		total_frames--;
-	}
-
-
-
-
 
 // 	canvas->set_color(GREEN);
 // 	canvas->draw_line(0, wetness, canvas->get_w(), wetness);
@@ -693,16 +655,12 @@ void ParametricWindow::update_canvas()
 }
 
 
-
-
-
-
-
 ParametricGUIFrame::ParametricGUIFrame(int window_size, int sample_rate)
- : PluginClientFrame(window_size / 2, window_size / 2, sample_rate)
+ : PluginClientFrame()
 {
 	this->window_size = window_size;
-	data = new double[window_size / 2];
+	data_size = window_size / 2;
+	data = new double[data_size];
 	freq_max = 0;
 	time_max = 0;
 }
@@ -711,14 +669,6 @@ ParametricGUIFrame::~ParametricGUIFrame()
 {
 	delete [] data;
 }
-
-
-
-
-
-
-
-
 
 
 ParametricFFT::ParametricFFT(ParametricEQ *plugin)
@@ -1029,16 +979,6 @@ int ParametricEQ::process_buffer(int64_t size,
 	return 0;
 }
 
-
-
-
-
-
-
-
-
-
-
 void ParametricEQ::reset()
 {
 	need_reconfigure = 1;
@@ -1048,28 +988,16 @@ void ParametricEQ::reset()
 
 void ParametricEQ::update_gui()
 {
-	if(thread)
-	{
-		if(load_configuration())
-		{
-			((ParametricWindow*)thread->window)->lock_window("ParametricEQ::update_gui");
-			calculate_envelope();
-			((ParametricWindow*)thread->window)->update_gui();
-			((ParametricWindow*)thread->window)->unlock_window();
-		}
-		else
-		{
-			int total_frames = get_gui_update_frames();
-//printf("ParametricEQ::update_gui %d %d\n", __LINE__, total_frames);
-			if(total_frames)
-			{
-				((ParametricWindow*)thread->window)->lock_window("ParametricEQ::update_gui");
-				((ParametricWindow*)thread->window)->update_canvas();
-				((ParametricWindow*)thread->window)->unlock_window();
-			}
-		}
+	if( !thread ) return;
+	ParametricWindow *window = (ParametricWindow*)thread->window;
+	window->lock_window("ParametricEQ::update_gui");
+	if( load_configuration() ) {
+		calculate_envelope();
+		window->update_gui();
 	}
+	else if(pending_gui_frames()) {
+		window->update_canvas();
+	}
+	window->unlock_window();
 }
-
-
 

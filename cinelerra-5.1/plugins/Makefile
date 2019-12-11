@@ -42,6 +42,7 @@ DIRS = $(OPENCV_OBJS) \
 	color3way \
 	colorbalance \
 	compressor \
+	compressormulti \
 	crikey \
 	crop \
 	crossfade \

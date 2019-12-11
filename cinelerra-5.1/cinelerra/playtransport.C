@@ -315,7 +315,7 @@ void PlayTransport::handle_transport(int command, int wait_tracking,
 	if( !edl ) return;
 	using_inout = use_inout;
 
-	if( !is_vwindow() )
+	if( use_mixers() )
 		mwindow->handle_mixers(edl, command, wait_tracking,
 				use_inout, toggle_audio, 0, speed);
 	engine->next_command->toggle_audio = toggle_audio;

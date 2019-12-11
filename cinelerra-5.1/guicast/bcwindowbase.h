@@ -576,6 +576,7 @@ private:
 	int allocate_color_table();
 	int init_gc();
 	int init_fonts();
+	void init_glyphs();
 	void init_xft();
 	void init_im();
 	void finit_im();

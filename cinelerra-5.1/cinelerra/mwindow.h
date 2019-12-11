@@ -72,6 +72,7 @@
 #include "playback3d.inc"
 #include "playbackengine.inc"
 #include "plugin.inc"
+#include "pluginclient.inc"
 #include "pluginfclient.inc"
 #include "pluginserver.inc"
 #include "pluginset.inc"
@@ -304,6 +305,10 @@ public:
 // Searches for matching plugin and renders data in it.
 	void render_plugin_gui(void *data, Plugin *plugin);
 	void render_plugin_gui(void *data, int size, Plugin *plugin);
+	void reset_plugin_gui_frames(Plugin *plugin);
+	void render_plugin_gui_frames(PluginClientFrames *frames, Plugin *plugin);
+	double get_tracking_position();
+	int get_tracking_direction();
 
 // Called from PluginVClient::process_buffer
 // Returns 1 if a GUI for the plugin is open so OpenGL routines can determine if

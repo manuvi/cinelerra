@@ -388,7 +388,8 @@ void FormatTools::update_extension()
 			char *ptr1 = ptr;
 // change "qt" to "mov" since ffmpeg does not know qt
 			extension_ptr = asset->format != FILE_FFMPEG ? extensions.get(0) :
-				!strcmp(asset->fformat, "qt") ? "mov" : asset->fformat ;
+				!strcmp(asset->fformat, "qt" ) ||
+				!strcmp(asset->fformat, "pro" ) ? "mov" : asset->fformat ;
 			while(*extension_ptr != 0 && *extension_ptr != '/')
 				*ptr1++ = *extension_ptr++;
 			*ptr1 = 0;

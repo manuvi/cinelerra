@@ -624,7 +624,7 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window, const char *title
 		}
 
 		if(!hidden) show_window();
-
+		init_glyphs();
 	}
 
 	draw_background(0, 0, this->w, this->h);
@@ -2425,6 +2425,30 @@ xft_init_lock.lock("BC_WindowBase::init_xft");
 	xftDefaultHasRender(display);
 xft_init_lock.unlock();
 #endif // HAVE_XFT
+}
+
+void BC_WindowBase::init_glyphs()
+{
+// draw all ascii char glyphs
+//  There are problems with some/my graphics boards/drivers
+//  which cause some glyphs to be munged if draws occur while
+//  the font is being loaded.  This code fills the font caches
+//  by drawing all the ascii glyphs before the system starts.
+//  Not a fix, but much better than nothing.
+	static int inited = 0;
+	if( inited ) return;
+	inited = 1;
+	int cur_font = current_font;
+// locale encodings, needed glyphs to be preloaded
+	const char *text = _( // ascii 0x20...0x7e
+		" !\"#$%&'()*+,-./0123456789:;<=>?"
+		"@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_"
+		"`abcdefghijklmnopqrstuvwxyz{|}~");
+	for( int font=SMALLFONT; font<=LARGEFONT; ++font ) {
+		set_font(font);
+		draw_text(5,5, text, 0);
+	}
+	set_font(cur_font);
 }
 
 void BC_WindowBase::init_im()

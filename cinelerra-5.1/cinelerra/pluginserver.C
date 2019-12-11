@@ -92,8 +92,8 @@ PluginServer::PluginServer(MWindow *mwindow, const char *path, int type)
 {
 	char fpath[BCTEXTLEN];
 	init();
-        this->plugin_type = type;
-        this->mwindow = mwindow;
+	this->plugin_type = type;
+	this->mwindow = mwindow;
 	if( type == PLUGIN_TYPE_FFMPEG ) {
 		ff_name = cstrdup(path);
 		sprintf(fpath, "ff_%s", path);
@@ -295,12 +295,12 @@ void PluginServer::set_title(const char *string)
 void PluginServer::generate_display_title(char *string)
 {
 	char ltitle[BCTEXTLEN];
-	if(BC_Resources::locale_utf8)
+	if( BC_Resources::locale_utf8 )
 		strcpy(ltitle, _(title));
 	else
 		BC_Resources::encode(BC_Resources::encoding, 0,
 				_(title),strlen(title)+1, ltitle,BCTEXTLEN);
-	if(plugin && plugin->track)
+	if( plugin && plugin->track )
 		sprintf(string, "%s: %s", plugin->track->title, ltitle);
 	else
 		strcpy(string, ltitle);
@@ -344,7 +344,7 @@ int PluginServer::open_plugin(int master,
 	EDL *edl,
 	Plugin *plugin)
 {
-	if(plugin_open) return 0;
+	if( plugin_open ) return 0;
 
 	this->preferences = preferences;
 	this->plugin = plugin;
@@ -403,8 +403,8 @@ int PluginServer::open_plugin(int master,
 // Run initialization functions
 	realtime = client->is_realtime();
 // Don't load defaults when probing the directory.
-	if(!master) {
-		if(realtime)
+	if( !master ) {
+		if( realtime )
 			client->load_defaults_xml();
 		else
 			client->load_defaults();
@@ -426,12 +426,11 @@ int PluginServer::open_plugin(int master,
 
 int PluginServer::close_plugin()
 {
-	if(!plugin_open) return 0;
+	if( !plugin_open ) return 0;
 
-	if(client)
-	{
+	if( client ) {
 // Defaults are saved in the thread.
-//		if(client->defaults) client->save_defaults();
+//		if( client->defaults ) client->save_defaults();
 		delete client;
 	}
 
@@ -444,11 +443,10 @@ int PluginServer::close_plugin()
 void PluginServer::client_side_close()
 {
 // Last command executed in client thread
-	if(plugin)
+	if( plugin )
 		mwindow->hide_plugin(plugin, 1);
 	else
-	if(prompt)
-	{
+	if( prompt ) {
 		prompt->lock_window();
 		prompt->set_done(1);
 		prompt->unlock_window();
@@ -457,13 +455,14 @@ void PluginServer::client_side_close()
 
 void PluginServer::render_stop()
 {
-	if(client)
+	if( client )
 		client->render_stop();
+	send_reset_gui_frames();
 }
 
 void PluginServer::write_table(FILE *fp, const char *path, int idx, int64_t mtime)
 {
-	if(!fp) return;
+	if( !fp ) return;
 	fprintf(fp, "%d \"%s\" \"%s\" %jd %d %d %d %d %d %d %d %d %d %d %d\n",
 		plugin_type, path, title, mtime, idx, audio, video, theme, realtime,
 		fileio, uses_gui, multichannel, synthesis, transition, lad_index);
@@ -492,7 +491,7 @@ int PluginServer::init_realtime(int realtime_sched,
 		int buffer_size)
 {
 
-	if(!plugin_open) return 0;
+	if( !plugin_open ) return 0;
 
 // set for realtime priority
 // initialize plugin
@@ -512,7 +511,7 @@ void PluginServer::process_transition(VFrame *input,
 		int64_t current_position,
 		int64_t total_len)
 {
-	if(!plugin_open) return;
+	if( !plugin_open ) return;
 	PluginVClient *vclient = (PluginVClient*)client;
 
 	vclient->source_position = current_position;
@@ -538,7 +537,7 @@ void PluginServer::process_transition(Samples *input,
 		int64_t fragment_size,
 		int64_t total_len)
 {
-	if(!plugin_open) return;
+	if( !plugin_open ) return;
 	PluginAClient *aclient = (PluginAClient*)client;
 
 	aclient->source_position = current_position;
@@ -556,50 +555,41 @@ void PluginServer::process_buffer(VFrame **frame,
 	int64_t total_len,
 	int direction)
 {
-	if(!plugin_open) return;
+	if( !plugin_open ) return;
 	PluginVClient *vclient = (PluginVClient*)client;
-
+	vclient->in_buffer_size = vclient->out_buffer_size = 1;
 	vclient->source_position = current_position;
 	vclient->total_len = total_len;
 	vclient->frame_rate = frame_rate;
 	vclient->input = new VFrame*[total_in_buffers];
 	vclient->output = new VFrame*[total_in_buffers];
-	for(int i = 0; i < total_in_buffers; i++)
-	{
+	for( int i = 0; i < total_in_buffers; i++ ) {
 		vclient->input[i] = frame[i];
 		vclient->output[i] = frame[i];
 	}
 
-	if(plugin)
-	{
+	if( plugin ) {
 		vclient->source_start = (int64_t)plugin->startproject *
-			frame_rate /
-			vclient->project_frame_rate;
+			frame_rate / vclient->project_frame_rate;
 	}
 	vclient->direction = direction;
 
-
 //PRINT_TRACE
 //printf("plugin=%p source_start=%ld\n", plugin, vclient->source_start);
-
-	vclient->begin_process_buffer();
-	if(multichannel)
-	{
+//	vclient->begin_process_buffer();
+	if( multichannel )
 		vclient->process_buffer(frame, current_position, frame_rate);
-	}
 	else
-	{
 		vclient->process_buffer(frame[0], current_position, frame_rate);
-	}
-	vclient->end_process_buffer();
+//	vclient->end_process_buffer();
 
-	for(int i = 0; i < total_in_buffers; i++)
+	for( int i = 0; i < total_in_buffers; i++ )
 		frame[i]->push_prev_effect(title);
 
 	delete [] vclient->input;
 	delete [] vclient->output;
 
-    vclient->age_temp();
+	vclient->age_temp();
 	use_opengl = 0;
 }
 
@@ -610,35 +600,61 @@ void PluginServer::process_buffer(Samples **buffer,
 	int64_t total_len,
 	int direction)
 {
-	if(!plugin_open) return;
+	if( !plugin_open ) return;
 	PluginAClient *aclient = (PluginAClient*)client;
-
 	aclient->source_position = current_position;
 	aclient->total_len = total_len;
 	aclient->sample_rate = sample_rate;
+	aclient->in_buffer_size = aclient->out_buffer_size = fragment_size;
+	aclient->output_buffers = buffer;
 
-	if(plugin)
+	if( plugin )
 		aclient->source_start = plugin->startproject *
 			sample_rate /
 			aclient->project_sample_rate;
 
 	aclient->direction = direction;
 	aclient->begin_process_buffer();
-	if(multichannel)
-	{
+	if( multichannel ) {
 		aclient->process_buffer(fragment_size,
-			buffer,
-			current_position,
-			sample_rate);
+			buffer, current_position, sample_rate);
 	}
-	else
-	{
+	else {
 		aclient->process_buffer(fragment_size,
-			buffer[0],
-			current_position,
-			sample_rate);
+			buffer[0], current_position, sample_rate);
 	}
 	aclient->end_process_buffer();
+}
+
+
+void PluginServer::send_reset_gui_frames()
+{
+	if( !attachmentpoint ) return;
+	attachmentpoint->reset_gui_frames(this);
+}
+
+void PluginServer::send_render_gui(void *data)
+{
+	if( !attachmentpoint ) return;
+	attachmentpoint->render_gui(data, this);
+}
+
+void PluginServer::send_render_gui(void *data, int size)
+{
+	if( !attachmentpoint ) return;
+	attachmentpoint->render_gui(data, size, this);
+}
+
+void PluginServer::render_gui(void *data)
+{
+	if( !client ) return;
+	client->plugin_render_gui(data);
+}
+
+void PluginServer::render_gui(void *data, int size)
+{
+	if( !client ) return;
+	client->plugin_render_gui(data, size);
 }
 
 
@@ -668,26 +684,26 @@ PluginServer *PluginGUIs::gui_server(int gui_id)
 }
 
 
-void PluginServer::send_render_gui(void *data)
+void PluginServer::reset_gui_frames()
 {
-//printf("PluginServer::send_render_gui 1 %p\n", attachmentpoint);
-	if(attachmentpoint) attachmentpoint->render_gui(data, this);
+	mwindow->reset_plugin_gui_frames(plugin);
 }
 
-void PluginServer::send_render_gui(void *data, int size)
+void PluginServer::reset_plugin_gui_frames()
 {
-//printf("PluginServer::send_render_gui 1 %p\n", attachmentpoint);
-	if(attachmentpoint) attachmentpoint->render_gui(data, size, this);
+	if( !client ) return;
+	client->plugin_reset_gui_frames();
 }
 
-void PluginServer::render_gui(void *data)
+void PluginServer::render_gui_frames(PluginClientFrames *frames)
 {
-	if(client) client->plugin_render_gui(data);
+	mwindow->render_plugin_gui_frames(frames, plugin);
 }
 
-void PluginServer::render_gui(void *data, int size)
+void PluginServer::render_plugin_gui_frames(PluginClientFrames *frames)
 {
-	if(client) client->plugin_render_gui(data, size);
+	if( !client ) return;
+	client->plugin_render_gui_frames(frames);
 }
 
 MainProgressBar* PluginServer::start_progress(char *string, int64_t length)
@@ -700,30 +716,22 @@ MainProgressBar* PluginServer::start_progress(char *string, int64_t length)
 
 int64_t PluginServer::get_written_samples()
 {
-	if(!plugin_open) return 0;
+	if( !plugin_open ) return 0;
 	return written_samples;
 }
 
 int64_t PluginServer::get_written_frames()
 {
-	if(!plugin_open) return 0;
+	if( !plugin_open ) return 0;
 	return written_frames;
 }
-
-
-
-
-
-
-
-
 
 
 // ======================= Non-realtime plugin
 
 int PluginServer::get_parameters(int64_t start, int64_t end, int channels)
 {
-	if(!plugin_open) return 0;
+	if( !plugin_open ) return 0;
 
 	client->start = start;
 	client->end = end;
@@ -739,7 +747,7 @@ int PluginServer::get_parameters(int64_t start, int64_t end, int channels)
 
 int PluginServer::set_interactive()
 {
-	if(!plugin_open) return 0;
+	if( !plugin_open ) return 0;
 	client->set_interactive();
 	return 0;
 }
@@ -776,13 +784,13 @@ int PluginServer::set_realtime_sched()
 
 int PluginServer::process_loop(VFrame **buffers, int64_t &write_length)
 {
-	if(!plugin_open) return 1;
+	if( !plugin_open ) return 1;
 	return client->plugin_process_loop(buffers, write_length);
 }
 
 int PluginServer::process_loop(Samples **buffers, int64_t &write_length)
 {
-	if(!plugin_open) return 1;
+	if( !plugin_open ) return 1;
 	return client->plugin_process_loop(buffers, write_length);
 }
 
@@ -792,14 +800,14 @@ int PluginServer::start_loop(int64_t start,
 	int64_t buffer_size,
 	int total_buffers)
 {
-	if(!plugin_open) return 0;
+	if( !plugin_open ) return 0;
 	client->plugin_start_loop(start, end, buffer_size, total_buffers);
 	return 0;
 }
 
 int PluginServer::stop_loop()
 {
-	if(!plugin_open) return 0;
+	if( !plugin_open ) return 0;
 	return client->plugin_stop_loop();
 }
 
@@ -808,66 +816,42 @@ int PluginServer::read_frame(VFrame *buffer,
 	int64_t start_position)
 {
 	((VModule*)modules->values[channel])->render(buffer,
-		start_position,
-		PLAY_FORWARD,
-		mwindow->edl->session->frame_rate,
-		0,
-		0);
+		start_position, PLAY_FORWARD,
+		mwindow->edl->session->frame_rate, 0, 0);
 	return 0;
 }
 
 int PluginServer::read_samples(Samples *buffer,
-	int channel,
-	int64_t sample_rate,
-	int64_t start_position,
-	int64_t len)
+	int channel, int64_t sample_rate, int64_t start_position, int64_t len)
 {
 // len is now in buffer
-	if(!multichannel) channel = 0;
+	if( !multichannel ) channel = 0;
 
-	if(nodes->total > channel)
+	if( nodes->total > channel )
 		return ((VirtualANode*)nodes->values[channel])->read_data(buffer,
-			len,
-			start_position,
-			sample_rate);
-	else
-	if(modules->total > channel)
+			len, start_position, sample_rate);
+	if( modules->total > channel )
 		return ((AModule*)modules->values[channel])->render(buffer,
-			len,
-			start_position,
-			PLAY_FORWARD,
-			sample_rate,
-			0);
-	else
-	{
-		printf("PluginServer::read_samples no object available for channel=%d\n",
-			channel);
-	}
-
+			len, start_position, PLAY_FORWARD, sample_rate, 0);
+	printf("PluginServer::read_samples no object available for channel=%d\n",
+		channel);
 	return -1;
 }
 
 
 int PluginServer::read_samples(Samples *buffer,
-	int channel,
-	int64_t start_position,
-	int64_t size)
+		int channel, int64_t start_position, int64_t size)
 {
 // total_samples is now set in buffer
 	((AModule*)modules->values[channel])->render(buffer,
-		size,
-		start_position,
-		PLAY_FORWARD,
-		mwindow->edl->session->sample_rate,
-		0);
+		size, start_position, PLAY_FORWARD,
+		mwindow->edl->session->sample_rate, 0);
 	return 0;
 }
 
 int PluginServer::read_frame(VFrame *buffer,
-	int channel,
-	int64_t start_position,
-	double frame_rate,
-	int use_opengl)
+		int channel, int64_t start_position, double frame_rate,
+		int use_opengl)
 {
 // Data source depends on whether we're part of a virtual console or a
 // plugin array.
@@ -879,36 +863,26 @@ int PluginServer::read_frame(VFrame *buffer,
 //PRINT_TRACE
 
 	int result = -1;
-	if(!multichannel) channel = 0;
+	if( !multichannel ) channel = 0;
 
 // Push our name on the next effect stack
 	buffer->push_next_effect(title);
 //printf("PluginServer::read_frame %p\n", buffer);
 //buffer->dump_stacks();
 
-	if(nodes->total > channel)
-	{
+	if( nodes->total > channel ) {
 //printf("PluginServer::read_frame %d\n", __LINE__);
 		result = ((VirtualVNode*)nodes->values[channel])->read_data(buffer,
-			start_position,
-			frame_rate,
-			use_opengl);
+			start_position, frame_rate, use_opengl);
 	}
 	else
-	if(modules->total > channel)
-	{
+	if( modules->total > channel ) {
 //printf("PluginServer::read_frame %d\n", __LINE__);
 		result = ((VModule*)modules->values[channel])->render(buffer,
-			start_position,
-//			PLAY_FORWARD,
-			client->direction,
-			frame_rate,
-			0,
-			0,
-			use_opengl);
+			start_position, //			PLAY_FORWARD,
+			client->direction, frame_rate, 0, 0, use_opengl);
 	}
-	else
-	{
+	else {
 		printf("PluginServer::read_frame no object available for channel=%d\n",
 			channel);
 	}
@@ -920,28 +894,10 @@ int PluginServer::read_frame(VFrame *buffer,
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // Called by client
 int PluginServer::get_gui_status()
 {
-	if(plugin)
+	if( plugin )
 		return plugin->show ? GUI_ON : GUI_OFF;
 	else
 		return GUI_OFF;
@@ -949,27 +905,25 @@ int PluginServer::get_gui_status()
 
 void PluginServer::raise_window()
 {
-	if(!plugin_open) return;
+	if( !plugin_open ) return;
 	client->raise_window();
 }
 
 void PluginServer::show_gui()
 {
-	if(!plugin_open) return;
+	if( !plugin_open ) return;
 	if( plugin ) {
 		plugin->gui_id = gui_id;
 		client->total_len = plugin->length;
 		client->source_start = plugin->startproject;
 	}
-	if(video)
-	{
+	if( video ) {
 		client->source_position = Units::to_int64(
 			mwindow->edl->local_session->get_selectionstart(1) *
 				mwindow->edl->session->frame_rate);
 	}
 	else
-	if(audio)
-	{
+	if( audio ) {
 		client->source_position = Units::to_int64(
 			mwindow->edl->local_session->get_selectionstart(1) *
 				mwindow->edl->session->sample_rate);
@@ -981,28 +935,25 @@ void PluginServer::show_gui()
 
 void PluginServer::hide_gui()
 {
-	if(!plugin_open) return;
+	if( !plugin_open ) return;
 	if( plugin ) plugin->gui_id = -1;
-	if(client->defaults) client->save_defaults();
+	if( client->defaults ) client->save_defaults();
 	client->hide_gui();
 }
 
 void PluginServer::update_gui()
 {
-	if(!plugin_open || !plugin) return;
+	if( !plugin_open || !plugin ) return;
 
 	client->total_len = plugin->length;
 	client->source_start = plugin->startproject;
 
-	if(video)
-	{
+	if( video ) {
 		client->source_position = Units::to_int64(
 			mwindow->edl->local_session->get_selectionstart(1) *
 				mwindow->edl->session->frame_rate);
 	}
-	else
-	if(audio)
-	{
+	else if( audio ) {
 		client->source_position = Units::to_int64(
 			mwindow->edl->local_session->get_selectionstart(1) *
 				mwindow->edl->session->sample_rate);
@@ -1013,7 +964,7 @@ void PluginServer::update_gui()
 
 void PluginServer::update_title()
 {
-	if(!plugin_open) return;
+	if( !plugin_open ) return;
 
 	client->update_display_title();
 }
@@ -1021,7 +972,7 @@ void PluginServer::update_title()
 
 int PluginServer::set_string(char *string)
 {
-	if(!plugin_open) return 0;
+	if( !plugin_open ) return 0;
 
 	client->set_string_client(string);
 	return 0;
@@ -1029,7 +980,7 @@ int PluginServer::set_string(char *string)
 
 int PluginServer::gui_open()
 {
-	if(attachmentpoint) return attachmentpoint->gui_open();
+	if( attachmentpoint ) return attachmentpoint->gui_open();
 	return 0;
 }
 
@@ -1047,7 +998,7 @@ int PluginServer::get_use_opengl()
 
 void PluginServer::run_opengl(PluginClient *plugin_client)
 {
-	if(vdevice)
+	if( vdevice )
 		((VDeviceX11*)vdevice->get_output_base())->run_plugin(plugin_client);
 }
 
@@ -1058,8 +1009,8 @@ void PluginServer::get_defaults_path(char *path)
 // Get plugin name from path
 	char *ptr1 = strrchr(get_path(), '/');
 	char *ptr2 = strrchr(get_path(), '.');
-	if(!ptr1) ptr1 = get_path();
-	if(!ptr2) ptr2 = get_path() + strlen(get_path());
+	if( !ptr1 ) ptr1 = get_path();
+	if( !ptr2 ) ptr2 = get_path() + strlen(get_path());
 	char string2[BCTEXTLEN], *ptr3 = string2;
 	while( ptr1 < ptr2 ) *ptr3++ = *ptr1++;
 	*ptr3 = 0;
@@ -1068,72 +1019,51 @@ void PluginServer::get_defaults_path(char *path)
 
 void PluginServer::save_defaults()
 {
-	if(client) client->save_defaults();
+	if( client ) client->save_defaults();
 }
 
 int PluginServer::get_samplerate()
 {
-	if(!plugin_open) return 0;
-	if(audio)
-	{
+	if( !plugin_open ) return 0;
+	if( audio )
 		return client->get_samplerate();
-	}
-	else
-	if(mwindow)
+	if( mwindow )
 		return mwindow->edl->session->sample_rate;
-	else
-	{
-		printf("PluginServer::get_samplerate audio and mwindow == NULL\n");
-		return 1;
-	}
+	printf("PluginServer::get_samplerate audio and mwindow == NULL\n");
+	return 1;
 }
 
 
 double PluginServer::get_framerate()
 {
-	if(!plugin_open) return 0;
-	if(video)
-	{
+	if( !plugin_open ) return 0;
+	if( video )
 		return client->get_framerate();
-	}
-	else
-	if(mwindow)
+	if( mwindow )
 		return mwindow->edl->session->frame_rate;
-	else
-	{
-		printf("PluginServer::get_framerate video and mwindow == NULL\n");
-		return 1;
-	}
+	printf("PluginServer::get_framerate video and mwindow == NULL\n");
+	return 1;
 }
 
 int PluginServer::get_project_samplerate()
 {
-	if(mwindow)
+	if( mwindow )
 		return mwindow->edl->session->sample_rate;
-	else
-	if(edl)
+	if( edl )
 		return edl->session->sample_rate;
-	else
-	{
-		printf("PluginServer::get_project_samplerate mwindow and edl are NULL.\n");
-		return 1;
-	}
+	printf("PluginServer::get_project_samplerate mwindow and edl are NULL.\n");
+	return 1;
 }
 
 double PluginServer::get_project_framerate()
 {
-	if(mwindow)
+	if( mwindow )
 		return mwindow->edl->session->frame_rate;
-	else
-	if(edl)
+	if( edl )
 		return edl->session->frame_rate;
-	else
-	{
-		printf("PluginServer::get_project_framerate mwindow and edl are NULL.\n");
-		return 1;
-	}
+	printf("PluginServer::get_project_framerate mwindow and edl are NULL.\n");
+	return 1;
 }
-
 
 
 int PluginServer::detach_buffers()
@@ -1157,10 +1087,8 @@ int PluginServer::detach_buffers()
 }
 
 int PluginServer::arm_buffer(int buffer_number,
-		int64_t offset_in,
-		int64_t offset_out,
-		int double_buffer_in,
-		int double_buffer_out)
+		int64_t offset_in, int64_t offset_out,
+		int double_buffer_in, int double_buffer_out)
 {
 	offset_in_render.values[buffer_number] = offset_in;
 	offset_out_render.values[buffer_number] = offset_out;
@@ -1183,14 +1111,14 @@ int PluginServer::set_automation(FloatAutos *autos, FloatAuto **start_auto, Floa
 
 void PluginServer::save_data(KeyFrame *keyframe)
 {
-	if(!plugin_open) return;
+	if( !plugin_open ) return;
 	client->save_data(keyframe);
 }
 
 KeyFrame* PluginServer::get_prev_keyframe(int64_t position)
 {
 	KeyFrame *result = 0;
-	if(plugin)
+	if( plugin )
 		result = plugin->get_prev_keyframe(position, client->direction);
 	else
 		result = keyframe;
@@ -1199,41 +1127,30 @@ KeyFrame* PluginServer::get_prev_keyframe(int64_t position)
 
 KeyFrame* PluginServer::get_next_keyframe(int64_t position)
 {
-	KeyFrame *result = 0;
-	if(plugin)
-		result = plugin->get_next_keyframe(position, client->direction);
-	else
-		result = keyframe;
+	KeyFrame *result = !plugin ? 0 :
+		plugin->get_next_keyframe(position, client->direction);
 	return result;
 }
 
 // Called for
 KeyFrame* PluginServer::get_keyframe()
 {
-	if(plugin)
+	if( plugin )
 // Realtime plugin case
 		return plugin->get_keyframe();
-	else
 // Rendered plugin case
-		return keyframe;
+	return keyframe;
 }
 
 
 void PluginServer::apply_keyframe(KeyFrame *src)
 {
-	if(!plugin)
-	{
+	if( !plugin )
 		keyframe->copy_data(src);
-	}
 	else
-	{
 // Span keyframes
 		plugin->keyframes->update_parameter(src);
-	}
 }
-
-
-
 
 
 void PluginServer::get_camera(float *x, float *y, float *z,
@@ -1256,17 +1173,14 @@ int PluginServer::get_interpolation_type()
 
 Theme* PluginServer::new_theme()
 {
-	if(theme)
-	{
+	if( theme )
 		return client->new_theme();
-	}
-	else
-		return 0;
+	return 0;
 }
 
 Theme* PluginServer::get_theme()
 {
-	if(mwindow) return mwindow->theme;
+	if( mwindow ) return mwindow->theme;
 	printf("PluginServer::get_theme mwindow not set\n");
 	return 0;
 }
@@ -1321,11 +1235,10 @@ VFrame *PluginServer::get_picon()
 // Called when plugin interface is tweeked
 void PluginServer::sync_parameters()
 {
-	if(video) mwindow->restart_brender();
+	if( video ) mwindow->restart_brender();
 	mwindow->sync_parameters();
 	mwindow->update_keyframe_guis();
-	if(mwindow->edl->session->auto_conf->plugins)
-	{
+	if( mwindow->edl->session->auto_conf->plugins ) {
 		mwindow->gui->lock_window("PluginServer::sync_parameters");
 		mwindow->gui->draw_overlays(1);
 		mwindow->gui->unlock_window();

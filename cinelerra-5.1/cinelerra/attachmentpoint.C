@@ -211,12 +211,31 @@ int AttachmentPoint::singlechannel()
 	return 0;
 }
 
+void AttachmentPoint::reset_gui_frames(PluginServer *server)
+{
+	if( server != plugin_servers.get(0) ) return;
+	if( renderengine && renderengine->mwindow )
+		renderengine->mwindow->reset_plugin_gui_frames(plugin);
+}
 
-void AttachmentPoint::render_gui(void *data, PluginServer *server)
+void AttachmentPoint::render_gui_frames(PluginClientFrames *frames, PluginServer *server)
 {
 //printf("AttachmentPoint::render_gui 1 %p %p\n", server, plugin_servers.get(0));
 	void *This = this;
 	if(!This) printf("AttachmentPoint::render_gui 1 NULL\n");
+
+// Discard if not 1st plugin server, so single channel plugins don't get double GUI updates
+	if(server != plugin_servers.get(0)) return;
+
+	if(renderengine && renderengine->mwindow)
+		renderengine->mwindow->render_plugin_gui_frames(frames, plugin);
+}
+
+
+void AttachmentPoint::render_gui(void *data, PluginServer *server)
+{
+	void *This = this;
+	if(!This) printf("AttachmentPoint::render_gui 2 NULL\n");
 
 // Discard if not 1st plugin server, so single channel plugins don't get double GUI updates
 	if(server != plugin_servers.get(0)) return;
@@ -228,7 +247,7 @@ void AttachmentPoint::render_gui(void *data, PluginServer *server)
 void AttachmentPoint::render_gui(void *data, int size, PluginServer *server)
 {
 	void *This = this;
-	if(!This) printf("AttachmentPoint::render_gui 2 NULL\n");
+	if(!This) printf("AttachmentPoint::render_gui 3 NULL\n");
 
 // Discard if not 1st plugin server, so single channel plugins don't get double GUI updates
 	if(server != plugin_servers.get(0)) return;
@@ -236,6 +255,7 @@ void AttachmentPoint::render_gui(void *data, int size, PluginServer *server)
 	if(renderengine && renderengine->mwindow)
 		renderengine->mwindow->render_plugin_gui(data, size, plugin);
 }
+
 
 int AttachmentPoint::gui_open()
 {

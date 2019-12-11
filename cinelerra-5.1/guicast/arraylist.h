@@ -46,6 +46,17 @@ public:
 		while( ++n<total ) values[n-1]=values[n];
 		remove();
 	}
+	void remove_block(int i, int n) {
+		if( i >= total ) return;
+		for( n+=i; n<total; ) values[i++] = values[n++];
+		total = i;
+	}
+	void remove_object_block(int i, int n) {
+		if( i >= total ) return;
+		for( n+=i; n<total; ) { del_value(i); values[i++] = values[n++]; }
+		for( n=i; n<total; ++n ) del_value(n);
+		total = i;
+	}
 	void remove(TYPE value) {
 		int out = 0;
 		for( int in=0; in<total; ++in )

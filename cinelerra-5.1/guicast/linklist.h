@@ -28,6 +28,7 @@ public:
 	void remove_pointer(ListItem<TYPE> *item);
 	TYPE *append(TYPE *new_item);
 	TYPE *append() { return append(new TYPE()); }
+	void destroy() { while(last) delete last; }
 	TYPE *insert_before(TYPE *here, TYPE *item);
 	TYPE *insert_before(TYPE *here) { return insert_before(here, new TYPE()); }
 	TYPE *insert_after(TYPE *here, TYPE *item);
@@ -45,8 +46,9 @@ public:
 	void swap(TYPE *item1, TYPE *item2);
 	void sort(TYPE *ap=0, TYPE *bp=0) { return sort(cmpr,ap,bp); }
 	void sort(int (*cmp)(TYPE *a, TYPE *b), TYPE *ap=0, TYPE *bp=0);
+	void concat(List<TYPE> &b);
 	List() { first = last = 0; }
-	virtual ~List() { while(last) delete last; }
+	virtual ~List() { destroy(); }
 };
 
 // convenience macros
@@ -130,6 +132,16 @@ void List<TYPE>::sort(int (*cmpr)(TYPE *a, TYPE *b), TYPE *ll, TYPE *rr)
 		sort(cmpr, ll, m);
 		ll = m;
 	}
+}
+
+template<class TYPE>
+void List<TYPE>::concat(List<TYPE> &b)
+{
+	if( !b.first ) return;
+	*(last ? &last->next : &first) = b.first;
+	b.first->previous = last;  last = b.last;
+	TYPE *bp = b.first;  b.first = b.last = 0;
+	while( bp ) { bp->list = this;  bp = bp->next; }
 }
 
 #endif

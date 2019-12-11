@@ -6,5 +6,4 @@ PLUGIN = compressor
 
 include ../../plugin_config
 
-
 $(OBJDIR)/compressor.o: compressor.C

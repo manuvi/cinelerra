@@ -263,9 +263,8 @@ class CWindowTransport : public PlayTransport
 {
 public:
 	CWindowTransport(MWindow *mwindow,
-		CWindowGUI *gui,
-		int x,
-		int y);
+		CWindowGUI *gui, int x, int y);
+	bool use_mixers() { return true; }
 	EDL* get_edl();
 	void goto_start();
 	void goto_end();

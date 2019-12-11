@@ -77,6 +77,13 @@ Theme::Theme()
 	BC_WindowBase::get_resources()->button_highlighted = 0xffe000;
 	BC_WindowBase::get_resources()->recursive_resizing = 0;
 	audio_color = BLACK;
+	zero_crossing_color = 0xc03545;
+	graph_active_color = GRAPH_ACTIVE_COLOR;
+	graph_inactive_color = GRAPH_INACTIVE_COLOR;
+	graph_grid_color = GRAPH_GRID_COLOR;
+	graph_bg_color = GRAPH_BG_COLOR;
+	graph_border1_color = GRAPH_BORDER1_COLOR;
+	graph_border2_color = GRAPH_BORDER2_COLOR;
 	fade_h = yS(22);
 	inout_highlight_color = GREEN;
 	meter_h = yS(17);

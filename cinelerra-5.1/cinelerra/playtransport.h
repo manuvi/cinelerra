@@ -69,7 +69,7 @@ public:
 // Get the EDL to play back with default to mwindow->edl
 	virtual EDL* get_edl();
 	void change_position(double position);
-	virtual int is_vwindow() { return 0; }
+	virtual bool use_mixers() { return false; }
 
 // playback parameters
 	int reverse;

@@ -3457,11 +3457,12 @@ int MWindow::plugin_gui_open(Plugin *plugin)
 	return result;
 }
 
+
 void MWindow::render_plugin_gui(void *data, Plugin *plugin)
 {
 	int gui_id = plugin->gui_id;
 	if( gui_id < 0 ) return;
-	plugin_gui_lock->lock("MWindow::render_plugin_gui");
+	plugin_gui_lock->lock("MWindow::render_plugin_gui 0");
 	PluginServer *plugin_server = plugin_guis->gui_server(gui_id);
 	if( plugin_server )
 		plugin_server->render_gui(data);
@@ -3472,13 +3473,44 @@ void MWindow::render_plugin_gui(void *data, int size, Plugin *plugin)
 {
 	int gui_id = plugin->gui_id;
 	if( gui_id < 0 ) return;
-	plugin_gui_lock->lock("MWindow::render_plugin_gui");
+	plugin_gui_lock->lock("MWindow::render_plugin_gui 1");
 	PluginServer *plugin_server = plugin_guis->gui_server(gui_id);
 	if( plugin_server )
 		plugin_server->render_gui(data, size);
 	plugin_gui_lock->unlock();
 }
 
+void MWindow::reset_plugin_gui_frames(Plugin *plugin)
+{
+	int gui_id = plugin->gui_id;
+	if( gui_id < 0 ) return;
+	plugin_gui_lock->lock("MWindow::reset_plugin_gui_frames");
+	PluginServer *plugin_server = plugin_guis->gui_server(gui_id);
+	if( plugin_server )
+		plugin_server->reset_plugin_gui_frames();
+	plugin_gui_lock->unlock();
+}
+
+void MWindow::render_plugin_gui_frames(PluginClientFrames *frames, Plugin *plugin)
+{
+	int gui_id = plugin->gui_id;
+	if( gui_id < 0 ) return;
+	plugin_gui_lock->lock("MWindow::render_plugin_gui_frames");
+	PluginServer *plugin_server = plugin_guis->gui_server(gui_id);
+	if( plugin_server )
+		plugin_server->render_plugin_gui_frames(frames);
+	plugin_gui_lock->unlock();
+}
+
+double MWindow::get_tracking_position()
+{
+	return edl->local_session->get_selectionstart(1);
+}
+
+int MWindow::get_tracking_direction()
+{
+	return cwindow->playback_engine->get_direction();
+}
 
 void MWindow::update_plugin_states()
 {

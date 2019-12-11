@@ -96,6 +96,7 @@ OBJS := $(OVERLAYS) \
 	$(OBJDIR)/clippopup.o \
 	$(OBJDIR)/colorpicker.o \
 	$(OBJDIR)/commonrender.o \
+	$(OBJDIR)/compressortools.o \
 	$(OBJDIR)/confirmquit.o \
 	$(OBJDIR)/confirmsave.o \
 	$(OBJDIR)/convert.o \
@@ -126,6 +127,7 @@ OBJS := $(OVERLAYS) \
 	$(OBJDIR)/edl.o \
 	$(OBJDIR)/edlsession.o \
 	$(OBJDIR)/effectlist.o \
+	$(OBJDIR)/eqcanvas.o \
 	$(OBJDIR)/exportedl.o \
 	$(OBJDIR)/fadeengine.o \
 	$(OBJDIR)/ffmpeg.o \

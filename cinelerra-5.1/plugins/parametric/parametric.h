@@ -232,6 +232,7 @@ public:
 	ParametricGUIFrame(int window_size, int sample_rate);
 	virtual ~ParametricGUIFrame();
 	double *data;
+	int data_size;
 // Maximum of window in frequency domain
 	double freq_max;
 // Maximum of window in time domain

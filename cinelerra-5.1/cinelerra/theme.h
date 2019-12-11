@@ -25,6 +25,7 @@
 #include "awindowgui.inc"
 #include "batchrender.inc"
 #include "bctheme.h"
+#include "compressortools.inc"
 #include "cwindowgui.inc"
 #include "guicast.h"
 #include "keyframegui.inc"
@@ -165,6 +166,16 @@ public:
 	int afolders_x, afolders_y, afolders_w, afolders_h;
 	int alist_x, alist_y, alist_w, alist_h;
 	int audio_color;
+// audio zero crossing
+	int zero_crossing_color;
+// compressor graph line
+	int graph_active_color;
+	int graph_inactive_color;
+// compressor graph background
+	int graph_grid_color;
+	int graph_bg_color;
+	int graph_border1_color;
+	int graph_border2_color;
 	int assetedit_color;
 	int browse_pad;
 	int cauto_x, cauto_y, cauto_w, cauto_h;

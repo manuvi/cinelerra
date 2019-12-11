@@ -23,6 +23,8 @@
 #define PLUGINCLIENT_INC
 
 class PluginClientAuto;
+class PluginClientFrames;
+class PluginClientFrame;
 class PluginClientWindow;
 class PluginFPot;
 class PluginIPot;
@@ -30,7 +32,6 @@ class PluginQPot;
 class PluginText;
 class PluginParam;
 class PluginClientThread;
-class PluginClientFrame;
 class PluginClient;
 
 #endif

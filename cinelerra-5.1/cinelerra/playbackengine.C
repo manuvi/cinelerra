@@ -452,6 +452,11 @@ void PlaybackEngine::stop_playback(int wait_tracking)
 	renderengine_lock->unlock();
 }
 
+int PlaybackEngine::get_direction()
+{
+	int curr_command = is_playing_back ? this->command->command : STOP;
+	return TransportCommand::get_direction(curr_command);
+}
 
 void PlaybackEngine::send_command(int command, EDL *edl, int wait_tracking, int use_inout)
 {

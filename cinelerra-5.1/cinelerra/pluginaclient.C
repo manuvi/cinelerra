@@ -19,10 +19,13 @@
  *
  */
 
+#include "aattachmentpoint.h"
+#include "audiodevice.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "pluginaclient.h"
 #include "pluginserver.h"
+#include "renderengine.h"
 #include "samples.h"
 
 #include <string.h>
@@ -32,15 +35,11 @@ PluginAClient::PluginAClient(PluginServer *server)
  : PluginClient(server)
 {
 	sample_rate = 0;
-	if(server &&
-		server->edl &&
-		server->edl->session)
-	{
+	if(server && server->edl && server->edl->session) {
 		project_sample_rate = server->edl->session->sample_rate;
 		sample_rate = project_sample_rate;
 	}
-	else
-	{
+	else {
 		project_sample_rate = 1;
 		sample_rate = 1;
 	}
@@ -92,54 +91,47 @@ int PluginAClient::process_realtime(int64_t size,
 }
 
 int PluginAClient::process_realtime(int64_t size,
-	Samples *input_ptr,
-	Samples *output_ptr)
+	Samples *input_ptr, Samples *output_ptr)
 {
 	return 0;
 }
 
-int PluginAClient::process_buffer(int64_t size,
-	Samples **buffer,
-	int64_t start_position,
-	int sample_rate)
+int PluginAClient::process_buffer(int64_t size, Samples **buffer,
+		int64_t start_position, int sample_rate)
 {
 	for(int i = 0; i < PluginClient::total_in_buffers; i++)
-		read_samples(buffer[i],
-			i,
-			sample_rate,
-			source_position,
-			size);
+		read_samples(buffer[i], i, sample_rate, source_position, size);
 	process_realtime(size, buffer, buffer);
 	return 0;
 }
 
-int PluginAClient::process_buffer(int64_t size,
-	Samples *buffer,
-	int64_t start_position,
-	int sample_rate)
+int PluginAClient::process_buffer(int64_t size, Samples *buffer,
+		int64_t start_position, int sample_rate)
 {
-	read_samples(buffer,
-		0,
-		sample_rate,
-		source_position,
-		size);
+	read_samples(buffer, 0, sample_rate, source_position, size);
 	process_realtime(size, buffer, buffer);
 	return 0;
 }
 
 
+void PluginAClient::begin_process_buffer()
+{
+	frame_buffer.destroy();
+}
+
+void PluginAClient::end_process_buffer()
+{
+	if( !frame_buffer.first ) return;
+	server->render_gui_frames(&frame_buffer);
+}
 
 
-int PluginAClient::plugin_start_loop(int64_t start,
-	int64_t end,
-	int64_t buffer_size,
-	int total_buffers)
+int PluginAClient::plugin_start_loop(int64_t start, int64_t end,
+		int64_t buffer_size, int total_buffers)
 {
 	sample_rate = get_project_samplerate();
-	return PluginClient::plugin_start_loop(start,
-		end,
-		buffer_size,
-		total_buffers);
+	return PluginClient::plugin_start_loop(start, end,
+		buffer_size, total_buffers);
 }
 
 int PluginAClient::plugin_get_parameters()
@@ -152,66 +144,42 @@ int PluginAClient::plugin_get_parameters()
 int64_t PluginAClient::local_to_edl(int64_t position)
 {
 	if(position < 0) return position;
-	return (int64_t)(position *
-		get_project_samplerate() /
-		sample_rate);
+	return (int64_t)(position * get_project_samplerate() / sample_rate);
 	return 0;
 }
 
 int64_t PluginAClient::edl_to_local(int64_t position)
 {
 	if(position < 0) return position;
-	return (int64_t)(position *
-		sample_rate /
-		get_project_samplerate());
+	return (int64_t)(position * sample_rate / get_project_samplerate());
 }
-
 
 int PluginAClient::plugin_process_loop(Samples **buffers, int64_t &write_length)
 {
 	write_length = 0;
-
-	if(is_multichannel())
-		return process_loop(buffers, write_length);
-	else
-		return process_loop(buffers[0], write_length);
+	return is_multichannel() ?
+		process_loop(buffers, write_length) :
+		process_loop(buffers[0], write_length);
 }
 
 int PluginAClient::read_samples(Samples *buffer,
-	int channel,
-	int64_t start_position,
-	int64_t total_samples)
+		int channel, int64_t start_position, int64_t total_samples)
 {
-	return server->read_samples(buffer,
-		channel,
-		start_position,
-		total_samples);
+	return server->read_samples(buffer, channel, start_position, total_samples);
 }
 
 int PluginAClient::read_samples(Samples *buffer,
-	int64_t start_position,
-	int64_t total_samples)
+		int64_t start_position, int64_t total_samples)
 {
-	return server->read_samples(buffer,
-		0,
-		start_position,
-		total_samples);
+	return server->read_samples(buffer, 0, start_position, total_samples);
 }
 
 int PluginAClient::read_samples(Samples *buffer,
-		int channel,
-		int sample_rate,
-		int64_t start_position,
-		int64_t len)
+		int channel, int sample_rate, int64_t start_position, int64_t len)
 {
 	return server->read_samples(buffer,
-		channel,
-		sample_rate,
-		start_position,
-		len);
+		channel, sample_rate, start_position, len);
 }
-
-
 
 
 int PluginAClient::get_project_samplerate()
@@ -222,6 +190,11 @@ int PluginAClient::get_project_samplerate()
 int PluginAClient::get_samplerate()
 {
 	return sample_rate;
+}
+
+Samples* PluginAClient::get_output(int channel)
+{
+	return output_buffers[channel];
 }
 
 

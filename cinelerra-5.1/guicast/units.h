@@ -32,6 +32,8 @@
 #define INFINITYGAIN -96
 #define MAXGAIN 50
 #define TOTALFREQS 1024
+// slots per octave
+#define OCTAVE 105
 #define TOTAL_TIMEFORMATS 7
 
 // h:mm:ss.sss
@@ -125,7 +127,8 @@ public:
 // return index of frequency
 	int fromfreq();
 	static int fromfreq(int index);
-
+	static double tofreq_f(double index);
+	static double fromfreq_f(double freq);
 // increment frequency by one
 	Freq& operator++();
 	Freq& operator--();

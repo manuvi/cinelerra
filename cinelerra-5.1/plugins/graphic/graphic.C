@@ -320,29 +320,15 @@ void GraphicCanvas::process(int buttonpress, int motion, int draw)
 	if(draw)
 	{
 		clear_box(0, 0, get_w(), get_h());
-
-
 		int niquist = plugin->PluginAClient::project_sample_rate / 2;
-		int total_frames = plugin->get_gui_update_frames();
-		GraphicGUIFrame *frame = (GraphicGUIFrame*)plugin->get_gui_frame();
 
-		if(frame)
-		{
-			delete plugin->last_frame;
-			plugin->last_frame = frame;
-		}
-		else
-		{
-			frame = plugin->last_frame;
-		}
-
-// Draw most recent frame
-		if(frame)
-		{
+// delete frames up to current tracking position
+		double tracking_position = plugin->get_tracking_position();
+		GraphicGUIFrame *frame = (GraphicGUIFrame *)
+			plugin->get_gui_frame(tracking_position, 1);
+		if( frame ) {
+			int y1 = 0, y2 = 0;
 			set_color(MEGREY);
-			int y1 = 0;
-			int y2 = 0;
-
 
 			for(int i = 0; i < get_w(); i++)
 			{
@@ -366,23 +352,7 @@ void GraphicCanvas::process(int buttonpress, int motion, int draw)
 					y1 = y2;
 				}
 			}
-//printf( "\n");
-
-			total_frames--;
-		}
-
-
-
-
-
-
-// Delete remaining frames
-		while(total_frames > 0)
-		{
-			PluginClientFrame *frame = plugin->get_gui_frame();
-
-			if(frame) delete frame;
-			total_frames--;
+			delete frame;
 		}
 	}
 
@@ -1131,18 +1101,15 @@ void GraphicEQ::update_gui()
 {
 	if( !thread ) return;
 	GraphicGUI *window = (GraphicGUI *)thread->window;
+	window->lock_window("GraphicEQ::update_gui");
 //lock here for points, needed by window cursor_motion callback
 //  deleted in load_configuration by read_data
-	window->lock_window("GraphicEQ::update_gui");
 	if( load_configuration() &&
 	    window->canvas->state != GraphicCanvas::DRAG_POINT ) {
 		window->update_canvas();
 		window->update_textboxes();
 	}
-	else {
-		int total_frames = get_gui_update_frames();
-//printf("ParametricEQ::update_gui %d %d\n", __LINE__, total_frames);
-		if( total_frames )
+	else if( pending_gui_frames() ) {
 			window->update_canvas();
 	}
 	window->unlock_window();
@@ -1299,25 +1266,20 @@ void GraphicEQ::calculate_envelope(ArrayList<GraphicPoint*> *points,
 }
 
 
-
-
 GraphicGUIFrame::GraphicGUIFrame(int window_size, int sample_rate)
- : PluginClientFrame(window_size / 2, window_size / 2, sample_rate)
+ : PluginClientFrame()
 {
-	data = new double[window_size / 2];
+	this->window_size = window_size;
+	data_size = window_size / 2;
+	data = new double[data_size];
 	freq_max = 0;
 	time_max = 0;
-	this->window_size = window_size;
 }
 
 GraphicGUIFrame::~GraphicGUIFrame()
 {
 	delete [] data;
 }
-
-
-
-
 
 
 GraphicFFT::GraphicFFT(GraphicEQ *plugin)

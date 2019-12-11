@@ -41,12 +41,10 @@ public:
 // These should return 1 if error or 0 if success.
 // Multichannel buffer process for backwards compatibility
 	virtual int process_realtime(int64_t size,
-		Samples **input_ptr,
-		Samples **output_ptr);
+		Samples **input_ptr, Samples **output_ptr);
 // Single channel buffer process for backwards compatibility and transitions
 	virtual int process_realtime(int64_t size,
-		Samples *input_ptr,
-		Samples *output_ptr);
+		Samples *input_ptr, Samples *output_ptr);
 
 // Process buffer using pull method.  By default this loads the input into the
 // buffer and calls process_realtime with input and output pointing to buffer.
@@ -54,23 +52,20 @@ public:
 //     to start of EDL.  End of buffer if reverse.
 // sample_rate - scale of start_position.
 	virtual int process_buffer(int64_t size,
-		Samples **buffer,
-		int64_t start_position,
-		int sample_rate);
+		Samples **buffer, int64_t start_position, int sample_rate);
 	virtual int process_buffer(int64_t size,
-		Samples *buffer,
-		int64_t start_position,
-		int sample_rate);
+		Samples *buffer, int64_t start_position, int sample_rate);
 
+// process render_gui frames via add_gui_frame
+	virtual void begin_process_buffer();
+	virtual void end_process_buffer();
 
 	virtual int process_loop(Samples *buffer, int64_t &write_length) { return 1; };
 	virtual int process_loop(Samples **buffers, int64_t &write_length) { return 1; };
 	int plugin_process_loop(Samples **buffers, int64_t &write_length);
 
-	int plugin_start_loop(int64_t start,
-		int64_t end,
-		int64_t buffer_size,
-		int total_buffers);
+	int plugin_start_loop(int64_t start, int64_t end,
+		int64_t buffer_size, int total_buffers);
 
 	int plugin_get_parameters();
 
@@ -92,20 +87,21 @@ public:
 // sample_rate - scale of start_position.  Provided so the client can get data
 //     at a higher fidelity than provided by the EDL.
 	int read_samples(Samples *buffer,
-		int channel,
-		int sample_rate,
-		int64_t start_position,
-		int64_t len);
+		int channel, int sample_rate, int64_t start_position, int64_t len);
 
 // Get the sample rate of the EDL
 	int get_project_samplerate();
 // Get the requested sample rate
 	int get_samplerate();
+	Samples* get_output(int channel);
+	int64_t get_startproject();
+	int64_t get_endproject();
 
 	int64_t local_to_edl(int64_t position);
 	int64_t edl_to_local(int64_t position);
-	int64_t get_startproject();
-	int64_t get_endproject();
+
+// the buffers passed to process_buffer
+	Samples **output_buffers;
 
 // point to the start of the buffers
 	ArrayList<float**> input_ptr_master;

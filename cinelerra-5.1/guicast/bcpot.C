@@ -44,6 +44,8 @@ BC_Pot::BC_Pot(int x, int y, VFrame **data)
 
 BC_Pot::~BC_Pot()
 {
+	for(int i = 0; i < POT_STATES; i++)
+		if(images[i]) delete images[i];
 }
 
 int BC_Pot::calculate_h()

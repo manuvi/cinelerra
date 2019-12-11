@@ -270,9 +270,16 @@ public:
 // Called by rendering client to cause the GUI to display something with the data.
 	void send_render_gui(void *data);
 	void send_render_gui(void *data, int size);
+
 // Called by MWindow to cause GUI to display
 	void render_gui(void *data);
 	void render_gui(void *data, int size);
+// PluginClientFrames queuing to gui frame_buffer
+	void send_reset_gui_frames();
+	void reset_gui_frames();
+	void render_gui_frames(PluginClientFrames *frames);
+	void reset_plugin_gui_frames();
+	void render_plugin_gui_frames(PluginClientFrames *frames);
 
 // Send the boundary autos of the next fragment
 	int set_automation(FloatAutos *autos, FloatAuto **start_auto, FloatAuto **end_auto, int reverse);

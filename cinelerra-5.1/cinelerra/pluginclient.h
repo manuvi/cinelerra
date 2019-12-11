@@ -30,6 +30,7 @@ class PluginClient;
 
 
 #include "arraylist.h"
+#include "linklist.h"
 #include "bchash.inc"
 #include "condition.h"
 #include "edlsession.inc"
@@ -137,25 +138,42 @@ int plugin_class::load_configuration() \
 }
 
 
+class PluginClientFrame : public ListItem<PluginClientFrame>
+{
+public:
+	PluginClientFrame();
+	virtual ~PluginClientFrame();
+// offset in EDL seconds for synchronizing with GUI
+	double position;
+};
+
+class PluginClientFrames : public List<PluginClientFrame>
+{
+public:
+	PluginClientFrames();
+	~PluginClientFrames();
+
+	static int fwd_cmpr(PluginClientFrame *ap, PluginClientFrame *bp);
+	static int rev_cmpr(PluginClientFrame *ap, PluginClientFrame *bp);
+	void fwd_sort() { sort(fwd_cmpr); }
+	void rev_sort() { sort(rev_cmpr); }
+	void sort_position(int dir);
+	void reset();
+	void add_gui_frame(PluginClientFrame *frame);
+	void concatenate(PluginClientFrames *frames);
+	PluginClientFrame *get_gui_frame(double pos, int dir);
+
+	int count;
+};
 
 
 class PluginClientWindow : public BC_Window
 {
 public:
 	PluginClientWindow(PluginClient *client,
-		int w,
-		int h,
-		int min_w,
-		int min_h,
-		int allow_resize);
-	PluginClientWindow(const char *title,
-		int x,
-		int y,
-		int w,
-		int h,
-		int min_w,
-		int min_h,
-		int allow_resize);
+		int w, int h, int min_w, int min_h, int allow_resize);
+	PluginClientWindow(const char *title, int x, int y,
+		int w, int h, int min_w, int min_h, int allow_resize);
 	virtual ~PluginClientWindow();
 
 	virtual int translation_event();
@@ -171,84 +189,68 @@ public:
 class PluginFPot : public BC_FPot
 {
 public:
-    PluginFPot(PluginParam *param, int x, int y);
-    int handle_event();
-        PluginParam *param;
+	PluginFPot(PluginParam *param, int x, int y);
+	int handle_event();
+		PluginParam *param;
 };
 
 class PluginIPot : public BC_IPot
 {
 public:
-    PluginIPot(PluginParam *param, int x, int y);
-    int handle_event();
-        PluginParam *param;
+	PluginIPot(PluginParam *param, int x, int y);
+	int handle_event();
+		PluginParam *param;
 };
 
 class PluginQPot : public BC_QPot
 {
 public:
-    PluginQPot(PluginParam *param, int x, int y);
-    int handle_event();
-        PluginParam *param;
+	PluginQPot(PluginParam *param, int x, int y);
+	int handle_event();
+		PluginParam *param;
 };
 
 class PluginText : public BC_TextBox
 {
 public:
-    PluginText(PluginParam *param, int x, int y, int value);
-    PluginText(PluginParam *param, int x, int y, float value);
-    int handle_event();
-        PluginParam *param;
+	PluginText(PluginParam *param, int x, int y, int value);
+	PluginText(PluginParam *param, int x, int y, float value);
+	int handle_event();
+		PluginParam *param;
 };
 
 class PluginParam
 {
 public:
-    PluginParam(PluginClient *plugin,
-        PluginClientWindow *gui,
-        int x1,
-        int x2,
-        int x3,
-        int y,
-        int text_w,
-        int *output_i,
-        float *output_f, // floating point output
-        int *output_q, // frequency output
-        const char *title,
-        float min,
-        float max);
-    ~PluginParam();
+	PluginParam(PluginClient *plugin, PluginClientWindow *gui,
+		int x1, int x2, int x3, int y, int text_w,
+		int *output_i, float *output_f, // floating point output
+		int *output_q, // frequency output
+		const char *title, float min, float max);
+	~PluginParam();
 
-    void initialize();
-    void update(int skip_text, int skip_pot);
+	void initialize();
+	void update(int skip_text, int skip_pot);
 // set the number of fractional digits
-    void set_precision(int digits);
+	void set_precision(int digits);
 
-// 2 possible outputs
-    float *output_f;
-    PluginFPot *fpot;
+// possible outputs
+	float *output_f;
+	PluginFPot *fpot;
+	int *output_i;
+	PluginIPot *ipot;
+	int *output_q;
+	PluginQPot *qpot;
 
-    int *output_i;
-    PluginIPot *ipot;
-
-    int *output_q;
-    PluginQPot *qpot;
-
-    char *title;
-    PluginText *text;
-    PluginClientWindow *gui;
-    PluginClient *plugin;
-    int x1;
-    int x2;
-    int x3;
-    int y;
-    int text_w;
-    float min;
-    float max;
-    int precision;
+	char *title;
+	PluginText *text;
+	PluginClientWindow *gui;
+	PluginClient *plugin;
+	int x1, x2, x3;
+	int y, text_w;
+	float min, max;
+	int precision;
 };
-
-
 
 
 class PluginClientThread : public Thread
@@ -267,22 +269,6 @@ public:
 
 private:
 	Condition *init_complete;
-};
-
-
-
-// Client overrides for GUI update data
-class PluginClientFrame
-{
-public:
-// Period_d is 1 second
-	PluginClientFrame(int data_size, int period_n, int period_d);
-	virtual ~PluginClientFrame();
-	int data_size;
-	int period_n;
-	int period_d;
-// Draw immediately
-	int force;
 };
 
 
@@ -311,11 +297,6 @@ public:
 // Get theme being used by Cinelerra currently.  Used by all plugins.
 	Theme* get_theme();
 
-
-
-
-
-
 // Non realtime signal processors define these.
 // Give the samplerate of the output for a non realtime plugin.
 // For realtime plugins give the requested samplerate.
@@ -324,19 +305,16 @@ public:
 // For realtime plugins give the requested framerate.
 	virtual double get_framerate();
 	virtual int delete_nonrealtime_parameters();
-	virtual int get_parameters();     // get information from user before non realtime processing
+	virtual int get_parameters();	 // get information from user before non realtime processing
 	virtual int64_t get_in_buffers(int64_t recommended_size);  // return desired size for input buffers
-	virtual int64_t get_out_buffers(int64_t recommended_size);     // return desired size for output buffers
+	virtual int64_t get_out_buffers(int64_t recommended_size);	 // return desired size for output buffers
 	virtual int start_loop();
 	virtual int process_loop();
 	virtual int stop_loop();
 // Hash files are the defaults for rendered plugins
-	virtual int load_defaults();       // load default settings for the plugin
-	virtual int save_defaults();      // save the current settings as defaults
+	virtual int load_defaults();	   // load default settings for the plugin
+	virtual int save_defaults();	  // save the current settings as defaults
 	BC_Hash* get_defaults();
-
-
-
 
 // Realtime commands for signal processors.
 // These must be defined by the plugin itself.
@@ -360,22 +338,14 @@ public:
 	int is_defaults();
 
 	virtual void update_gui();
-	virtual void save_data(KeyFrame *keyframe) {};    // write the plugin settings to text in text format
-	virtual void read_data(KeyFrame *keyframe) {};    // read the plugin settings from the text
-	int send_hide_gui();                                    // should be sent when the GUI receives a close event from the user
+	virtual void save_data(KeyFrame *keyframe) {};	// write the plugin settings to text in text format
+	virtual void read_data(KeyFrame *keyframe) {};	// read the plugin settings from the text
+	int send_hide_gui();									// should be sent when the GUI receives a close event from the user
 // Destroys the window but not the thread pointer.
 	void hide_gui();
-
-	int get_configure_change();                             // get propogated configuration change from a send_configure_change
-
-// Called by plugin server to update GUI with rendered data.
-	void plugin_render_gui(void *data);
-	void plugin_render_gui(void *data, int size);
-
-	void begin_process_buffer();
-	void end_process_buffer();
-
 	void plugin_update_gui();
+	virtual void begin_process_buffer() {}
+	virtual void end_process_buffer() {}
 	virtual int plugin_process_loop(VFrame **buffers, int64_t &write_length) { return 1; };
 	virtual int plugin_process_loop(Samples **buffers, int64_t &write_length) { return 1; };
 // get parameters depending on video or audio
@@ -396,8 +366,8 @@ public:
 // data for every frame.
 // If the result is the default keyframe, the keyframe's position is 0.
 // position - relative to EDL rate or local rate to allow simple
-//     passing of get_source_position.
-//     If -1 the tracking position in the edl is used.
+//	 passing of get_source_position.
+//	 If -1 the tracking position in the edl is used.
 // is_local - if 1, the position is converted to the EDL rate.
 	KeyFrame* get_prev_keyframe(int64_t position, int is_local = 1);
 	KeyFrame* get_next_keyframe(int64_t position, int is_local = 1);
@@ -449,6 +419,10 @@ public:
 // Get the direction of the most recent process_buffer
 	int get_direction();
 
+// position and direction for plugin gui tracking draws
+	double get_tracking_position();
+	int get_tracking_direction();
+
 // Plugin must call this before performing OpenGL operations.
 // Returns 1 if the user supports opengl buffers.
 	int get_use_opengl();
@@ -467,8 +441,6 @@ public:
 	float get_green();
 	float get_blue();
 
-
-
 // Operations for file handlers
 	virtual int open_file() { return 0; };
 	virtual int get_audio_parameters() { return 0; };
@@ -477,20 +449,12 @@ public:
 	virtual int open_file(char *path, int wr, int rd) { return 1; };
 	virtual int close_file() { return 0; };
 
-
-
-
-
 // All plugins define these.
 	PluginClientThread* get_thread();
 
-
-
 // Non realtime operations for signal processors.
-	virtual int plugin_start_loop(int64_t start,
-		int64_t end,
-		int64_t buffer_size,
-		int total_buffers);
+	virtual int plugin_start_loop(int64_t start, int64_t end,
+		int64_t buffer_size, int total_buffers);
 	int plugin_stop_loop();
 	int plugin_process_loop();
 	MainProgressBar* start_progress(char *string, int64_t length);
@@ -508,7 +472,7 @@ public:
 	int write_frames(int64_t total_frames);  // returns 1 for failure / tells the server that all output channel buffers are ready to go
 	int write_samples(int64_t total_samples);  // returns 1 for failure / tells the server that all output channel buffers are ready to go
 	virtual int plugin_get_parameters();
-	const char* get_defaultdir();     // Directory defaults should be stored in
+	const char* get_defaultdir();	 // Directory defaults should be stored in
 	void set_interactive();
 
 // Realtime operations.
@@ -517,48 +481,37 @@ public:
 	virtual int plugin_command_derived(int plugin_command) { return 0; };
 	int plugin_get_range();
 	int plugin_init_realtime(int realtime_priority,
-		int total_in_buffers,
-		int buffer_size);
-
+		int total_in_buffers, int buffer_size);
 
 // GUI updating wrappers for realtime plugins
 // Append frame to queue for next send_frame_buffer
 	void add_gui_frame(PluginClientFrame *frame);
 
-
-
 	virtual void render_gui(void *data);
 	virtual void render_gui(void *data, int size);
-
-// Called by client to get the total number of frames to draw in update_gui
-	int get_gui_update_frames();
-// Get GUI frame from frame_buffer.  Client must delete it.
-	PluginClientFrame* get_gui_frame();
-
-// Called by client to cause GUI to be rendered with data.
 	void send_render_gui();
 	void send_render_gui(void *data);
 	void send_render_gui(void *data, int size);
+	void plugin_render_gui(void *data);
+	void plugin_render_gui(void *data, int size);
 
-
-
-
-
-
-
-
-// create pointers to buffers of the plugin's type before realtime rendering
-	virtual int delete_buffer_ptrs();
-
-
-
+	void reset_gui_frames();
+	void reset_plugin_gui_frames();
+	void plugin_reset_gui_frames();
+	void plugin_render_gui_frames(PluginClientFrames *frames);
+	int get_gui_frames();
+// Called by client to get the total number of frames to draw in update_gui
+	int pending_gui_frames();
+// pop frames until buffer passes position=pos(-1 or seconds) in direction=dir(-1,0,1)
+	PluginClientFrame *get_gui_frame(double pos, int dir);
+	PluginClientFrame* next_gui_frame();
 
 // communication convenience routines for the base class
 	int stop_gui_client();
 	int save_data_client();
 	int load_data_client();
-	int set_string_client(char *string);                // set the string identifying the plugin
-	int send_cancelled();        // non realtime plugin sends when cancelled
+	int set_string_client(char *string);				// set the string identifying the plugin
+	int send_cancelled();		// non realtime plugin sends when cancelled
 
 // ================================= Buffers ===============================
 
@@ -580,18 +533,18 @@ public:
 	ArrayList<PluginClientAuto> automation;
 
 // ================================== Messages ===========================
-	char gui_string[BCTEXTLEN];          // string identifying module and plugin
-	int master_gui_on;              // Status of the master gui plugin
-	int client_gui_on;              // Status of this client's gui
+	char gui_string[BCTEXTLEN];		  // string identifying module and plugin
+	int master_gui_on;			  // Status of the master gui plugin
+	int client_gui_on;			  // Status of this client's gui
 
-	int show_initially;             // set to show a realtime plugin initially
+	int show_initially;			 // set to show a realtime plugin initially
 // range in project for processing
 	int64_t start, end;
-	int interactive;                // for the progress bar plugin
+	int interactive;				// for the progress bar plugin
 	int success;
-	int total_out_buffers;          // total send buffers allocated by the server
-	int total_in_buffers;           // total receive buffers allocated by the server
-	int wr, rd;                     // File permissions for fileio plugins.
+	int total_out_buffers;		  // total send buffers allocated by the server
+	int total_in_buffers;		   // total receive buffers allocated by the server
+	int wr, rd;					 // File permissions for fileio plugins.
 
 // These give the largest fragment the plugin is expected to handle.
 // size of a send buffer to the server
@@ -624,7 +577,7 @@ public:
 	PluginClientThread *thread;
 
 // Frames for updating GUI
-	ArrayList<PluginClientFrame*> frame_buffer;
+	PluginClientFrames frame_buffer;
 // Time of last GUI update
 	Timer *update_timer;
 
@@ -634,7 +587,7 @@ private:
 // Temporaries set in new_window
 	int window_x, window_y;
 // File handlers:
-//	Asset *asset;     // Point to asset structure in shared memory
+//	Asset *asset;	 // Point to asset structure in shared memory
 };
 
 

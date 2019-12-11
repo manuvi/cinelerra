@@ -24,6 +24,7 @@
 
 #include "bctimer.inc"
 #include "edit.inc"
+#include "track.inc"
 #include "guicast.h"
 #include "mwindow.inc"
 #include "trackcanvas.inc"
@@ -46,6 +47,7 @@ public:
 		Edit *edit, int64_t edit_x, int64_t edit_w,
 		int64_t pixmap_x, int64_t pixmap_w, int64_t pixmap_h,
 		int mode, int indexes_only);
+	int calculate_center_pixel(Track *track);
 	void draw_audio_resource(TrackCanvas *canvas,
 		Edit *edit, int x, int w);
 	void draw_video_resource(TrackCanvas *canvas,

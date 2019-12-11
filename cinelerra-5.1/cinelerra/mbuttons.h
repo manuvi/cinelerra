@@ -72,6 +72,7 @@ class MainTransport : public PlayTransport
 {
 public:
 	MainTransport(MWindow *mwindow, MButtons *mbuttons, int x, int y);
+	bool use_mixers() { return true; }
 	void goto_start();
 	void goto_end();
 };

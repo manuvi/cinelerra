@@ -90,19 +90,38 @@ int Freq::fromfreq()
 	int i = 0;
   	while( i<TOTALFREQS && freqtable[i]<freq ) ++i;
   	return i;
-};
+}
 
 int Freq::fromfreq(int index)
 {
 	int i = 0;
   	while( i<TOTALFREQS && freqtable[i]<index ) ++i;
   	return i;
-};
+}
 
 int Freq::tofreq(int index)
 {
 	if(index >= TOTALFREQS) index = TOTALFREQS - 1;
 	return freqtable[index];
+}
+
+// frequency doubles for every OCTAVE slots.  OCTAVE must be divisible by 3
+// 27.5 is at i=1
+// 55 is at i=106
+// 110 is at i=211
+// 220 is at i=316
+// 440 is at i=421
+// 880 is at i=526
+double Freq::tofreq_f(double index)
+{
+	if( index < 0.5 ) return 0;
+	return 440.0 * pow(2, (double)(index - 421) / OCTAVE);
+}
+double Freq::fromfreq_f(double f)
+{
+	if( f < 0.5 ) return 0;
+	double result = log(f / 440) / log(2.0) * OCTAVE + 421;
+	return result < 0 ? 0 : result;
 }
 
 Freq& Freq::operator++()
@@ -136,17 +155,8 @@ void Units::init()
 	topower[INFINITYGAIN * 10] = 0;   // infinity gain
 
 	Freq::freqtable = new int[TOTALFREQS + 1];
-// starting frequency
-	double freq1 = 27.5, freq2 = 55;
-// Some number divisable by three.  This depends on the value of TOTALFREQS
-	int scale = 105;
-
-	Freq::freqtable[0] = 0;
-	for(int i = 1, j = 0; i <= TOTALFREQS; i++, j++) {
-		Freq::freqtable[i] = (int)(freq1 + (freq2 - freq1) / scale * j + 0.5);
-		if(j < scale) continue;
-		freq1 = freq2;  freq2 *= 2;  j = 0;
-	}
+	for( int i=0; i<=TOTALFREQS; ++i )
+		Freq::freqtable[i] = Freq::tofreq_f(i);
 }
 void Units::finit()
 {

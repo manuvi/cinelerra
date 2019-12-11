@@ -335,7 +335,6 @@ SET_TRACE
 	IndexState *index_state = indexable->index_state;
 	double asset_over_session = (double)indexable->get_sample_rate() /
 		mwindow->edl->session->sample_rate;
-
 // Develop strategy for drawing
 // printf("ResourcePixmap::draw_audio_resource %d %p %d\n",
 // __LINE__,
@@ -345,52 +344,54 @@ SET_TRACE
 	{
 		case INDEX_NOTTESTED:
 			return;
-			break;
 // Disabled.  All files have an index.
 //		case INDEX_TOOSMALL:
 //			draw_audio_source(canvas, edit, x, w);
 //			break;
 		case INDEX_BUILDING:
-		case INDEX_READY:
-		{
+		case INDEX_READY: {
 			IndexFile indexfile(mwindow, indexable);
 			if( !indexfile.open_index() ) {
 				if( index_state->index_zoom >
-						mwindow->edl->local_session->zoom_sample *
+					mwindow->edl->local_session->zoom_sample *
 						asset_over_session ) {
-//printf("ResourcePixmap::draw_audio_resource %d\n", __LINE__);
-
 					draw_audio_source(canvas, edit, x, w);
 				}
 				else {
-//printf("ResourcePixmap::draw_audio_resource %d\n", __LINE__);
-					indexfile.draw_index(canvas,
-						this,
-						edit,
-						x,
-						w);
-SET_TRACE
+					indexfile.draw_index(canvas, this, edit, x, w);
 				}
-
 				indexfile.close_index();
-SET_TRACE
 			}
 			break;
 		}
 	}
+	if( !mwindow->preferences->rectify_audio ) {
+		int center_pixel = calculate_center_pixel(edit->track);
+		canvas->set_line_dashes(1);
+		canvas->set_color(mwindow->theme->zero_crossing_color);
+		canvas->draw_line(x, center_pixel, x + w, center_pixel, this);
+		canvas->set_line_dashes(0);
+	}
 }
 
+
+int ResourcePixmap::calculate_center_pixel(Track *track)
+{
+	int rect_audio = mwindow->preferences->rectify_audio;
+	int center_pixel = !rect_audio ?
+		mwindow->edl->local_session->zoom_track / 2 :
+		mwindow->edl->local_session->zoom_track ;
+	if( track->show_titles() )
+		center_pixel += mwindow->theme->get_image("title_bg_data")->get_h();
+	return center_pixel;
+}
 
 void ResourcePixmap::draw_audio_source(TrackCanvas *canvas, Edit *edit, int x, int w)
 {
 	w++;
 	Indexable *indexable = edit->get_source();
+	int center_pixel = calculate_center_pixel(edit->track);
 	int rect_audio = mwindow->preferences->rectify_audio;
-	int center_pixel = !rect_audio ?
-		mwindow->edl->local_session->zoom_track / 2 :
-		mwindow->edl->local_session->zoom_track ;
-	if( edit->track->show_titles() )
-		center_pixel += mwindow->theme->get_image("title_bg_data")->get_h();
 	int64_t scale_y = !rect_audio ?
 		mwindow->edl->local_session->zoom_y :
 		mwindow->edl->local_session->zoom_y * 2;
