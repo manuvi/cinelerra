@@ -24,7 +24,7 @@
 
 // Base class inherited by all the different types of plugins.
 
-#define MAX_FRAME_BUFFER 1024
+#define MAX_FRAME_BUFFER 8192
 
 class PluginClient;
 
@@ -486,6 +486,7 @@ public:
 // GUI updating wrappers for realtime plugins
 // Append frame to queue for next send_frame_buffer
 	void add_gui_frame(PluginClientFrame *frame);
+	int get_gui_frames();
 
 	virtual void render_gui(void *data);
 	virtual void render_gui(void *data, int size);
@@ -499,7 +500,8 @@ public:
 	void reset_plugin_gui_frames();
 	void plugin_reset_gui_frames();
 	void plugin_render_gui_frames(PluginClientFrames *frames);
-	int get_gui_frames();
+// first frame ready
+	int pending_gui_frame();
 // Called by client to get the total number of frames to draw in update_gui
 	int pending_gui_frames();
 // pop frames until buffer passes position=pos(-1 or seconds) in direction=dir(-1,0,1)
@@ -577,7 +579,7 @@ public:
 	PluginClientThread *thread;
 
 // Frames for updating GUI
-	PluginClientFrames frame_buffer;
+	PluginClientFrames client_frames;
 // Time of last GUI update
 	Timer *update_timer;
 

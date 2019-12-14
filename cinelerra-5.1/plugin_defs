@@ -129,6 +129,7 @@ audio := \
 	cdripper \
 	chorus \
 	compressor \
+	compressormulti \
 	dcoffset \
 	delayaudio \
 	denoise \

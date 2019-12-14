@@ -58,7 +58,7 @@ class ComprMultiReaction : public BC_TumbleTextBox
 {
 public:
 	ComprMultiReaction(ComprMultiEffect *plugin,
-		ComprMultiWindow *window, int x, int y);
+			ComprMultiWindow *window, int x, int y);
 	int handle_event();
 	ComprMultiEffect *plugin;
 };
@@ -66,23 +66,28 @@ public:
 class ComprMultiX : public BC_TumbleTextBox
 {
 public:
-	ComprMultiX(ComprMultiEffect *plugin, ComprMultiWindow *window, int x, int y);
+	ComprMultiX(ComprMultiEffect *plugin,
+			ComprMultiWindow *window, int x, int y);
 	int handle_event();
 	ComprMultiEffect *plugin;
+	ComprMultiWindow *window;
 };
 
 class ComprMultiY : public BC_TumbleTextBox
 {
 public:
-	ComprMultiY(ComprMultiEffect *plugin, ComprMultiWindow *window, int x, int y);
+	ComprMultiY(ComprMultiEffect *plugin,
+			ComprMultiWindow *window, int x, int y);
 	int handle_event();
 	ComprMultiEffect *plugin;
+	ComprMultiWindow *window;
 };
 
 class ComprMultiTrigger : public BC_TumbleTextBox
 {
 public:
-	ComprMultiTrigger(ComprMultiEffect *plugin, ComprMultiWindow *window, int x, int y);
+	ComprMultiTrigger(ComprMultiEffect *plugin,
+			ComprMultiWindow *window, int x, int y);
 	int handle_event();
 	ComprMultiEffect *plugin;
 };
@@ -90,7 +95,8 @@ public:
 class ComprMultiDecay : public BC_TumbleTextBox
 {
 public:
-	ComprMultiDecay(ComprMultiEffect *plugin, ComprMultiWindow *window, int x, int y);
+	ComprMultiDecay(ComprMultiEffect *plugin,
+			ComprMultiWindow *window, int x, int y);
 	int handle_event();
 	ComprMultiEffect *plugin;
 };
@@ -99,9 +105,21 @@ public:
 class ComprMultiClear : public BC_GenericButton
 {
 public:
-	ComprMultiClear(ComprMultiEffect *plugin, int x, int y);
+	ComprMultiClear(ComprMultiEffect *plugin,
+			ComprMultiWindow *window, int x, int y);
 	int handle_event();
 	ComprMultiEffect *plugin;
+	ComprMultiWindow *window;
+};
+
+class ComprMultiReset : public BC_GenericButton
+{
+public:
+	ComprMultiReset(ComprMultiEffect *plugin,
+			ComprMultiWindow *window, int x, int y);
+	int handle_event();
+	ComprMultiEffect *plugin;
+	ComprMultiWindow *window;
 };
 
 class ComprMultiSmooth : public BC_CheckBox
@@ -131,12 +149,14 @@ public:
 class ComprMultiInput : public BC_PopupMenu
 {
 public:
-	ComprMultiInput(ComprMultiEffect *plugin, int x, int y);
+	ComprMultiInput(ComprMultiEffect *plugin,
+			ComprMultiWindow *window, int x, int y);
 	void create_objects();
 	int handle_event();
 	static const char* value_to_text(int value);
 	static int text_to_value(char *text);
 	ComprMultiEffect *plugin;
+	ComprMultiWindow *window;
 };
 
 
@@ -167,12 +187,23 @@ class ComprMultiSize : public BC_PopupMenu
 {
 public:
 	ComprMultiSize(ComprMultiWindow *gui,
-		ComprMultiEffect *plugin, int x, int y);
+			ComprMultiEffect *plugin, int x, int y);
 	int handle_event();
 	void create_objects();		 // add initial items
 	void update(int size);
 	ComprMultiWindow *gui;
 	ComprMultiEffect *plugin;	
+};
+
+class ComprMultiMkupGain : public BC_FPot
+{
+public:
+	ComprMultiMkupGain(ComprMultiEffect *plugin, ComprMultiWindow *window,
+			int x, int y, double *output, double min, double max);
+	int handle_event();
+	ComprMultiWindow *window;
+	ComprMultiEffect *plugin;
+	double *output;
 };
 
 
@@ -192,6 +223,7 @@ public:
 	ComprMultiCanvas *canvas;
 	ComprMultiReaction *reaction;
 	ComprMultiClear *clear;
+	ComprMultiReset *reset;
 	ComprMultiX *x_text;
 	ComprMultiY *y_text;
 	ComprMultiTrigger *trigger;
@@ -209,6 +241,7 @@ public:
 	ComprMultiQPot *freq1;
 	ComprMultiQPot *freq2;
 	ComprMultiFPot *q;
+	ComprMultiMkupGain *mkup_gain;
 	ComprMultiSize *size;
 	EQCanvas *eqcanvas;
 

@@ -380,40 +380,6 @@ int BC_WindowBase::draw_single_text(int draw, int font,
 	return x - x0;
 }
 
-void BC_WindowBase::truncate_text(char *result, const char *text, int w)
-{
-	int new_w = get_text_width(current_font, text);
-
-	if( new_w > w ) {
-		const char* separator = "...";
-		int separator_w = get_text_width(current_font, separator);
-// can't fit
-		if( separator_w >= w ) {
-			strcpy(result, separator);
-			return;
-		}
-
-		int text_len = strlen(text);
-// widen middle gap until it fits
-		for( int i=text_len/2; i>0; --i ) {
-			strncpy(result, text, i);
-			result[i] = 0;
-			strcat(result, separator);
-			strncat(result, text + text_len - i, i);
-			result[i + strlen(separator) + i] = 0;
-			new_w = get_text_width(current_font, result);
-//printf("BC_WindowBase::truncate_text %d %d %d %s\n", __LINE__, new_w, w, result);
-			if(new_w < w) return;
-		}
-
-// Didn't fit
-		strcpy(result, separator);
-		return;
-	}
-
-	strcpy(result, text);
-}
-
 void BC_WindowBase::draw_center_text(int x, int y, const char *text, int length)
 {
 	if(length < 0) length = strlen(text);

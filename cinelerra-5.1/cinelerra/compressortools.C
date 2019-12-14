@@ -33,12 +33,7 @@
 
 BandConfig::BandConfig()
 {
-	freq = 0;
-	solo = 0;
-	bypass = 0;
-//	readahead_len = 1.0;
-	attack_len = 1.0;
-	release_len = 1.0;
+	reset();
 }
 
 BandConfig::~BandConfig()
@@ -56,14 +51,15 @@ void BandConfig::save_data(FileXML *xml, int number, int do_multiband)
 		xml->tag.set_property("SOLO", solo);
 		xml->tag.set_property("ATTACK_LEN", attack_len);
 		xml->tag.set_property("RELEASE_LEN", release_len);
+		xml->tag.set_property("MKUP_GAIN", mkup_gain);
 	}
 	xml->append_tag();
 	xml->append_newline();
 
 	for( int i = 0; i < levels.total; i++ ) {
 		xml->tag.set_title("LEVEL");
-		xml->tag.set_property("X", levels.values[i].x);
-		xml->tag.set_property("Y", levels.values[i].y);
+		xml->tag.set_property("X", levels[i].x);
+		xml->tag.set_property("Y", levels[i].y);
 		xml->append_tag();
 		xml->append_newline();
 	}
@@ -81,6 +77,7 @@ void BandConfig::read_data(FileXML *xml, int do_multiband)
 		solo = xml->tag.get_property("SOLO", solo);
 		attack_len = xml->tag.get_property("ATTACK_LEN", attack_len);
 		release_len = xml->tag.get_property("RELEASE_LEN", release_len);
+		mkup_gain = xml->tag.get_property("MKUP_GAIN", mkup_gain);
 	}
 
 	levels.remove_all();
@@ -107,7 +104,7 @@ void BandConfig::copy_from(BandConfig *src)
 {
 	levels.remove_all();
 	for( int i = 0; i < src->levels.total; i++ ) {
-		levels.append(src->levels.values[i]);
+		levels.append(src->levels[i]);
 	}
 
 //	readahead_len = src->readahead_len;
@@ -116,6 +113,7 @@ void BandConfig::copy_from(BandConfig *src)
 	freq = src->freq;
 	solo = src->solo;
 	bypass = src->bypass;
+	mkup_gain = src->mkup_gain;
 }
 
 int BandConfig::equiv(BandConfig *src)
@@ -124,6 +122,7 @@ int BandConfig::equiv(BandConfig *src)
 		solo != src->solo ||
 		bypass != src->bypass ||
 		freq != src->freq ||
+		mkup_gain != src->mkup_gain ||
 //		!EQUIV(readahead_len, src->readahead_len) ||
 		!EQUIV(attack_len, src->attack_len) ||
 		!EQUIV(release_len, src->release_len) ) {
@@ -131,8 +130,8 @@ int BandConfig::equiv(BandConfig *src)
 	}
 
 	for( int i = 0; i < levels.total && i < src->levels.total; i++ ) {
-		compressor_point_t *this_level = &levels.values[i];
-		compressor_point_t *that_level = &src->levels.values[i];
+		compressor_point_t *this_level = &levels[i];
+		compressor_point_t *that_level = &src->levels[i];
 		if( !EQUIV(this_level->x, that_level->x) ||
 			!EQUIV(this_level->y, that_level->y) ) {
 			return 0;
@@ -145,12 +144,24 @@ int BandConfig::equiv(BandConfig *src)
 void BandConfig::boundaries(CompressorConfigBase *base)
 {
 	for( int i = 0; i < levels.size(); i++ ) {
-		compressor_point_t *level = &levels.values[i];
+		compressor_point_t *level = &levels[i];
 		if( level->x < base->min_db ) level->x = base->min_db;
 		if( level->y < base->min_db ) level->y = base->min_db;
 		if( level->x > base->max_db ) level->x = base->max_db;
 		if( level->y > base->max_db ) level->y = base->max_db;
 	}
+}
+
+void BandConfig::reset()
+{
+	freq = 0;
+	solo = 0;
+	bypass = 0;
+//	readahead_len = 1.0;
+	attack_len = 1.0;
+	release_len = 1.0;
+	mkup_gain = 0.0;
+	levels.remove_all();
 }
 
 
@@ -163,13 +174,7 @@ CompressorConfigBase::CompressorConfigBase(int total_bands)
 	min_value = DB::fromdb(min_db) + 0.001;
 //	min_x = min_db;  max_x = 0;
 //	min_y = min_db;  max_y = 0;
-	smoothing_only = 0;
-	trigger = 0;
-	input = CompressorConfigBase::TRIGGER;
-	for( int i=0; i<total_bands; ++i ) {
-		bands[i].freq = Freq::tofreq((i+1) * TOTALFREQS / total_bands);
-	}
-	current_band = 0;
+	reset_base();
 }
 
 
@@ -177,6 +182,23 @@ CompressorConfigBase::~CompressorConfigBase()
 {
 	delete [] bands;
 }
+
+void CompressorConfigBase::reset_base()
+{
+	input = CompressorConfigBase::TRIGGER;
+	trigger = 0;
+	smoothing_only = 0;
+	for( int i=0; i<total_bands; ++i )
+		bands[i].freq = Freq::tofreq((i+1) * TOTALFREQS / total_bands);
+	current_band = 0;
+}
+
+void CompressorConfigBase::reset_bands()
+{
+	for( int i=0; i<total_bands; ++i )
+		bands[i].reset();
+}
+
 
 void CompressorConfigBase::boundaries()
 {
@@ -220,7 +242,7 @@ double CompressorConfigBase::get_y(int band, int i)
 	int sz = levels.size();
 	if( !sz ) return 1.;
 	if( i >= sz ) i = sz-1;
-	return levels.values[i].y;
+	return levels[i].y;
 }
 
 double CompressorConfigBase::get_x(int band, int i)
@@ -229,7 +251,7 @@ double CompressorConfigBase::get_x(int band, int i)
 	int sz = levels.size();
 	if( !sz ) return 0.;
 	if( i >= sz ) i = sz-1;
-	return levels.values[i].x;
+	return levels[i].x;
 }
 
 double CompressorConfigBase::calculate_db(int band, double x)
@@ -239,27 +261,30 @@ double CompressorConfigBase::calculate_db(int band, double x)
 	if( !sz ) return x;
 	compressor_point_t &point0 = levels[0];
 	double px0 = point0.x, py0 = point0.y, dx0 = x - px0;
-// the only point.  Use slope from min_db
-	if( sz == 1 )
-		return py0 + dx0 * (py0 - min_db) / (px0 - min_db);
 // before 1st point, use 1:1 gain
 	double ret = py0 + dx0;
+	if( sz > 1 ) {
 // find point <= x
-	int k = sz;
-	while( --k >= 0 && levels[k].x > x );
-	if( k >= 0 ) {
-		compressor_point_t &curr = levels[k];
-		double cx = curr.x, cy = curr.y, dx = x - cx;
+		int k = sz;
+		while( --k >= 0 && levels[k].x > x );
+		if( k >= 0 ) {
+			compressor_point_t &curr = levels[k];
+			double cx = curr.x, cy = curr.y, dx = x - cx;
 // between 2 points.  Use slope between 2 points
 // the last point.  Use slope of last 2 points
-		if( k >= sz-1 ) --k;
-		compressor_point_t &prev = levels[k+0];
-		compressor_point_t &next = levels[k+1];
-		double px = prev.x, py = prev.y;
-		double nx = next.x, ny = next.y;
-		ret = cy + dx * (ny - py) / (nx - px);
+			if( k >= sz-1 ) --k;
+			compressor_point_t &prev = levels[k+0];
+			compressor_point_t &next = levels[k+1];
+			double px = prev.x, py = prev.y;
+			double nx = next.x, ny = next.y;
+			ret = cy + dx * (ny - py) / (nx - px);
+		}
 	}
+	else
+// the only point.  Use slope from min_db
+		ret = py0 + dx0 * (py0 - min_db) / (px0 - min_db);
 
+	ret += bands[band].mkup_gain;
 	return ret;
 }
 
@@ -529,10 +554,10 @@ void CompressorCanvasBase::update()
 // draw the points
 			if( band == config->current_band ) {
 				ArrayList<compressor_point_t> &levels = config->bands[band].levels;
+				double mkup_gain = config->bands[band].mkup_gain;
 				for( int i = 0; i < levels.size(); i++ ) {
 					double x_db = config->get_x(band, i);
-					double y_db = config->get_y(band, i);
-
+					double y_db = config->get_y(band, i) + mkup_gain;
 					int x = db_to_x(x_db);
 					int y = db_to_y(y_db);
 
@@ -553,36 +578,35 @@ void CompressorCanvasBase::update()
 int CompressorCanvasBase::button_press_event()
 {
 // Check existing points
-	if( is_event_win() && 
-		cursor_inside() ) {
+	if( is_event_win() && cursor_inside() ) {
 		if( get_buttonpress() == 3 ) {
 			menu->activate_menu();
 			return 1;
 		}
+		int x = get_cursor_x(), y = get_cursor_y();
 		int band = config->current_band;
 		ArrayList<compressor_point_t> &levels = config->bands[band].levels;
+		double mkup_gain = config->bands[band].mkup_gain;
 		for( int i=0; i<levels.size(); ++i ) {
 			double x_db = config->get_x(config->current_band, i);
-			double y_db = config->get_y(config->current_band, i);
+			double y_db = config->get_y(config->current_band, i) + mkup_gain;
 
-			int x = db_to_x(x_db);
-			int y = db_to_y(y_db);
+			int px = db_to_x(x_db);
+			int py = db_to_y(y_db);
 
-			if( get_cursor_x() <= x + POINT_W / 2 && get_cursor_x() >= x - POINT_W / 2 &&
-			    get_cursor_y() <= y + POINT_W / 2 && get_cursor_y() >= y - POINT_W / 2 ) {
+			if( x <= px + POINT_W / 2 && x >= px - POINT_W / 2 &&
+			    y <= py + POINT_W / 2 && y >= py - POINT_W / 2 ) {
 				current_operation = DRAG;
 				current_point = i;
 				return 1;
 			}
 		}
 
-		if( get_cursor_x() >= graph_x &&
-		    get_cursor_x() < graph_x + graph_w &&
-		    get_cursor_y() >= graph_y &&
-		    get_cursor_y() < graph_y + graph_h ) {
+		if( x >= graph_x && x < graph_x + graph_w &&
+		    y >= graph_y && y < graph_y + graph_h ) {
 // Create new point
-			double x_db = x_to_db(get_cursor_x());
-			double y_db = y_to_db(get_cursor_y());
+			double x_db = x_to_db(x);
+			double y_db = y_to_db(y) + mkup_gain;
 
 			current_point = config->set_point(config->current_band, x_db, y_db);
 			current_operation = DRAG;
@@ -625,17 +649,19 @@ int CompressorCanvasBase::cursor_motion_event()
 {
 	int band = config->current_band;
 	ArrayList<compressor_point_t> &levels = config->bands[band].levels;
+	double mkup_gain = config->bands[band].mkup_gain;
+	int x = get_cursor_x(), y = get_cursor_y();
 
 	if( current_operation == DRAG ) {
-		int x = get_cursor_x();
-		int y = get_cursor_y();
 		double x_db = x_to_db(x);
-		double y_db = y_to_db(y);
+		double y_db = y_to_db(y) - mkup_gain;
 		
 		if( shift_down() ) {
 			const int grid_precision = 6;
-			x_db = config->max_db + (double)(grid_precision * (int)((x_db - config->max_db) / grid_precision - 0.5));
-			y_db = config->max_db + (double)(grid_precision * (int)((y_db - config->max_db) / grid_precision - 0.5));
+			x_db = config->max_db + (double)(grid_precision *
+				(int)((x_db - config->max_db) / grid_precision - 0.5));
+			y_db = config->max_db + (double)(grid_precision *
+				(int)((y_db - config->max_db) / grid_precision - 0.5));
 		}
 		
 		
@@ -654,24 +680,21 @@ int CompressorCanvasBase::cursor_motion_event()
 
 		for( int i = 0; i < levels.size(); i++ ) {
 			double x_db = config->get_x(config->current_band, i);
-			double y_db = config->get_y(config->current_band, i);
+			double y_db = config->get_y(config->current_band, i) + mkup_gain;
+			int px = db_to_x(x_db);
+			int py = db_to_y(y_db);
 
-			int x = db_to_x(x_db);
-			int y = db_to_y(y_db);
-
-			if( get_cursor_x() <= x + POINT_W / 2 && get_cursor_x() >= x - POINT_W / 2 &&
-				get_cursor_y() <= y + POINT_W / 2 && get_cursor_y() >= y - POINT_W / 2 ) {
+			if( x <= px + POINT_W / 2 && x >= px - POINT_W / 2 &&
+				y <= py + POINT_W / 2 && y >= py - POINT_W / 2 ) {
 				new_cursor = UPRIGHT_ARROW_CURSOR;
 				break;
 			}
 		}
 
 // out of active area
-		if( get_cursor_x() >= graph_x + graph_w ||
-			get_cursor_y() < graph_y ) {
+		if( x >= graph_x + graph_w || y < graph_y ) {
 			new_cursor = ARROW_CURSOR;
 		}
-
 		if( new_cursor != get_cursor() ) {
 			set_cursor(new_cursor, 0, 1);
 		}
@@ -741,11 +764,9 @@ void CompressorEngine::reset()
 	slope_samples = 0;
 	slope_current_sample = 0;
 	peak_samples = 0;
-	slope_value2 = 1.0;
 	slope_value1 = 1.0;
-	slope_samples = 0;
-	slope_current_sample = 0;
-	current_value = 1.0;
+	slope_value2 = 1.0;
+	current_value = 0.5;
 	gui_frame_samples = 2048;
 	gui_max_gain = 1.0;
 	gui_frame_counter = 0;
@@ -918,33 +939,19 @@ __LINE__, start_position + i, attack_slope, release_slope, current_value); bug =
 			slope_current_sample / 
 			slope_samples;
 
-		if( config->smoothing_only ) {
-			for( int j = 0; j < channels; j++ ) {
-				output_buffer[j]->get_data()[i] = current_value * 2 - 1;
-			}
-		}
-		else {
-			double gain = 1.0;
-
-			if( band_config->bypass ) {
-				gain = 1.0;
-			}
-			else {
+		double gain = 1.0;
+		if( !config->smoothing_only ) {
+			if( !band_config->bypass )
 				gain = config->calculate_gain(band, current_value);
-			}
-
 // update the GUI frames
 			if( fabs(gain - 1.0) > fabs(gui_max_gain - 1.0) ) {
 				gui_max_gain = gain;
 			}
-//if( !EQUIV(gain, 1.0) ) printf("CompressorEngine::process %d gain=%f\n", __LINE__, gain);
-
 // calculate the input level to draw.  Should it be the trigger or a channel?
 			GET_TRIGGER(input_buffer[channel]->get_data(), i);
 			if( sample > gui_max_level ) {
 				gui_max_level = sample;
 			}
-
 			gui_frame_counter++;
 			if( gui_frame_counter > gui_frame_samples ) {
 //if( !EQUIV(gui_frame_max, 1.0) ) printf("CompressorEngine::process %d offset=%d gui_frame_max=%f\n", __LINE__, i, gui_frame_max);
@@ -955,10 +962,12 @@ __LINE__, start_position + i, attack_slope, release_slope, current_value); bug =
 				gui_max_level = 0.0;
 				gui_frame_counter = 0;
 			}
-
-			for( int j = 0; j < channels; j++ ) {
-				output_buffer[j]->get_data()[i] = input_buffer[j]->get_data()[i] * gain;
-			}
+		}
+		else {
+			gain = current_value > 0.01 ? 0.5 / current_value : 50.;
+		}
+		for( int j = 0; j < channels; j++ ) {
+			output_buffer[j]->get_data()[i] = input_buffer[j]->get_data()[i] * gain;
 		}
 	}
 }

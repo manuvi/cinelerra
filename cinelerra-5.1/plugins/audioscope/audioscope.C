@@ -232,10 +232,7 @@ void AudioScopeCanvas::calculate_point()
 	CLAMP(x, 0, get_w() - 1);
 	CLAMP(y, 0, get_h() - 1);
 
-	((AudioScopeWindow*)plugin->thread->window)->calculate_probe(
-		x,
-		y,
-		1);
+	((AudioScopeWindow*)plugin->thread->window)->calculate_probe(x, y, 1);
 
 //printf("AudioScopeCanvas::calculate_point %d %d\n", __LINE__, Freq::tofreq(freq_index));
 }
@@ -338,14 +335,11 @@ int AudioScopeMode::text_to_mode(const char *text)
 
 
 AudioScopeWindow::AudioScopeWindow(AudioScope *plugin)
- : PluginClientWindow(plugin,
-	plugin->w,
-	plugin->h,
-	xS(320),
-	yS(320),
-	1)
+ : PluginClientWindow(plugin, plugin->w, plugin->h, xS(320), yS(320), 1)
 {
-	this->plugin = plugin;
+	this->plugin = plugin; 
+	probe_x = -1;
+	probe_y = -1;
 }
 
 AudioScopeWindow::~AudioScopeWindow()
@@ -889,20 +883,15 @@ void AudioScope::update_gui()
 //printf("AudioScope::update_gui %d %d\n", __LINE__, total_frames);
 
 
-
+// expire old history frames
+			int new_frames = frame_history.size() + total_frames;
+			int expired = new_frames - config.history_size;
+			if( expired > 0 )
+				frame_history.remove_object_block(0, expired);
 // Shift frames into history
 			for(int frame = 0; frame < total_frames; frame++)
-			{
-				if(frame_history.size() >= config.history_size)
-					frame_history.remove_object_number(0);
-
-				frame_history.append(frame_buffer.get(0));
-				frame_buffer.remove_number(0);
-			}
-
-// Reduce history size
-			while(frame_history.size() > config.history_size)
-				frame_history.remove_object_number(0);
+				frame_history.append(frame_buffer.get(frame));
+			frame_buffer.remove_block(0, total_frames);
 
 // Point probe data at history
 			current_frame = frame_history.get(frame_history.size() - 1);

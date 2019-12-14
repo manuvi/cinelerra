@@ -100,6 +100,7 @@ public:
 	void boundaries(CompressorConfigBase *base);
 	void save_data(FileXML *xml, int number, int do_multiband);
 	void read_data(FileXML *xml, int do_multiband);
+	void reset();
 
 	ArrayList<compressor_point_t> levels;
 	int solo;
@@ -108,6 +109,7 @@ public:
 //	double readahead_len;
 	double attack_len;
 	double release_len;
+	double mkup_gain;
 
 // upper frequency in Hz
 	int freq;
@@ -123,6 +125,8 @@ public:
 	virtual int equivalent(CompressorConfigBase &that);
 	void boundaries();
 	
+	void reset_base();
+	void reset_bands();
 	void remove_point(int band, int number);
 	int set_point(int band, double x, double y);
 	double calculate_db(int band, double x);
@@ -314,13 +318,6 @@ public:
 	
 	CompressorCanvasBase *canvas;
 };
-
-#define GRAPH_BG_COLOR		0x559977
-#define GRAPH_BORDER1_COLOR	0xeeaa44
-#define GRAPH_BORDER2_COLOR	0xeeaaff
-#define GRAPH_GRID_COLOR	0xeeffcc
-#define GRAPH_ACTIVE_COLOR	0x99cc77
-#define GRAPH_INACTIVE_COLOR	0x666688
 
 #endif
 

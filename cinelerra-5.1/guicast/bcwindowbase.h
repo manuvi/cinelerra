@@ -342,6 +342,8 @@ public:
 	int get_text_height(int font, const char *text = 0);
 	int get_text_width(int font, const char *text, int length = -1);
 	int get_text_width(int font, const wchar_t *text, int length = -1);
+// truncate the text with ... & return a new string
+	char *get_truncated_text(int font, const char *text, int max_w);
 	BC_Clipboard* get_clipboard();
 	void set_dragging(int value);
 	int set_w(int w);
@@ -407,8 +409,6 @@ public:
 		int length, BC_Pixmap *pixmap);
 	int draw_single_text(int draw, int font,
 		int x, int y, const wchar_t *text, int length = -1, BC_Pixmap *pixmap = 0);
-// truncate the text to a ... version that fits in the width, using the current_font
-	void truncate_text(char *result, const char *text, int w);
 	void draw_center_text(int x, int y, const char *text, int length = -1);
 	void draw_line(int x1, int y1, int x2, int y2, BC_Pixmap *pixmap = 0);
 	void draw_polygon(ArrayList<int> *x, ArrayList<int> *y, BC_Pixmap *pixmap = 0);

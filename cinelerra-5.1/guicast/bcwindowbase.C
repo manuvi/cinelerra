@@ -3060,6 +3060,39 @@ int BC_WindowBase::get_text_height(int font, const char *text)
 	return h * rowh;
 }
 
+// truncate the text with ... & return a new string
+char *BC_WindowBase::get_truncated_text(int font, const char *text, int max_w)
+{
+	char *result = cstrdup(text);
+	int text_w = get_text_width(font, text);
+	int ci = -1, len = strlen(text);
+	if( text_w > max_w ) {
+// get center of string
+		int cx = text_w/2, best = INT_MAX;
+		for( int i=1; i<=len; ++i ) {
+			int cw = get_text_width(font, text, i);
+			if( abs(cw-cx) < abs(best-cx) ) {
+				best = cw;  ci = i;
+			}
+		}
+	}
+	if( ci > 0 && ci < len-1 ) {
+// insert ... in the center
+		result[ci-1] = result[ci] = result[ci+1] = '.';
+
+		while( ci-2>=0 && ci+2<(int)strlen(result) &&
+		       get_text_width(font, result) > max_w ) {
+// take away a character from the longer side
+			int left_w = get_text_width(font, result, ci-2);
+			int right_w = get_text_width(font, result + ci+3);
+			int i = left_w > right_w ? --ci-1 : ci+2;
+			while( (result[i]=result[i+1])!=0 ) ++i;
+		}
+	}
+
+	return result;
+}
+
 BC_Bitmap* BC_WindowBase::new_bitmap(int w, int h, int color_model)
 {
 	if(color_model < 0) color_model = top_level->get_color_model();

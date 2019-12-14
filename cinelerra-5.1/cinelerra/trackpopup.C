@@ -573,15 +573,16 @@ void TrackPopupShowWindow::create_objects()
 	add_subwindow(title = new BC_Title(x, y, text));
 	int x1 = x + title->get_w() + xS(10);
 	int tw = get_w() - x1 - xS(20);
-	truncate_text(text, track->title, tw);
-	add_subwindow(new BC_Title(x1, y, text));
+	char *track_title = get_truncated_text(MEDIUMFONT, track->title, tw);
+	add_subwindow(new BC_Title(x1, y, track_title));
+	delete [] track_title;
 	y += title->get_h() + 5;
 	sprintf(text, _("Edit %d:"), track->edits->number_of(edit)+1);
 	add_subwindow(title = new BC_Title(x, y, text));
-	char edit_title[BCTEXTLEN];
-	edit->get_title(edit_title);
-	truncate_text(text, edit_title, tw);
-	add_subwindow(new BC_Title(x1, y, text));
+	edit->get_title(text);
+	char *edit_title = get_truncated_text(MEDIUMFONT, text, tw);
+	add_subwindow(new BC_Title(x1, y, edit_title));
+	delete [] edit_title;
 	y += title->get_h() + 5;
 
 	EDLSession *session = mwindow->edl->session;

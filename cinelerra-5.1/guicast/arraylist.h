@@ -47,14 +47,14 @@ public:
 		remove();
 	}
 	void remove_block(int i, int n) {
-		if( i >= total ) return;
-		for( n+=i; n<total; ) values[i++] = values[n++];
+		if( i >= total || !n ) return;
+		for( n+=i; n<total; ++i,++n ) values[i] = values[n];
 		total = i;
 	}
 	void remove_object_block(int i, int n) {
-		if( i >= total ) return;
-		for( n+=i; n<total; ) { del_value(i); values[i++] = values[n++]; }
-		for( n=i; n<total; ++n ) del_value(n);
+		if( i >= total || !n ) return;
+		for( int j=i,k=n; --k>=0 && j<total; ++j ) del_value(j);
+		for( n+=i; n<total; ++i,++n ) values[i] = values[n];
 		total = i;
 	}
 	void remove(TYPE value) {

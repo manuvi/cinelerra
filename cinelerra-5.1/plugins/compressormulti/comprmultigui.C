@@ -72,12 +72,6 @@ void ComprMultiWindow::create_objects()
 	int control_margin = xS(150);
 	int canvas_y2 = get_h() * 2 / 3;
 	BC_Title *title;
-	BandConfig *band_config = &plugin->config.bands[plugin->config.current_band];
-	BandConfig *prev_band = 0;
-	if( plugin->config.current_band > 0 ) {
-		prev_band = &plugin->config.bands[plugin->config.current_band - 1];
-	}
-
 	add_subwindow(title = new BC_Title(x, y, "In:"));
 	int y2 = y + title->get_h() + margin;
 	EDL *edl = plugin->get_edl();
@@ -161,35 +155,27 @@ void ComprMultiWindow::create_objects()
 	x_text->create_objects();
 	y += x_text->get_h() + margin;
 
-	add_subwindow(clear = new ComprMultiClear(plugin, x, y));
+	add_subwindow(clear = new ComprMultiClear(plugin, this, x, y));
 	y += clear->get_h() + margin;
 
-	add_subwindow(title = new BC_Title(x, y, _("Freq range:")));
-	y += title->get_h();
+	add_subwindow(title = new BC_Title(x, y, _("Gain:")));
+	
+	int x2 = get_w() - (margin + BC_Pot::calculate_w()) * 2;
+	int x3 = get_w() - (margin + BC_Pot::calculate_w());
+	add_subwindow(title = new BC_Title(x2, y, _("Freq range:")));
+	y += title->get_h() + margin;
 
+	add_subwindow(mkup_gain = new ComprMultiMkupGain(plugin, this, x, y,
+		&plugin->config.bands[plugin->config.current_band].mkup_gain,
+		-10., 10.));
 // the previous high frequency
-	int *ptr = 0;
-	if( prev_band ) {
-		ptr = &prev_band->freq;
-	}
-
-	add_subwindow(freq1 = new ComprMultiQPot(this, 
-		plugin, 
-		get_w() - (margin + BC_Pot::calculate_w()) * 2, 
-		y, 
-		ptr));
-
+	add_subwindow(freq1 = new ComprMultiQPot(this, plugin, x2, y,
+		plugin->config.current_band == 0 ? 0 :
+		&plugin->config.bands[plugin->config.current_band-1].freq));
 // the current high frequency
-	ptr = &band_config->freq;
-	if( plugin->config.current_band == TOTAL_BANDS - 1 ) {
-		ptr = 0;
-	}
-
-	add_subwindow(freq2 = new ComprMultiQPot(this, 
-		plugin, 
-		get_w() - margin - BC_Pot::calculate_w(), 
-		y, 
-		ptr));
+	add_subwindow(freq2 = new ComprMultiQPot(this, plugin, x3, y,
+		plugin->config.current_band!=TOTAL_BANDS-1 ? 0 :
+		&plugin->config.bands[plugin->config.current_band].freq));
 	y += freq1->get_h() + margin;
 
 	BC_Bar *bar;
@@ -198,10 +184,10 @@ void ComprMultiWindow::create_objects()
 
 	add_subwindow(title = new BC_Title(x, y, _("Trigger Type:")));
 	y += title->get_h();
-	add_subwindow(input = new ComprMultiInput(plugin, x, y));
+	add_subwindow(input = new ComprMultiInput(plugin, this, x, y));
 	input->create_objects();
 	y += input->get_h() + margin;
-	add_subwindow(title = new BC_Title(x, y, _("Trigger:")));
+	add_subwindow(title = new BC_Title(x, y, _("Channel:")));
 	y += title->get_h();
 
 	trigger = new ComprMultiTrigger(plugin, this, x, y);
@@ -220,13 +206,12 @@ void ComprMultiWindow::create_objects()
 
 	add_subwindow(title = new BC_Title(x, y, _("Window size:")));
 	y += title->get_h();
-	add_subwindow(size = new ComprMultiSize(this,
-		plugin,
-		x,
-		y));
+	add_subwindow(size = new ComprMultiSize(this, plugin, x, y));
 	size->create_objects();
 	size->update(plugin->config.window_size);
 	y += size->get_h() + margin;
+
+	add_subwindow(reset = new ComprMultiReset(plugin, this, x, y));
 
 	canvas->create_objects();
 	update_eqcanvas();
@@ -236,28 +221,15 @@ void ComprMultiWindow::create_objects()
 // called when the user selects a different band
 void ComprMultiWindow::update()
 {
-	BandConfig *band_config = &plugin->config.bands[plugin->config.current_band];
+	int curr_band = plugin->config.current_band;
+	for( int i = 0; i < TOTAL_BANDS; i++ )
+		band[i]->update(curr_band == i);
 
-	for( int i = 0; i < TOTAL_BANDS; i++ ) {
-		if( plugin->config.current_band == i ) {
-			band[i]->update(1);
-		}
-		else {
-			band[i]->update(0);
-		}
-	}
-
-	int *ptr = 0;
-	if( plugin->config.current_band > 0 ) {
-		ptr = &plugin->config.bands[plugin->config.current_band - 1].freq;
-	}
-	else {
-		ptr = 0;
-	}
-
-	freq1->output = ptr;
-	if( ptr ) {
-		freq1->update(*ptr);
+	int *ptr1 = !curr_band ? 0 :
+		&plugin->config.bands[curr_band-1].freq;
+	freq1->output = ptr1;
+	if( ptr1 ) {
+		freq1->update(*ptr1);
 		freq1->enable();
 	}
 	else {
@@ -266,16 +238,11 @@ void ComprMultiWindow::update()
 	}
 
 // top band edits the penultimate band
-	if( plugin->config.current_band < TOTAL_BANDS - 1 ) {
-		ptr = &band_config->freq;
-	}
-	else {
-		ptr = 0;
-	}
-
-	freq2->output = ptr;
-	if( ptr ) {
-		freq2->update(*ptr);
+	int *ptr2 = curr_band == TOTAL_BANDS-1 ? 0 :
+		&plugin->config.bands[curr_band].freq;
+	freq2->output = ptr2;
+	if( ptr2 ) {
+		freq2->update(*ptr2);
 		freq2->enable();
 	}
 	else {
@@ -284,6 +251,10 @@ void ComprMultiWindow::update()
 	}
 
 	q->update(plugin->config.q);
+	BandConfig *band_config = &plugin->config.bands[curr_band];
+	double *ptr3 = &band_config->mkup_gain;
+	mkup_gain->output = ptr3;
+	mkup_gain->update(*ptr3);
 	solo->update(band_config->solo);
 	bypass->update(band_config->bypass);
 	size->update(plugin->config.window_size);
@@ -448,7 +419,6 @@ int ComprMultiSize::handle_event()
 	return 1;
 }
 
-
 void ComprMultiSize::create_objects()
 {
 	add_item(new BC_MenuItem("2048"));
@@ -461,12 +431,31 @@ void ComprMultiSize::create_objects()
 	add_item(new BC_MenuItem("262144"));
 }
 
-
 void ComprMultiSize::update(int size)
 {
 	char string[BCTEXTLEN];
 	sprintf(string, "%d", size);
 	set_text(string);
+}
+
+
+ComprMultiMkupGain::ComprMultiMkupGain(ComprMultiEffect *plugin,
+		ComprMultiWindow *window, int x, int y,
+		double *output, double min, double max)
+ : BC_FPot(x, y, *output, min, max)
+{
+	this->window = window;
+	this->plugin = plugin;
+	this->output = output;
+	set_precision(0.01);
+}
+
+int ComprMultiMkupGain::handle_event()
+{
+	*output = get_value();
+	plugin->send_configure_change();
+	window->canvas->update();
+	return 1;
 }
 
 
@@ -483,7 +472,7 @@ void ComprMultiCanvas::update_window()
 
 
 ComprMultiReaction::ComprMultiReaction(ComprMultiEffect *plugin, 
-	ComprMultiWindow *window, int x, int y) 
+		ComprMultiWindow *window, int x, int y) 
  : BC_TumbleTextBox(window,
 	(float)plugin->config.bands[plugin->config.current_band].attack_len,
 	(float)MIN_ATTACK, (float)MAX_ATTACK, x, y, xS(100))
@@ -503,7 +492,7 @@ int ComprMultiReaction::handle_event()
 
 
 ComprMultiDecay::ComprMultiDecay(ComprMultiEffect *plugin, 
-	ComprMultiWindow *window, int x, int y) 
+		ComprMultiWindow *window, int x, int y) 
  : BC_TumbleTextBox(window,
 	(float)plugin->config.bands[plugin->config.current_band].release_len,
 	(float)MIN_DECAY, (float)MAX_DECAY, x, y, xS(100))
@@ -521,11 +510,12 @@ int ComprMultiDecay::handle_event()
 
 
 ComprMultiX::ComprMultiX(ComprMultiEffect *plugin, 
-	ComprMultiWindow *window, int x, int y) 
+		ComprMultiWindow *window, int x, int y) 
  : BC_TumbleTextBox(window, (float)0.0,
 	plugin->config.min_db, plugin->config.max_db, x, y, xS(100))
 {
 	this->plugin = plugin;
+	this->window = window;
 	set_increment(0.1);
 	set_precision(2);
 }
@@ -533,10 +523,10 @@ int ComprMultiX::handle_event()
 {
 	BandConfig *band_config = &plugin->config.bands[plugin->config.current_band];
 
-	int current_point = ((ComprMultiWindow*)plugin->thread->window)->canvas->current_point;
+	int current_point = window->canvas->current_point;
 	if( current_point < band_config->levels.total ) {
 		band_config->levels.values[current_point].x = atof(get_text());
-		((ComprMultiWindow*)plugin->thread->window)->canvas->update();
+		window->canvas->update();
 		plugin->send_configure_change();
 	}
 	return 1;
@@ -544,13 +534,12 @@ int ComprMultiX::handle_event()
 
 
 ComprMultiY::ComprMultiY(ComprMultiEffect *plugin, 
-	ComprMultiWindow *window, 
-	int x, 
-	int y) 
+		ComprMultiWindow *window, int x, int y) 
  : BC_TumbleTextBox(window, (float)0.0,
 	plugin->config.min_db, plugin->config.max_db, x, y, xS(100))
 {
 	this->plugin = plugin;
+	this->window = window;
 	set_increment(0.1);
 	set_precision(2);
 }
@@ -558,10 +547,10 @@ int ComprMultiY::handle_event()
 {
 	BandConfig *band_config = &plugin->config.bands[plugin->config.current_band];
 
-	int current_point = ((ComprMultiWindow*)plugin->thread->window)->canvas->current_point;
+	int current_point = window->canvas->current_point;
 	if( current_point < band_config->levels.total ) {
 		band_config->levels.values[current_point].y = atof(get_text());
-		((ComprMultiWindow*)plugin->thread->window)->canvas->update();
+		window->canvas->update();
 		plugin->send_configure_change();
 	}
 	return 1;
@@ -569,9 +558,7 @@ int ComprMultiY::handle_event()
 
 
 ComprMultiTrigger::ComprMultiTrigger(ComprMultiEffect *plugin, 
-	ComprMultiWindow *window,
-	int x, 
-	int y) 
+		ComprMultiWindow *window, int x, int y) 
  : BC_TumbleTextBox(window, (int)plugin->config.trigger,
 	MIN_TRIGGER, MAX_TRIGGER, x, y, xS(100))
 {
@@ -585,16 +572,18 @@ int ComprMultiTrigger::handle_event()
 }
 
 
-ComprMultiInput::ComprMultiInput(ComprMultiEffect *plugin, int x, int y) 
+ComprMultiInput::ComprMultiInput(ComprMultiEffect *plugin,
+	ComprMultiWindow *window, int x, int y) 
  : BC_PopupMenu(x, y, xS(100), 
 	ComprMultiInput::value_to_text(plugin->config.input), 1)
 {
 	this->plugin = plugin;
+	this->window = window;
 }
 int ComprMultiInput::handle_event()
 {
 	plugin->config.input = text_to_value(get_text());
-	((ComprMultiWindow*)plugin->thread->window)->update();
+	window->update();
 	plugin->send_configure_change();
 	return 1;
 }
@@ -627,19 +616,41 @@ int ComprMultiInput::text_to_value(char *text)
 }
 
 
-ComprMultiClear::ComprMultiClear(ComprMultiEffect *plugin, int x, int y) 
+ComprMultiClear::ComprMultiClear(ComprMultiEffect *plugin,
+		ComprMultiWindow *window, int x, int y) 
  : BC_GenericButton(x, y, _("Clear"))
 {
 	this->plugin = plugin;
+	this->window = window;
 }
 
 int ComprMultiClear::handle_event()
 {
 	BandConfig *band_config = &plugin->config.bands[plugin->config.current_band];
-
+	band_config->mkup_gain = 0.0;
 	band_config->levels.remove_all();
 //plugin->config.dump();
-	((ComprMultiWindow*)plugin->thread->window)->update();
+	window->update();
+	plugin->send_configure_change();
+	return 1;
+}
+
+ComprMultiReset::ComprMultiReset(ComprMultiEffect *plugin,
+		ComprMultiWindow *window, int x, int y) 
+ : BC_GenericButton(x, y, _("Reset"))
+{
+	this->plugin = plugin;
+	this->window = window;
+}
+
+int ComprMultiReset::handle_event()
+{
+	plugin->config.q = 1.0;
+	plugin->config.window_size = 4096;
+	plugin->config.reset_bands();
+	plugin->config.reset_base();
+//plugin->config.dump();
+	window->update();
 	plugin->send_configure_change();
 	return 1;
 }

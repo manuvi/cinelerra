@@ -314,6 +314,7 @@ public:
 // Returns 1 if a GUI for the plugin is open so OpenGL routines can determine if
 // they can run.
 	int plugin_gui_open(Plugin *plugin);
+	void stop_plugin_guis();
 
 	void show_keyframe_gui(Plugin *plugin);
 	void hide_keyframe_guis();

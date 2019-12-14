@@ -214,8 +214,8 @@ int CompressorEffect::process_buffer(int64_t size, Samples **buffer,
 	while( levels.size() < nbands ) levels.append();
 
 	for( int i=0; i<band_config->levels.total; ++i ) {
-		levels.values[i].x = DB::fromdb(band_config->levels.values[i].x);
-		levels.values[i].y = DB::fromdb(band_config->levels.values[i].y);
+		levels[i].x = DB::fromdb(band_config->levels[i].x);
+		levels[i].y = DB::fromdb(band_config->levels[i].y);
 	}
 // 	min_x = DB::fromdb(config.min_db);
 // 	min_y = DB::fromdb(config.min_db);
@@ -337,7 +337,6 @@ void CompressorConfig::copy_from(CompressorConfig &that)
 int CompressorConfig::equivalent(CompressorConfig &that)
 {
 	return CompressorConfigBase::equivalent(that);
-	return 1;
 }
 
 void CompressorConfig::interpolate(CompressorConfig &prev,
@@ -444,7 +443,19 @@ void CompressorWindow::create_objects()
 	x_text->create_objects();
 	y += x_text->get_h() + margin;
 
-	add_subwindow(clear = new CompressorClear(plugin, x, y));
+	add_subwindow(clear = new CompressorClear(plugin, this, x, y));
+	y += clear->get_h() + margin;
+
+	add_subwindow(title = new BC_Title(x, y, "Gain:"));
+	y += title->get_h() + margin;
+	BandConfig *band_config = &plugin->config.bands[0];
+	add_subwindow(mkup_gain = new CompressorMkupGain(plugin, this, x, y,
+		&band_config->mkup_gain, -10., 10.));
+	y += mkup_gain->get_h() + margin;
+
+	add_subwindow(reset = new CompressorReset(plugin, this, x, y));
+//	y += reset->get_h() + margin;
+
 	x = xS(10);
 	y = get_h() - yS(40);
 
@@ -457,6 +468,8 @@ void CompressorWindow::create_objects()
 void CompressorWindow::update()
 {
 	update_textboxes();
+	BandConfig *band_config = &plugin->config.bands[0];
+	mkup_gain->update(band_config->mkup_gain);
 	canvas->update();
 }
 
@@ -489,8 +502,8 @@ void CompressorWindow::update_textboxes()
 		release->update((float)band_config->release_len);
 	smooth->update(plugin->config.smoothing_only);
 	if( canvas->current_operation == CompressorCanvas::DRAG ) {
-		x_text->update((float)band_config->levels.values[canvas->current_point].x);
-		y_text->update((float)band_config->levels.values[canvas->current_point].y);
+		x_text->update((float)band_config->levels[canvas->current_point].x);
+		y_text->update((float)band_config->levels[canvas->current_point].y);
 	}
 }
 
@@ -573,6 +586,7 @@ CompressorX::CompressorX(CompressorEffect *plugin,
 	plugin->config.min_db, plugin->config.max_db, x, y, xS(100))
 {
 	this->plugin = plugin;
+	this->window = window;
 	set_increment(0.1);
 	set_precision(2);
 }
@@ -581,8 +595,8 @@ int CompressorX::handle_event()
 	BandConfig *band_config = &plugin->config.bands[0];
 	int current_point = ((CompressorWindow*)plugin->thread->window)->canvas->current_point;
 	if( current_point < band_config->levels.total ) {
-		band_config->levels.values[current_point].x = atof(get_text());
-		((CompressorWindow*)plugin->thread->window)->canvas->update();
+		band_config->levels[current_point].x = atof(get_text());
+		window->canvas->update();
 		plugin->send_configure_change();
 	}
 	return 1;
@@ -594,6 +608,7 @@ CompressorY::CompressorY(CompressorEffect *plugin,
 	plugin->config.min_db, plugin->config.max_db, x, y, xS(100))
 {
 	this->plugin = plugin;
+	this->window = window;
 	set_increment(0.1);
 	set_precision(2);
 }
@@ -602,8 +617,8 @@ int CompressorY::handle_event()
 	BandConfig *band_config = &plugin->config.bands[0];
 	int current_point = ((CompressorWindow*)plugin->thread->window)->canvas->current_point;
 	if( current_point < band_config->levels.total ) {
-		band_config->levels.values[current_point].y = atof(get_text());
-		((CompressorWindow*)plugin->thread->window)->canvas->update();
+		band_config->levels[current_point].y = atof(get_text());
+		window->canvas->update();
 		plugin->send_configure_change();
 	}
 	return 1;
@@ -668,21 +683,62 @@ int CompressorInput::text_to_value(char *text)
 	return CompressorConfig::TRIGGER;
 }
 
-CompressorClear::CompressorClear(CompressorEffect *plugin, int x, int y)
+CompressorClear::CompressorClear(CompressorEffect *plugin,
+		CompressorWindow *window, int x, int y)
  : BC_GenericButton(x, y, _("Clear"))
 {
 	this->plugin = plugin;
+	this->window = window;
 }
 
 int CompressorClear::handle_event()
 {
 	BandConfig *band_config = &plugin->config.bands[0];
-	band_config->levels.remove_all();
+	band_config->reset();
 //plugin->config.dump();
-	((CompressorWindow*)plugin->thread->window)->update();
+	window->update();
 	plugin->send_configure_change();
 	return 1;
 }
+
+CompressorReset::CompressorReset(CompressorEffect *plugin,
+		CompressorWindow *window, int x, int y) 
+ : BC_GenericButton(x, y, _("Reset"))
+{
+	this->plugin = plugin;
+	this->window = window;
+}
+
+int CompressorReset::handle_event()
+{
+	plugin->config.reset_bands();
+	plugin->config.reset_base();
+//plugin->config.dump();
+	window->update();
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+CompressorMkupGain::CompressorMkupGain(CompressorEffect *plugin, 
+		CompressorWindow *window, int x, int y,
+		double *output, double min, double max)
+ : BC_FPot(x, y, *output, min, max)
+{
+	this->plugin = plugin;
+	this->window = window;
+	this->output = output;
+	set_precision(0.01);
+}
+
+int CompressorMkupGain::handle_event()
+{
+	*output = get_value();
+	plugin->send_configure_change();
+	window->canvas->update();
+	return 1;
+}
+
 
 CompressorSmooth::CompressorSmooth(CompressorEffect *plugin, int x, int y)
  : BC_CheckBox(x, y, plugin->config.smoothing_only, _("Smooth only"))

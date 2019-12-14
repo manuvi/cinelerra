@@ -76,9 +76,32 @@ public:
 class CompressorClear : public BC_GenericButton
 {
 public:
-	CompressorClear(CompressorEffect *plugin, int x, int y);
+	CompressorClear(CompressorEffect *plugin, CompressorWindow *window,
+			int x, int y);
 	int handle_event();
 	CompressorEffect *plugin;
+	CompressorWindow *window;
+};
+
+class CompressorReset : public BC_GenericButton
+{
+public:
+	CompressorReset(CompressorEffect *plugin,
+			CompressorWindow *window, int x, int y);
+	int handle_event();
+	CompressorEffect *plugin;
+	CompressorWindow *window;
+};
+
+class CompressorMkupGain : public BC_FPot
+{
+public:
+	CompressorMkupGain(CompressorEffect *plugin, CompressorWindow *window,
+			int x, int y, double *output, double min, double max);
+	int handle_event();
+	CompressorWindow *window;
+	CompressorEffect *plugin;
+	double *output;
 };
 
 class CompressorX : public BC_TumbleTextBox
@@ -88,6 +111,7 @@ public:
 			int x, int y);
 	int handle_event();
 	CompressorEffect *plugin;
+	CompressorWindow *window;
 };
 
 class CompressorY : public BC_TumbleTextBox
@@ -97,6 +121,7 @@ public:
 			int x, int y);
 	int handle_event();
 	CompressorEffect *plugin;
+	CompressorWindow *window;
 };
 
 class CompressorTrigger : public BC_TumbleTextBox
@@ -146,6 +171,8 @@ public:
 	CompressorLookAhead *readahead;
 	CompressorAttack *attack;
 	CompressorClear *clear;
+	CompressorReset *reset;
+	CompressorMkupGain *mkup_gain;
 	CompressorX *x_text;
 	CompressorY *y_text;
 	CompressorTrigger *trigger;

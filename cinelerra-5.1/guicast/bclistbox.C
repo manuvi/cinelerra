@@ -3725,12 +3725,11 @@ int BC_ListBox::draw_items(int flush, int draw_bg)
 						gui->pixmap->draw_vframe(vicon, icon_x, icon_y);
 					else if( item->icon )
 						gui->pixmap->draw_pixmap(item->icon, icon_x, icon_y);
-					char item_text[BCTEXTLEN];
-					if( display_format == LISTBOX_ICONS_PACKED )
-						gui->truncate_text(item_text, item->text, text_w);
-					else
-						strcpy(item_text, item->text);
+					char *item_text = display_format == LISTBOX_ICONS_PACKED ?
+						get_truncated_text(MEDIUMFONT, item->text, text_w) :
+						cstrdup(item->text);
 					gui->draw_text(text_x, text_y + get_baseline(item), item_text);
+					delete [] item_text;
 				}
 				else
 					item->set_in_view(0);

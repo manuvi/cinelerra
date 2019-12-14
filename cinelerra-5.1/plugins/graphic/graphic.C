@@ -977,23 +977,6 @@ void GraphicGUI::update_textboxes()
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 GraphicEQ::GraphicEQ(PluginServer *server)
  : PluginAClient(server)
 {
@@ -1036,32 +1019,21 @@ void GraphicEQ::read_data(KeyFrame *keyframe)
 	input.set_shared_input(keyframe->xbuf);
 	config.points.remove_all_objects();
 
-	while(!result)
-	{
-		result = input.read_tag();
-
-		if(!result)
-		{
-			if(input.tag.title_is("GRAPHICEQ"))
-			{
-				config.window_size = input.tag.get_property("WINDOW_SIZE", config.window_size);
-				if(is_defaults())
-				{
-					w = input.tag.get_property("W", w);
-					h = input.tag.get_property("H", h);
-				}
-			}
-			else
-			if(input.tag.title_is("POINT"))
-			{
-				GraphicPoint *point;
-				config.points.append(point = new GraphicPoint);
-				point->freq = input.tag.get_property("X", 0);
-				point->value = input.tag.get_property("Y", 0.0);
+	while( !(result = input.read_tag()) ) {
+		if(input.tag.title_is("GRAPHICEQ")) {
+			config.window_size = input.tag.get_property("WINDOW_SIZE", config.window_size);
+			if(is_defaults()) {
+				w = input.tag.get_property("W", w);
+				h = input.tag.get_property("H", h);
 			}
 		}
+		else if(input.tag.title_is("POINT")) {
+			GraphicPoint *point;
+			config.points.append(point = new GraphicPoint);
+			point->freq = input.tag.get_property("X", 0);
+			point->value = input.tag.get_property("Y", 0.0);
+		}
 	}
-
 //	if(!active_point_exists()) active_point = -1;
 }
 
@@ -1082,8 +1054,7 @@ void GraphicEQ::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.append_newline();
 
-	for(int i = 0; i < config.points.total; i++)
-	{
+	for(int i = 0; i < config.points.total; i++) {
 		output.tag.set_title("POINT");
 		output.tag.set_property("X", config.points.values[i]->freq);
 		output.tag.set_property("Y", config.points.values[i]->value);
@@ -1109,30 +1080,27 @@ void GraphicEQ::update_gui()
 		window->update_canvas();
 		window->update_textboxes();
 	}
-	else if( pending_gui_frames() ) {
-			window->update_canvas();
+	else if( pending_gui_frame() ) {
+		window->update_canvas();
 	}
 	window->unlock_window();
 }
 
 void GraphicEQ::reconfigure()
 {
-	if(fft && fft->window_size != config.window_size)
-	{
+	if(fft && fft->window_size != config.window_size) {
 		delete fft;
 		fft = 0;
 	}
 
-	if(!fft)
-	{
+	if(!fft) {
 		fft = new GraphicFFT(this);
 		fft->initialize(config.window_size);
 	}
 
 	calculate_envelope(&config.points, envelope);
 
-	for(int i = 0; i < config.window_size / 2; i++)
-	{
+	for(int i = 0; i < config.window_size / 2; i++) {
 		if(envelope[i] < 0) envelope[i] = 0;
 	}
 

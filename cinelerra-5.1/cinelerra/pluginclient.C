@@ -653,11 +653,11 @@ PluginClientFrame* PluginClientFrames::get_gui_frame(double pos, int dir)
 
 PluginClientFrame* PluginClient::get_gui_frame(double pos, int dir)
 {
-	return frame_buffer.get_gui_frame(pos, dir);
+	return client_frames.get_gui_frame(pos, dir);
 }
 PluginClientFrame* PluginClient::next_gui_frame()
 {
-	return frame_buffer.first;
+	return client_frames.first;
 }
 
 
@@ -670,9 +670,9 @@ void PluginClient::update_gui()
 {
 }
 
-int PluginClient::pending_gui_frames()
+int PluginClient::pending_gui_frame()
 {
-	PluginClientFrame *frame = frame_buffer.first;
+	PluginClientFrame *frame = client_frames.first;
 	if( !frame ) return 0;
 	double tracking_position = get_tracking_position();
 	int direction = get_tracking_direction();
@@ -682,9 +682,28 @@ int PluginClient::pending_gui_frames()
 	return ret;
 }
 
+int PluginClient::pending_gui_frames()
+{
+	PluginClientFrame *frame = client_frames.first;
+	if( !frame ) return 0;
+	double tracking_position = get_tracking_position();
+	int direction = get_tracking_direction();
+	int count = 0;
+	while( frame && !(direction == PLAY_REVERSE ?
+	    frame->position < tracking_position :
+	    frame->position > tracking_position) ) {
+		++count;  frame=frame->next;
+	}
+	return count;
+}
+
 void PluginClient::add_gui_frame(PluginClientFrame *frame)
 {
-	frame_buffer.add_gui_frame(frame);
+	client_frames.add_gui_frame(frame);
+}
+int PluginClient::get_gui_frames()
+{
+	return client_frames.total();
 }
 
 double PluginClient::get_tracking_position()
@@ -699,7 +718,7 @@ int PluginClient::get_tracking_direction()
 
 void PluginClient::send_render_gui()
 {
-	server->send_render_gui(&frame_buffer);
+	server->send_render_gui(&client_frames);
 }
 
 void PluginClient::send_render_gui(void *data)
@@ -719,7 +738,7 @@ void PluginClient::plugin_reset_gui_frames()
 	BC_WindowBase *window = thread->get_window();
 	if( !window ) return;
 	window->lock_window("PluginClient::plugin_reset_gui_frames");
-	frame_buffer.reset();
+	client_frames.reset();
 	window->unlock_window();
 }
 
@@ -729,11 +748,11 @@ void PluginClient::plugin_render_gui_frames(PluginClientFrames *frames)
 	BC_WindowBase *window = thread->get_window();
 	if( !window ) return;
 	window->lock_window("PluginClient::render_gui");
-	while( frame_buffer.count > MAX_FRAME_BUFFER )
+	while( client_frames.count > MAX_FRAME_BUFFER )
 		delete get_gui_frame(0, 0);
-// append client frames to gui frame_buffer, consumes frames
-	frame_buffer.concatenate(frames);
-	frame_buffer.sort_position(get_tracking_direction());
+// append client frames to gui client_frames, consumes frames
+	client_frames.concatenate(frames);
+	client_frames.sort_position(get_tracking_direction());
 	update_timer->update();
 	window->unlock_window();
 }

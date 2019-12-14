@@ -77,10 +77,10 @@ public:
 	void reconfigure();
 // calculate the envelope for only this band
 	void calculate_envelope();
-	void process_readbehind(int size,
-		int reaction_samples, int decay_samples, int trigger);
-	void process_readahead(int size, int preview_samples,
-		int reaction_samples, int decay_samples, int trigger);
+//	void process_readbehind(int size,
+//		int reaction_samples, int decay_samples, int trigger);
+//	void process_readahead(int size, int preview_samples,
+//		int reaction_samples, int decay_samples, int trigger);
 	void allocate_filtered(int new_size);
 
 // bandpass filter for this band

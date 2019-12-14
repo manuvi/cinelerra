@@ -274,7 +274,7 @@ public:
 // Called by MWindow to cause GUI to display
 	void render_gui(void *data);
 	void render_gui(void *data, int size);
-// PluginClientFrames queuing to gui frame_buffer
+// PluginClientFrames queuing to gui client_frames
 	void send_reset_gui_frames();
 	void reset_gui_frames();
 	void render_gui_frames(PluginClientFrames *frames);

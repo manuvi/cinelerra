@@ -212,7 +212,7 @@ void ComprMultiEffect::save_data(KeyFrame *keyframe)
 void ComprMultiEffect::dump_frames()
 {
 	printf("tracking %f, direction %d\n", get_tracking_position(), get_tracking_direction());
-	CompressorClientFrame *cfp = (CompressorClientFrame *)frame_buffer.first;
+	CompressorClientFrame *cfp = (CompressorClientFrame *)client_frames.first;
 	for( int n=0; cfp; cfp=(CompressorClientFrame *)cfp->next,++n ) {
 		switch( cfp->type ) {
 		case GAIN_COMPRESSORFRAME: {
@@ -244,7 +244,7 @@ void ComprMultiEffect::update_gui()
 //printf("ComprMultiEffect::update_gui %d %d %d\n", __LINE__, reconfigured, total_frames);
 	if( reconfigured )
 		window->update();
-	if( pending_gui_frames() )
+	if( pending_gui_frame() )
 		window->update_eqcanvas();
 	window->unlock_window();
 }
@@ -632,7 +632,7 @@ void BandState::calculate_envelope()
 	}
 }
 
-
+#if 0
 void BandState::process_readbehind(int size,
 		int reaction_samples, int decay_samples, int trigger)
 {
@@ -819,7 +819,7 @@ void BandState::process_readahead(int size, int preview_samples,
 		}
 	}
 }
-
+#endif
 
 ComprMultiFFT::ComprMultiFFT(ComprMultiEffect *plugin, int channel)
 {

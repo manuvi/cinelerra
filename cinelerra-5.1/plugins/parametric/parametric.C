@@ -995,7 +995,7 @@ void ParametricEQ::update_gui()
 		calculate_envelope();
 		window->update_gui();
 	}
-	else if(pending_gui_frames()) {
+	else if( pending_gui_frame() ) {
 		window->update_canvas();
 	}
 	window->unlock_window();

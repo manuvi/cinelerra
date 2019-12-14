@@ -65,6 +65,7 @@ int CTracking::stop_playback()
 {
 	mwindow->gui->set_playing_back(0);
 	Tracking::stop_playback();
+	mwindow->stop_plugin_guis();
 	mwindow->edl->local_session->set_playback_end(get_tracking_position());
 	return 0;
 }

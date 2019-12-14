@@ -116,13 +116,13 @@ int PluginAClient::process_buffer(int64_t size, Samples *buffer,
 
 void PluginAClient::begin_process_buffer()
 {
-	frame_buffer.destroy();
+	client_frames.destroy();
 }
 
 void PluginAClient::end_process_buffer()
 {
-	if( !frame_buffer.first ) return;
-	server->render_gui_frames(&frame_buffer);
+	if( !client_frames.first ) return;
+	server->render_gui_frames(&client_frames);
 }
 
 

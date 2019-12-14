@@ -359,12 +359,12 @@ void Reverb::update_gui()
 	ReverbWindow *window = (ReverbWindow *)thread->window;
 	if( !window ) return;
 	int reconfigured = load_configuration();
-	int total_frames = pending_gui_frames();
-	if( !reconfigured && !total_frames ) return;
+	int pending = pending_gui_frame();
+	if( !reconfigured && !pending ) return;
 	window->lock_window("Reverb::update_gui 1");
 	if( reconfigured )
 		window->update();
-	if( total_frames )
+	if( pending )
 		window->update_canvas();
 	window->unlock_window();
 }

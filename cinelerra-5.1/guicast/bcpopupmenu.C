@@ -216,13 +216,13 @@ int BC_PopupMenu::draw_face(int dx, int color)
 	int available_w = get_w() - calculate_w(margin, 0, use_title);
 
 	if( !icon ) {
-		char truncated[BCTEXTLEN];
-		truncate_text(truncated, text, available_w);
+		char *truncated = get_truncated_text(MEDIUMFONT, text, available_w);
 		set_font(MEDIUMFONT);
 		BC_WindowBase::draw_center_text(
 			dx + available_w/2 + margin + offset,
 			(int)((float)get_h()/2 + get_text_ascent(MEDIUMFONT)/2 - 2) + offset,
 			truncated);
+		delete [] truncated;
 	}
 
 	if( icon ) {
