@@ -26,6 +26,7 @@ DIRS = $(OPENCV_OBJS) \
 	1080to540 \
 	720to480 \
 	aging \
+	alpha \
 	scaleratio \
 	audioscope \
 	bandslide \
@@ -69,6 +70,7 @@ DIRS = $(OPENCV_OBJS) \
 	flanger \
 	flash \
 	flip \
+	foreground \
 	framefield \
 	freeverb \
 	freezeframe \

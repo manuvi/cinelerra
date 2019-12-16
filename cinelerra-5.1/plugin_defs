@@ -23,6 +23,7 @@ video := \
 	1080to540 \
 	720to480 \
 	aging \
+	alpha \
 	bandslide \
 	bandwipe \
 	bluebanana \
@@ -52,6 +53,7 @@ video := \
 	fieldframe \
 	flash \
 	flip \
+	foreground \
 	framefield \
 	freezeframe \
 	gamma \

@@ -217,56 +217,50 @@ void Plugin::equivalent_output(Edit *edit, int64_t *result)
 	keyframes->equivalent_output(plugin->keyframes, startproject, result);
 }
 
-
-
-int Plugin::is_synthesis(int64_t position,
-		int direction)
+const char* Plugin::type_to_text(int type)
 {
-	switch(plugin_type)
-	{
-		case PLUGIN_STANDALONE:
-		{
-			if(!track)
-			{
-				printf("Plugin::is_synthesis track not defined\n");
-				return 0;
-			}
+	switch( type ) {
+        case PLUGIN_STANDALONE:    return _("standalone");
+        case PLUGIN_SHAREDPLUGIN:  return _("shared plugin");
+        case PLUGIN_SHAREDMODULE:  return _("shared module");
+	}
+	return _("none");
+}
 
-
-			PluginServer *plugin_server = MWindow::scan_plugindb(title,
-				track->data_type);
-//printf("Plugin::is_synthesis %d %p %d\n", __LINE__, plugin_server, plugin_server->get_synthesis());
-//plugin_server->dump();
-			return plugin_server->get_synthesis();
-			break;
+int Plugin::is_synthesis(int64_t position, int direction, int depth)
+{
+	if( depth > 255 ) {
+		printf("Plugin::is_synthesis %d: depth range limit, type=%s, title=%s\n",
+			__LINE__, type_to_text(plugin_type), title);
+		return 0;
+	}
+	switch( plugin_type ) {
+	case PLUGIN_STANDALONE: {
+		if( !track ) {
+			printf("Plugin::is_synthesis track not defined\n");
+			return 0;
 		}
+		PluginServer *plugin_server = MWindow::scan_plugindb(title, track->data_type);
+		return plugin_server->get_synthesis(); }
 
 // Dereference real plugin and descend another level
-		case PLUGIN_SHAREDPLUGIN:
-		{
-			int real_module_number = shared_location.module;
-			int real_plugin_number = shared_location.plugin;
-			Track *track = edl->tracks->number(real_module_number);
+	case PLUGIN_SHAREDPLUGIN: {
+		int real_module_number = shared_location.module;
+		int real_plugin_number = shared_location.plugin;
+		Track *track = edl->tracks->number(real_module_number);
 // Get shared plugin from master track
-			Plugin *plugin = track->get_current_plugin(position,
-				real_plugin_number,
-				direction,
-				0,
-				0);
+		Plugin *plugin = track->get_current_plugin(position,
+			real_plugin_number, direction, 0, 0);
 
-			if(plugin)
-				return plugin->is_synthesis(position, direction);
-			break;
-		}
+		if(plugin)
+			return plugin->is_synthesis(position, direction, depth+1);
+		break; }
 
 // Dereference the real track and descend
-		case PLUGIN_SHAREDMODULE:
-		{
-			int real_module_number = shared_location.module;
-			Track *track = edl->tracks->number(real_module_number);
-			return track->is_synthesis(position, direction);
-			break;
-		}
+	case PLUGIN_SHAREDMODULE: {
+		int real_module_number = shared_location.module;
+		Track *track = edl->tracks->number(real_module_number);
+		return track->is_synthesis(position, direction, depth+1); }
 	}
 	return 0;
 }

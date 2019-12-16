@@ -607,7 +607,7 @@ int CriKey::process_buffer(VFrame *frame, int64_t start_position, double frame_r
 		if( !pt->e ) continue;
 		if( set_target(engine->color, pt->x, pt->y) ) continue;
 		engine->threshold = pt->t;
-		edg->clear_frame();
+		edg->black_frame();
 		engine->process_packages();
 		fill_edge(edg, w, h);
 		FillRegion fill_region(edg, msk);

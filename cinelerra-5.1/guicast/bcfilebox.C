@@ -90,14 +90,8 @@ int BC_FileBoxListBox::selection_changed()
 		filebox->column_of_type(FILEBOX_NAME), 0);
 
 	if(item) {
-		char path[BCTEXTLEN];
-		strcpy(path, item->get_text());
-		filebox->textbox->update(path);
-		filebox->fs->extract_dir(filebox->directory, path);
-		filebox->fs->extract_name(filebox->filename, path);
-		filebox->fs->complete_path(path);
-		strcpy(filebox->current_path, path);
-		strcpy(filebox->submitted_path, path);
+		filebox->textbox->update(item->get_text());
+		filebox->update_paths(item->get_text());
 	}
 	return 1;
 }
@@ -172,11 +166,11 @@ BC_FileBoxTextBox::~BC_FileBoxTextBox()
 
 int BC_FileBoxTextBox::handle_event()
 {
-	int result = 0;
-	if(get_keypress() != RETURN)
-	{
+	int key = get_keypress(), result = 1;
+	if( !key || key == RETURN ) // not a text update
+		filebox->update_paths(filebox->textbox->get_text());
+	else
 		result = calculate_suggestions(&filebox->list_column[0]);
-	}
 	return result;
 }
 
@@ -1016,6 +1010,17 @@ int BC_FileBox::update_filter(const char *filter)
 	return 0;
 }
 
+
+void BC_FileBox::update_paths(const char *text)
+{
+	char path[BCTEXTLEN];
+	strncpy(path, text, sizeof(path)-1);
+	fs->extract_dir(directory, path);
+	fs->extract_name(filename, path);
+	fs->complete_path(path);
+	strcpy(current_path, path);
+	strcpy(submitted_path, path);
+}
 
 void BC_FileBox::move_column(int src, int dst)
 {

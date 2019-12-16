@@ -527,6 +527,7 @@ public:
 	int show_tooltip(int w=-1, int h=-1) { return show_tooltip(0, -1, -1, w, h); }
 	int hide_tooltip();
 	int set_icon(VFrame *data);
+	void set_net_icon(VFrame *data);
 	int load_defaults(BC_Hash *defaults);
 	int save_defaults(BC_Hash *defaults);
 

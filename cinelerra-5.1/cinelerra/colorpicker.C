@@ -23,6 +23,7 @@
 #include "bccapture.h"
 #include "bccolors.h"
 #include "bcdisplayinfo.h"
+#include "cstrdup.h"
 #include "colorpicker.h"
 #include "condition.h"
 #include "keys.h"
@@ -40,32 +41,28 @@
 ColorPicker::ColorPicker(int do_alpha, const char *title)
  : BC_DialogThread()
 {
-	this->title = title;
 	this->do_alpha = do_alpha;
-	this->ok_cancel = 0;
-	this->output = this->orig_color = BLACK;
-	this->alpha = this->orig_alpha = 255;
+	this->title = cstrdup(title);
 }
 
 ColorPicker::~ColorPicker()
 {
 	close_window();
+	delete [] title;
 }
 
-void ColorPicker::start_window(int output, int alpha, int ok_cancel)
+void ColorPicker::start_window(int color, int alpha, int ok_cancel)
 {
 	if( running() ) {
-		ColorWindow *gui = (ColorWindow *)get_gui();
-		if( gui ) {
-			gui->lock_window("ColorPicker::start_window");
-			gui->raise_window(1);
-			gui->unlock_window();
+		ColorWindow *window = (ColorWindow *)get_gui();
+		if( window ) {
+			window->lock_window("ColorPicker::start_window");
+			window->raise_window(1);
+			window->unlock_window();
 		}
 		return;
 	}
-	this->orig_color = output;
-	this->orig_alpha = alpha;
-	this->output = output;
+	this->color = color;
 	this->alpha = alpha;
 	this->ok_cancel = ok_cancel;
 	start();
@@ -79,7 +76,8 @@ BC_Window* ColorPicker::new_gui()
 	BC_DisplayInfo display_info;
 	int x = display_info.get_abs_cursor_x() + xS(25);
 	int y = display_info.get_abs_cursor_y() - yS(100);
-	int w = xS(540), h = yS(330);
+	int w = ColorWindow::calculate_w();
+	int h = ColorWindow::calculate_h();
 	if( ok_cancel )
 		h += bmax(BC_OKButton::calculate_h(),BC_CancelButton::calculate_h());
 	int root_w = display_info.get_root_w(), root_h = display_info.get_root_h();
@@ -87,37 +85,65 @@ BC_Window* ColorPicker::new_gui()
 	if( y+h > root_h ) y = root_h - h;
 	if( x < 0 ) x = 0;
 	if( y < 0 ) y = 0;
-	ColorWindow *gui = new ColorWindow(this, x, y, w, h, window_title);
-	gui->create_objects();
-	return gui;
+	ColorWindow *window = new ColorWindow(this, x, y, w, h, window_title);
+	window->start_selection(color, !do_alpha ? -1 : alpha, ok_cancel);
+	return window;
 }
 
-void ColorPicker::update_gui(int output, int alpha)
+void ColorPicker::update_gui(int color, int alpha)
 {
-	ColorWindow *gui = (ColorWindow *)get_gui();
-	if( !gui ) return;
-	gui->lock_window("ColorPicker::update_gui");
-	this->output = output;
-	this->alpha = alpha;
-	gui->change_values();
-	gui->update_display();
-	gui->unlock_window();
+	ColorWindow *window = (ColorWindow *)get_gui();
+	if( !window ) return;
+	window->update_gui(color, alpha);
 }
 
-int ColorPicker::handle_new_color(int output, int alpha)
+int ColorPicker::handle_new_color(int color, int alpha)
 {
 	printf("ColorPicker::handle_new_color undefined.\n");
 	return 1;
 }
 
-
 ColorWindow::ColorWindow(ColorPicker *thread, int x, int y, int w, int h, const char *title)
- : BC_Window(title, x, y, w, h, w, h, 0, 0, 1)
+ : BC_Window(title, x, y, w, h, w, h, 0, 0, 1),
+   ColorGUI(this)
 {
 	this->thread = thread;
+}
+
+ColorWindow::~ColorWindow()
+{
+}
+
+void ColorWindow::update_gui(int color, int alpha)
+{
+	lock_window("ColorWindow::update_gui");
+	this->color = color;
+	this->alpha = alpha;
+	change_values();
+	update_display();
+	unlock_window();
+}
+int ColorWindow::handle_new_color(int color, int alpha)
+{
+	lock_window("ColorWindow::handle_new_color");
+	thread->handle_new_color(color, alpha);
+	unlock_window();
+	return 1;
+}
+
+
+ColorGUI::ColorGUI(BC_WindowBase *window)
+{
+	this->window = window;
+	this->title = 0;
+	this->do_alpha = 0;
+	this->ok_cancel = 0;
+	this->color = this->orig_color = BLACK;
+	this->alpha = this->orig_alpha = 255;
+
 	wheel = 0;
 	wheel_value = 0;
-	output = 0;
+	color = 0;
 
 	hue = 0; sat = 0; val = 0;
 	red = 0; grn = 0; blu = 0;
@@ -131,7 +157,7 @@ ColorWindow::ColorWindow(ColorPicker *thread, int x, int y, int w, int h, const 
 
 	button_grabbed = 0;
 }
-ColorWindow::~ColorWindow()
+ColorGUI::~ColorGUI()
 {
 	delete hsv_h;  delete hsv_s;  delete hsv_v;
 	delete rgb_r;  delete rgb_g;  delete rgb_b;
@@ -139,19 +165,35 @@ ColorWindow::~ColorWindow()
 	delete aph_a;
 
 	if( button_grabbed ) {
-		ungrab_buttons();
-		ungrab_cursor();
+		window->ungrab_buttons();
+		window->ungrab_cursor();
 	}
 	update_history(rgb888());
 	save_history();
 }
 
-void ColorWindow::create_objects()
+void ColorGUI::add_tool(BC_WindowBase *sub_wdw)
+{
+	window->add_tool(sub_wdw);
+}
+
+void ColorGUI::start_selection(int color, int alpha, int ok_cancel)
+{
+	this->orig_color = color;
+	this->orig_alpha = alpha;
+	this->color = color;
+	this->alpha = alpha;
+	this->do_alpha = alpha < 0 ? 0 : 1;
+	this->ok_cancel = ok_cancel;
+	create_objects();
+}
+
+void ColorGUI::create_objects()
 {
 	int xs5 = xS(5), xs10 = xS(10), xs15 = xS(15);
 	int ys10 = yS(10), ys15 = yS(15), ys25 = yS(25), ys40 = yS(40);
 	int x0 = xs10, y0 = ys10;
-	lock_window("ColorWindow::create_objects");
+	window->lock_window("ColorGUI::create_objects");
 	change_values();
 
 	int x = x0, y = y0;
@@ -161,13 +203,13 @@ void ColorWindow::create_objects()
 	x += xS(180);  add_tool(wheel_value = new PaletteWheelValue(this, x, y));
 	wheel_value->create_objects();
 	x = x0;
-	y += yS(180);  add_tool(output = new PaletteOutput(this, x, y));
-	output->create_objects();
-	y += output->get_h() + yS(20);
+	y += yS(180);  add_tool(poutput = new PaletteOutput(this, x, y));
+	poutput->create_objects();
+	y += poutput->get_h() + yS(20);
 
 	load_history();  int x1 = x;
 	add_tool(hex_btn = new PaletteHexButton(this, x1, y));
-	char hex[BCSTRLEN];  sprintf(hex,"%06x",thread->output);
+	char hex[BCSTRLEN];  sprintf(hex,"%06x",color);
 	x1 += hex_btn->get_w() + xs5;
 	add_tool(hex_box = new PaletteHex(this, x1, y, hex));
 	x1 += hex_box->get_w() + xs15;
@@ -185,7 +227,7 @@ void ColorWindow::create_objects()
 	add_tool(new BC_Title(x, y+=ys40, C_("Y:"), SMALLFONT));
 	add_tool(new BC_Title(x, y+=ys25, C_("U:"), SMALLFONT));
 	add_tool(new BC_Title(x, y+=ys25, D_("colorpicker_Cr#V:"), SMALLFONT));
-	if( thread->do_alpha )
+	if( do_alpha )
 		add_tool(new BC_Title(x, y+=ys40, C_("A:"), SMALLFONT));
 	x += xS(24);
 	add_tool(hue = new PaletteHue(this, x, y= y0));
@@ -197,8 +239,8 @@ void ColorWindow::create_objects()
 	add_tool(lum = new PaletteLum(this, x, y+=ys40));
 	add_tool(c_r = new PaletteCr (this, x, y+=ys25));
 	add_tool(c_b = new PaletteCb (this, x, y+=ys25));
-	if( thread->do_alpha )
-		add_tool(alpha = new PaletteAlpha(this, x, y+=ys40));
+	if( do_alpha )
+		add_tool(palpha = new PaletteAlpha(this, x, y+=ys40));
 
 	x += hue->get_w() + xs10;
 	hsv_h = new PaletteHSV(this, x,y= y0, hsv.h, 0, 360);
@@ -219,58 +261,58 @@ void ColorWindow::create_objects()
 	yuv_u->create_objects();  yuv_u->set_tooltip(_("Blue Luminance Difference"));
 	yuv_v = new PaletteYUV(this, x,y+=ys25, yuv.v, 0, 1);
 	yuv_v->create_objects();  yuv_v->set_tooltip(_("Red Luminance Difference"));
-	if( thread->do_alpha ) {
+	if( do_alpha ) {
 		aph_a = new PaletteAPH(this, x,y+=ys40, aph, 0, 1);
 		aph_a->create_objects();  aph_a->set_tooltip(_("Alpha"));
 	}
-	if( thread->ok_cancel ) {
-		add_tool(new BC_OKButton(this));
-		add_tool(new BC_CancelButton(this));
+	if( ok_cancel ) {
+		add_tool(new BC_OKButton(window));
+		add_tool(new BC_CancelButton(window));
 	}
-	thread->create_objects(this);
+	create_objects(this);
 
 	update_display();
 	update_history();
-	show_window(1);
-	unlock_window();
+	window->show_window(1);
+	window->unlock_window();
 }
 
 
-void ColorWindow::change_values()
+void ColorGUI::change_values()
 {
-	float r = ((thread->output>>16) & 0xff) / 255.;
-	float g = ((thread->output>>8)  & 0xff) / 255.;
-	float b = ((thread->output>>0)  & 0xff) / 255.;
+	float r = ((color>>16) & 0xff) / 255.;
+	float g = ((color>>8)  & 0xff) / 255.;
+	float b = ((color>>0)  & 0xff) / 255.;
 	rgb.r = r;  rgb.g = g;  rgb.b = b;
-	aph = (float)thread->alpha / 255;
+	aph = (float)alpha / 255;
 	update_rgb(rgb.r, rgb.g, rgb.b);
 }
 
 
-int ColorWindow::close_event()
+int ColorGUI::close_gui()
 {
-	set_done(thread->ok_cancel ? 1 : 0);
+	window->set_done(ok_cancel ? 1 : 0);
 	return 1;
 }
 
 
-void ColorWindow::update_rgb()
+void ColorGUI::update_rgb()
 {
 	update_rgb(rgb.r, rgb.g, rgb.b);
 	update_display();
 }
-void ColorWindow::update_hsv()
+void ColorGUI::update_hsv()
 {
 	update_hsv(hsv.h, hsv.s, hsv.v);
 	update_display();
 }
-void ColorWindow::update_yuv()
+void ColorGUI::update_yuv()
 {
 	update_yuv(yuv.y, yuv.u, yuv.v);
 	update_display();
 }
 
-void ColorWindow::update_display()
+void ColorGUI::update_display()
 {
 	wheel->draw(wheel->oldhue, wheel->oldsaturation);
 	wheel->oldhue = hsv.h;
@@ -279,8 +321,8 @@ void ColorWindow::update_display()
 	wheel->flash();
 	wheel_value->draw(hsv.h, hsv.s, hsv.v);
 	wheel_value->flash();
-	output->draw();
-	output->flash();
+	poutput->draw();
+	poutput->flash();
 
 	hue->update((int)hsv.h);
 	sat->update(hsv.s);
@@ -305,24 +347,24 @@ void ColorWindow::update_display()
 	yuv_v->update(yuv.v);
 	hex_box->update();
 
-	if( thread->do_alpha ) {
-		alpha->update(aph);
+	if( do_alpha ) {
+		palpha->update(aph);
 		aph_a->update(aph);
 	}
 }
 
-int ColorWindow::handle_event()
+int ColorGUI::handle_gui()
 {
-	unlock_window();
-	thread->handle_new_color(rgb888(), alpha8());
-	lock_window("ColorWindow::handle_event");
+	window->unlock_window();
+	handle_new_color(rgb888(), alpha8());
+	window->lock_window("ColorGUI::handle_event");
 	return 1;
 }
 
-void ColorWindow::get_screen_sample()
+void ColorGUI::get_screen_sample()
 {
 	int cx, cy;
-	get_abs_cursor(cx, cy);
+	window->get_abs_cursor(cx, cy);
 	BC_Capture capture_bitmap(1, 1, 0);
 	VFrame vframe(1,1,BC_RGB888);
 	capture_bitmap.capture_frame(&vframe, cx,cy);
@@ -331,16 +373,16 @@ void ColorWindow::get_screen_sample()
 	update_rgb();
 }
 
-int ColorWindow::cursor_motion_event()
+int ColorGUI::cursor_motion_gui()
 {
-	if( button_grabbed && get_button_down() ) {
+	if( button_grabbed && window->get_button_down() ) {
 		get_screen_sample();
 		return 1;
 	}
 	return 0;
 }
 
-int ColorWindow::button_press_event()
+int ColorGUI::button_press_gui()
 {
 	if( button_grabbed ) {
 		get_screen_sample();
@@ -349,24 +391,24 @@ int ColorWindow::button_press_event()
 	return 0;
 }
 
-int ColorWindow::button_release_event()
+int ColorGUI::button_release_gui()
 {
 	if( button_grabbed ) {
-		ungrab_buttons();
-		ungrab_cursor();
+		window->ungrab_buttons();
+		window->ungrab_cursor();
 		grab_btn->enable();
 		button_grabbed = 0;
 		update_history();
-		return handle_event();
+		return handle_gui();
 	}
 	return 1;
 }
 
-void ColorWindow::update_rgb_hex(const char *hex)
+void ColorGUI::update_rgb_hex(const char *hex)
 {
 	unsigned color;
 	if( sscanf(hex,"%x",&color) == 1 ) {
-		if( thread->do_alpha ) {
+		if( do_alpha ) {
 			aph = ((color>>24) & 0xff) / 255.;
 			aph_a->update(aph);
 		}
@@ -376,15 +418,27 @@ void ColorWindow::update_rgb_hex(const char *hex)
 		rgb.r = r;  rgb.g = g;  rgb.b = b;
 		update_rgb();
 		update_history();
-		handle_event();
+		handle_gui();
 	}
 }
 
+void ColorGUI::update_gui(int color, int alpha)
+{
+	printf("ColorGUI::update_gui undefined.\n");
+}
 
-PaletteWheel::PaletteWheel(ColorWindow *window, int x, int y)
+int ColorGUI::handle_new_color(int color, int alpha)
+{
+	printf("ColorGUI::handle_new_color undefined.\n");
+	return 1;
+}
+
+
+
+PaletteWheel::PaletteWheel(ColorGUI *gui, int x, int y)
  : BC_SubWindow(x, y, xS(170), yS(170))
 {
-	this->window = window;
+	this->gui = gui;
 	oldhue = 0;
 	oldsaturation = 0;
 	button_down = 0;
@@ -411,15 +465,15 @@ int PaletteWheel::cursor_motion_event()
 	int x1, y1, distance;
 	if( button_down && is_event_win() ) {
 		float h = get_angle(get_w()/2, get_h()/2, get_cursor_x(), get_cursor_y());
-		bclamp(h, 0, 359.999);  window->hsv.h = h;
+		bclamp(h, 0, 359.999);  gui->hsv.h = h;
 		x1 = get_w() / 2 - get_cursor_x();
 		y1 = get_h() / 2 - get_cursor_y();
 		distance = (int)sqrt(x1 * x1 + y1 * y1);
 		float s = (float)distance / (get_w() / 2);
-		bclamp(s, 0, 1);  window->hsv.s = s;
-		window->hsv.v = 1;
-		window->update_hsv();
-		window->handle_event();
+		bclamp(s, 0, 1);  gui->hsv.s = s;
+		gui->hsv.v = 1;
+		gui->update_hsv();
+		gui->handle_gui();
 		return 1;
 	}
 	return 0;
@@ -500,8 +554,8 @@ void PaletteWheel::create_objects()
 		0, 0, get_w(), get_h(),
 		0, 0, get_w(), get_h(), 0);
 
-	oldhue = window->hsv.h;
-	oldsaturation = window->hsv.s;
+	oldhue = gui->hsv.h;
+	oldsaturation = gui->hsv.s;
 	draw(oldhue, oldsaturation);
 	flash();
 }
@@ -566,10 +620,10 @@ int PaletteWheel::get_angle(float x1, float y1, float x2, float y2)
 	return (int)result;
 }
 
-PaletteWheelValue::PaletteWheelValue(ColorWindow *window, int x, int y)
+PaletteWheelValue::PaletteWheelValue(ColorGUI *gui, int x, int y)
  : BC_SubWindow(x, y, xS(40), yS(170), BLACK)
 {
-	this->window = window;
+	this->gui = gui;
 	button_down = 0;
 }
 PaletteWheelValue::~PaletteWheelValue()
@@ -580,7 +634,7 @@ PaletteWheelValue::~PaletteWheelValue()
 void PaletteWheelValue::create_objects()
 {
 	frame = new VFrame(get_w(), get_h(), BC_RGB888);
-	draw(window->hsv.h, window->hsv.s, window->hsv.v);
+	draw(gui->hsv.h, gui->hsv.s, gui->hsv.v);
 	flash();
 }
 
@@ -603,9 +657,9 @@ int PaletteWheelValue::cursor_motion_event()
 	if( button_down && is_event_win() ) {
 //printf("PaletteWheelValue::cursor_motion 1\n");
 		float v = 1.0 - (float)(get_cursor_y() - 2) / (get_h() - 4);
-		bclamp(v, 0, 1);  window->hsv.v = v;
-		window->update_hsv();
-		window->handle_event();
+		bclamp(v, 0, 1);  gui->hsv.v = v;
+		gui->update_hsv();
+		gui->handle_gui();
 		return 1;
 	}
 	return 0;
@@ -650,10 +704,10 @@ int PaletteWheelValue::draw(float hue, float saturation, float value)
 	return 0;
 }
 
-PaletteOutput::PaletteOutput(ColorWindow *window, int x, int y)
+PaletteOutput::PaletteOutput(ColorGUI *gui, int x, int y)
  : BC_SubWindow(x, y, xS(180), yS(30), BLACK)
 {
-	this->window = window;
+	this->gui = gui;
 }
 PaletteOutput::~PaletteOutput()
 {
@@ -673,16 +727,16 @@ int PaletteOutput::handle_event()
 
 int PaletteOutput::draw()
 {
-	set_color(window->rgb888());
+	set_color(gui->rgb888());
 	draw_box(2, 2, get_w() - 4, get_h() - 4);
 	draw_3d_border(0, 0, get_w(), get_h(), 1);
 	return 0;
 }
 
-PaletteHue::PaletteHue(ColorWindow *window, int x, int y)
- : BC_ISlider(x, y, 0, xS(150), xS(200), 0, 359, (int)(window->hsv.h), 0)
+PaletteHue::PaletteHue(ColorGUI *gui, int x, int y)
+ : BC_ISlider(x, y, 0, xS(150), xS(200), 0, 359, (int)(gui->hsv.h), 0)
 {
-	this->window = window;
+	this->gui = gui;
 }
 PaletteHue::~PaletteHue()
 {
@@ -690,16 +744,16 @@ PaletteHue::~PaletteHue()
 
 int PaletteHue::handle_event()
 {
-	window->hsv.h = get_value();
-	window->update_hsv();
-	window->handle_event();
+	gui->hsv.h = get_value();
+	gui->update_hsv();
+	gui->handle_gui();
 	return 1;
 }
 
-PaletteSat::PaletteSat(ColorWindow *window, int x, int y)
- : BC_FSlider(x, y, 0, xS(150), xS(200), 0, 1.0, window->hsv.s, 0)
+PaletteSat::PaletteSat(ColorGUI *gui, int x, int y)
+ : BC_FSlider(x, y, 0, xS(150), xS(200), 0, 1.0, gui->hsv.s, 0)
 {
-	this->window = window;
+	this->gui = gui;
 	set_precision(0.01);
 }
 PaletteSat::~PaletteSat()
@@ -708,17 +762,17 @@ PaletteSat::~PaletteSat()
 
 int PaletteSat::handle_event()
 {
-	window->hsv.s = get_value();
-	window->update_hsv();
-	window->handle_event();
+	gui->hsv.s = get_value();
+	gui->update_hsv();
+	gui->handle_gui();
 	return 1;
 }
 
 
-PaletteVal::PaletteVal(ColorWindow *window, int x, int y)
- : BC_FSlider(x, y, 0, xS(150), xS(200), 0, 1.0, window->hsv.v, 0)
+PaletteVal::PaletteVal(ColorGUI *gui, int x, int y)
+ : BC_FSlider(x, y, 0, xS(150), xS(200), 0, 1.0, gui->hsv.v, 0)
 {
-	this->window = window;
+	this->gui = gui;
 	set_precision(0.01);
 }
 PaletteVal::~PaletteVal()
@@ -727,17 +781,17 @@ PaletteVal::~PaletteVal()
 
 int PaletteVal::handle_event()
 {
-	window->hsv.v = get_value();
-	window->update_hsv();
-	window->handle_event();
+	gui->hsv.v = get_value();
+	gui->update_hsv();
+	gui->handle_gui();
 	return 1;
 }
 
 
-PaletteRed::PaletteRed(ColorWindow *window, int x, int y)
- : BC_FSlider(x, y, 0, xS(150), xS(200), 0, 1, window->rgb.r, 0)
+PaletteRed::PaletteRed(ColorGUI *gui, int x, int y)
+ : BC_FSlider(x, y, 0, xS(150), xS(200), 0, 1, gui->rgb.r, 0)
 {
-	this->window = window;
+	this->gui = gui;
 	set_precision(0.01);
 }
 PaletteRed::~PaletteRed()
@@ -746,16 +800,16 @@ PaletteRed::~PaletteRed()
 
 int PaletteRed::handle_event()
 {
-	window->rgb.r = get_value();
-	window->update_rgb();
-	window->handle_event();
+	gui->rgb.r = get_value();
+	gui->update_rgb();
+	gui->handle_gui();
 	return 1;
 }
 
-PaletteGrn::PaletteGrn(ColorWindow *window, int x, int y)
- : BC_FSlider(x, y, 0, xS(150), xS(200), 0, 1, window->rgb.g, 0)
+PaletteGrn::PaletteGrn(ColorGUI *gui, int x, int y)
+ : BC_FSlider(x, y, 0, xS(150), xS(200), 0, 1, gui->rgb.g, 0)
 {
-	this->window = window;
+	this->gui = gui;
 	set_precision(0.01);
 }
 PaletteGrn::~PaletteGrn()
@@ -764,16 +818,16 @@ PaletteGrn::~PaletteGrn()
 
 int PaletteGrn::handle_event()
 {
-	window->rgb.g = get_value();
-	window->update_rgb();
-	window->handle_event();
+	gui->rgb.g = get_value();
+	gui->update_rgb();
+	gui->handle_gui();
 	return 1;
 }
 
-PaletteBlu::PaletteBlu(ColorWindow *window, int x, int y)
- : BC_FSlider(x, y, 0, xS(150), xS(200), 0, 1, window->rgb.b, 0)
+PaletteBlu::PaletteBlu(ColorGUI *gui, int x, int y)
+ : BC_FSlider(x, y, 0, xS(150), xS(200), 0, 1, gui->rgb.b, 0)
 {
-	this->window = window;
+	this->gui = gui;
 	set_precision(0.01);
 }
 PaletteBlu::~PaletteBlu()
@@ -782,16 +836,16 @@ PaletteBlu::~PaletteBlu()
 
 int PaletteBlu::handle_event()
 {
-	window->rgb.b = get_value();
-	window->update_rgb();
-	window->handle_event();
+	gui->rgb.b = get_value();
+	gui->update_rgb();
+	gui->handle_gui();
 	return 1;
 }
 
-PaletteAlpha::PaletteAlpha(ColorWindow *window, int x, int y)
- : BC_FSlider(x, y, 0, xS(150), xS(200), 0, 1, window->aph, 0)
+PaletteAlpha::PaletteAlpha(ColorGUI *gui, int x, int y)
+ : BC_FSlider(x, y, 0, xS(150), xS(200), 0, 1, gui->aph, 0)
 {
-	this->window = window;
+	this->gui = gui;
 	set_precision(0.01);
 }
 PaletteAlpha::~PaletteAlpha()
@@ -800,17 +854,17 @@ PaletteAlpha::~PaletteAlpha()
 
 int PaletteAlpha::handle_event()
 {
-	window->aph = get_value();
-	window->aph_a->update(window->aph);
-	window->hex_box->update();
-	window->handle_event();
+	gui->aph = get_value();
+	gui->aph_a->update(gui->aph);
+	gui->hex_box->update();
+	gui->handle_gui();
 	return 1;
 }
 
-PaletteLum::PaletteLum(ColorWindow *window, int x, int y)
- : BC_FSlider(x, y, 0, xS(150), xS(200), 0, 1, window->yuv.y, 0)
+PaletteLum::PaletteLum(ColorGUI *gui, int x, int y)
+ : BC_FSlider(x, y, 0, xS(150), xS(200), 0, 1, gui->yuv.y, 0)
 {
-	this->window = window;
+	this->gui = gui;
 	set_precision(0.01);
 }
 PaletteLum::~PaletteLum()
@@ -819,16 +873,16 @@ PaletteLum::~PaletteLum()
 
 int PaletteLum::handle_event()
 {
-	window->yuv.y = get_value();
-	window->update_yuv();
-	window->handle_event();
+	gui->yuv.y = get_value();
+	gui->update_yuv();
+	gui->handle_gui();
 	return 1;
 }
 
-PaletteCr::PaletteCr(ColorWindow *window, int x, int y)
- : BC_FSlider(x, y, 0, xS(150), xS(200), 0, 1, window->yuv.u, 0)
+PaletteCr::PaletteCr(ColorGUI *gui, int x, int y)
+ : BC_FSlider(x, y, 0, xS(150), xS(200), 0, 1, gui->yuv.u, 0)
 {
-	this->window = window;
+	this->gui = gui;
 	set_precision(0.01);
 }
 PaletteCr::~PaletteCr()
@@ -837,16 +891,16 @@ PaletteCr::~PaletteCr()
 
 int PaletteCr::handle_event()
 {
-	window->yuv.u = get_value();
-	window->update_yuv();
-	window->handle_event();
+	gui->yuv.u = get_value();
+	gui->update_yuv();
+	gui->handle_gui();
 	return 1;
 }
 
-PaletteCb::PaletteCb(ColorWindow *window, int x, int y)
- : BC_FSlider(x, y, 0, xS(150), xS(200), 0, 1, window->yuv.v, 0)
+PaletteCb::PaletteCb(ColorGUI *gui, int x, int y)
+ : BC_FSlider(x, y, 0, xS(150), xS(200), 0, 1, gui->yuv.v, 0)
 {
-	this->window = window;
+	this->gui = gui;
 	set_precision(0.01);
 }
 PaletteCb::~PaletteCb()
@@ -855,13 +909,13 @@ PaletteCb::~PaletteCb()
 
 int PaletteCb::handle_event()
 {
-	window->yuv.v = get_value();
-	window->update_yuv();
-	window->handle_event();
+	gui->yuv.v = get_value();
+	gui->update_yuv();
+	gui->handle_gui();
 	return 1;
 }
 
-void ColorWindow::update_rgb(float r, float g, float b)
+void ColorGUI::update_rgb(float r, float g, float b)
 {
 	{ float y, u, v;
 	YUV::yuv.rgb_to_yuv_f(r, g, b, y, u, v);
@@ -876,7 +930,7 @@ void ColorWindow::update_rgb(float r, float g, float b)
 	bclamp(v, 0, 1);    hsv.v = v; }
 }
 
-void ColorWindow::update_yuv(float y, float u, float v)
+void ColorGUI::update_yuv(float y, float u, float v)
 {
 	u -= 0.5;  v -= 0.5;
 	{ float r, g, b;
@@ -891,7 +945,7 @@ void ColorWindow::update_yuv(float y, float u, float v)
 	bclamp(v, 0, 1);   hsv.v = v; }
 }
 
-void ColorWindow::update_hsv(float h, float s, float v)
+void ColorGUI::update_hsv(float h, float s, float v)
 {
 	{ float r, g, b;
 	HSV::hsv_to_rgb(r,g,b, h,s,v);
@@ -906,7 +960,7 @@ void ColorWindow::update_hsv(float h, float s, float v)
 	bclamp(v, 0, 1);   yuv.v = v; }
 }
 
-void ColorWindow::load_history()
+void ColorGUI::load_history()
 {
 	char history_path[BCTEXTLEN];
 	MWindow::create_defaults_path(history_path,PALETTE_DATA);
@@ -936,7 +990,7 @@ void ColorWindow::load_history()
 		v1 = 0.5f * (v1+.5f);
 	}
 }
-void ColorWindow::save_history()
+void ColorGUI::save_history()
 {
 	char history_path[BCTEXTLEN];
 	MWindow::create_defaults_path(history_path,PALETTE_DATA);
@@ -948,7 +1002,7 @@ void ColorWindow::save_history()
 		fclose(fp);
 	}
 }
-void ColorWindow::update_history(int color)
+void ColorGUI::update_history(int color)
 {
 	int out = palette_history[0];
 	palette_history[0] = color;
@@ -958,29 +1012,29 @@ void ColorWindow::update_history(int color)
 		palette_history[i] = in;
 	}
 }
-void ColorWindow::update_history()
+void ColorGUI::update_history()
 {
 	update_history(rgb888());
 	history->update(0);
 }
-int ColorWindow::rgb888()
+int ColorGUI::rgb888()
 {
 	int r = 255*rgb.r + 0.5, g = 255*rgb.g + 0.5, b = 255*rgb.b + 0.5;
 	bclamp(r, 0, 255);  bclamp(g, 0, 255);  bclamp(b, 0, 255);
 	return (r<<16) | (g<<8) | (b<<0);
 }
-int ColorWindow::alpha8()
+int ColorGUI::alpha8()
 {
 	int a = 255*aph + 0.5;
 	bclamp(a, 0, 255);
 	return a;
 }
 
-PaletteNum::PaletteNum(ColorWindow *window, int x, int y,
+PaletteNum::PaletteNum(ColorGUI *gui, int x, int y,
 	float &output, float min, float max)
- : BC_TumbleTextBox(window, output, min, max, x, y, xS(64))
+ : BC_TumbleTextBox(gui->window, output, min, max, x, y, xS(64))
 {
-	this->window = window;
+	this->gui = gui;
 	this->output = &output;
 	set_increment(0.01);
 	set_precision(2);
@@ -994,39 +1048,39 @@ PaletteNum::~PaletteNum()
 int PaletteHSV::handle_event()
 {
 	update_output();
-	window->update_hsv();
-	window->handle_event();
+	gui->update_hsv();
+	gui->handle_gui();
 	return 1;
 }
 
 int PaletteRGB::handle_event()
 {
 	update_output();
-	window->update_rgb();
-	window->handle_event();
+	gui->update_rgb();
+	gui->handle_gui();
 	return 1;
 }
 
 int PaletteYUV::handle_event()
 {
 	update_output();
-	window->update_yuv();
-	window->handle_event();
+	gui->update_yuv();
+	gui->handle_gui();
 	return 1;
 }
 
 int PaletteAPH::handle_event()
 {
 	update_output();
-	window->update_display();
-	window->handle_event();
+	gui->update_display();
+	gui->handle_gui();
 	return 1;
 }
 
-PaletteHexButton::PaletteHexButton(ColorWindow *window, int x, int y)
+PaletteHexButton::PaletteHexButton(ColorGUI *gui, int x, int y)
  : BC_GenericButton(x, y, xS(50), "#")
 {
-	this->window = window;
+	this->gui = gui;
 	set_tooltip(_("hex rgb color"));
 }
 PaletteHexButton::~PaletteHexButton()
@@ -1034,15 +1088,15 @@ PaletteHexButton::~PaletteHexButton()
 }
 int PaletteHexButton::handle_event()
 {
-	const char *hex = window->hex_box->get_text();
-	window->update_rgb_hex(hex);
+	const char *hex = gui->hex_box->get_text();
+	gui->update_rgb_hex(hex);
 	return 1;
 }
 
-PaletteHex::PaletteHex(ColorWindow *window, int x, int y, const char *hex)
+PaletteHex::PaletteHex(ColorGUI *gui, int x, int y, const char *hex)
  : BC_TextBox(x, y, xS(100), 1, hex)
 {
-	this->window = window;
+	this->gui = gui;
 }
 PaletteHex::~PaletteHex()
 {
@@ -1050,9 +1104,9 @@ PaletteHex::~PaletteHex()
 void PaletteHex::update()
 {
 	char hex[BCSTRLEN], *cp = hex;
-	if( window->thread->do_alpha )
-		cp += sprintf(cp,"%02x", window->alpha8());
-	sprintf(cp,"%06x",window->rgb888());
+	if( gui->do_alpha )
+		cp += sprintf(cp,"%02x", gui->alpha8());
+	sprintf(cp,"%06x",gui->rgb888());
 	BC_TextBox::update(hex);
 }
 
@@ -1060,7 +1114,7 @@ int PaletteHex::keypress_event()
 {
 	if( get_keypress() != RETURN )
 		return BC_TextBox::keypress_event();
-	window->update_rgb_hex(get_text());
+	gui->update_rgb_hex(get_text());
 	return 1;
 }
 
@@ -1068,10 +1122,10 @@ int PaletteHex::keypress_event()
 #include "grabpick_hi_png.h"
 #include "grabpick_dn_png.h"
 
-PaletteGrabButton::PaletteGrabButton(ColorWindow *window, int x, int y)
+PaletteGrabButton::PaletteGrabButton(ColorGUI *gui, int x, int y)
  : BC_Button(x, y, vframes)
 {
-	this->window = window;
+	this->gui = gui;
 	vframes[0] = new VFramePng(grabpick_up_png);
 	vframes[1] = new VFramePng(grabpick_hi_png);
 	vframes[2] = new VFramePng(grabpick_dn_png);
@@ -1084,18 +1138,18 @@ PaletteGrabButton::~PaletteGrabButton()
 }
 int PaletteGrabButton::handle_event()
 {
-	if( window->grab_buttons() ) {
-		grab_cursor();
-		window->button_grabbed = 1;
-		button_press_event(); // redraw face HI
+	if( gui->window->grab_buttons() ) {
+		gui->window->grab_cursor();
+		gui->button_grabbed = 1;
+		gui->button_press_gui(); // redraw face HI
 	}
 	return 1;
 }
 
-PaletteHistory::PaletteHistory(ColorWindow *window, int x, int y)
+PaletteHistory::PaletteHistory(ColorGUI *gui, int x, int y)
  : BC_SubWindow(x,y, xS(200), yS(24))
 {
-	this->window = window;
+	this->gui = gui;
 	button_down = 0;
 	set_tooltip(_("color history"));
 }
@@ -1106,7 +1160,7 @@ void PaletteHistory::update(int flush)
 {
 	int x1 = 0, x2 = 0;
 	for( int i=0; i<PALLETTE_HISTORY_SIZE; x1=x2 ) {
-		int rgb = window->palette_history[i];
+		int rgb = gui->palette_history[i];
 		x2 = (++i * get_w())/PALLETTE_HISTORY_SIZE;
 		draw_3d_box(x1,0,x2-x1,get_h(),WHITE,BLACK,rgb,LTBLUE,DKBLUE);
 	}
@@ -1125,9 +1179,9 @@ int PaletteHistory::button_release_event()
 	if( !button_down || !is_event_win() ) return 0;
 	cursor_motion_event();
 	if( button_down > 0 ) {
-		window->handle_event();
-		window->update_display();
-		window->update_history();
+		gui->handle_gui();
+		gui->update_display();
+		gui->update_history();
 	}
 	button_down =  0;
 	return 1;
@@ -1138,13 +1192,13 @@ int PaletteHistory::cursor_motion_event()
 	hide_tooltip();
 	int pick = (PALLETTE_HISTORY_SIZE * get_cursor_x()) / get_w();
 	bclamp(pick, 0, PALLETTE_HISTORY_SIZE-1);
-	int color = window->palette_history[pick];
+	int color = gui->palette_history[pick];
 	float r = ((color>>16) & 0xff) / 255.;
 	float g = ((color>>8)  & 0xff) / 255.;
 	float b = ((color>>0)  & 0xff) / 255.;
-	if( window->rgb.r != r || window->rgb.g != g || window->rgb.b != b ) {
-		window->rgb.r = r;  window->rgb.g = g;  window->rgb.b = b;
-		window->update_rgb();
+	if( gui->rgb.r != r || gui->rgb.g != g || gui->rgb.b != b ) {
+		gui->rgb.r = r;  gui->rgb.g = g;  gui->rgb.b = b;
+		gui->update_rgb();
 	}
 	return 1;
 }

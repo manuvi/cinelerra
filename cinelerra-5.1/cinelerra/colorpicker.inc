@@ -24,6 +24,7 @@
 
 class ColorPicker;
 class ColorWindow;
+class ColorGUI;
 class PaletteWheel;
 class PaletteWheelValue;
 class PaletteOutput;

@@ -112,7 +112,7 @@ public:
 		double edl_length);
 	void shuffle_edits(double start, double end, int first_track);
 	void reverse_edits(double start, double end, int first_track);
-	void align_edits(double start, double end, ArrayList<double> *times);
+	void align_edits(double start, double end, Track *master_track);
 // Optimize editing
 	void optimize();
 	int is_muted(int64_t position, int direction);  // Test muting status
@@ -146,7 +146,7 @@ public:
 // Called by playable tracks to test for playable server.
 // Descends the plugin tree without creating a virtual console.
 // Used by PlayableTracks::is_playable.
-	int is_synthesis(int64_t position, int direction);
+	int is_synthesis(int64_t position, int direction, int depth=0);
 
 // Used by PlayableTracks::is_playable
 // Returns 1 if the track is in the output boundaries.

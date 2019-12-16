@@ -62,6 +62,9 @@ void ADevicePrefs::reset()
 	follow_audio_config = 0;
 	firewire_path = 0;
 	firewire_syt = 0;
+	channel_title = 0;
+	firewire_port = 0;
+	firewire_channel = 0;
 	syt_title = 0;
 	path_title = 0;
 
@@ -86,6 +89,9 @@ void ADevicePrefs::reset()
 
 	cine_bits = 0;
 	cine_path = 0;
+	server_title = 0;
+	port_title = 0;
+	esound_port = 0;
 }
 
 int ADevicePrefs::initialize(int creation)
@@ -162,7 +168,7 @@ int ADevicePrefs::delete_objects()
 		delete_alsa_objs();
 		break;
 	case AUDIO_ESOUND:
-			delete_esound_objs();
+		delete_esound_objs();
 		break;
 	case AUDIO_1394:
 	case AUDIO_DV1394:

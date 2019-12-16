@@ -268,6 +268,7 @@ public:
 
 	void create_history();
 	void update_history();
+	void update_paths(const char *text);
 	int refresh(int reset=0, int select_all=0);
 
 // The OK and Use This button submits a path.

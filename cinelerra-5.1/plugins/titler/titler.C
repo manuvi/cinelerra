@@ -362,14 +362,14 @@ printf("GlyphUnit::process_package 1 glyph not found (%s) %04x, '%c'\n",
 			glyph->right = 0;  glyph->bottom = 0;
 			glyph->freetype_index = 0;
 			glyph->data = new VFrame(glyph->width, glyph->height, BC_A8, glyph->pitch);
-			glyph->data->clear_frame();
+			glyph->data->black_frame();
 			glyph->data_stroke = 0;
 
 // create outline glyph
 			if( plugin->config.stroke_width >= SMALL &&
 				(plugin->config.style & BC_FONT_OUTLINE) ) {
 				glyph->data_stroke = new VFrame(glyph->width, glyph->height, BC_A8, glyph->pitch);
-				glyph->data_stroke->clear_frame();
+				glyph->data_stroke->black_frame();
 			}
 		}
 // char found and no outline desired
@@ -399,7 +399,7 @@ printf("GlyphUnit::process_package 1 glyph not found (%s) %04x, '%c'\n",
 //glyph->width, glyph->height, glyph->pitch, glyph->left, glyph->top, glyph->advance_x, glyph->freetype_index);
 
 			glyph->data = new VFrame(glyph->width, glyph->height, BC_A8, glyph->pitch);
-			glyph->data->clear_frame();
+			glyph->data->black_frame();
 			bm.buffer = glyph->data->get_data();
 			ft_Outline_Translate(&((FT_OutlineGlyph) glyph_image)->outline,
 				- bbox.xMin, - bbox.yMin);
@@ -500,9 +500,9 @@ printf("GlyphUnit::process_package 1 glyph not found (%s) %04x, '%c'\n",
 
 //printf("GlyphUnit::process_package 1\n");
 			glyph->data = new VFrame(glyph->width, glyph->height, BC_A8, glyph->pitch);
-			glyph->data->clear_frame();
+			glyph->data->black_frame();
 			glyph->data_stroke = new VFrame(glyph->width, glyph->height, BC_A8, glyph->pitch);
-			glyph->data_stroke->clear_frame();
+			glyph->data_stroke->black_frame();
 // for debugging	memset(	glyph->data_stroke->get_data(), 60, glyph->pitch * glyph->height);
 			bm.buffer=glyph->data->get_data();
 			ft_Outline_Get_Bitmap( freetype_library,

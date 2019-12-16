@@ -30,8 +30,11 @@
 class SoundLevelEffect;
 class SoundLevelWindow;
 
-
-
+class SoundLevelClientFrame : public PluginClientFrame
+{
+public:
+	double max, rms;
+};
 
 class SoundLevelConfig
 {
@@ -39,11 +42,8 @@ public:
 	SoundLevelConfig();
 	void copy_from(SoundLevelConfig &that);
 	int equivalent(SoundLevelConfig &that);
-	void interpolate(SoundLevelConfig &prev,
-		SoundLevelConfig &next,
-		int64_t prev_frame,
-		int64_t next_frame,
-		int64_t current_frame);
+	void interpolate(SoundLevelConfig &prev, SoundLevelConfig &next,
+		int64_t prev_frame, int64_t next_frame, int64_t current_frame);
 	float duration;
 };
 
@@ -68,14 +68,6 @@ public:
 	SoundLevelEffect *plugin;
 };
 
-
-
-
-
-
-
-
-
 class SoundLevelEffect : public PluginAClient
 {
 public:
@@ -89,6 +81,7 @@ public:
 	void reset();
 	void update_gui();
 	void render_gui(void *data, int size);
+	void render_stop();
 
 
 
@@ -98,15 +91,5 @@ public:
 	double max_accum;
 	int accum_size;
 };
-
-
-
-
-
-
-
-
-
-
 
 #endif

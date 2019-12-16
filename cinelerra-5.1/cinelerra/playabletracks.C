@@ -34,35 +34,16 @@
 #include "transportque.h"
 
 
-PlayableTracks::PlayableTracks(EDL *edl,
-	int64_t current_position,
-	int direction,
-	int data_type,
-	int use_nudge)
+PlayableTracks::PlayableTracks(EDL *edl, int64_t current_position,
+		int direction, int data_type, int use_nudge)
  : ArrayList<Track*>()
 {
 	this->data_type = data_type;
 
-	for(Track *current_track = edl->tracks->first;
-		current_track;
-		current_track = current_track->next)
-	{
-		if(is_playable(current_track, current_position, direction, use_nudge))
-		{
-// printf("PlayableTracks::PlayableTracks %d this=%p current_track=%p total=%d current_position=%jd\n",
-// __LINE__,
-// this,
-// current_track,
-// total,
-// current_position);
-			append(current_track);
-		}
+	for( Track *track=edl->tracks->first; track; track=track->next ) {
+		if( is_playable(track, current_position, direction, use_nudge) )
+			append(track);
 	}
-// printf("PlayableTracks::PlayableTracks %d data_type=%d total=%d current_position=%jd\n",
-// __LINE__,
-// data_type,
-// total,
-// current_position);
 }
 
 PlayableTracks::~PlayableTracks()
@@ -70,10 +51,8 @@ PlayableTracks::~PlayableTracks()
 }
 
 
-int PlayableTracks::is_playable(Track *current_track,
-	int64_t position,
-	int direction,
-	int use_nudge)
+int PlayableTracks::is_playable(Track *current_track, int64_t position,
+		int direction, int use_nudge)
 {
 	int result = 1;
 	if(use_nudge) position += current_track->nudge;

@@ -13,6 +13,8 @@
 		combines them to 1920x540 interlaced image.
 AgingTV:	Use to achieve an "old" movie or TV show
 		effect by adding moving lines and snow.
+Alpha:		Vary the alpha value from 0-completely transparent
+		to 1-no transparency at all.
 Auto Scale:	Automatically scale to a specified size.
 Blue Banana:	Used for color transformation or remapping as
 		well as chroma-key filtering. See Manual for usage:
@@ -86,6 +88,7 @@ Flip:		Flip a portion of a video track from left to right,
 		up to down or vice versa.
 FlowObj:	Retards image motion as shown with optical flow. Uses
 		the OpenCV thirdparty package.
+Foreground:	Provide a colored foreground of your choice.
 Frames to fields: Extracts 2 interlaced fields stored in alternating
 		lines & outputs them as full frames.
 Freeze Frame:	Lowest numbered frame in highlighted area will play

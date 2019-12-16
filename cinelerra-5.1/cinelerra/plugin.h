@@ -66,10 +66,10 @@ public:
 // title.
 	void equivalent_output(Edit *edit, int64_t *result);
 
+	const char* type_to_text(int type);
 // Called by playable tracks to test for playable server.
 // Descends the plugin tree without creating a virtual console.
-	int is_synthesis(int64_t position,
-		int direction);
+	int is_synthesis(int64_t position, int direction, int depth);
 
 	virtual int operator==(Plugin& that);
 	virtual int operator==(Edit& that);

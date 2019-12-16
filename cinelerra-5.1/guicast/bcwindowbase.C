@@ -4294,6 +4294,26 @@ void BC_WindowBase::set_title(const char *text, int utf8)
 	flush();
 }
 
+// must be RGBA8888
+void BC_WindowBase::set_net_icon(VFrame *data)
+{
+	int width = data->get_w(), height = data->get_h();
+	int size = 2 + width * height;
+	unsigned long *icon_data = new unsigned long[size];
+	unsigned long *lp = icon_data;
+	*lp++ = width;  *lp++ = height;
+	uint8_t **rows = data->get_rows();
+	for( int y=0; y<height; ++y ) {
+		unsigned *up = (unsigned *)rows[y];
+		for( int x=0; x<width; ++x )
+			*lp++ = *(unsigned *)up++;
+	}
+	Atom NetWMIcon = XInternAtom(display, "_NET_WM_ICON", True);
+	XChangeProperty(top_level->display, top_level->win, NetWMIcon,
+                XA_CARDINAL, 32, PropModeReplace, (unsigned char *)icon_data, size);
+	delete [] icon_data;
+}
+
 const char *BC_WindowBase::get_title()
 {
 	return title;
@@ -4315,27 +4335,28 @@ int BC_WindowBase::set_icon(VFrame *data)
 	icon_pixmap = new BC_Pixmap(top_level, data, PIXMAP_ALPHA, 1);
 
 	if(icon_window) delete icon_window;
-	icon_window = new BC_Popup(this,
-		(int)BC_INFINITY,
-		(int)BC_INFINITY,
-		icon_pixmap->get_w(),
-		icon_pixmap->get_h(),
-		-1,
-		1, // All windows are hidden initially
+	icon_window = new BC_Popup(this, 0, 0,
+		icon_pixmap->get_w(), icon_pixmap->get_h(),
+		-1, 1, // All windows are hidden initially
 		icon_pixmap);
 
-	XWMHints wm_hints;
-	wm_hints.flags = WindowGroupHint | IconPixmapHint | IconMaskHint | IconWindowHint;
+	XWMHints wm_hints;  memset(&wm_hints, 0, sizeof(wm_hints));
+	wm_hints.flags = IconPixmapHint; // | IconMaskHint | IconWindowHint;
 	wm_hints.icon_pixmap = icon_pixmap->get_pixmap();
 	wm_hints.icon_mask = icon_pixmap->get_alpha();
 	wm_hints.icon_window = icon_window->win;
-	wm_hints.window_group = XGroupLeader;
+	if( XGroupLeader ) {
+		wm_hints.flags |= WindowGroupHint;
+		wm_hints.window_group = XGroupLeader;
+	}
 
 // for(int i = 0; i < 1000; i++)
 // printf("02x ", icon_pixmap->get_alpha()->get_row_pointers()[0][i]);
 // printf("\n");
 
 	XSetWMHints(top_level->display, top_level->win, &wm_hints);
+
+	set_net_icon(data);
 	XSync(top_level->display, 0);
 	return 0;
 }

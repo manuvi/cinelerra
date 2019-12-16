@@ -824,14 +824,14 @@ void VWindowCanvas::close_source()
 
 void VWindowCanvas::draw_refresh(int flush)
 {
-	EDL *edl = gui->vwindow->get_edl();
-
 	if( !get_canvas()->get_video_on() ) {
 		int cw = get_canvas()->get_w(), ch = get_canvas()->get_h();
 		get_canvas()->clear_box(0, 0, cw, ch);
-		int ow = edl ? get_output_w(edl) : 0;
-		int oh = edl ? get_output_h(edl) : 0;
-		if( ow > 0 && oh > 0 && refresh_frame ) {
+	}
+	EDL *edl = gui->vwindow->get_edl();
+	if( refresh_frame && edl ) {
+		int ow = get_output_w(edl), oh = get_output_h(edl);
+		if( ow > 0 && oh > 0 ) {
 			float in_x1, in_y1, in_x2, in_y2;
 			float out_x1, out_y1, out_x2, out_y2;
 			get_transfers(edl,
@@ -851,6 +851,8 @@ void VWindowCanvas::draw_refresh(int flush)
 				(int)(in_x2 - in_x1), (int)(in_y2 - in_y1),
 				0);
 		}
+	}
+	if( !get_canvas()->get_video_on() ) {
 		draw_overlays();
 		get_canvas()->flash(flush);
 	}

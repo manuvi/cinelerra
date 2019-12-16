@@ -166,31 +166,17 @@ void Track::equivalent_output(Track *track, double *result)
 }
 
 
-int Track::is_synthesis(int64_t position,
-	int direction)
+int Track::is_synthesis(int64_t position, int direction, int depth)
 {
-	int is_synthesis = 0;
-	for(int i = 0; i < plugin_set.total; i++)
-	{
-		Plugin *plugin = get_current_plugin(position,
-			i,
-			direction,
-			0,
-			0);
-		if(plugin)
-		{
+	int result = 0;
+	for( int i = 0; !result && i<plugin_set.total; ++i ) {
+		Plugin *plugin = get_current_plugin(position, i, direction, 0, 0);
+		if( !plugin ) continue;
 // Assume data from a shared track is synthesized
-			if(plugin->plugin_type == PLUGIN_SHAREDMODULE)
-				is_synthesis = 1;
-			else
-				is_synthesis = plugin->is_synthesis(position,
-					direction);
-
-//printf("Track::is_synthesis %d %d\n", __LINE__, is_synthesis);
-			if(is_synthesis) break;
-		}
+		result = plugin->plugin_type == PLUGIN_SHAREDMODULE ? 1 :
+			plugin->is_synthesis(position, direction, depth);
 	}
-	return is_synthesis;
+	return result;
 }
 
 void Track::copy_from(Track *track)
@@ -953,55 +939,36 @@ int Track::copy_automation(double selectionstart,
 	return 0;
 }
 
-int Track::paste_automation(double selectionstart,
-	double total_length,
-	double frame_rate,
-	int64_t sample_rate,
-	FileXML *file,
-	int default_only,
-	int active_only)
+int Track::paste_automation(double selectionstart, double total_length,
+	double frame_rate, int64_t sample_rate,
+	FileXML *file, int default_only, int active_only)
 {
 // Only used for pasting automation alone.
-	int64_t start;
-	int64_t length;
-	int result;
-	double scale;
-	int current_pluginset;
-
-	if(data_type == TRACK_AUDIO)
-		scale = edl->session->sample_rate / sample_rate;
-	else
-		scale = edl->session->frame_rate / frame_rate;
+	double scale = data_type == TRACK_AUDIO ?
+		edl->session->sample_rate / sample_rate :
+		edl->session->frame_rate / frame_rate ;
 
 	total_length *= scale;
-	start = to_units(selectionstart, 0);
-	length = to_units(total_length, 1);
-	result = 0;
-	current_pluginset = 0;
+	int64_t start = to_units(selectionstart, 0);
+	int64_t length = to_units(total_length, 1);
+	int result = 0;
+	int current_pluginset = 0;
 //printf("Track::paste_automation 1\n");
 
-	while(!result)
-	{
-		result = file->read_tag();
-
-		if(!result)
-		{
-			if(file->tag.title_is("/TRACK"))
-				result = 1;
-			else
-			if(automation->paste(start, length, scale, file,
-					default_only, active_only, 0)) {}
-			else if(file->tag.title_is("PLUGINSET")) {
-				if(current_pluginset < plugin_set.total) {
-					plugin_set.values[current_pluginset]->
-						paste_keyframes(start, length, file,
+	while( !(result = file->read_tag()) ) {
+		if( file->tag.title_is("/TRACK") ) break;
+		if( automation->paste(start, length, scale, file,
+				default_only, active_only, 0) )
+			continue;
+		if( file->tag.title_is("PLUGINSET") ) {
+			if( current_pluginset < plugin_set.total ) {
+				plugin_set.values[current_pluginset]->
+					paste_keyframes(start, length, file,
 						default_only, active_only);
-					current_pluginset++;
-				}
+				++current_pluginset;
 			}
 		}
 	}
-
 
 	return 0;
 }
@@ -1688,64 +1655,63 @@ void Track::reverse_edits(double start, double end, int first_track)
 	}
 }
 
-void Track::align_edits(double start,
-	double end,
-	ArrayList<double> *times)
+void Track::align_edits(double start, double end, Track *master_track)
 {
 	int64_t start_units = to_units(start, 0);
 	int64_t end_units = to_units(end, 0);
 
-// If 1st track with data, times is empty & we need to collect the edit times.
-	if(!times->size())
-	{
-		for(Edit *current = edits->first; current; current = NEXT)
-		{
-			if(current->startproject >= start_units &&
-				current->startproject + current->length <= end_units)
-			{
-				times->append(from_units(current->startproject));
-			}
-		}
-	}
-	else
 // All other tracks get silence or cut to align the edits on the times.
-	{
-		int current_time = 0;
-		for(Edit *current = edits->first;
-			current && current_time < times->size(); )
-		{
-			if(current->startproject >= start_units &&
-				current->startproject + current->length <= end_units)
-			{
-				int64_t desired_startunits = to_units(times->get(current_time), 0);
-				int64_t current_startunits = current->startproject;
+	Edit *master = master_track->edits->first;
+	for(Edit *current = edits->first; current && master; ) {
+		if( current->startproject >= start_units &&
+		    current->startproject + current->length <= end_units ) {
+// edit is in highlighted region
+			int64_t master_length_units = to_units(master_track->from_units(master->length), 0);
+// starting time of master edit
+			int64_t master_start_units = to_units(master_track->from_units(master->startproject), 0);
+// starting time of current edit
+			int64_t current_startunits = current->startproject;
+
+// the following occur if multiple aligns are performed
+// master edit is not silence but current edit is silence
+			if( !master->silence() && current->silence() ) {
+// try again with next edit
 				current = NEXT;
+				continue;
+			}
+			if( master->silence() && !current->silence() ) {
+// master edit is silence but current edit is not silence
+				master = master->next;
+				continue;
+			}
+			if( current->length < master_length_units / 2 ) {
+// current edit is a glitch edit between 2 required edits
+				current = NEXT;
+				continue;
+			}
 
-
-				if(current_startunits < desired_startunits)
-				{
+			current = NEXT;
+// current edit starts before master edit
+			if( current_startunits < master_start_units ) {
 //printf("Track::align_edits %d\n", __LINE__);
-					edits->paste_silence(current_startunits,
-						desired_startunits);
-					shift_keyframes(current_startunits,
-						desired_startunits - current_startunits);
-				}
-				else
-				if(current_startunits > desired_startunits)
-				{
-					edits->clear(desired_startunits,
-						current_startunits);
-					if(edl->session->autos_follow_edits)
-						shift_keyframes(desired_startunits,
-							current_startunits - desired_startunits);
-				}
+				edits->paste_silence(current_startunits, master_start_units);
+				shift_keyframes(current_startunits,
+					master_start_units - current_startunits);
+			}
+			else if( current_startunits > master_start_units ) {
+// current edit starts after master edit
+				edits->clear(master_start_units,
+					current_startunits);
+				if(edl->session->autos_follow_edits)
+					shift_keyframes(master_start_units,
+						current_startunits - master_start_units);
+			}
 
-				current_time++;
-			}
-			else
-			{
-				current = NEXT;
-			}
+			master = master->next;
+		}
+		else {
+			current = NEXT;
+			master = master->next;
 		}
 	}
 
