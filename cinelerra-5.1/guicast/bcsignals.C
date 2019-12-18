@@ -504,6 +504,7 @@ static void handle_dump(int n, siginfo_t * info, void *sc)
 		fprintf(fp,"        by %d:%d %s(%s)\n",
 			pw->pw_uid, pw->pw_gid, pw->pw_name, pw->pw_gecos);
 	}
+	fprintf(fp,"\nOS:\n");  bc_copy_textfile(16, fp,"/etc/os-release");
 	fprintf(fp,"\nCPUS: %d\n",   BC_Resources::get_machine_cpus());
 	fprintf(fp,"\nCPUINFO:\n");  bc_copy_textfile(32, fp,"/proc/cpuinfo");
 	fprintf(fp,"\nTHREADS:\n");  BC_Trace::dump_threads(fp);

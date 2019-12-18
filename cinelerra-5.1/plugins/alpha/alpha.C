@@ -133,15 +133,8 @@ int AlphaMain::process_buffer(VFrame *frame,
 {
 	load_configuration();
 
-	int color_model = frame->get_color_model();
-	int need_alpha = BC_CModels::has_alpha(color_model);
-	if( need_alpha ) {
-		read_frame(frame, 0, start_position,
-			frame_rate, get_use_opengl());
-	}
-	int w = frame->get_w();
-	int h = frame->get_h();
-
+	read_frame(frame, 0, start_position, frame_rate, get_use_opengl());
+	int w = frame->get_w(), h = frame->get_h();
 
 #define MAIN_LOOP(type, components, is_yuv, max) do { \
 	if( components == 4 ) { \

@@ -55,11 +55,11 @@
 #define HEIGHT yS(320)
 #define MAX_SCALE 16
 
-ConvertRender::ConvertRender(MWindow *mwindow, const char *suffix)
+ConvertRender::ConvertRender(MWindow *mwindow)
  : Thread(1, 0, 0)
 {
 	this->mwindow = mwindow;
-	this->suffix = cstrdup(suffix);
+	suffix = 0;
 	format_asset = 0;
 	progress = 0;
 	progress_timer = new Timer;
@@ -74,7 +74,7 @@ ConvertRender::ConvertRender(MWindow *mwindow, const char *suffix)
 
 ConvertRender::~ConvertRender()
 {
-	delete suffix;
+	delete [] suffix;
 	delete progress;
 	delete counter_lock;
 	delete progress_timer;
@@ -154,6 +154,35 @@ int ConvertRender::from_convert_path(char *path, Indexable *idxbl)
 	return 0;
 }
 
+double ConvertRender::get_video_length(Indexable *idxbl)
+{
+	int64_t video_frames = idxbl->get_video_frames();
+	double frame_rate = idxbl->get_frame_rate();
+	if( video_frames < 0 && mwindow->edl->session->si_useduration )
+		video_frames = mwindow->edl->session->si_duration * frame_rate;
+	if( video_frames < 0 ) video_frames = 1;
+	return !video_frames ? 0 : video_frames / frame_rate;
+}
+
+double ConvertRender::get_audio_length(Indexable *idxbl)
+{
+	int64_t audio_samples = idxbl->get_audio_samples();
+	return !audio_samples ? 0 :
+		(double)audio_samples / idxbl->get_sample_rate();
+}
+
+double ConvertRender::get_length(Indexable *idxbl)
+{
+	return bmax(get_video_length(idxbl), get_audio_length(idxbl));
+}
+
+int ConvertRender::match_format(Asset *asset)
+{
+// close enough
+	return format_asset->audio_data == asset->audio_data &&
+		format_asset->video_data == asset->video_data ? 1 : 0;
+}
+
 EDL *ConvertRender::convert_edl(EDL *edl, Indexable *idxbl)
 {
 	Asset *copy_asset = edl->assets->get_asset(idxbl->path);
@@ -167,24 +196,24 @@ EDL *ConvertRender::convert_edl(EDL *edl, Indexable *idxbl)
 	FileSystem fs;  fs.extract_name(path, copy_asset->path);
 	strcpy(copy_edl->local_session->clip_title, path);
 	strcpy(copy_edl->local_session->clip_notes, _("Transcode clip"));
-	int64_t video_frames = idxbl->get_video_frames();
-	double frame_rate = idxbl->get_frame_rate();
-	double video_length = video_frames / frame_rate;
-	int64_t audio_samples = idxbl->get_audio_samples();
-	int sample_rate = idxbl->get_sample_rate();
-	double audio_length = (double)audio_samples / sample_rate;
+
+	double video_length = get_video_length(idxbl);
+	double audio_length = get_audio_length(idxbl);
 	copy_edl->session->video_tracks =
-		 video_frames > 0 ? 1 : 0;
+		 video_length > 0 ? 1 : 0;
 	copy_edl->session->audio_tracks =
-		 audio_samples > 0 ? copy_asset->channels : 0;
+		 audio_length > 0 ? copy_asset->channels : 0;
+
 	copy_edl->create_default_tracks();
-	Track *current = copy_edl->tracks->first;
+	Track *current = copy_edl->session->video_tracks ?
+		copy_edl->tracks->first : 0;
 	for( int vtrack=0; current; current=NEXT ) {
 		if( current->data_type != TRACK_VIDEO ) continue;
 		current->insert_asset(copy_asset, 0, video_length, 0, vtrack);
 		break;
 	}
-	current = copy_edl->tracks->first;
+	current = copy_edl->session->audio_tracks ?
+		copy_edl->tracks->first : 0;
 	for( int atrack=0; current; current=NEXT ) {
 		if( current->data_type != TRACK_AUDIO ) continue;
 		current->insert_asset(copy_asset, 0, audio_length, 0, atrack);
@@ -229,36 +258,49 @@ int ConvertRender::add_original(EDL *edl, Indexable *idxbl)
 				int ret = file.open_file(mwindow->preferences, convert, 1, 0);
 // render not needed if can use copy
 				if( ret == FILE_OK ) {
-					mwindow->mainindexes->add_next_asset(0, convert);
-					mwindow->mainindexes->start_build();
-					needed = 0;
+					if( match_format(file.asset) ) {
+						mwindow->mainindexes->add_next_asset(0, convert);
+						mwindow->mainindexes->start_build();
+						needed = 0;
+					}
+					else
+						needed = -1;
 				}
 			}
 		}
 	}
-	else {
+	else if( match_format(convert) ) {
 // dont render if copy already an assets
 		convert->add_user();
 		needed = 0;
+	}
+	else
+		needed = -1;
+	if( needed < 0 ) {
+		eprintf(_("transcode target file exists but is incorrect format:\n%s\n"
+			  "remove file from disk before transcode to new format.\n"), new_path);
+		return -1;
 	}
 	orig_copies.append(convert);
 	if( needed ) {
 		convert->copy_format(format_asset, 0);
 // new compression parameters
-		int64_t video_frames = idxbl->get_video_frames();
-		if( video_frames > 1 ) convert->video_data = 1;
-		int64_t audio_samples = idxbl->get_audio_samples();
-		if( audio_samples > 0 ) convert->audio_data = 1;
+		convert->video_data = format_asset->video_data;
+		if( convert->video_data ) {
+			convert->layers = 1;
+			convert->width = idxbl->get_w();
+			if( convert->width & 1 ) ++convert->width;
+			convert->actual_width = convert->width;
+			convert->height = idxbl->get_h();
+			if( convert->height & 1 ) ++convert->height;
+			convert->actual_height = convert->height;
+			convert->frame_rate = mwindow->edl->session->frame_rate;
+		}
+		convert->audio_data = format_asset->audio_data;
+		if( convert->audio_data ) {
+			convert->sample_rate = mwindow->edl->session->sample_rate;
+		}
 		convert->folder_no = AW_MEDIA_FOLDER;
-		convert->layers = 1;
-		convert->width = idxbl->get_w();
-		if( convert->width & 1 ) ++convert->width;
-		convert->actual_width = convert->width;
-		convert->height = idxbl->get_h();
-		if( convert->height & 1 ) ++convert->height;
-		convert->actual_height = convert->height;
-		convert->frame_rate = mwindow->edl->session->frame_rate;
-		convert->sample_rate = mwindow->edl->session->sample_rate;
 		add_needed(idxbl, convert);
 	}
 	return 1;
@@ -284,14 +326,17 @@ int ConvertRender::find_convertable_assets(EDL *edl)
 	Asset *orig_asset = edl->assets->first;
 	int count = 0;
 	for( ; orig_asset; orig_asset=orig_asset->next ) {
-		if( add_original(edl, orig_asset) )
-			++count;
+		int ret = add_original(edl, orig_asset);
+		if( ret < 0 ) return -1;
+		if( ret ) ++count;
 	}
 	return count;
 }
 
-void ConvertRender::set_format(Asset *asset)
+void ConvertRender::set_format(Asset *asset, const char *suffix)
 {
+	delete [] this->suffix;
+	this->suffix = cstrdup(suffix);
 	if( !format_asset )
 		format_asset = new Asset();
 	format_asset->copy_from(asset, 0);
@@ -360,13 +405,7 @@ void ConvertRender::start_progress()
 	double total_len= 0;
 	for( int i = 0; i < needed_idxbls.size(); i++ ) {
 		Indexable *orig_idxbl = needed_idxbls[i];
-		int64_t video_frames = orig_idxbl->get_video_frames();
-		double frame_rate = orig_idxbl->get_frame_rate();
-		double video_length = video_frames / frame_rate;
-		int64_t audio_samples = orig_idxbl->get_audio_samples();
-		int sample_rate = orig_idxbl->get_sample_rate();
-		double audio_length = (double)audio_samples / sample_rate;
-		double length = bmax(video_length, audio_length);
+		double length = get_length(orig_idxbl);
 		total_len += length;
 	}
 	int64_t total_samples = total_len * format_asset->sample_rate;
@@ -380,9 +419,8 @@ void ConvertRender::start_progress()
 
 void ConvertRender::stop_progress(const char *msg)
 {
+	delete convert_progress;  convert_progress = 0;
 	mwindow->gui->lock_window("ConvertRender::stop_progress");
-	delete convert_progress;
-	convert_progress = 0;
 	progress->update(0);
 	mwindow->mainprogress->end_progress(progress);
 	progress = 0;
@@ -464,14 +502,8 @@ void ConvertRender::create_copy(int i)
 {
 	Indexable *orig_idxbl = needed_idxbls[i];
 	Asset *needed_copy = needed_copies[i];
-	int64_t video_frames = orig_idxbl->get_video_frames();
-	double frame_rate = orig_idxbl->get_frame_rate();
-	double video_length = video_frames / frame_rate;
-	int64_t audio_samples = orig_idxbl->get_audio_samples();
-	int sample_rate = orig_idxbl->get_sample_rate();
-	double audio_length = (double)audio_samples / sample_rate;
-	double length = bmax(video_length, audio_length);
 	EDL *edl = convert_edl(mwindow->edl, orig_idxbl);
+	double length = get_length(orig_idxbl);
 	ConvertPackageRenderer renderer(this);
 	renderer.initialize(mwindow, edl, mwindow->preferences, needed_copy);
 	PackageDispatcher dispatcher;

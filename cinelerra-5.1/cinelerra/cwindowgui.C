@@ -1008,7 +1008,7 @@ int CWindowCanvas::set_fullscreen(int on, int unlock)
 		last_yscroll = get_yscroll();
 		last_zoom = get_zoom();
 		Canvas::set_fullscreen(1, unlock);
-		zoom_auto();
+//		zoom_auto();
 		ret = 1;
 	}
 	if( !on && get_fullscreen() ) {

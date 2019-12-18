@@ -236,7 +236,7 @@ void TitleWindow::create_objects()
 	add_subwindow(font_tumbler = new TitleFontTumble(client, this, x, y+margin));
 	x += font_tumbler->get_w() + margin;
 
-	int x1 = x, y1 = y;
+	int x1 = x+xS(20), y1 = y;
 	add_tool(size_title = new BC_Title(x1, y1+margin, _("Size:")));
 	sprintf(string, "%.2f", client->config.size);
 	x1 += size_title->get_w() + margin;
@@ -245,7 +245,7 @@ void TitleWindow::create_objects()
 	int x2 = x1 + size->get_w(), y2 = y1 + size->get_h() + margin;
 	add_subwindow(size_tumbler = new TitleSizeTumble(client, this, x2, y1+margin));
 
-	add_tool(pitch_title = new BC_Title(x-xS(5), y2+margin, _("Pitch:")));
+	add_tool(pitch_title = new BC_Title(x-xS(16), y2+margin, _("Line Pitch:")));
 	pitch = new TitlePitch(client, this, x1, y2+margin, &client->config.line_pitch);
 	pitch->create_objects();
 

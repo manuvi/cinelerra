@@ -2128,7 +2128,10 @@ void EDL::replace_assets(ArrayList<Indexable*> &orig_idxbls, ArrayList<Asset*> &
 			int i = orig_idxbls.size();
 			while( --i>=0 && strcmp(orig_idxbls[i]->path, idxbl->path) );
 			if( i < 0 ) continue;
-			edit->asset = assets->update((Asset*)new_assets[i]);
+			Asset *new_asset = new_assets[i];
+			if( track->data_type == TRACK_VIDEO && !new_asset->video_data ) continue;
+			if( track->data_type == TRACK_AUDIO && !new_asset->audio_data ) continue;
+			edit->asset = assets->update(new_assets[i]);
 		}
 	}
 	if( !parent_edl ) {

@@ -1250,10 +1250,16 @@ void MWindow::overwrite(EDL *source, int all)
 // so we need to clear only when not using both io points
 // FIXME: need to write simple overwrite_edl to be used for overwrite function
 	if( edl->local_session->get_inpoint() < 0 ||
-		edl->local_session->get_outpoint() < 0 )
-		edl->clear(dst_start, dst_start + overwrite_len, 0, 0, 0);
+	    edl->local_session->get_outpoint() < 0 )
+		edl->clear(dst_start, dst_start + overwrite_len,
+				edl->session->labels_follow_edits,
+				edl->session->plugins_follow_edits,
+				edl->session->autos_follow_edits);
 
-	paste(dst_start, dst_start + overwrite_len, &file, 0, 0, 0, 0, 0);
+	paste(dst_start, dst_start + overwrite_len, &file,
+				edl->session->labels_follow_edits,
+				edl->session->plugins_follow_edits,
+				edl->session->autos_follow_edits, 0, 0);
 
 	edl->local_session->set_selectionstart(dst_start + overwrite_len);
 	edl->local_session->set_selectionend(dst_start + overwrite_len);
@@ -2448,16 +2454,17 @@ void MWindow::start_convert(Asset *format_asset, const char *suffix,
 		float beep, int remove_originals)
 {
 	if( !convert_render )
-		convert_render = new ConvertRender(this, suffix);
-	convert_render->set_format(format_asset);
+		convert_render = new ConvertRender(this);
+	convert_render->set_format(format_asset, suffix);
 	int found = convert_render->find_convertable_assets(edl);
 	if( convert_render->needed_idxbls.size() > 0 )
 		convert_render->start_convert(beep, remove_originals);
 	else if( found > 0 )
 		finish_convert(remove_originals);
-	else {
+	else if( found < 0 )
+		eprintf(_("convert assets format error"));
+	else
 		eprintf(_("No convertable assets found"));
-	}
 }
 
 void MWindow::finish_convert(int remove_originals)

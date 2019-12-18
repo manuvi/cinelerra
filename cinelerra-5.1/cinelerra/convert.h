@@ -39,7 +39,7 @@
 class ConvertRender : public Thread
 {
 public:
-	ConvertRender(MWindow *mwindow, const char *suffix);
+	ConvertRender(MWindow *mwindow);
 	~ConvertRender();
 	void reset();
 	void to_convert_path(char *new_path, Indexable *idxbl);
@@ -50,6 +50,10 @@ public:
 	ArrayList<Indexable *> needed_idxbls;	// originals which match the needed_assets
 	ArrayList<Asset *> needed_copies;	// assets which must be created
 
+	double get_video_length(Indexable *idxbl);
+	double get_audio_length(Indexable *idxbl);
+	double get_length(Indexable *idxbl);
+	int match_format(Asset *asset);
 	EDL *convert_edl(EDL *edl, Indexable *idxbl);  // create render edl for this indexable
 	int add_original(EDL *edl, Indexable *idxbl);
 	void add_needed(Indexable *idxbl, Asset *convert);
@@ -57,7 +61,7 @@ public:
 
 // if user canceled progress bar
 	int is_canceled();
-	void set_format(Asset *asset);
+	void set_format(Asset *asset, const char *suffix);
 	void start_convert(float beep, int remove_originals);
 	void run();
 	void create_copy(int i);
