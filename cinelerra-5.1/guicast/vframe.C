@@ -276,6 +276,8 @@ int VFrame::reset_parameters(int do_opengl)
 	is_keyframe = 0;
 	pixel_rgb = 0x000000; // BLACK
 	pixel_yuv = 0x008080;
+	draw_alpha = 1.f;
+	draw_flags = ALIAS_OFF;
 	stipple = 0;
 	clear_color = 0x000000;
 	clear_alpha = 0x00;
@@ -1394,109 +1396,120 @@ int VFrame::get_memory_usage()
 // a (~alpha) transparency, 0x00==solid .. 0xff==transparent
 void VFrame::set_pixel_color(int rgb, int a)
 {
-	pixel_rgb = (rgb&0xffffff) | ~a<<24;
+	pixel_rgb = (~a<<24) | (rgb&0xffffff);
 	int ir = 0xff & (pixel_rgb >> 16);
 	int ig = 0xff & (pixel_rgb >> 8);
 	int ib = 0xff & (pixel_rgb >> 0);
 	YUV::yuv.rgb_to_yuv_8(ir, ig, ib);
-	pixel_yuv =  (~a<<24) | (ir<<16) | (ig<<8) | (ib<<0);
+	pixel_yuv = (~a<<24) | (ir<<16) | (ig<<8) | (ib<<0);
 }
 
 void VFrame::set_stiple(int mask)
 {
 	stipple = mask;
 }
-
-int VFrame::draw_pixel(int x, int y)
+void VFrame::set_draw_alpha(float alpha)
 {
-	if( x < 0 || y < 0 || x >= get_w() || y >= get_h() ) return 1;
-
-#define DRAW_PIXEL(type, r, g, b, comps, a) { \
-	type **rows = (type**)get_rows(); \
-	type *rp = rows[y], *bp = rp + x*comps; \
-	bp[0] = r; \
-	if( comps > 1 ) { bp[1] = g; bp[2] = b; } \
-	if( comps == 4 )  bp[3] = a; \
+	draw_alpha = alpha;
 }
+void VFrame::set_draw_flags(int flags)
+{
+	draw_flags = flags;
+}
+
+int VFrame::draw_pixel(float x, float y, float a)
+{
+	int ix = x, iy = y;
+	if( ix < 0 || iy < 0 || ix >= get_w() || iy >= get_h() ) return 1;
+	if( a <= 0 ) return 0;
+	if( a > 1 ) a = 1;
+	int color = BC_CModels::is_yuv(color_model) ? pixel_yuv : pixel_rgb;
 	float fr = 0, fg = 0, fb = 0, fa = 0;
-	int pixel_color = BC_CModels::is_yuv(color_model) ? pixel_yuv : pixel_rgb;
-	int ir = (0xff & (pixel_color >> 16));
-	int ig = (0xff & (pixel_color >> 8));
-	int ib = (0xff & (pixel_color >> 0));
-	int ia = (0xff & (pixel_color >> 24)) ^ 0xff;  // transparency, not opacity
-	if( (x+y) & stipple ) {
+	int ir = (0xff & (color >> 16));
+	int ig = (0xff & (color >> 8));
+	int ib = (0xff & (color >> 0));
+	int ia = (0xff & ~(color >> 24));  // transparency, not opacity
+	if( (ix+iy) & stipple ) {
 		ir = 255 - ir;  ig = 255 - ig;  ib = 255 - ib;
 	}
 	int rr = (ir<<8) | ir, gg = (ig<<8) | ig, bb = (ib<<8) | ib, aa = (ia<<8) | ia;
+	float fmax = 65535.f;  fa = aa/fmax;
 	if( BC_CModels::is_float(color_model) ) {
-		fr = rr/65535.f;  fg = gg/65535.f;  fb = bb/65535.f;  fa = aa/65535.f;
+		fr = rr/fmax;  fg = gg/fmax;  fb = bb/fmax;
 	}
 
+#define DRAW_PIXEL(cmdl, type, r, g, b, ofs, max, comps) \
+case cmdl: { \
+ float src_a = fa*draw_alpha, src_1a = 1 - src_a; \
+ type **rows = (type**)get_rows(); \
+ type *rp = rows[iy], *bp = rp + ix*comps; \
+ bp[0] = src_a * r + src_1a * bp[0]; \
+ if( comps > 1 ) { \
+  bp[1] = src_a * (g-ofs) + src_1a * (bp[1]-ofs) + ofs; \
+  bp[2] = src_a * (b-ofs) + src_1a * (bp[2]-ofs) + ofs; \
+ } \
+ if( comps == 4 ) \
+  bp[3] = src_a * max + src_1a * bp[3]; \
+ break;\
+}
+
 	switch(get_color_model()) {
-	case BC_A8:
-		DRAW_PIXEL(uint8_t, ib, 0, 0, 1, 0);
-		break;
-	case BC_RGB888:
-	case BC_YUV888:
-		DRAW_PIXEL(uint8_t, ir, ig, ib, 3, 0);
-		break;
-	case BC_RGBA8888:
-	case BC_YUVA8888:
-		DRAW_PIXEL(uint8_t, ir, ig, ib, 4, ia);
-		break;
-	case BC_RGB161616:
-	case BC_YUV161616:
-		DRAW_PIXEL(uint16_t, rr, gg, bb, 3, 0);
-		break;
-	case BC_RGBA16161616:
-	case BC_YUVA16161616:
-		DRAW_PIXEL(uint16_t, rr, gg, bb, 4, aa);
-		break;
-	case BC_RGB_FLOAT:
-		DRAW_PIXEL(float, fr, fg, fb, 3, 0);
-		break;
-	case BC_RGBA_FLOAT:
-		DRAW_PIXEL(float, fr, fg, fb, 4, fa);
-		break;
+	DRAW_PIXEL(BC_A8,           uint8_t, ib,  0,  0, 0x00, 0xff, 1);
+	DRAW_PIXEL(BC_RGB888,       uint8_t, ir, ig, ib, 0x00, 0xff, 3);
+	DRAW_PIXEL(BC_YUV888,       uint8_t, ir, ig, ib, 0x80, 0xff, 3);
+	DRAW_PIXEL(BC_RGBA8888,     uint8_t, ir, ig, ib, 0x00, 0xff, 4);
+	DRAW_PIXEL(BC_YUVA8888,     uint8_t, ir, ig, ib, 0x80, 0xff, 4);
+	DRAW_PIXEL(BC_RGB161616,    uint16_t, rr, gg, bb, 0x0000, 0xffff, 3);
+	DRAW_PIXEL(BC_YUV161616,    uint16_t, rr, gg, bb, 0x8000, 0xffff, 3);
+	DRAW_PIXEL(BC_RGBA16161616, uint16_t, rr, gg, bb, 0x0000, 0xffff, 4);
+	DRAW_PIXEL(BC_YUVA16161616, uint16_t, rr, gg, bb, 0x8000, 0xffff, 4);
+	DRAW_PIXEL(BC_RGB_FLOAT,    float, fr, fg, fb, 0., 1., 3);
+	DRAW_PIXEL(BC_RGBA_FLOAT,   float, fr, fg, fb, 0., 1., 4);
 	}
 	return 0;
 }
 
+int VFrame::draw_pixel(float x, float y, float frac, int axis)
+{
+	if( draw_flags ) {
+		int xs = axis, ys = 1-axis;
+		if( draw_flags & ALIAS_TOP ) draw_pixel(x-xs, y-ys, 1-frac);
+		draw_pixel(x, y, draw_flags & ALIAS_CTR ? 1-frac : 1);
+		if( draw_flags & ALIAS_BOT ) draw_pixel(x+xs, y+ys, frac);
+	}
+	else
+		draw_pixel(x, y);
+	return 0;
+}
 
-// Bresenham's
-void VFrame::draw_line(int x1, int y1, int x2, int y2)
+void VFrame::draw_line(float x1, float y1, float x2, float y2)
 {
 	if( y1 > y2 ) {
 		int tx = x1;  x1 = x2;  x2 = tx;
 		int ty = y1;  y1 = y2;  y2 = ty;
 	}
-
-	int x = x1, y = y1;
-	int dx = x2-x1, dy = y2-y1;
-	int dx2 = 2*dx, dy2 = 2*dy;
-	if( dx < 0 ) dx = -dx;
-	int r = dx > dy ? dx : dy, n = r;
-	int dir = 0;
-	if( dx2 < 0 ) dir += 1;
-	if( dy >= dx ) {
-		if( dx2 >= 0 ) do {	/* +Y, +X */
-			draw_pixel(x, y++);
-			if( (r -= dx2) < 0 ) { r += dy2;  ++x; }
-		} while( --n >= 0 );
-		else do {		/* +Y, -X */
-			draw_pixel(x, y++);
-			if( (r += dx2) < 0 ) { r += dy2;  --x; }
-		} while( --n >= 0 );
+	float dx = x2-x1, dy = y2-y1;
+	float s = dx ? dy/dx : 1;
+	float t = dy ? dx/dy : 0;
+	int xs = dx < 0 ? -1 : 1;
+	dx *= xs;
+	int idx = (int)x2 - (int)x1;
+	int idy = (int)y2 - (int)y1;
+	int d = dx >= dy ? abs(idx) : idy;
+	float x = x1, y = y1;
+	if( dx > dy ) {
+		draw_pixel(x, y, y-(int)y, 0);
+		while( --d >= 0 ) {
+			y = y1 + ((x += xs) - x1) * s;
+			draw_pixel(x, y, y-(int)y, 0);
+		}
 	}
 	else {
-		if( dx2 >= 0 ) do {	/* +X, +Y */
-			draw_pixel(x++, y);
-			if( (r -= dy2) < 0 ) { r += dx2;  ++y; }
-		} while( --n >= 0 );
-		else do {		/* -X, +Y */
-			draw_pixel(x--, y);
-			if( (r -= dy2) < 0 ) { r -= dx2;  ++y; }
-		} while( --n >= 0 );
+		draw_pixel(x, y, x-(int)x, 1);
+		while( --d >= 0 ) {
+			x = x1 + (++y - y1) * t;
+			draw_pixel(x, y, x-(int)x, 1);
+		}
 	}
 }
 
@@ -1562,7 +1575,15 @@ void smooth_line::draw()
 		if( abs(rr) < abs(r) )
 			moveX(rr);
 	}
-xit:	vframe->draw_pixel(sx, sy);
+xit:
+//	vframe->draw_pixel(sx, sy);
+	float vx = abs(dx), vy = abs(dy);
+	float vv = 4*(vx > vy ? dx : dy);
+	float frac = vv ? -r / vv : 0;
+	frac = (1+frac) / 2;
+	bclamp(frac, 0, 1);
+	int axis = abs(dx) >= abs(dy) ? 1 : 0;
+	vframe->draw_pixel(sx, sy, frac, axis);
 }
 
 void VFrame::draw_smooth(int x1, int y1, int x2, int y2, int x3, int y3)
@@ -1696,10 +1717,10 @@ void smooth_line::init1(int x1,int y1, int x2,int y2, int x3,int y3)
 		xmxx = ex; xmxy = ey;
 	}
 	if( xs > 0 )
-		vframe->draw_pixel(sx, sy);
+		vframe->draw_pixel(sx, sy, 0, 0);
 	while( xs*(sx-xmxx) < 0 && (xs*dx < 0 || rx() < 0) ) {
 		moveX(rx());
-		vframe->draw_pixel(sx, sy);
+		vframe->draw_pixel(sx, sy, 0, 0);
 	}
 }
 
@@ -1723,9 +1744,9 @@ void VFrame::smooth_draw(int x1, int y1, int x2, int y2, int x3, int y3)
 	else if( y1 < y2 && y3 < y2 ) {
 		smooth_line lt(this), rt(this);	// Q on top
 		lt.init0(x1, y1, x2, y2, x3, y3, 1);
-		draw_pixel(lt.sx, lt.sy);
+		draw_pixel(lt.sx, lt.sy, 0, 0);
 		rt.init0(x1, y1, x2, y2, x3, y3, -1);
-		draw_pixel(rt.sx, rt.sy);
+		draw_pixel(rt.sx, rt.sy, 0, 0);
 		while( !lt.done || !rt.done ) {
 			lt.draw();
 			rt.draw();
@@ -1734,7 +1755,7 @@ void VFrame::smooth_draw(int x1, int y1, int x2, int y2, int x3, int y3)
 	else {
 		smooth_line pt(this);		// Q in between
 		pt.init0(x1, y1, x2, y2, x3, y3, 0);
-		draw_pixel(pt.sx, pt.sy);
+		draw_pixel(pt.sx, pt.sy, 0, 1);
 		while( !pt.done ) {
 			pt.draw();
 		}

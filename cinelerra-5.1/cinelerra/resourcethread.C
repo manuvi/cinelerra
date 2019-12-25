@@ -174,6 +174,7 @@ ResourceThread::ResourceThread(MWindow *mwindow, MWindowGUI *gui)
 	prev_l = 0;
 	operation_count = 0;
 	render_engine = 0;
+	render_engine_id = -1;
 
 	audio_asset = 0;
 	audio_source = 0;

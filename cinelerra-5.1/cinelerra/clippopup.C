@@ -65,13 +65,13 @@ void ClipPopup::create_objects()
 	BC_SubMenu *submenu;
 	add_item(info = new ClipPopupInfo(mwindow, this));
 	add_item(format = new AWindowListFormat(mwindow, gui));
-	add_item(new ClipPopupSort(mwindow, this));
+	add_item(sort = new ClipPopupSort(mwindow, this));
+	add_item(open_edl = new ClipPopupOpenEDL(mwindow, this));
+	add_item(to_media = new ClipPopupToMedia(mwindow, this));
 	add_item(view = new ClipPopupView(mwindow, this));
 	add_item(view_window = new ClipPopupViewWindow(mwindow, this));
-	add_item(new ClipPopupCopy(mwindow, this));
-	add_item(new ClipPopupNest(mwindow, this));
-	add_item(new ClipPopupUnNest(mwindow, this));
-	add_item(new ClipPopupPaste(mwindow, this));
+	add_item(copy = new ClipPopupCopy(mwindow, this));
+	add_item(paste = new ClipPopupPaste(mwindow, this));
 	add_item(menu_item = new BC_MenuItem(_("Match...")));
 	menu_item->add_submenu(submenu = new BC_SubMenu());
 	submenu->add_submenuitem(new ClipMatchSize(mwindow, this));
@@ -417,107 +417,46 @@ void ClipListMenu::update()
 }
 
 
-ClipPopupNest::ClipPopupNest(MWindow *mwindow, ClipPopup *popup)
- : BC_MenuItem(_("Nest"))
+ClipPopupToMedia::ClipPopupToMedia(MWindow *mwindow, ClipPopup *popup)
+ : BC_MenuItem(_("Nest to Media"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
 }
-ClipPopupNest::~ClipPopupNest()
+ClipPopupToMedia::~ClipPopupToMedia()
 {
 }
 
-int ClipPopupNest::handle_event()
+int ClipPopupToMedia::handle_event()
 {
-	MWindowGUI *gui = mwindow->gui;
-	gui->lock_window("ClipPopupNest::handle_event 1");
-	if( mwindow->edl->session->proxy_scale != 1 ) {
+	if( mwindow->edl->session->proxy_scale == 1 )
+		mwindow->clip_to_media();
+	else
 		eprintf("Nesting not allowed when proxy scale != 1");
-		return 1;
-	}
-	int clips_total = mwindow->session->drag_clips->total;
-	for( int i=0; i<clips_total; ++i ) {
-		EDL *edl = mwindow->edl;
-		time_t dt;      time(&dt);
-		struct tm dtm;  localtime_r(&dt, &dtm);
-		char path[BCSTRLEN];
-		sprintf(path, _("Nested_%02d%02d%02d-%02d%02d%02d"),
-			dtm.tm_year+1900, dtm.tm_mon+1, dtm.tm_mday,
-			dtm.tm_hour, dtm.tm_min, dtm.tm_sec);
-		EDL *clip = mwindow->session->drag_clips->values[i];
-		EDL *nested = edl->new_nested(clip, path);
-		EDL *new_clip = edl->create_nested_clip(nested);
-		new_clip->folder_no = AW_CLIP_FOLDER;
-		sprintf(new_clip->local_session->clip_icon,
-			"clip_%02d%02d%02d-%02d%02d%02d.png",
-			dtm.tm_year+1900, dtm.tm_mon+1, dtm.tm_mday,
-			dtm.tm_hour, dtm.tm_min, dtm.tm_sec);
-		snprintf(new_clip->local_session->clip_title,
-			sizeof(new_clip->local_session->clip_title),
-			_("Nested: %s"), clip->local_session->clip_title);
-		strcpy(new_clip->local_session->clip_notes,
-		clip->local_session->clip_notes);
-		int idx = edl->clips.number_of(clip);
-		if( idx >= 0 ) {
-			edl->clips[idx] = new_clip;
-			clip->remove_user();
-		}
-		else
-			edl->clips.append(new_clip);
-		mwindow->mainindexes->add_next_asset(0, nested);
-	}
-	mwindow->mainindexes->start_build();
-	popup->gui->async_update_assets();
-	gui->unlock_window();
 	return 1;
 }
 
 
-ClipPopupUnNest::ClipPopupUnNest(MWindow *mwindow, ClipPopup *popup)
- : BC_MenuItem(_("UnNest"))
+ClipPopupOpenEDL::ClipPopupOpenEDL(MWindow *mwindow, ClipPopup *popup)
+ : BC_MenuItem(_("Open EDL"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
 }
-ClipPopupUnNest::~ClipPopupUnNest()
+
+ClipPopupOpenEDL::~ClipPopupOpenEDL()
 {
 }
 
-int ClipPopupUnNest::handle_event()
+int ClipPopupOpenEDL::handle_event()
 {
-	EDL *nested_edl = 0;
-	MWindowGUI *gui = mwindow->gui;
-	gui->lock_window("ClipPopupUnNest::handle_event 1");
 	int clips_total = mwindow->session->drag_clips->total;
-	for( int i=0; i<clips_total; ++i ) {
-		EDL *clip = mwindow->session->drag_clips->values[i];
-		Track *track = clip->tracks->first;
-		Edit *edit = track ? track->edits->first : 0;
-		nested_edl = edit && !edit->next && !edit->asset ? edit->nested_edl : 0;
-		while( nested_edl && (track=track->next)!=0 ) {
-			Edit *edit = track->edits->first;
-			if( !edit || edit->next ||
-			    ( edit->nested_edl != nested_edl &&
-			      strcmp(edit->nested_edl->path, nested_edl->path) ) )
-				nested_edl = 0;
-		}
-		if( nested_edl ) {
-			EDL *edl = mwindow->edl;
-			EDL *new_clip = new EDL(edl);
-			new_clip->create_objects();
-			new_clip->copy_all(nested_edl);
-			new_clip->folder_no = AW_CLIP_FOLDER;
-			int idx = edl->clips.number_of(clip);
-			if( idx >= 0 ) {
-				edl->clips[idx] = new_clip;
-				clip->remove_user();
-			}
-			else
-				edl->clips.append(new_clip);
-			popup->gui->async_update_assets();
-		}
+	if( clips_total ) {
+		popup->unlock_window();
+		EDL *clip = mwindow->session->drag_clips->values[0];
+		mwindow->stack_push(clip);
+		popup->lock_window("ClipPopupOpenEDL::handle_event");
 	}
-	gui->unlock_window();
 	return 1;
 }
 

@@ -151,6 +151,25 @@ public:
 	ColorPicker *thread;
 };
 
+class ColorOK : public BC_OKButton
+{
+public:
+	ColorOK(ColorGUI *gui, BC_WindowBase *window);
+	int handle_event();
+
+	BC_WindowBase *window;
+	ColorGUI *gui;
+};
+
+class ColorCancel : public BC_CancelButton
+{
+public:
+	ColorCancel(ColorGUI *gui, BC_WindowBase *window);
+	int handle_event();
+
+	BC_WindowBase *window;
+	ColorGUI *gui;
+};
 
 class PaletteWheel : public BC_SubWindow
 {

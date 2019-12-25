@@ -79,7 +79,7 @@ BC_Window* ColorPicker::new_gui()
 	int w = ColorWindow::calculate_w();
 	int h = ColorWindow::calculate_h();
 	if( ok_cancel )
-		h += bmax(BC_OKButton::calculate_h(),BC_CancelButton::calculate_h());
+		h += bmax(ColorOK::calculate_h(),ColorCancel::calculate_h());
 	int root_w = display_info.get_root_w(), root_h = display_info.get_root_h();
 	if( x+w > root_w ) x = root_w - w;
 	if( y+h > root_h ) y = root_h - h;
@@ -266,8 +266,8 @@ void ColorGUI::create_objects()
 		aph_a->create_objects();  aph_a->set_tooltip(_("Alpha"));
 	}
 	if( ok_cancel ) {
-		add_tool(new BC_OKButton(window));
-		add_tool(new BC_CancelButton(window));
+		add_tool(new ColorOK(this, window));
+		add_tool(new ColorCancel(this, window));
 	}
 	create_objects(this);
 
@@ -289,8 +289,41 @@ void ColorGUI::change_values()
 }
 
 
+ColorOK::ColorOK(ColorGUI *gui, BC_WindowBase *window)
+ : BC_OKButton(window)
+{
+	this->gui = gui;
+	this->window = window;
+}
+int ColorOK::handle_event()
+{
+	gui->ok_cancel = 0;
+	gui->close_gui();
+	window->sync_display();
+	return 1;
+}
+
+ColorCancel::ColorCancel(ColorGUI *gui, BC_WindowBase *window)
+ : BC_CancelButton(window)
+{
+	this->gui = gui;
+	this->window = window;
+}
+int ColorCancel::handle_event()
+{
+	gui->ok_cancel = 1;
+	gui->close_gui();
+	window->sync_display();
+	return 1;
+}
+
 int ColorGUI::close_gui()
 {
+	if( button_grabbed ) {
+		button_grabbed = 0;
+		window->ungrab_buttons();
+		window->ungrab_cursor();
+	}
 	window->set_done(ok_cancel ? 1 : 0);
 	return 1;
 }
@@ -1141,7 +1174,7 @@ int PaletteGrabButton::handle_event()
 	if( gui->window->grab_buttons() ) {
 		gui->window->grab_cursor();
 		gui->button_grabbed = 1;
-		gui->button_press_gui(); // redraw face HI
+		return BC_Button::button_press_event(); // redraw face HI
 	}
 	return 1;
 }

@@ -51,9 +51,14 @@ public:
 
 
 	ClipPopupInfo *info;
+	AWindowListFormat *format;
+	ClipPopupSort *sort;
+	ClipPopupOpenEDL *open_edl;
 	ClipPopupView *view;
 	ClipPopupViewWindow *view_window;
-	AWindowListFormat *format;
+	ClipPopupCopy *copy;
+	ClipPopupToMedia *to_media;
+	ClipPopupPaste *paste;
 };
 
 class ClipPopupInfo : public BC_MenuItem
@@ -208,11 +213,11 @@ public:
 	AWindowGUI *gui;
 };
 
-class ClipPopupNest : public BC_MenuItem
+class ClipPopupToMedia : public BC_MenuItem
 {
 public:
-	ClipPopupNest(MWindow *mwindow, ClipPopup *popup);
-	~ClipPopupNest();
+	ClipPopupToMedia(MWindow *mwindow, ClipPopup *popup);
+	~ClipPopupToMedia();
 
 	int handle_event();
 
@@ -220,11 +225,11 @@ public:
 	ClipPopup *popup;
 };
 
-class ClipPopupUnNest : public BC_MenuItem
+class ClipPopupOpenEDL : public BC_MenuItem
 {
 public:
-	ClipPopupUnNest(MWindow *mwindow, ClipPopup *popup);
-	~ClipPopupUnNest();
+	ClipPopupOpenEDL(MWindow *mwindow, ClipPopup *popup);
+	~ClipPopupOpenEDL();
 
 	int handle_event();
 

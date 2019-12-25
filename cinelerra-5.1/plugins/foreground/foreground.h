@@ -72,6 +72,12 @@ public:
 	void create_objects();
 	void update();
 
+	int close_event() { return colors->close_gui(); }
+	int cursor_motion_event() { return colors->cursor_motion_gui(); }
+	int button_press_event() { return colors->button_press_gui(); }
+	int button_release_event() { return colors->button_release_gui(); }
+	void done_event(int result) { colors->close_gui(); }
+
 	ForegroundMain *plugin;
 	ForegroundColors *colors;
 };

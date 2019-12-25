@@ -75,6 +75,8 @@ private:
 
 class BC_GenericButton : public BC_Button
 {
+	int color;
+	char text[BCTEXTLEN];
 public:
 	BC_GenericButton(int x, int y,
 		const char *text, VFrame **data = 0, int color=-1);
@@ -85,10 +87,8 @@ public:
 	int draw_face(int flash = 1);
 	static int calculate_w(BC_WindowBase *gui, const char *text);
 	static int calculate_h();
+	void set_text(const char *cp);
 	const char *get_text () { return text; }
-private:
-	int color;
-	char text[BCTEXTLEN];
 };
 
 class BC_OKTextButton : public BC_GenericButton

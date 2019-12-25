@@ -255,8 +255,52 @@ void SketcherCurveWidth::update(int width)
 }
 
 
+SketcherAliasItem::SketcherAliasItem(SketcherAliasing *popup, int v)
+ : BC_MenuItem(popup->alias_to_text(v))
+{
+	this->popup = popup;
+	this->v = v;
+}
+
+int SketcherAliasItem::handle_event()
+{
+	popup->set_text(get_text());
+	popup->plugin->config.aliasing = v;
+	popup->gui->send_configure_change();
+	return 1;
+}
+
+
+SketcherAliasing::SketcherAliasing(SketcherWindow *gui, Sketcher *plugin,
+		int x, int y)
+ : BC_PopupMenu(x, y, xS(64),
+		alias_to_text(plugin->config.aliasing), 1, 0, xS(3))
+{
+	this->gui = gui;
+	this->plugin = plugin;
+}
+SketcherAliasing::~SketcherAliasing()
+{
+}
+
+void SketcherAliasing::create_objects()
+{
+	add_item(new SketcherAliasItem(this, -1));
+	add_item(new SketcherAliasItem(this, 0));
+	add_item(new SketcherAliasItem(this, 1));
+}
+
+const char *SketcherAliasing::alias_to_text(int alias)
+{
+	if( alias < 0 ) return _("Off");
+	if( alias > 0 ) return _("Dbl");
+	return _("On");
+}
+
+
+
 SketcherWindow::SketcherWindow(Sketcher *plugin)
- : PluginClientWindow(plugin, xS(380), yS(620), xS(380), yS(620), 0)
+ : PluginClientWindow(plugin, xS(400), yS(620), xS(400), yS(620), 0)
 {
 	this->plugin = plugin;
 	this->title_pen = 0;  this->curve_pen = 0;
@@ -310,6 +354,10 @@ void SketcherWindow::create_objects()
 	x1 += title_width->get_w() + margin;
 	curve_width = new SketcherCurveWidth(this, x1, y, cv->width);
 	curve_width->create_objects();
+	x1 += curve_width->get_w() + margin;
+	aliasing = new SketcherAliasing(this, plugin, x1, y);
+	add_subwindow(aliasing);	dy = bmax(dy,aliasing->get_h());
+	aliasing->create_objects();
 	y += dy + 2*margin;		dy = 0;
 
 	x1 = get_w()-x - BC_Title::calculate_w(this, curve_text, LARGEFONT);

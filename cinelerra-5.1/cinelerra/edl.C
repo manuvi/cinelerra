@@ -34,6 +34,7 @@
 #include "edits.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "file.h"
 #include "filexml.h"
 #include "floatauto.h"
 #include "floatautos.h"
@@ -600,7 +601,7 @@ void EDL::copy_indexables(EDL *edl)
 	}
 }
 
-EDL *EDL::new_nested(EDL *edl, const char *path)
+EDL *EDL::new_nested_edl(EDL *edl, const char *path)
 {
 	EDL *nested = new EDL;  // no parent for nested edl
 	nested->create_objects();
@@ -613,6 +614,22 @@ EDL *EDL::new_nested(EDL *edl, const char *path)
 	return nested;
 }
 
+EDL *EDL::get_nested_edl()
+{
+	Track *track = tracks->first;
+	Edit *edit = track ? track->edits->first : 0;
+	EDL *nested = edit && !edit->next && !edit->asset ? edit->nested_edl : 0;
+	while( nested && (track=track->next)!=0 ) {
+		Edit *edit = track->edits->first;
+		if( !edit || edit->next ||
+		    ( edit->nested_edl != nested &&
+		      strcmp(edit->nested_edl->path, nested->path) ) )
+			nested = 0;
+	}
+	return nested;
+}
+
+
 EDL *EDL::create_nested_clip(EDL *nested)
 {
 	EDL *new_edl = new EDL(this);  // parent for clip edl
@@ -623,12 +640,44 @@ EDL *EDL::create_nested_clip(EDL *nested)
 
 void EDL::create_nested(EDL *nested)
 {
+	int video_tracks = 0, audio_tracks = 0;
+	for( Track *track=nested->tracks->first; track!=0; track=track->next ) {
+		if( track->data_type == TRACK_VIDEO && track->record ) ++video_tracks;
+		if( track->data_type == TRACK_AUDIO && track->record ) ++audio_tracks;
+	}
+// renderengine properties
+	if( video_tracks > 0 )
+		video_tracks = 1;
+	if( audio_tracks > 0 )
+		audio_tracks = nested->session->audio_channels;
+	
 // Keep frame rate, sample rate, and output size unchanged.
 // Nest all video & audio outputs
+	session->video_channels = video_tracks;
+	session->audio_channels = audio_tracks;
 	session->video_tracks = 1;
-	session->audio_tracks = nested->session->audio_channels;
+	session->audio_tracks = audio_tracks;
 	create_default_tracks();
 	insert_asset(0, nested, 0, 0, 0);
+}
+
+void EDL::overwrite_clip(EDL *clip)
+{
+	int folder = folder_no;
+	char clip_title[BCTEXTLEN];  strcpy(clip_title, local_session->clip_title);
+	char clip_notes[BCTEXTLEN];  strcpy(clip_notes, local_session->clip_notes);
+	char clip_icon[BCSTRLEN];    strcpy(clip_icon,  local_session->clip_icon);
+	copy_all(clip);
+	folder_no = folder;
+	strcpy(local_session->clip_title, clip_title);
+	strcpy(local_session->clip_notes, clip_notes);
+	strcpy(local_session->clip_icon, clip_icon);
+	if( !clip_icon[0] ) return;
+// discard old clip icon to reconstruct 
+	char clip_icon_path[BCTEXTLEN];
+	snprintf(clip_icon_path, sizeof(clip_icon_path),
+		"%s/%s", File::get_config_path(), clip_icon);
+	remove(clip_icon_path);
 }
 
 void EDL::retrack()
@@ -1158,7 +1207,7 @@ void EDL::insert_asset(Asset *asset,
 
 	if( new_nested_edl ) {
 		length = new_nested_edl->tracks->total_length();
-		layers = 1;
+		layers = new_nested_edl->session->video_channels;
 		channels = new_nested_edl->session->audio_channels;
 	}
 

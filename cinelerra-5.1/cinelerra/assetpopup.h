@@ -51,12 +51,16 @@ public:
 
 
 	AssetPopupInfo *info;
+	AWindowListFormat *format;
+	AssetPopupOpenEDL *open_edl;
+	AssetPopupToClip *to_clip;
+	AssetPopupSort *sort;
 	AssetPopupBuildIndex *index;
 	AssetPopupView *view;
 	AssetPopupViewWindow *view_window;
 	AssetPopupOpenMixer *open_mixer;
 	AssetPopupInsertMixer *insert_mixer;
-	AWindowListFormat *format;
+	AssetPopupPaste *paste;
 };
 
 class AssetPopupInfo : public BC_MenuItem
@@ -67,6 +71,30 @@ public:
 
 	int handle_event();
 	int button_press_event();
+
+	MWindow *mwindow;
+	AssetPopup *popup;
+};
+
+class AssetPopupOpenEDL : public BC_MenuItem
+{
+public:
+	AssetPopupOpenEDL(MWindow *mwindow, AssetPopup *popup);
+	~AssetPopupOpenEDL();
+
+	int handle_event();
+
+	MWindow *mwindow;
+	AssetPopup *popup;
+};
+
+class AssetPopupToClip : public BC_MenuItem
+{
+public:
+	AssetPopupToClip(MWindow *mwindow, AssetPopup *popup);
+	~AssetPopupToClip();
+
+	int handle_event();
 
 	MWindow *mwindow;
 	AssetPopup *popup;

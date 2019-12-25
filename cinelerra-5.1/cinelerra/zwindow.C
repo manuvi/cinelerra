@@ -185,7 +185,6 @@ ZWindow::ZWindow(MWindow *mwindow)
 	idx = -1;
 	edl = 0;
 	highlighted = 0;
-	destroy = 1;
 	title[0] = 0;
 	zgui = 0;
 }
@@ -207,10 +206,10 @@ BC_Window* ZWindow::new_gui()
 
 void ZWindow::handle_done_event(int result)
 {
-	idx = -1;
 	stop_playback(1);
-	if( destroy )
+	if( result )
 		mwindow->del_mixer(this);
+	idx = -1;
 }
 void ZWindow::handle_close_event(int result)
 {

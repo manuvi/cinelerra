@@ -85,7 +85,7 @@ int TracerPointY::handle_event()
 }
 
 TracerWindow::TracerWindow(Tracer *plugin)
- : PluginClientWindow(plugin, xS(400), yS(420), xS(400), yS(420), 0)
+ : PluginClientWindow(plugin, xS(460), yS(420), xS(460), yS(420), 0)
 {
 	this->plugin = plugin;
 	this->title_x = 0;    this->point_x = 0;
@@ -116,18 +116,18 @@ void TracerWindow::create_objects()
 	TracerPoint *pt = hot_point >= 0 ? plugin->config.points[hot_point] : 0;
 	point_x = new TracerPointX(this, x1, y, !pt ? 0 : pt->x);
 	point_x->create_objects();
-	x1 += point_x->get_w() + margin;
+	x1 += point_x->get_w() + margin + xS(20);
 	add_subwindow(new_point = new TracerNewPoint(this, plugin, x1, y));
-	x1 += new_point->get_w() + margin;
+	x1 += new_point->get_w() + margin + xS(30);
 	add_subwindow(point_up = new TracerPointUp(this, x1, y));
 	y += point_x->get_h() + margin;
 	add_subwindow(title_y = new BC_Title(x, y, _("Y:")));
 	x1 = x + title_y->get_w() + margin;
 	point_y = new TracerPointY(this, x1, y, !pt ? 0 : pt->y);
 	point_y->create_objects();
-	x1 += point_y->get_w() + margin;
+	x1 += point_y->get_w() + margin + xS(20);
 	add_subwindow(del_point = new TracerDelPoint(this, plugin, x1, y));
-	x1 += del_point->get_w() + margin;
+	x1 += del_point->get_w() + margin + xS(30);
 	add_subwindow(point_dn = new TracerPointDn(this, x1, y));
 	y += point_y->get_h() + margin + yS(10);
 
@@ -595,7 +595,7 @@ int TracerRadius::handle_event()
 }
 
 TracerNewPoint::TracerNewPoint(TracerWindow *gui, Tracer *plugin, int x, int y)
- : BC_GenericButton(x, y, xS(80), _("New"))
+ : BC_GenericButton(x, y, xS(100), _("New"))
 {
 	this->gui = gui;
 	this->plugin = plugin;
@@ -612,7 +612,7 @@ int TracerNewPoint::handle_event()
 }
 
 TracerDelPoint::TracerDelPoint(TracerWindow *gui, Tracer *plugin, int x, int y)
- : BC_GenericButton(x, y, xS(80), C_("Del"))
+ : BC_GenericButton(x, y, xS(100), C_("Del"))
 {
 	this->gui = gui;
 	this->plugin = plugin;

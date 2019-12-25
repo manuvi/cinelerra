@@ -46,6 +46,7 @@ public:
 	int n;
 	uint8_t *msk;
 
+	int draw_mask(int x, int y);
 	SketcherVPen(VFrame *vfrm, int n)
 	 : VFrame(vfrm->get_data(), -1, vfrm->get_y()-vfrm->get_data(),
 	    vfrm->get_u()-vfrm->get_data(), vfrm->get_v()-vfrm->get_data(),
@@ -57,40 +58,38 @@ public:
 	}
 	~SketcherVPen() { delete [] msk; }
 
-	void draw_line(float x1, float y1, float x2, float y2) {
-		VFrame::draw_line(int(x1+.5f),int(y1+.5f), int(x2+.5f),int(y2+.5f));
-	}
 	void draw_smooth(float x1, float y1, float x2, float y2, float x3, float y3) {
 		VFrame::draw_smooth(int(x1+.5f),int(y1+.5f),
 			int(x2+.5f),int(y2+.5f), int(x3+.5f),int(y3+.5f));
 	}
 
-	virtual int draw_pixel(int x, int y) = 0;
+	virtual int draw_pixel(float x, float y, float a) = 0;
+	int draw_pixel(float x, float y, float frac, int axis);
 };
 
 class SketcherPenSquare : public SketcherVPen
 {
 public:
 	SketcherPenSquare(VFrame *vfrm, int n) : SketcherVPen(vfrm, n) {}
-	int draw_pixel(int x, int y);
+	int draw_pixel(float x, float y, float a);
 };
 class SketcherPenPlus : public SketcherVPen
 {
 public:
 	SketcherPenPlus(VFrame *vfrm, int n) : SketcherVPen(vfrm, n) {}
-	int draw_pixel(int x, int y);
+	int draw_pixel(float x, float y, float a);
 };
 class SketcherPenSlant : public SketcherVPen
 {
 public:
 	SketcherPenSlant(VFrame *vfrm, int n) : SketcherVPen(vfrm, n) {}
-	int draw_pixel(int x, int y);
+	int draw_pixel(float x, float y, float a);
 };
 class SketcherPenXlant : public SketcherVPen
 {
 public:
 	SketcherPenXlant(VFrame *vfrm, int n) : SketcherVPen(vfrm, n) {}
-	int draw_pixel(int x, int y);
+	int draw_pixel(float x, float y, float a);
 };
 
 
@@ -140,7 +139,7 @@ public:
 	double nearest_point(int &pi, coord x, coord y);
 
 	SketcherVPen *new_vpen(VFrame *out);
-	void draw(VFrame *img);
+	void draw(VFrame *img, int flags);
 };
 class SketcherCurves : public ArrayList<SketcherCurve *>
 {
@@ -166,6 +165,7 @@ public:
 	void dump();
 
 	int drag;
+	int aliasing;
 	int cv_selected, pt_selected;
 };
 

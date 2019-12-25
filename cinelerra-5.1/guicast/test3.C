@@ -22,8 +22,12 @@
 #include "bcsignals.h"
 #include "guicast.h"
 
-
-
+/*
+c++ x.C -I/mnt1/build5/cinelerra-5.1/guicast \
+  -L/mnt1/build5/cinelerra-5.1/guicast/x86_64 -lguicast \
+  -DHAVE_GL -DHAVE_XFT -I/usr/include/freetype2 -lGL -lX11 -lXext \
+  -lXinerama -lXv -lpng  -lfontconfig -lfreetype -lXft -pthread
+*/
 
 class TestWindow : public BC_Window
 {
@@ -32,18 +36,21 @@ public:
 
 	void create_objects()
 	{
+		lock_window("TestWindow::create_objects");
 		set_color(BLACK);
 		set_font(LARGEFONT);
 		draw_text(10, 50, "Hello world");
 		flash();
 		flush();
+		unlock_window();
 	};
 };
 
 
 int main()
 {
-	new BC_Signals;
+	BC_Signals signals;
+	BC_WindowBase::init_resources(1.);
 	TestWindow window;
 	window.create_objects();
 	window.run_window();

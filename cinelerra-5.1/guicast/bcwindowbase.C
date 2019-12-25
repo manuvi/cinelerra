@@ -2437,6 +2437,8 @@ void BC_WindowBase::init_glyphs()
 //  Not a fix, but much better than nothing.
 	static int inited = 0;
 	if( inited ) return;
+	XGrabServer(display);
+	XSync(display, 0);
 	inited = 1;
 	int cur_font = current_font;
 // locale encodings, needed glyphs to be preloaded
@@ -2449,6 +2451,7 @@ void BC_WindowBase::init_glyphs()
 		draw_text(5,5, text, 0);
 	}
 	set_font(cur_font);
+	XUngrabServer(display);
 }
 
 void BC_WindowBase::init_im()

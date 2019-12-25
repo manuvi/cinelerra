@@ -105,6 +105,18 @@
 
 #define FONT_SEARCHPATH "fonts"
 
+class StackItem
+{
+public:
+	EDL *edl, *new_edl;
+	MainUndo *undo;
+};
+
+class Stack : public ArrayList<StackItem>
+{
+public:
+};
+
 
 class MWindow : public Thread
 {
@@ -135,6 +147,12 @@ public:
 	int get_tracks_height();
 // Total horizontal pixels in timeline
 	int get_tracks_width();
+// session stack
+	void stack_push(EDL *edl);
+	void stack_pop();
+	void forget_nested_edl(EDL *nested);
+	void clip_to_media();
+	void media_to_clip();
 // Show windows
 	void show_vwindow();
 	void show_awindow();
@@ -218,7 +236,7 @@ public:
 	void create_mixers(double position = 0);
 	void refresh_mixers(int dir=1);
 	void stop_mixers();
-	void close_mixers(int destroy=1);
+	void close_mixers(int result=1);
 	void open_mixers();
 	ZWindow *get_mixer(Mixer *&mixer);
 	void del_mixer(ZWindow *zwindow);
@@ -289,6 +307,7 @@ public:
 	void split_y();
 	void crop_video(int mode);
 	void update_plugins();
+	void get_backup_path(char *path, int len);
 // Call after every edit operation
 	void save_backup();
 	void load_backup();
@@ -564,6 +583,8 @@ public:
 // Main undo stack
 	MainUndo *undo;
 	int undo_command;
+// session stack
+	Stack stack;
 
 	BC_Hash *defaults;
 	Assets *assets;

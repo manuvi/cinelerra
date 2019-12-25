@@ -35,6 +35,13 @@
 #define MAX_STACK_ELEMENTS 255
 #define SHM_MIN_SIZE 2048
 
+#define ALIAS_OFF 0
+#define ALIAS_TOP 1
+#define ALIAS_CTR 2
+#define ALIAS_BOT 4
+#define ALIAS_DBL 5
+#define ALIAS_NRM 6
+
 // Scene graph for 3D models
 // Defined by the subclass
 class VFrameScene
@@ -342,16 +349,20 @@ public:
 	void copy_stacks(VFrame *src);
 // Updates the params with values from src
 	void copy_params(VFrame *src);
-
 // This clears the stacks and the param table
 	void clear_stacks();
 
-	virtual int draw_pixel(int x, int y);
-	int pixel_rgb, pixel_yuv, stipple;
+// pixel drawing
+	virtual int draw_pixel(float x, float y, float a=1.f);
+	virtual int draw_pixel(float x, float y, float frac, int axis);
+	void set_draw_alpha(float a);
+	void set_draw_flags(int flags);
+	int pixel_rgb, pixel_yuv, stipple, draw_flags;
+	float draw_alpha;
 
 	void set_pixel_color(int rgb, int a=0xff);
 	void set_stiple(int mask);
-	void draw_line(int x1, int y1, int x2, int y2);
+	void draw_line(float x1, float y1, float x2, float y2);
 	void draw_smooth(int x1, int y1, int x2, int y2, int x3, int y3);
 	void smooth_draw(int x1, int y1, int x2, int y2, int x3, int y3);
 	void draw_rect(int x1, int y1, int x2, int y2);

@@ -76,13 +76,15 @@ void AssetPopup::create_objects()
 	BC_SubMenu *submenu;
 	add_item(info = new AssetPopupInfo(mwindow, this));
 	add_item(format = new AWindowListFormat(mwindow, gui));
-	add_item(new AssetPopupSort(mwindow, this));
+	add_item(open_edl = new AssetPopupOpenEDL(mwindow, this));
+	add_item(to_clip = new AssetPopupToClip(mwindow, this));
+	add_item(sort = new AssetPopupSort(mwindow, this));
 	add_item(index = new AssetPopupBuildIndex(mwindow, this));
 	add_item(view = new AssetPopupView(mwindow, this));
 	add_item(view_window = new AssetPopupViewWindow(mwindow, this));
 	add_item(open_mixer = new AssetPopupOpenMixer(mwindow, this));
 	add_item(insert_mixer = new AssetPopupInsertMixer(mwindow, this));
-	add_item(new AssetPopupPaste(mwindow, this));
+	add_item(paste = new AssetPopupPaste(mwindow, this));
 	add_item(menu_item = new BC_MenuItem(_("Match...")));
 	menu_item->add_submenu(submenu = new BC_SubMenu());
 	submenu->add_submenuitem(new AssetMatchSize(mwindow, this));
@@ -175,6 +177,51 @@ int AssetPopupInfo::handle_event()
 		popup->gui->awindow->clip_edit->edit_clip(
 			mwindow->session->drag_clips->values[0], cur_x, cur_y);
 	}
+	return 1;
+}
+
+
+AssetPopupOpenEDL::AssetPopupOpenEDL(MWindow *mwindow, AssetPopup *popup)
+ : BC_MenuItem(_("Open EDL"))
+{
+	this->mwindow = mwindow;
+	this->popup = popup;
+}
+AssetPopupOpenEDL::~AssetPopupOpenEDL()
+{
+}
+
+int AssetPopupOpenEDL::handle_event()
+{
+	int assets_total = mwindow->session->drag_assets->size();
+	if( assets_total ) {
+		popup->unlock_window();
+		Indexable *idxbl = mwindow->session->drag_assets->get(0);
+		EDL *edl = idxbl && !idxbl->is_asset ? (EDL *)idxbl : 0;
+		if( edl )
+			mwindow->stack_push(edl);
+		else
+			eprintf(_("media is not EDL:\n%s"), idxbl->path);
+		popup->lock_window("AssetPopupOpenEDL::handle_event");
+	}
+	return 1;
+}
+
+
+AssetPopupToClip::AssetPopupToClip(MWindow *mwindow, AssetPopup *popup)
+ : BC_MenuItem(_("EDL to clip"))
+{
+	this->mwindow = mwindow;
+	this->popup = popup;
+}
+
+AssetPopupToClip::~AssetPopupToClip()
+{
+}
+
+int AssetPopupToClip::handle_event()
+{
+	mwindow->media_to_clip();
 	return 1;
 }
 

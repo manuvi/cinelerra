@@ -2177,28 +2177,24 @@ void MWindow::save_clip(EDL *new_edl, const char *txt)
         time_t now;  time(&now);
         struct tm dtm;   localtime_r(&now, &dtm);
 	char *cp = new_edl->local_session->clip_notes;
-	int n, sz = sizeof(new_edl->local_session->clip_notes)-1;
-	if( txt && *txt ) {
-		n = snprintf(cp, sz, "%s", txt);
-		cp += n;  sz -= n;
-	}
-	n = snprintf(cp, sz,
+	char *ep = cp + sizeof(new_edl->local_session->clip_notes)-1;
+	if( txt && *txt )
+		cp += snprintf(cp, ep-cp, "%s", txt);
+	cp += snprintf(cp, ep-cp,
 		"%02d/%02d/%02d %02d:%02d:%02d,  +%s\n",
 		dtm.tm_year+1900, dtm.tm_mon+1, dtm.tm_mday,
 		dtm.tm_hour, dtm.tm_min, dtm.tm_sec, duration);
-	cp += n;  sz -= n;
 	if( path && *path ) {
 	        FileSystem fs;
         	char title[BCTEXTLEN];
 		fs.extract_name(title, path);
-		n = snprintf(cp, sz, "%s", title);
-		cp += n;  sz -= n;
+		cp += snprintf(cp, ep-cp, "%s", title);
 	}
-	cp[n] = 0;
 	sprintf(new_edl->local_session->clip_icon,
-		"clip_%02d%02d%02d-%02d%02d%02d.png",
+		"clip_%02d%02d%02d-%02d%02d%02d-%d.png",
 		dtm.tm_year+1900, dtm.tm_mon+1, dtm.tm_mday,
-		dtm.tm_hour, dtm.tm_min, dtm.tm_sec);
+		dtm.tm_hour, dtm.tm_min, dtm.tm_sec,
+		new_edl->id);
 	new_edl->folder_no = AW_CLIP_FOLDER;
 	edl->update_assets(new_edl);
 	int cur_x, cur_y;

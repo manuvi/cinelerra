@@ -180,7 +180,6 @@ extern "C"
 
 }
 
-
 extern long cin_timezone;
 
 ArrayList<PluginServer*>* MWindow::plugindb = 0;
@@ -1312,7 +1311,7 @@ void MWindow::stop_mixers()
 	}
 }
 
-void MWindow::close_mixers(int destroy)
+void MWindow::close_mixers(int result)
 {
 	ArrayList<ZWindow*> closed;
 	zwindows_lock->lock("MWindow::close_mixers");
@@ -1320,10 +1319,9 @@ void MWindow::close_mixers(int destroy)
 		ZWindow *zwindow = zwindows[i];
 		if( zwindow->idx < 0 ) continue;
 		zwindow->idx = -1;
-		zwindow->destroy = destroy;
 		ZWindowGUI *zgui = zwindow->zgui;
 		zgui->lock_window("MWindow::select_zwindow 0");
-		zgui->set_done(0);
+		zgui->set_done(result);
 		zgui->unlock_window();
 		closed.append(zwindow);
 	}
@@ -3734,6 +3732,122 @@ void MWindow::update_project(int load_mode)
 	if(debug) PRINT_TRACE
 }
 
+void MWindow::stack_push(EDL *new_edl)
+{
+// needs gui lock
+	gui->lock_window("MWindow::stack_push");
+	if( stack.size() < 9 ) {
+		undo_before();
+		StackItem &item = stack.append();
+		item.edl = edl;
+		item.new_edl = new_edl;
+		item.undo = undo;
+		edl = new_edl;
+		edl->add_user();
+		strcpy(session->filename, edl->path);
+		undo = new MainUndo(this);
+		gui->stack_button->update();
+		update_project(LOADMODE_REPLACE);
+	}
+	gui->unlock_window();
+}
+
+void MWindow::stack_pop()
+{
+	if( !stack.size() ) return;
+// writes on config_path/backup%d.xml
+	save_backup();
+// already have gui lock
+	forget_nested_edl(edl);
+	StackItem &item = stack.last();
+// session edl replaced, overwrite and save clip data
+	if( item.new_edl != edl && item.new_edl->parent_edl )
+		item.new_edl->overwrite_clip(edl);
+	edl->remove_user();
+	edl = item.edl;
+	delete undo;
+	undo = item.undo;
+	stack.remove();
+	strcpy(session->filename, edl->path);
+	update_project(LOADMODE_REPLACE);
+	undo_after(_("open edl"), LOAD_ALL);
+	gui->stack_button->update();
+}
+
+void MWindow::forget_nested_edl(EDL *nested)
+{
+	frame_cache->remove_item(nested);
+	wave_cache->remove_item(nested);
+	if( gui->render_engine &&
+	    gui->render_engine_id == nested->id ) {
+		delete gui->render_engine;
+		gui->render_engine = 0;
+	}
+	if( gui->resource_thread->render_engine_id == nested->id ) {
+		gui->resource_thread->render_engine_id = -1;
+		delete gui->resource_thread->render_engine;
+		gui->resource_thread->render_engine = 0;
+	}
+}
+
+void MWindow::clip_to_media()
+{
+	if( edl->session->proxy_scale != 1 ) {
+		eprintf("Nesting not allowed when proxy scale != 1");
+		return;
+	}
+	undo_before();
+	int clips_total = session->drag_clips->total;
+	for( int i=0; i<clips_total; ++i ) {
+		EDL *clip = session->drag_clips->values[i];
+		time_t dt;      time(&dt);
+		struct tm dtm;  localtime_r(&dt, &dtm);
+		char path[BCSTRLEN], *cp = path, *ep = cp+sizeof(path)-1;
+		cp += snprintf(cp, ep-cp, _("Nested_%02d%02d%02d-%02d%02d%02d_"),
+			dtm.tm_year+1900, dtm.tm_mon+1, dtm.tm_mday,
+			dtm.tm_hour, dtm.tm_min, dtm.tm_sec);
+		cp += snprintf(cp, ep-cp, clip->local_session->clip_title);
+		EDL *nested = edl->new_nested_edl(clip, path);
+		edl->clips.remove(clip);
+		clip->remove_user();
+		mainindexes->add_next_asset(0, nested);
+	}
+	undo_after(_("clip2media"), LOAD_ALL);
+	mainindexes->start_build();
+	awindow->gui->async_update_assets();
+}
+
+void MWindow::media_to_clip()
+{
+	undo_before();
+	int assets_total = session->drag_assets->total;
+	for( int i=0; i<assets_total; ++i ) {
+		Indexable *idxbl = session->drag_assets->values[i];
+		if( idxbl->is_asset ) {
+			eprintf(_("media is not EDL:\n%s"), idxbl->path);
+			continue;
+		}
+		char clip_title[BCSTRLEN];
+		int name_ok = 0;
+		while( !name_ok ) {
+			name_ok = 1;
+			sprintf(clip_title, _("Clip %d"), session->clip_number++);
+			for( int i=0; name_ok && i<edl->clips.size(); ++i ) {
+				char *title = edl->clips[i]->local_session->clip_title;
+				if( !strcasecmp(clip_title, title) ) name_ok = 0;
+			}
+		}
+		EDL *nested = (EDL *)idxbl;
+		EDL *clip = edl->add_clip(nested);
+		strcpy(clip->local_session->clip_title, clip_title);
+		snprintf(clip->local_session->clip_notes,
+			sizeof(clip->local_session->clip_notes),
+			_("From: %s"), nested->path);
+	}
+	undo_after(_("media2clip"), LOAD_ALL);
+	awindow->gui->async_update_assets();
+}
+
 void MWindow::update_preferences(Preferences *prefs)
 {
 	if( prefs != preferences )
@@ -3807,24 +3921,29 @@ void MWindow::rebuild_indices()
 }
 
 
+void MWindow::get_backup_path(char *path, int len)
+{
+	char *cp = path, *ep = cp + len-1;
+	cp += snprintf(cp, ep-cp, "%s/", File::get_config_path());
+	int idx = stack.size();
+	cp += snprintf(cp, ep-cp, idx ? BACKUPn_FILE : BACKUP_FILE, idx);
+}
+
 void MWindow::save_backup()
 {
 	FileXML file;
 	edl->optimize();
 	edl->set_path(session->filename);
+
 	char backup_path[BCTEXTLEN], backup_path1[BCTEXTLEN];
-	snprintf(backup_path, sizeof(backup_path), "%s/%s",
-		File::get_config_path(), BACKUP_FILE);
-	snprintf(backup_path1, sizeof(backup_path1), "%s/%s",
-		File::get_config_path(), BACKUP_FILE1);
+	get_backup_path(backup_path, sizeof(backup_path));
 	rename(backup_path, backup_path1);
 	edl->save_xml(&file, backup_path);
 	file.terminate_string();
 	FileSystem fs;
 	fs.complete_path(backup_path);
 
-	if(file.write_to_file(backup_path))
-	{
+	if(file.write_to_file(backup_path)) {
 		char string2[256];
 		sprintf(string2, _("Couldn't open %s for writing."), backup_path);
 		gui->show_message(string2);
@@ -3837,8 +3956,7 @@ void MWindow::load_backup()
 	path_list.set_array_delete();
 	char *out_path;
 	char backup_path[BCTEXTLEN];
-	snprintf(backup_path, sizeof(backup_path), "%s/%s",
-		File::get_config_path(), BACKUP_FILE);
+	get_backup_path(backup_path, sizeof(backup_path));
 	FileSystem fs;
 	fs.complete_path(backup_path);
 

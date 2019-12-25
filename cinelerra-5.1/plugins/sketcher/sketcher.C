@@ -242,6 +242,7 @@ REGISTER_PLUGIN(Sketcher)
 SketcherConfig::SketcherConfig()
 {
 	drag = 1;
+	aliasing = 0;
 	cv_selected = 0;
 	pt_selected = 0;
 }
@@ -252,6 +253,7 @@ SketcherConfig::~SketcherConfig()
 int SketcherConfig::equivalent(SketcherConfig &that)
 {
 	if( this->drag != that.drag ) return 0;
+	if( this->aliasing != that.aliasing ) return 0;
 	if( this->cv_selected != that.cv_selected ) return 0;
 	if( this->pt_selected != that.pt_selected ) return 0;
 	if( this->curves.size() != that.curves.size() ) return 0;
@@ -264,6 +266,7 @@ int SketcherConfig::equivalent(SketcherConfig &that)
 void SketcherConfig::copy_from(SketcherConfig &that)
 {
 	this->drag = that.drag;
+	this->aliasing = that.aliasing;
 	this->cv_selected = that.cv_selected;
 	this->pt_selected = that.pt_selected;
 	int m = curves.size(), n = that.curves.size();
@@ -278,6 +281,7 @@ void SketcherConfig::interpolate(SketcherConfig &prev, SketcherConfig &next,
 	this->cv_selected = prev.cv_selected;
 	this->pt_selected = prev.pt_selected;
 	this->drag = prev.drag;
+	this->aliasing = prev.aliasing;
 
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
@@ -360,6 +364,7 @@ void Sketcher::save_data(KeyFrame *keyframe)
 
 	output.tag.set_title("SKETCHER");
 	output.tag.set_property("DRAG", config.drag);
+	output.tag.set_property("ALIASING", config.aliasing);
 	output.tag.set_property("CV_SELECTED", config.cv_selected);
 	output.tag.set_property("PT_SELECTED", config.pt_selected);
 	output.append_tag();
@@ -384,6 +389,7 @@ void Sketcher::read_data(KeyFrame *keyframe)
 	while( !(result=input.read_tag()) ) {
 		if( input.tag.title_is("SKETCHER") ) {
 			config.drag = input.tag.get_property("DRAG", config.drag);
+			config.aliasing = input.tag.get_property("ALIASING", config.aliasing);
 			config.cv_selected = input.tag.get_property("CV_SELECTED", 0);
 			config.pt_selected = input.tag.get_property("PT_SELECTED", 0);
 		}
@@ -438,47 +444,58 @@ void Sketcher::draw_point(VFrame *vfrm, SketcherPoint *pt, int color)
 }
 
 
-int SketcherVPen::draw_pixel(int x, int y)
+int SketcherVPen::draw_mask(int x, int y)
 {
-	if( x >= 0 && x < vfrm->get_w() &&
-	    y >= 0 && y < vfrm->get_h() )
-		msk[vfrm->get_w()*y + x] = 0xff;
+	int w = vfrm->get_w(), h = vfrm->get_h();
+	if( x < 0 || x >= w ) return 1;
+	if( y < 0 || y >= h ) return 1;
+	msk[w * y + x] = 0xff;
 	return 0;
 }
 
-int SketcherPenSquare::draw_pixel(int x, int y)
+int SketcherVPen::draw_pixel(float x, float y, float frac, int axis)
 {
+	draw_mask(x, y);
+	return VFrame::draw_pixel(x, y, frac, axis);
+}
+
+int SketcherPenSquare::draw_pixel(float x, float y, float a)
+{
+	vfrm->set_draw_alpha(a);
 	vfrm->draw_line(x-n, y, x+n, y);
 	for( int i=-n; i<n; ++i )
 		vfrm->draw_line(x-n, y+i, x+n, y+i);
-	return SketcherVPen::draw_pixel(x, y);
+	return 0;
 }
-int SketcherPenPlus::draw_pixel(int x, int y)
+int SketcherPenPlus::draw_pixel(float x, float y, float a)
 {
+	vfrm->set_draw_alpha(a);
 	if( n > 1 ) {
 		vfrm->draw_line(x-n, y, x+n, y);
 		vfrm->draw_line(x, y-n, x, y+n);
 	}
 	else
 		vfrm->draw_pixel(x, y);
-	return SketcherVPen::draw_pixel(x, y);
+	return 0;
 }
-int SketcherPenSlant::draw_pixel(int x, int y)
+int SketcherPenSlant::draw_pixel(float x, float y, float a)
 {
+	vfrm->set_draw_alpha(a);
 	vfrm->draw_line(x-n,   y+n,   x+n,   y-n);
 	vfrm->draw_line(x-n+1, y+n,   x+n+1, y-n);
 	vfrm->draw_line(x-n,   y+n+1, x+n,   y-n+1);
-	return SketcherVPen::draw_pixel(x, y);
+	return 0;
 }
-int SketcherPenXlant::draw_pixel(int x, int y)
+int SketcherPenXlant::draw_pixel(float x, float y, float a)
 {
+	vfrm->set_draw_alpha(a);
 	vfrm->draw_line(x-n,   y+n,   x+n,   y-n);
 	vfrm->draw_line(x-n+1, y+n,   x+n+1, y-n);
 	vfrm->draw_line(x-n,   y+n+1, x+n,   y-n+1);
 	vfrm->draw_line(x-n,   y-n,   x+n,   y+n);
 	vfrm->draw_line(x-n+1, y-n,   x+n+1, y+n);
 	vfrm->draw_line(x-n,   y-n+1, x+n,   y-n+1);
-	return SketcherVPen::draw_pixel(x, y);
+	return 0;
 }
 
 
@@ -563,6 +580,7 @@ class FillRegion
 public:
 	SketcherPoint *next();
 	bool exists() { return stack.size() > 0; }
+	void draw_pixel(int x, int y) { img->draw_pixel(x, y); }
 	void start_at(int x, int y);
 	void run();
 	FillRegion(SketcherPoints &pts, SketcherVPen *vpen);
@@ -591,25 +609,26 @@ void FillRegion::start_at(int x, int y)
 
 void FillRegion::run()
 {
+	img->set_draw_alpha(1);
 	while( stack.size() > 0 ) {
 		int y, ilt, irt;
 		pop(y, ilt, irt);
 		int ofs = y*w + ilt;
 		for( int x=ilt; x<=irt; ++x,++ofs ) {
+			draw_pixel(x, y);
 			if( msk[ofs] ) continue;
 			msk[ofs] = 0xff;
-			img->draw_pixel(x, y);
 			int lt = x, rt = x;
 			int lofs = ofs;
 			for( int i=lt; --i>=0; ) {
+				draw_pixel(i, y);
 				if( msk[--lofs] ) break;
-				img->draw_pixel(i, y);
 				msk[lofs] = 0xff;  lt = i;
 			}
 			int rofs = ofs;
 			for( int i=rt; ++i< w; ) {
+				draw_pixel(i, y);
 				if( msk[++rofs] ) break;
-				img->draw_pixel(i, y);
 				msk[rofs] = 0xff;  rt = i;
 			}
 			if( y+1 <  h ) push(y+1, lt, rt);
@@ -629,12 +648,13 @@ SketcherPoint *FillRegion::next()
 	return 0;
 }
 
-
-void SketcherCurve::draw(VFrame *img)
+void SketcherCurve::draw(VFrame *img, int alias)
 {
 	if( !points.size() ) return;
+	img->set_pixel_color(color, (~color>>24)&0xff);
 	const float fmx = 16383;
 	SketcherVPen *vpen = new_vpen(img);
+	vpen->set_draw_flags(alias);
 	FillRegion fill(points, vpen);
 	SketcherPoint *pnt0 = fill.next();
 	SketcherPoint *pnt1 = pnt0 ? fill.next() : 0;
@@ -694,7 +714,7 @@ void SketcherCurve::draw(VFrame *img)
 		vpen->draw_line(pnt0->x, pnt0->y, pnt1->x, pnt1->y);
 	}
 	else if( pnt0 ) {
-		vpen->draw_pixel(pnt0->x, pnt0->y);
+		vpen->draw_pixel(pnt0->x, pnt0->y, 1);
 	}
 	delete vpen;
 }
@@ -740,10 +760,11 @@ int Sketcher::process_realtime(VFrame *input, VFrame *output)
 		int m = cv->points.size();
 		if( !m ) continue;
 		img->clear_frame();
-		img->set_pixel_color(cv->color, (~cv->color>>24)&0xff);
-		cv->draw(img);
+		int alias = config.aliasing < 0 ? ALIAS_OFF :
+			config.aliasing > 0 ? ALIAS_DBL : ALIAS_NRM;
+		cv->draw(img, alias);
 		overlay_frame->overlay(out, img, 0,0,w,h, 0,0,w,h,
-				1.f, TRANSFER_NORMAL, NEAREST_NEIGHBOR);
+				1.f, TRANSFER_SRC_OVER, NEAREST_NEIGHBOR);
 	}
 
 	if( config.drag ) {

@@ -100,6 +100,7 @@ MWindowGUI::MWindowGUI(MWindow *mwindow)
 	drag_popup = 0;
 
 	render_engine = 0;
+	render_engine_id = -1;
 	for(int i = 0; i < TOTAL_PANES; i++)
 		pane[i] = 0;
 
@@ -168,20 +169,21 @@ void MWindowGUI::create_objects()
 
 	if(debug) printf("MWindowGUI::create_objects %d\n", __LINE__);
 
-	int x = get_w() - MainShBtns::calculate_w(-1, 0, -1);
-	add_subwindow(mainmenu = new MainMenu(mwindow, this, x));
-	mainmenu->create_objects();
-	add_subwindow(mainshbtns = new MainShBtns(mwindow, x, -1));
+	int x1 = get_w() - MainShBtns::calculate_w(-1, 0, -1) - xS(5);
+	add_subwindow(mainshbtns = new MainShBtns(mwindow, x1, -1));
 	mainshbtns->load(mwindow->preferences);
+	int x2 = x1 - mwindow->theme->stack_button_w - xS(5);
+	add_subwindow(stack_button = new StackButton(mwindow, x2, yS(2)));
+	add_subwindow(mainmenu = new MainMenu(mwindow, this, x2));
+	mainmenu->create_objects();
 	mwindow->theme->get_mwindow_sizes(this, get_w(), get_h());
 	mwindow->theme->draw_mwindow_bg(this);
 	if(debug) printf("MWindowGUI::create_objects %d\n", __LINE__);
 
 	add_subwindow(mbuttons = new MButtons(mwindow, this));
 	mbuttons->create_objects();
-	int x1 = mbuttons->get_x() + mbuttons->get_w(), y1 = mbuttons->get_y()+yS(2);
-	add_subwindow(proxy_toggle = new ProxyToggle(mwindow, mbuttons, x1, y1));
-	x1 += proxy_toggle->get_w() + xS(3);
+	int y1 = mbuttons->get_y()+yS(2);
+	add_subwindow(proxy_toggle = new ProxyToggle(mwindow, mbuttons, x2, y1));
 	add_subwindow(ffmpeg_toggle = new FFMpegToggle(mwindow, mbuttons, x1, y1));
 
 	pane[TOP_LEFT_PANE] = new TimelinePane(mwindow,
@@ -289,15 +291,16 @@ int MWindowGUI::resize_event(int w, int h)
 //printf("MWindowGUI::resize_event %d\n", __LINE__);
 	mwindow->session->mwindow_w = w;
 	mwindow->session->mwindow_h = h;
-	int x = w - MainShBtns::calculate_w(-1, 0, -1);
-	mainmenu->resize_event(x, mainmenu->get_h());
-	mainshbtns->reposition_window(x, -1);
+	int x1 = get_w() - MainShBtns::calculate_w(-1, 0, -1) - xS(5);
+	mainshbtns->reposition_window(x1, -1);
+	int x2 = x1 - mwindow->theme->stack_button_w - xS(5);
+	stack_button->reposition_window(x2, stack_button->get_y());
+	mainmenu->resize_event(x2, mainmenu->get_h());
 	mwindow->theme->get_mwindow_sizes(this, w, h);
 	mwindow->theme->draw_mwindow_bg(this);
 	mbuttons->resize_event();
-	int x1 = mbuttons->get_x() + mbuttons->get_w(), y1 = mbuttons->get_y()+yS(2);
-	proxy_toggle->reposition_window(x1, y1);
-	x1 += proxy_toggle->get_w() + xS(3);
+	int y1 = mbuttons->get_y()+yS(2);
+	proxy_toggle->reposition_window(x2, y1);
 	ffmpeg_toggle->reposition_window(x1, y1);
 	statusbar->resize_event();
 	zoombar->resize_event();
@@ -609,6 +612,7 @@ void MWindowGUI::flash_canvas(int flush)
 int MWindowGUI::show_window(int flush)
 {
 	int ret = BC_WindowBase::show_window(flush);
+	stack_button->update();
 	update_proxy_toggle();
 	return ret;
 }
@@ -2295,6 +2299,34 @@ int FFMpegToggle::handle_event()
 	mwindow->show_warning(&mwindow->preferences->warn_indexes,
 		_("Changing the base codecs may require rebuilding indexes."));
 	return 1;
+}
+
+
+StackButton::StackButton(MWindow *mwindow, int x, int y)
+ : BC_GenericButton(x, y, mwindow->theme->stack_button_w, "0")
+{
+	this->mwindow = mwindow;
+	set_tooltip(_("Return to previous EDL"));
+}
+
+int StackButton::handle_event()
+{
+	mwindow->stack_pop();
+	return 1;
+}
+
+void StackButton::update()
+{
+	char text[BCSTRLEN];
+	int i = mwindow->stack.size();
+	sprintf(text, "%d", i);
+	set_text(text);
+	draw_face();
+	int hidden = is_hidden();
+	if( !i && !hidden )
+		hide_window();
+	else if( hidden )
+		show_window();
 }
 
 

@@ -81,7 +81,7 @@ public:
 	ZWindowGUI *zgui;
 	EDL* edl;
 
-	int idx, destroy;
+	int idx;
 	int highlighted;
 	char title[BCTEXTLEN];
 };

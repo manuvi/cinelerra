@@ -85,7 +85,7 @@ int ZWindowGUI::translation_event()
 
 int ZWindowGUI::close_event()
 {
-	set_done(0);
+	set_done(1);
 	return 1;
 }
 

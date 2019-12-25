@@ -15,7 +15,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
  */
 
 #ifndef __SKETCHERWINDOW_H__
@@ -38,6 +37,8 @@ class SketcherDelCurve;
 class SketcherCurveUp;
 class SketcherCurveDn;
 class SketcherCurveWidth;
+class SketcherAliasItem;
+class SketcherAliasing;
 class SketcherCurveList;
 class SketcherPointX;
 class SketcherPointY;
@@ -166,6 +167,30 @@ public:
 	int handle_event();
 	void update(int width);
 	int width;
+};
+
+class SketcherAliasItem : public BC_MenuItem
+{
+public:
+	SketcherAliasItem(SketcherAliasing *popup, int v);
+	int handle_event();
+
+	SketcherAliasing *popup;
+	int v;
+};
+
+class SketcherAliasing : public BC_PopupMenu
+{
+public:
+	SketcherAliasing(SketcherWindow *gui, Sketcher *plugin,
+			int x, int y);
+	~SketcherAliasing();
+
+	const char *alias_to_text(int alias);
+	void create_objects();
+
+	Sketcher *plugin;
+	SketcherWindow *gui;
 };
 
 class SketcherCurveList : public BC_ListBox
@@ -376,6 +401,7 @@ public:
 	SketcherCurveUp *curve_up;
 	SketcherCurveDn *curve_dn;
 	SketcherCurveWidth *curve_width;
+	SketcherAliasing *aliasing;
 	SketcherCurveList *curve_list;
 	SketcherResetCurves *reset_curves;
 

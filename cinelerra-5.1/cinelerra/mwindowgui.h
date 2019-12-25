@@ -79,6 +79,16 @@ public:
 	MButtons *mbuttons;
 };
 
+class StackButton : public BC_GenericButton
+{
+public:
+	StackButton(MWindow *mwindow, int x, int y);
+	int handle_event();
+	void update();
+
+	MWindow *mwindow;
+};
+
 class ProxyToggle : public BC_Toggle
 {
 public:
@@ -225,6 +235,7 @@ public:
 	MButtons *mbuttons;
 	FFMpegToggle *ffmpeg_toggle;
 	ProxyToggle *proxy_toggle;
+	StackButton *stack_button;
 	PaneDivider *x_divider;
 	PaneDivider *y_divider;
 	TimelinePane *pane[TOTAL_PANES];

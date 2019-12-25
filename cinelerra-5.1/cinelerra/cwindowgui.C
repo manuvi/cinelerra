@@ -21,6 +21,7 @@
 
 #include "automation.h"
 #include "autos.h"
+#include "bccolors.h"
 #include "bcsignals.h"
 #include "canvas.h"
 #include "clip.h"
@@ -2345,44 +2346,21 @@ int CWindowCanvas::do_eyedrop(int &rerender, int button_press, int draw)
 				gui->eyedrop_visible = 1;
 			}
 
-// Decompression coefficients straight out of jpeglib
-#define V_TO_R    1.40200
-#define V_TO_G    -0.71414
-
-#define U_TO_G    -0.34414
-#define U_TO_B    1.77200
-
-#define GET_COLOR(type, components, max, do_yuv) \
-{ \
+#define GET_COLOR(type, components, max, do_yuv) { \
 	type *row = (type*)(refresh_frame->get_rows()[i]) + \
 		j * components; \
 	float red = (float)*row++ / max; \
 	float green = (float)*row++ / max; \
 	float blue = (float)*row++ / max; \
 	if( do_yuv ) \
-	{ \
-		float r = red + V_TO_R * (blue - 0.5); \
-		float g = red + U_TO_G * (green - 0.5) + V_TO_G * (blue - 0.5); \
-		float b = red + U_TO_B * (green - 0.5); \
-		mwindow->edl->local_session->red += r; \
-		mwindow->edl->local_session->green += g; \
-		mwindow->edl->local_session->blue += b; \
-		if( r > mwindow->edl->local_session->red_max ) mwindow->edl->local_session->red_max = r; \
-		if( g > mwindow->edl->local_session->green_max ) mwindow->edl->local_session->green_max = g; \
-		if( b > mwindow->edl->local_session->blue_max ) mwindow->edl->local_session->blue_max = b; \
-	} \
-	else \
-	{ \
-		mwindow->edl->local_session->red += red; \
-		mwindow->edl->local_session->green += green; \
-		mwindow->edl->local_session->blue += blue; \
-		if( red > mwindow->edl->local_session->red_max ) mwindow->edl->local_session->red_max = red; \
-		if( green > mwindow->edl->local_session->green_max ) mwindow->edl->local_session->green_max = green; \
-		if( blue > mwindow->edl->local_session->blue_max ) mwindow->edl->local_session->blue_max = blue; \
-	} \
+		YUV::yuv.yuv_to_rgb_f(red, green, blue, red, green-0.5, blue-0.5); \
+	mwindow->edl->local_session->red += red; \
+	mwindow->edl->local_session->green += green; \
+	mwindow->edl->local_session->blue += blue; \
+	if( red > mwindow->edl->local_session->red_max ) mwindow->edl->local_session->red_max = red; \
+	if( green > mwindow->edl->local_session->green_max ) mwindow->edl->local_session->green_max = green; \
+	if( blue > mwindow->edl->local_session->blue_max ) mwindow->edl->local_session->blue_max = blue; \
 }
-
-
 
 			mwindow->edl->local_session->red = 0;
 			mwindow->edl->local_session->green = 0;

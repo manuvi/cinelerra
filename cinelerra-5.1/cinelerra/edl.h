@@ -196,9 +196,11 @@ public:
 	int copy_assets(int copy_flags, double start, double end,
 		FileXML *file, const char *output_path);
 	void copy_indexables(EDL *edl);
-	EDL *new_nested(EDL *edl, const char *path);
+	EDL *new_nested_edl(EDL *edl, const char *path);
+	EDL *get_nested_edl();
 	EDL *create_nested_clip(EDL *nested);
 	void create_nested(EDL *nested);
+	void overwrite_clip(EDL *clip);
 	void paste_silence(double start, double end,
 		int edit_labels /* = 1 */,
 		int edit_plugins,

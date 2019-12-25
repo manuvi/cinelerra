@@ -295,6 +295,8 @@ int AModule::import_samples(AEdit *edit,
 		nested_renderengine->command->command = command;
 		result = 0;
 	}
+	if( edit_sample_rate <= 0 )
+		result = 1;
 
 	if( !result ) {
 // speed_buffer is (have_speed ? speed_temp : buffer)

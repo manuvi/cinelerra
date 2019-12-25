@@ -480,7 +480,11 @@ int BC_GenericButton::draw_face(int flush)
 	return 0;
 }
 
-
+void BC_GenericButton::set_text(const char *cp)
+{
+	strncpy(text, cp, sizeof(text));
+	draw_face();
+}
 
 
 

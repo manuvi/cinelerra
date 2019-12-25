@@ -70,6 +70,7 @@ Theme::Theme()
 	mtransport_margin = 0;
 	toggle_margin = 0;
 	control_pixels = xS(50);
+	stack_button_w = xS(32);
 	timebar_cursor_color = RED;
 
 	BC_WindowBase::get_resources()->bg_color = BLOND;
@@ -608,7 +609,9 @@ void Theme::get_mwindow_sizes(MWindowGUI *gui, int w, int h)
 {
 	mbuttons_x = 0;
 	mbuttons_y = gui->menu_h() + yS(1);
-	mbuttons_w = w - (ffmpeg_toggle[0]->get_w()+2 + proxy_p_toggle[0]->get_w()+xS(2));
+	mbuttons_w = w - (ffmpeg_toggle[0]->get_w()+xS(2) +
+			 proxy_p_toggle[0]->get_w()+xS(2) +
+			 stack_button_w);
 	mbuttons_h = get_image("mbutton_bg")->get_h();
 	mclock_x = window_border - xS(5);
 	mclock_y = mbuttons_y-1 + mbuttons_h;

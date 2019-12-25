@@ -25,6 +25,7 @@
 // Run-time configuration directory
 #define DEAMON_PORT 400
 #define BACKUP_FILE "backup.xml"
+#define BACKUPn_FILE "backup%d.xml"
 #define BACKUP_FILE1 "backup.prev"
 #define LAYOUT_FILE "layout%d_rc"
 #define LAYOUT_NAME_LEN 8

@@ -636,8 +636,8 @@ void CWindowEyedropGUI::update()
 	float y, u, v;
 	YUV::yuv.rgb_to_yuv_f(r, g, b, y, u, v);
 	this->y->update(y);
-	this->u->update(u);  u += 0.5;
-	this->v->update(v);  v += 0.5;
+	this->u->update(u += 0.5);
+	this->v->update(v += 0.5);
 
 	int yx = 255*y + 0.5;  bclamp(yx,0,255);
 	int ux = 255*u + 0.5;  bclamp(ux,0,255);
@@ -3082,7 +3082,7 @@ int CWindowMaskGUI::save_mask(const char *nm)
 	int i = masks.size();
 	while( --i >= 0 ) {
 		if( strcmp(masks[i]->name, nm) ) continue;
-		masks.remove_object_number(i);
+		masks.remove_object_number(i++);
 	}
 	mask = new SubMask(0, -1);
 	strncpy(mask->name, nm, sizeof(mask->name)-1);
@@ -3100,7 +3100,7 @@ int CWindowMaskGUI::del_mask(const char *nm)
 	int i = masks.size();
 	while( --i >= 0 ) {
 		if( strcmp(masks[i]->name, nm) ) continue;
-		masks.remove_object_number(i);
+		masks.remove_object_number(i++);
 	}
 	save_masks(masks);
 	masks.remove_all_objects();

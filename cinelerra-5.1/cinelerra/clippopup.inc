@@ -32,10 +32,11 @@ class ClipPopupPaste;
 class ClipMatchSize;
 class ClipMatchRate;
 class ClipMatchAll;
-class ClipPopupProjectRemove;
-class ClipPopupDiskRemove;
+class ClipPopupDelete;
 class ClipPasteToFolder;
-class ClipListMenu;
 class ClipListFormat;
+class ClipListMenu;
+class ClipPopupToMedia;
+class ClipPopupOpenEDL;
 
 #endif

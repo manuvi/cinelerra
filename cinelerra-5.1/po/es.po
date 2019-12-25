@@ -986,7 +986,7 @@ msgstr "Recursos"
 #: cinelerra/awindowgui.C:1428 cinelerra/awindowgui.C:2364
 #: cinelerra/awindowgui.C:2384
 msgid "awindowgui#Title"
-msgstr "awindowgui#Título"
+msgstr "Título"
 
 #: cinelerra/awindowgui.C:1429 cinelerra/awindowgui.C:2365
 msgid "Comments"
@@ -1991,7 +1991,7 @@ msgstr "Fuente"
 
 #: cinelerra/channelinfo.C:347
 msgid "channelinfo#Title"
-msgstr "channelinfo#Título"
+msgstr "Título"
 
 #: cinelerra/channelinfo.C:348 cinelerra/dbwindow.C:596
 #: cinelerra/recordbatches.C:22
@@ -2188,43 +2188,43 @@ msgstr "Selector de color"
 
 #: cinelerra/colorpicker.C:179
 msgid "colorpicker#H:"
-msgstr "colorpicker#H:"
+msgstr "H:"
 
 #: cinelerra/colorpicker.C:180
 msgid "colorpicker#S:"
-msgstr "colorpicker#S:"
+msgstr "S:"
 
 #: cinelerra/colorpicker.C:181
 msgid "colorpicker_value#V:"
-msgstr "colorpicker_value#V:"
+msgstr "V:"
 
 #: cinelerra/colorpicker.C:182
 msgid "colorpicker#R:"
-msgstr "colorpicker#R:"
+msgstr "R:"
 
 #: cinelerra/colorpicker.C:183
 msgid "colorpicker#G:"
-msgstr "colorpicker#G:"
+msgstr "G:"
 
 #: cinelerra/colorpicker.C:184
 msgid "colorpicker#B:"
-msgstr "colorpicker#B:"
+msgstr "B:"
 
 #: cinelerra/colorpicker.C:185
 msgid "colorpicker#Y:"
-msgstr "colorpicker#Y:"
+msgstr "Y:"
 
 #: cinelerra/colorpicker.C:186
 msgid "colorpicker#U:"
-msgstr "colorpicker#U:"
+msgstr "U:"
 
 #: cinelerra/colorpicker.C:187
 msgid "colorpicker_Cr#V:"
-msgstr "colorpicker_Cr#V:"
+msgstr "V:"
 
 #: cinelerra/colorpicker.C:189
 msgid "colorpicker#A:"
-msgstr "colorpicker#A:"
+msgstr "A:"
 
 #: cinelerra/colorpicker.C:205
 msgid "Hue"
@@ -3026,7 +3026,7 @@ msgstr "longitud"
 
 #: cinelerra/dbwindow.C:595
 msgid "dbwindow#Title"
-msgstr "dbwindow#Título"
+msgstr "Título"
 
 #: cinelerra/dbwindow.C:597
 msgid "Access time"
@@ -5585,7 +5585,7 @@ msgstr "Aplicar a todos los fotogramas clave seleccionados"
 
 #: cinelerra/keyframegui.C:761
 msgid "keyframegui#Save"
-msgstr "keyframegui#Guardar"
+msgstr "Guardar"
 
 #: cinelerra/keyframepopup.C:103
 msgid "Show Plugin Settings"
@@ -10244,7 +10244,7 @@ msgstr "Arrastrar"
 
 #: plugins/crikey/crikeywindow.C:610
 msgid "crikeywindow#Del"
-msgstr "crikeywindow#Borrar"
+msgstr "Borrar"
 
 #: plugins/crop/crop.C:143
 msgid "Crop & Position"
@@ -12583,7 +12583,7 @@ msgstr "pluma"
 
 #: plugins/sketcher/sketcherwindow.C:859 plugins/sketcher/sketcherwindow.C:1234
 msgid "sketcherwindow#Del"
-msgstr "sketcherwindow#Supr"
+msgstr "Borrar"
 
 #: plugins/sketcher/sketcherwindow.C:992
 msgid "Type"
@@ -12923,7 +12923,7 @@ msgstr "Máscara Alpha"
 
 #: plugins/timefront/timefront.C:513
 msgid "timefront#Square"
-msgstr "timefront#Cuadrado"
+msgstr "Cuadrado"
 
 #: plugins/timefront/timefront.C:599
 msgid "Inversion"
@@ -13216,7 +13216,7 @@ msgstr "Rellenar"
 
 #: plugins/tracer/tracerwindow.C:615
 msgid "tracerwindow#Del"
-msgstr "tracerwindow#Supr"
+msgstr "Borrar"
 
 #: plugins/translate/translatewin.C:61
 msgid "In X:"

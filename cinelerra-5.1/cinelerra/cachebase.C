@@ -88,20 +88,26 @@ void CacheBase::remove_all()
 }
 
 
-void CacheBase::remove_asset(Asset *asset)
+void CacheBase::remove_item(int source_id, char *path)
 {
 	CacheItemBase *current, *next;
 	lock->lock("CacheBase::remove_id");
 	for( current=first; current; current=next ) {
 		next = current->next;
-		if( (current->path && !strcmp(current->path, asset->path)) ||
-			current->source_id == asset->id)
+		if( current->source_id == source_id ||
+		    (path && current->path && !strcmp(current->path, path)) )
 			del_item(current);
 	}
 	lock->unlock();
-//printf("CacheBase::remove_asset: removed %d entries for %s\n", total, asset->path);
 }
-
+void CacheBase::remove_item(Indexable *idxbl)
+{
+	remove_item(idxbl->id, idxbl->path);
+}
+void CacheBase::remove_asset(Asset *asset)
+{
+	remove_item(asset);
+}
 
 void CacheBase::del_item(CacheItemBase *item)
 {

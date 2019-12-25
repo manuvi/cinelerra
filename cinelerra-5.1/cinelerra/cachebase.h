@@ -73,7 +73,9 @@ public:
 // Delete item.
 	void del_item(CacheItemBase *item);
 	int delete_item(CacheItemBase *item);
-// Remove all items with the asset id.
+// Remove all items with the same source_id or matching path if set
+	void remove_item(int source_id, char *path);
+	void remove_item(Indexable *idxbl);
 	void remove_asset(Asset *asset);
 // Called when done with the item returned by get_.
 // Ignore if item was 0.
