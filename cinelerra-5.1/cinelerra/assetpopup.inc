@@ -35,6 +35,7 @@
 class AssetPopup;
 class AssetPopupInfo;
 class AssetPopupOpenEDL;
+class AssetPopupCloseEDL;
 class AssetPopupToClip;
 class AssetPopupSort;
 class AssetPopupBuildIndex;

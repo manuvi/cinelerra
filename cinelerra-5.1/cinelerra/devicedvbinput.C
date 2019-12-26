@@ -488,7 +488,7 @@ int DeviceDVBInput::dvb_status()
 	signal_ber = ioctl(fe, FE_READ_BER, &rate) ? -1 : rate;
 	uint32_t errs = 0;
 	signal_unc = ioctl(fe, FE_READ_UNCORRECTED_BLOCKS, &errs) ? -1 : errs;
-	if( signal_lck && signal_ber >= 0 && signal_ber < 255 ) locked = 1;
+	if( signal_lck && signal_ber < 255 ) locked = 1;
 	if( dvb_locked != locked ) {
 		printf(_("** %scarrier, dvb_locked %s\n"),
 			 signal_crr ? "" : _("no "), locked ? _("lock") : _("lost") );

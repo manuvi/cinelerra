@@ -21,6 +21,7 @@
 #include "asset.h"
 #include "bcdialog.h"
 #include "bcsignals.h"
+#include "xfer/xfer.h"
 #include "channelpicker.h"
 #include "condition.h"
 #include "cursors.h"
@@ -1067,9 +1068,74 @@ int RecordMonitorThread::render_dv()
 	return 0;
 }
 
+// VFrame xfer all/odd/even inputs
 void RecordMonitorThread::render_uncompressed()
 {
-	output_frame->transfer_from(input_frame);
+	VFrame *in = input_frame, *out = output_frame;
+	out->set_timestamp(in->get_timestamp());
+	out->copy_params(in);
+
+	unsigned char *in_ptrs[4], *out_ptrs[4];
+	unsigned char **inp, **outp;
+	if( BC_CModels::is_planar(in->get_color_model()) ) {
+		in_ptrs[0] = in->get_y();
+		in_ptrs[1] = in->get_u();
+		in_ptrs[2] = in->get_v();
+		in_ptrs[3] = in->get_a();
+		inp = in_ptrs;
+	}
+	else
+		inp = in->get_rows();
+	if( BC_CModels::is_planar(out->get_color_model()) ) {
+		out_ptrs[0] = out->get_y();
+		out_ptrs[1] = out->get_u();
+		out_ptrs[2] = out->get_v();
+		out_ptrs[3] = out->get_a();
+		outp = out_ptrs;
+	}
+	else
+		outp = out->get_rows();
+
+        int out_colormodel = out->get_color_model();
+	int out_x = 0, out_y = 0;
+	int out_w = out->get_w(), out_h = out->get_h();
+	int out_rowspan = out->get_bytes_per_line();
+        int inp_colormodel = in->get_color_model();
+	int inp_x = 0, inp_y = 0;
+	int inp_w = in->get_w(), inp_h = in->get_h();
+	int inp_rowspan = in->get_bytes_per_line();
+	int bg_color = 0;
+
+        int ret = 1;
+        if( inp_w > 0 && inp_h > 0 && out_w > 0 && out_h > 0 ) {
+                BC_Xfer xfer(outp, out_colormodel, out_x, out_y, out_w, out_h, out_rowspan,
+                        inp, inp_colormodel, inp_x, inp_y, inp_w, inp_h, inp_rowspan,
+                        bg_color,0xff);
+                int *row_table = xfer.row_table;
+		switch( record->deinterlace ) {
+		case RECORD_LACE_NONE:
+			break;
+		case RECORD_LACE_EVEN: {
+			int inp_y1 = inp_y;
+	                for( int i=0; i<out_h; ++i ) {
+				if( (row_table[i] &= ~1) < inp_y1 )
+					row_table[i] = inp_y1;
+			}
+			break; }
+		case RECORD_LACE_ODD: {
+			int inp_y2 = inp_y + inp_h-1;
+	                for( int i=0; i<out_h; ++i ) {
+				if( (row_table[i] |= 1) > inp_y2 )
+					row_table[i] = inp_y2;
+			}
+			break; }
+		}
+                ret = xfer.xfer();
+        }
+        if( ret )
+                printf("RecordMonitorThread::render_uncompressed failed: "
+			"%d %d(%dx%d) to %d(%dx%d)\n", __LINE__,
+                        inp_colormodel, inp_w, inp_h, out_colormodel, out_w, out_h);
 }
 
 void RecordMonitorThread::show_output_frame()

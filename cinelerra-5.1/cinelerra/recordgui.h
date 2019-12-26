@@ -51,6 +51,8 @@ class RecordGUIDropFrames;
 class RecordGUIFillFrames;
 class RecordGUIPowerOff;
 class RecordGUICommCheck;
+class RecordGUIDelaceItem;
+class RecordGUIDeinterlace;
 class RecordGUILabel;
 class RecordGUIClearLabels;
 class RecordGUILoop;
@@ -132,6 +134,7 @@ public:
 	RecordGUIFillFrames *fill_frames;
 	RecordGUIPowerOff *power_off;
 	RecordGUICommCheck *commercial_check;
+	RecordGUIDeinterlace *deinterlace;
 	RecordGUIMonitorVideo *monitor_video;
 	RecordGUIMonitorAudio *monitor_audio;
 	RecordGUIAudioMeters *meter_audio;
@@ -360,6 +363,26 @@ public:
 	RecordGUI *gui;
 };
 
+class RecordGUIDelaceItem : public BC_MenuItem
+{
+public:
+	RecordGUIDelaceItem(RecordGUIDeinterlace *popup, const char *text, int id);
+	int handle_event();
+
+	RecordGUIDeinterlace *popup;
+	int id;
+};
+
+class RecordGUIDeinterlace : public BC_PopupMenu
+{
+public:
+	RecordGUIDeinterlace(RecordGUI *gui, int x, int y);
+	void create_objects();
+	void update();
+
+	RecordGUI *gui;
+};
+
 class RecordGUIMonitorVideo : public BC_CheckBox
 {
 public:
@@ -550,11 +573,5 @@ public:
 	int handle_event();
 	RecordGUI *gui;
 };
-
-
-
-
-
-
 
 #endif

@@ -59,6 +59,10 @@
 
 #define SESSION (mwindow->edl->session)
 
+#define RECORD_LACE_NONE 0
+#define RECORD_LACE_ODD 1
+#define RECORD_LACE_EVEN 2
+
 class Record;
 
 class RecordMenuItem : public BC_MenuItem
@@ -328,6 +332,7 @@ public:
 	int video_window_w;       // Width of record video window
 	int dropped, behind;
 	int input_threads_pausing;
+	int deinterlace;
 };
 
 class RecordScheduleItem {

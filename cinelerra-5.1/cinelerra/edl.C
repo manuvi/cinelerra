@@ -664,14 +664,19 @@ void EDL::create_nested(EDL *nested)
 void EDL::overwrite_clip(EDL *clip)
 {
 	int folder = folder_no;
-	char clip_title[BCTEXTLEN];  strcpy(clip_title, local_session->clip_title);
-	char clip_notes[BCTEXTLEN];  strcpy(clip_notes, local_session->clip_notes);
-	char clip_icon[BCSTRLEN];    strcpy(clip_icon,  local_session->clip_icon);
+	char clip_title[BCTEXTLEN], clip_notes[BCTEXTLEN], clip_icon[BCSTRLEN];
+	if( parent_edl ) {
+		strcpy(clip_title, local_session->clip_title);
+		strcpy(clip_notes, local_session->clip_notes);
+		strcpy(clip_icon,  local_session->clip_icon);
+	}
 	copy_all(clip);
 	folder_no = folder;
-	strcpy(local_session->clip_title, clip_title);
-	strcpy(local_session->clip_notes, clip_notes);
-	strcpy(local_session->clip_icon, clip_icon);
+	if( parent_edl ) {
+		strcpy(local_session->clip_title, clip_title);
+		strcpy(local_session->clip_notes, clip_notes);
+		strcpy(local_session->clip_icon, clip_icon);
+	}
 	if( !clip_icon[0] ) return;
 // discard old clip icon to reconstruct 
 	char clip_icon_path[BCTEXTLEN];

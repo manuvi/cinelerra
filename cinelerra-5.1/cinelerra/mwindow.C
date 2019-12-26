@@ -3761,7 +3761,7 @@ void MWindow::stack_pop()
 	forget_nested_edl(edl);
 	StackItem &item = stack.last();
 // session edl replaced, overwrite and save clip data
-	if( item.new_edl != edl && item.new_edl->parent_edl )
+	if( item.new_edl != edl )
 		item.new_edl->overwrite_clip(edl);
 	edl->remove_user();
 	edl = item.edl;
@@ -3802,11 +3802,14 @@ void MWindow::clip_to_media()
 		EDL *clip = session->drag_clips->values[i];
 		time_t dt;      time(&dt);
 		struct tm dtm;  localtime_r(&dt, &dtm);
-		char path[BCSTRLEN], *cp = path, *ep = cp+sizeof(path)-1;
+		char path[BCTEXTLEN], *cp = path, *ep = cp+sizeof(path)-1;
+// path_basename = "Nested_<date>-<time>_<basename>"
 		cp += snprintf(cp, ep-cp, _("Nested_%02d%02d%02d-%02d%02d%02d_"),
 			dtm.tm_year+1900, dtm.tm_mon+1, dtm.tm_mday,
 			dtm.tm_hour, dtm.tm_min, dtm.tm_sec);
-		cp += snprintf(cp, ep-cp, clip->local_session->clip_title);
+		char *bp = strrchr(clip->local_session->clip_title, '/');
+		bp = bp ? bp+1 : clip->local_session->clip_title;
+		cp += snprintf(cp, ep-cp, "%s", bp);
 		EDL *nested = edl->new_nested_edl(clip, path);
 		edl->clips.remove(clip);
 		clip->remove_user();

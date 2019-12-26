@@ -53,6 +53,7 @@ public:
 	AssetPopupInfo *info;
 	AWindowListFormat *format;
 	AssetPopupOpenEDL *open_edl;
+	AssetPopupCloseEDL *close_edl;
 	AssetPopupToClip *to_clip;
 	AssetPopupSort *sort;
 	AssetPopupBuildIndex *index;
@@ -86,6 +87,18 @@ public:
 
 	MWindow *mwindow;
 	AssetPopup *popup;
+};
+
+class AssetPopupCloseEDL : public BC_MenuItem
+{
+public:
+	AssetPopupCloseEDL(MWindow *mwindow, AWindowGUI *gui);
+	~AssetPopupCloseEDL();
+
+	int handle_event();
+
+	MWindow *mwindow;
+	AWindowGUI *gui;
 };
 
 class AssetPopupToClip : public BC_MenuItem
@@ -256,6 +269,7 @@ public:
 	AWindowGUI *gui;
 	AssetPopupLoadFile *load_file;
 	AWindowListFormat *format;
+	AssetPopupCloseEDL *close_edl;
 	AssetSnapshot *asset_snapshot;
 	AssetGrabshot *asset_grabshot;
 	AssetSelectUsed *select_used;

@@ -77,6 +77,7 @@ void AssetPopup::create_objects()
 	add_item(info = new AssetPopupInfo(mwindow, this));
 	add_item(format = new AWindowListFormat(mwindow, gui));
 	add_item(open_edl = new AssetPopupOpenEDL(mwindow, this));
+	add_item(close_edl = new AssetPopupCloseEDL(mwindow, gui));
 	add_item(to_clip = new AssetPopupToClip(mwindow, this));
 	add_item(sort = new AssetPopupSort(mwindow, this));
 	add_item(index = new AssetPopupBuildIndex(mwindow, this));
@@ -204,6 +205,26 @@ int AssetPopupOpenEDL::handle_event()
 			eprintf(_("media is not EDL:\n%s"), idxbl->path);
 		popup->lock_window("AssetPopupOpenEDL::handle_event");
 	}
+	return 1;
+}
+
+AssetPopupCloseEDL::AssetPopupCloseEDL(MWindow *mwindow, AWindowGUI *gui)
+ : BC_MenuItem(_("Close EDL"))
+{
+	this->mwindow = mwindow;
+	this->gui = gui;
+}
+AssetPopupCloseEDL::~AssetPopupCloseEDL()
+{
+}
+
+int AssetPopupCloseEDL::handle_event()
+{
+	gui->unlock_window();
+	mwindow->gui->lock_window("AssetPopupCloseEDL::handle_event");
+	mwindow->stack_pop();
+	mwindow->gui->unlock_window();
+	gui->lock_window("AssetPopupCloseEDL::handle_event");
 	return 1;
 }
 
@@ -473,6 +494,7 @@ void AssetListMenu::create_objects()
 {
 	add_item(load_file = new AssetPopupLoadFile(mwindow, gui));
 	add_item(format = new AWindowListFormat(mwindow, gui));
+	add_item(close_edl = new AssetPopupCloseEDL(mwindow, gui));
 	add_item(select_used = new AssetSelectUsed(mwindow, gui));
 	BC_SubMenu *submenu;
 	select_used->add_submenu(submenu = new BC_SubMenu());

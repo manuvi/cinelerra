@@ -385,6 +385,11 @@ void RecordGUI::create_objects()
 	add_subwindow(power_off = new RecordGUIPowerOff(this, x1, y1));
 	x1 += power_off->get_w() + xs10;
 	add_subwindow(commercial_check = new RecordGUICommCheck(this, x1, y1));
+	x1 += commercial_check->get_w() + xs30;
+	add_subwindow(deinterlace = new RecordGUIDeinterlace(this, x1, y1));
+	deinterlace->create_objects();
+	x1 += deinterlace->get_w() + xs5;
+	add_subwindow(new BC_Title(x1, y1, _("deinterlace")));
 
 // Batches
 	x = xs10;
@@ -424,6 +429,7 @@ void RecordGUI::create_objects()
 		batch_duration->enable();
 	else
 		batch_duration->disable();
+	show_window(1);
 	unlock_window();
 }
 
@@ -729,7 +735,6 @@ int RecordGUICommCheck::handle_event()
 	return 1;
 }
 
-
 int RecordGUICommCheck::keypress_event()
 {
 	if( get_keypress() == caption[0] ) {
@@ -739,6 +744,44 @@ int RecordGUICommCheck::keypress_event()
 		return 1;
 	}
 	return 0;
+}
+
+
+RecordGUIDelaceItem::RecordGUIDelaceItem(RecordGUIDeinterlace *popup,
+		const char *text, int id)
+ : BC_MenuItem(text)
+{
+	this->popup = popup;
+	this->id = id;
+}
+int RecordGUIDelaceItem::handle_event()
+{
+	popup->gui->record->deinterlace = id;
+	popup->update();
+	return 1;
+}
+
+RecordGUIDeinterlace::RecordGUIDeinterlace(RecordGUI *gui, int x, int y)
+ : BC_PopupMenu(x, y, xS(24), "", 1, 0, xS(3))
+{
+	this->gui = gui;
+}
+
+void RecordGUIDeinterlace::create_objects()
+{
+	add_item(new RecordGUIDelaceItem(this, _("None"), RECORD_LACE_NONE));
+	add_item(new RecordGUIDelaceItem(this, _("Even"), RECORD_LACE_EVEN));
+	add_item(new RecordGUIDelaceItem(this, _("Odd"), RECORD_LACE_ODD));
+	update();
+}
+
+void RecordGUIDeinterlace::update()
+{
+	int v = gui->record->deinterlace;
+	for( int i=0,n=total_items(); i<n; ++i ) {
+		RecordGUIDelaceItem *item = (RecordGUIDelaceItem *)get_item(i);
+		item->set_checked(item->id == v);
+	}
 }
 
 

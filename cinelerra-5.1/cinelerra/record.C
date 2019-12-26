@@ -160,6 +160,7 @@ Record::Record(MWindow *mwindow, RecordMenuItem *menu_item)
 	cutads_status = new RecordCutAdsStatus(this);
 	blink_status = new RecordBlinkStatus(this);
 #endif
+	deinterlace = RECORD_LACE_ODD;
 }
 
 Record::~Record()
@@ -234,6 +235,7 @@ int Record::load_defaults()
 	video_zoom = defaults->get("RECORD_VIDEO_Z", (float)1);
 	picture->load_defaults();
 	reverse_interlace = defaults->get("REVERSE_INTERLACE", 0);
+	deinterlace = defaults->get("DEINTERLACE", RECORD_LACE_ODD);
 	do_cursor = defaults->get("RECORD_CURSOR", 0);
 	do_big_cursor = defaults->get("RECORD_BIG_CURSOR", 0);
 	for( int i=0; i<MAXCHANNELS; ++i ) {
@@ -272,6 +274,7 @@ int Record::save_defaults()
 	defaults->update("RECORD_VIDEO_Z", video_zoom);
 	picture->save_defaults();
 	defaults->update("REVERSE_INTERLACE", reverse_interlace);
+	defaults->update("DEINTERLACE", deinterlace);
 	defaults->update("RECORD_CURSOR", do_cursor);
 	defaults->update("RECORD_BIG_CURSOR", do_big_cursor);
 	for( int i=0; i<MAXCHANNELS; ++i ) {

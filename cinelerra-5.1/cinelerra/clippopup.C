@@ -67,6 +67,7 @@ void ClipPopup::create_objects()
 	add_item(format = new AWindowListFormat(mwindow, gui));
 	add_item(sort = new ClipPopupSort(mwindow, this));
 	add_item(open_edl = new ClipPopupOpenEDL(mwindow, this));
+	add_item(close_edl = new ClipPopupCloseEDL(mwindow, gui));
 	add_item(to_media = new ClipPopupToMedia(mwindow, this));
 	add_item(view = new ClipPopupView(mwindow, this));
 	add_item(view_window = new ClipPopupViewWindow(mwindow, this));
@@ -406,6 +407,7 @@ ClipListMenu::~ClipListMenu()
 void ClipListMenu::create_objects()
 {
 	add_item(format = new AWindowListFormat(mwindow, gui));
+	add_item(close_edl = new ClipPopupCloseEDL(mwindow, gui));
 	add_item(new AWindowListSort(mwindow, gui));
 	add_item(new ClipPasteToFolder(mwindow));
 	update();
@@ -457,6 +459,26 @@ int ClipPopupOpenEDL::handle_event()
 		mwindow->stack_push(clip);
 		popup->lock_window("ClipPopupOpenEDL::handle_event");
 	}
+	return 1;
+}
+
+ClipPopupCloseEDL::ClipPopupCloseEDL(MWindow *mwindow, AWindowGUI *gui)
+ : BC_MenuItem(_("Close EDL"))
+{
+	this->mwindow = mwindow;
+	this->gui = gui;
+}
+ClipPopupCloseEDL::~ClipPopupCloseEDL()
+{
+}
+
+int ClipPopupCloseEDL::handle_event()
+{
+	gui->unlock_window();
+	mwindow->gui->lock_window("ClipPopupCloseEDL::handle_event");
+	mwindow->stack_pop();
+	mwindow->gui->unlock_window();
+	gui->lock_window("ClipPopupCloseEDL::handle_event");
 	return 1;
 }
 

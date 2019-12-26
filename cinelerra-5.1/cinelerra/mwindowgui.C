@@ -2306,11 +2306,12 @@ StackButton::StackButton(MWindow *mwindow, int x, int y)
  : BC_GenericButton(x, y, mwindow->theme->stack_button_w, "0")
 {
 	this->mwindow = mwindow;
-	set_tooltip(_("Return to previous EDL"));
+	set_tooltip(_("Close EDL"));
 }
 
 int StackButton::handle_event()
 {
+	mwindow->save_backup();
 	mwindow->stack_pop();
 	return 1;
 }
@@ -2322,11 +2323,6 @@ void StackButton::update()
 	sprintf(text, "%d", i);
 	set_text(text);
 	draw_face();
-	int hidden = is_hidden();
-	if( !i && !hidden )
-		hide_window();
-	else if( hidden )
-		show_window();
 }
 
 

@@ -54,6 +54,7 @@ public:
 	AWindowListFormat *format;
 	ClipPopupSort *sort;
 	ClipPopupOpenEDL *open_edl;
+	ClipPopupCloseEDL *close_edl;
 	ClipPopupView *view;
 	ClipPopupViewWindow *view_window;
 	ClipPopupCopy *copy;
@@ -209,6 +210,7 @@ public:
 	void create_objects();
 	void update();
 	AWindowListFormat *format;
+	ClipPopupCloseEDL *close_edl;
 	MWindow *mwindow;
 	AWindowGUI *gui;
 };
@@ -235,6 +237,18 @@ public:
 
 	MWindow *mwindow;
 	ClipPopup *popup;
+};
+
+class ClipPopupCloseEDL : public BC_MenuItem
+{
+public:
+	ClipPopupCloseEDL(MWindow *mwindow, AWindowGUI *gui);
+	~ClipPopupCloseEDL();
+
+	int handle_event();
+
+	MWindow *mwindow;
+	AWindowGUI *gui;
 };
 
 #endif

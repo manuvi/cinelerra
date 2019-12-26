@@ -38,5 +38,6 @@ class ClipListFormat;
 class ClipListMenu;
 class ClipPopupToMedia;
 class ClipPopupOpenEDL;
+class ClipPopupCloseEDL;
 
 #endif
