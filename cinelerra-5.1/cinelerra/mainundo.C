@@ -209,12 +209,10 @@ int MainUndo::undo()
 //printf("MainUndo::undo %d %s\n", __LINE__, current->get_filename());
 			mwindow->set_filename(current->get_filename());
 
-			if( mwindow->gui ) {
 // Now update the menu with the after entry
-				UndoStackItem *prev = PREVIOUS;
-				mwindow->gui->mainmenu->undo->
-					update_caption(prev ? prev->get_description() : "");
-			}
+			UndoStackItem *prev = PREVIOUS;
+			mwindow->gui->mainmenu->undo->
+				update_caption(prev ? prev->get_description() : "");
 		}
 	}
 

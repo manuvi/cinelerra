@@ -118,6 +118,28 @@ public:
 };
 
 
+#define BEEP_SAMPLE_RATE 48000
+
+class Beeper : public Thread
+{
+public:
+	typedef int16_t audio_data_t;
+	Beeper(MWindow *mwindow);
+	~Beeper();
+
+	void run();
+	void start();
+	void stop(int wait);
+	void tone(double freq, double secs, double gain);
+
+	MWindow *mwindow;
+	double freq, secs, gain;
+	AudioDevice *audio;
+	int playing_audio, interrupted;
+	int audio_pos;
+};
+
+
 class MWindow : public Thread
 {
 public:
@@ -554,7 +576,7 @@ public:
 	int enable_proxy();
 	int disable_proxy();
 	int to_proxy(Asset *asset, int new_scale, int new_use_scaler);
-	ProxyBeep *proxy_beep;
+	Beeper *beeper;
 
 	void dump_plugins(FILE *fp=stdout);
 	void dump_edl(FILE *fp=stdout);

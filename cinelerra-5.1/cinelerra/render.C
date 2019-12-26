@@ -955,8 +955,9 @@ void RenderThread::run()
 			render_frames, render_time, render_rate);
 	}
 
-	if( render->mode == Render::INTERACTIVE && render->beep > 0 )
-		mwindow->beep(3000., 1.5, render->beep);
+	float gain = render->beep;
+	if( render->mode == Render::INTERACTIVE && gain > 0 )
+		mwindow->beep(3000., 1.5, gain);
 
 	if( script ) {
 		if( !render->result )

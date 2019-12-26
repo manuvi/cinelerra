@@ -466,6 +466,10 @@ void FormatTools::reposition_window(int &init_x, int &init_y)
 	format_text->reposition_window(x, y);
 	x += format_text->get_w();
 	format_button->reposition_window(x, y);
+	x += format_button->get_w() + 5;
+	ffmpeg_type->reposition_window(x, y);
+	x += ffmpeg_type->get_w();
+	format_ffmpeg->reposition_window(x, y);
 
 	x = init_x;
 	y += format_button->get_h() + ys10;

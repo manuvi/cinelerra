@@ -367,6 +367,9 @@ BC_Resources::BC_Resources(float x_scale, float y_scale)
 	BC_WindowBase::resources = this;
 	synchronous = 0;
 	vframe_shm = 0;
+	use_shm = -1;
+	shm_reply = 1;
+
 	if( x_scale <= 0 ) x_scale = 1;
 	if( y_scale <= 0 ) y_scale = x_scale;
 	this->x_scale = x_scale;
@@ -755,9 +758,6 @@ new_vframes(10,default_vscroll_data,
 
 	generic_button_margin = xS(15);
 	draw_clock_background=1;
-
-	use_shm = -1;
-	shm_reply = 1;
 
 // Initialize
 	bg_color = ORANGE;

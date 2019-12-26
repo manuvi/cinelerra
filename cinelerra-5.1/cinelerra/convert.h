@@ -204,24 +204,4 @@ public:
 	float beep;
 };
 
-class ConvertBeep : public Thread
-{
-public:
-	enum { BEEP_SAMPLE_RATE=48000 };
-	typedef int16_t audio_data_t;
-	ConvertBeep(MWindow *mwindow);
-	~ConvertBeep();
-
-	void run();
-	void start();
-	void stop(int wait);
-	void tone(double freq, double secs, double gain);
-
-	MWindow *mwindow;
-	double freq, secs, gain;
-	AudioDevice *audio;
-	int playing_audio, interrupted;
-	int audio_pos;
-};
-
 #endif

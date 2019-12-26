@@ -78,6 +78,7 @@ Preferences::Preferences()
 	use_renderfarm = 0;
 	force_uniprocessor = 0;
 	renderfarm_port = DEAMON_PORT;
+	renderfarm_consolidate = 0;
 	render_preroll = 0.5;
 	brender_preroll = 0;
 	renderfarm_mountpoint[0] = 0;

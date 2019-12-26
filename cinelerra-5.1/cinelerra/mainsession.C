@@ -368,8 +368,12 @@ void MainSession::default_window_positions(int window_config)
 int MainSession::load_defaults(BC_Hash *defaults)
 {
 // Setup main windows
-	strcpy(a_x11_host, defaults->get("A_X11_HOST", a_x11_host));
-	strcpy(b_x11_host, defaults->get("B_X11_HOST", b_x11_host));
+	char *a_host = defaults->get("A_X11_HOST", a_x11_host);
+	if( a_host != a_x11_host )
+		strcpy(a_x11_host, defaults->get("A_X11_HOST", a_x11_host));
+	char *b_host = defaults->get("B_X11_HOST", b_x11_host);
+	if( b_host != b_x11_host )
+		strcpy(b_x11_host, defaults->get("B_X11_HOST", b_x11_host));
 	window_config = defaults->get("WINDOW_CONFIG", window_config);
 	default_window_positions(window_config);
 

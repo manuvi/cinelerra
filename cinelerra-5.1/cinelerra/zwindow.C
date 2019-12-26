@@ -32,6 +32,7 @@
 #include "renderengine.h"
 #include "timelinepane.h"
 #include "track.h"
+#include "tracks.h"
 #include "transportque.h"
 #include "zwindow.h"
 #include "zwindowgui.h"
@@ -258,10 +259,20 @@ void ZWindow::update_mixer_ids()
 
 void ZWindow::set_title(const char *tp)
 {
+	Track *track = 0;
 	Mixer *mixer = mwindow->edl->mixers.get_mixer(idx);
-	if( mixer ) mixer->set_title(tp);
+	if( mixer ) {
+ 		mixer->set_title(tp);
+		for( track=mwindow->edl->tracks->first; track; track=track->next ) {
+			if( track->data_type != TRACK_VIDEO ) continue;
+			int mixer_id = track->get_mixer_id();
+			int k = mixer->mixer_ids.size();
+			while( --k >= 0 && mixer_id != mixer->mixer_ids[k] );
+			if( k >= 0 ) break;
+		}
+	}
 	char *cp = title, *ep = cp + sizeof(title)-1;
-	cp += snprintf(title, ep-cp, _("Mixer %d"), idx);
+	cp += snprintf(title, ep-cp, track ? track->title : _("Mixer %d"), idx);
 	if( tp ) cp += snprintf(cp, ep-cp, ": %s", tp);
 	*cp = 0;
 }

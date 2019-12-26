@@ -172,10 +172,6 @@ void ProxyDialog::handle_close_event(int result)
 	}
 	mwindow->edl->session->proxy_auto_scale = auto_scale;
 	mwindow->edl->session->proxy_beep = beep;
-	mwindow->edl->session->proxy_disabled_scale = 1;
-	mwindow->gui->lock_window("ProxyDialog::handle_close_event");
-	mwindow->gui->update_proxy_toggle();
-	mwindow->gui->unlock_window();
 	asset->save_defaults(mwindow->defaults, "PROXY_", 1, 1, 0, 0, 0); 
 	result = mwindow->to_proxy(asset, new_scale, use_scaler);
 	if( result >= 0 && beep > 0 && new_scale != 1 ) {
@@ -189,6 +185,10 @@ void ProxyDialog::handle_close_event(int result)
 		else
 			mwindow->beep(2000., 2.0, beep);
 	}
+	mwindow->edl->session->proxy_disabled_scale = 1;
+	mwindow->gui->lock_window("ProxyDialog::handle_close_event");
+	mwindow->update_project(LOADMODE_REPLACE);
+	mwindow->gui->unlock_window();
 }
 
 void ProxyRender::to_proxy_path(char *new_path, Indexable *indexable, int scale)
@@ -776,87 +776,5 @@ LoadClient* ProxyFarm::new_client()
 LoadPackage* ProxyFarm::new_package()
 {
 	return new ProxyPackage;
-}
-
-
-ProxyBeep::ProxyBeep(MWindow *mwindow)
- : Thread(1, 0, 0)
-{
-	this->mwindow = mwindow;
-	audio = new AudioDevice(mwindow);
-	playing_audio = 0;
-	interrupted = -1;
-}
-
-ProxyBeep::~ProxyBeep()
-{
-	stop(0);
-	delete audio;
-}
-
-void ProxyBeep::run()
-{
-	int channels = 2;
-	int64_t bfrsz = BEEP_SAMPLE_RATE;
-	EDL *edl = mwindow->edl;
-	EDLSession *session = edl->session;
-	AudioOutConfig *aconfig = session->playback_config->aconfig;
-	audio->open_output(aconfig, BEEP_SAMPLE_RATE, bfrsz, channels, 0);
-	audio->start_playback();
-
-	double out0[bfrsz], out1[bfrsz], *out[2] = { out0, out1 };
-	const double two_pi = 2*M_PI;
-	int64_t audio_len = BEEP_SAMPLE_RATE * secs;
-	const double dt = two_pi * freq/BEEP_SAMPLE_RATE;
-	double th = 0;
-
-	audio_pos = 0;
-	playing_audio = 1;
-	while( !interrupted ) {
-		int len = audio_len - audio_pos;
-		if( len <= 0 ) break;
-		if( len > bfrsz ) len = bfrsz;
-		int k = audio_pos;
-		for( int i=0; i<len; ++i,++k,th+=dt ) {
-			double t = th - two_pi;
-			if( t >= 0 ) th = t;
-			out0[i] = out1[i] = sin(th) * gain;
-		}
-		audio->write_buffer(out, channels, len);
-		audio_pos = k;
-	}
-
-	if( !interrupted )
-		audio->set_last_buffer();
-	audio->stop_audio(interrupted ? 0 : 1);
-	playing_audio = 0;
-
-	audio->close_all();
-}
-
-void ProxyBeep::start()
-{
-	if( running() ) return;
-	audio_pos = -1;
-	interrupted = 0;
-	Thread::start();
-}
-
-void ProxyBeep::stop(int wait)
-{
-	if( running() && !interrupted ) {
-		interrupted = 1;
-		audio->stop_audio(wait);
-	}
-	Thread::join();
-}
-
-void ProxyBeep::tone(double freq, double secs, double gain)
-{
-	stop(0);
-	this->freq = freq;
-	this->secs = secs;
-	this->gain = gain;
-	start();
 }
 

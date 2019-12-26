@@ -240,7 +240,7 @@ MWindow::MWindow()
 	screens = 1;
 	in_destructor = 0;
 	speed_edl = 0;
-	proxy_beep = 0;
+	beeper = 0;
 	shuttle = 0;
 	mixers_align = 0;
 }
@@ -261,7 +261,7 @@ MWindow::~MWindow()
 #ifdef HAVE_DVB
 	gui->channel_info->stop();
 #endif
-	delete proxy_beep;
+	delete beeper;
 	delete create_bd;       create_bd = 0;
 	delete create_dvd;      create_dvd = 0;
 	delete shuttle;         shuttle = 0;
@@ -1825,9 +1825,91 @@ void MWindow::undo_after(const char *description, uint32_t load_flags, int chang
 
 void MWindow::beep(double freq, double secs, double gain)
 {
-	if( !proxy_beep ) proxy_beep = new ProxyBeep(this);
-	proxy_beep->tone(freq, secs, gain);
+	if( !beeper ) beeper = new Beeper(this);
+	beeper->tone(freq, secs, gain);
 }
+
+Beeper::Beeper(MWindow *mwindow)
+ : Thread(1, 0, 0)
+{
+	this->mwindow = mwindow;
+	audio = new AudioDevice(mwindow);
+	playing_audio = 0;
+	interrupted = -1;
+}
+
+Beeper::~Beeper()
+{
+	stop(0);
+	delete audio;
+}
+
+void Beeper::run()
+{
+	int channels = 2;
+	int64_t bfrsz = BEEP_SAMPLE_RATE;
+	EDL *edl = mwindow->edl;
+	EDLSession *session = edl->session;
+	AudioOutConfig *aconfig = session->playback_config->aconfig;
+	audio->open_output(aconfig, BEEP_SAMPLE_RATE, bfrsz, channels, 0);
+	audio->start_playback();
+
+	double out0[bfrsz], out1[bfrsz], *out[2] = { out0, out1 };
+	const double two_pi = 2*M_PI;
+	int64_t audio_len = BEEP_SAMPLE_RATE * secs;
+	const double dt = two_pi * freq/BEEP_SAMPLE_RATE;
+	double th = 0;
+
+	audio_pos = 0;
+	playing_audio = 1;
+	while( !interrupted ) {
+		int len = audio_len - audio_pos;
+		if( len <= 0 ) break;
+		if( len > bfrsz ) len = bfrsz;
+		int k = audio_pos;
+		for( int i=0; i<len; ++i,++k,th+=dt ) {
+			double t = th - two_pi;
+			if( t >= 0 ) th = t;
+			out0[i] = out1[i] = sin(th) * gain;
+		}
+		audio->write_buffer(out, channels, len);
+		audio_pos = k;
+	}
+
+	if( !interrupted )
+		audio->set_last_buffer();
+	audio->stop_audio(interrupted ? 0 : 1);
+	playing_audio = 0;
+
+	audio->close_all();
+}
+
+void Beeper::start()
+{
+	if( running() ) return;
+	audio_pos = -1;
+	interrupted = 0;
+	Thread::start();
+}
+
+void Beeper::stop(int wait)
+{
+	if( running() && !interrupted ) {
+		interrupted = 1;
+		audio->stop_audio(wait);
+	}
+	Thread::join();
+}
+
+void Beeper::tone(double freq, double secs, double gain)
+{
+	stop(0);
+	this->freq = freq;
+	this->secs = secs;
+	this->gain = gain;
+	start();
+}
+
 
 int MWindow::load_filenames(ArrayList<char*> *filenames,
 	int load_mode,
@@ -2116,6 +2198,8 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 				edl->session->autos_follow_edits,
 				0); // overwrite
 		}
+		else if( load_mode == LOADMODE_NEW_TRACKS )
+			paste_edls(&new_edls, load_mode, 0, -1, 0, 0, 0, 0);
 		else
 			paste_edls(&new_edls, load_mode, 0, -1, 1, 1, 1, 0);
 	}
@@ -2219,11 +2303,12 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 		gui->unlock_window(); // to update progress bar
 		int ret = render_proxy(orig_idxbls);
 		gui->lock_window("MWindow::load_filenames");
-		if( ret >= 0 && edl->session->proxy_beep ) {
+		float gain = edl->session->proxy_beep;
+		if( ret >= 0 && gain > 0 ) {
 			if( ret > 0 )
-				beep(2000., 1.5, 0.5);
+				beep(2000., 1.5, gain);
 			else
-				beep(4000., 0.25, 0.5);
+				beep(4000., 0.25, gain);
 		}
 	}
 
@@ -2307,14 +2392,19 @@ int MWindow::enable_proxy()
 	    edl->session->proxy_disabled_scale != 1 ) {
 		int new_scale = edl->session->proxy_disabled_scale;
 		int new_use_scaler = edl->session->proxy_use_scaler;
-		edl->session->proxy_disabled_scale = 1;
 		Asset *asset = new Asset;
 		asset->format = FILE_FFMPEG;
 		asset->load_defaults(defaults, "PROXY_", 1, 1, 0, 0, 0);
 		ret = to_proxy(asset, new_scale, new_use_scaler);
 		asset->remove_user();
-		if( ret > 0 )
-			beep(2000., 1.5, 0.5);
+		if( ret > 0 ) {
+			float gain = edl->session->proxy_beep;
+			beep(2000., 1.5, gain);
+		}
+		edl->session->proxy_disabled_scale = 1;
+		gui->lock_window("MWindow::to_proxy");
+		update_project(LOADMODE_REPLACE);
+		gui->unlock_window();
 	}
 	return 1;
 }
@@ -2323,14 +2413,17 @@ int MWindow::disable_proxy()
 {
 	if( edl->session->proxy_scale != 1 &&
 	    edl->session->proxy_disabled_scale == 1 ) {
-		int new_scale = 1;
+		int old_scale = edl->session->proxy_scale, new_scale = 1;
 		int new_use_scaler = edl->session->proxy_use_scaler;
-		edl->session->proxy_disabled_scale = edl->session->proxy_scale;
 		Asset *asset = new Asset;
 		asset->format = FILE_FFMPEG;
 		asset->load_defaults(defaults, "PROXY_", 1, 1, 0, 0, 0);
 		to_proxy(asset, new_scale, new_use_scaler);
 		asset->remove_user();
+		edl->session->proxy_disabled_scale = old_scale;
+		gui->lock_window("MWindow::to_proxy");
+		update_project(LOADMODE_REPLACE);
+		gui->unlock_window();
 	}
 	return 1;
 }
@@ -2460,10 +2553,6 @@ int MWindow::to_proxy(Asset *asset, int new_scale, int new_use_scaler)
 	undo_after(_("proxy"), LOAD_ALL);
 	edl->Garbage::remove_user();
 	restart_brender();
-
-	gui->lock_window("MWindow::to_proxy");
-	update_project(LOADMODE_REPLACE);
-	gui->unlock_window();
 
 	return !result ? proxy_render.needed_proxies.size() : -1;
 }
@@ -3737,6 +3826,7 @@ void MWindow::stack_push(EDL *new_edl)
 // needs gui lock
 	gui->lock_window("MWindow::stack_push");
 	if( stack.size() < 9 ) {
+		save_backup();
 		undo_before();
 		StackItem &item = stack.append();
 		item.edl = edl;
@@ -3939,6 +4029,8 @@ void MWindow::save_backup()
 	edl->set_path(session->filename);
 
 	char backup_path[BCTEXTLEN], backup_path1[BCTEXTLEN];
+	snprintf(backup_path1, sizeof(backup_path1), "%s/%s",
+		File::get_config_path(), BACKUP_FILE1);
 	get_backup_path(backup_path, sizeof(backup_path));
 	rename(backup_path, backup_path1);
 	edl->save_xml(&file, backup_path);

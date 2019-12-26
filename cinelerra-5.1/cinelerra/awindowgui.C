@@ -120,7 +120,8 @@ AssetVIcon::~AssetVIcon()
 VFrame *AssetVIcon::frame()
 {
 	AssetVIconThread *avt = picon->gui->vicon_thread;
-	Asset *asset = (Asset *)picon->indexable;
+	Indexable *idxbl = picon->indexable;
+	Asset *asset = idxbl && idxbl->is_asset ? (Asset *)idxbl : 0;
 	if( !asset ) return vframes()>0 ? (VFrame*)*images[0] : 0;
 	if( !asset->video_data && audio_data && audio_size && length > 0 ) {
 		if( !temp ) temp = new VFrame(0, -1, w, h, BC_RGB888, -1);

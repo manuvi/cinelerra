@@ -236,32 +236,50 @@ VFrame *ResourcePixmap::change_title_color(VFrame *title_bg, int color)
 	int bpp = BC_CModels::calculate_pixelsize(colormodel);
 	int tw = title_bg->get_w(), tw1 = tw-1, th = title_bg->get_h();
 	VFrame *title_bar = new VFrame(tw, th, colormodel);
-	uint8_t cr = (color>>16), cg = (color>>8), cb = (color>>0);
 	uint8_t **bar_rows = title_bar->get_rows();
 	const uint8_t gap_grey = 0x4a;
-	if( th > 0 ) {
-		uint8_t *cp = bar_rows[0];
-		for( int x=0; x<tw; ++x ) {
-			cp[0] = cp[1] = cp[2] = gap_grey;
-			if( bpp > 3 ) cp[3] = 0xff;
-			cp += bpp;
+	if( BC_CModels::has_alpha(colormodel) && // fast path
+	    BC_CModels::calculate_pixelsize(colormodel) == sizeof(unsigned) ) {
+		const unsigned gap_rgba = (0xff<<24) |
+			(gap_grey<<16) | (gap_grey<<8) | (gap_grey<<0);
+		if( th > 0 ) {
+			unsigned *bp = (unsigned *)bar_rows[0];
+			for( int i=tw; --i>=0; ) *bp++ = gap_rgba;
+		}
+		unsigned rgba = (0xff<<24) | (color & 0xffffff);
+		for( int y=1; y<th; ++y ) {
+			unsigned *bp = (unsigned *)bar_rows[y];
+			if( tw > 0 ) *bp++ = gap_rgba;
+			for( int i=tw1; --i>0; ++bp ) *bp = rgba;
+			if( tw > 1 ) *bp = gap_rgba;
 		}
 	}
-	for( int y=1; y<th; ++y ) {
-		uint8_t *cp = bar_rows[y];
-		if( tw > 0 ) {
-			cp[0] = cp[1] = cp[2] = gap_grey;
-			if( bpp > 3 ) cp[3] = 0xff;
-			cp += bpp;
+	else {
+		uint8_t cr = (color>>16), cg = (color>>8), cb = (color>>0);
+		if( th > 0 ) {
+			uint8_t *cp = bar_rows[0];
+			for( int x=0; x<tw; ++x ) {
+				cp[0] = cp[1] = cp[2] = gap_grey;
+				if( bpp > 3 ) cp[3] = 0xff;
+				cp += bpp;
+			}
 		}
-		for( int x=1; x<tw1; ++x ) {
-			cp[0] = cr; cp[1] = cg; cp[2] = cb;
-			if( bpp > 3 ) cp[3] = 0xff;
-			cp += bpp;
-		}
-		if( tw > 1 ) {
-			cp[0] = cp[1] = cp[2] = gap_grey;
-			if( bpp > 3 ) cp[3] = 0xff;
+		for( int y=1; y<th; ++y ) {
+			uint8_t *cp = bar_rows[y];
+			if( tw > 0 ) {
+				cp[0] = cp[1] = cp[2] = gap_grey;
+				if( bpp > 3 ) cp[3] = 0xff;
+				cp += bpp;
+			}
+			for( int x=1; x<tw1; ++x ) {
+				cp[0] = cr; cp[1] = cg; cp[2] = cb;
+				if( bpp > 3 ) cp[3] = 0xff;
+				cp += bpp;
+			}
+			if( tw > 1 ) {
+				cp[0] = cp[1] = cp[2] = gap_grey;
+				if( bpp > 3 ) cp[3] = 0xff;
+			}
 		}
 	}
 	return title_bar;
@@ -270,17 +288,28 @@ VFrame *ResourcePixmap::change_title_color(VFrame *title_bg, int color)
 VFrame *ResourcePixmap::change_picon_alpha(VFrame *picon_frame, int alpha)
 {
 	uint8_t **picon_rows = picon_frame->get_rows();
-	int w = picon_frame->get_w(), h = picon_frame->get_h();
+	int pw = picon_frame->get_w(), ph = picon_frame->get_h();
 	int color_model = picon_frame->get_color_model();
 	int bpp = BC_CModels::calculate_pixelsize(color_model);
-	VFrame *frame = new VFrame(w, h, BC_RGBA8888);
+	VFrame *frame = new VFrame(pw, ph, BC_RGBA8888);
 	uint8_t **rows = frame->get_rows();
-	for( int y=0; y<h; ++y ) {
-		uint8_t *bp = picon_rows[y], *rp = rows[y];
-		for( int x=0; x<w; ++x ) {
-			rp[0] = bp[0];	rp[1] = bp[1];
-			rp[2] = bp[2];	bp += bpp;
-			rp[3] = alpha;  rp += 4;
+	if( BC_CModels::has_alpha(color_model) && // fast path
+	    BC_CModels::calculate_pixelsize(color_model) == sizeof(unsigned) ) {
+		unsigned a = alpha << 24;
+		for( int y=0; y<ph; ++y ) {
+			unsigned *bp = (unsigned *)picon_rows[y];
+			unsigned *rp = (unsigned *)rows[y];
+			for( int i=pw; --i>=0; ++bp,++rp ) *rp = (*bp & 0xffffff) | a;
+		}
+	}
+	else {
+		for( int y=0; y<ph; ++y ) {
+			uint8_t *bp = picon_rows[y], *rp = rows[y];
+			for( int x=0; x<pw; ++x ) {
+				rp[0] = bp[0];	rp[1] = bp[1];
+				rp[2] = bp[2];	bp += bpp;
+				rp[3] = alpha;  rp += 4;
+			}
 		}
 	}
 	return frame;
