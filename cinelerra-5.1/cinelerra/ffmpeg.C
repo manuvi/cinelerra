@@ -333,12 +333,35 @@ int FFStream::encode_activate()
 	return writing;
 }
 
+// this is a global parameter that really should be in the context
 static AVPixelFormat hw_pix_fmt = AV_PIX_FMT_NONE; // protected by ff_lock
+
+// goofy maneuver to attach a hw_format to an av_context
+#define GET_HW_PIXFMT(fn, fmt) \
+static AVPixelFormat get_hw_##fn(AVCodecContext *ctx, const enum AVPixelFormat *pix_fmts) { \
+	return fmt; \
+}
+GET_HW_PIXFMT(vaapi, AV_PIX_FMT_VAAPI)
+GET_HW_PIXFMT(vdpau, AV_PIX_FMT_VDPAU)
+GET_HW_PIXFMT(cuda,  AV_PIX_FMT_CUDA)
+GET_HW_PIXFMT(nv12,  AV_PIX_FMT_NV12)
+
 static enum AVPixelFormat get_hw_format(AVCodecContext *ctx,
 			const enum AVPixelFormat *pix_fmts)
 {
-	for( const enum AVPixelFormat *p=pix_fmts; *p!=AV_PIX_FMT_NONE; ++p )
-		if( *p == hw_pix_fmt ) return *p;
+	for( const enum AVPixelFormat *p=pix_fmts; *p!=AV_PIX_FMT_NONE; ++p ) {
+		if( *p != hw_pix_fmt ) continue;
+		switch( *p ) {
+		case AV_PIX_FMT_VAAPI: ctx->get_format = get_hw_vaapi; return *p;
+		case AV_PIX_FMT_VDPAU: ctx->get_format = get_hw_vdpau; return *p;
+		case AV_PIX_FMT_CUDA:  ctx->get_format = get_hw_cuda;  return *p;
+		case AV_PIX_FMT_NV12:  ctx->get_format = get_hw_nv12;  return *p;
+		default:
+			fprintf(stderr, "Unknown HW surface format: %s\n",
+				av_get_pix_fmt_name(*p));
+			continue;
+		}
+	}
 	fprintf(stderr, "Failed to get HW surface format.\n");
 	return hw_pix_fmt = AV_PIX_FMT_NONE;
 }
