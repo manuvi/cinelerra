@@ -143,7 +143,7 @@ int SketcherCurveColor::handle_new_color(int color, int alpha)
 
 SketcherCoord::SketcherCoord(SketcherWindow *gui, int x, int y,
 		coord output, coord mn, coord mx)
- : BC_TumbleTextBox(gui, output, mn, mx, x, y, 64, 1)
+ : BC_TumbleTextBox(gui, output, mn, mx, x, y, xS(80), 1)
 {
 	this->gui = gui;
 	set_increment(1);
@@ -154,7 +154,7 @@ SketcherCoord::~SketcherCoord()
 
 SketcherNum::SketcherNum(SketcherWindow *gui, int x, int y,
 		int output, int mn, int mx)
- : BC_TumbleTextBox(gui, output, mn, mx, x, y, 54)
+ : BC_TumbleTextBox(gui, output, mn, mx, x, y, xS(54))
 {
 	this->gui = gui;
 	set_increment(1);
@@ -273,7 +273,7 @@ int SketcherAliasItem::handle_event()
 
 SketcherAliasing::SketcherAliasing(SketcherWindow *gui, Sketcher *plugin,
 		int x, int y)
- : BC_PopupMenu(x, y, xS(64),
+ : BC_PopupMenu(x, y, xS(80),
 		alias_to_text(plugin->config.aliasing), 1, 0, xS(3))
 {
 	this->gui = gui;
@@ -300,7 +300,7 @@ const char *SketcherAliasing::alias_to_text(int alias)
 
 
 SketcherWindow::SketcherWindow(Sketcher *plugin)
- : PluginClientWindow(plugin, xS(400), yS(620), xS(400), yS(620), 0)
+ : PluginClientWindow(plugin, xS(460), yS(680), xS(460), yS(680), 0)
 {
 	this->plugin = plugin;
 	this->title_pen = 0;  this->curve_pen = 0;
@@ -326,6 +326,9 @@ SketcherWindow::SketcherWindow(Sketcher *plugin)
 	new_points = 0;
 	pending_motion = 0;
 	pending_config = 0;
+	helped = 0;
+	help_h = get_h();
+	last_time = 0;
 }
 
 SketcherWindow::~SketcherWindow()
@@ -345,7 +348,7 @@ void SketcherWindow::create_objects()
 		ci = plugin->new_curve();
 	SketcherCurve *cv = plugin->config.curves[ci];
 
-	reset_curves = new SketcherResetCurves(this, plugin, x1=x, y+yS(3));
+	reset_curves = new SketcherResetCurves(this, plugin, x1=x, y);
 	add_subwindow(reset_curves);	dy = bmax(dy,reset_curves->get_h());
 	x1 += reset_curves->get_w() + 2*margin;
 	const char *curve_text = _("Curve");
@@ -468,6 +471,9 @@ void SketcherWindow::create_objects()
 	y += dy + margin + yS(5);		dy = 0;
 	point_list->update(pi);
 
+	add_subwindow(help = new SketcherHelp(this, plugin, x, y));
+	y += help->get_h() + yS(5);
+	help_y = y;
 	bar = new BC_Bar(x, y, get_w()-xS(2)*x);
 	add_subwindow(bar);		dy = bmax(dy,bar->get_h());
 	y += dy + yS(2)*margin;
@@ -496,7 +502,11 @@ void SketcherWindow::create_objects()
 	y += dy + margin + yS(10);
 
 	add_subwindow(notes3 = new BC_Title(x, y,
+		   "Wheel: rotate, centered on cursor\n"
+		   "Wheel: shift: scale, centered on cursor\n"
 		   "Key DEL= delete point, +Shift= delete curve\n"));
+
+	resize_window(get_w(), help_y);
 	show_window(1);
 }
 
@@ -614,8 +624,38 @@ int SketcherWindow::grab_button_press(XEvent *event)
 	SketcherPoints &points = cv->points;
 	int pi = config.pt_selected;
 
+	float s = 1.001; // min scale
+	float th = 0.1 * M_PI/180.f; // min theta .1 deg per wheel_btn
+	int64_t ms = event->xbutton.time;
+	double dt = (ms - last_time) / 1000.;  // seconds
+	last_time = ms;
+	double mx_accel = 100., r = mx_accel / exp(1.);
+	double mx_dt = 1./2., mn_dt = 1./15.; // mn..mx period in sec/xev
+	bclip(dt, mn_dt, mx_dt);
+	double accel = r * exp(-(dt-mn_dt)/(mx_dt-mn_dt));
 	int button_no = event->xbutton.button;
 	switch( button_no ) {
+	case WHEEL_DOWN:
+		s = 2 - s;
+		th = -th;  // fall thru
+	case WHEEL_UP: { // shift_down scale, !shift_down rotate
+		s =  1 + (s-1)*accel;
+		th *= accel;
+		float st = sin(th), ct = cos(th);
+		int sz = points.size();
+		int shift_down = (state & ShiftMask) ? 1 : 0;
+		for( int i=0; i<sz; ++i ) {
+			SketcherPoint *pt = points[i];
+			float px = pt->x - track_x, py = pt->y - track_y;
+			float nx = shift_down ? px*s : px*ct + py*st;
+			float ny = shift_down ? py*s : py*ct - px*st;
+			point_list->set_point(i, PT_X, pt->x = nx + track_x);
+			point_list->set_point(i, PT_Y, pt->y = ny + track_y);
+		}
+		point_list->update(-1);
+		button_no = 0;
+		break; }
+
 	case LEFT_BUTTON: {
 		if( (state & ShiftMask) ) { // create new point/string
 			++new_points;
@@ -878,7 +918,7 @@ void SketcherCurveList::add_curve(const char *id, const char *pen,
 }
 
 SketcherNewCurve::SketcherNewCurve(SketcherWindow *gui, Sketcher *plugin, int x, int y)
- : BC_GenericButton(x, y, xS(64), _("New"))
+ : BC_GenericButton(x, y, xS(96), _("New"))
 {
 	this->gui = gui;
 	this->plugin = plugin;
@@ -904,7 +944,7 @@ int SketcherNewCurve::handle_event()
 }
 
 SketcherDelCurve::SketcherDelCurve(SketcherWindow *gui, Sketcher *plugin, int x, int y)
- : BC_GenericButton(x, y, xS(64), C_("Del"))
+ : BC_GenericButton(x, y, xS(96), C_("Del"))
 {
 	this->gui = gui;
 	this->plugin = plugin;
@@ -930,7 +970,7 @@ int SketcherDelCurve::handle_event()
 }
 
 SketcherCurveUp::SketcherCurveUp(SketcherWindow *gui, int x, int y)
- : BC_GenericButton(x, y, _("Up"))
+ : BC_GenericButton(x, y, xS(96), _("Up"))
 {
 	this->gui = gui;
 }
@@ -954,7 +994,7 @@ int SketcherCurveUp::handle_event()
 }
 
 SketcherCurveDn::SketcherCurveDn(SketcherWindow *gui, int x, int y)
- : BC_GenericButton(x, y, _("Dn"))
+ : BC_GenericButton(x, y, xS(96), _("Dn"))
 {
 	this->gui = gui;
 }
@@ -1161,7 +1201,7 @@ void SketcherWindow::update_gui()
 
 
 SketcherPointUp::SketcherPointUp(SketcherWindow *gui, int x, int y)
- : BC_GenericButton(x, y, _("Up"))
+ : BC_GenericButton(x, y, xS(96), _("Up"))
 {
 	this->gui = gui;
 }
@@ -1199,7 +1239,7 @@ int SketcherPointUp::handle_event()
 }
 
 SketcherPointDn::SketcherPointDn(SketcherWindow *gui, int x, int y)
- : BC_GenericButton(x, y, _("Dn"))
+ : BC_GenericButton(x, y, xS(96), _("Dn"))
 {
 	this->gui = gui;
 }
@@ -1260,7 +1300,7 @@ int SketcherDrag::handle_event()
 }
 
 SketcherNewPoint::SketcherNewPoint(SketcherWindow *gui, Sketcher *plugin, int x, int y)
- : BC_GenericButton(x, y, xS(64), _("New"))
+ : BC_GenericButton(x, y, xS(96), _("New"))
 {
 	this->gui = gui;
 	this->plugin = plugin;
@@ -1279,7 +1319,7 @@ int SketcherNewPoint::handle_event()
 }
 
 SketcherDelPoint::SketcherDelPoint(SketcherWindow *gui, Sketcher *plugin, int x, int y)
- : BC_GenericButton(x, y, xS(64), C_("Del"))
+ : BC_GenericButton(x, y, xS(96), C_("Del"))
 {
 	this->gui = gui;
 	this->plugin = plugin;
@@ -1334,7 +1374,7 @@ int SketcherResetCurves::handle_event()
 }
 
 SketcherResetPoints::SketcherResetPoints(SketcherWindow *gui, Sketcher *plugin, int x, int y)
- : BC_GenericButton(x, y, _("Reset"))
+ : BC_GenericButton(x, y-yS(2), _("Reset"))
 {
 	this->gui = gui;
 	this->plugin = plugin;
@@ -1353,5 +1393,25 @@ int SketcherResetPoints::handle_event()
 		gui->send_configure_change();
 	}
 	return 1;
+}
+
+SketcherHelp::SketcherHelp(SketcherWindow *gui, Sketcher *plugin, int x, int y)
+ : BC_CheckBox(x, y, 0, _("Help"))
+{
+	this->gui = gui;
+	this->plugin = plugin;
+        set_tooltip(_("Show help text"));
+}
+SketcherHelp::~SketcherHelp()
+{
+}
+
+int SketcherHelp::handle_event()
+{
+        gui->helped = get_value();
+        gui->resize_window(gui->get_w(),
+                gui->helped ? gui->help_h : gui->help_y);
+        gui->update_gui();
+        return 1;
 }
 

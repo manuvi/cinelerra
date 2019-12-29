@@ -8,6 +8,13 @@ Cinfinity icons selected in Preferences Sam (CC BY 3.0,
 Cakewalk and Neophyte themes by Olaf Wolff (CC BY 4.0,
   https://creativecommons.org/licenses/by/4.0/)
 .
+December 2019 New Features of note:
+  Edit EDLs feature added for easily editing nested EDLs.
+  New Compressor Multi, Alpha, and Foreground plugins.
+  Sketcher plugin improvements for aliasing/scaling/rotating.
+  Fastpath minor speed improvement for titles/bkg colors.
+  Improved hardware accelerators support.
+  OTA TV support for Happauge 1657 Dual USB device recording.
 November 2019 New Features of note:
   Audio improvements added for playback/speed/sampling.
   Spanish po and website translations updated by Sergio.

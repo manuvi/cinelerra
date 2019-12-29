@@ -53,6 +53,7 @@ class SketcherPointUp;
 class SketcherPointDn;
 class SketcherResetCurves;
 class SketcherResetPoints;
+class SketcherHelp;
 class SketcherWindow;
 
 
@@ -373,6 +374,16 @@ public:
 	SketcherWindow *gui;
 };
 
+class SketcherHelp : public BC_CheckBox
+{
+public:
+	SketcherHelp(SketcherWindow *gui, Sketcher *plugin, int x, int y);
+	~SketcherHelp();
+	int handle_event();
+
+	Sketcher *plugin;
+	SketcherWindow *gui;
+};
 
 class SketcherWindow : public PluginClientWindow
 {
@@ -404,6 +415,7 @@ public:
 	SketcherAliasing *aliasing;
 	SketcherCurveList *curve_list;
 	SketcherResetCurves *reset_curves;
+	SketcherHelp *help;
 
 	SketcherResetPoints *reset_points;
 	SketcherDrag *drag;
@@ -426,8 +438,10 @@ public:
 	float track_x, track_y;
 	int state, dragging;
 	int pending_motion, pending_config;
+	int helped, help_y, help_h;
 	XEvent motion_event;
 	float last_x, last_y;
+	int64_t last_time;
 	BC_Title *notes0, *notes1, *notes2, *notes3;
 };
 #endif
