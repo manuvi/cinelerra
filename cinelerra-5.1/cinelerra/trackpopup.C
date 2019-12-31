@@ -454,10 +454,12 @@ TrackTitleColorPicker::~TrackTitleColorPicker()
 }
 void TrackTitleColorPicker::create_objects(ColorWindow *gui)
 {
+	gui->lock_window("TrackTitleColorPicker::create_objects");
 	int y = gui->get_h() - BC_CancelButton::calculate_h() + yS(10);
 	int x = gui->get_w() - BC_CancelButton::calculate_w() - xS(10);
 	x -= BC_GenericButton::calculate_w(gui, _("default")) + xS(15);
 	gui->add_subwindow(new TrackTitleColorDefault(this, x, y));
+	gui->unlock_window();
 }
 
 int TrackTitleColorPicker::handle_new_color(int color, int alpha)

@@ -86,6 +86,7 @@ BC_Window* ColorPicker::new_gui()
 	if( x < 0 ) x = 0;
 	if( y < 0 ) y = 0;
 	ColorWindow *window = new ColorWindow(this, x, y, w, h, window_title);
+	window->create_objects();
 	window->start_selection(color, !do_alpha ? -1 : alpha, ok_cancel);
 	return window;
 }
@@ -112,6 +113,13 @@ ColorWindow::ColorWindow(ColorPicker *thread, int x, int y, int w, int h, const 
 
 ColorWindow::~ColorWindow()
 {
+}
+
+void ColorWindow::create_objects()
+{
+	BC_WindowBase::create_objects();
+	ColorGUI::create_objects();
+	thread->create_objects(this);
 }
 
 void ColorWindow::update_gui(int color, int alpha)

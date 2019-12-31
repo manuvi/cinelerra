@@ -238,6 +238,8 @@ VFrame *ResourcePixmap::change_title_color(VFrame *title_bg, int color)
 	VFrame *title_bar = new VFrame(tw, th, colormodel);
 	uint8_t **bar_rows = title_bar->get_rows();
 	const uint8_t gap_grey = 0x4a;
+	union { unsigned rgba; struct { uint8_t r,g,b,a; }; } c;
+	c.r = color>>16;  c.g = color>>8;  c.b = color>>0;  c.a = 0xff;
 	if( BC_CModels::has_alpha(colormodel) && // fast path
 	    BC_CModels::calculate_pixelsize(colormodel) == sizeof(unsigned) ) {
 		const unsigned gap_rgba = (0xff<<24) |
@@ -246,16 +248,14 @@ VFrame *ResourcePixmap::change_title_color(VFrame *title_bg, int color)
 			unsigned *bp = (unsigned *)bar_rows[0];
 			for( int i=tw; --i>=0; ) *bp++ = gap_rgba;
 		}
-		unsigned rgba = (0xff<<24) | (color & 0xffffff);
 		for( int y=1; y<th; ++y ) {
 			unsigned *bp = (unsigned *)bar_rows[y];
 			if( tw > 0 ) *bp++ = gap_rgba;
-			for( int i=tw1; --i>0; ++bp ) *bp = rgba;
+			for( int i=tw1; --i>0; ++bp ) *bp = c.rgba;
 			if( tw > 1 ) *bp = gap_rgba;
 		}
 	}
 	else {
-		uint8_t cr = (color>>16), cg = (color>>8), cb = (color>>0);
 		if( th > 0 ) {
 			uint8_t *cp = bar_rows[0];
 			for( int x=0; x<tw; ++x ) {
@@ -272,7 +272,7 @@ VFrame *ResourcePixmap::change_title_color(VFrame *title_bg, int color)
 				cp += bpp;
 			}
 			for( int x=1; x<tw1; ++x ) {
-				cp[0] = cr; cp[1] = cg; cp[2] = cb;
+				cp[0] = c.r; cp[1] = c.g; cp[2] = c.b;
 				if( bpp > 3 ) cp[3] = 0xff;
 				cp += bpp;
 			}

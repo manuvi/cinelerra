@@ -278,6 +278,7 @@ SketcherAliasing::SketcherAliasing(SketcherWindow *gui, Sketcher *plugin,
 {
 	this->gui = gui;
 	this->plugin = plugin;
+	set_tooltip(_("Anti-Aliasing"));
 }
 SketcherAliasing::~SketcherAliasing()
 {
@@ -293,7 +294,7 @@ void SketcherAliasing::create_objects()
 const char *SketcherAliasing::alias_to_text(int alias)
 {
 	if( alias < 0 ) return _("Off");
-	if( alias > 0 ) return _("Dbl");
+	if( alias > 0 ) return _("Double");
 	return _("On");
 }
 

@@ -45,6 +45,7 @@ public:
 	ColorPicker(int do_alpha = 0, const char *title = 0);
 	~ColorPicker();
 	void start_window(int color, int alpha, int ok_cancel=0);
+	virtual void create_objects(ColorWindow *window) {}
 	virtual void update_gui(int color, int alpha);
 	virtual int handle_new_color(int color, int alpha);
 	BC_Window* new_gui();
@@ -142,6 +143,7 @@ public:
 
 	void update_gui(int color, int alpha);
 	int handle_new_color(int color, int alpha);
+	void create_objects();
 
 	int close_event() { return close_gui(); }
 	int cursor_motion_event() { return cursor_motion_gui(); }
