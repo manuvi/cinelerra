@@ -2068,6 +2068,10 @@ void AWindowGUI::update_asset_list()
 		if( !exists ) {
 			AssetPicon *picon = new AssetPicon(mwindow,
 				this, current);
+			if( current->format == FILE_REF ) {
+				int color = picon->get_color();
+				picon->set_color(color ^ 0x5599CC);
+			}
 			new_assets.append(picon);
 		}
 	}

@@ -61,6 +61,7 @@ BC_MenuItem::BC_MenuItem(const char *text, const char *hotkey_text, int hotkey)
 	alt_hotkey = 0;
 	ctrl_hotkey = 0;
 	menu_popup = 0;
+	enabled = 1;
 }
 
 BC_MenuItem::~BC_MenuItem()
@@ -134,6 +135,16 @@ int BC_MenuItem::deactivate_submenus(BC_MenuPopup *exclude)
 	}
 	return 0;
 }
+
+int BC_MenuItem::get_enabled(int v)
+{
+	return enabled;
+}
+void BC_MenuItem::set_enabled(int v)
+{
+	enabled = v;
+}
+
 
 int BC_MenuItem::activate_submenu()
 {

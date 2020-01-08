@@ -144,14 +144,16 @@ int BC_MenuPopup::total_items()
 	return menu_items.size();
 }
 
+
 int BC_MenuPopup::dispatch_button_press()
 {
 	int result = 0;
 	if(popup)
 	{
-		for(int i = 0; i < menu_items.total && !result && popup; i++)
-		{
-			result = menu_items.values[i]->dispatch_button_press();
+		for(int i = 0; i < menu_items.total && !result && popup; i++) {
+			BC_MenuItem *item = menu_items[i];
+			if( !item->enabled ) continue;
+			result = item->dispatch_button_press();
 		}
 		if(result) draw_items();
 	}
@@ -163,9 +165,10 @@ int BC_MenuPopup::dispatch_button_release()
 	int result = 0, redraw = 0;
 	if(popup)
 	{
-		for(int i = 0; i < menu_items.total && !result && popup; i++)
-		{
-			result = menu_items.values[i]->dispatch_button_release(redraw);
+		for(int i = 0; i < menu_items.total && !result && popup; i++) {
+			BC_MenuItem *item = menu_items[i];
+			if( !item->enabled ) continue;
+			result = item->dispatch_button_release(redraw);
 		}
 		if(redraw) draw_items();
 	}
@@ -175,9 +178,10 @@ int BC_MenuPopup::dispatch_button_release()
 int BC_MenuPopup::dispatch_key_press()
 {
 	int result = 0;
-	for(int i = 0; i < menu_items.total && !result; i++)
-	{
-		result = menu_items.values[i]->dispatch_key_press();
+	for(int i = 0; i < menu_items.total && !result; i++) {
+		BC_MenuItem *item = menu_items[i];
+		if( !item->enabled ) continue;
+		result = item->dispatch_key_press();
 	}
 	return result;
 }
@@ -189,9 +193,10 @@ int BC_MenuPopup::dispatch_motion_event()
 	if(popup)
 	{
 // Try submenus and items
-		for(i = 0; i < menu_items.total; i++)
-		{
-			result |= menu_items.values[i]->dispatch_motion_event(redraw);
+		for(i = 0; i < menu_items.total; i++) {
+			BC_MenuItem *item = menu_items[i];
+			if( !item->enabled ) continue;
+			result |= item->dispatch_motion_event(redraw);
 		}
 
 		if(redraw) draw_items();
@@ -221,9 +226,10 @@ int BC_MenuPopup::dispatch_translation_event()
 		this->x = new_x;
 		this->y = new_y;
 
-		for(int i = 0; i < menu_items.total; i++)
-		{
-			menu_items.values[i]->dispatch_translation_event();
+		for(int i = 0; i < menu_items.total; i++) {
+			BC_MenuItem *item = menu_items[i];
+			if( !item->enabled ) continue;
+			item->dispatch_translation_event();
 		}
 	}
 	return 0;
@@ -236,9 +242,10 @@ int BC_MenuPopup::dispatch_cursor_leave()
 
 	if(popup)
 	{
-		for(int i = 0; i < menu_items.total; i++)
-		{
-			result |= menu_items.values[i]->dispatch_cursor_leave();
+		for(int i = 0; i < menu_items.total; i++) {
+			BC_MenuItem *item = menu_items[i];
+			if( !item->enabled ) continue;
+			result |= item->dispatch_cursor_leave();
 		}
 		if(result) draw_items();
 	}
@@ -323,9 +330,10 @@ int BC_MenuPopup::activate_menu(int x,
 
 int BC_MenuPopup::deactivate_submenus(BC_MenuPopup *exclude)
 {
-	for(int i = 0; i < menu_items.total; i++)
-	{
-		menu_items.values[i]->deactivate_submenus(exclude);
+	for(int i = 0; i < menu_items.total; i++) {
+		BC_MenuItem *item = menu_items[i];
+		if( !item->enabled ) continue;
+		item->deactivate_submenus(exclude);
 	}
 	return 0;
 }
@@ -361,9 +369,10 @@ int BC_MenuPopup::draw_items()
 			BLACK);
 	}
 
-	for(int i = 0; i < menu_items.total; i++)
-	{
-		menu_items.values[i]->draw();
+	for(int i = 0; i < menu_items.total; i++) {
+		BC_MenuItem *item = menu_items[i];
+		if( !item->enabled ) continue;
+		item->draw();
 	}
 	popup->flash();
 
@@ -382,27 +391,27 @@ int BC_MenuPopup::get_dimensions()
 // pad for border
 	h = yS(2);
 // Set up parameters in each item and get total h.
-	for(i = 0; i < menu_items.total; i++)
-	{
-		text_w = xs10 + top_level->get_text_width(MEDIUMFONT, menu_items.values[i]->text);
-		if(menu_items.values[i]->checked) text_w += check->get_w() + xS(1);
+	for(i = 0; i < menu_items.total; i++) {
+		BC_MenuItem *item = menu_items[i];
+		if( !item->enabled ) continue;
+		text_w = xs10 + top_level->get_text_width(MEDIUMFONT, item->text);
+		if(item->checked) text_w += check->get_w() + xS(1);
 
-		key_w = xs10 + top_level->get_text_width(MEDIUMFONT, menu_items.values[i]->hotkey_text);
+		key_w = xs10 + top_level->get_text_width(MEDIUMFONT, item->hotkey_text);
 		if(text_w > widest_text) widest_text = text_w;
 		if(key_w > widest_key) widest_key = key_w;
 
-		if(!strcmp(menu_items.values[i]->text, "-"))
-			menu_items.values[i]->h = ys5;
-		else
-		{
-			menu_items.values[i]->h = item_bg[0] ? item_bg[0]->get_h() :
+		if(!strcmp(item->text, "-"))
+			item->h = ys5;
+		else {
+			item->h = item_bg[0] ? item_bg[0]->get_h() :
 				top_level->get_text_height(MEDIUMFONT) + ys4;
 		}
 
-		menu_items.values[i]->y = h;
-		menu_items.values[i]->highlighted = 0;
-		menu_items.values[i]->down = 0;
-		h += menu_items.values[i]->h;
+		item->y = h;
+		item->highlighted = 0;
+		item->down = 0;
+		h += item->h;
 	}
 	w = widest_text + widest_key + xs20;
 
@@ -429,8 +438,9 @@ int BC_MenuPopup::cursor_inside()
 	if( !popup ) return 0;
 	if( popup->cursor_above() ) return 1;
 	for( int i=0; i<menu_items.size(); ++i ) {
-		if( !menu_items[i]->submenu ) continue;
-		if( menu_items[i]->submenu->cursor_inside() ) return 1;
+		BC_MenuItem *item = menu_items[i];
+		if( !item->enabled || !item->submenu ) continue;
+		if( item->submenu->cursor_inside() ) return 1;
 	}
 	return 0;
 }

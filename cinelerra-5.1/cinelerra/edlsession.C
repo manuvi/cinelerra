@@ -501,7 +501,7 @@ int EDLSession::save_defaults(BC_Hash *defaults)
 void EDLSession::boundaries()
 {
 	Workarounds::clamp(audio_tracks, 0, (int)BC_INFINITY);
-	Workarounds::clamp(audio_channels, 1, MAXCHANNELS - 1);
+	Workarounds::clamp(audio_channels, 0, MAXCHANNELS - 1);
 	Workarounds::clamp(sample_rate, 1, 1000000);
 	Workarounds::clamp(video_tracks, 0, (int)BC_INFINITY);
 	Workarounds::clamp(video_channels, 1, MAXCHANNELS - 1);

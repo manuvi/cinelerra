@@ -129,6 +129,12 @@ int ClipPopup::update()
 {
 	format->update();
 	gui->collect_assets();
+	EDL *clip = !mwindow->session->drag_clips->size() ? 0 :
+		mwindow->session->drag_clips->get(0);
+	int enable_open = clip ? 1 : 0;
+	open_edl->set_enabled(enable_open);
+	int enable_close = mwindow->stack.size() > 0 ? 1 : 0;
+	close_edl->set_enabled(enable_close);
 	return 0;
 }
 
@@ -416,6 +422,8 @@ void ClipListMenu::create_objects()
 void ClipListMenu::update()
 {
 	format->update();
+	int enable_close = mwindow->stack.size() > 0 ? 1 : 0;
+	close_edl->set_enabled(enable_close);
 }
 
 
@@ -456,7 +464,7 @@ int ClipPopupOpenEDL::handle_event()
 	if( clips_total ) {
 		popup->unlock_window();
 		EDL *clip = mwindow->session->drag_clips->values[0];
-		mwindow->stack_push(clip);
+		mwindow->stack_push(clip, 0);
 		popup->lock_window("ClipPopupOpenEDL::handle_event");
 	}
 	return 1;

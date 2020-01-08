@@ -27,6 +27,7 @@
 #include <limits.h>
 
 #include "arraylist.h"
+#include "bcwindowbase.inc"
 #include "mutex.h"
 #include "keyframe.inc"
 #include "filexml.inc"
@@ -165,7 +166,7 @@ public:
 	long output_length;
 	char *output;
 	char left_delimiter, right_delimiter;
-	char filename[MAX_TITLE];
+	char filename[BCTEXTLEN];
 	static const char *xml_header;
 	static const int xml_header_size;
 };

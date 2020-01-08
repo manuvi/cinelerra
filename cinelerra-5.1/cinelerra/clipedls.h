@@ -1,6 +1,5 @@
-#ifndef NESTEDEDLS_H
-#define NESTEDEDLS_H
-
+#ifndef __CLIP_EDLS_H__
+#define __CLIP_EDLS_H__
 
 #include "arraylist.h"
 #include "edl.inc"

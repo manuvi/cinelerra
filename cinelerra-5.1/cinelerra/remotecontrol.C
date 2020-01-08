@@ -84,7 +84,7 @@ int RemoteControl::deactivate()
 int RemoteControl::remote_key(int key)
 {
 	if( !is_active() ) return 0;
-	return handler->remote_process_key(this, key);
+	return handler->process_key(key);
 }
 
 void RemoteControl::set_color(int color)
@@ -172,8 +172,7 @@ int RemoteGUI::keypress_event()
 	return result;
 }
 
-RemoteHandler::
-RemoteHandler(RemoteGUI *gui, int color)
+RemoteHandler::RemoteHandler(RemoteGUI *gui, int color)
 {
 	this->gui = gui;
 	this->color = color;

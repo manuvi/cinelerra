@@ -146,6 +146,28 @@ int AssetPopup::update()
 	format->update();
 	int proxy = mwindow->edl->session->awindow_folder == AW_PROXY_FOLDER ? 1 : 0;
 	gui->collect_assets(proxy);
+	int enable_open = 0;
+	int assets_total = mwindow->session->drag_assets->size();
+	Indexable *idxbl = !assets_total ? 0 :
+		mwindow->session->drag_assets->get(0);
+	if( idxbl ) {
+		if( idxbl->is_asset ) {
+			Asset *asset = (Asset *)idxbl;
+			if( asset->format == FILE_REF )
+				enable_open = 1;
+		}
+		else
+			enable_open = 1;
+	}
+	open_edl->set_enabled(enable_open);
+	int enable_close = mwindow->stack.size() > 0 ? 1 : 0;
+	close_edl->set_enabled(enable_close);
+	int enable_clip = 0;
+	for( int i=0; !enable_clip && i<assets_total; ++i ) {
+		Indexable *idxbl = mwindow->session->drag_assets->get(i);
+		if( !idxbl->is_asset ) enable_clip = 1;
+	}
+	to_clip->set_enabled(enable_clip);
 	return 0;
 }
 
@@ -195,16 +217,36 @@ AssetPopupOpenEDL::~AssetPopupOpenEDL()
 int AssetPopupOpenEDL::handle_event()
 {
 	int assets_total = mwindow->session->drag_assets->size();
-	if( assets_total ) {
-		popup->unlock_window();
-		Indexable *idxbl = mwindow->session->drag_assets->get(0);
-		EDL *edl = idxbl && !idxbl->is_asset ? (EDL *)idxbl : 0;
-		if( edl )
-			mwindow->stack_push(edl);
-		else
-			eprintf(_("media is not EDL:\n%s"), idxbl->path);
-		popup->lock_window("AssetPopupOpenEDL::handle_event");
+	if( !assets_total ) return 1;
+	popup->unlock_window();
+	EDL *edl = 0;
+	Indexable *idxbl = mwindow->session->drag_assets->get(0);
+	if( idxbl->is_asset ) {
+		Asset *asset = (Asset *)idxbl;
+		if( asset->format == FILE_REF ) {
+			FileXML xml_file;
+			const char *filename = asset->path;
+			if( xml_file.read_from_file(filename, 1) ) {
+				eprintf(_("Error: unable to open:\n  %s"), filename);
+				return 1;
+			}
+			edl = new EDL;
+			edl->create_objects();
+			if( edl->load_xml(&xml_file, LOAD_ALL) ) {
+				eprintf(_("Error: unable to load:\n  %s"), filename);
+				edl->remove_user();
+				return 1;
+			}
+		}
 	}
+	else {
+		edl = (EDL *)idxbl;
+	}
+	if( edl )
+		mwindow->stack_push(edl, idxbl);
+	else
+		eprintf(_("media is not EDL:\n%s"), idxbl->path);
+	popup->lock_window("AssetPopupOpenEDL::handle_event");
 	return 1;
 }
 
@@ -484,10 +526,6 @@ AssetListMenu::AssetListMenu(MWindow *mwindow, AWindowGUI *gui)
 
 AssetListMenu::~AssetListMenu()
 {
-	if( !shots_displayed ) {
-		delete asset_snapshot;
-		delete asset_grabshot;
-	}
 }
 
 void AssetListMenu::create_objects()
@@ -519,7 +557,7 @@ void AssetListMenu::create_objects()
 	grabshot_submenu->add_submenuitem(new GrabshotMenuItem(grabshot_submenu, _("jpeg"), GRABSHOT_JPEG));
 	grabshot_submenu->add_submenuitem(new GrabshotMenuItem(grabshot_submenu, _("tiff"), GRABSHOT_TIFF));
 	grabshot_submenu->add_submenuitem(new GrabshotMenuItem(grabshot_submenu, _("ppm"),  GRABSHOT_PPM));
-	update_titles(shots_displayed = 1);
+	update_titles(1);
 }
 
 AssetPopupLoadFile::AssetPopupLoadFile(MWindow *mwindow, AWindowGUI *gui)
@@ -542,16 +580,10 @@ int AssetPopupLoadFile::handle_event()
 void AssetListMenu::update_titles(int shots)
 {
 	format->update();
-	if( shots && !shots_displayed ) {
-		shots_displayed = 1;
-		add_item(asset_snapshot);
-		add_item(asset_grabshot);
-	}
-	else if( !shots && shots_displayed ) {
-		shots_displayed = 0;
-		remove_item(asset_snapshot);
-		remove_item(asset_grabshot);
-	}
+	int enable_close = mwindow->stack.size() > 0 ? 1 : 0;
+	close_edl->set_enabled(enable_close);
+	asset_snapshot->set_enabled(shots);
+	asset_grabshot->set_enabled(shots);
 }
 
 AssetListCopy::AssetListCopy(MWindow *mwindow, AWindowGUI *gui)
@@ -755,7 +787,8 @@ void AssetPasteDialog::handle_done_event(int result)
 	MWindow *mwindow = paste->mwindow;
 	mwindow->interrupt_indexes();
 	mwindow->gui->lock_window("AssetPasteDialog::handle_done_event");
-	result = mwindow->load_filenames(&path_list, LOADMODE_RESOURCESONLY, 0);
+	result = mwindow->load_filenames(&path_list,
+		LOADMODE_RESOURCESONLY, LOADMODE_EDL_CLIP, 0);
 	mwindow->gui->unlock_window();
 	path_list.remove_all_objects();
 	mwindow->save_backup();

@@ -259,7 +259,7 @@ int ConvertRender::add_original(EDL *edl, Indexable *idxbl)
 // render not needed if can use copy
 				if( ret == FILE_OK ) {
 					if( match_format(file.asset) ) {
-						mwindow->mainindexes->add_next_asset(0, convert);
+						mwindow->mainindexes->add_indexable(convert);
 						mwindow->mainindexes->start_build();
 						needed = 0;
 					}
@@ -512,7 +512,7 @@ void ConvertRender::create_copy(int i)
 	RenderPackage *package = dispatcher.get_package(0);
 	if( !renderer.render_package(package) ) {
 		Asset *asset = mwindow->edl->assets->update(needed_copy);
-		mwindow->mainindexes->add_next_asset(0, asset);
+		mwindow->mainindexes->add_indexable(asset);
 		mwindow->mainindexes->start_build();
 	}
 	else

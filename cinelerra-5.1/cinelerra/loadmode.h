@@ -37,19 +37,19 @@ public:
 class LoadModeToggle : public BC_Toggle
 {
 public:
-	LoadModeToggle(int x, int y, LoadMode *window,
-		int value, const char *images, const char *tooltip);
+	LoadModeToggle(int x, int y, LoadMode *window, int value,
+		int *output, const char *images, const char *tooltip);
 	int handle_event();
 	LoadMode *window;
-	int value;
+	int id, *output;
 };
 
 class LoadMode
 {
 public:
-	LoadMode(MWindow *mwindow,
-		BC_WindowBase *window, int x, int y, int *output,
-		int use_nothing=1, int use_nested=0, int line_wrap=0);
+	LoadMode(MWindow *mwindow, BC_WindowBase *window,
+		int x, int y, int *load_mode, int *edl_mode=0,
+		int use_nothing=1, int line_wrap=0);
 	~LoadMode();
 	void create_objects();
 	int reposition_window(int x, int y);
@@ -64,17 +64,17 @@ public:
 	int get_x();
 	int get_y();
 
-	const char *mode_to_text();
+	const char *mode_to_text(int mode);
 	void update();
 	int set_line_wrap(int v);
 
-	BC_Title *title;
+	BC_Title *load_title, *edl_title;
 	BC_TextBox *textbox;
 	LoadModeListBox *listbox;
 	MWindow *mwindow;
 	BC_WindowBase *window;
-	int x, y, *output;
-	int use_nothing, use_nested, line_wrap;
+	int x, y, *load_mode, *edl_mode;
+	int use_nothing, line_wrap;
 	LoadModeToggle *mode[TOTAL_LOADMODES];
 	ArrayList<LoadModeItem*> load_modes;
 };

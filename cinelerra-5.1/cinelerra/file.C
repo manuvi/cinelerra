@@ -54,6 +54,7 @@
 #undef HAVE_STDLIB_H // automake conflict
 #include "filepng.h"
 #include "fileppm.h"
+#include "fileref.h"
 #include "filescene.h"
 #include "filesndfile.h"
 #include "filetga.h"
@@ -577,6 +578,9 @@ int File::open_file(Preferences *preferences,
 		file = new FileDV(this->asset, this);
 		break;
 #endif
+	case FILE_REF:
+		file = new FileREF(this->asset, this);
+		break;
 // try plugins
 	default:
 		return 1;
@@ -1213,6 +1217,7 @@ int File::strtoformat(const char *format)
 	if( !strcasecmp(format, _(RAWDV_NAME)) ) return FILE_RAWDV;
 	if( !strcasecmp(format, _(FFMPEG_NAME)) ) return FILE_FFMPEG;
 	if( !strcasecmp(format, _(DBASE_NAME)) ) return FILE_DB;
+	if( !strcasecmp(format, _(REF_NAME)) ) return FILE_REF;
 
 	return 0;
 }
@@ -1253,6 +1258,7 @@ const char* File::formattostr(int format)
 	case FILE_RAWDV:	return _(RAWDV_NAME);
 	case FILE_FFMPEG:	return _(FFMPEG_NAME);
 	case FILE_DB:		return _(DBASE_NAME);
+	case FILE_REF:		return _(REF_NAME);
 	}
 	return _("Unknown");
 }
@@ -1344,6 +1350,7 @@ int File::get_best_colormodel(Asset *asset, int driver)
 	case FILE_DB:		return FileDB::get_best_colormodel(asset, driver);
 #endif
 	case FILE_FFMPEG:	return FileFFMPEG::get_best_colormodel(asset, driver);
+	case FILE_REF:		return FileREF::get_best_colormodel(asset, driver);
 	}
 
 	return BC_RGB888;
@@ -1478,6 +1485,7 @@ const char* File::get_tag(int format)
 	case FILE_VMPEG:        return "m2v";
 	case FILE_WAV:          return "wav";
 	case FILE_FFMPEG:       return "ffmpg";
+	case FILE_REF:          return "ref";
 	}
 	return 0;
 }
@@ -1515,6 +1523,7 @@ const char* File::get_prefix(int format)
 	case FILE_CR2_LIST:	return "CR2_LIST";
 	case FILE_GIF_LIST:	return "GIF_LIST";
 	case FILE_DB:		return "DB";
+	case FILE_REF:		return "REF";
 	}
 	return _("UNKNOWN");
 }

@@ -67,6 +67,8 @@ public:
 	BC_WindowBase* get_top_level();
 	BC_PopupMenu* get_popup_menu();
 	BC_SubMenu *get_submenu();
+	int get_enabled(int v);
+	void set_enabled(int v);
 
 private:
 	BC_WindowBase *top_level;
@@ -80,6 +82,8 @@ private:
 	int down;
 // check box
 	int checked;
+// not drawn if not enabled
+	int enabled;
 // title
 	char *text;
 // text of hotkey

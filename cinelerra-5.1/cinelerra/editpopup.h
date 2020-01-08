@@ -50,6 +50,17 @@ public:
 	Plugin *plugin;
 	PluginSet *pluginset;
 	double position;
+	EditPopupOpenEDL *open_edl;
+};
+
+class EditPopupOpenEDL : public BC_MenuItem
+{
+public:
+	EditPopupOpenEDL(MWindow *mwindow, EditPopup *popup);
+	int handle_event();
+
+	MWindow *mwindow;
+	EditPopup *popup;
 };
 
 class EditPopupClearSelect : public BC_MenuItem

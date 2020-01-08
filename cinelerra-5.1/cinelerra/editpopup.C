@@ -29,6 +29,7 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "file.h"
+#include "filexml.h"
 #include "keys.h"
 #include "language.h"
 #include "localsession.h"
@@ -55,6 +56,7 @@ EditPopup::EditPopup(MWindow *mwindow, MWindowGUI *gui)
 	plugin = 0;
 	pluginset = 0;
 	position = 0;
+	open_edl = 0;
 }
 
 EditPopup::~EditPopup()
@@ -63,6 +65,7 @@ EditPopup::~EditPopup()
 
 void EditPopup::create_objects()
 {
+	add_item(open_edl = new EditPopupOpenEDL(mwindow, this));
 	add_item(new EditPopupClearSelect(mwindow, this));
 	add_item(new EditPopupCopy(mwindow, this));
 	add_item(new EditPopupCut(mwindow, this));
@@ -83,7 +86,58 @@ int EditPopup::activate_menu(Track *track, Edit *edit,
 	this->pluginset = pluginset;
 	this->plugin = plugin;
 	this->position = position;
+	int enable = !edit ? 0 :
+		edit->nested_edl ? 1 :
+		!edit->asset ? 0 :
+		edit->asset->format == FILE_REF ? 1 : 0;
+	open_edl->set_enabled(enable);
 	return BC_PopupMenu::activate_menu();
+}
+
+EditPopupOpenEDL::EditPopupOpenEDL(MWindow *mwindow, EditPopup *popup)
+ : BC_MenuItem(_("Open EDL"))
+{
+	this->mwindow = mwindow;
+	this->popup = popup;
+	set_ctrl(1);
+	set_shift(1);
+}
+
+int EditPopupOpenEDL::handle_event()
+{
+	Edit *edit = popup->edit;
+	if( !edit ) return 1;
+	EDL *edl = 0;
+	Indexable *idxbl = 0;
+	if( edit->asset && edit->asset->format == FILE_REF ) {
+		FileXML xml_file;
+		const char *filename = edit->asset->path;
+		if( xml_file.read_from_file(filename, 1) ) {
+			eprintf(_("Error: unable to open:\n  %s"), filename);
+			return 1;
+		}
+		edl = new EDL;
+		edl->create_objects();
+		if( edl->load_xml(&xml_file, LOAD_ALL) ) {
+			eprintf(_("Error: unable to load:\n  %s"), filename);
+			edl->remove_user();
+			return 1;
+		}
+		idxbl = edit->asset;
+	}
+	else if( edit->nested_edl ) {
+		edl = edit->nested_edl;
+		edl->add_user();
+		idxbl = edl;
+	}
+	else {
+		char edit_title[BCTEXTLEN];
+		edit->get_title(edit_title);
+		eprintf(_("Edit is not EDL: %s"), edit_title);
+		return 1;
+	}
+	mwindow->stack_push(edl, idxbl);
+	return 1;
 }
 
 EditPopupClearSelect::EditPopupClearSelect(MWindow *mwindow, EditPopup *popup)

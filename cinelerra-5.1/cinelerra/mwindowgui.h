@@ -42,7 +42,6 @@
 #include "pluginpopup.inc"
 #include "record.inc"
 #include "remotecontrol.h"
-#include "record.inc"
 #include "renderengine.inc"
 #include "resourcepixmap.h"
 #include "resourcethread.inc"
@@ -56,6 +55,7 @@
 #include "trackpopup.inc"
 #include "trackscroll.inc"
 #include "transitionpopup.inc"
+#include "wintv.inc"
 #include "zoombar.inc"
 
 
@@ -270,8 +270,9 @@ public:
 // remote control
 	AndroidControl *android_control;
 	RemoteControl *remote_control;
-	CWindowRemoteHandler *cwindow_remote_handler;
-	RecordRemoteHandler *record_remote_handler;
+	WinTV *wintv;
+	RemoteHandler *cwindow_remote_handler;
+	RemoteHandler *record_remote_handler;
 };
 
 #endif

@@ -59,6 +59,7 @@
 #include "record.h"
 #include "recordgui.h"
 #include "renderengine.h"
+#include "remotecontrol.h"
 #include "resourcethread.h"
 #include "samplescroll.h"
 #include "shbtnprefs.h"
@@ -72,6 +73,7 @@
 #include "transitionpopup.h"
 #include "vwindowgui.h"
 #include "vwindow.h"
+#include "wintv.h"
 #include "zoombar.h"
 
 #define PANE_DRAG_MARGIN MAX(mwindow->theme->pane_w, mwindow->theme->pane_h)
@@ -163,8 +165,19 @@ void MWindowGUI::create_objects()
 	if(debug) printf("MWindowGUI::create_objects %d\n", __LINE__);
 	set_icon(mwindow->theme->get_image("mwindow_icon"));
 	remote_control = new RemoteControl(this);
-	cwindow_remote_handler = new CWindowRemoteHandler(remote_control);
-	record_remote_handler = new RecordRemoteHandler(remote_control);
+#ifdef HAVE_WINTV
+	WinTV *wintv = mwindow->wintv;
+	if( wintv ) {
+		cwindow_remote_handler = (RemoteHandler*)
+			new WinTVCWindowHandler(wintv, remote_control);
+		record_remote_handler = (RemoteHandler*)
+			new WinTVRecordHandler(wintv, remote_control);
+	}
+#endif
+	if( !cwindow_remote_handler ) cwindow_remote_handler =
+		(RemoteHandler*)new CWindowRemoteHandler(remote_control);
+	if( !record_remote_handler  ) record_remote_handler =
+		(RemoteHandler*)new RecordRemoteHandler(remote_control);
 	mwindow->reset_android_remote();
 
 	if(debug) printf("MWindowGUI::create_objects %d\n", __LINE__);

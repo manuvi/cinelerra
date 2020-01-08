@@ -146,6 +146,7 @@ OBJS := $(OVERLAYS) \
 	$(OBJDIR)/file.o \
 	$(OBJDIR)/filepng.o \
 	$(OBJDIR)/fileppm.o \
+	$(OBJDIR)/fileref.o \
 	$(OBJDIR)/filescene.o \
 	$(OBJDIR)/filesndfile.o \
 	$(OBJDIR)/filetga.o \
@@ -365,6 +366,7 @@ OBJS := $(OVERLAYS) \
 	$(OBJDIR)/vwindowgui.o \
 	$(OBJDIR)/vwindow.o \
 	$(OBJDIR)/wavecache.o \
+	$(OBJDIR)/wintv.o \
 	$(OBJDIR)/wwindow.o \
 	$(OBJDIR)/zoombar.o \
 	$(OBJDIR)/zoompanel.o \

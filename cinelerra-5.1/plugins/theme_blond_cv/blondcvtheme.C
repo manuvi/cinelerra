@@ -474,16 +474,30 @@ void BlondCVTheme::initialize()
 		"loadmode_dn.png",
 		"loadmode_checkedhi.png",
 		"loadmode_resource");
-	new_toggle("loadmode_nested.png",
+
+	new_toggle("loadmode_edl_clip.png",
 		"loadmode_up.png",
 		"loadmode_hi.png",
 		"loadmode_checked.png",
 		"loadmode_dn.png",
 		"loadmode_checkedhi.png",
-		"loadmode_nested");
+		"loadmode_edl_clip");
+	new_toggle("loadmode_edl_nested.png",
+		"loadmode_up.png",
+		"loadmode_hi.png",
+		"loadmode_checked.png",
+		"loadmode_dn.png",
+		"loadmode_checkedhi.png",
+		"loadmode_edl_nested");
+	new_toggle("loadmode_edl_fileref.png",
+		"loadmode_up.png",
+		"loadmode_hi.png",
+		"loadmode_checked.png",
+		"loadmode_dn.png",
+		"loadmode_checkedhi.png",
+		"loadmode_edl_fileref");
 
 	resources->bar_data = new_image("bar", "bar.png");
-
 
 	resources->min_menu_w = 0;
 	resources->menu_popup_bg = 0;  // if (0) use menu_light, menu_up, menu_shadow

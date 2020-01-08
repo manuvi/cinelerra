@@ -204,13 +204,28 @@ void BlueDotTheme::initialize()
 		"loadmode_dn.png",
 		"loadmode_checkedhi.png",
 		"loadmode_resource");
-	new_toggle("loadmode_nested.png",
+
+	new_toggle("loadmode_edl_clip.png",
 		"loadmode_up.png",
 		"loadmode_hi.png",
 		"loadmode_checked.png",
 		"loadmode_dn.png",
 		"loadmode_checkedhi.png",
-		"loadmode_nested");
+		"loadmode_edl_clip");
+	new_toggle("loadmode_edl_nested.png",
+		"loadmode_up.png",
+		"loadmode_hi.png",
+		"loadmode_checked.png",
+		"loadmode_dn.png",
+		"loadmode_checkedhi.png",
+		"loadmode_edl_nested");
+	new_toggle("loadmode_edl_fileref.png",
+		"loadmode_up.png",
+		"loadmode_hi.png",
+		"loadmode_checked.png",
+		"loadmode_dn.png",
+		"loadmode_checkedhi.png",
+		"loadmode_edl_fileref");
 
 //There are differences here, but we won't change until the end.
 //Specific to BD

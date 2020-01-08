@@ -56,6 +56,7 @@ CHECK_WITH([libzmpeg],[build libzmpeg],[LIBZMPEG],[yes])
 CHECK_WITH([commercial],[enable commercial capture],[COMMERCIAL],[yes])
 CHECK_WITH([thirdparty],[use thirdparty build],[CIN_3RDPARTY],[yes])
 CHECK_WITH([shuttle],[shuttle device],[SHUTTLE],[yes])
+CHECK_WITH([wintv],[usb 2040:826d wintv device],[WINTV],[yes])
 CHECK_WITH([vaapi],[video acceleration api],[VAAPI],[yes])
 CHECK_WITH([vdpau],[video decode+presentation api for unix],[VDPAU],[yes])
 CHECK_WITH([nv],[nvenc/nvdec ffnvcodec api],[NV],[yes])
@@ -591,7 +592,7 @@ CHECK_HEADERS([dav1d], [libdav1d headers], [dav1d/dav1d.h])
 CHECK_LIB([libwebp], [webp], [WebPGetEncoderVersion])
 CHECK_HEADERS([libwebp], [libwebp headers], [webp/encode.h])
 CHECK_LIB([a52dec], [a52], [a52_init])
-CHECK_HEADERS([a52dec], [a52 headers], [a52.h])
+CHECK_HEADERS([a52dec], [a52 headers], [stdint.h a52.h])
 CHECK_LIB([encore], [encore], [encore])
 CHECK_HEADERS([encore], [encore headers], [encore.h])
 CHECK_LIB([giflib], [gif], [DGifOpen])
@@ -886,7 +887,7 @@ fi
 for v in GL XFT XXF86VM OSS ALSA FIREWIRE DV DVB \
 	 VIDEO4LINUX2 ESOUND PACTL OPENEXR LV2 \
 	 COMMERCIAL LIBZMPEG SHUTTLE SHUTTLE_USB \
-	 VAAPI VDPAU CUDA NV; do
+	 VAAPI VDPAU CUDA NV WINTV; do
   eval vv="\$WANT_$v"
   if test "x$vv" != "xno"; then
     CFG_CFLAGS+=" -DHAVE_$v"

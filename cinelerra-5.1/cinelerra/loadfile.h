@@ -63,7 +63,7 @@ public:
 
 	MWindow *mwindow;
 	Load *load;
-	int load_mode;
+	int load_mode, edl_mode;
 	LoadFileWindow *window;
 };
 
@@ -115,7 +115,8 @@ public:
 class LoadFileApply : public BC_GenericButton
 {
 public:
-	LoadFileApply(LoadFileWindow *load_file_window);
+	LoadFileApply(LoadFileWindow *load_file_window,
+		int x, int y, const char *text);
 	int handle_event();
 	LoadFileWindow *load_file_window;
 };

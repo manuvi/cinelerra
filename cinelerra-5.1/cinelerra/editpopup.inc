@@ -23,6 +23,7 @@
 #define __EDITPOPUP_INC__
 
 class EditPopup;
+class EditPopupOpenEDL;
 class EditPopupClearSelect;
 class EditPopupCopy;
 class EditPopupCopyPack;

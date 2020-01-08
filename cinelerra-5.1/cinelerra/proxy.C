@@ -739,7 +739,7 @@ void ProxyClient::process_package(LoadPackage *ptr)
 		if( !scale ) scale = 1;
 		asset->width = asset->actual_width * scale;
 		asset->height = asset->actual_height * scale;
-		mwindow->mainindexes->add_next_asset(0, asset);
+		mwindow->mainindexes->add_indexable(asset);
 		mwindow->mainindexes->start_build();
 	}
 	else

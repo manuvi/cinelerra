@@ -118,6 +118,7 @@ public:
 // warning
 	int warn_indexes;
 	int warn_version;
+	int warn_stack;
 	int bd_warn_root;
 // grab input focus on enter notify
 	int grab_input_focus;

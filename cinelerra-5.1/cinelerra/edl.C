@@ -212,7 +212,7 @@ int EDL::read_xml(FileXML *file, uint32_t load_flags)
 				file->tag.title_is("/CLIP_EDL") ||
 				file->tag.title_is("/NESTED_EDL") ||
 				file->tag.title_is("/VWINDOW_EDL") ) {
-				result = 1;
+				break;
 			}
 			else
 			if( file->tag.title_is("CLIPBOARD") ) {

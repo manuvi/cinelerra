@@ -44,6 +44,7 @@ class ViewViconModeItem;
 class UseTipWindow;
 class UseWarnIndecies;
 class UseWarnVersion;
+class UseWarnStack;
 class BD_WarnRoot;
 class PopupMenuBtnup;
 class GrabFocusPolicy;

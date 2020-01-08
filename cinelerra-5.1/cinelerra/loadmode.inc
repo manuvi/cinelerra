@@ -32,6 +32,7 @@ class LoadModeListBox;
 
 // Load modes for loading files, importing recordings, importing effects
 // Be sure to change mode_images in LoadMode::create_objects if you change this.
+// insertion modes
 #define LOADMODE_NOTHING 0
 #define LOADMODE_REPLACE 1
 #define LOADMODE_REPLACE_CONCATENATE 2
@@ -39,7 +40,10 @@ class LoadModeListBox;
 #define LOADMODE_CONCATENATE 4
 #define LOADMODE_PASTE 5
 #define LOADMODE_RESOURCESONLY 6
-#define LOADMODE_NESTED 7
-#define TOTAL_LOADMODES 8
+// edl load modes
+#define LOADMODE_EDL_CLIP 7
+#define LOADMODE_EDL_NESTED 8
+#define LOADMODE_EDL_FILEREF 9
+#define TOTAL_LOADMODES 10
 
 #endif

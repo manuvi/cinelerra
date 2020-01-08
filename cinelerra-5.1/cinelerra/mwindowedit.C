@@ -1377,7 +1377,7 @@ if( debug ) printf("MWindow::load_assets %d\n", __LINE__);
 	for( int i=0; i<new_assets->total; ++i ) {
 		Indexable *indexable = new_assets->get(i);
 		if( indexable->is_asset ) {
-			remove_asset_from_caches((Asset*)indexable);
+			remove_from_caches(indexable);
 		}
 		EDL *new_edl = new EDL;
 		new_edl->create_objects();
@@ -1551,8 +1551,7 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls, int load_mode,
 	else
 // Recycle existing tracks of master EDL
 	if( load_mode == LOADMODE_CONCATENATE ||
-	    load_mode == LOADMODE_PASTE ||
-	    load_mode == LOADMODE_NESTED ) {
+	    load_mode == LOADMODE_PASTE ) {
 		Track *current = first_track ? first_track : edl->tracks->first;
 		for( ; current; current=NEXT ) {
 			if( current->record ) {
@@ -1589,13 +1588,15 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls, int load_mode,
 // Add assets and prepare index files
 		for( Asset *new_asset=new_edl->assets->first;
 		     new_asset; new_asset=new_asset->next ) {
-			mainindexes->add_next_asset(0, new_asset);
+			mainindexes->add_indexable(new_asset);
 		}
 // Capture index file status from mainindex test
 		edl->update_assets(new_edl);
 //PRINT_TRACE
 // Get starting point of insertion.  Need this to paste labels.
 		switch( load_mode ) {
+		case LOADMODE_NOTHING:
+			continue;
 		case LOADMODE_REPLACE:
 			current_position = 0;
 			break;
@@ -1614,7 +1615,6 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls, int load_mode,
 			break;
 
 		case LOADMODE_PASTE:
-		case LOADMODE_NESTED:
 			destination_track = 0;
 			if( i == 0 ) {
 				for( int j=0; j<destination_tracks.total; ++j ) {
@@ -1634,7 +1634,7 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls, int load_mode,
 		    load_mode != LOADMODE_ASSETSONLY ) {
 // Insert labels
 			if( edit_labels ) {
-				if( load_mode == LOADMODE_PASTE || load_mode == LOADMODE_NESTED )
+				if( load_mode == LOADMODE_PASTE )
 					edl->labels->insert_labels(new_edl->labels,
 						destination_tracks.total ? paste_position[0] : 0.0,
 						edl_length, 1);
@@ -1675,7 +1675,6 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls, int load_mode,
 						break;
 
 					case LOADMODE_PASTE:
-					case LOADMODE_NESTED:
 						current_position = paste_position[destination_track];
 						paste_position[destination_track] += new_track->get_length();
 						break;
@@ -1702,8 +1701,7 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls, int load_mode,
 			}
 		}
 
-		if( load_mode == LOADMODE_PASTE ||
-		    load_mode == LOADMODE_NESTED )
+		if( load_mode == LOADMODE_PASTE )
 			current_position += edl_length;
 	}
 

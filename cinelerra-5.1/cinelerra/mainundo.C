@@ -267,11 +267,11 @@ int MainUndo::load_from_undo(FileXML *file, uint32_t load_flags)
 	}
 	mwindow->edl->load_xml(file, load_flags);
 	for( Asset *asset=mwindow->edl->assets->first; asset; asset=asset->next ) {
-		mwindow->mainindexes->add_next_asset(0, asset);
+		mwindow->mainindexes->add_indexable(asset);
 	}
 	for( int i=0; i<mwindow->edl->nested_edls.size(); ++i ) {
 		EDL *nested_edl = mwindow->edl->nested_edls[i];
-		mwindow->mainindexes->add_next_asset(0, nested_edl);
+		mwindow->mainindexes->add_indexable(nested_edl);
 	}
 	mwindow->mainindexes->start_build();
 	mwindow->update_plugin_guis(1);

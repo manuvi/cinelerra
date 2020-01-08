@@ -102,6 +102,7 @@
 #include "zwindow.inc"
 #include "wwindow.inc"
 #include "wavecache.inc"
+#include "wintv.inc"
 
 #define FONT_SEARCHPATH "fonts"
 
@@ -109,7 +110,9 @@ class StackItem
 {
 public:
 	EDL *edl, *new_edl;
+	Indexable *idxbl;
 	MainUndo *undo;
+	int64_t mtime;
 };
 
 class Stack : public ArrayList<StackItem>
@@ -170,11 +173,11 @@ public:
 // Total horizontal pixels in timeline
 	int get_tracks_width();
 // session stack
-	void stack_push(EDL *edl);
+	void stack_push(EDL *edl, Indexable *idxbl);
 	void stack_pop();
-	void forget_nested_edl(EDL *nested);
 	void clip_to_media();
 	void media_to_clip();
+	int create_ref(Asset *asset, EDL *ref);
 // Show windows
 	void show_vwindow();
 	void show_awindow();
@@ -269,12 +272,13 @@ public:
 	void tile_mixers();
 	int load_filenames(ArrayList<char*> *filenames,
 		int load_mode = LOADMODE_REPLACE,
+		int edl_mode = LOADMODE_EDL_CLIP,
 // Cause the project filename on the top of the window to be updated.
 // Not wanted for loading backups.
 		int update_filename = 1);
 
 // Print out plugins which are referenced in the EDL but not loaded.
-	void test_plugins(EDL *new_edl, char *path);
+	void test_plugins(EDL *new_edl, const char *path);
 
 	int interrupt_indexes();  // Stop index building
 
@@ -512,7 +516,7 @@ public:
 	void rebuild_indices();
 // Asset removal from caches
 	void reset_caches();
-	void remove_asset_from_caches(Asset *asset);
+	void remove_from_caches(Indexable *idxbl);
 	void remove_assets_from_project(int push_undo, int redraw, int delete_indexes,
 		ArrayList<Indexable*> *drag_assets /* mwindow->session->drag_assets */,
 		ArrayList<EDL*> *drag_clips /* mwindow->session->drag_clips */);
@@ -766,6 +770,7 @@ public:
 	void init_preferences();
 	void init_signals();
 	void init_shuttle();
+	void init_wintv();
 	void init_theme();
 	void init_compositor();
 	void init_levelwindow();
@@ -791,6 +796,7 @@ public:
 	int screens;
 	int in_destructor;
 	Shuttle *shuttle;
+	WinTV *wintv;
 };
 
 #endif

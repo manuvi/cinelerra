@@ -89,6 +89,7 @@
 #define FILE_DB                 37
 #define FILE_PPM                38
 #define FILE_PPM_LIST           39
+#define FILE_REF                40
 
 // For formats supported by plugins, the format number is the plugin number in the
 // plugin list ORed with 0x8000.
@@ -124,6 +125,7 @@ N_("TGA Sequence")
 N_("TIFF")
 N_("TIFF Sequence")
 N_("Unknown sound")
+N_("Reference to EDL")
 #endif
 
 #define AC3_NAME		"AC3"
@@ -160,6 +162,7 @@ N_("Unknown sound")
 #define TIFF_NAME		"TIFF"
 #define VMPEG_NAME		"MPEG Video"    // For encoding only
 #define WAV_NAME		"Microsoft WAV"
+#define REF_NAME		"Reference EDL"
 
 #define BITSLINEAR8    8
 #define BITSLINEAR16   16

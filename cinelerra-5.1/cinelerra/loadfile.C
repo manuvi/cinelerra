@@ -79,6 +79,8 @@ LoadFileThread::LoadFileThread(MWindow *mwindow, Load *load)
 	this->mwindow = mwindow;
 	this->load = load;
 	this->window = 0;
+	load_mode = LOADMODE_REPLACE;
+	edl_mode = LOADMODE_EDL_CLIP;
 }
 
 LoadFileThread::~LoadFileThread()
@@ -92,7 +94,8 @@ BC_Window* LoadFileThread::new_gui()
 
 	sprintf(default_path, "~");
 	mwindow->defaults->get("DEFAULT_LOADPATH", default_path);
-	load_mode = mwindow->defaults->get("LOAD_MODE", LOADMODE_REPLACE);
+	load_mode = mwindow->defaults->get("LOAD_MODE", load_mode);
+	edl_mode = mwindow->defaults->get("LOAD_EDL_MODE", edl_mode);
 
 	mwindow->gui->lock_window("LoadFileThread::new_gui");
 	window = new LoadFileWindow(mwindow, this, default_path);
@@ -113,10 +116,9 @@ void LoadFileThread::handle_done_event(int result)
 
 void LoadFileThread::load_apply()
 {
-	mwindow->defaults->update("DEFAULT_LOADPATH",
-		window->get_submitted_path());
-	mwindow->defaults->update("LOAD_MODE",
-		load_mode);
+	mwindow->defaults->update("DEFAULT_LOADPATH", window->get_submitted_path());
+	mwindow->defaults->update("LOAD_MODE", load_mode);
+	mwindow->defaults->update("LOAD_EDL_MODE", edl_mode);
 
 	ArrayList<char*> path_list;
 	path_list.set_array_delete();
@@ -137,7 +139,7 @@ void LoadFileThread::load_apply()
 
 	mwindow->interrupt_indexes();
 	mwindow->gui->lock_window("LoadFileThread::run");
-	mwindow->load_filenames(&path_list, load_mode, 0);
+	mwindow->load_filenames(&path_list, load_mode, edl_mode, 0);
 	mwindow->gui->mainmenu->add_load(path_list.values[0]);
 	mwindow->gui->unlock_window();
 	path_list.remove_all_objects();
@@ -146,7 +148,8 @@ void LoadFileThread::load_apply()
 
 	mwindow->restart_brender();
 
-	if(load_mode == LOADMODE_REPLACE || load_mode == LOADMODE_REPLACE_CONCATENATE)
+	if( load_mode == LOADMODE_REPLACE ||
+	    load_mode == LOADMODE_REPLACE_CONCATENATE )
 		mwindow->session->changes_made = 0;
 	else
 		mwindow->session->changes_made = 1;
@@ -185,9 +188,13 @@ void LoadFileWindow::create_objects()
 
 	int x = get_w() / 2 - LoadMode::calculate_w(this, mwindow->theme) / 2;
 	int y = get_y_margin();
-	loadmode = new LoadMode(mwindow, this, x, y, &thread->load_mode, 0, 1);
+	loadmode = new LoadMode(mwindow, this, x, y,
+		&thread->load_mode, &thread->edl_mode, 0, 1);
 	loadmode->create_objects();
-	add_subwindow(load_file_apply = new LoadFileApply(this));
+	const char *apply =  _("Apply");
+	x = 3*get_w()/4 - BC_GenericButton::calculate_w(this, apply)/2;
+	y = get_h() - BC_CancelButton::calculate_h() - yS(16);
+	add_subwindow(load_file_apply = new LoadFileApply(this, x, y, apply));
 
 	show_window(1);
 	unlock_window();
@@ -201,19 +208,18 @@ int LoadFileWindow::resize_event(int w, int h)
 	int x = w / 2 - LoadMode::calculate_w(this, mwindow->theme) / 2;
 	int y = get_y_margin();
 	loadmode->reposition_window(x, y);
-	x = (w - BC_GenericButton::calculate_w(this, _("Apply")))/2;
-	y = h - BC_GenericButton::calculate_h() - 15;
+	const char *apply =  load_file_apply->get_text();
+	x = 3*get_w()/4 - BC_GenericButton::calculate_w(this, apply)/2;
+	y = get_h() - BC_CancelButton::calculate_h() - yS(16);
 	load_file_apply->reposition_window(x, y);
 	flush();
 	return 1;
 }
 
 
-LoadFileApply::LoadFileApply(LoadFileWindow *load_file_window)
- : BC_GenericButton( (load_file_window->get_w() -
-		BC_GenericButton::calculate_w(load_file_window, _("Apply")))/2,
-	load_file_window->get_h() - BC_GenericButton::calculate_h() - 15,
-	_("Apply"))
+LoadFileApply::LoadFileApply(LoadFileWindow *load_file_window,
+		int x, int y, const char *text)
+ : BC_GenericButton(x, y, text)
 {
 	this->load_file_window = load_file_window;
 }
@@ -261,6 +267,7 @@ int LoadPrevious::handle_event()
 	path_list.set_array_delete();
 	char *out_path;
 	int load_mode = mwindow->defaults->get("LOAD_MODE", LOADMODE_REPLACE);
+	int edl_mode = mwindow->defaults->get("LOAD_EDL_MODE", LOADMODE_EDL_CLIP);
 
 	path_list.append(out_path = new char[strlen(path) + 1]);
 	strcpy(out_path, path);
@@ -270,6 +277,7 @@ int LoadPrevious::handle_event()
 	path_list.remove_all_objects();
 
 	mwindow->defaults->update("LOAD_MODE", load_mode);
+	mwindow->defaults->update("LOAD_EDL_MODE", edl_mode);
 	mwindow->save_backup();
 	mwindow->session->changes_made = 0;
 	return 1;

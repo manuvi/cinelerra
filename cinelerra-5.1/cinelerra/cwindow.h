@@ -82,12 +82,15 @@ public:
 
 class CWindowRemoteHandler : public RemoteHandler
 {
-	int last_key;
 public:
-	int remote_process_key(RemoteControl *remote_control, int key);
-
 	CWindowRemoteHandler(RemoteControl *remote_control);
 	~CWindowRemoteHandler();
+	int process_key(int key);
+	int remote_process_key(RemoteControl *remote_control, int key);
+
+	int key, last_key;
+	RemoteControl *remote_control;
+	MWindow *mwindow;
 };
 
 #endif

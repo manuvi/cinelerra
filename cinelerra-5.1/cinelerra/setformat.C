@@ -316,7 +316,7 @@ void SetFormatWindow::create_objects()
 		_("Channels:")));
 	add_subwindow(channels = new SetChannelsTextBox(thread,
 		mwindow->theme->setformat_x2, y));
-	add_subwindow(new BC_ITumbler(channels, 1, MAXCHANNELS,
+	add_subwindow(new BC_ITumbler(channels, 0, MAXCHANNELS,
 		mwindow->theme->setformat_x2 + channels->get_w(), y));
 
 	y += mwindow->theme->setformat_margin;
@@ -513,18 +513,13 @@ SetChannelsTextBox::SetChannelsTextBox(SetFormatThread *thread, int x, int y)
 }
 int SetChannelsTextBox::handle_event()
 {
-	int new_channels = CLIP(atoi(get_text()), 1, MAXCHANNELS);
-
+	int new_channels = CLIP(atoi(get_text()), 0, MAXCHANNELS);
 	thread->new_settings->session->audio_channels = new_channels;
-
-
-	if(new_channels > 0)
-	{
+	if(new_channels > 0) {
 		memcpy(thread->new_settings->session->achannel_positions,
 			&thread->mwindow->preferences->channel_positions[new_channels - 1],
 			sizeof(thread->new_settings->session->achannel_positions));
 	}
-
 
 	thread->window->canvas->draw();
 	return 1;

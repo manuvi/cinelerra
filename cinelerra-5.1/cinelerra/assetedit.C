@@ -133,7 +133,7 @@ void AssetEdit::handle_close_event(int result)
 // Omit index status from copy since an index rebuild may have been
 // happening when new_asset was created but not be happening anymore.
 			if( asset ) {
-				mwindow->remove_asset_from_caches(asset);
+				mwindow->remove_from_caches(asset);
 //printf("AssetEdit::handle_close_event %d %f\n", __LINE__, asset->get_frame_rate());
 				asset->copy_from(changed_params, 0);
 //printf("AssetEdit::handle_close_event %d %d %d\n", __LINE__, changed_params->bits, asset->bits);
@@ -159,7 +159,7 @@ void AssetEdit::handle_close_event(int result)
 					indexable->path);
 				remove_file(index_filename);
 				indexable->index_state->index_status = INDEX_NOTTESTED;
-				mwindow->mainindexes->add_next_asset(0, indexable);
+				mwindow->mainindexes->add_indexable(indexable);
 				mwindow->mainindexes->start_build();
 			}
 			mwindow->gui->unlock_window();

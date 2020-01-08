@@ -233,7 +233,8 @@ public:
 	int commercial_jobs();
 	void clear_keybfr();
 	void add_key(int ch);
-	int remote_process_key(RemoteControl *remote_control, int key);
+	int record_process_key(RemoteControl *remote_control, int key);
+	int wintv_process_code(int code);
 	int spawn(const char *fmt, ...);
 	void display_video_text(int x, int y, const char *text, int font,
 		int bg_color, int color, int alpha, double secs, double scale);
@@ -360,11 +361,13 @@ public:
 class RecordRemoteHandler : public RemoteHandler
 {
 public:
-	int remote_process_key(RemoteControl *remote_control, int key);
+	int process_key(int key);
 	int spawn(const char *fmt, ...);
 
 	RecordRemoteHandler(RemoteControl *remote_control);
 	~RecordRemoteHandler();
+
+	RemoteControl *remote_control;
 };
 
 class RecordCutAdsStatus : public Thread

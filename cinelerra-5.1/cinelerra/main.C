@@ -106,7 +106,8 @@ public:
 //PRINT_TRACE
 		mwindow->gui->lock_window("main");
 //PRINT_TRACE
-		mwindow->load_filenames(filenames, LOADMODE_REPLACE);
+		mwindow->load_filenames(filenames,
+			LOADMODE_REPLACE, LOADMODE_EDL_CLIP);
 //PRINT_TRACE
 		if( filenames->size() == 1 )
 			mwindow->gui->mainmenu->add_load(filenames->get(0));

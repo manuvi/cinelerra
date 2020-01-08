@@ -50,6 +50,7 @@
 #include "trackcanvas.h"
 #include "tracks.h"
 #include "transportque.h"
+#include "wintv.h"
 
 #include <unistd.h>
 
@@ -273,7 +274,10 @@ CWindowRemoteHandler::
 CWindowRemoteHandler(RemoteControl *remote_control)
  : RemoteHandler(remote_control->gui, RED)
 {
+	this->remote_control = remote_control;
+	this->mwindow = remote_control->mwindow_gui->mwindow;
 	last_key = -1;
+	key = -1;
 }
 
 CWindowRemoteHandler::
@@ -281,24 +285,27 @@ CWindowRemoteHandler::
 {
 }
 
+int CWindowRemoteHandler::process_key(int key)
+{
+	return remote_process_key(remote_control, key);
+}
+
 int CWindowRemoteHandler::remote_process_key(RemoteControl *remote_control, int key)
 {
-	MWindowGUI *mwindow_gui = remote_control->mwindow_gui;
-	EDL *edl = mwindow_gui->mwindow->edl;
+	EDL *edl = mwindow->edl;
 	if( !edl ) return 0;
-	PlayTransport *transport = mwindow_gui->mbuttons->transport;
+	PlayTransport *transport = mwindow->gui->mbuttons->transport;
 	if( !transport->get_edl() ) return 0;
 	PlaybackEngine *engine = transport->engine;
 	double position = engine->get_tracking_position();
 	double length = edl->tracks->total_length();
-	int next_command = -1, lastkey = last_key;
-	last_key = key;
+	int next_command = -1;
 
 	switch( key ) {
 	case '1': case '2': case '3': case '4':
 	case '5': case '6': case '7': case '8':
-		if( lastkey == 'e' ) {
-			mwindow_gui->mwindow->select_asset(key-'1', 1);
+		if( last_key == 'e' ) {
+			mwindow->select_asset(key-'1', 1);
 			break;
 		} // fall through
 	case '0': case '9':
@@ -316,18 +323,18 @@ int CWindowRemoteHandler::remote_process_key(RemoteControl *remote_control, int 
 	case KPRECD:  next_command = SLOW_REWIND;	break;
 	case KPAUSE:  next_command = SLOW_FWD;		break;
 	case ' ':  next_command = NORMAL_FWD;		break;
-	case 'a':  gui->tile_windows(0);		return 1;
-	case 'b':  gui->tile_windows(1);		return 1;
-	case 'c':  gui->tile_windows(2);		return 1;
+	case 'a':  remote_control->gui->tile_windows(0);  return 1;
+	case 'b':  remote_control->gui->tile_windows(1);  return 1;
+	case 'c':  remote_control->gui->tile_windows(2);  return 1;
 #ifdef HAVE_DVB
 	case 'd':
-		mwindow_gui->channel_info->toggle_scan();
+		mwindow->gui->channel_info->toggle_scan();
 		return 1;
 #endif
 	case 'e':
 		break;
 	case 'f': {
-		CWindowCanvas *canvas = mwindow_gui->mwindow->cwindow->gui->canvas;
+		CWindowCanvas *canvas = mwindow->cwindow->gui->canvas;
 		int on = canvas->get_fullscreen() ? 0 : 1;
 		canvas->Canvas::set_fullscreen(on, 0);
 		return 1; }

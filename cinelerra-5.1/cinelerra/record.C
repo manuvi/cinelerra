@@ -75,6 +75,7 @@
 #include "tracks.h"
 #include "videoconfig.h"
 #include "videodevice.h"
+#include "wintv.h"
 
 #include <string.h>
 #include <sys/types.h>
@@ -404,7 +405,7 @@ void Record::run()
 			Asset *asset = batch->asset;
 			if( batch->recorded ) {
 				EDL *new_edl = new EDL;
-				mwindow->remove_asset_from_caches(asset);
+				mwindow->remove_from_caches(asset);
 				new_edl->create_objects();
 				new_edl->copy_session(mwindow->edl);
 				mwindow->asset_to_edl(new_edl, asset, batch->labels);
@@ -553,7 +554,7 @@ int Record::delete_output_file()
 		record_gui->update_batches();
 		Asset *asset = batch->asset;
 		remove_file(asset->path);
-		mwindow->remove_asset_from_caches(asset);
+		mwindow->remove_from_caches(asset);
 		delete_index_file(asset);
 		batch->clear_notice();
 		record_gui->update_batches();
@@ -1525,6 +1526,7 @@ void Record::update_skimming(int v) {}
 RecordRemoteHandler::RecordRemoteHandler(RemoteControl *remote_control)
  : RemoteHandler(remote_control->gui, GREEN)
 {
+	this->remote_control = remote_control;
 }
 
 RecordRemoteHandler::~RecordRemoteHandler()
@@ -1755,13 +1757,13 @@ void Record::add_key(int ch)
 				BIGFONT, WHITE, BLACK, 0, 3., 2.);
 }
 
-int RecordRemoteHandler::remote_process_key(RemoteControl *remote_control, int key)
+int RecordRemoteHandler::process_key(int key)
 {
 	Record *record = remote_control->mwindow_gui->record;
-	return record->remote_process_key(remote_control, key);
+	return record->record_process_key(remote_control, key);
 }
 
-int Record::remote_process_key(RemoteControl *remote_control, int key)
+int Record::record_process_key(RemoteControl *remote_control, int key)
 {
 	int ch = key;
 
@@ -1839,6 +1841,83 @@ int Record::remote_process_key(RemoteControl *remote_control, int key)
 
 	last_key = key;
 	return 1;
+}
+
+int Record::wintv_process_code(int code)
+{
+#ifdef HAVE_WINTV
+	WinTV *wintv = (WinTV *)mwindow->gui->cwindow_remote_handler;
+	switch( code ) {
+	case WTV_OK:   break;
+	case WTV_LT:   break;
+	case WTV_UP:   break;
+	case WTV_RT:   break;
+	case WTV_DN:   break;
+	case WTV_HOME: {
+                RecordMonitorCanvas *canvas = record_monitor->window->canvas;
+                int on = canvas->get_fullscreen() ? 0 : 1;
+                canvas->Canvas::set_fullscreen(on, 0);
+                break; }
+	case WTV_BACK: // toggle metering audio
+                set_audio_metering(metering_audio ? 0 : 1);
+                break;
+	case WTV_VOLUP: {
+		double gain = adevice->get_play_gain() * 1.25;
+		set_play_gain(gain);
+		break; }
+	case WTV_VOLDN: {
+		double gain = adevice->get_play_gain() * 0.75;
+		set_play_gain(gain);
+		break; }
+	case WTV_CH_UP:
+                channel_up();
+                break;
+	case WTV_CH_DN:
+                channel_down();
+                break;
+	case WTV_0:
+		if( wintv->last_code == WTV_0 ) {
+			clear_keybfr();
+			break;
+		} // fall thru
+	case WTV_1: case WTV_2: case WTV_3: case WTV_4:
+	case WTV_5: case WTV_6: case WTV_7: case WTV_8:
+	case WTV_9: {
+		int ch = code - WTV_0 + '0';
+		add_key(ch);
+		break; }
+	case WTV_TEXT: // add decimal point
+		add_key('.');
+		break;
+	case WTV_CC: // change channel
+		set_channel_name(keybfr);
+		clear_keybfr();
+		break;
+	case WTV_BOX:
+                display_channel_schedule();
+		break;
+	case WTV_START: break;
+	case WTV_REV:   break;
+	case WTV_STOP:  break;
+	case WTV_PLAY:  break;
+	case WTV_FWD:   break;
+	case WTV_END:   break;
+	case WTV_MUTE: // toggle mute audio
+		if( !monitor_audio ) {
+			set_mute_gain(1);
+			set_play_gain(play_gain);
+		}
+		set_audio_monitoring(monitor_audio ? 0 : 1);
+		break;
+	case WTV_PREV:
+                display_channel_info();
+                break;
+	default:
+		printf("wintv record: unknown code: %04x\n", code);
+		break;
+	}
+#endif
+	return 0;
 }
 
 #ifdef HAVE_COMMERCIAL
@@ -2078,4 +2157,5 @@ run()
 	remote_color(record->status_color);
 }
 
+// HAVE_COMMERCIAL
 #endif

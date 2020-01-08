@@ -67,9 +67,9 @@ MainIndexes::~MainIndexes()
 	delete index_lock;
 }
 
-void MainIndexes::add_next_asset(File *file, Indexable *indexable)
+void MainIndexes::add_indexable(Indexable *indexable)
 {
-	next_lock->lock("MainIndexes::add_next_asset");
+	next_lock->lock("MainIndexes::add_indexable");
 
 SET_TRACE
 // Test current asset

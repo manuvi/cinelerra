@@ -1330,24 +1330,19 @@ int BC_FileBox::get_y_margin()
 char* BC_FileBox::get_path(int selection)
 {
 	if(selection == 0)
-	{
 		return get_submitted_path();
-	}
-	else
-	{
-		BC_ListBoxItem *item = listbox->get_selection(
-			column_of_type(FILEBOX_NAME), selection - 1);
-		if(item)
-		{
-			fs->join_names(string, directory, item->get_text());
-			return string;
-		}
+	BC_ListBoxItem *item = listbox->get_selection(
+		column_of_type(FILEBOX_NAME), selection - 1);
+	if( item ) {
+		fs->join_names(string, directory, item->get_text());
+		return string;
 	}
 	return 0;
 }
 
 char* BC_FileBox::get_submitted_path()
 {
+	update_paths(textbox->get_text());
 	return submitted_path;
 }
 
