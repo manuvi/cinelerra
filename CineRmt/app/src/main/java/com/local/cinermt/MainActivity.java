@@ -160,7 +160,11 @@ public class MainActivity extends Activity
 		img.setOnClickListener(this);
 		img = (ImageButton)findViewById(R.id.buttonF);
 		img.setOnClickListener(this);
-		img = (ImageButton)findViewById(R.id.button_dot);
+		img = (ImageButton)findViewById(R.id.buttonDOT);
+		img.setOnClickListener(this);
+		img = (ImageButton)findViewById(R.id.buttonTV);
+		img.setOnClickListener(this);
+		img = (ImageButton)findViewById(R.id.quit);
 		img.setOnClickListener(this);
 		img = (ImageButton)findViewById(R.id.fast_lt);
 		img.setOnClickListener(this);
@@ -190,12 +194,22 @@ public class MainActivity extends Activity
 		img.setOnClickListener(this);
 		img = (ImageButton)findViewById(R.id.rplay);
 		img.setOnClickListener(this);
+		img = (ImageButton)findViewById(R.id.vol_dn);
+		img.setOnClickListener(this);
+		img = (ImageButton)findViewById(R.id.vol_up);
+		img.setOnClickListener(this);
+		img = (ImageButton)findViewById(R.id.mute);
+		img.setOnClickListener(this);
+		img = (ImageButton)findViewById(R.id.ch_up);
+		img.setOnClickListener(this);
+		img = (ImageButton)findViewById(R.id.ch_dn);
+		img.setOnClickListener(this);
 
 		img = (ImageButton)findViewById(R.id.suspend);
 		img.setOnClickListener(this);
 		img = (ImageButton)findViewById(R.id.config);
 		img.setOnClickListener(this);
-		img = (ImageButton)findViewById(R.id.exit);
+		img = (ImageButton)findViewById(R.id.buttonCC);
 		img.setOnClickListener(this);
 		img = (ImageButton)findViewById(R.id.power);
 		img.setOnClickListener(this);
@@ -212,9 +226,7 @@ public class MainActivity extends Activity
 	public void onClick(View v) {
         if (v instanceof ImageButton) {
             int id = ((ImageButton)v).getId();
-			if (id == R.id.stop) { send("stop"); }
-			else if (id == R.id.play) { send("play"); }
-			else if (id == R.id.rplay) { send("rplay"); }
+			if (id == R.id.menu) { send("menu"); }
 			else if (id == R.id.button0) { send("key 0"); }
 			else if (id == R.id.button1) { send("key 1"); }
 			else if (id == R.id.button2) { send("key 2"); }
@@ -230,18 +242,28 @@ public class MainActivity extends Activity
 			else if (id == R.id.buttonC) { send("key C"); }
 			else if (id == R.id.buttonD) { send("key D"); }
 			else if (id == R.id.buttonE) { send("key E"); }
-			else if (id == R.id.buttonF) { send("key F"); }
-			else if (id == R.id.fast_lt) { send("fast_lt"); }
-			else if (id == R.id.media_up) { send("media_up"); }
-			else if (id == R.id.fast_rt) { send("fast_rt"); }
-			else if (id == R.id.menu) { send("menu"); }
+			else if (id == R.id.buttonF) { send("book"); }
+			else if (id == R.id.rplay) { send("rplay"); }
+			else if (id == R.id.stop) { send("stop"); }
+			else if (id == R.id.play) { send("play"); }
 			else if (id == R.id.media_lt) { send("media_lt"); }
-			else if (id == R.id.pause) { send("pause"); }
 			else if (id == R.id.media_rt) { send("media_rt"); }
-			else if (id == R.id.slow_lt) { send("slow_lt"); }
+			else if (id == R.id.media_up) { send("media_up"); }
 			else if (id == R.id.media_dn) { send("media_dn"); }
+			else if (id == R.id.pause) { send("pause"); }
+			else if (id == R.id.slow_lt) { send("slow_lt"); }
 			else if (id == R.id.slow_rt) { send("slow_rt"); }
-			else if (id == R.id.full_scr) { send("key F"); }
+			else if (id == R.id.fast_lt) { send("fast_lt"); }
+			else if (id == R.id.fast_rt) { send("fast_rt"); }
+			else if (id == R.id.full_scr) { send("fscrn"); }
+			else if (id == R.id.mute) { send("mute"); }
+			else if (id == R.id.vol_up) { send("vol_up"); }
+			else if (id == R.id.vol_dn) { send("vol_dn"); }
+			else if (id == R.id.ch_up) { send("ch_up"); }
+			else if (id == R.id.ch_dn) { send("ch_dn"); }
+			else if (id == R.id.buttonDOT) { send("key dot"); }
+			else if (id == R.id.buttonCC) { send("key cc"); }
+			else if (id == R.id.buttonTV) { send("key tv"); }
 			else {
 				save_defaults();
 				if (id == R.id.config) {
@@ -251,12 +273,13 @@ public class MainActivity extends Activity
 					it.putExtra("PORT", dport);
 					startActivity(it);
 				}
-				else if (id == R.id.suspend)
-					send("suspend");
-				else if (id == R.id.power)
-					send("power");
-				else if (id != R.id.exit)
+				else if (id == R.id.quit) send("hand");
+				else if (id == R.id.suspend) send("suspend");
+				else if (id == R.id.power) send("power");
+				else {
+					Toast.makeText(this, "unknown msg",Toast.LENGTH_SHORT).show();
 					return;
+				}
 				finish();
 			}
 		}

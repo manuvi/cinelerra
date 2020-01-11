@@ -75,7 +75,7 @@ int WinTV::open_usb_input(int vendor, int product, int &version)
 		char path[PATH_MAX];  struct stat st;
 		snprintf(path, PATH_MAX, "%s/%s", dev_input, fn);
 		if( stat(path, &st) < 0 ) continue;
-		if( S_ISDIR(st.st_mode) ) continue;
+		if( !S_ISCHR(st.st_mode) ) continue;
 		int fd = open(path, O_RDONLY);
 		if( fd < 0 ) continue;
 		if( !ioctl(fd, EVIOCGID, &dev_id) ) {
@@ -126,11 +126,11 @@ int WinTV::check_menu_keys(int code)
 		break;
 	case WTV_TV: {
 		Record *record = mwindow->gui->record;
-                if( !record->running() )
-                        record->start();
-                else
-                        record->record_gui->interrupt_thread->start(0);
-                break; }
+		if( !record->running() )
+			record->start();
+		else
+			record->record_gui->interrupt_thread->start(0);
+		break; }
 	case WTV_MENU:
 #ifdef HAVE_DVB
 		mwindow->gui->channel_info->toggle_scan();
@@ -139,7 +139,7 @@ int WinTV::check_menu_keys(int code)
 	case WTV_RED: {
 		RemoteControl *remote_control = mwindow->gui->remote_control;
 		if( !remote_control->deactivate() )
-                        remote_control->activate();
+			remote_control->activate();
 		break; }
 	default:
 		result = 0;
@@ -176,15 +176,15 @@ void WinTV::handle_event()
 
 int WinTVCWindowHandler::wintv_process_code(int code)
 {
-        MWindow *mwindow = wintv->mwindow;
-        EDL *edl = mwindow->edl;
-        if( !edl ) return 0;
-        PlayTransport *transport = mwindow->gui->mbuttons->transport;
-        if( !transport->get_edl() ) return 0;
-        PlaybackEngine *engine = transport->engine;
-        double position = engine->get_tracking_position();
-        double length = edl->tracks->total_length();
-        int next_command = -1;
+	MWindow *mwindow = wintv->mwindow;
+	EDL *edl = mwindow->edl;
+	if( !edl ) return 0;
+	PlayTransport *transport = mwindow->gui->mbuttons->transport;
+	if( !transport->get_edl() ) return 0;
+	PlaybackEngine *engine = transport->engine;
+	double position = engine->get_tracking_position();
+	double length = edl->tracks->total_length();
+	int next_command = -1;
 
 	switch( code ) {
 	case WTV_OK:
@@ -214,10 +214,10 @@ int WinTVCWindowHandler::wintv_process_code(int code)
 	case WTV_DN:  position -= 60.0;  break;
 	case WTV_BACK: return 1;
 	case WTV_HOME: {
-                CWindowCanvas *canvas = mwindow->cwindow->gui->canvas;
-                int on = canvas->get_fullscreen() ? 0 : 1;
-                canvas->Canvas::set_fullscreen(on, 0);
-                return 1; }
+		CWindowCanvas *canvas = mwindow->cwindow->gui->canvas;
+		int on = canvas->get_fullscreen() ? 0 : 1;
+		canvas->Canvas::set_fullscreen(on, 0);
+		return 1; }
 	case WTV_VOLUP: return 1;
 	case WTV_VOLDN: return 1;
 	case WTV_CH_UP: return 1;
@@ -240,7 +240,7 @@ int WinTVCWindowHandler::wintv_process_code(int code)
 	if( next_command < 0 ) {
 		if( position < 0 ) position = 0;
 		transport->change_position(position);
-        }
+	}
 	else
 		transport->handle_transport(next_command);
 	return 0;

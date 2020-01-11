@@ -368,6 +368,7 @@ OBJS := $(OVERLAYS) \
 	$(OBJDIR)/wavecache.o \
 	$(OBJDIR)/wintv.o \
 	$(OBJDIR)/wwindow.o \
+	$(OBJDIR)/x10tv.o \
 	$(OBJDIR)/zoombar.o \
 	$(OBJDIR)/zoompanel.o \
 	$(OBJDIR)/zwindow.o \

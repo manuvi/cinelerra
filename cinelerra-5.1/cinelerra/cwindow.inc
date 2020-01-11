@@ -23,6 +23,6 @@
 #define CWINDOW_INC
 
 class CWindow;
-class CWindowRemoteHandler;
+class KeyEvCWindowHandler;
 
 #endif

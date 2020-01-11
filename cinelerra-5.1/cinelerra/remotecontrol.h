@@ -45,7 +45,12 @@ public:
 	int color;
 
 	void activate() { gui->set_active(this); }
-	virtual int process_key(int key) { return -1; }
+	virtual int remote_key(int key);
+	virtual int process_key(int key);
+
+	virtual int is_keytv() { return 0; }
+	virtual int is_wintv() { return 0; }
+	virtual int is_x10tv() { return 0; }
 
 	RemoteHandler(RemoteGUI *gui, int color);
 	virtual ~RemoteHandler();

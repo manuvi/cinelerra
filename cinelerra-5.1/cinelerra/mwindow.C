@@ -132,6 +132,7 @@
 #include "wavecache.h"
 #include "wintv.h"
 #include "wwindow.h"
+#include "x10tv.h"
 #include "zoombar.h"
 #include "zwindow.h"
 #include "zwindowgui.h"
@@ -244,6 +245,7 @@ MWindow::MWindow()
 	beeper = 0;
 	shuttle = 0;
 	wintv = 0;
+	x10tv = 0;
 	mixers_align = 0;
 }
 
@@ -269,6 +271,9 @@ MWindow::~MWindow()
 	delete shuttle;         shuttle = 0;
 #ifdef HAVE_WINTV
 	delete wintv;           wintv = 0;
+#endif
+#ifdef HAVE_X10TV
+	delete x10tv;           x10tv = 0;
 #endif
 	delete batch_render;    batch_render = 0;
 	delete convert_render;  convert_render = 0;
@@ -1608,6 +1613,14 @@ void MWindow::init_wintv()
 		wintv->start();
 #endif
 }
+void MWindow::init_x10tv()
+{
+#ifdef HAVE_X10TV
+	x10tv = X10TV::probe(this);
+	if( x10tv )
+		x10tv->start();
+#endif
+}
 
 
 void MWindow::init_brender()
@@ -2683,7 +2696,10 @@ void MWindow::create_objects(int want_gui,
 	strcat(string, "/" FONT_SEARCHPATH);
 	BC_Resources::init_fontconfig(string);
 	if(debug) PRINT_TRACE
-	init_wintv();
+// use if plugged
+	init_x10tv();
+	if( !x10tv )
+		init_wintv();
 
 // Default project created here
 	init_edl();

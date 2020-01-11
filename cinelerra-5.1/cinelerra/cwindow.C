@@ -50,7 +50,6 @@
 #include "trackcanvas.h"
 #include "tracks.h"
 #include "transportque.h"
-#include "wintv.h"
 
 #include <unistd.h>
 
@@ -270,8 +269,8 @@ void CWindow::refresh_frame(int change_type, int dir)
 	refresh_frame(change_type, mwindow->edl, dir);
 }
 
-CWindowRemoteHandler::
-CWindowRemoteHandler(RemoteControl *remote_control)
+CWindowKeyEvHandler::
+CWindowKeyEvHandler(RemoteControl *remote_control)
  : RemoteHandler(remote_control->gui, RED)
 {
 	this->remote_control = remote_control;
@@ -280,17 +279,17 @@ CWindowRemoteHandler(RemoteControl *remote_control)
 	key = -1;
 }
 
-CWindowRemoteHandler::
-~CWindowRemoteHandler()
+CWindowKeyEvHandler::
+~CWindowKeyEvHandler()
 {
 }
 
-int CWindowRemoteHandler::process_key(int key)
+int CWindowKeyEvHandler::remote_key(int key)
 {
 	return remote_process_key(remote_control, key);
 }
 
-int CWindowRemoteHandler::remote_process_key(RemoteControl *remote_control, int key)
+int CWindowKeyEvHandler::remote_process_key(RemoteControl *remote_control, int key)
 {
 	EDL *edl = mwindow->edl;
 	if( !edl ) return 0;
@@ -326,13 +325,7 @@ int CWindowRemoteHandler::remote_process_key(RemoteControl *remote_control, int 
 	case 'a':  remote_control->gui->tile_windows(0);  return 1;
 	case 'b':  remote_control->gui->tile_windows(1);  return 1;
 	case 'c':  remote_control->gui->tile_windows(2);  return 1;
-#ifdef HAVE_DVB
-	case 'd':
-		mwindow->gui->channel_info->toggle_scan();
-		return 1;
-#endif
-	case 'e':
-		break;
+	case KPFSCRN:
 	case 'f': {
 		CWindowCanvas *canvas = mwindow->cwindow->gui->canvas;
 		int on = canvas->get_fullscreen() ? 0 : 1;

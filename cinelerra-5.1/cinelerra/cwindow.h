@@ -80,13 +80,14 @@ public:
 	CPlayback *playback_engine;
 };
 
-class CWindowRemoteHandler : public RemoteHandler
+class CWindowKeyEvHandler : public RemoteHandler
 {
 public:
-	CWindowRemoteHandler(RemoteControl *remote_control);
-	~CWindowRemoteHandler();
-	int process_key(int key);
+	CWindowKeyEvHandler(RemoteControl *remote_control);
+	~CWindowKeyEvHandler();
+	int remote_key(int key);
 	int remote_process_key(RemoteControl *remote_control, int key);
+	int is_keytv() { return 1; }
 
 	int key, last_key;
 	RemoteControl *remote_control;

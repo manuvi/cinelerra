@@ -25,7 +25,7 @@
 class RecordMenuItem;
 class Record;
 
-class RecordRemoteHandler;
+class KeyEvRecordHandler;
 class RecordCutAdsStatus;
 class RecordBlinkStatus;
 

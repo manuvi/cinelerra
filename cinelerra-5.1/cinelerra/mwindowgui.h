@@ -56,6 +56,7 @@
 #include "trackscroll.inc"
 #include "transitionpopup.inc"
 #include "wintv.inc"
+#include "x10tv.inc"
 #include "zoombar.inc"
 
 
@@ -167,6 +168,7 @@ public:
 	int keyboard_listener(BC_WindowBase *wp);
 	int key_listener(int key);
 	void use_android_remote(int on);
+	int keyev_grab_remote();
 	int close_event();
 	int quit();
 	void stop_drawing();
@@ -271,6 +273,7 @@ public:
 	AndroidControl *android_control;
 	RemoteControl *remote_control;
 	WinTV *wintv;
+	X10TV *x10tv;
 	RemoteHandler *cwindow_remote_handler;
 	RemoteHandler *record_remote_handler;
 };

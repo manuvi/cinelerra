@@ -59,6 +59,8 @@ bool AndroidControl::is_msg(const char *cp)
 void AndroidControl::press(int key)
 {
 // printf("press 0x%04x\n",key);
+	if( key == KPMENU && mwindow_gui->keyev_grab_remote() )
+		printf("android grab remote\n");
 	if( mwindow_gui->key_listener(key) ) return;
 	mwindow_gui->remote_control->remote_key(key);
 }
@@ -96,19 +98,7 @@ void AndroidControl::run()
 		if( !len || !msg_len || *pin != *msg ) continue;
 		++msg; --msg_len;
 		if( msg_len <= 0 ) continue;
-		if( is_msg("stop") ) press(KPSTOP);
-		else if( is_msg("play") ) press(KPPLAY);
-		else if( is_msg("rplay") ) press(KPREV);
-		else if( is_msg("pause") ) press(' ');
-       		else if( is_msg("fast_lt") ) press(KPBACK);
-		else if( is_msg("media_up") ) press(UP);
-		else if( is_msg("fast_rt") ) press(KPFWRD);
-		else if( is_msg("menu") ) press(KPMENU);
-		else if( is_msg("media_lt") ) press(LEFT);
-		else if( is_msg("media_rt") ) press(RIGHT);
-		else if( is_msg("slow_lt") ) press(KPRECD);
-		else if( is_msg("media_dn") ) press(DOWN);
-		else if( is_msg("slow_rt") ) press(KPAUSE);
+		if( is_msg("menu") ) press(KPMENU);
 		else if( is_msg("key 0") ) press('0');
 		else if( is_msg("key 1") ) press('1');
 		else if( is_msg("key 2") ) press('2');
@@ -124,7 +114,29 @@ void AndroidControl::run()
 		else if( is_msg("key C") ) press('c');
 		else if( is_msg("key D") ) press('d');
 		else if( is_msg("key E") ) press('e');
-		else if( is_msg("key F") ) press('f');
+		else if( is_msg("book") ) press(KPBOOK);
+		else if( is_msg("rplay") ) press(KPREV);
+		else if( is_msg("stop") ) press(KPSTOP);
+		else if( is_msg("play") ) press(KPPLAY);
+		else if( is_msg("media_lt") ) press(LEFT);
+		else if( is_msg("media_rt") ) press(RIGHT);
+		else if( is_msg("media_up") ) press(UP);
+		else if( is_msg("media_dn") ) press(DOWN);
+		else if( is_msg("pause") ) press(' ');
+		else if( is_msg("slow_lt") ) press(KPRECD);
+		else if( is_msg("slow_rt") ) press(KPAUSE);
+       		else if( is_msg("fast_lt") ) press(KPBACK);
+		else if( is_msg("fast_rt") ) press(KPFWRD);
+		else if( is_msg("fscrn") ) press(KPFSCRN);
+		else if( is_msg("mute") ) press(KPMUTE);
+		else if( is_msg("vol_up") ) press(KPVOLUP);
+		else if( is_msg("vol_dn") ) press(KPVOLDN);
+		else if( is_msg("ch_up") ) press(KPCHUP);
+		else if( is_msg("ch_dn") ) press(KPCHDN);
+		else if( is_msg("key dot") ) press('.');
+		else if( is_msg("key cc") ) press(KPCC);
+		else if( is_msg("key tv") ) press(KPTV);
+		else if( is_msg("hand") ) press(KPHAND);
 		else if( is_msg("suspend") ) {
 			system("sync; sleep 1; acpitool -s");
 		}

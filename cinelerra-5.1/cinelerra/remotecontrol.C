@@ -53,11 +53,13 @@ RemoteControl::~RemoteControl()
 int RemoteControl::activate(RemoteHandler *handler)
 {
 	int result = 0;
-	active_lock->lock("RemoteControl::activate");
-	if( !is_active() ) {
-		if( !handler ) handler = !mwindow_gui->record->running() ?
+	deactivate();
+	if( !handler )
+		handler = !mwindow_gui->record->running() ?
 			(RemoteHandler *)mwindow_gui->cwindow_remote_handler :
 			(RemoteHandler *)mwindow_gui->record_remote_handler ;
+	active_lock->lock("RemoteControl::activate");
+	if( handler ) {
 		gui->lock_window("RemoteControl::activate");
 		gui->set_active(handler);
 		gui->set_color(handler->color);
@@ -72,19 +74,21 @@ int RemoteControl::activate(RemoteHandler *handler)
 int RemoteControl::deactivate()
 {
 	int result = 0;
-	active_lock->lock("RemoteControl::deactivate");
 	if( is_active() ) {
-		gui->set_inactive();
-		result = 1;
+		active_lock->lock("RemoteControl::deactivate");
+		if( is_active() ) {
+			gui->set_inactive();
+			result = 1;
+		}
+		active_lock->unlock();
 	}
-	active_lock->unlock();
 	return result;
 }
 
 int RemoteControl::remote_key(int key)
 {
 	if( !is_active() ) return 0;
-	return handler->process_key(key);
+	return handler->remote_key(key);
 }
 
 void RemoteControl::set_color(int color)
@@ -182,4 +186,14 @@ RemoteHandler::~RemoteHandler()
 {
 }
 
+int RemoteHandler::remote_key(int key)
+{
+	gui->set_inactive();
+	return -1;
+}
+
+int RemoteHandler::process_key(int key)
+{
+	return -1;
+}
 

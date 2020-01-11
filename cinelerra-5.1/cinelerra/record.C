@@ -76,6 +76,7 @@
 #include "videoconfig.h"
 #include "videodevice.h"
 #include "wintv.h"
+#include "x10tv.h"
 
 #include <string.h>
 #include <sys/types.h>
@@ -349,7 +350,8 @@ void Record::run()
 	record_gui->show_window();
 	record_gui->flush();
 
-	if( mwindow->gui->remote_control->deactivate() )
+	if( mwindow->gui->remote_control->deactivate() &&
+	    mwindow->gui->record_remote_handler )
 		mwindow->gui->record_remote_handler->activate();
 
 	if( video_window_open ) {
@@ -388,7 +390,8 @@ void Record::run()
 	stop(0);
 	edl->Garbage::remove_user();
 
-	if( mwindow->gui->remote_control->deactivate() )
+	if( mwindow->gui->remote_control->deactivate() &&
+	    mwindow->gui->cwindow_remote_handler )
 		mwindow->gui->cwindow_remote_handler->activate();
 
 // Save everything again
@@ -1523,14 +1526,20 @@ void Record::stop_skimming() {}
 void Record::update_skimming(int v) {}
 #endif
 
-RecordRemoteHandler::RecordRemoteHandler(RemoteControl *remote_control)
+RecordKeyEvHandler::RecordKeyEvHandler(RemoteControl *remote_control)
  : RemoteHandler(remote_control->gui, GREEN)
 {
 	this->remote_control = remote_control;
 }
 
-RecordRemoteHandler::~RecordRemoteHandler()
+RecordKeyEvHandler::~RecordKeyEvHandler()
 {
+}
+
+int RecordKeyEvHandler::remote_key(int key)
+{
+	Record *record = remote_control->mwindow_gui->record;
+	return record->record_process_key(remote_control, key);
 }
 
 void Record::
@@ -1757,34 +1766,63 @@ void Record::add_key(int ch)
 				BIGFONT, WHITE, BLACK, 0, 3., 2.);
 }
 
-int RecordRemoteHandler::process_key(int key)
-{
-	Record *record = remote_control->mwindow_gui->record;
-	return record->record_process_key(remote_control, key);
-}
-
 int Record::record_process_key(RemoteControl *remote_control, int key)
 {
 	int ch = key;
 
 	switch( key ) {
 	case KPENTER:
-		if( last_key == KPENTER ) {
-			set_channel_name(keybfr);
-			clear_keybfr();
-			break;
-		}
-		ch = '.';  // fall through
-	case '0': if( last_key == '0' && ch == '0' ) {
+		if( last_key != KPENTER ) break;
+	case KPCC:
+		set_channel_name(keybfr);
 		clear_keybfr();
 		break;
-	}
-	case '1': case '2': case '3': case '4':
-	case '5': case '6': case '7': case '8': case '9':
+	case '0':
+		if( last_key == '0' && ch == '0' ) {
+			clear_keybfr();
+			break;
+		} // fall thru
+	case '1': case '2': case '3':
+	case '4': case '5': case '6':
+	case '7': case '8': case '9':
+	case '.':
 		add_key(ch);
 		break;
-	//case UP: case DOWN: case LEFT: case RIGHT:
-	//case KPPLAY: case KPBACK: case KPFORW:
+	//case UP: case DOWN:
+	//case LEFT: case RIGHT:
+	//case KPPLAY: case KPFWRD:
+	case KPMUTE:
+	case 'a': // toggle mute audio
+		if( !monitor_audio ) { set_mute_gain(1);  set_play_gain(1); }
+		set_audio_monitoring(monitor_audio ? 0 : 1);
+		break;
+	case KPBACK:  case 'm': // toggle metering audio
+		set_audio_metering(metering_audio ? 0 : 1);
+		break;
+	case 'd':  case KPSLASH:
+		display_channel_info();
+		break;
+	case 'e':  case KPSTAR:
+		display_channel_schedule();
+		break;
+	case KPCHUP:  case KPPLUS:
+		channel_up();
+		break;
+	case KPCHDN:  case KPMINUS:
+		channel_down();
+		break;
+	case KPVOLUP: {
+		set_play_gain(play_gain * 1.25);
+		break; }
+	case KPVOLDN: {
+		set_play_gain(play_gain * 0.75);
+		break; }
+	case KPFSCRN:
+	case 'f': {
+		RecordMonitorCanvas *canvas = record_monitor->window->canvas;
+		int on = canvas->get_fullscreen() ? 0 : 1;
+		canvas->Canvas::set_fullscreen(on, 0);
+		break; }
 #ifdef HAVE_COMMERCIAL
 	case KPRECD:  case 'c': // start capture, mark endpoint
 		if( !deletions ) {
@@ -1798,43 +1836,17 @@ int Record::record_process_key(RemoteControl *remote_control, int key)
 		}
 		display_cut_icon(10,20);
 		break;
-	case KPSTOP:  case 'd': // end capture, start cutting
+	case KPSTOP:  case 's': // end capture, start cutting
 		remote_control->set_color(YELLOW);
 		stop_commercial_capture(1);
 		break;
 	case KPAUSE:  case 'x': // ignore current commercial
 		mark_commercial_capture(DEL_SKIP);
 		break;
-#endif
-	case KPBACK:  case 'a': // toggle mute audio
-		if( !monitor_audio ) { set_mute_gain(1);  set_play_gain(1); }
-		set_audio_monitoring(monitor_audio ? 0 : 1);
-		break;
-	case 'm': // toggle metering audio
-		set_audio_metering(metering_audio ? 0 : 1);
-		break;
-#ifdef HAVE_COMMERCIAL
-	case KPPLAY:  case 's': // ignore previous endpoint
+	case KPPLAY:  case 'z': // ignore previous endpoint
 		mark_commercial_capture(DEL_OOPS);
 		break;
 #endif
-	case KPFWRD:  case KPSLASH:
-		display_channel_info();
-		break;
-	case KPMAXW:  case KPSTAR:
-		display_channel_schedule();
-		break;
-	case KPCHUP:  case KPPLUS:
-		channel_up();
-		break;
-	case KPCHDN:  case KPMINUS:
-		channel_down();
-		break;
-	case 'f': {
-		RecordMonitorCanvas *canvas = record_monitor->window->canvas;
-		int on = canvas->get_fullscreen() ? 0 : 1;
-		canvas->Canvas::set_fullscreen(on, 0);
-		break; }
 	default:
 		return -1;
 	}
@@ -1846,7 +1858,6 @@ int Record::record_process_key(RemoteControl *remote_control, int key)
 int Record::wintv_process_code(int code)
 {
 #ifdef HAVE_WINTV
-	WinTV *wintv = (WinTV *)mwindow->gui->cwindow_remote_handler;
 	switch( code ) {
 	case WTV_OK:   break;
 	case WTV_LT:   break;
@@ -1862,12 +1873,10 @@ int Record::wintv_process_code(int code)
                 set_audio_metering(metering_audio ? 0 : 1);
                 break;
 	case WTV_VOLUP: {
-		double gain = adevice->get_play_gain() * 1.25;
-		set_play_gain(gain);
+		set_play_gain(play_gain * 1.125);
 		break; }
 	case WTV_VOLDN: {
-		double gain = adevice->get_play_gain() * 0.75;
-		set_play_gain(gain);
+		set_play_gain(play_gain * 0.875);
 		break; }
 	case WTV_CH_UP:
                 channel_up();
@@ -1875,11 +1884,14 @@ int Record::wintv_process_code(int code)
 	case WTV_CH_DN:
                 channel_down();
                 break;
-	case WTV_0:
-		if( wintv->last_code == WTV_0 ) {
+	case WTV_0: {
+		WinTVRecordHandler *wintv_remote = (WinTVRecordHandler *)
+			mwindow->gui->remote_control->handler;
+		WinTV *wintv = !wintv_remote ? 0 : wintv_remote->wintv;
+		if( !wintv || wintv->last_code == WTV_0 ) {
 			clear_keybfr();
 			break;
-		} // fall thru
+		} } // fall thru
 	case WTV_1: case WTV_2: case WTV_3: case WTV_4:
 	case WTV_5: case WTV_6: case WTV_7: case WTV_8:
 	case WTV_9: {
@@ -1914,6 +1926,94 @@ int Record::wintv_process_code(int code)
                 break;
 	default:
 		printf("wintv record: unknown code: %04x\n", code);
+		break;
+	}
+#endif
+	return 0;
+}
+
+int Record::x10tv_process_code(int code)
+{
+#ifdef HAVE_X10TV
+	switch( code ) {
+	case X10_A: // toggle metering audio
+                set_audio_metering(metering_audio ? 0 : 1);
+                break;
+	case X10_B:		break;
+	case X10_POWER:		break;
+	case X10_TV:		break;
+	case X10_DVD:		break;
+	case X10_WWW:		break;
+	case X10_BOOK:		break;
+	case X10_EDIT:		break;
+	case X10_VOLUP: {
+		set_play_gain(play_gain * 1.125);
+		break; }
+	case X10_VOLDN: {
+		set_play_gain(play_gain * 0.875);
+		break; }
+	case X10_MUTE: // toggle mute audio
+		if( !monitor_audio ) {
+			set_mute_gain(1);
+			set_play_gain(play_gain);
+		}
+		set_audio_monitoring(monitor_audio ? 0 : 1);
+		break;
+	case X10_CH_UP:
+                channel_up();
+                break;
+	case X10_CH_DN:
+                channel_down();
+                break;
+	case X10_0: {
+		X10TVRecordHandler *x10tv_remote = (X10TVRecordHandler *)
+			mwindow->gui->remote_control->handler;
+		X10TV *x10tv = !x10tv_remote ? 0 : x10tv_remote->x10tv;
+		if( x10tv->last_code == X10_0 ) {
+			clear_keybfr();
+			break;
+		} } // fall thru
+	case X10_1: case X10_2: case X10_3: case X10_4:
+	case X10_5: case X10_6: case X10_7: case X10_8:
+	case X10_9: {
+		int ch = code - X10_0 + '0';
+		add_key(ch);
+		break; }
+	case X10_MENU: // add decimal point
+		add_key('.');
+		break;
+	case X10_SETUP: // change channel
+		set_channel_name(keybfr);
+		clear_keybfr();
+		break;
+	case X10_C:
+                display_channel_schedule();
+		break;
+	case X10_UP:		break;
+	case X10_D:
+                display_channel_info();
+                break;
+	case X10_PROPS:		break;
+	case X10_LT:		break;
+	case X10_OK:		break;
+	case X10_RT:		break;
+	case X10_SCRN: {
+                RecordMonitorCanvas *canvas = record_monitor->window->canvas;
+                int on = canvas->get_fullscreen() ? 0 : 1;
+                canvas->Canvas::set_fullscreen(on, 0);
+                break; }
+	case X10_E:		break;
+	case X10_DN:		break;
+	case X10_F:		break;
+	case X10_REW:		break;
+	case X10_PLAY:		break;
+	case X10_FWD:		break;
+	case X10_REC:		break;
+	case X10_STOP:		break;
+	case X10_PAUSE:		break;
+
+	default:
+		printf("x10tv record: unknown code: %04x\n", code);
 		break;
 	}
 #endif

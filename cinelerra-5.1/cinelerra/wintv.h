@@ -75,6 +75,7 @@ public:
 	WinTVCWindowHandler(WinTV *wintv, RemoteControl *remote_control);
 	int wintv_process_code(int code);
 	int process_key(int key);
+	int is_wintv() { return 1; }
 
 	WinTV *wintv;
 };
@@ -85,6 +86,7 @@ public:
 	WinTVRecordHandler(WinTV *wintv, RemoteControl *remote_control);
 	int wintv_process_code(int code);
 	int process_key(int key);
+	int is_wintv() { return 1; }
 
 	WinTV *wintv;
 };

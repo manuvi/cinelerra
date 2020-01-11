@@ -235,6 +235,7 @@ public:
 	void add_key(int ch);
 	int record_process_key(RemoteControl *remote_control, int key);
 	int wintv_process_code(int code);
+	int x10tv_process_code(int code);
 	int spawn(const char *fmt, ...);
 	void display_video_text(int x, int y, const char *text, int font,
 		int bg_color, int color, int alpha, double secs, double scale);
@@ -358,14 +359,15 @@ public:
 	~RecordSchedule() { remove_all_objects(); }
 };
 
-class RecordRemoteHandler : public RemoteHandler
+class RecordKeyEvHandler : public RemoteHandler
 {
 public:
-	int process_key(int key);
+	int remote_key(int key);
 	int spawn(const char *fmt, ...);
 
-	RecordRemoteHandler(RemoteControl *remote_control);
-	~RecordRemoteHandler();
+	RecordKeyEvHandler(RemoteControl *remote_control);
+	~RecordKeyEvHandler();
+	int is_keytv() { return 1; }
 
 	RemoteControl *remote_control;
 };

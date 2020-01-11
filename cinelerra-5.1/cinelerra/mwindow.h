@@ -103,6 +103,7 @@
 #include "wwindow.inc"
 #include "wavecache.inc"
 #include "wintv.inc"
+#include "x10tv.inc"
 
 #define FONT_SEARCHPATH "fonts"
 
@@ -771,6 +772,7 @@ public:
 	void init_signals();
 	void init_shuttle();
 	void init_wintv();
+	void init_x10tv();
 	void init_theme();
 	void init_compositor();
 	void init_levelwindow();
@@ -797,6 +799,7 @@ public:
 	int in_destructor;
 	Shuttle *shuttle;
 	WinTV *wintv;
+	X10TV *x10tv;
 };
 
 #endif

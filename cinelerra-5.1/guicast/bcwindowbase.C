@@ -1261,35 +1261,8 @@ if( debug && event->type != ClientMessage ) {
 		case XK_F10:		key_pressed = KEY_F10;	break;
 		case XK_F11:		key_pressed = KEY_F11;	break;
 		case XK_F12:		key_pressed = KEY_F12;	break;
-
+// activates remote
 		case XK_Menu:		key_pressed = KPMENU;	break;  /* menu */
-// remote control
-// above	case XK_KP_Enter:	key_pressed = KPENTER;	break;  /* check */
-		case XF86XK_MenuKB:	key_pressed = KPMENU;	break;  /* menu */
-// intercepted	case XF86XK_PowerDown: key_pressed = KPPOWER;	break;  /* Power */
-		case XF86XK_Launch1:	key_pressed = KPTV;	break;  /* TV */
-		case XF86XK_Launch2:	key_pressed = KPDVD;	break;  /* DVD */
-// intercepted	case XF86XK_WWW:	key_pressed = KPWWEB;	break;  /* WEB */
-		case XF86XK_Launch3:	key_pressed = KPBOOK;	break;  /* book */
-		case XF86XK_Launch4:	key_pressed = KPHAND;	break;  /* hand */
-		case XF86XK_Reply:	key_pressed = KPTMR;	break;  /* timer */
-		case SunXK_Front:	key_pressed = KPMAXW;	break;  /* max */
-// above	case XK_Left:		key_pressed = LEFT;	break;  /* left */
-// above	case XK_Right:		key_pressed = RIGHT;	break;  /* right */
-// above	case XK_Down:		key_pressed = DOWN;	break;  /* down */
-// above	case XK_Up:		key_pressed = UP;	break;  /* up */
-// above	case XK_SPACE:		key_pressed = KPSPACE;	break;  /* ok */
-// intercepted	case XF86XK_AudioRaiseVolume: key_pressed = KPVOLU;	break;  /* VOL + */
-// intercepted	case XF86XK_AudioMute: key_pressed = KPMUTE;	break;  /* MUTE */
-// intercepted	case XF86XK_AudioLowerVolume: key_pressed = KPVOLD;	break;  /* VOL - */
-		case XF86XK_ScrollUp:	key_pressed = KPCHUP;	break;  /* CH + */
-		case XF86XK_ScrollDown:	key_pressed = KPCHDN;	break;  /* CH - */
-		case XF86XK_AudioRecord: key_pressed = KPRECD;	break;  /* ( o) red */
-		case XF86XK_Forward:	key_pressed = KPPLAY;	break;  /* ( >) */
-		case XK_Redo:		key_pressed = KPFWRD;	break;  /* (>>) */
-		case XF86XK_Back:	key_pressed = KPBACK;	break;  /* (<<) */
-		case XK_Cancel:		key_pressed = KPSTOP;	break;  /* ([]) */
-		case XK_Pause:		key_pressed = KPAUSE;	break;  /* ('') */
 
 		default:
 			key_pressed = keysym & 0xff;

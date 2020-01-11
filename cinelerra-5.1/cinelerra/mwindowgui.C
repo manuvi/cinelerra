@@ -74,6 +74,7 @@
 #include "vwindowgui.h"
 #include "vwindow.h"
 #include "wintv.h"
+#include "x10tv.h"
 #include "zoombar.h"
 
 #define PANE_DRAG_MARGIN MAX(mwindow->theme->pane_w, mwindow->theme->pane_h)
@@ -165,21 +166,26 @@ void MWindowGUI::create_objects()
 	if(debug) printf("MWindowGUI::create_objects %d\n", __LINE__);
 	set_icon(mwindow->theme->get_image("mwindow_icon"));
 	remote_control = new RemoteControl(this);
-#ifdef HAVE_WINTV
-	WinTV *wintv = mwindow->wintv;
-	if( wintv ) {
+	cwindow_remote_handler = 0;
+	record_remote_handler = 0;
+#ifdef HAVE_X10TV
+// should be first, use if plugged
+	if( !cwindow_remote_handler && mwindow->x10tv ) {
 		cwindow_remote_handler = (RemoteHandler*)
-			new WinTVCWindowHandler(wintv, remote_control);
+			new X10TVCWindowHandler(mwindow->x10tv, remote_control);
 		record_remote_handler = (RemoteHandler*)
-			new WinTVRecordHandler(wintv, remote_control);
+			new X10TVRecordHandler(mwindow->x10tv, remote_control);
 	}
 #endif
-	if( !cwindow_remote_handler ) cwindow_remote_handler =
-		(RemoteHandler*)new CWindowRemoteHandler(remote_control);
-	if( !record_remote_handler  ) record_remote_handler =
-		(RemoteHandler*)new RecordRemoteHandler(remote_control);
+#ifdef HAVE_WINTV
+	if( !cwindow_remote_handler && mwindow->wintv ) {
+		cwindow_remote_handler = (RemoteHandler*)
+			new WinTVCWindowHandler(mwindow->wintv, remote_control);
+		record_remote_handler = (RemoteHandler*)
+			new WinTVRecordHandler(mwindow->wintv, remote_control);
+	}
+#endif
 	mwindow->reset_android_remote();
-
 	if(debug) printf("MWindowGUI::create_objects %d\n", __LINE__);
 
 	int x1 = get_w() - MainShBtns::calculate_w(-1, 0, -1) - xS(5);
@@ -1312,6 +1318,19 @@ void MWindowGUI::use_android_remote(int on)
 	}
 	if( android_control ) return;
 	android_control = new AndroidControl(this);
+}
+int MWindowGUI::keyev_grab_remote()
+{
+	if( cwindow_remote_handler && cwindow_remote_handler->is_keytv() &&
+	    record_remote_handler  && record_remote_handler->is_keytv() )
+		return 0;
+	delete cwindow_remote_handler;
+	delete record_remote_handler;
+	cwindow_remote_handler = (RemoteHandler*)
+		new CWindowKeyEvHandler(mwindow->gui->remote_control);
+	record_remote_handler = (RemoteHandler*)
+		new RecordKeyEvHandler(mwindow->gui->remote_control);
+	return 1;
 }
 
 int MWindowGUI::close_event()

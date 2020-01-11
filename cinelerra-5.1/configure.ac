@@ -57,6 +57,7 @@ CHECK_WITH([commercial],[enable commercial capture],[COMMERCIAL],[yes])
 CHECK_WITH([thirdparty],[use thirdparty build],[CIN_3RDPARTY],[yes])
 CHECK_WITH([shuttle],[shuttle device],[SHUTTLE],[yes])
 CHECK_WITH([wintv],[usb 2040:826d wintv device],[WINTV],[yes])
+CHECK_WITH([x10tv],[usb 0bc7:0004 X10 remote device],[X10TV],[yes])
 CHECK_WITH([vaapi],[video acceleration api],[VAAPI],[yes])
 CHECK_WITH([vdpau],[video decode+presentation api for unix],[VDPAU],[yes])
 CHECK_WITH([nv],[nvenc/nvdec ffnvcodec api],[NV],[yes])
@@ -887,7 +888,7 @@ fi
 for v in GL XFT XXF86VM OSS ALSA FIREWIRE DV DVB \
 	 VIDEO4LINUX2 ESOUND PACTL OPENEXR LV2 \
 	 COMMERCIAL LIBZMPEG SHUTTLE SHUTTLE_USB \
-	 VAAPI VDPAU CUDA NV WINTV; do
+	 VAAPI VDPAU CUDA NV WINTV X10TV; do
   eval vv="\$WANT_$v"
   if test "x$vv" != "xno"; then
     CFG_CFLAGS+=" -DHAVE_$v"
