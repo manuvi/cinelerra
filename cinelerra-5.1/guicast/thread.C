@@ -55,7 +55,7 @@ void* Thread::entrypoint(void *parameters)
 	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
 	thread->cancel_enabled = false;
 
-// Set realtime here seince it doesn't work in start
+// Set realtime here since it doesn't work in start
 	if( thread->realtime && getuid() == 0 ) {
 		struct sched_param param = { sched_priority : 1 };
 		if(pthread_setschedparam(thread->tid, SCHED_RR, &param) < 0)
