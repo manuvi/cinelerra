@@ -251,6 +251,9 @@ int PreferencesThread::apply_settings()
 		mwindow->restart_status = -1;
 	}
 
+	if( mwindow->preferences->perpetual_session && !preferences->perpetual_session )
+		mwindow->remove_undo_data();
+
 	mwindow->edl->copy_session(edl, 1);
 	mwindow->update_preferences(preferences);
 

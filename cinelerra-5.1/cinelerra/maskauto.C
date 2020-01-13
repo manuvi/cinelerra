@@ -100,7 +100,7 @@ void SubMask::copy_from(SubMask& ptr, int do_name)
 {
 	if( do_name ) {
 		memset(name, 0, sizeof(name));
-		strncpy(name, ptr.name, sizeof(name-1));
+		strncpy(name, ptr.name, sizeof(name)-1);
 	}
 	fader = ptr.fader;
 	feather = ptr.feather;

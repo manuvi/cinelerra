@@ -363,7 +363,7 @@ int main(int argc, char *argv[])
 				MWindow mwindow;
 				mwindow.create_objects(1, !filenames.total, config_path);
 				CommandLineThread *thread  = 0;
-				if( mwindow.preferences->perpetual_session && load_perpetual )
+				if( load_perpetual )
 					mwindow.load_undo_data();
 //SET_TRACE
 // load the initial files on seperate tracks
@@ -399,8 +399,7 @@ int main(int argc, char *argv[])
 					done = 1;
 
 				mwindow.save_defaults();
-				if( mwindow.preferences->perpetual_session )
-					mwindow.save_undo_data();
+				mwindow.save_undo_data();
 //PRINT_TRACE
 				filenames.remove_all_objects();
 				delete thread;

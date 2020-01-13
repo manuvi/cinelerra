@@ -48,6 +48,7 @@ CHECK_WITH([cindat],[cinelerra share path],[CINDAT_DIR],[auto])
 CHECK_WITH([plugin-dir],[plugin install dir],[PLUGIN_DIR],[auto])
 CHECK_WITH([ladspa-dir],[ladspa install dir],[LADSPA_DIR],[auto])
 CHECK_WITH([config-dir],[.bcast config dir],[CONFIG_DIR],[$$HOME/.bcast5])
+CHECK_WITH([nested-dir],[nested proxy dir],[NESTED_DIR],[$$HOME/Videos])
 CHECK_WITH([browser],[cin_browser path],[CIN_BROWSER],[firefox])
 CHECK_WITH([git-ffmpeg],[git ffmpeg using url],[GIT_FFMPEG],[no])
 CHECK_WITH([noelision],[use noelision/libpthread],[NOELISION],[auto])
@@ -748,8 +749,9 @@ EXROStream() : Imf::OStream("mypath") {} };
 ]])], [HAVE_OPENEXR=yes], [HAVE_OPENEXR=no])
  RESULT="$HAVE_OPENEXR"
  if test "x$RESULT" = "xyes"; then
-   SHARED_openexr="$LIBS"
-   CFG_CFLAGS+=" -I/usr/include/OpenEXR -I/usr/local/include/OpenEXR"
+  SHARED_openexr="$LIBS"
+  SHARED_LIBS+=" $LIBS"
+  CFG_CFLAGS+=" -I/usr/include/OpenEXR -I/usr/local/include/OpenEXR"
  fi
  LIBS="$saved_LIBS"
  CXXFLAGS="$saved_CXXFLAGS"
@@ -966,6 +968,7 @@ echo "  using: exec-name = $WANT_CIN"
 echo "  using: with-cinlib = $WANT_CINLIB_DIR"
 echo "  using: with-cindat = $WANT_CINDAT_DIR"
 echo "  using: with-config-dir = $WANT_CONFIG_DIR"
+echo "  using: with-nested-dir = $WANT_NESTED_DIR"
 echo "  using: with-browser = $WANT_CIN_BROWSER"
 echo "  using: with-plugin-dir = $WANT_PLUGIN_DIR"
 echo "  using: with-ladspa-dir = $WANT_LADSPA_DIR"
@@ -1049,6 +1052,7 @@ echo "CFLAGS += '-DCIN=\"\$(WANT_CIN)\"'"
 echo "CFLAGS += '-DCINLIB_DIR=\"$WANT_CINLIB_DIR\"'"
 echo "CFLAGS += '-DCINDAT_DIR=\"$WANT_CINDAT_DIR\"'"
 echo "CFLAGS += '-DCONFIG_DIR=\"$WANT_CONFIG_DIR\"'"
+echo "CFLAGS += '-DNESTED_DIR=\"$WANT_NESTED_DIR\"'"
 echo "CFLAGS += '-DPLUGIN_DIR=\"$WANT_PLUGIN_DIR\"'"
 echo "CFLAGS += '-DLOCALE_DIR=\"$WANT_LOCALE_DIR\"'"
 echo "CFLAGS += '-DLADSPA_DIR=\"$WANT_LADSPA_DIR\"'"

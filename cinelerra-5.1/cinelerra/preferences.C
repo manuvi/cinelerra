@@ -65,6 +65,7 @@ Preferences::Preferences()
 	keyframe_reticle = HAIRLINE_DRAGGING;
 	perpetual_session = 0;
 	strcpy(lv2_path, DEFAULT_LV2_PATH);
+	strcpy(nested_proxy_path, DEFAULT_NESTED_PROXY_PATH);
 	autostart_lv2ui = 0;
 	trap_sigsegv = 1;
 	trap_sigintr = 1;
@@ -206,6 +207,7 @@ void Preferences::copy_from(Preferences *that)
 	force_uniprocessor = that->force_uniprocessor;
 	strcpy(lv2_path, that->lv2_path);
 	autostart_lv2ui = that->autostart_lv2ui;
+	strcpy(nested_proxy_path, that->nested_proxy_path);
 	trap_sigsegv = that->trap_sigsegv;
 	trap_sigintr = that->trap_sigintr;
 	processors = that->processors;
@@ -330,6 +332,8 @@ int Preferences::load_defaults(BC_Hash *defaults)
 	strcpy(lv2_path, DEFAULT_LV2_PATH);
 	defaults->get("LV2_PATH", lv2_path);
 	autostart_lv2ui = defaults->get("AUTOSTART_LV2UI", autostart_lv2ui);
+	strcpy(nested_proxy_path, DEFAULT_NESTED_PROXY_PATH);
+	defaults->get("NESTED_PROXY_PATH", nested_proxy_path);
 	trap_sigsegv = defaults->get("TRAP_SIGSEGV", trap_sigsegv);
 	trap_sigintr = defaults->get("TRAP_SIGINTR", trap_sigintr);
 
@@ -482,6 +486,7 @@ int Preferences::save_defaults(BC_Hash *defaults)
 	defaults->update("PERPETUAL_SESSION", perpetual_session);
 	defaults->update("LV2_PATH", lv2_path);
 	defaults->update("AUTOSTART_LV2UI", autostart_lv2ui);
+	defaults->update("NESTED_PROXY_PATH", nested_proxy_path);
 	defaults->update("TRAP_SIGSEGV", trap_sigsegv);
 	defaults->update("TRAP_SIGINTR", trap_sigintr);
 	defaults->update("AWINDOW_PICON_H", awindow_picon_h);

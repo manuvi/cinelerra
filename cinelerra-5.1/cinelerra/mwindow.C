@@ -4124,6 +4124,7 @@ void MWindow::save_backup()
 		sprintf(string2, _("Couldn't open %s for writing."), backup_path);
 		gui->show_message(string2);
 	}
+	save_undo_data();
 }
 
 void MWindow::load_backup()
@@ -4151,8 +4152,8 @@ void MWindow::load_backup()
 
 void MWindow::save_undo_data()
 {
-	undo_before();
-	undo_after(_("perpetual session"), LOAD_ALL);
+	if( stack.size() > 0 ) return;
+	if( !preferences->perpetual_session ) return;
 	char perpetual_path[BCTEXTLEN];
 	snprintf(perpetual_path, sizeof(perpetual_path), "%s/%s",
 		File::get_config_path(), PERPETUAL_FILE);
@@ -4164,15 +4165,27 @@ void MWindow::save_undo_data()
 
 void MWindow::load_undo_data()
 {
+	if( stack.size() > 0 ) return;
+	if( !preferences->perpetual_session ) return;
 	char perpetual_path[BCTEXTLEN];
 	snprintf(perpetual_path, sizeof(perpetual_path), "%s/%s",
 		File::get_config_path(), PERPETUAL_FILE);
 	FILE *fp = fopen(perpetual_path,"r");
 	if( !fp ) return;
 	undo->load(fp);
+	undo_before();
+	undo_after(_("perpetual load"), LOAD_ALL);
 	fclose(fp);
 }
 
+void MWindow::remove_undo_data()
+{
+	if( stack.size() > 0 ) return;
+	char perpetual_path[BCTEXTLEN];
+	snprintf(perpetual_path, sizeof(perpetual_path), "%s/%s",
+		File::get_config_path(), PERPETUAL_FILE);
+	::remove(perpetual_path);
+}
 
 int MWindow::copy_target(const char *path, const char *target)
 {

@@ -308,6 +308,18 @@ public:
 	InterfacePrefs *subwindow;
 };
 
+class PrefsNestedProxyPath : public BC_TextBox
+{
+public:
+	PrefsNestedProxyPath(PreferencesWindow *pwindow,
+		InterfacePrefs *subwindow, int x, int y, int w);
+	~PrefsNestedProxyPath();
+
+	int handle_event();
+	PreferencesWindow *pwindow;
+	InterfacePrefs *subwindow;
+};
+
 class PrefsReloadPlugins : public BC_GenericButton
 {
 public:

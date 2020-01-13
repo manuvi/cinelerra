@@ -195,7 +195,16 @@ void ProxyRender::to_proxy_path(char *new_path, Indexable *indexable, int scale)
 {
 // path is already a proxy
 	if( strstr(indexable->path, ".proxy") ) return;
-	strcpy(new_path, indexable->path);
+	if( !indexable->is_asset ) {
+		char *ifn = indexable->path, *cp = strrchr(ifn, '/');
+		if( cp ) ifn = cp+1;
+		char proxy_path[BCTEXTLEN];
+		File::getenv_path(proxy_path,
+			mwindow->preferences->nested_proxy_path);
+		sprintf(new_path, "%s/%s", proxy_path, ifn);
+	}
+	else
+		strcpy(new_path, indexable->path);
 	char prxy[BCSTRLEN];
 	int n = sprintf(prxy, ".proxy%d", scale);
 // insert proxy, path.sfx => path.proxy#-sfx.ext
@@ -265,8 +274,18 @@ Asset *ProxyRender::add_original(Indexable *idxbl, int new_scale)
 	if( strstr(idxbl->path,".proxy") ) return 0;
 	char new_path[BCTEXTLEN];
 	to_proxy_path(new_path, idxbl, new_scale);
-// don't proxy if not readable
+// don't proxy if not readable, or proxy_path not writable
 	if( idxbl->is_asset && access(idxbl->path, R_OK) ) return 0;
+	int ret = access(new_path, W_OK);
+	if( ret ) {
+		int fd = ::open(new_path,O_WRONLY);
+		if( fd < 0 ) fd = open(new_path,O_WRONLY+O_CREAT,0666);
+		if( fd >= 0 ) { close(fd);  ret = 0; }
+	}
+	if( ret ) {
+		eprintf(_("bad proxy path: %s\n"), new_path);
+		return 0;
+	}
 // add to orig_idxbls & orig_proxies if it isn't already there.
 	int got_it = 0;
 	for( int i = 0; !got_it && i<orig_proxies.size(); ++i )

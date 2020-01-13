@@ -249,7 +249,7 @@ void BC_Texture::write_tex(const char *fn, int id)
 	uint8_t *img = new uint8_t[w*h*3];
 	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, img);
 	write_ppm(img, w, h, "%s", fn);
-	delete img;
+	delete [] img;
 	glActiveTexture(prev_id);
 #endif
 }

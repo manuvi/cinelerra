@@ -189,6 +189,7 @@ public:
 	char plugin_dir[BCTEXTLEN];
 	char lv2_path[BCTEXTLEN];
 	int autostart_lv2ui;
+	char nested_proxy_path[BCTEXTLEN];
 
 // Required when updating renderfarm rates
 	Mutex *preferences_lock;

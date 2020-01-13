@@ -62,7 +62,7 @@ InterfacePrefs::~InterfacePrefs()
 void InterfacePrefs::create_objects()
 {
 	int xs4 = xS(4), xs5 = xS(5), xs10 = xS(10), xs30 = xS(30);
-	int ys5 = yS(5), ys10 = yS(10), ys20 = yS(20), ys30 = yS(30), ys35 = yS(35);
+	int ys5 = yS(5), ys10 = yS(10), ys30 = yS(30), ys35 = yS(35);
 	BC_Resources *resources = BC_WindowBase::get_resources();
 	int margin = mwindow->theme->widget_border;
 	char string[BCTEXTLEN];
@@ -130,26 +130,35 @@ void InterfacePrefs::create_objects()
 	AndroidRemote *android_remote = new AndroidRemote(pwindow, x2, y);
 	add_subwindow(android_remote);
 	y += android_remote->get_h() + ys10;
-	add_subwindow(title = new BC_Title(x2, y, _("Port:")));
-	int x3 = x2 + title->get_w() + margin;
+	int x3 = x2;
+	add_subwindow(title = new BC_Title(x3, y, _("Port:")));
+	x3 += title->get_w() + margin;
 	AndroidPort *android_port = new AndroidPort(pwindow, x3, y);
 	add_subwindow(android_port);
-	y += title->get_h() + ys10;
-	add_subwindow(title = new BC_Title(x2, y, _("PIN:")));
+	x3 += android_port->get_w() + 2*margin;
+	add_subwindow(title = new BC_Title(x3, y, _("PIN:")));
+	x3 += title->get_w() + margin;
 	AndroidPIN *android_pin = new AndroidPIN(pwindow, x3, y);
 	add_subwindow(android_pin);
-	y += title->get_h() + ys20;
+	y += android_port->get_h() + 3*margin;
 
 	ShBtnPrefs *shbtn_prefs = new ShBtnPrefs(pwindow, this, x2, y);
 	add_subwindow(shbtn_prefs);
-	y += shbtn_prefs->get_h() + ys20;
+	x3 = x2 + shbtn_prefs->get_w() + 2*margin;
+	add_subwindow(reload_plugins = new PrefsReloadPlugins(pwindow, this, x3, y));
+	y += reload_plugins->get_h() + 3*margin;
 
-	add_subwindow(reload_plugins = new PrefsReloadPlugins(pwindow, this, x2, y));
-	y += reload_plugins->get_h() + ys10;
+	add_subwindow(title = new BC_Title(x2, y, _("Nested Proxy Path:")));
+	y += title->get_h() + ys10;
+	PrefsNestedProxyPath *nested_proxy_path = new PrefsNestedProxyPath(pwindow, this,
+			x2, y, get_w()-x2-xs30);
+	add_subwindow(nested_proxy_path);
+	y += xs30;
 
 	add_subwindow(title = new BC_Title(x2, y, _("Default LV2_PATH:")));
 	y += title->get_h() + ys10;
-	PrefsLV2PathText *lv2_path_text = new PrefsLV2PathText(pwindow, this, x2, y, get_w()-x2-xs30);
+	PrefsLV2PathText *lv2_path_text = new PrefsLV2PathText(pwindow, this,
+			x2, y, get_w()-x2-xs30);
 	add_subwindow(lv2_path_text);
 	y += xs30;
 
@@ -422,7 +431,7 @@ int AndroidRemote::handle_event()
 }
 
 AndroidPIN::AndroidPIN(PreferencesWindow *pwindow, int x, int y)
- : BC_TextBox(x, y, xS(240), 1, pwindow->thread->preferences->android_pin)
+ : BC_TextBox(x, y, xS(180), 1, pwindow->thread->preferences->android_pin)
 {
 	this->pwindow = pwindow;
 }
@@ -682,6 +691,24 @@ PrefsLV2PathText::~PrefsLV2PathText()
 int PrefsLV2PathText::handle_event()
 {
 	strcpy(pwindow->thread->preferences->lv2_path, get_text());
+	return 1;
+}
+
+PrefsNestedProxyPath::PrefsNestedProxyPath(PreferencesWindow *pwindow,
+	InterfacePrefs *subwindow, int x, int y, int w)
+ : BC_TextBox(x, y, w, 1, pwindow->thread->preferences->nested_proxy_path)
+{
+	this->pwindow = pwindow;
+	this->subwindow = subwindow;
+}
+
+PrefsNestedProxyPath::~PrefsNestedProxyPath()
+{
+}
+
+int PrefsNestedProxyPath::handle_event()
+{
+	strcpy(pwindow->thread->preferences->nested_proxy_path, get_text());
 	return 1;
 }
 

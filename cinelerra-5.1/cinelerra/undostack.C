@@ -59,7 +59,7 @@ UndoStackItem *UndoStack::get_current_redo()
 UndoStackItem* UndoStack::push()
 {
 // delete oldest 2 undos if necessary
-	if( total() > UNDOLEVELS ) {
+	while( total() > UNDOLEVELS ) {
 		UndoStackItem *item = first, *key = item;
 #ifdef UNDO_INCREMENTAL
 		for( int i=2; --i>=0; item=item->next );

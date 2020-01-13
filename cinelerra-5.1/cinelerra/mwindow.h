@@ -549,6 +549,7 @@ public:
 	void redo_entry(BC_WindowBase *calling_window_gui);
 	void save_undo_data();
 	void load_undo_data();
+	void remove_undo_data();
 	int copy_target(const char *path, const char *target);
 	int link_target(const char *real_path, const char *link_path, int relative);
 	void save_project(const char *dir, int save_mode, int overwrite, int reload);
