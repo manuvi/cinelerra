@@ -918,16 +918,25 @@ void AssetPicon::create_objects()
 	int is_clip = 0;
 
 	if( this->indexable ) {
-		fs.extract_name(name, indexable->path);
-		set_text(name);
-		if( this->indexable->is_asset )
+		char *cp = name;
+		if( this->indexable->is_asset ) {
 			asset = (Asset *)indexable;
-		else
+			if( asset->format == FILE_REF ) {
+				cp += sprintf(cp, "ref:");
+				set_color(get_color() ^ 0x5599CC);
+			}
+		}
+		else {
 			edl = (EDL *)indexable;
+			cp += sprintf(cp, "edl:");
+			set_color(get_color() ^ 0xCC9955);
+		}
+		fs.extract_name(cp, indexable->path);
+		set_text(name);
 	}
 	else if( this->edl ) {
 		edl = this->edl;
-		set_text(strcpy(name, edl->local_session->clip_title));
+		strcpy(name, edl->local_session->clip_title);
 		set_text(name);
 		is_clip = 1;
 	}
@@ -2068,10 +2077,6 @@ void AWindowGUI::update_asset_list()
 		if( !exists ) {
 			AssetPicon *picon = new AssetPicon(mwindow,
 				this, current);
-			if( current->format == FILE_REF ) {
-				int color = picon->get_color();
-				picon->set_color(color ^ 0x5599CC);
-			}
 			new_assets.append(picon);
 		}
 	}

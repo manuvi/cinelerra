@@ -2139,14 +2139,12 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 			session->group_number += groups;
 			switch( edl_mode ) {
 			case LOADMODE_EDL_CLIP: {
-        			sprintf(new_edl->local_session->clip_title, _("Clip %d"),
-			                session->clip_number++);
-				char string[BCSTRLEN];
-				time_t t;  time(&t);
-				ctime_r(&t, string);
-				snprintf(new_edl->local_session->clip_notes,
-					sizeof(new_edl->local_session->clip_notes),
-					+("%sFrom: %s"), string, filename);
+				strcpy(new_edl->local_session->clip_title,
+					filenames->get(i));
+       				struct stat st;
+				time_t t = !stat(filenames->get(i),&st) ?
+       					st.st_mtime : time(&t);
+				ctime_r(&t, new_edl->local_session->clip_notes);
 				switch( load_mode ) {
 				case LOADMODE_REPLACE:
 				case LOADMODE_REPLACE_CONCATENATE:

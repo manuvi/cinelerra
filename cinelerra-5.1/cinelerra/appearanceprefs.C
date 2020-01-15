@@ -214,6 +214,9 @@ void AppearancePrefs::create_objects()
 	BD_WarnRoot *bdwr_warn = new BD_WarnRoot(pwindow, x, y);
 	add_subwindow(bdwr_warn);
 	y += bdwr_warn->get_h() + ys5;
+	UseWarnFileRef *warn_ref = new UseWarnFileRef(pwindow, x, y);
+	add_subwindow(warn_ref);
+	y += warn_ref->get_h() + ys5;
 
 	x = get_w() / 3 + xs30;
 	y = y1;
@@ -627,6 +630,20 @@ int BD_WarnRoot::handle_event()
 	pwindow->thread->preferences->bd_warn_root = get_value();
 	return 1;
 }
+
+UseWarnFileRef::UseWarnFileRef(PreferencesWindow *pwindow, int x, int y)
+ : BC_CheckBox(x, y, pwindow->thread->preferences->warn_fileref,
+	_("Warn on creating file references"))
+{
+	this->pwindow = pwindow;
+}
+
+int UseWarnFileRef::handle_event()
+{
+	pwindow->thread->preferences->warn_fileref = get_value();
+	return 1;
+}
+
 
 PopupMenuBtnup::PopupMenuBtnup(PreferencesWindow *pwindow, int x, int y)
  : BC_CheckBox(x, y, pwindow->thread->preferences->popupmenu_btnup,

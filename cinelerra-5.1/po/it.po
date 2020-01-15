@@ -4295,7 +4295,7 @@ msgid "Nest sequence"
 msgstr "Sequenza Nest"
 
 #: cinelerra//loadmode.C:82 cinelerra//loadmode.C:102
-msgid "Insertion strategy:"
+msgid "Load strategy:"
 msgstr "Modalità Inserimento:"
 
 #: cinelerra//localsession.C:63

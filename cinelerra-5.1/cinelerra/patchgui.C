@@ -386,6 +386,7 @@ int RecordPatch::button_press_event()
 			get_resources()->text_background :
 			get_resources()->text_background_disarmed);
 		patch->title->set_text_row(0);
+		mwindow->gui->draw_overlays(1);
 		return 1;
 	}
 	return 0;

@@ -271,6 +271,14 @@ public:
 	PreferencesWindow *pwindow;
 };
 
+class UseWarnFileRef : public BC_CheckBox
+{
+public:
+	UseWarnFileRef(PreferencesWindow *pwindow, int x, int y);
+	int handle_event();
+	PreferencesWindow *pwindow;
+};
+
 class PopupMenuBtnup : public BC_CheckBox
 {
 public:

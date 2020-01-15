@@ -91,6 +91,7 @@ void WWindowGUI::create_objects()
 	x = get_w() - BC_CancelButton::calculate_w() - xS(10);
 	add_subwindow(new BC_CancelButton(x, y));
 	show_window();
+	raise_window();
 	unlock_window();
 }
 

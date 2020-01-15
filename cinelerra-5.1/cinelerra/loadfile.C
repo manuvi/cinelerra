@@ -36,6 +36,7 @@
 #include "mainsession.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
+#include "preferences.h"
 #include "theme.h"
 
 
@@ -95,7 +96,6 @@ BC_Window* LoadFileThread::new_gui()
 	sprintf(default_path, "~");
 	mwindow->defaults->get("DEFAULT_LOADPATH", default_path);
 	load_mode = mwindow->defaults->get("LOAD_MODE", load_mode);
-	edl_mode = mwindow->defaults->get("LOAD_EDL_MODE", edl_mode);
 
 	mwindow->gui->lock_window("LoadFileThread::new_gui");
 	window = new LoadFileWindow(mwindow, this, default_path);
@@ -118,8 +118,10 @@ void LoadFileThread::load_apply()
 {
 	mwindow->defaults->update("DEFAULT_LOADPATH", window->get_submitted_path());
 	mwindow->defaults->update("LOAD_MODE", load_mode);
-	mwindow->defaults->update("LOAD_EDL_MODE", edl_mode);
-
+	if( edl_mode == LOADMODE_EDL_FILEREF )
+		mwindow->show_warning(
+			&mwindow->preferences->warn_fileref,
+			_("Other projects can change this project"));
 	ArrayList<char*> path_list;
 	path_list.set_array_delete();
 
@@ -188,6 +190,8 @@ void LoadFileWindow::create_objects()
 
 	int x = get_w() / 2 - LoadMode::calculate_w(this, mwindow->theme) / 2;
 	int y = get_y_margin();
+// always start as clip to match historical behavior
+	thread->edl_mode = LOADMODE_EDL_CLIP;
 	loadmode = new LoadMode(mwindow, this, x, y,
 		&thread->load_mode, &thread->edl_mode, 0, 1);
 	loadmode->create_objects();
@@ -267,7 +271,6 @@ int LoadPrevious::handle_event()
 	path_list.set_array_delete();
 	char *out_path;
 	int load_mode = mwindow->defaults->get("LOAD_MODE", LOADMODE_REPLACE);
-	int edl_mode = mwindow->defaults->get("LOAD_EDL_MODE", LOADMODE_EDL_CLIP);
 
 	path_list.append(out_path = new char[strlen(path) + 1]);
 	strcpy(out_path, path);
@@ -277,7 +280,6 @@ int LoadPrevious::handle_event()
 	path_list.remove_all_objects();
 
 	mwindow->defaults->update("LOAD_MODE", load_mode);
-	mwindow->defaults->update("LOAD_EDL_MODE", edl_mode);
 	mwindow->save_backup();
 	mwindow->session->changes_made = 0;
 	return 1;

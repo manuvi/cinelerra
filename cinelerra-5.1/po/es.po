@@ -5717,7 +5717,7 @@ msgid "Nest sequence"
 msgstr "Secuencia de anidado"
 
 #: cinelerra/loadmode.C:118 cinelerra/loadmode.C:167
-msgid "Insertion strategy:"
+msgid "Load strategy:"
 msgstr "Estrategia de inserción:"
 
 #: cinelerra/localsession.C:63

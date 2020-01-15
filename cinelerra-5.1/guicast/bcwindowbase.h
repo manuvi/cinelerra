@@ -504,6 +504,7 @@ public:
 	void slide_down(int distance);
 	void flicker(int n=3, int ms=66);
 	void focus();
+	int wait_viewable(int ms);
 
 	int cycle_textboxes(int amount);
 

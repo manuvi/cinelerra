@@ -5768,7 +5768,7 @@ msgid "Nest sequence"
 msgstr "Вложенная последовательность"
 
 #: cinelerra/loadmode.C:118 cinelerra/loadmode.C:167
-msgid "Insertion strategy:"
+msgid "Load strategy:"
 msgstr "Стратегия открытия:"
 
 #: cinelerra/localsession.C:63

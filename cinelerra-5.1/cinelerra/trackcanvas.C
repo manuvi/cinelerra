@@ -1680,9 +1680,16 @@ void TrackCanvas::draw_selected(int x, int y, int w, int h)
 
 void TrackCanvas::draw_selected_edits(EDL *edl, int dx, int dy, int color0, int color1)
 {
+	int dropping = 0;
 	for( Track *track=edl->tracks->first; track; track=track->next ) {
+		if( !track->record && color1 < 0 ) {
+			if( dropping )
+				dy -= track->vertical_span(mwindow->theme);
+			continue;
+		}
 		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
 			if( !edit->is_selected ) continue;
+			dropping = 1;
 			int64_t x, y, w, h;
 			edit_dimensions(edit, x, y, w, h);
 			x += dx;  y += dy;
@@ -1691,10 +1698,10 @@ void TrackCanvas::draw_selected_edits(EDL *edl, int dx, int dy, int color0, int 
 			set_opaque();
 			int inner = color1 < 0 ? color0 : !edit->group_id ? color0 :
 				mwindow->get_group_color(edit->group_id);
-			set_color(inner);
-			draw_selected(x, y, w, h);
 			int outer = color1 < 0 ? color0 : !edit->group_id ? color1 : inner;
-			set_color(outer);
+			set_color(track->record ? inner : outer);
+			draw_selected(x, y, w, h);
+			set_color(track->record ? outer : inner);
 			draw_selected(x-1, y-1, w+2, h+2);
 			draw_selected(x-2, y-2, w+1, h+1);
 		}
@@ -5045,25 +5052,29 @@ int TrackCanvas::do_edits(int cursor_x, int cursor_y, int button_press, int drag
 	return result;
 }
 
-
+// returns -1=doesnt fit, 1=fits, 0=fits but overwrites
 int TrackCanvas::test_track_group(EDL *group, Track *first_track, double &pos)
 {
+	int intersects = 0;
 	Track *src = group->tracks->first;
 	for( Track *track=first_track; track && src; track=track->next ) {
-		if( !track->record ) continue;
+		if( !track->record ) return -1;
 		if( src->data_type != track->data_type ) return -1;
 		for( Edit *src_edit=src->edits->first; src_edit; src_edit=src_edit->next ) {
 			if( src_edit->silence() ) continue;
-			if( edit_intersects(track, src_edit, pos) ) return 0;
+			if( !intersects && edit_intersects(track, src_edit, pos) )
+				intersects = 1;
 		}
 		src = src->next;
 	}
-	return !src ? 1 : 0;
+	return src ? -1 : !intersects ? 1 : 0;
 }
 
 int TrackCanvas::edit_intersects(Track *track, Edit *src_edit, double &pos)
 {
 	if( pos < 0 ) { pos = 0;  return 1; }
+	int pane_no = pane->number;
+	int cur_pix = track->edl->get_position_cursorx(pos, pane_no);
 	int64_t src_start = src_edit->startproject;
 	int64_t src_end = src_start + src_edit->length;
 	double new_start = src_edit->track->from_units(src_start) + pos;
@@ -5076,6 +5087,7 @@ int TrackCanvas::edit_intersects(Track *track, Edit *src_edit, double &pos)
 		if( edit_start >= trk_end ) continue;
 		int64_t edit_end = edit_start + edit->length;
 		if( trk_start >= edit_end ) continue;
+
 		int64_t lt_dist = labs(trk_end - edit_start);
 		int64_t rt_dist = labs(edit_end - trk_start);
 		int64_t position;
@@ -5093,7 +5105,10 @@ int TrackCanvas::edit_intersects(Track *track, Edit *src_edit, double &pos)
 			if( lt_dist > rt_dist )
 				position -= src_end;
 		}
-		pos = edit->track->from_units(position);
+		double new_pos = edit->track->from_units(position);
+		int new_pix = track->edl->get_position_cursorx(new_pos, pane_no);
+		if( abs(new_pix-cur_pix) < HANDLE_W )
+			pos = new_pos;
 		return 1;
 	}
 	return 0;

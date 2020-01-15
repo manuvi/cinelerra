@@ -4214,6 +4214,8 @@ void BC_WindowBase::set_force_tooltip(int v)
 
 int BC_WindowBase::raise_window(int do_flush)
 {
+	if( hidden ) return 1;
+	if( wait_viewable(500) ) return 1;
 	XRaiseWindow(top_level->display, win);
 	if(do_flush) XFlush(top_level->display);
 	return 0;
@@ -4628,5 +4630,17 @@ void BC_WindowBase::focus()
 	XGetWindowAttributes(top_level->display, top_level->win, &xwa);
 	if( xwa.map_state == IsViewable )
 		XSetInputFocus(top_level->display, top_level->win, RevertToParent, CurrentTime);
+}
+
+int BC_WindowBase::wait_viewable(int ms)
+{
+	Timer timer;
+	XWindowAttributes xwa;
+	do {
+		XGetWindowAttributes(top_level->display, top_level->win, &xwa);
+		if( xwa.map_state == IsViewable ) return 1;
+		usleep(10000);
+	} while( timer.get_difference() < ms );
+	return 0;
 }
 
