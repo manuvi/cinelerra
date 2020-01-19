@@ -442,7 +442,7 @@ BC_FileBox::BC_FileBox(int x, int y, const char *init_path,
  : BC_Window(title, x, y,
  	BC_WindowBase::get_resources()->filebox_w,
 	BC_WindowBase::get_resources()->filebox_h,
-	xS(400), yS(300), 1, 0, 1)
+	xS(450), yS(350), 1, 0, 1)
 {
 	fs = new FileSystem;
 // 	if(want_directory)
@@ -708,28 +708,28 @@ int BC_FileBox::resize_event(int w, int h)
 {
 	draw_background(0, 0, w, h);
 	flash(0);
+	int dw = w - get_w();
+	int dh = h - get_h();
 
 // OK button handles resize event itself
 // 	ok_button->reposition_window(ok_button->get_x(),
-// 		h - (get_h() - ok_button->get_y()));
-// 	cancel_button->reposition_window(w - (get_w() - cancel_button->get_x()),
-// 		h - (get_h() - cancel_button->get_y()));
+// 		ok_button->get_y() + dh);
+// 	cancel_button->reposition_window(cancel_button->get_x() + dw,
+// 		cancel_button->get_y() + dh);
 	if(usethis_button)
 		usethis_button->reposition_window(w / 2 - xS(50),
-			h - (get_h() - usethis_button->get_y()));
+			usethis_button->get_y() + dh);
 
 
-	if(filter_popup) filter_popup->reposition_window(w - (get_w() - filter_popup->get_x()),
-		h - (get_h() - filter_popup->get_y()),
-		w - xS(30),
-		0);
+	if(filter_popup)
+		filter_popup->reposition_window(filter_popup->get_x() + dw,
+			filter_popup->get_y() + dh, w - xS(30), 0);
 
-	if(filter_title) filter_title->reposition_window(filter_title->get_x(),
-		h - (get_h() - filter_title->get_y()));
+	if(filter_title)
+		filter_title->reposition_window(filter_title->get_x(),
+			filter_title->get_y() + dh);
 	if(filter_text) filter_text->reposition_window(filter_text->get_x(),
-		h - (get_h() - filter_text->get_y()),
-		w - (get_w() - filter_text->get_w()),
-		1);
+		filter_text->get_y() + dh, filter_text->get_w() + dw, 1);
 	directory_title->reposition_window(
 		directory_title->get_x(), directory_title->get_y(),
 		get_w()-directory_title->get_x() - recent_popup->get_w()-xS(20), 1);
@@ -738,30 +738,22 @@ int BC_FileBox::resize_event(int w, int h)
 		directory_title->get_y(),
 		directory_title->get_w() + recent_popup->get_w(), xS(200));
 	search_text->reposition_window(
-		search_text->get_x(),
-		search_text->get_y(),
-		get_w() - search_text->get_x() -  xS(40),
-		1);
+		search_text->get_x(), search_text->get_y(),
+		get_w() - search_text->get_x() -  xS(40), 1);
 	file_title->reposition_window(file_title->get_x(),
-		h - (get_h() - file_title->get_y()));
+		file_title->get_y() + dh);
 	textbox->reposition_window(textbox->get_x(),
-		h - (get_h() - textbox->get_y()),
-		w - (get_w() - textbox->get_w()),
-		1);
-	listbox->reposition_window(listbox->get_x(),
-		listbox->get_y(),
-		w - (get_w() - listbox->get_w()),
-		h - (get_h() - listbox->get_h()),
-		0);
-	int dx = w - get_w();
-	icon_button->reposition_window(icon_button->get_x()+dx, icon_button->get_y());
-	text_button->reposition_window(text_button->get_x()+dx, text_button->get_y());
-	folder_button->reposition_window(folder_button->get_x()+dx, folder_button->get_y());
-	rename_button->reposition_window(rename_button->get_x()+dx, rename_button->get_y());
-	reload_button->reposition_window(reload_button->get_x()+dx, reload_button->get_y());
-	delete_button->reposition_window(delete_button->get_x()+dx, delete_button->get_y());
-	updir_button->reposition_window(updir_button->get_x()+dx, updir_button->get_y());
-	szfmt_button->reposition_window(szfmt_button->get_x()+dx, szfmt_button->get_y());
+		textbox->get_y() + dh, textbox->get_w() + dw, 1);
+	listbox->reposition_window(listbox->get_x(), listbox->get_y(),
+		listbox->get_w() + dw, listbox->get_h() + dh, 0);
+	icon_button->reposition_window(icon_button->get_x()+dw, icon_button->get_y());
+	text_button->reposition_window(text_button->get_x()+dw, text_button->get_y());
+	folder_button->reposition_window(folder_button->get_x()+dw, folder_button->get_y());
+	rename_button->reposition_window(rename_button->get_x()+dw, rename_button->get_y());
+	reload_button->reposition_window(reload_button->get_x()+dw, reload_button->get_y());
+	delete_button->reposition_window(delete_button->get_x()+dw, delete_button->get_y());
+	updir_button->reposition_window(updir_button->get_x()+dw, updir_button->get_y());
+	szfmt_button->reposition_window(szfmt_button->get_x()+dw, szfmt_button->get_y());
 	set_w(w);  set_h(h);
 	get_resources()->filebox_w = get_w();
 	get_resources()->filebox_h = get_h();

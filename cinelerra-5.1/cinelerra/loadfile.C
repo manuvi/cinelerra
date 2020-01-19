@@ -121,7 +121,8 @@ void LoadFileThread::load_apply()
 	if( edl_mode == LOADMODE_EDL_FILEREF )
 		mwindow->show_warning(
 			&mwindow->preferences->warn_fileref,
-			_("Other projects can change this project"));
+			_("Other projects can change this project\n"
+			  "and this can become a broken link"));
 	ArrayList<char*> path_list;
 	path_list.set_array_delete();
 

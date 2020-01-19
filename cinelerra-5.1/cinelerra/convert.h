@@ -61,7 +61,7 @@ public:
 
 // if user canceled progress bar
 	int is_canceled();
-	void set_format(Asset *asset, const char *suffix);
+	void set_format(Asset *asset, const char *suffix, int to_proxy);
 	void start_convert(float beep, int remove_originals);
 	void run();
 	void create_copy(int i);
@@ -79,6 +79,7 @@ public:
 	int total_rendered, remove_originals;
 	int failed, canceled, result;
 	float beep;
+	int to_proxy;
 };
 
 class ConvertMenuItem : public BC_MenuItem
@@ -119,6 +120,17 @@ class ConvertRemoveOriginals : public BC_CheckBox
 public:
 	ConvertRemoveOriginals(ConvertWindow *gui, int x, int y);
         ~ConvertRemoveOriginals();
+
+	int handle_event();
+
+	ConvertWindow *gui;
+};
+
+class ConvertToProxyPath : public BC_CheckBox
+{
+public:
+	ConvertToProxyPath(ConvertWindow *gui, int x, int y);
+	~ConvertToProxyPath();
 
 	int handle_event();
 
@@ -178,6 +190,7 @@ public:
 	ConvertSuffixText *suffix_text;
 	ConvertFormatTools *format_tools;
 	ConvertRemoveOriginals *remove_originals;
+	ConvertToProxyPath *to_proxy_path;
 	ConvertBeepOnDone *beep_on_done;
 };
 
@@ -202,6 +215,7 @@ public:
 	int orig_w, orig_h;
 	int remove_originals;
 	float beep;
+	int to_proxy;
 };
 
 #endif

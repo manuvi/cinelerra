@@ -224,10 +224,10 @@ void LoadMode::create_objects()
 		ix += pad;
 	}
 
-	ix = 0;  iy = mh+pad;
+	ix = xS(25);  iy = mh+pad;
 	const char *mode_text = mode_to_text(*load_mode);
 	textbox = new BC_TextBox(x+ix, y+iy,
-		mwindow->theme->loadmode_w, 1, mode_text);
+		mwindow->theme->loadmode_w-2*ix, 1, mode_text);
 	window->add_subwindow(textbox);
 	ix += textbox->get_w();
 	listbox = new LoadModeListBox(window, this, x+ix, y+iy);
@@ -274,7 +274,7 @@ int LoadMode::reposition_window(int x, int y)
 		ix += pad;
 	}
 
-	ix = 0;  iy = mh+pad;
+	ix = xS(25);  iy = mh+pad;
 	textbox->reposition_window(x+ix, y+iy);
 	ix += textbox->get_w();
 	listbox->reposition_window(x+ix, y+iy);

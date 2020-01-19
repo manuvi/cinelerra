@@ -4638,9 +4638,9 @@ int BC_WindowBase::wait_viewable(int ms)
 	XWindowAttributes xwa;
 	do {
 		XGetWindowAttributes(top_level->display, top_level->win, &xwa);
-		if( xwa.map_state == IsViewable ) return 1;
+		if( xwa.map_state == IsViewable ) return 0;
 		usleep(10000);
 	} while( timer.get_difference() < ms );
-	return 0;
+	return 1;
 }
 

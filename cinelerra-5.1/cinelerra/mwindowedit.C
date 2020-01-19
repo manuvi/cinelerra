@@ -2445,11 +2445,11 @@ void MWindow::add_proxy(ArrayList<Indexable*> *orig_assets, ArrayList<Indexable*
 }
 
 void MWindow::start_convert(Asset *format_asset, const char *suffix,
-		float beep, int remove_originals)
+		float beep, int to_proxy, int remove_originals)
 {
 	if( !convert_render )
 		convert_render = new ConvertRender(this);
-	convert_render->set_format(format_asset, suffix);
+	convert_render->set_format(format_asset, suffix, to_proxy);
 	int found = convert_render->find_convertable_assets(edl);
 	if( convert_render->needed_idxbls.size() > 0 )
 		convert_render->start_convert(beep, remove_originals);

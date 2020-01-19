@@ -132,7 +132,7 @@ void CAKEWALKTHEME::initialize()
  recordgui_fixed_color = MeterGreen;
  recordgui_variable_color = MeterYellow;
  channel_position_color = MeterYellow;
- resources->meter_title_w = xS(25);
+ resources->meter_title_w = xS(28);
  edit_font_color = ComicYellow;
  assetedit_color = TextFgBright;
  timebar_cursor_color = WHITE;

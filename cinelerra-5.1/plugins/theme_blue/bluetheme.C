@@ -932,7 +932,7 @@ void BlueDotTheme::initialize()
 	recordgui_variable_color = RED;
 
 	channel_position_color = MEYELLOW;
-	resources->meter_title_w = xS(25);
+	resources->meter_title_w = xS(28);
 
         // (asset) edit info text color
         edit_font_color = YELLOW;

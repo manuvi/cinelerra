@@ -6,6 +6,7 @@ class ConvertMenuItem;
 class ConvertFormatTools;
 class ConvertSuffixText;
 class ConvertRemoveOriginals;
+class ConvertToProxyPath;
 class ConvertBeepOnDone;
 class ConvertPackageRenderer;
 class ConvertProgress;

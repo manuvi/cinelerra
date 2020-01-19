@@ -196,7 +196,7 @@ void NEOPHYTETHEME::initialize()
 	recordgui_variable_color = RED;
 	      
 	channel_position_color = ComicYellow; // Set Format, speaker numbers 
-	resources->meter_title_w = xS(25);
+	resources->meter_title_w = xS(28);
 
 	// (asset) edit info text color
 	edit_font_color = ComicYellow; // ? ../../cinelerra/theme.h:282

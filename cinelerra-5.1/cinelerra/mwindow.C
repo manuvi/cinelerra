@@ -4287,7 +4287,10 @@ void MWindow::save_project(const char *dir, int save_mode, int overwrite, int re
 	char progress_title[BCTEXTLEN];
 	sprintf(progress_title, _("Saving to %s:\n"), dir);
 	int total_assets = save_edl->assets->total();
+	gui->lock_window("MWindow::save_project");
 	MainProgressBar *progress = mainprogress->start_progress(progress_title, total_assets);
+	gui->unlock_window();
+
 	int ret = 0;
 	Asset *current = save_edl->assets->first;
 	for( int i=0; !ret && current; ++i, current=NEXT ) {

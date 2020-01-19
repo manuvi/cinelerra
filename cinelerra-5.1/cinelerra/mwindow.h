@@ -597,7 +597,7 @@ public:
 	int optimize_assets();            // delete unused assets from the cache and assets
 // render edl assets to specified format, then replace in edl
 	void start_convert(Asset *format_asset, const char *suffix,
-			float beep, int remove_originals);
+			float beep, int to_proxy, int remove_originals);
 	void finish_convert(int remove_originals);
 	ConvertRender *convert_render;
 

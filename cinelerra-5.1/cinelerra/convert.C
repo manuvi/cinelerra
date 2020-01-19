@@ -52,7 +52,7 @@
 
 
 #define WIDTH xS(400)
-#define HEIGHT yS(320)
+#define HEIGHT yS(360)
 #define MAX_SCALE 16
 
 ConvertRender::ConvertRender(MWindow *mwindow)
@@ -70,6 +70,7 @@ ConvertRender::ConvertRender(MWindow *mwindow)
 	failed = 0;  canceled = 0;
 	result = 0;
 	beep = 0;
+	to_proxy = 0;
 }
 
 ConvertRender::~ConvertRender()
@@ -102,7 +103,16 @@ void ConvertRender::reset()
 
 void ConvertRender::to_convert_path(char *new_path, Indexable *idxbl)
 {
-	strcpy(new_path, idxbl->path);
+	if( to_proxy ) {
+		char *bp = idxbl->path, *cp = strrchr(bp, '/');
+		if( cp ) bp = cp+1;
+		char filename[BCTEXTLEN], proxy_path[BCTEXTLEN];
+		strcpy(filename, bp);
+		File::getenv_path(proxy_path, mwindow->preferences->nested_proxy_path);
+		sprintf(new_path, "%s/%s", proxy_path, filename);
+	}
+	else
+		strcpy(new_path, idxbl->path);
 	int n = strlen(suffix);
 	char *ep = new_path + strlen(new_path);
 	char *sfx = strrchr(new_path, '.');
@@ -333,13 +343,14 @@ int ConvertRender::find_convertable_assets(EDL *edl)
 	return count;
 }
 
-void ConvertRender::set_format(Asset *asset, const char *suffix)
+void ConvertRender::set_format(Asset *asset, const char *suffix, int to_proxy)
 {
 	delete [] this->suffix;
 	this->suffix = cstrdup(suffix);
 	if( !format_asset )
 		format_asset = new Asset();
 	format_asset->copy_from(asset, 0);
+	this->to_proxy = to_proxy;
 }
 
 void ConvertRender::start_convert(float beep, int remove_originals)
@@ -568,6 +579,8 @@ void ConvertWindow::create_objects()
 	add_subwindow(remove_originals = new ConvertRemoveOriginals(this, x, y));
 	x = lmargin;
 	y += remove_originals->get_h() + margin;
+	add_subwindow(to_proxy_path = new ConvertToProxyPath(this, x, y));
+	y += to_proxy_path->get_h() + margin;
 
 	add_subwindow(beep_on_done = new ConvertBeepOnDone(this, x, y));
 	x += beep_on_done->get_w() + margin + xS(10);
@@ -654,6 +667,7 @@ ConvertDialog::ConvertDialog(MWindow *mwindow)
 	asset->audio_data = 1;
 	remove_originals = 1;
 	beep = 0;
+	to_proxy = 0;
 }
 
 ConvertDialog::~ConvertDialog()
@@ -670,6 +684,7 @@ BC_Window* ConvertDialog::new_gui()
 	asset->load_defaults(mwindow->defaults, "CONVERT_", 1, 1, 0, 1, 0);
 	remove_originals = mwindow->defaults->get("CONVERT_REMOVE_ORIGINALS", remove_originals);
 	beep = mwindow->defaults->get("CONVERT_BEEP", beep);
+	to_proxy = mwindow->defaults->get("CONVERT_TO_PROXY", to_proxy);
 	mwindow->defaults->get("CONVERT_SUFFIX", suffix);
 	mwindow->gui->lock_window("ConvertDialog::new_gui");
 	int cx, cy;
@@ -686,8 +701,9 @@ void ConvertDialog::handle_close_event(int result)
 	mwindow->defaults->update("CONVERT_SUFFIX", suffix);
 	mwindow->defaults->update("CONVERT_REMOVE_ORIGINALS", remove_originals);
 	mwindow->defaults->update("CONVERT_BEEP", beep);
+	mwindow->defaults->update("CONVERT_TO_PROXY", to_proxy);
 	asset->save_defaults(mwindow->defaults, "CONVERT_", 1, 1, 0, 1, 0);
-	mwindow->start_convert(asset, suffix, beep, remove_originals);
+	mwindow->start_convert(asset, suffix, beep, to_proxy, remove_originals);
 }
 
 
@@ -704,6 +720,22 @@ ConvertRemoveOriginals::~ConvertRemoveOriginals()
 int ConvertRemoveOriginals::handle_event()
 {
 	gui->dialog->remove_originals = get_value();
+	return 1;
+}
+
+ConvertToProxyPath::ConvertToProxyPath(ConvertWindow *gui, int x, int y)
+ : BC_CheckBox(x, y, gui->dialog->to_proxy, _("Into Nested Proxy directory"))
+{
+	this->gui = gui;
+}
+
+ConvertToProxyPath::~ConvertToProxyPath()
+{
+}
+
+int ConvertToProxyPath::handle_event()
+{
+	gui->dialog->to_proxy = get_value();
 	return 1;
 }
 

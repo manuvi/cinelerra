@@ -358,8 +358,10 @@ int ProxyRender::create_needed_proxies(int new_scale)
 	}
 
 // start progress bar.  MWindow is locked inside this
+	mwindow->gui->lock_window("ProxyRender::create_needed_proxies");
 	progress = mwindow->mainprogress->
 		start_progress(_("Creating proxy files..."), total_len);
+	mwindow->gui->unlock_window();
 
 	ProxyFarm engine(mwindow, this, &needed_idxbls, &needed_proxies);
 	engine.process_packages();

@@ -930,7 +930,7 @@ void BrightTheme::initialize()
 	recordgui_variable_color = BLACK;
 
 	channel_position_color = BLACK;
-	resources->meter_title_w = xS(25);
+	resources->meter_title_w = xS(28);
 }
 
 
