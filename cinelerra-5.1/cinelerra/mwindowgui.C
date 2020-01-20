@@ -186,6 +186,12 @@ void MWindowGUI::create_objects()
 	}
 #endif
 	mwindow->reset_android_remote();
+	if( !cwindow_remote_handler )
+		cwindow_remote_handler = (RemoteHandler*)
+			new CWindowKeyEvHandler(mwindow->gui->remote_control);
+	if( !record_remote_handler )
+		record_remote_handler = (RemoteHandler*)
+			new RecordKeyEvHandler(mwindow->gui->remote_control);
 	if(debug) printf("MWindowGUI::create_objects %d\n", __LINE__);
 
 	int x1 = get_w() - MainShBtns::calculate_w(-1, 0, -1) - xS(5);

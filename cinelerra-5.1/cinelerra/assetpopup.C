@@ -892,12 +892,13 @@ int SnapshotMenuItem::handle_event()
 	if( !edl->have_video() ) return 1;
 
 	Preferences *preferences = mwindow->preferences;
-	char filename[BCTEXTLEN];
+	char filename[BCTEXTLEN], snapshot_path[BCTEXTLEN];
 	static const char *exts[] = { "png", "jpg", "tif", "ppm" };
 	time_t tt;     time(&tt);
 	struct tm tm;  localtime_r(&tt,&tm);
+	File::getenv_path(snapshot_path, preferences->snapshot_path);
 	snprintf(filename,sizeof(filename),"%s/%s_%04d%02d%02d-%02d%02d%02d.%s",
-		preferences->snapshot_path, _("snap"),
+		snapshot_path, _("snap"),
 		1900+tm.tm_year,1+tm.tm_mon,tm.tm_mday,
 		tm.tm_hour,tm.tm_min,tm.tm_sec, exts[mode]);
 	char *asset_path = FileSystem::basepath(filename);
@@ -1117,12 +1118,13 @@ int GrabshotPopup::grab_event(XEvent *event)
 
 	MWindow *mwindow = grab_thread->mwindow;
 	Preferences *preferences = mwindow->preferences;
-	char filename[BCTEXTLEN];
+	char filename[BCTEXTLEN], snapshot_path[BCTEXTLEN];
 	static const char *exts[] = { "png", "jpg", "tif", "ppm" };
 	time_t tt;     time(&tt);
 	struct tm tm;  localtime_r(&tt,&tm);
+	File::getenv_path(snapshot_path, preferences->snapshot_path);
 	snprintf(filename,sizeof(filename),"%s/%s_%04d%02d%02d-%02d%02d%02d.%s",
-		preferences->snapshot_path, _("grab"),
+		snapshot_path, _("grab"),
 		1900+tm.tm_year,1+tm.tm_mon,tm.tm_mday,
 		tm.tm_hour,tm.tm_min,tm.tm_sec, exts[mode]);
 	char *asset_path = FileSystem::basepath(filename);

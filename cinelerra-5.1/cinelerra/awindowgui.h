@@ -165,6 +165,7 @@ public:
 	AssetPicon *picon;
 	VFrame *temp;
 	int64_t length;
+	int broken;
 
 	VFrame *frame();
 	int64_t set_seq_no(int64_t no);

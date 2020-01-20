@@ -220,7 +220,7 @@ void AppearancePrefs::create_objects()
 
 	x = get_w() / 3 + xs30;
 	y = y1;
-	add_subwindow(title = new BC_Title(x1, y, _("Flags:"), LARGEFONT,
+	add_subwindow(title = new BC_Title(x, y, _("Flags:"), LARGEFONT,
 		resources->text_default));
 	y += title->get_h() + ys10;
 	y1 = y;

@@ -109,6 +109,7 @@ AssetVIcon::AssetVIcon(AssetPicon *picon, int w, int h, double framerate, int64_
 	this->picon = picon;
 	this->length = length;
 	temp = 0;
+	broken = 0;
 }
 
 AssetVIcon::~AssetVIcon()
@@ -119,6 +120,7 @@ AssetVIcon::~AssetVIcon()
 
 VFrame *AssetVIcon::frame()
 {
+	if( broken ) return 0;
 	AssetVIconThread *avt = picon->gui->vicon_thread;
 	Indexable *idxbl = picon->indexable;
 	Asset *asset = idxbl && idxbl->is_asset ? (Asset *)idxbl : 0;
@@ -161,7 +163,10 @@ VFrame *AssetVIcon::frame()
 	if( seq_no >= images.size() ) {
 		MWindow *mwindow = picon->mwindow;
 		File *file = mwindow->video_cache->check_out(asset, mwindow->edl, 1);
-		if( !file ) return 0;
+		if( !file ) {
+			broken = 1;
+			return 0;
+		}
 		if( temp && (temp->get_w() != asset->width || temp->get_h() != asset->height) ) {
 			delete temp;  temp = 0;
 		}
@@ -929,7 +934,7 @@ void AssetPicon::create_objects()
 		else {
 			edl = (EDL *)indexable;
 			cp += sprintf(cp, "edl:");
-			set_color(get_color() ^ 0xCC9955);
+//			set_color(get_color() ^ 0xCC9955);
 		}
 		fs.extract_name(cp, indexable->path);
 		set_text(name);

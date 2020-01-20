@@ -32,6 +32,7 @@
 #define LAYOUTS_MAX 4
 #define DEFAULT_LV2_PATH CINDAT_DIR "/lv2"
 #define DEFAULT_NESTED_PROXY_PATH NESTED_DIR
+#define DEFAULT_SNAPSHOT_PATH SNAP_DIR
 #define FFMPEG_EARLY_TIP _("Currently: Try FFMpeg first\n   Click to: Try FFMpeg last")
 #define FFMPEG_LATE_TIP  _("Currently: Try FFMpeg last\n   Click to: Try FFMpeg first")
 

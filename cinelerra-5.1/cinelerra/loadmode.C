@@ -52,9 +52,9 @@ static const char *mode_text[] =
 	N_("Concatenate to existing tracks"),
 	N_("Paste over selection/at insertion point"),
 	N_("Create new resources only"),
-	N_("EDL as Clip"),
-	N_("EDL as Nested"),
-	N_("EDL as Reference"),
+	N_("EDL"),
+	N_("Nested"),
+	N_("Reference"),
 };
 
 

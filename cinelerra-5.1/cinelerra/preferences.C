@@ -75,7 +75,7 @@ Preferences::Preferences()
 	vicon_color_mode = VICON_COLOR_MODE_LOW;
 	theme[0] = 0;
 	plugin_icons[0] = 0;
-	strcpy(snapshot_path, "/tmp");
+	strcpy(snapshot_path, DEFAULT_SNAPSHOT_PATH);
 	use_renderfarm = 0;
 	force_uniprocessor = 0;
 	renderfarm_port = DEAMON_PORT;
@@ -347,7 +347,7 @@ int Preferences::load_defaults(BC_Hash *defaults)
 	strcpy(plugin_icons, DEFAULT_PICON);
 	defaults->get("THEME", theme);
 	defaults->get("PLUGIN_ICONS", plugin_icons);
-	strcpy(snapshot_path, "/tmp");
+	strcpy(snapshot_path, DEFAULT_SNAPSHOT_PATH);
 	defaults->get("SNAPSHOT_PATH", snapshot_path);
 
 	for( int i=0; i<MAXCHANNELS; ++i ) {
