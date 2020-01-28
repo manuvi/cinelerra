@@ -809,7 +809,7 @@ SET_TRACE
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glDisable(GL_BLEND);
 SET_TRACE
-	return 0;
 #endif
+	return 0;
 }
 

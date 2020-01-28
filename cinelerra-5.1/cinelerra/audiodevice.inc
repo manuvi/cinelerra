@@ -41,6 +41,7 @@ enum
 	AUDIO_IEC61883,
 	AUDIO_DVB,
 	AUDIO_V4L2MPEG,
+	AUDIO_PULSE,
 };
 
 #define AUDIO_OSS_TITLE "OSS"
@@ -55,5 +56,6 @@ enum
 #endif
 #define AUDIO_DVB_TITLE "DVB"
 #define	AUDIO_V4L2MPEG_TITLE "V4L2 MPEG"
+#define AUDIO_PULSE_TITLE "Pulse Audio"
 
 #endif

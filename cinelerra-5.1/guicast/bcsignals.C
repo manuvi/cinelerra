@@ -25,10 +25,13 @@
 #include "bckeyboard.h"
 #include "bcresources.h"
 #include "cstrdup.h"
+#include "filesystem.h"
 
 #include <ctype.h>
 #include <dirent.h>
+#ifndef NO_BTRACE
 #include <execinfo.h>
+#endif
 #include <fcntl.h>
 #include <pwd.h>
 #include <stdio.h>
@@ -37,7 +40,9 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
+#ifndef NO_PRCTL
 #include <sys/prctl.h>
+#endif
 #include <sys/types.h>
 
 BC_Signals* BC_Signals::global_signals = 0;
@@ -182,6 +187,7 @@ static const char* signal_titles[] =
 
 void BC_Signals::dump_stack(FILE *fp)
 {
+#ifndef NO_BTRACE
 	void *buffer[256];
 	int total = backtrace (buffer, 256);
 	char **result = backtrace_symbols (buffer, total);
@@ -190,6 +196,7 @@ void BC_Signals::dump_stack(FILE *fp)
 	{
 		fprintf(fp, "%s\n", result[i]);
 	}
+#endif
 }
 
 // Kill subprocesses
@@ -270,15 +277,18 @@ static void signal_entry_recoverable(int signum)
 		getpid());
 }
 
+#ifndef NO_PRCTL
 // used to terminate child processes when program terminates
 static void handle_exit(int signum)
 {
 //printf("child %d exit\n", getpid());
 	exit(0);
 }
+#endif
 
 void BC_Signals::set_sighup_exit(int enable)
 {
+#ifndef NO_PRCTL
 	if( enable ) {
 // causes SIGHUP to be generated when parent dies
 		signal(SIGHUP, handle_exit);
@@ -291,6 +301,7 @@ void BC_Signals::set_sighup_exit(int enable)
 		signal(SIGHUP, signal_entry);
 		prctl(PR_SET_PDEATHSIG, 0,0,0,0);
 	}
+#endif
 }
 
 BC_Signals::BC_Signals()
@@ -379,6 +390,7 @@ const char* BC_Signals::sig_to_str(int number)
 }
 
 
+#ifndef NO_CTX
 #include <ucontext.h>
 #include <sys/wait.h>
 #include "thread.h"
@@ -463,6 +475,8 @@ static void reg_dump(FILE *fp,sigregs_t *rp) {}
 #error gotta have IP
 #endif
 
+// HAVE_CTX
+#endif
 
 static void handle_dump(int n, siginfo_t * info, void *sc)
 {
@@ -474,13 +488,16 @@ static void handle_dump(int n, siginfo_t * info, void *sc)
 // it is not necessary to be root if ptrace is allowed via:
 // echo 0 > /proc/sys/kernel/yama/ptrace_scope (usually set to 1)
 //	if( uid != 0 ) return;
-	ucontext_t *uc = (ucontext_t *)sc;
 	int pid = getpid(), tid = gettid();
+	void *ip = 0;
+#ifndef NO_CTX
+	ucontext_t *uc = (ucontext_t *)sc;
 	struct sigregs_t *c = (struct sigregs_t *)&uc->uc_mcontext;
-	uint8_t *ip = (uint8_t *)c->IP;
+	ip = (void *)c->IP;
+#endif
 	fprintf(stderr,"** %s at %p in pid %d, tid %d\n",
 		n==SIGSEGV? "segv" : n==SIGINT? "intr" : "trap",
-		(void*)ip, pid, tid);
+		ip, pid, tid);
 	FILE *fp = 0;
 	char fn[PATH_MAX];
 	if( BC_Signals::trap_path ) {
@@ -491,7 +508,7 @@ static void handle_dump(int n, siginfo_t * info, void *sc)
 		fprintf(stderr,"writing debug data to %s\n", fn);
 		fprintf(fp,"** %s at %p in pid %d, tid %d\n",
 			n==SIGSEGV? "segv" : n==SIGINT? "intr" : "trap",
-			(void*)c->IP, pid, tid);
+			ip, pid, tid);
 	}
 	else {
 		strcpy(fn, "stdout");
@@ -521,6 +538,7 @@ static void handle_dump(int n, siginfo_t * info, void *sc)
 	fprintf(fp,"\nSTATUS:\n");   bc_copy_textfile(INT_MAX, fp,"/proc/%d/status",pid);
 	fprintf(fp,"\nFD:\n");	     bc_list_openfiles(INT_MAX, fp,"/proc/%d/fd", pid);
 	fprintf(fp,"\nMAPS:\n");     bc_copy_textfile(INT_MAX, fp,"/proc/%d/maps",pid);
+#ifndef NO_CTX
 	char proc_mem[64];
 	if( tid > 0 && tid != pid )
 		sprintf(proc_mem,"/proc/%d/task/%d/mem",pid,tid);
@@ -530,7 +548,7 @@ static void handle_dump(int n, siginfo_t * info, void *sc)
 	if( pfd >= 0 ) {
 		fprintf(fp,"\nCODE:\n");
 		for( int i=-32; i<32; ) {
-			uint8_t v;  void *vp = (void *)(ip + i);
+			uint8_t v;  void *vp = (void *)((char*)ip + i);
 			if( !(i & 7) ) fprintf(fp,"%p:  ", vp);
 			if( pread(pfd,&v,sizeof(v),(off_t)vp) != sizeof(v) ) break;
 			fprintf(fp,"%c%02x", !i ? '>' : ' ', v);
@@ -541,10 +559,11 @@ static void handle_dump(int n, siginfo_t * info, void *sc)
 	}
 	else
 		fprintf(fp,"err opening: %s, %m\n", proc_mem);
-
 	reg_dump(fp, c);
+#endif
 	fprintf(fp,"\n\n");
 	if( fp != stdout ) fclose(fp);
+#ifndef NO_GDB
 	char cmd[1024], *cp = cmd;
 	cp += sprintf(cp, "exec gdb /proc/%d/exe -p %d --batch --quiet "
 		"-ex \"thread apply all info registers\" "
@@ -566,5 +585,6 @@ static void handle_dump(int n, siginfo_t * info, void *sc)
 	}
         char *const argv[4] = { (char*) "/bin/sh", (char*) "-c", cmd, 0 };
         execvp(argv[0], &argv[0]);
+#endif
 }
 

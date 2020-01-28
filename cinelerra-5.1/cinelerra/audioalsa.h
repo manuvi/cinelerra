@@ -49,7 +49,8 @@ public:
 	int flush_device();
 	int interrupt_playback();
 	int stop_output();
-
+	static void add_pulse_devices(int mode,
+		ArrayList<char*> *name, ArrayList<char*> *pcm_name);
 private:
 	int close_output();
 	void translate_name(char *output, char *input, int mode);

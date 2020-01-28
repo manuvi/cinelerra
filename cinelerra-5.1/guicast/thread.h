@@ -25,11 +25,16 @@
 #include <stdio.h>
 #include <pthread.h>
 #include <unistd.h>
+
+#ifndef NO_TID
 #include <sys/syscall.h>
 
 // glibc >= 2.30 provides gettid() in unistd
 #if !defined(__GLIBC_PREREQ) || !__GLIBC_PREREQ(2, 30)
 static inline int gettid() { return syscall(SYS_gettid, 0, 0, 0); }
+#endif
+#else
+static inline long gettid() { return (long)pthread_self(); }
 #endif
 
 // The thread does not autodelete by default.

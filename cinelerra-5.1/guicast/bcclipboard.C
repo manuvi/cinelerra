@@ -113,18 +113,24 @@ void BC_Clipboard::run()
 	XEvent event;
 	int done = 0;
 #ifndef SINGLE_THREAD
+#ifndef NO_XSELECT
 	int x_fd = ConnectionNumber(out_display);
+#endif
 #endif
 
 	while(!done) {
 #ifndef SINGLE_THREAD
 // see bcwindowevents.C regarding XNextEvent
+#ifndef NO_XSELECT
 		fd_set x_fds;
 		FD_ZERO(&x_fds);
 		FD_SET(x_fd, &x_fds);
 		struct timeval tv;
 		tv.tv_sec = 0;  tv.tv_usec = 200000;
 		select(x_fd + 1, &x_fds, 0, 0, &tv);
+#else
+		usleep(100000);
+#endif
 		XLockDisplay(out_display);
 
 		while( XPending(out_display) ) {

@@ -145,64 +145,6 @@ void AudioALSA::list_devices(ArrayList<char*> *names, ArrayList<char*> *pcm_name
 
 		snd_ctl_close(handle);
 	}
-
-#ifdef HAVE_PACTL
-// attempt to add pulseaudio "monitor" devices
-//  run: pactl list <sources>|<sinks>
-//   scan output for <Source/Sink> #n,  Name: <device>
-//   build alsa device config and add to alsa snd_config
-
-	const char *arg = 0;
-	switch( mode ) {
-		case MODERECORD:
-			arg = "source";
-			break;
-		case MODEPLAY:
-			arg = "sink";
-			break;
-	}
-	FILE *pactl = 0;
-	char line[BCTEXTLEN];
-	if( arg ) {
-		sprintf(line, "LANGUAGE=en_US.UTF-8 pactl list %ss", arg);
-		pactl = popen(line,"r");
-	}
-	if( pactl ) {
-		snd_config_update();
-		char name[BCTEXTLEN], pa_name[BCTEXTLEN], device[BCTEXTLEN];
-		name[0] = pa_name[0] = device[0] = 0;
-		int arg_len = strlen(arg);
-		while( fgets(line, sizeof(line), pactl) ) {
-			if( !strncasecmp(line, arg, arg_len) ) {
-				char *sp = name, *id = pa_name;
-				for( char *cp=line; *cp && *cp!='\n'; *sp++=*cp++ )
-					*id++ = (*cp>='A' && *cp<='Z') ||
-						(*cp>='a' && *cp<='z') ||
-						(*cp>='0' && *cp<='9') ? *cp : '_';
-				*sp++ = 0;  *id = 0;
-				if( names )
-					names->append(cstrdup(name));
-				continue;
-			}
-			if( sscanf(line, " Name: %s", device) != 1 ) continue;
-			int len = strlen(pa_name);
-			if( pcm_names )
-				pcm_names->append(cstrdup(pa_name));
-			char alsa_config[BCTEXTLEN];
-			len = snprintf(alsa_config, sizeof(alsa_config),
-				"pcm.!%s {\n type pulse\n device %s\n}\n"
-				"ctl.!%s {\n type pulse\n device %s\n}\n",
-				pa_name, device, pa_name, device);
-			FILE *fp = fmemopen(alsa_config,len,"r");
-			snd_input_t *inp;
-			snd_input_stdio_attach(&inp, fp, 1);
-			snd_config_load(snd_config, inp);
-			name[0] = pa_name[0] = device[0] = 0;
-			snd_input_close(inp);
-		}
-		pclose(pactl);
-	}
-#endif
 }
 
 void AudioALSA::translate_name(char *output, char *input, int mode)
@@ -214,6 +156,9 @@ void AudioALSA::translate_name(char *output, char *input, int mode)
 	pcm_titles.set_array_delete();
 
 	list_devices(&titles, &pcm_titles, mode);
+
+// attempt to add pulseaudio "monitor" devices
+	add_pulse_devices(mode, &titles, &pcm_titles);
 
 	sprintf(output, "default");
 	for(int i = 0; i < titles.total; i++)
@@ -674,6 +619,66 @@ snd_pcm_t* AudioALSA::get_output()
 snd_pcm_t* AudioALSA::get_input()
 {
 	return dsp_in;
+}
+
+void AudioALSA::add_pulse_devices(int mode,
+		ArrayList<char*> *names, ArrayList<char*> *pcm_names)
+{
+#ifdef HAVE_PACTL
+//  run: pactl list <sources>|<sinks>
+//   scan output for <Source/Sink> #n,  Name: <device>
+//   build alsa device config and add to alsa snd_config
+	const char *arg = 0;
+	switch( mode ) {
+	case MODERECORD:
+		arg = "source";
+		break;
+	case MODEPLAY:
+		arg = "sink";
+		break;
+	}
+	FILE *pactl = 0;
+	char line[BCTEXTLEN];
+	if( arg ) {
+		sprintf(line, "LANGUAGE=en_US.UTF-8 pactl list %ss", arg);
+		pactl = popen(line,"r");
+	}
+	if( pactl ) {
+		snd_config_update();
+		char name[BCTEXTLEN], pa_name[BCTEXTLEN], device[BCTEXTLEN];
+		name[0] = pa_name[0] = device[0] = 0;
+		int arg_len = strlen(arg);
+		while( fgets(line, sizeof(line), pactl) ) {
+			if( !strncasecmp(line, arg, arg_len) ) {
+				char *sp = name, *id = pa_name;
+				for( char *cp=line; *cp && *cp!='\n'; *sp++=*cp++ )
+					*id++ = (*cp>='A' && *cp<='Z') ||
+						(*cp>='a' && *cp<='z') ||
+						(*cp>='0' && *cp<='9') ? *cp : '_';
+				*sp++ = 0;  *id = 0;
+				if( names )
+					names->append(cstrdup(name));
+				continue;
+			}
+			if( sscanf(line, " Name: %s", device) != 1 ) continue;
+			int len = strlen(pa_name);
+			if( pcm_names )
+				pcm_names->append(cstrdup(pa_name));
+			char alsa_config[BCTEXTLEN];
+			len = snprintf(alsa_config, sizeof(alsa_config),
+				"pcm.!%s {\n type pulse\n device %s\n}\n"
+				"ctl.!%s {\n type pulse\n device %s\n}\n",
+				pa_name, device, pa_name, device);
+			FILE *fp = fmemopen(alsa_config,len,"r");
+			snd_input_t *inp;
+			snd_input_stdio_attach(&inp, fp, 1);
+			snd_config_load(snd_config, inp);
+			name[0] = pa_name[0] = device[0] = 0;
+			snd_input_close(inp);
+		}
+		pclose(pactl);
+	}
+#endif
 }
 
 #endif

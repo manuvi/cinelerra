@@ -420,7 +420,7 @@ int AssetPopupInsertMixer::handle_event()
 }
 
 AssetPopupPaste::AssetPopupPaste(MWindow *mwindow, AssetPopup *popup)
- : BC_MenuItem(_("Paste"))
+ : BC_MenuItem(C_("Paste"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;

@@ -1896,6 +1896,8 @@ void TrackCanvas::draw_hard_edges()
 		for(Edit *edit = track->edits->first; edit; edit = edit->next) {
 			if( !edit->hard_left && !edit->hard_right ) continue;
 			edit_dimensions(edit, x, y, w, h);
+			if( !MWindowGUI::visible(x, x + w, 0, get_w()) ||
+			    !MWindowGUI::visible(y, y + h, 0, get_h()) ) continue;
 			set_color(GREEN);
 			set_opaque();
 			int y1 = y;

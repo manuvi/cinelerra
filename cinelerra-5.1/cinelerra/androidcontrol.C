@@ -47,6 +47,9 @@ AndroidControl::AndroidControl(MWindowGUI *mwindow_gui)
 {
 	this->mwindow_gui = mwindow_gui;
 	Thread::start();
+	done = -1;
+	sockfd = -1;
+	msg = 0;
 }
 
 bool AndroidControl::is_msg(const char *cp)

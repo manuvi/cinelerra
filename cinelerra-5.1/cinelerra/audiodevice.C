@@ -25,9 +25,10 @@
 #endif
 #include "audioalsa.h"
 #include "audiodvb.h"
-#include "audiov4l2mpeg.h"
 #include "audioesound.h"
 #include "audiooss.h"
+#include "audiopulse.h"
+#include "audiov4l2mpeg.h"
 #include "asset.h"
 #include "bctimer.h"
 #include "condition.h"
@@ -255,6 +256,12 @@ int AudioDevice::create_lowlevel(AudioLowLevel* &lowlevel, int driver,int in)
 #ifdef HAVE_VIDEO4LINUX2
 		case AUDIO_V4L2MPEG:
 			lowlevel = new AudioV4L2MPEG(this);
+			break;
+#endif
+
+#ifdef HAVE_PULSE
+		case AUDIO_PULSE:
+			lowlevel = new AudioPulse(this);
 			break;
 #endif
 		}

@@ -70,19 +70,22 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#ifdef HAVE_ISOFS
 #include <linux/iso_fs.h>
+#endif
 
 // check for isofs volume_id for dvd/cdrom
 
 static int udf_volume_id(const char *path, char *fname)
 {
+	int result = 1;
+#ifdef HAVE_ISOFS
 	struct stat st;
 	if( stat(path,&st) ) return 1;
 	// search mounted devices
 	FILE *fp = fopen("/proc/mounts","r");
 	if( !fp ) return 1;
 
-	int result = 1;
 	while( result && !feof(fp) && !ferror(fp) ) {
 		char devpath[BCTEXTLEN], mpath[BCTEXTLEN];
 		char options[BCTEXTLEN], line[BCTEXTLEN];
@@ -122,6 +125,7 @@ static int udf_volume_id(const char *path, char *fname)
 	}
 
 	fclose(fp);
+#endif
 	return result;
 }
 

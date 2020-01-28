@@ -22,6 +22,7 @@
 #include "adeviceprefs.h"
 #include "audioalsa.h"
 #include "audiodevice.inc"
+#include "audiopulse.h"
 #include "bcsignals.h"
 #include "bitspopup.h"
 #include "edl.h"
@@ -91,7 +92,7 @@ void ADevicePrefs::reset()
 	cine_path = 0;
 	server_title = 0;
 	port_title = 0;
-	esound_port = 0;
+	port = 0;
 }
 
 int ADevicePrefs::initialize(int creation)
@@ -125,6 +126,9 @@ int ADevicePrefs::initialize(int creation)
 		break;
 	case AUDIO_ALSA:
 		create_alsa_objs();
+		break;
+	case AUDIO_PULSE:
+		create_pulse_objs();
 		break;
 	case AUDIO_ESOUND:
 		create_esound_objs();
@@ -167,6 +171,9 @@ int ADevicePrefs::delete_objects()
 	case AUDIO_ALSA:
 		delete_alsa_objs();
 		break;
+	case AUDIO_PULSE:
+		delete_pulse_objs();
+		break;
 	case AUDIO_ESOUND:
 		delete_esound_objs();
 		break;
@@ -205,9 +212,9 @@ int ADevicePrefs::delete_oss_objs()
 int ADevicePrefs::delete_esound_objs()
 {
 	delete server_title;
+	delete server;
 	delete port_title;
-	delete esound_server;
-	delete esound_port;
+	delete port;
 	return 0;
 }
 
@@ -242,6 +249,15 @@ int ADevicePrefs::delete_alsa_objs()
 	delete alsa_device;
 	delete alsa_bits;
 	delete alsa_workaround;
+#endif
+	return 0;
+}
+
+int ADevicePrefs::delete_pulse_objs()
+{
+#ifdef HAVE_PULSE
+	delete server_title;
+	delete server;
 #endif
 	return 0;
 }
@@ -410,9 +426,7 @@ int ADevicePrefs::create_alsa_objs()
 				_("Stop playback locks up."));
 		dialog->add_subwindow(alsa_workaround);
 	}
-
 #endif
-
 	return 0;
 }
 
@@ -437,8 +451,8 @@ int ADevicePrefs::create_esound_objs()
 	server_title = new BC_Title(x1, y, _("Server:"),
 			MEDIUMFONT, resources->text_default);
 	dialog->add_subwindow(server_title);
-	esound_server = new ADeviceTextBox(x1, y + yS(20), output_char);
-	dialog->add_subwindow(esound_server);
+	server = new ADeviceTextBox(x1, y + yS(20), output_char);
+	dialog->add_subwindow(server);
 
 	switch(mode) {
 	case MODEPLAY:
@@ -451,12 +465,12 @@ int ADevicePrefs::create_esound_objs()
 		output_int = &out_config->esound_out_port;
 		break;
 	}
-	x1 += esound_server->get_w() + xS(5);
+	x1 += server->get_w() + xS(5);
 	port_title = new BC_Title(x1, y, _("Port:"),
 			MEDIUMFONT, resources->text_default);
 	dialog->add_subwindow(port_title);
-	esound_port = new ADeviceIntBox(x1, y + yS(20), output_int);
-	dialog->add_subwindow(esound_port);
+	port = new ADeviceIntBox(x1, y + yS(20), output_int);
+	dialog->add_subwindow(port);
 	return 0;
 }
 
@@ -615,6 +629,29 @@ int ADevicePrefs::create_v4l2mpeg_objs()
 }
 
 
+int ADevicePrefs::create_pulse_objs()
+{
+#ifdef HAVE_PULSE
+	char *output_char = 0;
+	switch(mode) {
+	case MODEPLAY:
+		output_char = out_config->pulse_out_server;
+		break;
+	case MODERECORD:
+		output_char = in_config->pulse_in_server;
+		break;
+	}
+	int x1 = x, y1 = y;
+	x1 += menu->get_w() + xS(5);
+	dialog->add_subwindow(server_title = new BC_Title(x1, y1,
+		_("Server (blank for default):")));
+	y1 += server_title->get_h() + yS(5);
+	dialog->add_subwindow(server = new ADeviceTextBox(x1, y1, output_char));
+#endif
+	return 0;
+}
+
+
 ADriverMenu::ADriverMenu(int x, int y, ADevicePrefs *device_prefs,
 	int do_input, int *output)
  : BC_PopupMenu(x, y, xS(125), adriver_to_string(*output), 1)
@@ -656,6 +693,9 @@ void ADriverMenu::create_objects()
 #ifdef HAVE_VIDEO4LINUX2
 	if(do_input) add_item(new ADriverItem(this, AUDIO_V4L2MPEG_TITLE, AUDIO_V4L2MPEG));
 #endif
+#ifdef HAVE_PULSE
+	add_item(new ADriverItem(this, AUDIO_PULSE_TITLE, AUDIO_PULSE));
+#endif
 }
 
 char* ADriverMenu::adriver_to_string(int driver)
@@ -669,6 +709,9 @@ char* ADriverMenu::adriver_to_string(int driver)
 		break;
 	case AUDIO_ESOUND:
 		sprintf(string, AUDIO_ESOUND_TITLE);
+		break;
+	case AUDIO_PULSE:
+		sprintf(string, AUDIO_PULSE_TITLE);
 		break;
 	case AUDIO_NAS:
 		sprintf(string, AUDIO_NAS_TITLE);

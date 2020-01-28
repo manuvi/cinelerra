@@ -841,8 +841,11 @@ void SWindowGUI::save_spumux_data()
 		if( !track->record ) continue;
 		char *cp = track_title, *ep = cp+sizeof(track_title)-6;
 		for( const char *bp=track->title; cp<ep && *bp!=0; ) {
-			int b = butf8(bp), c = !iswalnum(b) ? '_' : b;
-			butf8(c, cp);
+			int wch = butf8(bp); // iswalnum(wch) broken by MS port
+			if( !( (wch >= 'A' && wch <= 'Z') ||
+			       (wch >= 'a' && wch <= 'z') ||
+			       (wch >= '0' && wch <= '9') ) ) wch = '_';
+			butf8(wch, cp);
 		}
 		*cp = 0;
 		snprintf(ext,len,"-%s.udvd",track_title);

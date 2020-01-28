@@ -27,7 +27,11 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <X11/extensions/XShm.h>
+#ifdef HAVE_XV
 #include <X11/extensions/Xvlib.h>
+#else
+typedef struct _XvImage XvImage;
+#endif
 
 #include "bcwindowbase.inc"
 #include "bcbitmap.inc"
@@ -58,8 +62,10 @@ class BC_BitmapImage : public ListItem<BC_BitmapImage> {
 	friend class BC_Bitmap;
 	friend class BC_XImage;
 	friend class BC_XShmImage;
+#ifdef HAVE_XV
 	friend class BC_XvImage;
 	friend class BC_XvShmImage;
+#endif
 	friend class BC_ActiveBitmaps;
 protected:
 	int read_frame_rgb(VFrame* frame);
@@ -122,6 +128,7 @@ public:
 	int read_drawable(Drawable &pixmap, int source_x, int source_y);
 };
 
+#ifdef HAVE_XV
 class BC_XvImage : public BC_BitmapImage {
 	long xv_offset(int i) { return xv_image->offsets[i]; }
 	unsigned char* xv_plane(int i) { return get_data() + xv_offset(i); }
@@ -151,15 +158,17 @@ public:
 		int source_x, int source_y, int source_w, int source_h,
 		int dest_x, int dest_y, int dest_w, int dest_h);
 };
-
+#endif
 
 
 class BC_Bitmap
 {
 	friend class BC_XImage;
 	friend class BC_XShmImage;
+#ifdef HAVE_XV
 	friend class BC_XvImage;
 	friend class BC_XvShmImage;
+#endif
 	friend class BC_BitmapImage;
 	friend class BC_ActiveBitmaps;
 	int buffer_count, max_buffer_count;

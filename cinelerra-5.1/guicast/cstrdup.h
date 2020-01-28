@@ -4,7 +4,6 @@
 #include <stdarg.h>
 #include <stdint.h>
 #include <string.h>
-#include <wctype.h>
 
 static inline char *cstrcat(int n, ...) {
   int len = 0;  va_list va;  va_start(va,n);
@@ -58,23 +57,33 @@ static inline int butf8(unsigned int v, char *&cp)
 }
 
 static inline int bstrcasecmp(const char *ap, const char *bp)
-{
-	int a, b, ret;
+{ // not really correct, but what was left after MS port
+	int ret, a, b;
 	do {
-		a = towlower(butf8(ap));  b = towlower(butf8(bp));
+		if( (a=butf8(ap)) >= 'A' && a <= 'Z' ) a += 'a' - 'A';
+		if( (b=butf8(bp)) >= 'A' && b <= 'Z' ) b += 'a' - 'A';
 	} while( !(ret=a-b) && a && b );
 	return ret;
 }
 
 static inline const char *bstrcasestr(const char *src, const char *tgt)
 {
-	int ssz = strlen(src), tsz = strlen(tgt), ret = 0;
+	int ssz = strlen(src), tsz = strlen(tgt);
 	const char *cp = tgt;
-	wchar_t wtgt[tsz + 1], *tp = wtgt;
-	while( *cp ) *tp++ = towlower(butf8(cp));
+	uint32_t wtgt[tsz+1], *tp = wtgt;
+	while( *cp ) {
+		int wch = butf8(cp);
+		if( wch >= 'A' && wch <= 'Z' ) wch += 'a' - 'A';
+		*tp++ = wch;
+	}
+	*tp = 0;
 	for( tsz=tp-wtgt; ssz>=tsz; ++src,--ssz ) {
 		cp = src;   tp = wtgt;
-		for( int i=tsz; --i>=0 && !(ret=towlower(butf8(cp))-*tp); ++tp );
+		int ret = 0, wch = 0;
+		for( int i=tsz; --i>=0 && !ret && (wch=butf8(cp)); ) {
+			if( wch >= 'A' && wch <= 'Z' ) wch += 'a' - 'A';
+			ret = wch - *tp++;
+		}
 		if( !ret ) return src;
 	}
 	return 0;

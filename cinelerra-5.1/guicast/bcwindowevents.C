@@ -74,7 +74,9 @@ void BC_WindowEvents::run()
 // listening anymore and XCloseDisplay locks up.
 	XEvent *event;
 #ifndef SINGLE_THREAD
+#ifndef NO_XSELECT
 	int x_fd = ConnectionNumber(window->display);
+#endif
 #endif
 
 	while(!done)
@@ -89,6 +91,7 @@ void BC_WindowEvents::run()
 // This came from a linuxquestions post.
 // We can get a file descriptor for the X display & use select instead of XNextEvent.
 // The newest X11 library requires locking the display to use XNextEvent.
+#ifndef NO_XSELECT
 		fd_set x_fds;
 		FD_ZERO(&x_fds);
 		FD_SET(x_fd, &x_fds);
@@ -96,6 +99,9 @@ void BC_WindowEvents::run()
 		tv.tv_sec = 0;  tv.tv_usec = 200000;
 //printf("BC_WindowEvents::run %d %s\n", __LINE__, window->title);
 		select(x_fd + 1, &x_fds, 0, 0, &tv);
+#else
+		usleep(100000);
+#endif
 		XLockDisplay(window->display);
 		while(!done && XPending(window->display))
 		{

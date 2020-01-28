@@ -105,6 +105,22 @@
 //typedef void* GLXContext;
 #endif
 
+typedef uint32_t wchr_t;
+
+static inline size_t wstrlen(const wchr_t *s)
+{
+	size_t len = 0;
+	while( s[len] ) ++len;
+	return len;
+}
+
+static inline wchr_t *wstrncpy(wchr_t *dest, const wchr_t *src, size_t n)
+{
+	for( wchr_t *dp=dest; n>0 && (*dp++=*src++); --n );
+	return dest;
+}
+
+
 class BC_ResizeCall
 {
 public:
@@ -313,7 +329,7 @@ public:
 	int get_buttonpress();
 	int get_has_focus();
 	int get_dragging();
-	wchar_t* get_wkeystring(int *length = 0);
+	wchr_t* get_wkeystring(int *length = 0);
 	int get_keypress();
 	int get_keysym() { return keysym; }
 #ifdef X_HAVE_UTF8_STRING
@@ -341,7 +357,7 @@ public:
 	int get_text_descent(int font);
 	int get_text_height(int font, const char *text = 0);
 	int get_text_width(int font, const char *text, int length = -1);
-	int get_text_width(int font, const wchar_t *text, int length = -1);
+	int get_text_width(int font, const wchr_t *text, int length = -1);
 // truncate the text with ... & return a new string
 	char *get_truncated_text(int font, const char *text, int max_w);
 	BC_Clipboard* get_clipboard();
@@ -405,10 +421,10 @@ public:
 	void draw_text_line(int x, int y, const char *text, int len, BC_Pixmap *pixmap = 0);
 	void draw_xft_text(int x, int y, const char *text, int len,
 		BC_Pixmap *pixmap = 0, int is_utf8 = 0);
-	void draw_xft_text(int x, int y, const wchar_t *text,
+	void draw_xft_text(int x, int y, const wchr_t *text,
 		int length, BC_Pixmap *pixmap);
 	int draw_single_text(int draw, int font,
-		int x, int y, const wchar_t *text, int length = -1, BC_Pixmap *pixmap = 0);
+		int x, int y, const wchr_t *text, int length = -1, BC_Pixmap *pixmap = 0);
 	void draw_center_text(int x, int y, const char *text, int length = -1);
 	void draw_line(int x1, int y1, int x2, int y2, BC_Pixmap *pixmap = 0);
 	void draw_polygon(ArrayList<int> *x, ArrayList<int> *y, BC_Pixmap *pixmap = 0);
@@ -574,7 +590,7 @@ private:
 	Cursor create_grab_cursor();
 // Get width of a single line.  Used by get_text_width
 	int get_single_text_width(int font, const char *text, int length);
-	int get_single_text_width(int font, const wchar_t *text, int length);
+	int get_single_text_width(int font, const wchr_t *text, int length);
 	int allocate_color_table();
 	int init_gc();
 	int init_fonts();
@@ -724,7 +740,7 @@ private:
 // Last key pressed
 	int key_pressed;
 	int wkey_string_length;
-	wchar_t wkey_string[4];
+	wchr_t wkey_string[4];
 #ifdef X_HAVE_UTF8_STRING
 	char* key_pressed_utf8;
 #endif

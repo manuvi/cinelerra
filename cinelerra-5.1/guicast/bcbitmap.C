@@ -29,7 +29,10 @@
 
 #include <string.h>
 #include <unistd.h>
+
+#ifdef HAVE_XV
 #include <X11/extensions/Xvlib.h>
+#endif
 
 int BC_Bitmap::max_active_buffers = 0;
 int BC_Bitmap::zombies = 0;
@@ -124,6 +127,8 @@ void BC_Bitmap::reque(BC_BitmapImage *bfr)
 	avail_lock->unlock();
 }
 
+
+#ifdef HAVE_XV
 BC_XvShmImage::BC_XvShmImage(BC_Bitmap *bitmap, int index,
 	int w, int h, int color_model)
  : BC_BitmapImage(bitmap, index)
@@ -166,6 +171,7 @@ BC_XvShmImage::~BC_XvShmImage()
 	XShmDetach(top_level->display, &shm_info);
 	shmdt(shm_info.shmaddr);
 }
+#endif
 
 
 BC_XShmImage::BC_XShmImage(BC_Bitmap *bitmap, int index,
@@ -211,6 +217,7 @@ BC_XShmImage::~BC_XShmImage()
 
 
 
+#ifdef HAVE_XV
 BC_XvImage::BC_XvImage(BC_Bitmap *bitmap, int index,
 	int w, int h, int color_model)
  : BC_BitmapImage(bitmap, index)
@@ -237,6 +244,7 @@ BC_XvImage::~BC_XvImage()
 {
 	XFree(xv_image);
 }
+#endif
 
 
 BC_XImage::BC_XImage(BC_Bitmap *bitmap, int index,
@@ -371,13 +379,16 @@ BC_BitmapImage *BC_Bitmap::new_buffer(int type, int idx)
 	BC_BitmapImage *buffer = 0;
 	if( idx < 0 ) {
 		if( type == bmXShmImage ) type = bmXImage;
+#ifdef HAVE_XV
 		else if( type ==  bmXvShmImage ) type = bmXvImage;
+#endif
 	}
 	switch( type ) {
 	default:
 	case bmXImage:
 		buffer = new BC_XImage(this, idx, w, h, color_model);
 		break;
+#ifdef HAVE_XV
 	case bmXvImage:
 		buffer = new BC_XvImage(this, idx, w, h, color_model);
 		break;
@@ -387,6 +398,7 @@ BC_BitmapImage *BC_Bitmap::new_buffer(int type, int idx)
 	case bmXvShmImage:
 		buffer = new BC_XvShmImage(this, idx, w, h, color_model);
 		break;
+#endif
 	}
 	if( buffer->is_zombie() ) ++zombies;
 	return buffer;
@@ -445,11 +457,19 @@ int BC_Bitmap::allocate_data()
 		else if( bsz >= 0x400000 ) max_buffer_count /= 8;
 		else if( bsz >= 0x100000 ) max_buffer_count /= 4;
 		else if( bsz >= 0x10000 ) max_buffer_count /= 2;
-		type = hardware_scaling() ? bmXvShmImage : bmXShmImage;
+		type =
+#ifdef HAVE_XV
+			hardware_scaling() ? bmXvShmImage :
+#endif
+			bmXShmImage;
 		count = MIN_BITMAP_BUFFERS;
 	}
 	else // use unshared memory.
-		type = hardware_scaling() ? bmXvImage : bmXImage;
+		type =
+#ifdef HAVE_XV
+			hardware_scaling() ? bmXvImage :
+#endif
+			bmXImage;
 	update_buffers(count);
 	return 0;
 }
@@ -531,6 +551,7 @@ int BC_XShmImage::write_drawable(Drawable &pixmap, GC &gc,
 	return 0;
 }
 
+#ifdef HAVE_XV
 int BC_XvImage::write_drawable(Drawable &pixmap, GC &gc,
 	int source_x, int source_y, int source_w, int source_h,
 	int dest_x, int dest_y, int dest_w, int dest_h)
@@ -552,6 +573,7 @@ int BC_XvShmImage::write_drawable(Drawable &pixmap, GC &gc,
 		dest_x, dest_y, dest_w, dest_h, bitmap->shm_reply);
 	return 0;
 }
+#endif
 
 int BC_Bitmap::write_drawable(Drawable &pixmap, GC &gc,
 		int source_x, int source_y, int source_w, int source_h,

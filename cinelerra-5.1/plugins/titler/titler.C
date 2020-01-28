@@ -145,7 +145,7 @@ int TitleConfig::equivalent(TitleConfig &that)
 //		fade_in == that.fade_in && fade_out == that.fade_out &&
 //		EQUIV(pixels_per_second, that.pixels_per_second) &&
 		wlen == that.wlen &&
-		!memcmp(wtext, that.wtext, wlen * sizeof(wchar_t)) &&
+		!memcmp(wtext, that.wtext, wlen * sizeof(wchr_t)) &&
 		title_x == that.title_x && title_y == that.title_y &&
 		title_w == that.title_w && title_h == that.title_h &&
 //		window_w == that.window_w && window_h == that.window_h &&
@@ -180,7 +180,7 @@ void TitleConfig::copy_from(TitleConfig &that)
 	fade_out = that.fade_out;
 	pixels_per_second = that.pixels_per_second;
 	demand(wlen = that.wlen);
-	memcpy(wtext, that.wtext, that.wlen * sizeof(wchar_t));
+	memcpy(wtext, that.wtext, that.wlen * sizeof(wchr_t));
 	title_x = that.title_x;  title_y = that.title_y;
 	title_w = that.title_w;  title_h = that.title_h;
 	window_w = that.window_w;  window_h = that.window_h;
@@ -218,7 +218,7 @@ void TitleConfig::interpolate(TitleConfig &prev, TitleConfig &next,
 	fade_out = prev.fade_out;
 	pixels_per_second = prev.pixels_per_second;
 	demand(wlen = prev.wlen);
-	memcpy(wtext, prev.wtext, prev.wlen * sizeof(wchar_t));
+	memcpy(wtext, prev.wtext, prev.wlen * sizeof(wchr_t));
 	wtext[wlen] = 0;
 	this->title_x = prev.title_x == next.title_x ? prev.title_x :
 		prev.title_x * prev_scale + next.title_x * next_scale;
@@ -245,7 +245,7 @@ int TitleConfig::demand(long sz)
 	if( wtext && wsize >= sz ) return 0;
 	delete [] wtext;
 	wsize = sz + wlen/2 + 0x1000;
-	wtext = new wchar_t[wsize+1];
+	wtext = new wchr_t[wsize+1];
 	wtext[wsize] = 0;
 	return 1;
 }
@@ -254,7 +254,7 @@ void TitleConfig::to_wtext(const char *from_enc, const char *text, int tlen)
 {
 	demand(tlen);
 	wlen = BC_Resources::encode(from_enc, BC_Resources::wide_encoding,
-		(char*)text,tlen, (char *)wtext,sizeof(*wtext)*wsize) / sizeof(wchar_t);
+		(char*)text,tlen, (char *)wtext,sizeof(*wtext)*wsize) / sizeof(wchr_t);
 	while( wlen > 0 && !wtext[wlen-1] ) --wlen;
 }
 
@@ -1325,15 +1325,15 @@ BC_FontEntry* TitleMain::config_font()
 }
 
 
-static inline bool is_ltr(wchar_t wch) { return iswalpha(wch); }
-static inline bool is_nbr(wchar_t wch) { return iswdigit(wch); }
-static inline bool is_ws(wchar_t wch) { return wch==' ' || wch=='\t'; }
-static inline bool is_idch(wchar_t wch) { return is_ltr(wch) || is_nbr(wch) || wch=='_'; }
+static inline bool is_ltr(wchr_t wch) { return iswalpha(wch); }
+static inline bool is_nbr(wchr_t wch) { return iswdigit(wch); }
+static inline bool is_ws(wchr_t wch) { return wch==' ' || wch=='\t'; }
+static inline bool is_idch(wchr_t wch) { return is_ltr(wch) || is_nbr(wch) || wch=='_'; }
 
 // return eof=-1, chr=0, opener=1, closer=2
-int TitleParser::wget(wchar_t &wch)
+int TitleParser::wget(wchr_t &wch)
 {
-	wchar_t *wip = wid, *wtp = wtxt;  *wip = 0;  *wtp = 0;
+	wchr_t *wip = wid, *wtp = wtxt;  *wip = 0;  *wtp = 0;
 	int ilen = sizeof(wid)/sizeof(wid[0]);
 	int tlen = sizeof(wtxt)/sizeof(wtxt[0]);
 	int ich;
@@ -1370,15 +1370,15 @@ int TitleParser::wget(wchar_t &wch)
 	wch = ich;
 	return ret;
 }
-int TitleParser::tget(wchar_t &wch)
+int TitleParser::tget(wchr_t &wch)
 {
 	int ret = wget(wch);
 	if( ret > 0 ) {
-		int wid_len = wcslen(wid)+1;
+		int wid_len = wstrlen(wid)+1;
 		BC_Resources::encode(
 			BC_Resources::wide_encoding, plugin->config.encoding,
 			(char*)wid,wid_len*sizeof(wid[0]), (char *)id,sizeof(id));
-		int wtxt_len = wcslen(wtxt)+1;
+		int wtxt_len = wstrlen(wtxt)+1;
 		BC_Resources::encode(
 			BC_Resources::wide_encoding, plugin->config.encoding,
 			(char*)wtxt,wtxt_len*sizeof(wtxt[0]), (char *)text,sizeof(text));
@@ -1670,7 +1670,7 @@ void TitleMain::load_glyphs()
 	int total_packages = 0;
 
 	while( !wchrs.eof() ) {
-		wchar_t wch1 = wchrs.wcur(), wch;
+		wchr_t wch1 = wchrs.wcur(), wch;
 		long ipos = wchrs.tell();
 		int ret = wchrs.tget(wch);
 		if( ret > 0 ) {
@@ -1778,7 +1778,7 @@ int TitleMain::get_text()
 		if( !row ) row = title_rows.add();
 		TitleChar *chr = 0;
 		long ipos = wchrs.tell();
-		wchar_t wch1 = wchrs.wcur(), wch;
+		wchr_t wch1 = wchrs.wcur(), wch;
 		int ret = wchrs.tget(wch);
 		if( ret < 0 || wch == '\n' ) {
 			if( row->x1 > row->x2 ) row->x1 = row->x2 = 0;
@@ -2554,7 +2554,7 @@ void TitleMain::save_data(KeyFrame *keyframe)
 	char text[tsz];
 	int text_len = BC_Resources::encode(
 		BC_Resources::wide_encoding, DEFAULT_ENCODING,
-		(char*)config.wtext, config.wlen*sizeof(wchar_t),
+		(char*)config.wtext, config.wlen*sizeof(wchr_t),
 		text, tsz);
 	output.append_text(text, text_len);
 	output.tag.set_title("/TITLE");
@@ -2621,15 +2621,15 @@ void TitleMain::read_data(KeyFrame *keyframe)
 	}
 }
 
-void TitleMain::insert_text(const wchar_t *wtxt, int pos)
+void TitleMain::insert_text(const wchr_t *wtxt, int pos)
 {
-	int len = wcslen(wtxt);
+	int len = wstrlen(wtxt);
 	int wlen = config.wlen;
 	if( pos < 0 ) pos = 0;
 	if( pos > wlen ) pos = wlen;
 	config.demand(wlen + len);
 	int wsize1 = config.wsize-1;
-	wchar_t *wtext = config.wtext;
+	wchr_t *wtext = config.wtext;
 	for( int i=wlen, j=wlen+len; --i>=pos; ) {
 		if( --j >= wsize1 ) continue;
 		wtext[j] = wtext[i];

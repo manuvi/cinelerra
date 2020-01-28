@@ -64,6 +64,7 @@ OBJS := $(OVERLAYS) \
 	$(OBJDIR)/audioidevice.o \
 	$(OBJDIR)/audioodevice.o \
 	$(OBJDIR)/audiooss.o \
+	$(OBJDIR)/audiopulse.o \
 	$(OBJDIR)/audiov4l2mpeg.o \
 	$(OBJDIR)/autoconf.o \
 	$(OBJDIR)/automation.o \
@@ -460,6 +461,9 @@ LIBS += -lXft
 endif
 ifneq ($(WANT_ALSA),no)
 LIBS += -lasound
+endif
+ifneq ($(WANT_PULSE),no)
+LIBS += -lpulse-simple -lpulse
 endif
 ifneq ($(WANT_OPENEXR),no)
 LIBS += -lIex -lIexMath -lIlmImf -lIlmImfUtil

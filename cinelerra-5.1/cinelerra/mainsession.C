@@ -243,16 +243,20 @@ void MainSession::default_window_positions(int window_config)
 		case 1024: right_w = 1280;  break;
 		case 1200: right_w = 1600;  break;
 		case 1080: right_w = 1920;  break;
-		default:   right_w = root_w/2;  break;
+		default:
+			dual_head = 0;
+			break;
 		}
-		if( window_config == 1 ) {
-			root_x = root_w - right_w;
-			root_w = right_w;
-		}
-		else {
-			// use same aspect ratio to compute left height
-			root_w -= right_w;
-			root_h = (root_w*root_h) / right_w;
+		if( dual_head ) {
+			if( window_config == 1 ) {
+				root_x = root_w - right_w;
+				root_w = right_w;
+			}
+			else {
+				// use same aspect ratio to compute left height
+				root_w -= right_w;
+				root_h = (root_w*root_h) / right_w;
+			}
 		}
 	}
 

@@ -161,7 +161,7 @@ public:
 	double fade_in, fade_out;
 	float pixels_per_second; // Speed of motion
 // Text to display
-	wchar_t *wtext;
+	wchr_t *wtext;
 	long wsize, wlen;
 // Position in frame relative to top left
 	float title_x, title_y;
@@ -233,7 +233,7 @@ public:
 // Position of each image box in a row
 class TitleChar {
 public:
-	wchar_t wch;
+	wchr_t wch;
 	int typ, flags;
 	void *vp;
 	int x, y;
@@ -502,7 +502,7 @@ public:
 
 class TitleParser
 {
-	const wchar_t *bfr, *out, *lmt;
+	const wchr_t *bfr, *out, *lmt;
 public:
 	TitleMain *plugin;
 
@@ -511,9 +511,9 @@ public:
 	bool eof() { return out >= lmt; }
 	int wcur() { return eof() ? -1 : *out; }
 	int wnext() { return eof() ? -1 : *out++; }
-	int wget(wchar_t &wch);
-	int tget(wchar_t &wch);
-	wchar_t wid[BCSTRLEN], wtxt[BCTEXTLEN];
+	int wget(wchr_t &wch);
+	int tget(wchr_t &wch);
+	wchr_t wid[BCSTRLEN], wtxt[BCTEXTLEN];
 	char id[BCSTRLEN], text[BCTEXTLEN];
 	int set_attributes(int ret);
 
@@ -587,7 +587,7 @@ public:
 	void update_gui();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void insert_text(const wchar_t *wtxt, int pos);
+	void insert_text(const wchr_t *wtxt, int pos);
 
 	void build_previews(TitleWindow *gui);
 	void reset_render();

@@ -1,6 +1,7 @@
 include ../../plugin_defs
 
 OBJS = $(OBJDIR)/shapewipe.o
+LFLAGS += -lpng
 
 PLUGIN = shapewipe
 

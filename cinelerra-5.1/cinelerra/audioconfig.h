@@ -43,12 +43,14 @@ public:
 	int oss_in_bits;
 	int afirewire_in_port, afirewire_in_channel;
 	char esound_in_server[1024];
+	char pulse_in_server[1024];
 	int esound_in_port;
 
 // Output
 	int audio_out_driver;
 	char oss_out_device[1024];
 	char esound_out_server[1024];
+	char pulse_out_server[1024];
 	int esound_out_port;
 	int oss_out_channels;
 	int oss_out_bits;

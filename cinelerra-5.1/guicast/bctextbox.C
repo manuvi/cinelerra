@@ -58,14 +58,14 @@ BC_TextBox::BC_TextBox(int x, int y, int w, int rows,
 }
 
 BC_TextBox::BC_TextBox(int x, int y, int w, int rows,
-	int size, wchar_t *wtext, int has_border, int font)
+	int size, wchr_t *wtext, int has_border, int font)
  : BC_SubWindow(x, y, w, 0, -1)
 {
 	is_utf8 = 1;
 	skip_cursor = 0;
 	reset_parameters(rows, has_border, font, size);
-	wdemand(wcslen(wtext));
-	wcsncpy(this->wtext, wtext, wsize);
+	wdemand(wstrlen(wtext));
+	wstrncpy(this->wtext, wtext, wsize);
 }
 
 BC_TextBox::BC_TextBox(int x, int y, int w, int rows,
@@ -79,15 +79,15 @@ BC_TextBox::BC_TextBox(int x, int y, int w, int rows,
 }
 
 BC_TextBox::BC_TextBox(int x, int y, int w, int rows,
-	const wchar_t *wtext, int has_border, int font, int is_utf8)
+	const wchr_t *wtext, int has_border, int font, int is_utf8)
  : BC_SubWindow(x, y, w, 0, -1)
 {
 	this->is_utf8 = is_utf8;
 	skip_cursor = 0;
 	reset_parameters(rows, has_border, font, BCTEXTLEN);
 	wsize = BCTEXTLEN;
-	wtext = new wchar_t[wsize+1];
-	wcsncpy(this->wtext, wtext, wsize);
+	wtext = new wchr_t[wsize+1];
+	wstrncpy(this->wtext, wtext, wsize);
 	this->wtext[wsize] = 0;
 }
 
@@ -224,20 +224,20 @@ int BC_TextBox::wtext_update()
 		int nsize = tsize > 0 ? tsize : tlen + BCTEXTLEN;
 		wdemand(nsize);
 		wlen = BC_Resources::encode(src_enc, dst_enc, text, tlen,
-			(char*)wtext, wsize*sizeof(wchar_t)) / sizeof(wchar_t);
+			(char*)wtext, wsize*sizeof(wchr_t)) / sizeof(wchr_t);
 		dirty = 0;
 	}
 	wtext[wlen] = 0;
 	return wlen;
 }
 
-int BC_TextBox::text_update(const wchar_t *wcp, int wsz, char *tcp, int tsz)
+int BC_TextBox::text_update(const wchr_t *wcp, int wsz, char *tcp, int tsz)
 {
 	const char *src_enc = BC_Resources::wide_encoding;
 	const char *dst_enc = BC_Resources::encoding;
-	if( wsz < 0 ) wsz = wcslen(wcp);
+	if( wsz < 0 ) wsz = wstrlen(wcp);
 	int len = BC_Resources::encode(src_enc, dst_enc,
-		(char*)wcp, wsz*sizeof(wchar_t), tcp, tsz);
+		(char*)wcp, wsz*sizeof(wchr_t), tcp, tsz);
 	tcp[len] = 0;
 	return len;
 }
@@ -460,11 +460,11 @@ int BC_TextBox::update(const char *text)
 	return 0;
 }
 
-int BC_TextBox::update(const wchar_t *wtext)
+int BC_TextBox::update(const wchr_t *wtext)
 {
-	int wtext_len = wcslen(wtext);
+	int wtext_len = wstrlen(wtext);
 	wdemand(wtext_len);
-	wcsncpy(this->wtext, wtext, wsize);
+	wstrncpy(this->wtext, wtext, wsize);
 	this->wlen = wtext_len;
 	if(highlight_letter1 > wtext_len) highlight_letter1 = wtext_len;
 	if(highlight_letter2 > wtext_len) highlight_letter2 = wtext_len;
@@ -541,7 +541,7 @@ const char* BC_TextBox::get_text()
 	return text;
 }
 
-const wchar_t* BC_TextBox::get_wtext()
+const wchr_t* BC_TextBox::get_wtext()
 {
 	wtext_update();
 	return wtext;
@@ -664,7 +664,7 @@ void BC_TextBox::draw(int flush)
 	for(i=0, k=text_y; i < wtext_len && k < get_h(); k += text_height) {
 // Draw row of text
 		row_begin = i;
-		wchar_t *wtext_row = &wtext[i];
+		wchr_t *wtext_row = &wtext[i];
 		for( ; i<wtext_len && wtext[i]!='\n'; ++i );
 		if( (row_end=i) < wtext_len ) ++i;
 
@@ -1120,7 +1120,7 @@ int BC_TextBox::repeat_event(int64_t duration)
 void BC_TextBox::default_keypress(int &dispatch_event, int &result)
 {
 	int key = top_level->get_keypress(), len;
-	wchar_t *wkeys = top_level->get_wkeystring(&len);
+	wchr_t *wkeys = top_level->get_wkeystring(&len);
 	switch( key ) {
 	case KPENTER:	key = '\n';	goto kpchr;
 	case KPMINUS:	key = '-';	goto kpchr;
@@ -1158,7 +1158,7 @@ int BC_TextBox::keypress_event()
 	last_keypress = get_keypress();
 
 	if( unicode_active >= 0 ) {
-		wchar_t wch = 0;
+		wchr_t wch = 0;
 		int wlen =  -1;
 		switch( last_keypress ) {
 //unicode active acitons
@@ -1642,7 +1642,7 @@ int BC_TextBox::keypress_event()
 				case 'u': case 'U': {
 					if( shift_down() ) {
 						unicode_active = ibeam_letter;
-						wchar_t wkey = 'U';
+						wchr_t wkey = 'U';
 						insert_text(&wkey, 1);
 						find_ibeam(1);
 						highlight_letter1 = unicode_active;
@@ -1737,7 +1737,7 @@ int BC_TextBox::wdemand(int len)
 {
 	if( wtext && wsize >= len ) return 0;
 	int nsize = len + wlen/2 + BCTEXTLEN;
-	wchar_t *ntext = new wchar_t[nsize+1];
+	wchr_t *ntext = new wchr_t[nsize+1];
 	ntext[nsize] = 0;
 	memcpy(ntext, wtext, wsize*sizeof(wtext[0]));
 	delete [] wtext;  wtext = ntext;  wsize = nsize;
@@ -1756,9 +1756,9 @@ int BC_TextBox::tdemand(int len)
 	return 1;
 }
 
-void BC_TextBox::insert_text(const wchar_t *wcp, int len)
+void BC_TextBox::insert_text(const wchr_t *wcp, int len)
 {
-	if( len < 0 ) len = wcslen(wcp);
+	if( len < 0 ) len = wstrlen(wcp);
 	int wtext_len = wtext_update();
 	wdemand(wtext_len + len + 1);
 	if( unicode_active < 0 && highlight_letter1 < highlight_letter2 ) {
@@ -2101,11 +2101,11 @@ void BC_TextBox::paste_selection(int clipboard_num)
 	int len = clipboard_len(clipboard_num);
 	if( len > 0 )
 	{
-		char cstring[len];  wchar_t wstring[len];
+		char cstring[len];  wchr_t wstring[len];
 		from_clipboard(cstring, len, clipboard_num);  --len;
 //printf("BC_TextBox::paste_selection %d '%*.*s'\n",len,len,len,cstring);
 		len = BC_Resources::encode(BC_Resources::encoding, BC_Resources::wide_encoding,
-			cstring,len, (char *)wstring,(len+1)*sizeof(wchar_t)) / sizeof(wchar_t);
+			cstring,len, (char *)wstring,(len+1)*sizeof(wchr_t)) / sizeof(wchr_t);
 		insert_text(wstring, len);
 		last_keypress = 0;
 	}
@@ -2212,7 +2212,7 @@ BC_ScrollTextBox::BC_ScrollTextBox(BC_WindowBase *parent_window,
 
 BC_ScrollTextBox::BC_ScrollTextBox(BC_WindowBase *parent_window,
 	int x, int y, int w, int rows,
-	const wchar_t *default_wtext, int default_size)
+	const wchr_t *default_wtext, int default_size)
 {
 	this->parent_window = parent_window;
 	this->x = x;
@@ -2263,7 +2263,7 @@ void BC_ScrollTextBox::update(const char *text)
 	update_scrollbars();
 }
 
-void BC_ScrollTextBox::update(const wchar_t *wtext)
+void BC_ScrollTextBox::update(const wchr_t *wtext)
 {
 	this->text->update(wtext);
 	update_scrollbars();
@@ -2289,7 +2289,7 @@ int BC_ScrollTextBox::button_release_event()
 
 int BC_ScrollTextBox::get_h() { return text->get_h(); }
 const char *BC_ScrollTextBox::get_text() { return text->get_text(); }
-const wchar_t *BC_ScrollTextBox::get_wtext() { return text->get_wtext(); }
+const wchr_t *BC_ScrollTextBox::get_wtext() { return text->get_wtext(); }
 
 int BC_ScrollTextBox::get_buttonpress()
 {
@@ -2325,10 +2325,10 @@ BC_ScrollTextBoxText::BC_ScrollTextBoxText(BC_ScrollTextBox *gui, const char *te
 	this->gui = gui;
 }
 
-BC_ScrollTextBoxText::BC_ScrollTextBoxText(BC_ScrollTextBox *gui, const wchar_t *wtext)
+BC_ScrollTextBoxText::BC_ScrollTextBoxText(BC_ScrollTextBox *gui, const wchr_t *wtext)
  : BC_TextBox(gui->x, gui->y,
 	gui->w - get_resources()->vscroll_data[SCROLL_HANDLE_UP]->get_w(),
-	gui->rows, gui->default_size, (wchar_t*)wtext, 1, MEDIUMFONT)
+	gui->rows, gui->default_size, (wchr_t*)wtext, 1, MEDIUMFONT)
 {
 	this->gui = gui;
 }
@@ -2469,7 +2469,7 @@ BC_PopupTextBoxText::BC_PopupTextBoxText(BC_PopupTextBox *popup, int x, int y, c
 	this->popup = popup;
 }
 
-BC_PopupTextBoxText::BC_PopupTextBoxText(BC_PopupTextBox *popup, int x, int y, const wchar_t *wtext)
+BC_PopupTextBoxText::BC_PopupTextBoxText(BC_PopupTextBox *popup, int x, int y, const wchr_t *wtext)
  : BC_TextBox(x, y, popup->text_w, 1, wtext, BCTEXTLEN)
 {
 	this->popup = popup;
@@ -2569,7 +2569,7 @@ int BC_PopupTextBox::handle_event()
 }
 
 const char *BC_PopupTextBox::get_text() { return textbox->get_text(); }
-const wchar_t *BC_PopupTextBox::get_wtext() { return textbox->get_wtext(); }
+const wchr_t *BC_PopupTextBox::get_wtext() { return textbox->get_wtext(); }
 int BC_PopupTextBox::get_number() { return list_item; }
 void BC_PopupTextBox::set_number(int v) { list_item = v; }
 int BC_PopupTextBox::get_x() { return x; }
@@ -2774,7 +2774,7 @@ const char* BC_TumbleTextBox::get_text()
 	return textbox->get_text();
 }
 
-const wchar_t* BC_TumbleTextBox::get_wtext()
+const wchr_t* BC_TumbleTextBox::get_wtext()
 {
 	return textbox->get_wtext();
 }

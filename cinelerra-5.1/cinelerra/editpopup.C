@@ -213,7 +213,7 @@ int EditPopupCutPack::handle_event()
 }
 
 EditPopupMute::EditPopupMute(MWindow *mwindow, EditPopup *popup)
- : BC_MenuItem(_("Mute"),_("Ctrl-m"),'m')
+ : BC_MenuItem(C_("Mute"),_("Ctrl-m"),'m')
 {
 	this->mwindow = mwindow;
 	this->popup = popup;

@@ -24,7 +24,8 @@
 // An object which contains samples
 
 
-
+#include "bcresources.h"
+#include "bcwindowbase.h"
 #include "samples.h"
 #include <stdio.h>
 #include <sys/shm.h>
@@ -46,8 +47,15 @@ Samples::Samples(int samples)
 Samples::Samples(Samples *src)
 {
 	reset();
-	share(src->get_shmid());
-	set_allocated(src->get_allocated());
+	int src_sz = src->get_allocated();
+	if( use_shm ) {
+		share(src->get_shmid());
+		set_allocated(src_sz);
+	}
+	else {
+		share(src->data);
+		set_allocated(0);
+	}
 	set_offset(src->get_offset());
 }
 
@@ -58,7 +66,8 @@ Samples::~Samples()
 
 void Samples::reset()
 {
-	use_shm = 1;
+	BC_Resources *resources = BC_WindowBase::get_resources();
+	use_shm = !resources || !resources->use_shm ? 0 : 1;
 	shmid = -1;
 	data = 0;
 	allocated = 0;
@@ -71,7 +80,7 @@ void Samples::clear_objects()
 	{
 		if(data) shmdt(data);
 	}
-	else
+	else if( allocated )
 	{
 		delete [] data;
 	}
@@ -95,16 +104,31 @@ void Samples::share(int shmid)
 	this->allocated = 0;
 	this->shmid = shmid;
 }
+void Samples::share(double *buffer)
+{
+	if(data)
+	{
+		if(use_shm)
+			shmdt(data);
+		else
+			delete [] data;
+	}
+	this->use_shm = 0;
+	data = buffer;
+	this->allocated = 0;
+	this->shmid = -1;
+}
+
 
 void Samples::allocate(int samples, int use_shm)
 {
-	if(data &&
+	if( !this->use_shm ) use_shm = 0;
+	if( data &&
 		this->allocated >= samples &&
-		this->use_shm == use_shm) return;
+		this->use_shm == use_shm ) return;
 
-	if(data)
-	{
-		if(this->use_shm)
+	if( data ) {
+		if( this->use_shm )
 			shmdt(data);
 		else
 			delete [] data;
@@ -112,8 +136,7 @@ void Samples::allocate(int samples, int use_shm)
 
 	this->use_shm = use_shm;
 
-	if(use_shm)
-	{
+	if( use_shm ) {
 		shmid = shmget(IPC_PRIVATE,
 			(samples + 1) * sizeof(double),
 			IPC_CREAT | 0777);
@@ -121,18 +144,12 @@ void Samples::allocate(int samples, int use_shm)
 	// This causes it to automatically delete when the program exits.
 		shmctl(shmid, IPC_RMID, 0);
 	}
-	else
-	{
+	else {
 		shmid = -1;
 		data = new double[samples];
 	}
 
-
 	this->allocated = samples;
-
-
-
-
 }
 
 // Get the buffer

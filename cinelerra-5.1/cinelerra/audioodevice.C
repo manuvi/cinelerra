@@ -375,11 +375,15 @@ void AudioDevice::run_output()
 		output_buffer_t *obfr = &output[buffer_num];
 		obfr->play_lock->lock("AudioDevice::run 1");
 		if( !is_playing_back || playback_interrupted ) break;
-		if( obfr->last_buffer ) { lowlevel_out->flush_device(); break; }
+		if( obfr->last_buffer ) {
+			if( lowlevel_out ) lowlevel_out->flush_device();
+			break;
+		}
 // get size for position information
 // write converted buffer synchronously
 		double bfr_time = obfr->bfr_time;
-		int result = lowlevel_out->write_buffer(obfr->buffer, obfr->size);
+		int result = !lowlevel_out ? -1 :
+			lowlevel_out->write_buffer(obfr->buffer, obfr->size);
 // allow writing to the buffer
 		obfr->arm_lock->unlock();
 		if( !result ) {

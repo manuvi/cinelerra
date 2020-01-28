@@ -31,10 +31,11 @@
 
 #include "audioalsa.inc"
 #include "audioconfig.inc"
-#include "audiodvb.inc"
 #include "audiodevice.inc"
+#include "audiodvb.inc"
 #include "audioesound.inc"
 #include "audiooss.inc"
+#include "audiopulse.inc"
 #include "audiov4l2mpeg.inc"
 #include "bctimer.inc"
 #include "binary.h"
@@ -89,6 +90,7 @@ public:
 	friend class AudioDVB;
 	friend class AudioV4L2MPEG;
 	friend class AudioOSS;
+	friend class AudioPulse;
 	friend class AudioESound;
 	friend class Audio1394;
 	friend class VDevice1394;

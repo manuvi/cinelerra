@@ -268,7 +268,9 @@ MWindow::~MWindow()
 	delete beeper;
 	delete create_bd;       create_bd = 0;
 	delete create_dvd;      create_dvd = 0;
+#ifdef HAVE_SHUTTLE
 	delete shuttle;         shuttle = 0;
+#endif
 #ifdef HAVE_WINTV
 	delete wintv;           wintv = 0;
 #endif
@@ -675,6 +677,7 @@ int MWindow::init_plugins(MWindow *mwindow, Preferences *preferences)
 
 int MWindow::init_ladspa_plugins(MWindow *mwindow, Preferences *preferences)
 {
+#ifdef HAVE_LADSPA
 	char *path = getenv("LADSPA_PATH");
 	char ladspa_path[BCTEXTLEN];
 	if( !path ) {
@@ -719,6 +722,7 @@ int MWindow::init_ladspa_plugins(MWindow *mwindow, Preferences *preferences)
 		}
 		fclose(fp);
 	}
+#endif
 	return 1;
 }
 
@@ -742,7 +746,7 @@ void MWindow::scan_plugin_index(MWindow *mwindow, Preferences *preferences, FILE
 	char plugin_path[BCTEXTLEN];
 	sprintf(plugin_path, "%s/%s", plug_dir, plug_path);
 	FileSystem fs;
-	fs.set_filter( "[*.plugin][*.so]" );
+	fs.set_filter( "[*.plugin][*.so][*.dll]" );
 	int result = fs.update(plugin_path);
 	if( result || !fs.dir_list.total ) return;
 	int vis_id = idx++;

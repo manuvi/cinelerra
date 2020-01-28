@@ -1,5 +1,6 @@
 #ifndef __SHUTTLE_H__
 #define __SHUTTLE_H__
+#ifdef HAVE_SHUTTLE
 
 #include "arraylist.h"
 #include "bcwindowbase.inc"
@@ -20,8 +21,7 @@
 // delay in ms before processing each XTest event
 // CurrentTime means no delay
 #define DELAY CurrentTime
-// playback max speed -64x .. 64x
-#define SHUTTLE_MAX_SPEED 64.
+
 #define SHUTTLE_INTERFACE 0
 
 // protocol for events from the shuttlepro HUD device
@@ -256,4 +256,5 @@ public:
 	input_event ev;
 };
 
+#endif
 #endif

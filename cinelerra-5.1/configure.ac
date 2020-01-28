@@ -29,8 +29,6 @@ CFG_CFLAGS+=" -I/usr/include/freetype2 -I/usr/local/include/freetype2"
 CFG_CFLAGS+=" -I/usr/include/uuid -I/usr/local/include/uuid"
 CFG_CFLAGS+=" -I/usr/include/mjpegtools -I/usr/local/include/mjpegtools"
 
-CFG_LDFLAGS+=" -z noexecstack"
-
 AC_DEFUN([CHECK_WITH], [
 AC_ARG_WITH([$1],
   AC_HELP_STRING([--with-[$1]], [$2 ($4)]),
@@ -41,12 +39,12 @@ AC_SUBST([WANT_$3])
 CHECK_WITH([jobs],[parallel build jobs],[JOBS],[auto])
 CHECK_WITH([exec-name],[binary executable name],[CIN],[cin])
 CHECK_WITH([single-user],[to install cin in bin],[CINBIN_BUILD],[no])
-CHECK_WITH([ladspa-build],[build ladspa library],[LADSPA_BUILD],[yes])
 CHECK_WITH([lv2],[lv2 library support],[LV2],[yes])
 CHECK_WITH([cinlib],[cinelerra library path],[CINLIB_DIR],[auto])
 CHECK_WITH([cindat],[cinelerra share path],[CINDAT_DIR],[auto])
 CHECK_WITH([plugin-dir],[plugin install dir],[PLUGIN_DIR],[auto])
 CHECK_WITH([ladspa-dir],[ladspa install dir],[LADSPA_DIR],[auto])
+CHECK_WITH([ladspa-build],[build ladspa library],[LADSPA_BUILD],[yes])
 CHECK_WITH([config-dir],[.bcast config dir],[CONFIG_DIR],[$$HOME/.bcast5])
 CHECK_WITH([nested-dir],[nested proxy dir],[NESTED_DIR],[$$HOME/Videos])
 CHECK_WITH([snap-dir],[snapshot/grabshot dir],[SNAP_DIR],[$$HOME/Pictures])
@@ -538,8 +536,6 @@ CHECK_LIB([XEXT], [Xext], [XShmQueryExtension])
 CHECK_HEADERS([XEXT], [Xlib XShm extention], [X11/Xlib.h X11/extensions/XShm.h X11/extensions/shape.h])
 CHECK_LIB([XINERAMA], [Xinerama], [XineramaQueryExtension])
 CHECK_HEADERS([XINERAMA], [Xinerama headers], [X11/extensions/Xinerama.h])
-CHECK_LIB([XV], [Xv], [XvQueryExtension])
-CHECK_HEADERS([XV], [Xlib Xv extention], [X11/Xlib.h X11/extensions/Xvlib.h])
 CHECK_LIB([XFIXES], [Xfixes], [XFixesQueryVersion])
 CHECK_LIB([BZ2], [bz2], [BZ2_bzDecompress])
 CHECK_LIB([FONTCONFIG], [fontconfig], [FcInit])
@@ -650,6 +646,10 @@ CHECK_WANT([GL], [auto], [use opengl], [
  CHECK_LIB([GL], [GLU], [gluOrtho2D])
  CHECK_HEADERS([GL], [opengl headers], [GL/gl.h GL/glext.h GL/glu.h GL/glx.h])])
 
+CHECK_WANT([XV], [auto], [use xv], [
+ CHECK_LIB([xv], [Xv], [XvQueryExtension])
+ CHECK_HEADERS([xv], [Xlib Xv extention], [X11/Xlib.h X11/extensions/Xvlib.h])])
+
 CHECK_WANT([OSS], [auto], [use OSS audio], [
  CHECK_HEADERS([OSS], [oss headers], [sys/soundcard.h])])
 
@@ -689,6 +689,22 @@ CHECK_WANT([ESOUND], [no], [use esd], [
  CHECK_HEADERS([esound], [esound headers], [esd.h])
  CHECK_LIB([audiofile], [audiofile], [afOpenFile])
  CHECK_HEADERS([audiofile], [audiofile headers], [audiofile.h])])
+
+CHECK_WANT([PULSE], [auto], [use pulseaudio], [
+ CHECK_LIB([pulse_simple], [pulse-simple], [pa_simple_new])
+ CHECK_HEADERS([pulse_simple], [pulse-simple headers], [pulse/simple.h])
+ CHECK_LIB([pulse], [pulse], [pa_context_new])
+ CHECK_HEADERS([pulse], [pulse headers], [pulse/error.h])])
+
+CHECK_WANT([ISOFS], [auto], [use isofs], [
+ CHECK_HEADERS([isofs], [isofs headers], [linux/isofs.h])])
+
+if test "x$WANT_LADSPA_BUILD" != "xyes" ; then
+ CHECK_WANT([LADSPA], [auto], [ladspa plugin clients], [
+  CHECK_HEADERS([ladspa], [ladspa headers], [ladspa.h])])
+else
+ WANT_LADSPA=yes
+fi
 
 CHECK_WANT([SHUTTLE], [yes], [shuttle dev support], [
  CHECK_HEADERS([keysyms], [x11 keysym defs], [X11/keysymdef.h])])
@@ -888,9 +904,9 @@ echo ""
 if test "x$WANT_CIN_3RDPARTY" != "xno"; then
   CFG_CFLAGS+=" -DHAVE_CIN_3RDPARTY"
 fi
-for v in GL XFT XXF86VM OSS ALSA FIREWIRE DV DVB \
-	 VIDEO4LINUX2 ESOUND PACTL OPENEXR LV2 \
-	 COMMERCIAL LIBZMPEG SHUTTLE SHUTTLE_USB \
+for v in GL XFT XXF86VM OSS ALSA FIREWIRE DV DVB LADSPA \
+	 VIDEO4LINUX2 ESOUND PULSE PACTL OPENEXR LV2 \
+	 COMMERCIAL LIBZMPEG SHUTTLE SHUTTLE_USB XV \
 	 VAAPI VDPAU CUDA NV WINTV X10TV; do
   eval vv="\$WANT_$v"
   if test "x$vv" != "xno"; then
@@ -1071,6 +1087,22 @@ if test "x$CFG_LDFLAGS" != "x" ; then
   echo ""
 fi
 
+if test "x$CYGWIN" != "x" ; then
+  echo 'FF_DIR ?= /usr/local'
+  echo 'CFLAGS += -I$(FF_DIR)/include'
+  echo 'LDFLAGS += -L$(FF_DIR)/lib'
+  echo ""
+  echo "CFLAGS += -DNO_BTRACE"
+  echo "CFLAGS += -DNO_GDB"
+  echo "CFLAGS += -DNO_CTX"
+  echo "CFLAGS += -DNO_PRCTL"
+  echo "CFLAGS += -DNO_TID"
+  echo "CFLAGS += -DNO_XSELECT"
+  echo ""
+else
+  LDFLAGS+=" -z noexecstack"
+fi
+
 if test "x$WANT_X264_HIDEPTH" = "xyes" ; then
   X264_CFG_PARAMS="$X264_CFG_PARAMS --bit-depth=10"
 fi
@@ -1153,3 +1185,4 @@ fi
 if test "x$X265_CFG_PARAMS" != "x" ; then
   echo "x265.cfg_params :=$X265_CFG_PARAMS -DENABLE_SHARED=no"
 fi
+

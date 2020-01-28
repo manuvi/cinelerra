@@ -434,7 +434,7 @@ void DenoiseFFTEffect::collect_noise()
 	for(int i = 0; i < config.samples; i += WINDOW_SIZE)
 	{
 		collect_engine->process_buffer(collection_start,
-			WINDOW_SIZE, (Samples*)0, get_direction());
+			WINDOW_SIZE, (Samples**)0, get_direction());
 		collection_start += step * WINDOW_SIZE;
 		total_windows++;
 	}

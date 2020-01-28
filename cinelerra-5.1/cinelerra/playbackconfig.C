@@ -31,9 +31,12 @@ AudioOutConfig::AudioOutConfig()
 #ifdef HAVE_ALSA
 	driver = AUDIO_ALSA;
 #else
+#ifdef HAVE_PULSE
+	driver = AUDIO_PULSE;
+#else
 	driver = AUDIO_OSS;
 #endif
-
+#endif
 	audio_offset = 0.0;
 	map51_2 = 0;
 	play_gain = 1.0;
@@ -47,6 +50,8 @@ AudioOutConfig::AudioOutConfig()
 
 	esound_out_server[0] = 0;
 	esound_out_port = 0;
+
+	pulse_out_server[0] = 0;
 
 	sprintf(alsa_out_device, "default");
 	alsa_out_bits = 16;
@@ -85,12 +90,10 @@ int AudioOutConfig::operator==(AudioOutConfig &that)
 		!strcmp(oss_out_device[0], that.oss_out_device[0]) &&
 		(oss_out_bits == that.oss_out_bits) &&
 
-
-
 		!strcmp(esound_out_server, that.esound_out_server) &&
 		(esound_out_port == that.esound_out_port) &&
 
-
+		!strcmp(pulse_out_server, that.pulse_out_server) &&
 
 		!strcmp(alsa_out_device, that.alsa_out_device) &&
 		(alsa_out_bits == that.alsa_out_bits) &&
@@ -126,6 +129,9 @@ void AudioOutConfig::copy_from(AudioOutConfig *src)
 
 	strcpy(esound_out_server, src->esound_out_server);
 	esound_out_port = src->esound_out_port;
+
+	strcpy(pulse_out_server, src->pulse_out_server);
+
 	for(int i = 0; i < MAXDEVICES; i++)
 	{
 		oss_enable[i] = src->oss_enable[i];
@@ -171,7 +177,10 @@ int AudioOutConfig::load_defaults(BC_Hash *defaults, int active_config)
 	interrupt_workaround = defaults->getf(interrupt_workaround, "%sALSA_INTERRUPT_WORKAROUND", prefix);
 
 	defaults->getf(esound_out_server, "%sESOUND_OUT_SERVER", prefix);
+	defaults->getf(pulse_out_server, "%sPULSE_OUT_SERVER", prefix);
 	esound_out_port = defaults->getf(esound_out_port, "%sESOUND_OUT_PORT", prefix);
+
+	defaults->getf(pulse_out_server, "%sPULSE_OUT_SERVER", prefix);
 
 	firewire_channel = defaults->getf(firewire_channel, "%sAFIREWIRE_OUT_CHANNEL", prefix);
 	firewire_port = defaults->getf(firewire_port, "%sAFIREWIRE_OUT_PORT", prefix);
@@ -211,7 +220,10 @@ int AudioOutConfig::save_defaults(BC_Hash *defaults, int active_config)
 	defaults->updatef(interrupt_workaround, "%sALSA_INTERRUPT_WORKAROUND", prefix);
 
 	defaults->updatef(esound_out_server, "%sESOUND_OUT_SERVER", prefix);
+	defaults->updatef(pulse_out_server, "%sPULSE_OUT_SERVER", prefix);
 	defaults->updatef(esound_out_port, "%sESOUND_OUT_PORT", prefix);
+
+	defaults->updatef(pulse_out_server, "%sPULSE_OUT_SERVER", prefix);
 
 	defaults->updatef(firewire_channel, "%sAFIREWIRE_OUT_CHANNEL", prefix);
 	defaults->updatef(firewire_port, "%sAFIREWIRE_OUT_PORT", prefix);

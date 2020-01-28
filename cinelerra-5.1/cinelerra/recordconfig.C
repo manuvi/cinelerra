@@ -48,7 +48,7 @@ AudioInConfig::AudioInConfig()
 	strcpy(firewire_path, "/dev/raw1394");
 	esound_in_server[0] = 0;
 	esound_in_port = 0;
-
+	pulse_in_server[0] = 0;
 	sprintf(alsa_in_device, "default");
 	alsa_in_bits = 16;
 	in_samplerate = 48000;
@@ -100,6 +100,8 @@ void AudioInConfig::copy_from(AudioInConfig *src)
 	strcpy(esound_in_server, src->esound_in_server);
 	esound_in_port = src->esound_in_port;
 
+	strcpy(pulse_in_server, src->pulse_in_server);
+
 	for(int i = 0; i < MAXDEVICES; i++)
 	{
 		oss_enable[i] = src->oss_enable[i];
@@ -139,8 +141,9 @@ int AudioInConfig::load_defaults(BC_Hash *defaults)
 	}
 	oss_in_bits = defaults->get("R_OSS_IN_BITS", oss_in_bits);
 	defaults->get("R_ESOUND_IN_SERVER", esound_in_server);
+	defaults->get("R_PULSE_IN_SERVER", pulse_in_server);
 	esound_in_port = defaults->get("R_ESOUND_IN_PORT", esound_in_port);
-
+	defaults->get("R_PULSE_IN_SERVER", pulse_in_server);
 	defaults->get("R_ALSA_IN_DEVICE", alsa_in_device);
 	alsa_in_bits = defaults->get("R_ALSA_IN_BITS", alsa_in_bits);
 	in_samplerate = defaults->get("R_IN_SAMPLERATE", in_samplerate);
@@ -170,8 +173,9 @@ int AudioInConfig::save_defaults(BC_Hash *defaults)
 
 	defaults->update("R_OSS_IN_BITS", oss_in_bits);
 	defaults->update("R_ESOUND_IN_SERVER", esound_in_server);
+	defaults->update("R_PULSE_IN_SERVER", pulse_in_server);
 	defaults->update("R_ESOUND_IN_PORT", esound_in_port);
-
+	defaults->update("R_PULSE_IN_SERVER", pulse_in_server);
 	defaults->update("R_ALSA_IN_DEVICE", alsa_in_device);
 	defaults->update("R_ALSA_IN_BITS", alsa_in_bits);
 	defaults->update("R_IN_SAMPLERATE", in_samplerate);

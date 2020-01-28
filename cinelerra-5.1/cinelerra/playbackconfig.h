@@ -58,7 +58,8 @@ public:
 
 	char esound_out_server[BCTEXTLEN];
 	int esound_out_port;
-
+// PulseAudio
+	char pulse_out_server[BCTEXTLEN];
 // ALSA options
 	char alsa_out_device[BCTEXTLEN];
 	int alsa_out_bits;

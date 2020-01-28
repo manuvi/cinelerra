@@ -530,9 +530,9 @@ int TitleWindow::insert_ibeam(const char *txt, int ofs)
 {
 	int ibeam = cur_ibeam;
 	int ilen = strlen(txt)+1;
-	wchar_t wtxt[ilen];
+	wchr_t wtxt[ilen];
 	int len = BC_Resources::encode(client->config.encoding, BC_Resources::wide_encoding,
-		(char*)txt,ilen, (char *)wtxt,ilen*sizeof(wtxt[0])) / sizeof(wchar_t);
+		(char*)txt,ilen, (char *)wtxt,ilen*sizeof(wtxt[0])) / sizeof(wchr_t);
 	client->insert_text(wtxt, ibeam);
 	while( len > 0 && !wtxt[len] ) --len;
 	int adv = len+1 + ofs;
@@ -582,7 +582,8 @@ void TitleWindow::update_gui()
 	fade_out->update((float)client->config.fade_out);
 	font->update(client->config.font);
 	check_style(client->config.font,0);
-	text->update(client->config.wtext ? &client->config.wtext[0] : L"");
+	wchr_t wz[1] = { 0 };
+	text->update(client->config.wtext ? &client->config.wtext[0] : wz);
 	speed->update(client->config.pixels_per_second);
 	outline->update((int64_t)client->config.outline_size);
 #ifdef USE_STROKER
@@ -987,10 +988,10 @@ int TitleText::button_press_event()
 int TitleText::handle_event()
 {
 	window->fonts_popup->deactivate();
-	const wchar_t *wtext = get_wtext();
-	long wlen = wcslen(wtext);
+	const wchr_t *wtext = get_wtext();
+	long wlen = wstrlen(wtext);
 	client->config.demand(wlen);
-	wcsncpy(client->config.wtext, wtext, client->config.wsize);
+	wstrncpy(client->config.wtext, wtext, client->config.wsize);
 	client->config.wlen = wlen;
 	window->update_stats();
 	window->send_configure_change();

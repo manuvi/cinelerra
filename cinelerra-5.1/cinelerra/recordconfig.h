@@ -54,6 +54,7 @@ public:
 
 	char esound_in_server[BCTEXTLEN];
 	int esound_in_port;
+	char pulse_in_server[BCTEXTLEN];
 	char alsa_in_device[BCTEXTLEN];
 	int alsa_in_bits;
 	char dvb_in_adapter[BCTEXTLEN];

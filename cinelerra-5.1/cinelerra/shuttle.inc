@@ -9,4 +9,7 @@ class Translation;
 class Translations;
 class Shuttle;
 
+// playback max speed -64x .. 64x
+#define SHUTTLE_MAX_SPEED 64.
+
 #endif

@@ -211,21 +211,21 @@ void BC_WindowBase::draw_xft_text(int x, int y,
 	const char *text, int length, BC_Pixmap *pixmap, int is_utf8)
 {
 	int l = length + 1;
-	wchar_t wide_text[l];
+	wchr_t wide_text[l];
 	length = BC_Resources::encode(
 		is_utf8 ? "UTF8" : BC_Resources::encoding, BC_Resources::wide_encoding,
-		(char*)text, length, (char*)wide_text, l*sizeof(wchar_t)) / sizeof(wchar_t);
+		(char*)text, length, (char*)wide_text, l*sizeof(wchr_t)) / sizeof(wchr_t);
 	draw_xft_text(x, y, wide_text, length, pixmap);
 }
 
 void BC_WindowBase::draw_xft_text(int x, int y,
-	const wchar_t *text, int length, BC_Pixmap *pixmap)
+	const wchr_t *text, int length, BC_Pixmap *pixmap)
 {
 	int dy = -1;
-	const wchar_t *wsp = text, *wep = wsp + length;
+	const wchr_t *wsp = text, *wep = wsp + length;
 	int font = top_level->current_font;
 	while( wsp < wep ) {
-		const wchar_t *wcp = wsp;
+		const wchr_t *wcp = wsp;
 		while( wcp < wep && *wcp != '\n' ) ++wcp;
 		int len = wcp - wsp;
 		if( len > 0 )
@@ -272,16 +272,16 @@ void BC_WindowBase::xft_draw_string(XftColor *xft_color, XftFont *xft_font,
 	}
 }
 
-int BC_WindowBase::get_single_text_width(int font, const wchar_t *text, int length)
+int BC_WindowBase::get_single_text_width(int font, const wchr_t *text, int length)
 {
 	return draw_single_text(0, font, 0,0, text, length);
 }
 
 int BC_WindowBase::draw_single_text(int draw, int font,
-	int x, int y, const wchar_t *text, int length, BC_Pixmap *pixmap)
+	int x, int y, const wchr_t *text, int length, BC_Pixmap *pixmap)
 {
 	if( length < 0 )
-		length = wcslen(text);
+		length = wstrlen(text);
 	if( !length ) return 0;
 
 	if( !get_resources()->use_xft ) {
@@ -319,7 +319,7 @@ int BC_WindowBase::draw_single_text(int draw, int font,
 	int x0 = x;
 	XftFont *basefont = top_level->get_xft_struct(font);
 	XftFont *curfont = 0, *altfont = 0;
-	const wchar_t *up = text, *ubp = up, *uep = ubp + length;
+	const wchr_t *up = text, *ubp = up, *uep = ubp + length;
 
 	while( up < uep ) {
 		XftFont *xft_font = 0;

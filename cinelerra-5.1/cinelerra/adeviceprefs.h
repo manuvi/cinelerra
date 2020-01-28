@@ -26,16 +26,12 @@
 class OSSEnable;
 class ALSADevice;
 
+#include "adeviceprefs.inc"
 #include "bitspopup.inc"
 #include "guicast.h"
 #include "playbackconfig.inc"
 #include "preferencesthread.inc"
 #include "recordconfig.inc"
-
-class ADriverMenu;
-class ADeviceTextBox;
-class ADeviceIntBox;
-class ADeviceTumbleBox;
 
 class ADevicePrefs
 {
@@ -74,6 +70,7 @@ private:
 	int create_cine_objs();
 	int create_dvb_objs();
 	int create_v4l2mpeg_objs();
+	int create_pulse_objs();
 
 	int delete_oss_objs();
 	int delete_esound_objs();
@@ -81,6 +78,7 @@ private:
 	int delete_alsa_objs();
 	int delete_dvb_objs();
 	int delete_v4l2mpeg_objs();
+	int delete_pulse_objs();
 
 // The output config resolved from playback strategy and render engine.
 	AudioOutConfig *out_config;
@@ -99,8 +97,8 @@ private:
 	OSSEnable *oss_enable[MAXDEVICES];
 	ADeviceTextBox *oss_path[MAXDEVICES];
 	BitsPopup *oss_bits;
-	ADeviceTextBox *esound_server;
-	ADeviceIntBox *esound_port;
+	ADeviceTextBox *server;
+	ADeviceIntBox *port;
 	ADeviceIntBox *firewire_port;
 	ADeviceIntBox *firewire_channel;
 	ADeviceTextBox *firewire_path;

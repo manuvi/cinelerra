@@ -55,17 +55,17 @@ class BC_TextBox : public BC_SubWindow
 // may be local fixed/dynamic, or shared fixed ref via set_text
 	char *text;
 // always local dynamic
-	wchar_t *wtext;
+	wchr_t *wtext;
 public:
 // size > 0: fixed buffer, size == 0: dynamic buffer
 // size < 0: fixed shared buffer via set_text
 	BC_TextBox(int x, int y, int w, int rows, int size, char *text,
 		int has_border=1, int font=MEDIUMFONT);
-	BC_TextBox(int x, int y, int w, int rows, int size, wchar_t *wtext,
+	BC_TextBox(int x, int y, int w, int rows, int size, wchr_t *wtext,
 		int has_border=1, int font=MEDIUMFONT);
 	BC_TextBox(int x, int y, int w, int rows, const char *text,
 		int has_border=1, int font=MEDIUMFONT, int is_utf8=1);
-	BC_TextBox(int x, int y, int w, int rows, const wchar_t *wtext,
+	BC_TextBox(int x, int y, int w, int rows, const wchr_t *wtext,
 		int has_border=1, int font=MEDIUMFONT, int is_utf8=1);
 	BC_TextBox(int x, int y, int w, int rows, int64_t text,
 		int has_border=1, int font=MEDIUMFONT);
@@ -87,7 +87,7 @@ public:
 	void set_selection(int char1, int char2, int ibeam);
 	void wset_selection(int char1, int char2, int ibeam);
 	int update(const char *text);
-	int update(const wchar_t *wtext);
+	int update(const wchr_t *wtext);
 	int update(int64_t value);
 	int update(float value);
 	void disable();
@@ -110,7 +110,7 @@ public:
 	int activate();
 	int deactivate();
 	const char* get_text();
-	const wchar_t* get_wtext();
+	const wchr_t* get_wtext();
 	void set_text(char *text, int isz);
 	int wdemand(int len);
 	int tdemand(int len);
@@ -177,7 +177,7 @@ private:
 	void copy_selection(int clipboard_num);
 	void paste_selection(int clipboard_num);
 	void delete_selection(int letter1, int letter2, int text_len);
-	void insert_text(const wchar_t *wcp, int len=-1);
+	void insert_text(const wchr_t *wcp, int len=-1);
 // Reformat text according to separators.
 // ibeam_left causes the ibeam to move left.
 	int is_separator(const char *txt, int i);
@@ -195,7 +195,7 @@ private:
 	int tstrcmp(const char *cp);
 	char *tstrcpy(const char *cp);
 	char *tstrcat(const char *cp);
-	int text_update(const wchar_t *wcp, int wsz, char *tcp, int tsz);
+	int text_update(const wchr_t *wcp, int wsz, char *tcp, int tsz);
 	int wtext_update();
 
 // Top left of text relative to window
@@ -257,7 +257,7 @@ class BC_ScrollTextBox
 	BC_ScrollTextBoxYScroll *yscroll;
 	BC_WindowBase *parent_window;
 	const char *default_text;
-	const wchar_t *default_wtext;
+	const wchr_t *default_wtext;
 	int default_size;
 	int x, y, w, rows;
 
@@ -270,7 +270,7 @@ public:
 		const char *default_text, int default_size=BCTEXTLEN);
         BC_ScrollTextBox(BC_WindowBase *parent_window,
                 int x, int y, int w, int rows,
-                const wchar_t *default_wtext, int default_size=BCTEXTLEN);
+                const wchr_t *default_wtext, int default_size=BCTEXTLEN);
 	virtual ~BC_ScrollTextBox();
 	void create_objects();
 
@@ -281,7 +281,7 @@ public:
 	void set_text(char *text, int isz);
 	int set_text_row(int n);
 	void update(const char *text);
-	void update(const wchar_t *wtext);
+	void update(const wchr_t *wtext);
 	void reposition_window(int x, int y, int w, int rows);
 	void update_scrollbars();
 // accessors
@@ -295,7 +295,7 @@ public:
 // forward functions
 	int get_h();
 	const char *get_text();
-	const wchar_t *get_wtext();
+	const wchr_t *get_wtext();
 	int get_buttonpress();
 	void wset_selection(int char1, int char2, int ibeam);
 	void set_selection(int char1, int char2, int ibeam);
@@ -306,7 +306,7 @@ class BC_ScrollTextBoxText : public BC_TextBox
 {
 public:
 	BC_ScrollTextBoxText(BC_ScrollTextBox *gui, const char *text);
-	BC_ScrollTextBoxText(BC_ScrollTextBox *gui, const wchar_t *wtext);
+	BC_ScrollTextBoxText(BC_ScrollTextBox *gui, const wchr_t *wtext);
 	virtual ~BC_ScrollTextBoxText();
 	int handle_event();
 	int motion_event();
@@ -351,7 +351,7 @@ public:
 	virtual int handle_event();
 
 	const char *get_text();
-	const wchar_t *get_wtext();
+	const wchr_t *get_wtext();
 	int get_number();
 	void set_number(int v);
 	int get_x();
@@ -376,7 +376,7 @@ private:
 	int x, y, text_w, list_h;
 	int list_format, list_item;
 	const char *default_text;
-	const wchar_t *default_wtext;
+	const wchr_t *default_wtext;
 	ArrayList<BC_ListBoxItem*> *list_items;
 	BC_PopupTextBoxText *textbox;
 	BC_PopupTextBoxList *listbox;
@@ -387,7 +387,7 @@ class BC_PopupTextBoxText : public BC_TextBox
 {
 public:
 	BC_PopupTextBoxText(BC_PopupTextBox *popup, int x, int y, const char *text);
-	BC_PopupTextBoxText(BC_PopupTextBox *popup, int x, int y, const wchar_t *wtext);
+	BC_PopupTextBoxText(BC_PopupTextBox *popup, int x, int y, const wchr_t *wtext);
 	virtual ~BC_PopupTextBoxText();
 	int handle_event();
 	BC_PopupTextBox *popup;
@@ -428,7 +428,7 @@ public:
 	virtual int handle_up_event();
 	virtual int handle_down_event();
 	const char* get_text();
-	const wchar_t* get_wtext();
+	const wchr_t* get_wtext();
 	BC_TextBox* get_textbox();
 	int update(const char *value);
 	int update(int64_t value);

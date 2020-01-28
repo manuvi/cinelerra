@@ -515,7 +515,9 @@ void VDriverMenu::create_objects()
 	else
 	{
 		add_item(new VDriverItem(this, PLAYBACK_X11_TITLE, PLAYBACK_X11));
+#ifdef HAVE_XV
 		add_item(new VDriverItem(this, PLAYBACK_X11_XV_TITLE, PLAYBACK_X11_XV));
+#endif
 #ifdef HAVE_GL
 // Check runtime glx version. pbuffer needs >= 1.3
 		if(get_opengl_server_version() >= 103)

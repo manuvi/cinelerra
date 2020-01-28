@@ -57,7 +57,9 @@
 #include <typeinfo>
 
 #include <X11/extensions/Xinerama.h>
+#ifdef HAVE_XV
 #include <X11/extensions/Xvlib.h>
+#endif
 #include <X11/extensions/shape.h>
 #include <X11/XF86keysym.h>
 #include <X11/Sunkeysym.h>
@@ -205,9 +207,10 @@ BC_WindowBase::~BC_WindowBase()
 			XFree(xinerama_info);
 		xinerama_screens = 0;
 		xinerama_info = 0;
+#ifdef HAVE_XV
 		if( xvideo_port_id >= 0 )
 			XvUngrabPort(display, xvideo_port_id, CurrentTime);
-
+#endif
 		unlock_window();
 // Must be last reference to display.
 // _XftDisplayInfo needs a lock.
@@ -869,8 +872,11 @@ int BC_WindowBase::keysym_lookup(XEvent *event)
 	wkey_string_length = 0;
 
 	if( input_context ) {
+		wchar_t wkey[4];
 		wkey_string_length = XwcLookupString(input_context,
-			(XKeyEvent*)event, wkey_string, 4, &keysym, 0);
+			(XKeyEvent*)event, wkey, 4, &keysym, 0);
+		for( int i=0; i<wkey_string_length; ++i )
+			wkey_string[i] = wkey[i];
 //printf("keysym_lookup 1 %d %d %lx %x %x %x %x\n", wkey_string_length, keysym,
 //  wkey_string[0], wkey_string[1], wkey_string[2], wkey_string[3]);
 
@@ -2421,7 +2427,7 @@ void BC_WindowBase::init_glyphs()
 		"`abcdefghijklmnopqrstuvwxyz{|}~");
 	for( int font=SMALLFONT; font<=LARGEFONT; ++font ) {
 		set_font(font);
-		draw_text(5,5, text, 0);
+		draw_text(5,5, text);
 	}
 	set_font(cur_font);
 	XUngrabServer(display);
@@ -2944,10 +2950,10 @@ int BC_WindowBase::get_text_width(int font, const char *text, int length)
 	return w;
 }
 
-int BC_WindowBase::get_text_width(int font, const wchar_t *text, int length)
+int BC_WindowBase::get_text_width(int font, const wchr_t *text, int length)
 {
 	int i, j, w = 0;
-	if( length < 0 ) length = wcslen(text);
+	if( length < 0 ) length = wstrlen(text);
 
 	for( i=j=0; i<length && text[i]; ++i ) {
 		if( text[i] != '\n' ) continue;
@@ -3114,6 +3120,7 @@ int BC_WindowBase::accel_available(int color_model, int lock_it)
 
 int BC_WindowBase::grab_port_id(int color_model)
 {
+#ifdef HAVE_XV
 	if( !get_resources()->use_xvideo ||	// disabled
 	    !get_resources()->use_shm )		// Only local server is fast enough.
 		return -1;
@@ -3160,8 +3167,10 @@ int BC_WindowBase::grab_port_id(int color_model)
 	}
 
 	XvFreeAdaptorInfo(info);
-
 	return xvideo_port_id;
+#else
+	return -1;
+#endif
 }
 
 
@@ -4039,7 +4048,7 @@ int BC_WindowBase::ctrl_down()
 	return top_level->ctrl_mask;
 }
 
-wchar_t* BC_WindowBase::get_wkeystring(int *length)
+wchr_t* BC_WindowBase::get_wkeystring(int *length)
 {
 	if(length)
 		*length = top_level->wkey_string_length;
