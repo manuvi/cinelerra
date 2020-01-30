@@ -425,73 +425,16 @@ endif
 
 LIBS := $(LIBRARIES)
 
-ifneq ($(WANT_CIN_3RDPARTY),no)
-LIBS += $(libraries)
-else
-
-LIBS += -lpthread -lm -lbz2 -llzma -lz -lpng -luuid
-LIBS += -lX11 -lXau -lXdmcp -lXext -lXfixes -lXv -lXinerama
-LIBS += -lfontconfig -lfreetype
-LIBS += -lavcodec -lavdevice -lavfilter -lavformat -lavresample -lavutil
+ifeq ($(WANT_CIN_3RDPARTY),no)
+LIBS += -lavcodec -lavdevice -lavfilter -lavformat -lavutil
 LIBS += -lswresample -lswscale
-LIBS += -lvpx -lwebp -lwebpmux
+LIBS += -lintl -liconv
+LIBS += -lexecinfo
 
-LIBS += $(if $(filter fftw,$(static_pkgs)), -lfftw3)
-LIBS += $(if $(filter flac,$(static_pkgs)), -lFLAC)
-LIBS += $(if $(filter giflib,$(static_pkgs)), -lgif)
-LIBS += $(if $(filter lame,$(static_pkgs)), -lmp3lame)
-LIBS += $(if $(filter libjpeg,$(static_pkgs)), -ljpeg)
-LIBS += $(if $(filter openjpeg,$(static_pkgs)), -lopenjp2)
-LIBS += $(if $(filter libogg,$(static_pkgs)), -logg)
-LIBS += $(if $(filter libsndfile,$(static_pkgs)), -lsndfile)
-LIBS += $(if $(filter libtheora,$(static_pkgs)), -ltheoradec -ltheoraenc)
-LIBS += $(if $(filter libuuid,$(static_pkgs)), -luuid)
-LIBS += $(if $(filter libvorbis,$(static_pkgs)), -lvorbis -lvorbisenc -lvorbisfile)
-LIBS += $(if $(filter tiff,$(static_pkgs)), -ltiff)
-LIBS += $(if $(filter twolame,$(static_pkgs)), -ltwolame)
-LIBS += $(if $(filter x264,$(static_pkgs)), -lx264)
-LIBS += $(if $(filter x265,$(static_pkgs)), -lx265)
-LIBS += $(if $(filter libvpx,$(static_pkgs)), -lvpx)
-
-ifneq ($(WANT_GL),no)
-LIBS += -lGL -lGLU -lGLX
-endif
-ifneq ($(WANT_XFT),no)
-LIBS += -lXft
-endif
-ifneq ($(WANT_ALSA),no)
-LIBS += -lasound
-endif
-ifneq ($(WANT_PULSE),no)
-LIBS += -lpulse-simple -lpulse
-endif
-ifneq ($(WANT_OPENEXR),no)
-LIBS += -lIex -lIexMath -lIlmImf -lIlmImfUtil
-endif
-ifneq ($(WANT_DV),no)
-LIBS += -ldv
-endif
-ifneq ($(WANT_FIREWIRE),no)
-LIBS += -lavc1394 -lraw1394 -liec61883 -lrom1394
-endif
-ifneq ($(WANT_DVB),no)
-LIBS += -ldv
-endif
-ifneq ($(WANT_DL),no)
-LIBS += -ldl
-endif
-ifneq ($(WANT_LIBZMPEG),no)
-LIBS += -lmjpegutils
-endif
-ifneq ($(WANT_OPUS),no)
-LIBS += -lopus
-endif
-ifneq ($(WANT_NUMA),no)
-LIBS += -lnuma
-endif
-ifneq ($(WANT_LV2),no)
-LIBS += -llilv-0 -lsratom-0 -lserd-0 -lsord-0 -lsuil-0
-endif
+LIBS += $(shared_libs)
+LIBS += $(system_libs)
+else
+LIBS += $(libraries)
 endif
 
 ifneq ($(WANT_COMMERCIAL),no)
@@ -519,6 +462,7 @@ LV2OBJS = \
 endif
 
 CFLAGS := \
+	-I/usr/local/include \
 	-I$(GUICAST) \
 	-I$(LIBZMPEG3) \
 	$(static_incs) \
@@ -571,8 +515,8 @@ $(OUTPUT): $(OBJS) $(THEME_DATA) $(DCRAW) $(LIBRARIES)
 
 ifneq ($(WANT_COMMERCIAL),no)
 $(CUTADS):	$(CUTOBJS) $(CUTLIBS) $(LIBRARIES)
-	@echo g++ -o $@ $(CUTOBJS)
-	@g++ $(CFLAGS) -pthread -o $@ $(CUTOBJS) $(CUTLIBS) $(LIBS)
+	@echo $(CXX) -o $@ $(CUTOBJS)
+	@$(CXX) $(CFLAGS) -pthread -o $@ $(CUTOBJS) $(CUTLIBS) $(LIBS)
 	$(if $(findstring -g,$(CFLAGS)),objcopy --only-keep-debug $(CUTADS) $(CUTADS).debuginfo)
 	$(if $(findstring -ggdb,$(CFLAGS)),,strip $(CUTADS))
 
@@ -583,8 +527,8 @@ install:	install-cutads
 endif
 
 $(BDWRITE):	$(BDWOBJS) $(LIBRARIES)
-	@echo g++ -o $@ $(BDWOBJS)
-	@g++ $(CFLAGS) -pthread -o $@ $(BDWOBJS) $(LIBS)
+	@echo $(CXX) -o $@ $(BDWOBJS)
+	@$(CXX) $(CFLAGS) -pthread -o $@ $(BDWOBJS) $(LIBS)
 	$(if $(findstring -g,$(CFLAGS)),objcopy --only-keep-debug $(BDWRITE) $(BDWRITE).debuginfo)
 	$(if $(findstring -ggdb,$(CFLAGS)),,strip $(BDWRITE))
 
@@ -593,13 +537,13 @@ install-bdwrite:
 install:	install-bdwrite
 
 ydiff:	ydiff.C $(LIBRARIES)
-	@echo g++ -o $@ ydiff.C
-	@g++ $(CFLAGS) ydiff.C -o $@ $(LIBS)
+	@echo $(CXX) -o $@ ydiff.C
+	@$(CXX) $(CFLAGS) ydiff.C -o $@ $(LIBS)
 
 shdmp:	shdmp.C
-	@g++ $(CFLAGS) shdmp.C -o $@
+	@$(CXX) $(CFLAGS) shdmp.C -o $@
 shudmp:	shudmp.C
-	@g++ $(CFLAGS) shudmp.C -o $@ -lusb-1.0
+	@$(CXX) $(CFLAGS) shudmp.C -o $@ -lusb-1.0
 
 clean:
 	rm -rf $(OBJDIR)

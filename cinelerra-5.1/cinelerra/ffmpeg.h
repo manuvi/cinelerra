@@ -20,6 +20,7 @@
 #include "fileffmpeg.inc"
 #include "indexstate.inc"
 #include "mutex.h"
+#include "preferences.inc"
 #include "thread.h"
 #include "vframe.inc"
 
@@ -204,10 +205,14 @@ public:
 
 class FFVideoConvert {
 public:
+	Preferences *preferences;
 	struct SwsContext *convert_ctx;
 	AVFrame *sw_frame;
 
-	FFVideoConvert() { convert_ctx = 0; sw_frame = 0; }
+	FFVideoConvert(Preferences *preferences) {
+		this->preferences = preferences;
+		convert_ctx = 0; sw_frame = 0;
+	}
 	~FFVideoConvert() {
 		if( convert_ctx ) sws_freeContext(convert_ctx);
 		if( sw_frame ) av_frame_free(&sw_frame);
@@ -412,6 +417,7 @@ public:
 
 	int ff_cpus();
 	const char *ff_hw_dev();
+	Preferences *ff_prefs();
 	void dump_context(AVCodecContext *ctx);
 };
 

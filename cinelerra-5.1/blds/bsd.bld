@@ -7,7 +7,8 @@ export CPLUS_INCLUDE_PATH=/usr/local/include
 export LIBRARY_PATH=/usr/local/lib
 alias make=gmake
 ( ./autogen.sh
-  CC=clang CXX=clang++ CFLAGS="-g -O2 -DFFMPEG3" ./configure --with-single-user \
+  BSD=1 CC=clang CXX=clang++ CFLAGS="-g -O2 -DFFMPEG3" \
+  ./configure --with-single-user \
     --disable-static-build --without-lv2 --disable-lame --disable-twolame \
     --with-oss --without-alsa --without-firewire --without-dv --without-dvb \
     --without-video4linux2 --without-xxf86vm --without-ladspa-build \

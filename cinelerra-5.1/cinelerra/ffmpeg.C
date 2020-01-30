@@ -1033,7 +1033,8 @@ IndexMarks *FFAudioStream::get_markers()
 }
 
 FFVideoStream::FFVideoStream(FFMPEG *ffmpeg, AVStream *strm, int idx, int fidx)
- : FFStream(ffmpeg, strm, fidx)
+ : FFStream(ffmpeg, strm, fidx),
+   FFVideoConvert(ffmpeg->ff_prefs())
 {
 	this->idx = idx;
 	width = height = 0;
@@ -1367,7 +1368,7 @@ int FFVideoConvert::convert_picture_vframe(VFrame *frame, AVFrame *ip)
 }
 
 int FFVideoConvert::convert_picture_vframe(VFrame *frame, AVFrame *ip, AVFrame *ipic)
-{
+{ // picture = vframe
 	int cmodel = frame->get_color_model();
 	AVPixelFormat ofmt = color_model_to_pix_fmt(cmodel);
 	if( ofmt == AV_PIX_FMT_NB ) return -1;
@@ -1421,6 +1422,19 @@ int FFVideoConvert::convert_picture_vframe(VFrame *frame, AVFrame *ip, AVFrame *
 				" sws_getCachedContext() failed\n");
 		return -1;
 	}
+
+	int jpeg_range = preferences->yuv_color_range == BC_COLORS_JPEG ? 1 : 0;
+	int *inv_table, *table, src_range, dst_range;
+	int brightness, contrast, saturation;
+	if( !sws_getColorspaceDetails(convert_ctx,
+			&inv_table, &src_range, &table, &dst_range,
+			&brightness, &contrast, &saturation) ) {
+		if( src_range != jpeg_range || dst_range != jpeg_range )
+			sws_setColorspaceDetails(convert_ctx,
+					inv_table, jpeg_range, table, jpeg_range,
+					brightness, contrast, saturation);
+	}
+
 	int ret = sws_scale(convert_ctx, ip->data, ip->linesize, 0, ip->height,
 	    ipic->data, ipic->linesize);
 	if( ret < 0 ) {
@@ -1485,7 +1499,7 @@ int FFVideoConvert::convert_vframe_picture(VFrame *frame, AVFrame *op)
 }
 
 int FFVideoConvert::convert_vframe_picture(VFrame *frame, AVFrame *op, AVFrame *opic)
-{
+{ // vframe = picture
 	int cmodel = frame->get_color_model();
 	AVPixelFormat ifmt = color_model_to_pix_fmt(cmodel);
 	if( ifmt == AV_PIX_FMT_NB ) return -1;
@@ -1523,6 +1537,19 @@ int FFVideoConvert::convert_vframe_picture(VFrame *frame, AVFrame *op, AVFrame *
 				" sws_getCachedContext() failed\n");
 		return -1;
 	}
+
+	int jpeg_range = preferences->yuv_color_range == BC_COLORS_JPEG ? 1 : 0;
+	int *inv_table, *table, src_range, dst_range;
+	int brightness, contrast, saturation;
+	if( !sws_getColorspaceDetails(convert_ctx,
+			&inv_table, &src_range, &table, &dst_range,
+			&brightness, &contrast, &saturation) ) {
+		if( dst_range != jpeg_range )
+			sws_setColorspaceDetails(convert_ctx,
+					inv_table, src_range, table, jpeg_range,
+					brightness, contrast, saturation);
+	}
+
 	int ret = sws_scale(convert_ctx, opic->data, opic->linesize, 0, frame->get_h(),
 			op->data, op->linesize);
 	if( ret < 0 ) {
@@ -3227,6 +3254,11 @@ int FFMPEG::ff_cpus()
 const char *FFMPEG::ff_hw_dev()
 {
 	return &file_base->file->preferences->use_hw_dev[0];
+}
+
+Preferences *FFMPEG::ff_prefs()
+{
+	return !file_base ? 0 : file_base->file->preferences;
 }
 
 int FFVideoStream::create_filter(const char *filter_spec, AVCodecParameters *avpar)

@@ -1,81 +1,37 @@
 Email cin@lists.cinelerra-gg.org 4 help.
 For usage help, refer to the following:
-  https://cinelerra-gg.org/downloads/CinelerraGG_manual.pdf
-  https://cinelerra-gg.org/downloads/Features.pdf
+  https://cinelerra-gg.org/download/CinelerraGG_Manual.pdf
   http://g-raffa.eu/Cinelerra/HOWTO/basics.html
 Cinfinity icons selected in Preferences Sam (CC BY 3.0,
   https://creativecommons.org/licenses/by/3.0/)
 Cakewalk and Neophyte themes by Olaf Wolff (CC BY 4.0,
   https://creativecommons.org/licenses/by/4.0/)
 .
-December 2019 New Features of note:
+January 2020 New Features of note:
+  Updated reference Manual using LaTeX now complete.
+  File by Reference capability now available.
+  Hauppauge Remote Control added for OTA TV.
+  Pulse Audio added as a sound driver choice.
+.
+2019 New Features of note:
   Edit EDLs feature added for easily editing nested EDLs.
-  New Compressor Multi, Alpha, and Foreground plugins.
-  Sketcher plugin improvements for aliasing/scaling/rotating.
-  Fastpath minor speed improvement for titles/bkg colors.
-  Improved hardware accelerators support.
   OTA TV support for Happauge 1657 Dual USB device recording.
-November 2019 New Features of note:
   Audio improvements added for playback/speed/sampling.
-  Spanish po and website translations updated by Sergio.
+  Spanish, Russian, French, and German translations updated.
   Transcode 1:1 added to convert to a different format.
   Compositor zoom using the wheel & panning is available.
-October 2019 New Features of note:
   Scaling for any size monitor now available in Preferences.
-  New Shape Wipe video transitions have been contributed.
-  Russian translation contributions for better coverage.
-  Insertion Strategy icons added back in for ease of use.
-  Several additional ffmpeg opts files contributed for use.
-September 2019 New Features of note:
-  Crop & Position new plugin now available.
-  New "Load recent" in File pulldown, for recently used media.
-  Library x265 has been upgraded to 3.1.2.
-  Camera and Projector menu has added Add Keyframe/Reset.
-August 2019 New Features of note:
-  FFmpeg in use with Cinelerra is now version 4.2.
-  Lipvpx has been upgraded to version 1.8.1.
-  Dav1d is now the default/faster decoder for AV1 media.
-  Performance improvements were added for Mask feathering.
-July 2019 New Features of note:
-  Completion of Masking improvements with Preset Shapes, Center
-    and Normalize buttons, plus x/y scaling in 1 direction only.
-  Provision for usage of Rectified Audio waveforms was added.
-  Spanning Keyframes is now isolated to avoid interference.
-June 2019 New Features of note:
-  Hardware acceleration Nvenc for Nvidia boards rendering in.
-  More masking improvements to include tracks, solo, & gangs.
-  Cuda capability optional if do your own builds.
-  Gradient plugin improved for OpenGL + color picker.
-  Blade cute/Hard edges is now less intrusive.
-May 2019 New Features of note:
-  Masking enhancements added to include Rotate and Scale.
-  Some encode hardware acceleration for vaapi graphics boards.
-  More decode options for vdpau/vaapi hardware acceleration.
-  French and German improved program translations.
-  Additional args capability for Shell Commands setup.
-April 2019 New Features of note:
-  GPU usage for MPEG/H.264 formats with vdpau/vaapi for decode.
-  New Tracer plugin to outline objects available.
-  A Clear button for 15 plugins sliders eases usage.
-  Camera and Projector slight improvements with yellow line.
-  Enhanced ffmpeg error reporting.
-March 2019 New Features of note:
-  Mixers, multiple cameras, now has Audio Alignment.
+  Improved and new transitions and plugins to include:
+    Tracer, Crop & Position, Compressor Multi, Alpha, Foreground.
+  Libraries updated for FFmpeg, libvpx, x264, x265, and Dav1d.
+  Major improvements for Masking in the Compositor.
+  Camera and Projector menu and usage improvements added.
+  Hardware acceleration capabilities added to include:
+    nvenc for nvidia boards, vdapu and vaapi hardware, + cuda.
   Additional options for Preview mode in Resources window.
   Named layouts for easier identification purposes.
-  ShuttlePro/Xpress will work on multiple instances.
-  Insert Mixers for multiple cameras at Insertion point.
-February 2019 New Features of note:
-  AV1 and WebP format usage is now included.
-  ShuttlePro/Xpress stabilization/setup/definition is complete.
-  Transitions now allow for length in frames, time and seconds.
-  Gif formatted files have had major improvements added.
-January 2019 New Features of note:
-  Capability for Shuttle usage has been added.
-  Drag Handle management includes Slide and Edge too.
-  Updated x264 (now includes 10-bit and 8-bit) and x265.
-  Undo stack can now be dumped into the terminal windows.
-  23 more plugins have reset buttons included.
+  Capability for ShuttlePro/Xpress usage has been added.
+  Insert Mixers for multiple cameras general improvements added.
 .
 2018 New Features of note:
   Inter-View mode / Identifying Source Targets added.

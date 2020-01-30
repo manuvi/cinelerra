@@ -509,7 +509,7 @@ fi
 
 AC_DEFUN([CHECK_LIB], [
 if test "x$HAVE_$1" != "xno"; then
- if test "x$PKG_$1" = "x" -o "x$WANT_STATIC_BUILD" = "xno" -a "x$PKG_$1" = "xauto"; then
+ if test "x$PKG_$1" = "x" -o "x$WANT_STATIC_BUILD" = "xno" -a "x$PKG_$1" != "xno"; then
   AC_CHECK_LIB([$2], [$3], [HAVE_$1=yes], [HAVE_$1=no], [$4])
   AC_SUBST([HAVE_$1])
   if test "x$WANT_$1" != "xno"; then
@@ -828,7 +828,11 @@ fi
 AC_DEFUN([PKG_PROVIDE],[
 if test "x$BUILD_$1" = "x" ; then
  if test "x$PKG_$1" = "xyes"; then
-  PKG_FORCED([$1])
+  if test "x$WANT_CIN_3RDPARTY" = "xno"; then
+    PKG_SHARED([$1])
+  else
+    PKG_FORCED([$1])
+  fi
  elif test "x$2" = "xno" -o "x$PKG_$1" = "xno"; then
   PKG_DISABLED([$1])
  elif test "x$WANT_STATIC_BUILD" = "xyes"; then
@@ -1088,9 +1092,9 @@ if test "x$CFG_LDFLAGS" != "x" ; then
 fi
 
 if test "x$CYGWIN" != "x" ; then
-  echo 'FF_DIR ?= /usr/local'
-  echo 'CFLAGS += -I$(FF_DIR)/include'
-  echo 'LDFLAGS += -L$(FF_DIR)/lib'
+  echo 'FF_PATH ?= /usr/local'
+  echo 'LDFLAGS += -L$(FF_PATH)/lib'
+  echo 'CFLAGS += -I$(FF_PATH)/include'
   echo ""
   echo "CFLAGS += -DNO_BTRACE"
   echo "CFLAGS += -DNO_GDB"
@@ -1101,6 +1105,11 @@ if test "x$CYGWIN" != "x" ; then
   echo ""
 else
   LDFLAGS+=" -z noexecstack"
+fi
+if test "x$BSD" != "x" ; then
+  echo "CFLAGS += -DNO_PRCTL"
+  echo "CFLAGS += -DNO_TID"
+  echo "CFLAGS += -DNO_GDB"
 fi
 
 if test "x$WANT_X264_HIDEPTH" = "xyes" ; then

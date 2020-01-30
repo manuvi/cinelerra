@@ -1002,7 +1002,9 @@ int PluginFAClient::process_buffer(int64_t size, Samples **buffer, int64_t start
 
 
 PluginFVClient::PluginFVClient(PluginServer *server, const char *name)
- : PluginVClient(server), PluginFClient(this, name)
+ : PluginVClient(server),
+   PluginFClient(this, name),
+   FFVideoConvert(server->preferences)
 {
 }
 
