@@ -1,7 +1,7 @@
 Source: cin
 Section: video
 Priority: optional
-Standards-Version: 5.1.20191231
+Standards-Version: 5.1.20200131
 Maintainer: mailing list <cin@lists.cinelerra-gg.org>
 Homepage: https://www.cinelerra-gg.org/
 Build-Depends:

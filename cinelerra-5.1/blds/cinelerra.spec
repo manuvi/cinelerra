@@ -1,4 +1,4 @@
-%define ver 20191231
+%define ver 20200131
 %define cin cinelerra
 Summary: Multimedia Editing and construction
 
@@ -48,7 +48,7 @@ BuildRequires: nasm
 BuildRequires: libtool
 BuildRequires: ncurses-devel
 BuildRequires: texinfo
-BuildRequires: udftools
+#BuildRequires: udftools
 BuildRequires: gtk2-devel
 BuildRequires: libva-devel
 BuildRequires: libvdpau-devel

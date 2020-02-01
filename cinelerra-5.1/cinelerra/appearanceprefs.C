@@ -750,9 +750,9 @@ int HighlightInverseColor::handle_event()
 
 
 const char *YuvColorSpace::color_space[] = {
-	N_("BT601"),
-	N_("BT709"),
-	N_("BT2020"),
+	N_("BT601"), // COLOR_SPACE_BT601
+	N_("BT709"), // COLOR_SPACE_BT709
+	N_("BT2020"), // COLOR_SPACE_BT2020
 };
 
 YuvColorSpace::YuvColorSpace(int x, int y, PreferencesWindow *pwindow)
@@ -794,8 +794,8 @@ int YuvColorSpaceItem::handle_event()
 
 
 const char *YuvColorRange::color_range[] = {
-	N_("JPEG"),
-	N_("MPEG"),
+	N_("JPEG"), // COLOR_RANGE_JPEG
+	N_("MPEG"), // COLOR_RANGE_MPEG
 };
 
 YuvColorRange::YuvColorRange(int x, int y, PreferencesWindow *pwindow)

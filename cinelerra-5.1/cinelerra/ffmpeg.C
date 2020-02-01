@@ -1423,15 +1423,28 @@ int FFVideoConvert::convert_picture_vframe(VFrame *frame, AVFrame *ip, AVFrame *
 		return -1;
 	}
 
-	int jpeg_range = preferences->yuv_color_range == BC_COLORS_JPEG ? 1 : 0;
+	int color_range = 0;
+	switch( preferences->yuv_color_range ) {
+	case BC_COLORS_JPEG:  color_range = 1;  break;
+	case BC_COLORS_MPEG:  color_range = 0;  break;
+	}
+	int ff_color_space = SWS_CS_ITU601;
+	switch( preferences->yuv_color_space ) {
+	case BC_COLORS_BT601:  ff_color_space = SWS_CS_ITU601;  break;
+	case BC_COLORS_BT709:  ff_color_space = SWS_CS_ITU709;  break;
+	case BC_COLORS_BT2020: ff_color_space = SWS_CS_BT2020;  break;
+	}
+	const int *color_table = sws_getCoefficients(ff_color_space);
+
 	int *inv_table, *table, src_range, dst_range;
 	int brightness, contrast, saturation;
 	if( !sws_getColorspaceDetails(convert_ctx,
 			&inv_table, &src_range, &table, &dst_range,
 			&brightness, &contrast, &saturation) ) {
-		if( src_range != jpeg_range || dst_range != jpeg_range )
+		if( src_range != color_range || dst_range != color_range ||
+		    inv_table != color_table || table != color_table )
 			sws_setColorspaceDetails(convert_ctx,
-					inv_table, jpeg_range, table, jpeg_range,
+					color_table, color_range, color_table, color_range,
 					brightness, contrast, saturation);
 	}
 
@@ -1538,15 +1551,28 @@ int FFVideoConvert::convert_vframe_picture(VFrame *frame, AVFrame *op, AVFrame *
 		return -1;
 	}
 
-	int jpeg_range = preferences->yuv_color_range == BC_COLORS_JPEG ? 1 : 0;
+
+	int color_range = 0;
+	switch( preferences->yuv_color_range ) {
+	case BC_COLORS_JPEG:  color_range = 1;  break;
+	case BC_COLORS_MPEG:  color_range = 0;  break;
+	}
+	int ff_color_space = SWS_CS_ITU601;
+	switch( preferences->yuv_color_space ) {
+	case BC_COLORS_BT601:  ff_color_space = SWS_CS_ITU601;  break;
+	case BC_COLORS_BT709:  ff_color_space = SWS_CS_ITU709;  break;
+	case BC_COLORS_BT2020: ff_color_space = SWS_CS_BT2020;  break;
+	}
+	const int *color_table = sws_getCoefficients(ff_color_space);
+
 	int *inv_table, *table, src_range, dst_range;
 	int brightness, contrast, saturation;
 	if( !sws_getColorspaceDetails(convert_ctx,
 			&inv_table, &src_range, &table, &dst_range,
 			&brightness, &contrast, &saturation) ) {
-		if( dst_range != jpeg_range )
+		if( dst_range != color_range || table != color_table )
 			sws_setColorspaceDetails(convert_ctx,
-					inv_table, src_range, table, jpeg_range,
+					inv_table, src_range, color_table, color_range,
 					brightness, contrast, saturation);
 	}
 

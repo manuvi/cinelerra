@@ -728,6 +728,19 @@ CHECK_WANT([LV2], [auto], [use lv2], [
  CHECK_HEADERS([lv2], [suil headers], [suil/suil.h])
  CFLAGS="$saved_CFLAGS"])
 
+test "x$HAVE_lilv" = "xno" || \
+test "x$HAVE_sord" = "xno" || \
+test "x$HAVE_serd" = "xno" || \
+test "x$HAVE_sratom" = "xno" || \
+test "x$HAVE_lv2" = "xno" || \
+test "x$HAVE_suil" = "xno" && \
+  HAVE_lilv=no && \
+  HAVE_sord=no && \
+  HAVE_serd=no && \
+  HAVE_sratom=no && \
+  HAVE_lv2=no && \
+  HAVE_suil=no
+
 CHECK_WANT([CUDA], [auto], [build cuda plugins], [
   CHECK_HEADERS([CUDA], [cuda sdk], [${CUDA_PATH:-/usr/local/cuda}/include/cuda.h])])
 
