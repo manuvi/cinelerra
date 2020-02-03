@@ -61,6 +61,7 @@ sys_install: $(CIN_INSTALLS)
 
 sys_uninstall: $(CIN_UNINSTALLS)
 	rm -f "$(DESTDIR)$(bindir)/$(WANT_CIN)"
+	rm -f "$(DESTDIR)$(bindir)/bdwrite"
 	rm -rf "$(DESTDIR)$(WANT_CINLIB_DIR)"
 	rm -rf "$(DESTDIR)$(datadir)/$(WANT_CIN)"
 	rm -rf "$(DESTDIR)$(localedir)"/*/"LC_MESSAGES/$(WANT_CIN).mo"

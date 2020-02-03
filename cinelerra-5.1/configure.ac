@@ -623,20 +623,17 @@ fi
 AC_DEFUN([CHECK_WANT], [
 RESULT=yes
 # WANT_$1
-if test "x$WANT_$1" != "xno" ; then
 AC_ARG_WITH(m4_tolower([$1]),
  AC_HELP_STRING([m4_join([-],[--with],m4_tolower([$1]))], [$3] (auto)),
   [WANT_$1=$withval],[WANT_$1=$2])
  m4_quote($4)
- if test "x$RESULT" = "xno" -a "x$PKG_$1" = "x"; then
-  if test "x$WANT_$1" = "xyes" ; then
+ if test "x$WANT_$1" = "xauto" ; then
+  WANT_$1="$RESULT"
+ elif test "x$WANT_$1" = "xyes" ; then
+  if test "x$RESULT" = "xno" -a "x$PKG_$1" = "x"; then
     AC_MSG_ERROR([required for $1 support.])
   fi
-  WANT_$1=no
- elif test "x$WANT_$1" = "xauto" ; then
-  WANT_$1=yes
  fi
-fi
 CFG_WANTS+=" $1"
 AC_SUBST([WANT_$1])
 ])
@@ -670,6 +667,15 @@ CHECK_WANT([FIREWIRE], [auto], [use firewire], [
  CHECK_HEADERS([libiec61883], [libiec61883 headers], [libiec61883/iec61883.h])
  CHECK_LIB([libraw1394], [raw1394], [raw1394_iso_recv_init])
  CHECK_HEADERS([libraw1394], [libraw1394 headers], [libraw1394/raw1394.h])])
+# have all or none
+test "x$HAVE_libavc1394" = "xyes" && \
+test "x$HAVE_libiec61883" = "xyes" && \
+test "x$HAVE_libraw1394" = "xyes" && \
+  HAVE_FIREWIRE=yes || \
+HAVE_libavc1394=no && \
+HAVE_libiec61883=no && \
+HAVE_libraw1394=no && \
+ HAVE_FIREWIRE=no
 
 CHECK_WANT([DV], [auto], [use dv], [
  CHECK_LIB([libdv], [dv], [dv_init])
@@ -689,6 +695,13 @@ CHECK_WANT([ESOUND], [no], [use esd], [
  CHECK_HEADERS([esound], [esound headers], [esd.h])
  CHECK_LIB([audiofile], [audiofile], [afOpenFile])
  CHECK_HEADERS([audiofile], [audiofile headers], [audiofile.h])])
+# have all or none
+test "x$HAVE_esound" = "xyes" && \
+test "x$HAVE_audiofile" = "xyes" && \
+  HAVE_ESOUND=yes || \
+HAVE_esound=no && \
+HAVE_audiofile=no && \
+  HAVE_ESOUND=no
 
 CHECK_WANT([PULSE], [auto], [use pulseaudio], [
  CHECK_LIB([pulse_simple], [pulse-simple], [pa_simple_new])
@@ -727,19 +740,21 @@ CHECK_WANT([LV2], [auto], [use lv2], [
  CFLAGS="-I/usr/include/suil-0 -I/usr/local/include/suil-0"
  CHECK_HEADERS([lv2], [suil headers], [suil/suil.h])
  CFLAGS="$saved_CFLAGS"])
-
-test "x$HAVE_lilv" = "xno" || \
-test "x$HAVE_sord" = "xno" || \
-test "x$HAVE_serd" = "xno" || \
-test "x$HAVE_sratom" = "xno" || \
-test "x$HAVE_lv2" = "xno" || \
-test "x$HAVE_suil" = "xno" && \
-  HAVE_lilv=no && \
-  HAVE_sord=no && \
-  HAVE_serd=no && \
-  HAVE_sratom=no && \
-  HAVE_lv2=no && \
-  HAVE_suil=no
+# have all or none
+test "x$HAVE_lv2" = "xyes" && \
+test "x$HAVE_lilv" = "xyes" && \
+test "x$HAVE_sord" = "xyes" && \
+test "x$HAVE_serd" = "xyes" && \
+test "x$HAVE_sratom" = "xyes" && \
+test "x$HAVE_suil" = "xyes" && \
+  HAVE_LV2=yes || \
+HAVE_lv2=no && \
+HAVE_lilv=no && \
+HAVE_sord=no && \
+HAVE_serd=no && \
+HAVE_sratom=no && \
+HAVE_suil=no && \
+  HAVE_LV2=no
 
 CHECK_WANT([CUDA], [auto], [build cuda plugins], [
   CHECK_HEADERS([CUDA], [cuda sdk], [${CUDA_PATH:-/usr/local/cuda}/include/cuda.h])])
@@ -777,11 +792,15 @@ EXRIStream() : Imf::IStream("mypath") {} };
 class EXROStream : public Imf::OStream { public: 
 EXROStream() : Imf::OStream("mypath") {} };
 ]])], [HAVE_OPENEXR=yes], [HAVE_OPENEXR=no])
- RESULT="$HAVE_OPENEXR"
- if test "x$RESULT" = "xyes"; then
-  SHARED_openexr="$LIBS"
-  SHARED_LIBS+=" $LIBS"
-  CFG_CFLAGS+=" -I/usr/include/OpenEXR -I/usr/local/include/OpenEXR"
+ if test "x$WANT_OPENEXR" = "xauto"; then
+   WANT_OPENEXR="yes"
+ fi
+ if test "x$WANT_OPENEXR" = "xyes" -a "x$HAVE_OPENEXR" = "xyes"; then
+  if test "x$WANT_STATIC_BUILD" = "xno"; then
+    SHARED_openexr="$LIBS"
+    SHARED_LIBS+=" $LIBS"
+    CFG_CFLAGS+=" -I/usr/include/OpenEXR -I/usr/local/include/OpenEXR"
+  fi
  fi
  LIBS="$saved_LIBS"
  CXXFLAGS="$saved_CXXFLAGS"
@@ -789,6 +808,13 @@ EXROStream() : Imf::OStream("mypath") {} };
  AC_MSG_RESULT([$HAVE_OPENEXR])
 ])
 AC_SUBST([HAVE_OPENEXR])
+# have all or none
+test "x$HAVE_openexr" = "xyes" && \
+test "x$HAVE_ilmbase" = "xyes" && \
+  HAVE_OPENEXR=yes || \
+HAVE_openexr=no && \
+HAVE_ilmbase=no &&
+  HAVE_OPENEXR=no
 
 # build global_config
 OBJDIR=`uname -m`
@@ -831,7 +857,7 @@ for dep in \
         openexr/ilmbase ilmbase/libogg \
         libtheora/libogg libtheora/libvorbis ; do
   lib=`dirname $dep`;  needs=`basename $dep`
-  eval pkg_lib="\$PKG_$lib"; eval needs_lib="\$HAVE_$needs";
+  eval pkg_lib="\$PKG_$lib"
   if test "x$pkg_lib" != "xno"; then
     eval "PKG_$needs=yes"
   fi
