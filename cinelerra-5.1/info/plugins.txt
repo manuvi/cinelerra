@@ -43,6 +43,8 @@ Color 3 Way:	Modify color of Shadows, Midtones, and Highlights
 		as you specify.
 Color Balance:	Modify RGB colors or white balance to compensate
 		for errors in video such as low lighting.
+ColorSpace:	Tweak colors from one color space/range to another
+		space=BT601/BT709/BT2020  range=MPEG/JPEG
 CriKey:		Regionally based chroma key with interpolation;
 		useful when you only want a specific zone defined.
 		.
@@ -262,6 +264,7 @@ F_colorhold:	Turns a certain color range into gray when RGB.
 F_colorkey:	Turns a certain color into transparency when RGB.
 F_colorlevels:	Adjusts the color levels.
 F_colormatrix:	Converts color matrix.
+F_colorspace:	Converts color space/range.
 F_cover_rect:	Find and cover a user specified object.
 F_crop:		Crops the input video.
 F_cropdetect:	Auto-detect crop size.

@@ -5,6 +5,7 @@ Video Effects
 		C41
 		Color 3 Way
 		Color Balance
+		ColorSpace
 		Gamma
 		Gradient
 		HistEq
@@ -30,6 +31,7 @@ Video Effects
 		F_colorkey
 		F_colorlevels
 		F_colormatrix
+		F_colorspace
 		F_curves
 		F_elbg
 		F_eq

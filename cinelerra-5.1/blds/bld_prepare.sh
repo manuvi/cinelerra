@@ -7,7 +7,7 @@ fi
 
 if [ $# -ne 1 ]; then
   echo "usage: $0 <os>"
-  echo "  <os> = [centos | suse | ubuntu]"
+  echo "  <os> = [centos | suse | ubuntu | fedora | mint | debian]"
 fi
 
 dir="$1"
@@ -56,7 +56,7 @@ case "$dir" in
     gettext-devel inkscape udftools autoconf automake numactl-devel \
     jbigkit-devel libvdpau-devel libva-devel gtk2-devel mesa-vdpau-drivers
   ;;
-"suse" | "leap")
+"suse" | "leap" | "tumbleweed")
   zypper -n install nasm gcc gcc-c++ zlib-devel texinfo libpng16-devel \
     freeglut-devel libXv-devel alsa-devel libbz2-devel ncurses-devel \
     libXinerama-devel freetype-devel libXft-devel giflib-devel ctags \

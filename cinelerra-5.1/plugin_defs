@@ -35,6 +35,7 @@ video := \
 	chromakeyhsv \
 	color3way \
 	colorbalance \
+	colorspace \
 	crikey \
 	cropp \
 	crossfade \

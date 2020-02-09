@@ -42,6 +42,7 @@ DIRS = $(OPENCV_OBJS) \
 	chromakeyhsv \
 	color3way \
 	colorbalance \
+	colorspace \
 	compressor \
 	compressormulti \
 	crikey \

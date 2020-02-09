@@ -83,7 +83,7 @@ colorchannelmixer
 colorkey
 colorlevels
 colormatrix src=bt601:dst=bt709
-#colorspace bt709
+colorspace iall=smpte170m:all=bt709
 compand
 compensationdelay
 #concat ###Operation not permitted
