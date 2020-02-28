@@ -234,8 +234,9 @@ PKG_3RD([flac],[auto],
   [ include ])
 
 PKG_3RD([giflib],[yes],
-  [giflib-5.1.6],
-  [ libgif.a ],
+  [giflib-5.2.1],
+  [ libgif.a \
+    libutil.a ],
   [ . ])
 
 PKG_3RD([ilmbase],[auto],
@@ -278,24 +279,23 @@ PKG_3RD([libdv],[auto],
   [ . ])
 
 PKG_3RD([libjpeg],[auto],
-  [libjpeg-turbo-1.5.1],
-  [ .libs/libjpeg.a \
-    .libs/libturbojpeg.a \
-    simd/.libs/libsimd.a ],
-  [ . ])
+  [libjpeg-turbo-2.0.4],
+  [ build/libjpeg.a \
+    build/libturbojpeg.a ],
+  [ opt/libjpeg-turbo/include ])
 
 PKG_3RD([opus],[auto],
-  [opus-1.3],
+  [opus-1.3.1],
   [ .libs/libopus.a ],
   [ include ])
 
 PKG_3RD([openjpeg],[auto],
-  [openjpeg-2.3.0],
+  [openjpeg-2.3.1],
   [ bin/libopenjp2.a ],
   [ src/lib/openjp2 ])
 
 PKG_3RD([libogg],[auto],
-  [libogg-1.3.3],
+  [libogg-1.3.4],
   [ src/.libs/libogg.a ],
   [ include ])
 
@@ -353,24 +353,24 @@ PKG_3RD([openexr],[auto],
 #  [])
 #
 PKG_3RD([tiff],[auto],
-  [tiff-4.0.10],
+  [tiff-4.1.0],
   [ libtiff/.libs/libtiff.a \
     libtiff/.libs/libtiffxx.a \
     port/.libs/libport.a ],[
    . ])
 
 PKG_3RD([twolame],[auto],
-  [twolame-0.3.13],
+  [twolame-0.4.0],
   [ libtwolame/.libs/libtwolame.a ],
   [  libtwolame ])
 
 PKG_3RD([x264],[auto],
-  [x264-snapshot-20190117-2245-stable],
+  [x264-snapshot-20191217-2245-stable],
   [ libx264.a ],
   [ . ])
 
 PKG_3RD([x265],[auto],
-  [x265_3.1.2],
+  [x265_3.2.1],
   [ libx265.a ],
   [ . source ])
 
@@ -385,27 +385,27 @@ PKG_3RD([lv2],[auto],
   [ usr/local/include usr/local/lib64/lv2 usr/local/lib/lv2 ])
 
 PKG_3RD([sratom],[auto],
-  [sratom-0.6.2],
+  [sratom-0.6.4],
   [ usr/local/lib/libsratom-0.a ],
   [ usr/local/include ])
 
 PKG_3RD([serd],[auto],
-  [serd-0.30.0],
+  [serd-0.30.2],
   [ usr/local/lib/libserd-0.a ],
   [ usr/local/include ])
 
 PKG_3RD([sord],[auto],
-  [sord-0.16.2],
+  [sord-0.16.4],
   [ usr/local/lib/libsord-0.a ],
   [ usr/local/include ])
 
 PKG_3RD([lilv],[auto],
-  [lilv-0.24.4],
+  [lilv-0.24.6],
   [ usr/local/lib/liblilv-0.a ],
   [ usr/local/include ])
 
 PKG_3RD([suil],[auto],
-  [suil-0.10.2],
+  [suil-0.10.6],
   [ usr/local/lib/libsuil-0.a ],
   [ usr/local/include ])
 
@@ -415,12 +415,12 @@ PKG_3RD([libaom],[auto],
   [ usr/local/include ])
 
 PKG_3RD([dav1d],[auto],
-  [dav1d-0.5.0],
+  [dav1d-0.5.1],
   [ usr/local/lib*/libdav1d*.a ],
   [ usr/local/include ])
 
 PKG_3RD([libwebp],[auto],
-  [libwebp-1.0.2],
+  [libwebp-1.1.0],
   [ usr/local/lib*/libwebp*.a ],
   [ usr/local/include ])
 
@@ -556,20 +556,12 @@ CHECK_LIB([lame], [mp3lame], [lame_init])
 CHECK_HEADERS([lame], [lame headers], [lame/lame.h])
 CHECK_LIB([libjpeg], [jpeg], [jpeg_start_decompress])
 CHECK_HEADERS([libjpeg], [jpeg headers], [stdio.h jpeglib.h])
-CHECK_LIB([libogg], [ogg], [ogg_stream_init])
-CHECK_HEADERS([libogg], [ogg headers], [ogg/ogg.h])
 CHECK_LIB([openjpeg], [openjp2], [opj_version])
 CHECK_HEADERS([openjpeg], [openjpeg headers], [openjpeg.h])
 CHECK_LIB([libsndfile], [sndfile], [sf_open])
 CHECK_HEADERS([libsndfile], [sndfile headers], [sndfile.h])
 CHECK_LIB([ilmbase], [IlmImf], [ImfOpenInputFile])
 CHECK_HEADERS([ilmbase], [IlmImf headers], [OpenEXR/ImfCRgbaFile.h])
-CHECK_LIB([libtheora], [theora], [theora_info_init], [-ltheoraenc -ltheoradec -logg])
-CHECK_HEADERS([libtheora], [threora headers], [theora/theoraenc.h])
-CHECK_LIB([libvorbis], [vorbisenc], [vorbis_encode_init], [-lvorbis -lvorbisfile -logg])
-CHECK_HEADERS([libvorbis], [vorbis encoders headers], [vorbis/vorbisenc.h])
-CHECK_LIB([libvorbis], [vorbisfile], [ov_open])
-CHECK_HEADERS([libvorbis], [vorbis file headers], [vorbis/vorbisfile.h])
 CHECK_LIB([libvpx], [vpx], [vpx_codec_decode])
 CHECK_HEADERS([libvpx], [vpx headers], [vpx/vpx_decoder.h])
 CHECK_LIB([mjpegtools], [mjpegutils], [mjpeg_info])
@@ -657,6 +649,16 @@ CHECK_WANT([XFT], [auto], [use libXft], [
 CHECK_WANT([ALSA], [auto], [use libasound/alsa], [
  CHECK_LIB([ALSA], [asound], [snd_pcm_open])
  CHECK_HEADERS([ALSA], [asound headers], [alsa/asoundlib.h])])
+
+CHECK_WANT([OGG], [auto], [use ogg/theora/vorbis], [
+ CHECK_LIB([libogg], [ogg], [ogg_stream_init])
+ CHECK_HEADERS([libogg], [ogg headers], [ogg/ogg.h])
+ CHECK_LIB([libtheora], [theora], [theora_info_init], [-ltheoraenc -ltheoradec -logg])
+ CHECK_HEADERS([libtheora], [threora headers], [theora/theoraenc.h])
+ CHECK_LIB([libvorbis], [vorbisenc], [vorbis_encode_init], [-lvorbis -lvorbisfile -logg])
+ CHECK_HEADERS([libvorbis], [vorbis encoders headers], [vorbis/vorbisenc.h])
+ CHECK_LIB([libvorbis], [vorbisfile], [ov_open])
+ CHECK_HEADERS([libvorbis], [vorbis file headers], [vorbis/vorbisfile.h])])
 
 CHECK_WANT([FIREWIRE], [auto], [use firewire], [
  CHECK_LIB([libavc1394], [avc1394], [avc1394_init_target])
@@ -947,7 +949,7 @@ echo ""
 if test "x$WANT_CIN_3RDPARTY" != "xno"; then
   CFG_CFLAGS+=" -DHAVE_CIN_3RDPARTY"
 fi
-for v in GL XFT XXF86VM OSS ALSA FIREWIRE DV DVB LADSPA \
+for v in GL XFT XXF86VM OSS ALSA FIREWIRE OGG DV DVB LADSPA \
 	 VIDEO4LINUX2 ESOUND PULSE PACTL OPENEXR LV2 \
 	 COMMERCIAL LIBZMPEG SHUTTLE SHUTTLE_USB XV \
 	 VAAPI VDPAU CUDA NV WINTV X10TV; do

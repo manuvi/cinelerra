@@ -262,6 +262,7 @@ public:
 
 	int interlaced;
 	int top_field_first;
+	int color_space, color_range;
 };
 
 class FFCodecRemap
@@ -309,6 +310,8 @@ public:
 	static void load_audio_options(Asset *asset, EDL *edl);
 	static void scan_video_options(Asset *asset, EDL *edl);
 	static void load_video_options(Asset *asset, EDL *edl);
+	static void scan_format_options(Asset *asset, EDL *edl);
+	static void load_format_options(Asset *asset, EDL *edl);
 	static void set_asset_format(Asset *asset, EDL *edl, const char *text);
 	int get_file_format();
 	static int get_encoder(const char *options, char *format, char *codec, char *bsfilter);
@@ -409,6 +412,8 @@ public:
 	int ff_coded_width(int stream);
 	int ff_coded_height(int stream);
 	float ff_aspect_ratio(int stream);
+	int ff_color_range(int stream);
+	int ff_color_space(int stream);
 	double ff_frame_rate(int stream);
 	const char *ff_video_format(int stream);
 	int64_t ff_video_frames(int stream);

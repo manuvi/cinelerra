@@ -155,15 +155,37 @@ public:
 	void update_formats();
 };
 
-class FFMPEGConfigAudio : public BC_Window
+class FFMPEGConfigWindow : public BC_Window
 {
 public:
-	FFMPEGConfigAudio(BC_WindowBase *parent_window, Asset *asset, EDL *edl);
+	FFMPEGConfigWindow(const char *title, BC_WindowBase *parent_window,
+		int x, int y, int w, int h, Asset *asset, EDL *edl);
+	~FFMPEGConfigWindow();
+	virtual char *get_options() = 0;
+	virtual int get_options_len() = 0;
+	void start(const void *obj);
+
+	BC_WindowBase *parent_window;
+	FFOptionsDialog *ff_options_dialog;
+	Asset *asset;
+	EDL *edl;
+	const void *obj;
+	char *format_name;
+	char *codec_name;
+};
+
+class FFMPEGConfigAudio : public FFMPEGConfigWindow
+{
+public:
+	FFMPEGConfigAudio(BC_WindowBase *parent_window,
+		int x, int y, Asset *asset, EDL *edl);
 	~FFMPEGConfigAudio();
 
 	void create_objects();
 	int close_event();
 	void load_options();
+	char *get_options();
+	int get_options_len();
 
 	FFMpegSampleFormat *sample_format;
 	ArrayList<BC_ListBoxItem*> presets;
@@ -172,9 +194,8 @@ public:
 	FFMpegAudioQuality *quality;
 	FFAudioOptions *audio_options;
 	BC_WindowBase *parent_window;
-	Asset *asset;
-	EDL *edl;
-	FFOptionsDialog *ff_options_dialog;
+	FFOptionsViewAudio *view_audio;
+	FFOptionsViewFormat *view_format;
 };
 
 class FFAudioOptions : public BC_ScrollTextBox
@@ -195,22 +216,14 @@ public:
 	FFMPEGConfigAudio *popup;
 };
 
-
-class FFMPEGConfigAudioToggle : public BC_CheckBox
+class FFMPEGConfigVideo : public FFMPEGConfigWindow
 {
 public:
-	FFMPEGConfigAudioToggle(FFMPEGConfigAudio *popup,
-		char *title_text, int x, int y, int *output);
-	int handle_event();
-	int *output;
-	FFMPEGConfigAudio *popup;
-};
-
-class FFMPEGConfigVideo : public BC_Window
-{
-public:
-	FFMPEGConfigVideo(BC_WindowBase *parent_window, Asset *asset, EDL *edl);
+	FFMPEGConfigVideo(BC_WindowBase *parent_window,
+		int x, int y, Asset *asset, EDL *edl);
 	~FFMPEGConfigVideo();
+	char *get_options();
+	int get_options_len();
 
 	void create_objects();
 	int close_event();
@@ -223,9 +236,8 @@ public:
 	FFMpegVideoBitrate *bitrate;
 	FFMpegVideoQuality *quality;
 	FFVideoOptions *video_options;
-	Asset *asset;
-	EDL *edl;
-	FFOptionsDialog *ff_options_dialog;
+	FFOptionsViewVideo *view_video;
+	FFOptionsViewFormat *view_format;
 };
 
 class FFVideoOptions : public BC_ScrollTextBox
@@ -245,15 +257,32 @@ public:
 	FFMPEGConfigVideo *popup;
 };
 
-class FFMPEGConfigVideoToggle : public BC_CheckBox
+class FFMPEGConfigFormat : public FFMPEGConfigWindow
 {
 public:
-	FFMPEGConfigVideoToggle(FFMPEGConfigVideo *popup,
-		char *title_text, int x, int y, int *output);
-	int handle_event();
-	int *output;
-	FFMPEGConfigVideo *popup;
+	FFMPEGConfigFormat(FFOptionsFormatViewDialog *view_dialog,
+		int x, int y, Asset *asset, EDL *edl);
+	~FFMPEGConfigFormat();
+	char *get_options();
+	int get_options_len();
+
+	void create_objects();
+	int close_event();
+	void load_options();
+
+	FFOptionsFormatViewDialog *view_dialog;
+	FFFormatOptions *format_options;
 };
+
+class FFFormatOptions : public BC_ScrollTextBox
+{
+public: 
+	FFFormatOptions(FFMPEGConfigFormat *format_popup,
+		int x, int y, int w, int rows, int size, char *text);
+
+	FFMPEGConfigFormat *format_popup;
+};
+
 
 class FFMPEGScanProgress : public Thread
 {
@@ -400,7 +429,7 @@ public:
 class FFOptionsWindow : public BC_Window
 {
 public:
-	FFOptionsWindow(FFOptionsDialog *dialog);
+	FFOptionsWindow(FFOptionsDialog *dialog, int x, int y);
 	~FFOptionsWindow();
 
 	void create_objects();
@@ -425,22 +454,20 @@ public:
 class FFOptionsDialog : public BC_DialogThread
 {
 public:
-	FFOptionsDialog();
+	FFOptionsDialog(FFMPEGConfigWindow *cfg_window);
 	~FFOptionsDialog();
 	virtual void update_options(const char *options) = 0;
 
 	void load_options(const char *bp, int len);
 	void store_options(char *cp, int len);
-	void start(const char *format_name, const char *codec_name,
-		AVCodec *codec, const char *options, int len);
+	void start();
 	BC_Window* new_gui();
 	void handle_done_event(int result);
 
+	FFMPEGConfigWindow *cfg_window;
 	FFOptionsWindow *options_window;
-	const char *format_name, *codec_name;
-	AVCodec *codec;
 	AVDictionary *ff_opts;
-	int ff_len;
+	int wx, wy;
 };
 
 class FFOptionsAudioDialog : public FFOptionsDialog
@@ -463,7 +490,17 @@ public:
 	~FFOptionsVideoDialog();
 };
 
-class FFOptionsViewAudio: public BC_GenericButton
+class FFOptionsFormatDialog : public FFOptionsDialog
+{
+public:
+	FFMPEGConfigFormat *fmt_config;
+	void update_options(const char *options);
+
+	FFOptionsFormatDialog(FFMPEGConfigFormat *fmt_config);
+	~FFOptionsFormatDialog();
+};
+
+class FFOptionsViewAudio : public BC_GenericButton
 {
 public:
 	FFOptionsViewAudio(FFMPEGConfigAudio *aud_config, int x, int y, const char *text);
@@ -471,6 +508,7 @@ public:
 
 	int handle_event();
 	FFMPEGConfigAudio *aud_config;
+	AVCodecContext *avctx;
 };
 
 class FFOptionsViewVideo : public BC_GenericButton
@@ -481,6 +519,45 @@ public:
 
 	int handle_event();
 	FFMPEGConfigVideo *vid_config;
+	AVCodecContext *avctx;
+};
+
+class FFOptionsViewFormat : public BC_GenericButton
+{
+public:
+	FFOptionsViewFormat(BC_WindowBase *parent_window,
+	 	EDL *edl, Asset *asset, int x, int y, const char *text);
+	~FFOptionsViewFormat();
+
+	int handle_event();
+	BC_WindowBase *parent_window;
+	EDL *edl;
+	Asset *asset;
+	FFOptionsFormatViewDialog *format_dialog;
+};
+
+class FFOptionsFormatView : public BC_GenericButton
+{
+public:
+	FFOptionsFormatView(FFMPEGConfigFormat *fmt_config, int x, int y, const char *text);
+	~FFOptionsFormatView();
+	int handle_event();
+
+	FFMPEGConfigFormat *fmt_config;
+	AVFormatContext *fmt_ctx;
+};
+
+class FFOptionsFormatViewDialog : public BC_DialogThread
+{
+public:
+	FFOptionsFormatViewDialog(FFOptionsViewFormat *view_format, int wx, int wy);
+	~FFOptionsFormatViewDialog();
+	BC_Window* new_gui();
+	void handle_done_event(int result);
+
+	FFOptionsViewFormat *view_format;
+	FFMPEGConfigFormat *cfg_window;
+	int wx, wy;
 };
 
 #endif

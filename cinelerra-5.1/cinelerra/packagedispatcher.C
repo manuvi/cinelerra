@@ -102,7 +102,7 @@ int PackageDispatcher::create_packages(MWindow *mwindow, EDL *edl,
 		strcpy(packages[0]->path, default_asset->path);
 		break;
 	case SINGLE_PASS_FARM:
-		packaging_engine = File::new_packaging_engine(default_asset);
+		packaging_engine = (PackagingEngine*)new PackagingEngineDefault();
 		packaging_engine->create_packages_single_farm(edl, preferences,
 				default_asset, total_start, total_end);
 		break;
@@ -189,6 +189,7 @@ int PackageDispatcher::create_packages(MWindow *mwindow, EDL *edl,
 // Only if this isn't a background render or non interactive.
 	if( strategy != BRENDER_FARM && test_overwrite && mwindow ) {
 		ArrayList<char*> paths;
+		paths.set_array_delete();
 		get_package_paths(&paths);
 		result = ConfirmSave::test_files(mwindow, &paths);
 		paths.remove_all_objects();

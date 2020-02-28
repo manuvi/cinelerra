@@ -32,6 +32,14 @@
 #include <fcntl.h>
 #include <string.h>
 
+//from "getarg.h"
+extern "C"
+int GifQuantizeBuffer(unsigned int Width, unsigned int Height,
+                   int *ColorMapSize, GifByteType * RedInput,
+                   GifByteType * GreenInput, GifByteType * BlueInput,
+                   GifByteType * OutputBuffer,
+                   GifColorType * OutputColorMap);
+
 FileGIF::FileGIF(Asset *asset, File *file)
  : FileBase(asset, file)
 {

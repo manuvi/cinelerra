@@ -2656,9 +2656,15 @@ int AWindowFolders::load_expanders()
 	if( !fp ) {
 		snprintf(expanders_path, sizeof(expanders_path), "%s/%s",
 			File::get_cindat_path(), EXPANDERS_FILE);
+		char *cp = strrchr(expanders_path,'.');
+		if( cp ) strcpy(cp+1, mwindow->cin_lang);
 		fp = fopen(expanders_path, "r");
 	}
-
+	if( !fp ) {
+		snprintf(expanders_path, sizeof(expanders_path), "%s/%s",
+			File::get_cindat_path(), EXPANDERS_FILE);
+		fp = fopen(expanders_path, "r");
+	}
 	if( !fp ) return 1;
 	const char tab = '\t';
 	char line[BCTEXTLEN];   line[0] = 0;

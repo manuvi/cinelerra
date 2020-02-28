@@ -145,6 +145,7 @@ OBJS := $(OVERLAYS) \
 	$(OBJDIR)/filejpeg.o \
 	$(OBJDIR)/filelist.o \
 	$(OBJDIR)/file.o \
+	$(OBJDIR)/fileogg.o \
 	$(OBJDIR)/filepng.o \
 	$(OBJDIR)/fileppm.o \
 	$(OBJDIR)/fileref.o \
@@ -153,6 +154,7 @@ OBJS := $(OVERLAYS) \
 	$(OBJDIR)/filetga.o \
 	$(OBJDIR)/filethread.o \
 	$(OBJDIR)/filetiff.o \
+	$(OBJDIR)/filevorbis.o \
 	$(OBJDIR)/filexml.o \
 	$(OBJDIR)/floatauto.o \
 	$(OBJDIR)/floatautos.o \
@@ -550,7 +552,8 @@ clean:
 	rm -f shuttle_keys.h
 
 tags:
-	ctags -R -h default --langmap=c:+.inc . ../guicast/ ../libzmpeg3 ../plugins ../thirdparty/ffmpeg-*
+	ctags -R -h default --langmap=c:+.inc . ../guicast/ ../libzmpeg3 ../plugins ../thirdparty/ffmpeg-* \
+		../thirdparty/libtheora* ../thirdparty/libvorbis* ../thirdparty/libogg*
 
 $(OBJDIR)/fileexr.o:	BFLAGS:= -Wno-deprecated
 $(OBJDIR)/sha1.o:	BFLAGS:= -O3

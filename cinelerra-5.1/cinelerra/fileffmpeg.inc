@@ -26,17 +26,22 @@ class FileFFMPEG;
 class FFMpegConfigNum;
 class FFMpegAudioNum;
 class FFMpegAudioBitrate;
+class FFMpegAudioQuality;
 class FFMpegVideoNum;
 class FFMpegVideoBitrate;
 class FFMpegVideoQuality;
+class FFMpegPixFmtItems;
+class FFMpegPixelFormat;
+class FFMpegSampleFormat;
+class FFMPEGConfigWindow;
 class FFMPEGConfigAudio;
 class FFAudioOptions;
 class FFMPEGConfigAudioPopup;
-class FFMPEGConfigAudioToggle;
 class FFMPEGConfigVideo;
 class FFVideoOptions;
 class FFMPEGConfigVideoPopup;
-class FFMPEGConfigVideoToggle;
+class FFMPEGConfigFormat;
+class FFFormatOptions;
 class FFMPEGScanProgress;
 
 class FFOptions_OptName;
@@ -44,15 +49,24 @@ class FFOptions_OptValue;
 class FFOptions_Opt;
 class FFOptions;
 class FFOptions_OptPanel;
+class FFOptionsKindItem;
+class FFOptionsKind;
 class FFOptionsUnits;
 class FFOptionsText;
 class FFOptionsApply;
 class FFOptionsWindow;
 class FFOptionsDialog;
-class FFOptionsKindItem;
-class FFOptionsKind;
+class FFOptionsAudioDialog;
+class FFOptionsVideoDialog;
+class FFOptionsFormatDialog;
+class FFOptionsViewAudio;
+class FFOptionsViewVideo;
+class FFOptionsViewFormat;
+class FFOptionsFormatView;
+class FFOptionsFormatViewDialog;
 
 #define FF_KIND_CODEC 0
-#define FF_KIND_FFMPEG 1
+#define FF_KIND_FORMAT 1
+#define FF_KIND_FFMPEG 2
 
 #endif

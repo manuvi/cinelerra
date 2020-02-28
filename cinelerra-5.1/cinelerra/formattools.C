@@ -748,6 +748,7 @@ int FormatFormat::handle_event()
 			asset->video_data = File::renders_video(asset);
 			asset->ff_audio_options[0] = 0;
 			asset->ff_video_options[0] = 0;
+			asset->ff_format_options[0] = 0;
 			format->format_text->update(selection->get_text());
 			if( !format->use_brender )
 				format->update_extension();
@@ -778,8 +779,10 @@ int FormatFFMPEG::handle_event()
 	if( selection ) {
 		const char *text = get_selection(0, 0)->get_text();
 		format->ffmpeg_type->update(text);
+// forces options load defaults
 		format->asset->ff_audio_options[0] = 0;
 		format->asset->ff_video_options[0] = 0;
+		format->asset->ff_format_options[0] = 0;
 		FFMPEG::set_asset_format(format->asset, format->mwindow->edl, text);
 		format->update_extension();
 		format->close_format_windows();

@@ -314,7 +314,6 @@ public:
 //	int64_t normalized_sample_rate;
 	Preferences *preferences;
 	int wr, rd;
-	static PackagingEngine *new_packaging_engine(Asset *asset);
 
 	static void init_cin_path();
 	static void get_exe_path(char *result, char *bnp=0);

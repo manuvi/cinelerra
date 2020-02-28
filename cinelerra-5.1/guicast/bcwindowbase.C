@@ -3910,9 +3910,9 @@ void BC_WindowBase::get_pop_cursor(int &px, int &py, int lock_window)
 	get_abs_cursor(px, py, lock_window);
 	if( px < xmargin ) px = xmargin;
 	if( py < ymargin ) py = ymargin;
-	int wd = get_screen_w(lock_window,-1) - xmargin;
+	int wd = get_screen_x(lock_window,-1) + get_screen_w(lock_window,-1) - xmargin;
 	if( px > wd ) px = wd;
-	int ht = get_screen_h(lock_window,-1) - ymargin;
+	int ht = get_screen_y(lock_window,-1) + get_screen_h(lock_window,-1) - ymargin;
 	if( py > ht ) py = ht;
 }
 int BC_WindowBase::get_pop_cursor_x(int lock_window)

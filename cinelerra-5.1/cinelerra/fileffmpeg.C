@@ -216,8 +216,11 @@ void FileFFMPEG::get_parameters(BC_WindowBase *parent_window,
 {
 	Asset *ff_asset = new Asset();
 	ff_asset->copy_from(asset, 0);
+	int wx, wy;
+	parent_window->get_pop_cursor(wx, wy);
 	if( audio_options ) {
-		FFMPEGConfigAudio *window = new FFMPEGConfigAudio(parent_window, ff_asset, edl);
+		FFMPEGConfigAudio *window = new FFMPEGConfigAudio(parent_window,
+			wx, wy, ff_asset, edl);
 		format_window = window;
 		window->create_objects();
 		if( !window->run_window() ) {
@@ -229,7 +232,8 @@ void FileFFMPEG::get_parameters(BC_WindowBase *parent_window,
 		delete window;
 	}
 	else if( video_options ) {
-		FFMPEGConfigVideo *window = new FFMPEGConfigVideo(parent_window, ff_asset, edl);
+		FFMPEGConfigVideo *window = new FFMPEGConfigVideo(parent_window,
+			wx, wy, ff_asset, edl);
 		format_window = window;
 		window->create_objects();
 		if( !window->run_window() ) {
@@ -347,6 +351,10 @@ int FileFFMPEG::open_file(int rd, int wr)
 				    (asset->video_length = ff->ff_video_frames(0)) < 2 )
 					asset->video_length = asset->video_length < 0 ? 0 : -1;
 				if( !asset->frame_rate ) asset->frame_rate = ff->ff_frame_rate(0);
+				if( asset->ff_color_range < 0 )
+					asset->ff_color_range = ff->ff_color_range(0);
+				if( asset->ff_color_space < 0 )
+					asset->ff_color_space = ff->ff_color_space(0);
 				strcpy(asset->vcodec, ff->ff_video_format(0));
 			}
 			IndexState *index_state = asset->index_state;
@@ -456,31 +464,61 @@ int FileFFMPEG::get_best_colormodel(Asset *asset, int driver)
 	return BC_YUV420P;
 }
 
-//======
 
-FFMPEGConfigAudio::FFMPEGConfigAudio(BC_WindowBase *parent_window, Asset *asset, EDL *edl)
- : BC_Window(_(PROGRAM_NAME ": Audio Preset"),
- 	parent_window->get_abs_cursor_x(1),
- 	parent_window->get_abs_cursor_y(1),
-	xS(420), yS(420))
+FFMPEGConfigWindow::FFMPEGConfigWindow(const char *title,
+		BC_WindowBase *parent_window,
+		int x, int y, int w, int h,
+		Asset *asset, EDL *edl)
+ : BC_Window(title, x, y, w, h)
 {
 	this->parent_window = parent_window;
 	this->asset = asset;
 	this->edl = edl;
-	preset_popup = 0;
+	ff_options_dialog = 0;
+	obj = 0;
+	format_name = 0;
+	codec_name = 0;
+}
 
+FFMPEGConfigWindow::~FFMPEGConfigWindow()
+{
+	delete ff_options_dialog;
+}
+
+void FFMPEGConfigWindow::start(const void *obj)
+{
+	this->obj = obj;
+	ff_options_dialog->start();
+}
+
+//======
+
+FFMPEGConfigAudio::FFMPEGConfigAudio(BC_WindowBase *parent_window,
+		int x, int y, Asset *asset, EDL *edl)
+ : FFMPEGConfigWindow(_(PROGRAM_NAME ": Audio Preset"), parent_window, x, y,
+		xS(420), yS(420), asset, edl)
+{
+	preset_popup = 0;
 	bitrate = 0;
 	audio_options = 0;
-	ff_options_dialog = 0;
+	format_name = asset->fformat;
+	codec_name = asset->acodec;
 }
 
 FFMPEGConfigAudio::~FFMPEGConfigAudio()
 {
 	lock_window("FFMPEGConfigAudio::~FFMPEGConfigAudio");
-	delete ff_options_dialog;
 	delete preset_popup;
 	presets.remove_all_objects();
+	delete audio_options;
 	unlock_window();
+}
+
+char *FFMPEGConfigAudio::get_options() {
+	return asset->ff_audio_options;
+}
+int FFMPEGConfigAudio::get_options_len() {
+	return sizeof(asset->ff_audio_options)-1;
 }
 
 void FFMPEGConfigAudio::load_options()
@@ -550,8 +588,11 @@ void FFMPEGConfigAudio::create_objects()
 	add_subwindow(title);
 
 	ff_options_dialog = new FFOptionsAudioDialog(this);
-	int x1 = x + title->get_w() + 8;
-	add_subwindow(new FFOptionsViewAudio(this, x1, y, _("view")));
+	int x1 = x + title->get_w() + xS(8);
+	add_subwindow(view_audio = new FFOptionsViewAudio(this, x1, y, _("view")));
+	x1 += x + view_audio->get_w() + xS(20);
+	view_format = new FFOptionsViewFormat(this, edl, asset, x1, y, _("format"));
+	add_subwindow(view_format);
 
 	y += yS(25);
 	audio_options = new FFAudioOptions(this, x, y, get_w()-x-xS(20), 8,
@@ -606,34 +647,17 @@ int FFMPEGConfigAudioPopup::handle_event()
 	return 1;
 }
 
-
-FFMPEGConfigAudioToggle::FFMPEGConfigAudioToggle(FFMPEGConfigAudio *popup,
-	char *title_text, int x, int y, int *output)
- : BC_CheckBox(x, y, *output, title_text)
-{
-	this->popup = popup;
-	this->output = output;
-}
-int FFMPEGConfigAudioToggle::handle_event()
-{
-	*output = get_value();
-	return 1;
-}
-
 //======
 
-FFMPEGConfigVideo::FFMPEGConfigVideo(BC_WindowBase *parent_window, Asset *asset, EDL *edl)
- : BC_Window(_(PROGRAM_NAME ": Video Preset"),
- 	parent_window->get_abs_cursor_x(1),
- 	parent_window->get_abs_cursor_y(1),
-	xS(420), yS(420))
+FFMPEGConfigVideo::FFMPEGConfigVideo(BC_WindowBase *parent_window,
+		int x, int y, Asset *asset, EDL *edl)
+ : FFMPEGConfigWindow(_(PROGRAM_NAME ": Video Preset"), parent_window, x, y,
+		xS(420), yS(420), asset, edl)
 {
-	this->parent_window = parent_window;
-	this->asset = asset;
-	this->edl = edl;
 	preset_popup = 0;
-	ff_options_dialog = 0;
 	pixel_format = 0;
+	format_name = asset->fformat;
+	codec_name = asset->vcodec;
 
 	bitrate = 0;
 	quality = 0;
@@ -643,11 +667,18 @@ FFMPEGConfigVideo::FFMPEGConfigVideo(BC_WindowBase *parent_window, Asset *asset,
 FFMPEGConfigVideo::~FFMPEGConfigVideo()
 {
 	lock_window("FFMPEGConfigVideo::~FFMPEGConfigVideo");
-	delete ff_options_dialog;
-	delete pixel_format;
 	delete preset_popup;
+	delete pixel_format;
+	delete video_options;
 	presets.remove_all_objects();
 	unlock_window();
+}
+
+char *FFMPEGConfigVideo::get_options() {
+	return asset->ff_video_options;
+}
+int FFMPEGConfigVideo::get_options_len() {
+	return sizeof(asset->ff_video_options)-1;
 }
 
 void FFMPEGConfigVideo::load_options()
@@ -723,7 +754,10 @@ void FFMPEGConfigVideo::create_objects()
 
 	ff_options_dialog = new FFOptionsVideoDialog(this);
 	int x1 = x + title->get_w() + 8;
-	add_subwindow(new FFOptionsViewVideo(this, x1, y, _("view")));
+	add_subwindow(view_video = new FFOptionsViewVideo(this, x1, y, _("view")));
+	x1 += x + view_video->get_w() + xS(20);
+	view_format = new FFOptionsViewFormat(this, edl, asset, x1, y, _("format"));
+	add_subwindow(view_format);
 
 	y += yS(25);
 	video_options = new FFVideoOptions(this, x, y, get_w()-x-xS(20), 8,
@@ -777,19 +811,81 @@ int FFMPEGConfigVideoPopup::handle_event()
 	return 1;
 }
 
+//======
 
-FFMPEGConfigVideoToggle::FFMPEGConfigVideoToggle(FFMPEGConfigVideo *popup,
-	char *title_text, int x, int y, int *output)
- : BC_CheckBox(x, y, *output, title_text)
+FFMPEGConfigFormat::FFMPEGConfigFormat(FFOptionsFormatViewDialog *view_dialog,
+		int x, int y, Asset *asset, EDL *edl)
+ : FFMPEGConfigWindow(_(PROGRAM_NAME ": Format Preset"),
+		view_dialog->view_format, x, y, xS(420), yS(300), asset, edl)
 {
-	this->popup = popup;
-	this->output = output;
+	this->view_dialog = view_dialog;
+	format_options = 0;
+	format_name = asset->fformat;
+	codec_name = 0;
 }
-int FFMPEGConfigVideoToggle::handle_event()
+
+FFMPEGConfigFormat::~FFMPEGConfigFormat()
 {
-	*output = get_value();
+	lock_window("FFMPEGConfigFormat::~FFMPEGConfigFormat");
+	delete format_options;
+	unlock_window();
+}
+
+char *FFMPEGConfigFormat::get_options() {
+	return asset->ff_format_options;
+}
+int FFMPEGConfigFormat::get_options_len() {
+	return sizeof(asset->ff_format_options)-1;
+}
+
+void FFMPEGConfigFormat::load_options()
+{
+ 	Asset *asset = view_dialog->view_format->asset;
+ 	EDL *edl = view_dialog->view_format->edl;
+	FFMPEG::load_format_options(asset, edl);
+}
+
+void FFMPEGConfigFormat::create_objects()
+{
+	int x = xS(10), y = yS(10);
+	lock_window("FFMPEGConfigFormat::create_objects");
+ 	Asset *asset = view_dialog->view_format->asset;
+	BC_Title *title;
+	add_subwindow(title = new BC_Title(x, y, _("Format:")));
+	int x1 = x + title->get_w() + 8;
+	add_subwindow(new BC_Title(x1, y, asset->fformat));
+	y += yS(25);
+
+	add_subwindow(title = new BC_Title(x, y, _("Format Options:")));
+
+	ff_options_dialog = new FFOptionsFormatDialog(this);
+	x1 = x + title->get_w() + 8;
+	add_subwindow(new FFOptionsFormatView(this, x1, y, _("view")));
+
+	y += yS(25);
+	format_options = new FFFormatOptions(this, x, y, get_w()-x-xS(20), 8,
+		 sizeof(asset->ff_format_options)-1, asset->ff_format_options);
+	format_options->create_objects();
+	add_subwindow(new BC_OKButton(this));
+	add_subwindow(new BC_CancelButton(this));
+	show_window(1);
+	unlock_window();
+}
+
+int FFMPEGConfigFormat::close_event()
+{
+	set_done(1);
 	return 1;
 }
+
+FFFormatOptions::FFFormatOptions(FFMPEGConfigFormat *format_popup,
+	int x, int y, int w, int rows, int size, char *text)
+ : BC_ScrollTextBox(format_popup, x, y, w, rows, text, size)
+{
+	this->format_popup = format_popup;
+}
+
+//======
 
 FFMPEGScanProgress::FFMPEGScanProgress(IndexFile *index_file, MainProgressBar *progress_bar,
 		const char *title, int64_t length, int64_t *position, int *canceled)
@@ -1012,6 +1108,7 @@ int FFOptionsKindItem::handle_event()
 
 const char *FFOptionsKind::kinds[] = {
 	N_("codec"),	// FF_KIND_CODEC
+	N_("format"),	// FF_KIND_FORMAT
 	N_("ffmpeg"),	// FF_KIND_FFMPEG
 };
 
@@ -1029,8 +1126,8 @@ FFOptionsKind::
 
 void FFOptionsKind::create_objects()
 {
-	for( int i=0; i<(int)(sizeof(kinds)/sizeof(kinds[0])); ++i )
-		add_item(new FFOptionsKindItem(this, _(kinds[i]), i));
+	add_item(new FFOptionsKindItem(this, _(kinds[FF_KIND_CODEC]), FF_KIND_CODEC));
+	add_item(new FFOptionsKindItem(this, _(kinds[FF_KIND_FFMPEG]), FF_KIND_FFMPEG));
 }
 
 int FFOptionsKind::handle_event()
@@ -1139,19 +1236,7 @@ void FFOptions::initialize(FFOptionsWindow *win, int kind)
 	remove_all_objects();
 	this->win = win;
 	win->selected = 0;
-	obj = 0;
-	if( !avctx )
-		avctx = avcodec_alloc_context3(win->dialog->codec);
-
-	switch( kind ) {
-	case FF_KIND_CODEC:
-		obj = (const void *)avctx->priv_data;
-		break;
-	case FF_KIND_FFMPEG:
-		obj = (const void *)avctx;
-		break;
-	}
-
+	obj = win->dialog->cfg_window->obj;
 	if( obj ) {
 		FFOptions &conf = *this;
 		const AVOption *opt = 0;
@@ -1176,10 +1261,10 @@ void FFOptions::initialize(FFOptionsWindow *win, int kind)
 			char val[BCTEXTLEN], *vp = fopt->get(val, sizeof(val));
 			fopt->item_value->update(vp);
 		}
+		qsort(&values[0],size(),sizeof(values[0]),cmpr);
 	}
-
-	qsort(&values[0],size(),sizeof(values[0]),cmpr);
-	win->kind->set(kind);
+	if( win->kind )
+		win->kind->set(kind);
 	win->panel->update();
 	win->panel->set_yposition(0);
 }
@@ -1455,11 +1540,12 @@ const char *FFOptions_Opt::tip()
 }
 
 
-FFOptionsWindow::FFOptionsWindow(FFOptionsDialog *dialog)
- : BC_Window(_(PROGRAM_NAME ": Options"), xS(60), yS(30), xS(640), yS(400))
+FFOptionsWindow::FFOptionsWindow(FFOptionsDialog *dialog, int x, int y)
+ : BC_Window(_(PROGRAM_NAME ": Options"), x, y, xS(640), yS(400))
 {
 	this->dialog = dialog;
 	this->selected = 0;
+	this->kind = 0;
 }
 
 FFOptionsWindow::~FFOptionsWindow()
@@ -1472,16 +1558,19 @@ void FFOptionsWindow::create_objects()
 	int ys10 = yS(10);
 	lock_window("FFOptionsWindow::create_objects");
 	BC_Title *title;
+	const char *format_name = dialog->cfg_window->format_name;
+	const char *codec_name = dialog->cfg_window->codec_name;
 	int x0 = xs10, y0 = ys10;
 	int x = x0, y = y0;
 	add_subwindow(title = new BC_Title(x, y, _("Format: ")));
 	x += title->get_w();
-	add_subwindow(new BC_Title(x, y, dialog->format_name));
-	x = x0 + xS(150);
-	add_subwindow(title = new BC_Title(x, y, _("Codec: ")));
-	x += title->get_w();
-	add_subwindow(new BC_Title(x, y, dialog->codec_name));
-
+	add_subwindow(new BC_Title(x, y, format_name));
+	if( codec_name ) {
+		x = x0 + xS(150);
+		add_subwindow(title = new BC_Title(x, y, _("Codec: ")));
+		x += title->get_w();
+		add_subwindow(new BC_Title(x, y, codec_name));
+	}
 	x = x0;  y += title->get_h() + ys10;  y0 = y;
 	add_subwindow(title = new BC_Title(x, y, _("Type: ")));
 	x += title->get_w() + xs8;
@@ -1498,13 +1587,14 @@ void FFOptionsWindow::create_objects()
 	add_subwindow(text = new FFOptionsText(this, x, y, x1-x - xs8));
 	add_subwindow(apply = new FFOptionsApply(this, x1, y));
 	y += units->get_h() + ys10;
-	add_subwindow(kind = new FFOptionsKind(this, x1, y0, apply->get_w()));
-	kind->create_objects();
-	const char *kind_text = _("Kind:");
-	x1 -= BC_Title::calculate_w(this, kind_text) + xs8;
-	add_subwindow(kind_title = new BC_Title(x1, y0, kind_text));
+	if( codec_name ) {
+		add_subwindow(kind = new FFOptionsKind(this, x1, y0, apply->get_w()));
+		kind->create_objects();
+		const char *kind_text = _("Kind:");
+		x1 -= BC_Title::calculate_w(this, kind_text) + xs8;
+		add_subwindow(kind_title = new BC_Title(x1, y0, kind_text));
+	}
 	y0 = y;
-
 	panel_x = x0;  panel_y = y0;
 	panel_w = get_w()-xs10 - panel_x;
 	panel_h = get_h()-ys10 - panel_y - BC_OKButton::calculate_h();
@@ -1513,7 +1603,7 @@ void FFOptionsWindow::create_objects()
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
 	panel->create_objects();
-	options.initialize(this, FF_KIND_CODEC);
+	options.initialize(this, codec_name ? FF_KIND_CODEC : FF_KIND_FORMAT);
 	draw();
 	show_window(1);
 	unlock_window();
@@ -1528,12 +1618,14 @@ int FFOptionsWindow::resize_event(int w, int h)
 {
 	int xs8 = xS(8), xs10 = xS(10);
 	int ys10 = yS(10);
-	int x1 = w - xs8 - kind->get_w();
-	int y = kind->get_y();
-	kind->reposition_window(x1, y);
-	x1 -= kind_title->get_w() + xs8;
-	kind_title->reposition_window(x1,y);
-	x1 = get_w() - apply->get_w() - xs8;
+	if( kind ) {
+		int x0 = w - xs8 - kind->get_w();
+		int y0 = kind->get_y();
+		kind->reposition_window(x0, y0);
+		x0 -= kind_title->get_w() + xs8;
+		kind_title->reposition_window(x0, y0);
+	}
+	int x1 = get_w() - apply->get_w() - xs8;
 	int y1 = units->get_y();
 	apply->reposition_window(x1, y1);
 	int x0 = units->get_x() + units->get_w() + xs8;
@@ -1545,20 +1637,18 @@ int FFOptionsWindow::resize_event(int w, int h)
 	return 1;
 }
 
-FFOptionsDialog::FFOptionsDialog()
+FFOptionsDialog::FFOptionsDialog(FFMPEGConfigWindow *cfg_window)
  : BC_DialogThread()
 {
-	this->options_window = 0;
-	this->codec_name = 0;
-	this->codec = 0;
-	this->ff_opts = 0;
-	this->ff_len = 0;
+	this->cfg_window = cfg_window;
+	options_window = 0;
+	ff_opts = 0;
 }
 
 FFOptionsDialog::~FFOptionsDialog()
 {
 	close_window();
-	delete [] codec_name;
+	av_dict_free(&ff_opts);
 }
 
 void FFOptionsDialog::load_options(const char *bp, int len)
@@ -1597,8 +1687,7 @@ void FFOptionsDialog::store_options(char *cp, int len)
 	*cp = 0;
 }
 
-void FFOptionsDialog::start(const char *format_name, const char *codec_name,
-	AVCodec *codec, const char *options, int len)
+void FFOptionsDialog::start()
 {
 	if( options_window ) {
 		options_window->lock_window("FFOptionsDialog::start");
@@ -1606,20 +1695,16 @@ void FFOptionsDialog::start(const char *format_name, const char *codec_name,
 		options_window->unlock_window();
 		return;
 	}
-
-	this->format_name = cstrdup(format_name);
-	this->codec_name = cstrdup(codec_name);
-	this->codec = codec;
-	this->ff_opts = 0;
-	this->ff_len = len;
-	load_options(options, len);
-
+	cfg_window->get_pop_cursor(wx, wy);
+	char *options = cfg_window->get_options();
+	int options_len = cfg_window->get_options_len();
+	load_options(options, options_len);
 	BC_DialogThread::start();
 }
 
 BC_Window* FFOptionsDialog::new_gui()
 {
-	options_window = new FFOptionsWindow(this);
+	options_window = new FFOptionsWindow(this, wx, wy);
 	options_window->create_objects();
 	return options_window;
 }
@@ -1627,17 +1712,16 @@ BC_Window* FFOptionsDialog::new_gui()
 void FFOptionsDialog::handle_done_event(int result)
 {
 	if( !result ) {
-		char options[ff_len];
-		store_options(options, ff_len);
+		char *options = cfg_window->get_options();
+		int options_len = cfg_window->get_options_len();
+		store_options(options, options_len);
 		update_options(options);
 	}
 	options_window = 0;
-	delete [] format_name; format_name = 0;
-	delete [] codec_name;  codec_name = 0;
-	av_dict_free(&ff_opts);
 }
 
 FFOptionsAudioDialog::FFOptionsAudioDialog(FFMPEGConfigAudio *aud_config)
+ : FFOptionsDialog(aud_config)
 {
 	this->aud_config = aud_config;
 }
@@ -1655,6 +1739,7 @@ void FFOptionsAudioDialog::update_options(const char *options)
 }
 
 FFOptionsVideoDialog::FFOptionsVideoDialog(FFMPEGConfigVideo *vid_config)
+ : FFOptionsDialog(vid_config)
 {
 	this->vid_config = vid_config;
 }
@@ -1671,62 +1756,192 @@ void FFOptionsVideoDialog::update_options(const char *options)
 	vid_config->unlock_window();
 }
 
+FFOptionsFormatDialog::FFOptionsFormatDialog(FFMPEGConfigFormat *fmt_config)
+ : FFOptionsDialog(fmt_config)
+{
+	this->fmt_config = fmt_config;
+}
 
-FFOptionsViewAudio::FFOptionsViewAudio(FFMPEGConfigAudio *aud_config, int x, int y, const char *text)
+FFOptionsFormatDialog::~FFOptionsFormatDialog()
+{
+	close_window();
+}
+
+void FFOptionsFormatDialog::update_options(const char *options)
+{
+	fmt_config->lock_window("FFOptionsFormatDialog::update_options");
+	fmt_config->format_options->update(options);
+	fmt_config->unlock_window();
+}
+
+
+FFOptionsViewAudio::FFOptionsViewAudio(FFMPEGConfigAudio *aud_config,
+		int x, int y, const char *text)
  : BC_GenericButton(x, y, text)
 {
 	this->aud_config = aud_config;
+	avctx = 0;
 }
 
 FFOptionsViewAudio::~FFOptionsViewAudio()
 {
+	avcodec_free_context(&avctx);
 }
 
 int FFOptionsViewAudio::handle_event()
 {
-	char audio_format[BCSTRLEN]; audio_format[0] = 0;
-	char audio_codec[BCSTRLEN]; audio_codec[0] = 0;
-	AVCodec *codec = 0;
+	int ret = 0;
 	Asset *asset = aud_config->asset;
 	const char *name = asset->acodec;
-	if( !FFMPEG::get_format(audio_format, "audio", name) &&
-	    !FFMPEG::get_codec(audio_codec, "audio", name) )
-		codec = avcodec_find_encoder_by_name(audio_codec);
-	if( !codec ) {
+	char *audio_format = aud_config->format_name;
+	char *audio_codec = aud_config->codec_name;
+	AVCodec *codec = !ret &&
+	    !FFMPEG::get_format(audio_format, "audio", name) &&
+	    !FFMPEG::get_codec(audio_codec, "audio", name) ?
+		avcodec_find_encoder_by_name(audio_codec) : 0;
+	if( !ret && !codec ) {
 		eprintf(_("no codec named: %s: %s"), name, audio_codec);
-		return 1;
+		ret = 1;
 	}
-	aud_config->ff_options_dialog->start(audio_format, audio_codec, codec,
-		asset->ff_audio_options, sizeof(asset->ff_audio_options));
+	avcodec_free_context(&avctx);
+	if( !ret && !(avctx = avcodec_alloc_context3(codec)) ) {
+		eprintf(_("no codec context: %s: %s"), name, audio_codec);
+		ret = 1;
+	}
+	if( !ret ) {
+		const void *obj = avctx->priv_data;
+		aud_config->start(obj);
+	}
 	return 1;
 }
 
-FFOptionsViewVideo::FFOptionsViewVideo(FFMPEGConfigVideo *vid_config, int x, int y, const char *text)
+FFOptionsViewVideo::FFOptionsViewVideo(FFMPEGConfigVideo *vid_config,
+		int x, int y, const char *text)
  : BC_GenericButton(x, y, text)
 {
 	this->vid_config = vid_config;
+	avctx = 0;
 }
 
 FFOptionsViewVideo::~FFOptionsViewVideo()
 {
+	avcodec_free_context(&avctx);
 }
 
 int FFOptionsViewVideo::handle_event()
 {
-	char video_format[BCSTRLEN]; video_format[0] = 0;
-	char video_codec[BCSTRLEN]; video_codec[0] = 0;
-	AVCodec *codec = 0;
+	int ret = 0;
 	Asset *asset = vid_config->asset;
 	const char *name = asset->vcodec;
-	if( !FFMPEG::get_format(video_format, "video", name) &&
-	    !FFMPEG::get_codec(video_codec, "video", name) )
-		codec = avcodec_find_encoder_by_name(video_codec);
-	if( !codec ) {
+	char *video_format = vid_config->format_name;
+	char *video_codec = vid_config->codec_name;
+	AVCodec *codec = !ret &&
+	    !FFMPEG::get_format(video_format, "video", name) &&
+	    !FFMPEG::get_codec(video_codec, "video", name) ?
+		avcodec_find_encoder_by_name(video_codec) : 0;
+	if( !ret && !codec ) {
 		eprintf(_("no codec named: %s: %s"), name, video_codec);
-		return 1;
+		ret = 1;
 	}
-	vid_config->ff_options_dialog->start(video_format, video_codec, codec,
-		asset->ff_video_options, sizeof(asset->ff_video_options));
+	avcodec_free_context(&avctx);
+	if( !ret && !(avctx = avcodec_alloc_context3(codec)) ) {
+		eprintf(_("no codec context: %s: %s"), name, video_codec);
+		ret = 1;
+	}
+
+	if( !ret ) {
+		const void *obj = (const void *)avctx->priv_data;
+		vid_config->start(obj);
+	}
 	return 1;
+}
+
+FFOptionsViewFormat::FFOptionsViewFormat(BC_WindowBase *parent_window,
+	 	EDL *edl, Asset *asset, int x, int y, const char *text)
+ : BC_GenericButton(x, y, text)
+{
+	this->parent_window = parent_window;
+	this->edl = edl;
+	this->asset = asset;
+	format_dialog = 0;
+}
+
+FFOptionsViewFormat::~FFOptionsViewFormat()
+{
+	delete format_dialog;
+}
+
+int FFOptionsViewFormat::handle_event()
+{
+	delete format_dialog;
+	int wx, wy;
+	get_pop_cursor(wx, wy);
+	format_dialog = new FFOptionsFormatViewDialog(this, wx, wy);
+	format_dialog->start();
+	return 1;
+}
+
+
+FFOptionsFormatView::FFOptionsFormatView(FFMPEGConfigFormat *fmt_config,
+		int x, int y, const char *text)
+ : BC_GenericButton(x, y, text)
+{
+	this->fmt_config = fmt_config;
+	fmt_ctx = 0;
+}
+
+FFOptionsFormatView::~FFOptionsFormatView()
+{
+	avformat_free_context(fmt_ctx);
+}
+
+int FFOptionsFormatView::handle_event()
+{
+	Asset *asset = fmt_config->asset;
+	char *format_name = asset->fformat;
+	avformat_free_context(fmt_ctx);  fmt_ctx = 0;
+	int ret = avformat_alloc_output_context2(&fmt_ctx, 0, format_name, 0);
+	if( ret || !fmt_ctx ) {
+		eprintf(_("no format named: %s"), format_name);
+		ret = 1;
+	}
+	if( !ret ) {
+		const void *obj = fmt_ctx->priv_data;
+		fmt_config->start(obj);
+	}
+	return 1;
+}
+
+FFOptionsFormatViewDialog::FFOptionsFormatViewDialog(FFOptionsViewFormat *view_format,
+		int wx, int wy)
+{
+	this->view_format = view_format;
+	this->wx = wx;
+	this->wy = wy;
+	cfg_window = 0;
+}
+
+FFOptionsFormatViewDialog::~FFOptionsFormatViewDialog()
+{
+	close_window();
+}
+
+BC_Window *FFOptionsFormatViewDialog::new_gui()
+{
+	cfg_window = new FFMPEGConfigFormat(this, wx, wy,
+		view_format->asset, view_format->edl);
+	cfg_window->create_objects();
+	return cfg_window;
+}
+
+void FFOptionsFormatViewDialog::handle_done_event(int result)
+{
+	if( !result ) {
+		char *options = cfg_window->get_options();
+		int options_len = cfg_window->get_options_len();
+		cfg_window->ff_options_dialog->store_options(options, options_len);
+		cfg_window->ff_options_dialog->update_options(options);
+	}
+	cfg_window = 0;
 }
 

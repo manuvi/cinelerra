@@ -93,6 +93,7 @@ public:
 		int expand_relative = 1);
 	int read_audio(FileXML *xml);
 	int read_video(FileXML *xml);
+	int read_format(FileXML *xml);
 	int read_index(FileXML *xml);
 	void reset_audio();
 	void reset_video();
@@ -165,6 +166,21 @@ public:
 // 2 - 3
 	int ampeg_derivative;
 
+// Vorbis compression
+	int vorbis_min_bitrate;
+	int vorbis_bitrate;
+	int vorbis_max_bitrate;
+	int vorbis_vbr;
+
+// Theora compression
+	int theora_fix_bitrate;
+	int theora_bitrate;
+	int theora_quality;
+	int theora_sharpness;
+	int theora_keyframe_frequency;
+	int theora_keyframe_force_frequency;
+
+
 // Set by package render during file creation. -1 means square pixels.
 	double aspect_ratio;
 
@@ -191,11 +207,13 @@ public:
 	int vmpeg_field_order;
 	int vmpeg_pframe_distance;
 
-// ffmpeg muxer file extension
+// ffmpeg
 	char fformat[BCSTRLEN];
+	char ff_format_options[BCTEXTLEN];
 	char ff_video_options[BCTEXTLEN];
 	char ff_pixel_format[BCSTRLEN];
 	int ff_video_bitrate, ff_video_quality;
+	int ff_color_space, ff_color_range;
 	char ff_audio_options[BCTEXTLEN];
 	char ff_sample_format[BCSTRLEN];
 	int ff_audio_bitrate, ff_audio_quality;

@@ -205,9 +205,10 @@ dav1d.cfg_vars?=echo "echo dav1d custom make" >> configure; chmod +x ./configure
 dav1d.mak_params?=; $(MAKE) -C dav1d* install DESTDIR="$(call bld_path,dav1d)"
 libwebp.cfg_vars?= mkdir build && cd build && $(call cmake_config,..)
 libwebp.mak_params?= -C build all install DESTDIR=$(call bld_path,libwebp)
-mjpegtools.cflags?="$(call inc_path,libjpeg) $(call ld_path,libjpeg,.libs)"
-mjpegtools.mak_params?=; ln -s . $(call bld_path,mjpegtools,utils)/mjpegtools 
-mjpegtools.cfg_params?= --enable-shared=no --without-libsdl --without-v4l
+mjpegtools.cflags?="$(call inc_path,libjpeg) $(call ld_path,libjpeg,build)"
+mjpegtools.cfg_vars?= ./autogen.sh; 
+mjpegtools.cfg_params?= --enable-shared=no --without-libsdl --without-sdlgfx --without-v4l
+mjpegtools.mak_params?= all
 ladspa.cfg_vars?= CFLAGS+=' -Dinline="" '
 ladspa.mak_params?=; $(MAKE) -C ladspa* install DESTDIR=$(call bld_path,ladspa)
 libavc1394.cfg_vars?=PKG_CONFIG_PATH=$(call bld_path,libraw1394)
@@ -221,7 +222,9 @@ libiec61883.cflags?="$(call inc_path,libraw1394)"
 libiec61883.ldflags?="$(call ld_path,libraw1394,src/.libs)"
 libiec61883.cfg_params?= --enable-shared=no
 libiec61883.mak_params?=; cd $(call bld_path,libiec61883,src); ln -sf . libiec61883
-libjpeg.cfg_params?= --enable-shared=no
+libjpeg.cfg_vars?= mkdir build && cd build && $(call cmake_config,..)
+libjpeg.cfg_params?= -DENABLE_SHARED=no -DCMAKE_INSTALL_LIBDIR=lib 
+libjpeg.mak_params?= -C build all install DESTDIR=$(call bld_path,libjpeg)
 libogg.cfg_params?= --enable-shared=no
 libraw1394.cfg_params?=  --enable-shared=no; ln -sf src libraw1394
 libtheora.cfg_vars?=PKG_CONFIG_PATH=$(call bld_path,libogg):$(call bld_path,libvorbis)

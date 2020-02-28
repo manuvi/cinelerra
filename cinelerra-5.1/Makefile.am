@@ -32,7 +32,7 @@ export mkinstalldirs install_sh inst_sh
 
 # install to bin
 bin_install:	install-recursive
-	cp -a COPYING README models Cinelerra_factory expanders.txt \
+	cp -a COPYING README models Cinelerra_factory expanders.* \
 		shuttlerc ffmpeg msg info tips lv2_blacklist.txt bin/.
 	sed -e 's/\<cin\>/$(WANT_CIN)/g' < image/cin.desktop \
 		> "bin/applications/$(WANT_CIN).desktop"
@@ -52,7 +52,7 @@ bin_uninstall:
 sys_install: $(CIN_INSTALLS)
 	cd bin; $(inst_sh) "$(DESTDIR)$(bindir)" "$(WANT_CIN)" bdwrite
 	cd bin; $(inst_sh) "$(DESTDIR)$(datadir)/$(WANT_CIN)" \
-		COPYING README models Cinelerra_factory expanders.txt \
+		COPYING README models Cinelerra_factory expanders.* \
 		shuttlerc ffmpeg msg info tips doc
 	cd bin/locale; $(inst_sh) "$(DESTDIR)$(localedir)" .
 	cd bin/plugins; $(inst_sh) "$(DESTDIR)$(WANT_PLUGIN_DIR)" .

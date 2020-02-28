@@ -42,6 +42,8 @@ binary-arch: build install
 	dh_icons -a
 	dh_fixperms -a
 	dh_installdeb -a
+	dh_makeshlibs
+	dh_shlibdeps
 	dh_gencontrol 
 	dh_builddeb -p cin
 

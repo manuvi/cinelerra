@@ -81,6 +81,8 @@
 #define FILE_EXR                26
 #define FILE_EXR_LIST           27
 #define FILE_CR2                28
+#define FILE_OGG	        30
+#define FILE_VORBIS             31
 #define FILE_FLAC               32
 #define FILE_FFMPEG             33
 #define FILE_SCENE              34
@@ -113,6 +115,8 @@ N_("Microsoft WAV")
 N_("MPEG Audio")    // For encoding only
 N_("MPEG")          // For decoding only
 N_("MPEG Video")    // For encoding only
+N_("OGG Theora/Vorbis")
+N_("OGG Vorbis")    // For decoding only
 N_("PNG")
 N_("PNG Sequence")
 N_("PPM")
@@ -148,6 +152,7 @@ N_("Reference to EDL")
 #define JPEG_LIST_NAME		"JPEG Sequence"
 #define JPEG_NAME		"JPEG"
 #define MPEG_NAME		"MPEG Stream"	// For capture only
+#define OGG_NAME		"OGG Theora/Vorbis"
 #define PCM_NAME		"Raw PCM"
 #define PNG_LIST_NAME		"PNG Sequence"
 #define PNG_NAME		"PNG"
@@ -161,6 +166,7 @@ N_("Reference to EDL")
 #define TIFF_LIST_NAME		"TIFF Sequence"
 #define TIFF_NAME		"TIFF"
 #define VMPEG_NAME		"MPEG Video"    // For encoding only
+#define VORBIS_NAME		"OGG Vorbis"
 #define WAV_NAME		"Microsoft WAV"
 #define REF_NAME		"Reference EDL"
 

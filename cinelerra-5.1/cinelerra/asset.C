@@ -84,6 +84,7 @@ int Asset::init_values()
 	strcpy(acodec, "");
 
 	strcpy(fformat,"mp4");
+	ff_format_options[0] = 0;
 	ff_audio_options[0] = 0;
 	ff_sample_format[0] = 0;
 	ff_audio_bitrate = 0;
@@ -92,6 +93,8 @@ int Asset::init_values()
 	ff_pixel_format[0] = 0;
 	ff_video_bitrate = 0;
 	ff_video_quality = -1;
+	ff_color_space = -1;
+	ff_color_range = -1;
 
 	jpeg_quality = 80;
 	aspect_ratio = -1;
@@ -100,6 +103,18 @@ int Asset::init_values()
 	mp3_bitrate = 224;
 	ampeg_bitrate = 256;
 	ampeg_derivative = 3;
+
+	vorbis_vbr = 0;
+	vorbis_min_bitrate = -1;
+	vorbis_bitrate = 128000;
+	vorbis_max_bitrate = -1;
+
+	theora_fix_bitrate = 1;
+	theora_bitrate = 860000;
+	theora_quality = 16;
+	theora_sharpness = 2;
+	theora_keyframe_frequency = 64;
+	theora_keyframe_force_frequency = 64;
 
 // mpeg parameters
 	vmpeg_iframe_distance = 45;
@@ -187,6 +202,7 @@ void Asset::copy_format(Asset *asset, int do_index)
 	audio_data = asset->audio_data;
 	format = asset->format;
 	strcpy(fformat, asset->fformat);
+	strcpy(ff_format_options, asset->ff_format_options);
 	channels = asset->channels;
 	sample_rate = asset->sample_rate;
 	bits = asset->bits;
@@ -219,6 +235,8 @@ void Asset::copy_format(Asset *asset, int do_index)
 	strcpy(ff_pixel_format, asset->ff_pixel_format);
 	ff_video_bitrate = asset->ff_video_bitrate;
 	ff_video_quality = asset->ff_video_quality;
+	ff_color_space = asset->ff_color_space;
+	ff_color_range = asset->ff_color_range;
 
 	this->audio_length = asset->audio_length;
 	this->video_length = asset->video_length;
@@ -226,6 +244,21 @@ void Asset::copy_format(Asset *asset, int do_index)
 
 	ampeg_bitrate = asset->ampeg_bitrate;
 	ampeg_derivative = asset->ampeg_derivative;
+
+
+	vorbis_vbr = asset->vorbis_vbr;
+	vorbis_min_bitrate = asset->vorbis_min_bitrate;
+	vorbis_bitrate = asset->vorbis_bitrate;
+	vorbis_max_bitrate = asset->vorbis_max_bitrate;
+
+
+	theora_fix_bitrate = asset->theora_fix_bitrate;
+	theora_bitrate = asset->theora_bitrate;
+	theora_quality = asset->theora_quality;
+	theora_sharpness = asset->theora_sharpness;
+	theora_keyframe_frequency = asset->theora_keyframe_frequency;
+	theora_keyframe_force_frequency = asset->theora_keyframe_frequency;
+
 
 	jpeg_quality = asset->jpeg_quality;
 
@@ -314,11 +347,12 @@ int Asset::equivalent(Asset &asset, int test_audio, int test_video, EDL *edl)
 		delete [] out_path;
 	}
 
-	if(result && format == FILE_FFMPEG && strcmp(fformat, asset.fformat) )
+	if( result && format == FILE_FFMPEG &&
+	    (strcmp(fformat, asset.fformat) ||
+	     strcmp(ff_format_options, asset.ff_format_options)) )
 		result = 0;
 
-	if(test_audio && result)
-	{
+	if(test_audio && result) {
 		result = (channels == asset.channels &&
 			sample_rate == asset.sample_rate &&
 			bits == asset.bits &&
@@ -327,7 +361,7 @@ int Asset::equivalent(Asset &asset, int test_audio, int test_video, EDL *edl)
 			header == asset.header &&
 			dither == asset.dither &&
 			!strcmp(acodec, asset.acodec));
-		if(result && format == FILE_FFMPEG)
+		if( result && format == FILE_FFMPEG )
 			result = !strcmp(ff_audio_options, asset.ff_audio_options) &&
 				!strcmp(ff_sample_format, asset.ff_sample_format) &&
 				ff_audio_bitrate == asset.ff_audio_bitrate &&
@@ -335,8 +369,7 @@ int Asset::equivalent(Asset &asset, int test_audio, int test_video, EDL *edl)
 	}
 
 
-	if(test_video && result)
-	{
+	if(test_video && result) {
 		result = (layers == asset.layers &&
 			program == asset.program &&
 			frame_rate == asset.frame_rate &&
@@ -346,11 +379,13 @@ int Asset::equivalent(Asset &asset, int test_audio, int test_video, EDL *edl)
 			!strcmp(vcodec, asset.vcodec) &&
 			mov_sphere == asset.mov_sphere &&
 			jpeg_sphere == asset.jpeg_sphere);
-		if(result && format == FILE_FFMPEG)
+		if( result && format == FILE_FFMPEG )
 			result = !strcmp(ff_video_options, asset.ff_video_options) &&
 				!strcmp(ff_pixel_format, asset.ff_pixel_format) &&
 				ff_video_bitrate == asset.ff_video_bitrate &&
-				ff_video_quality == asset.ff_video_quality;
+				ff_video_quality == asset.ff_video_quality &&
+				ff_color_space == asset.ff_color_space &&
+				ff_color_range == asset.ff_color_range;
 	}
 
 	return result;
@@ -364,88 +399,38 @@ int Asset::test_path(const char *path)
 		return 0;
 }
 
-int Asset::read(FileXML *file,
-	int expand_relative)
+int Asset::read(FileXML *file, int expand_relative)
 {
 	int result = 0;
-
 // Check for relative path.
-	if(expand_relative)
-	{
+	if( expand_relative ) {
 		char new_path[BCTEXTLEN];
 		char asset_directory[BCTEXTLEN];
 		char input_directory[BCTEXTLEN];
 		FileSystem fs;
-
 		strcpy(new_path, path);
 		fs.set_current_dir("");
-
 		fs.extract_dir(asset_directory, path);
-
 // No path in asset.
 // Take path of XML file.
-		if(!asset_directory[0])
-		{
+		if( !asset_directory[0] ) {
 			fs.extract_dir(input_directory, file->filename);
-
 // Input file has a path
 			if(input_directory[0])
-			{
 				fs.join_names(path, input_directory, new_path);
-			}
 		}
 	}
 
-
-	while(!result)
-	{
-		result = file->read_tag();
-		if(!result)
-		{
-			if(file->tag.title_is("/ASSET"))
-			{
-				result = 1;
-			}
-			else
-			if(file->tag.title_is("AUDIO"))
-			{
-				read_audio(file);
-			}
-			else
-			if(file->tag.title_is("AUDIO_OMIT"))
-			{
-				read_audio(file);
-			}
-			else
-			if(file->tag.title_is("FORMAT"))
-			{
-				const char *string = file->tag.get_property("TYPE");
-				format = File::strtoformat(string);
-				use_header =
-					file->tag.get_property("USE_HEADER", use_header);
-				file->tag.get_property("FFORMAT", fformat);
-			}
-			else
-			if(file->tag.title_is("FOLDER"))
-			{
-				folder_no = file->tag.get_property("NUMBER", AW_MEDIA_FOLDER);
-			}
-			else
-			if(file->tag.title_is("VIDEO"))
-			{
-				read_video(file);
-			}
-			else
-			if(file->tag.title_is("VIDEO_OMIT"))
-			{
-				read_video(file);
-			}
-			else
-			if(file->tag.title_is("INDEX"))
-			{
-				read_index(file);
-			}
-		}
+	while( !(result=file->read_tag()) ) {
+		if( file->tag.title_is("/ASSET") ) break;
+		if( file->tag.title_is("AUDIO")  ) { read_audio(file);  continue; }
+		if( file->tag.title_is("AUDIO_OMIT") ) { read_audio(file);  continue; }
+		if( file->tag.title_is("FORMAT") ) { read_format(file);  continue; }
+		if( file->tag.title_is("VIDEO")  ) { read_video(file);  continue; }
+		if( file->tag.title_is("VIDEO_OMIT") ) { read_video(file);  continue; }
+		if( file->tag.title_is("INDEX")  ) { read_index(file);  continue; }
+		if( file->tag.title_is("FOLDER") )
+			folder_no = file->tag.get_property("NUMBER", AW_MEDIA_FOLDER);
 	}
 
 	boundaries();
@@ -497,6 +482,18 @@ int Asset::read_video(FileXML *file)
 	ilacemode_to_xmltext(string, ILACE_MODE_NOTINTERLACED);
 	interlace_mode = ilacemode_from_xmltext(file->tag.get_property("INTERLACE_MODE",string), ILACE_MODE_NOTINTERLACED);
 
+	return 0;
+}
+
+int Asset::read_format(FileXML *file)
+{
+	const char *string = file->tag.get_property("TYPE");
+	format = File::strtoformat(string);
+	use_header = file->tag.get_property("USE_HEADER", use_header);
+	fformat[0] = 0;
+	file->tag.get_property("FFORMAT", fformat);
+	ff_format_options[0] = 0;
+	file->tag.get_property("FF_FORMAT_OPTIONS", ff_format_options);
 	return 0;
 }
 
@@ -554,6 +551,7 @@ int Asset::write(FileXML *file,
 		File::formattostr(format));
 	file->tag.set_property("USE_HEADER", use_header);
 	file->tag.set_property("FFORMAT", fformat);
+	file->tag.set_property("FF_FORMAT_OPTIONS", ff_format_options);
 
 	file->append_tag();
 	file->tag.set_title("/FORMAT");
@@ -603,7 +601,14 @@ int Asset::write_audio(FileXML *file)
 
 // 	file->tag.set_property("AMPEG_BITRATE", ampeg_bitrate);
 // 	file->tag.set_property("AMPEG_DERIVATIVE", ampeg_derivative);
+//
+// 	file->tag.set_property("VORBIS_VBR", vorbis_vbr);
+// 	file->tag.set_property("VORBIS_MIN_BITRATE", vorbis_min_bitrate);
+// 	file->tag.set_property("VORBIS_BITRATE", vorbis_bitrate);
+// 	file->tag.set_property("VORBIS_MAX_BITRATE", vorbis_max_bitrate);
+//
 // 	file->tag.set_property("MP3_BITRATE", mp3_bitrate);
+//
 
 
 
@@ -703,6 +708,7 @@ void Asset::load_defaults(BC_Hash *defaults,
 		format = GET_DEFAULT("FORMAT", format);
 		use_header = GET_DEFAULT("USE_HEADER", use_header);
 		GET_DEFAULT("FFORMAT", fformat);
+		GET_DEFAULT("FF_FORMAT_OPTIONS", ff_format_options);
 	}
 
 	if(do_data_types)
@@ -742,6 +748,18 @@ void Asset::load_defaults(BC_Hash *defaults,
 	ampeg_bitrate = GET_DEFAULT("AMPEG_BITRATE", ampeg_bitrate);
 	ampeg_derivative = GET_DEFAULT("AMPEG_DERIVATIVE", ampeg_derivative);
 
+	vorbis_vbr = GET_DEFAULT("VORBIS_VBR", vorbis_vbr);
+	vorbis_min_bitrate = GET_DEFAULT("VORBIS_MIN_BITRATE", vorbis_min_bitrate);
+	vorbis_bitrate = GET_DEFAULT("VORBIS_BITRATE", vorbis_bitrate);
+	vorbis_max_bitrate = GET_DEFAULT("VORBIS_MAX_BITRATE", vorbis_max_bitrate);
+
+	theora_fix_bitrate = GET_DEFAULT("THEORA_FIX_BITRATE", theora_fix_bitrate);
+	theora_bitrate = GET_DEFAULT("THEORA_BITRATE", theora_bitrate);
+	theora_quality = GET_DEFAULT("THEORA_QUALITY", theora_quality);
+	theora_sharpness = GET_DEFAULT("THEORA_SHARPNESS", theora_sharpness);
+	theora_keyframe_frequency = GET_DEFAULT("THEORA_KEYFRAME_FREQUENCY", theora_keyframe_frequency);
+	theora_keyframe_force_frequency = GET_DEFAULT("THEORA_FORCE_KEYFRAME_FREQUENCY", theora_keyframe_force_frequency);
+
 	GET_DEFAULT("FF_AUDIO_OPTIONS", ff_audio_options);
 	GET_DEFAULT("FF_SAMPLE_FORMAT", ff_sample_format);
 	ff_audio_bitrate = GET_DEFAULT("FF_AUDIO_BITRATE", ff_audio_bitrate);
@@ -750,6 +768,9 @@ void Asset::load_defaults(BC_Hash *defaults,
 	GET_DEFAULT("FF_PIXEL_FORMAT", ff_pixel_format);
 	ff_video_bitrate = GET_DEFAULT("FF_VIDEO_BITRATE", ff_video_bitrate);
 	ff_video_quality = GET_DEFAULT("FF_VIDEO_QUALITY", ff_video_quality);
+	ff_color_space = GET_DEFAULT("FF_COLOR_SPACE", ff_color_space);
+	ff_color_range = GET_DEFAULT("FF_COLOR_RANGE", ff_color_range);
+	GET_DEFAULT("FF_FORMAT_OPTIONS", ff_format_options);
 
 	mp3_bitrate = GET_DEFAULT("MP3_BITRATE", mp3_bitrate);
 
@@ -770,6 +791,14 @@ void Asset::load_defaults(BC_Hash *defaults,
 	vmpeg_seq_codes = GET_DEFAULT("VMPEG_SEQ_CODES", vmpeg_seq_codes);
 	vmpeg_preset = GET_DEFAULT("VMPEG_PRESET", vmpeg_preset);
 	vmpeg_field_order = GET_DEFAULT("VMPEG_FIELD_ORDER", vmpeg_field_order);
+
+	theora_fix_bitrate = GET_DEFAULT("THEORA_FIX_BITRATE", theora_fix_bitrate);
+	theora_bitrate = GET_DEFAULT("THEORA_BITRATE", theora_bitrate);
+	theora_quality = GET_DEFAULT("THEORA_QUALITY", theora_quality);
+	theora_sharpness = GET_DEFAULT("THEORA_SHARPNESS", theora_sharpness);
+	theora_keyframe_frequency = GET_DEFAULT("THEORA_KEYFRAME_FREQUENCY", theora_keyframe_frequency);
+	theora_keyframe_force_frequency = GET_DEFAULT("THEORA_FORCE_KEYFRAME_FEQUENCY", theora_keyframe_force_frequency);
+
 
 	ac3_bitrate = GET_DEFAULT("AC3_BITRATE", ac3_bitrate);
 
@@ -804,6 +833,7 @@ void Asset::save_defaults(BC_Hash *defaults,
 		UPDATE_DEFAULT("FORMAT", format);
 		UPDATE_DEFAULT("USE_HEADER", use_header);
 		UPDATE_DEFAULT("FFORMAT", fformat);
+		UPDATE_DEFAULT("FF_FORMAT_OPTIONS", ff_format_options);
 	}
 
 	if(do_data_types)
@@ -820,6 +850,11 @@ void Asset::save_defaults(BC_Hash *defaults,
 		UPDATE_DEFAULT("AMPEG_BITRATE", ampeg_bitrate);
 		UPDATE_DEFAULT("AMPEG_DERIVATIVE", ampeg_derivative);
 
+		UPDATE_DEFAULT("VORBIS_VBR", vorbis_vbr);
+		UPDATE_DEFAULT("VORBIS_MIN_BITRATE", vorbis_min_bitrate);
+		UPDATE_DEFAULT("VORBIS_BITRATE", vorbis_bitrate);
+		UPDATE_DEFAULT("VORBIS_MAX_BITRATE", vorbis_max_bitrate);
+
 		UPDATE_DEFAULT("FF_AUDIO_OPTIONS", ff_audio_options);
 		UPDATE_DEFAULT("FF_SAMPLE_FORMAT", ff_sample_format);
 		UPDATE_DEFAULT("FF_AUDIO_BITRATE", ff_audio_bitrate);
@@ -828,6 +863,17 @@ void Asset::save_defaults(BC_Hash *defaults,
 		UPDATE_DEFAULT("FF_PIXEL_FORMAT",  ff_pixel_format);
 		UPDATE_DEFAULT("FF_VIDEO_BITRATE", ff_video_bitrate);
 		UPDATE_DEFAULT("FF_VIDEO_QUALITY", ff_video_quality);
+		UPDATE_DEFAULT("FF_COLOR_SPACE", ff_color_space);
+		UPDATE_DEFAULT("FF_COLOR_RANGE", ff_color_range);
+
+		UPDATE_DEFAULT("THEORA_FIX_BITRATE", theora_fix_bitrate);
+		UPDATE_DEFAULT("THEORA_BITRATE", theora_bitrate);
+		UPDATE_DEFAULT("THEORA_QUALITY", theora_quality);
+		UPDATE_DEFAULT("THEORA_SHARPNESS", theora_sharpness);
+		UPDATE_DEFAULT("THEORA_KEYFRAME_FREQUENCY", theora_keyframe_frequency);
+		UPDATE_DEFAULT("THEORA_FORCE_KEYFRAME_FREQUENCY", theora_keyframe_force_frequency);
+
+
 
 		UPDATE_DEFAULT("MP3_BITRATE", mp3_bitrate);
 
@@ -923,6 +969,8 @@ int Asset::dump(FILE *fp)
 	fprintf(fp,"   ff_pixel_format=\"%s\"\n", ff_pixel_format);
 	fprintf(fp,"   ff_video_bitrate=%d\n", ff_video_bitrate);
 	fprintf(fp,"   ff_video_quality=%d\n", ff_video_quality);
+	fprintf(fp,"   ff_color_space=%d\n", ff_color_space);
+	fprintf(fp,"   ff_color_range=%d\n", ff_color_range);
 	fprintf(fp,"   audio_data %d channels %d samplerate %d bits %d"
 		" byte_order %d signed %d header %d dither %d acodec %4.4s\n",
 		audio_data, channels, sample_rate, bits, byte_order, signed_,

@@ -52,6 +52,7 @@ BuildRequires: texinfo
 BuildRequires: gtk2-devel
 BuildRequires: libva-devel
 BuildRequires: libvdpau-devel
+BuildRequires: pulseaudio-libs-devel
 %{?rhat:BuildRequires: alsa-lib-devel}
 %{?rhat:BuildRequires: bzip2-devel}
 %{?rhat:BuildRequires: xorg-x11-fonts-cyrillic}

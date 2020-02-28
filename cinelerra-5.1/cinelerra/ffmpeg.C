@@ -1043,6 +1043,8 @@ FFVideoStream::FFVideoStream(FFMPEG *ffmpeg, AVStream *strm, int idx, int fidx)
 	length = 0;
 	interlaced = 0;
 	top_field_first = 0;
+	color_space = -1;
+	color_range = -1;
 }
 
 FFVideoStream::~FFVideoStream()
@@ -1428,13 +1430,13 @@ int FFVideoConvert::convert_picture_vframe(VFrame *frame, AVFrame *ip, AVFrame *
 	case BC_COLORS_JPEG:  color_range = 1;  break;
 	case BC_COLORS_MPEG:  color_range = 0;  break;
 	}
-	int ff_color_space = SWS_CS_ITU601;
+	int color_space = SWS_CS_ITU601;
 	switch( preferences->yuv_color_space ) {
-	case BC_COLORS_BT601:  ff_color_space = SWS_CS_ITU601;  break;
-	case BC_COLORS_BT709:  ff_color_space = SWS_CS_ITU709;  break;
-	case BC_COLORS_BT2020: ff_color_space = SWS_CS_BT2020;  break;
+	case BC_COLORS_BT601:  color_space = SWS_CS_ITU601;  break;
+	case BC_COLORS_BT709:  color_space = SWS_CS_ITU709;  break;
+	case BC_COLORS_BT2020: color_space = SWS_CS_BT2020;  break;
 	}
-	const int *color_table = sws_getCoefficients(ff_color_space);
+	const int *color_table = sws_getCoefficients(color_space);
 
 	int *inv_table, *table, src_range, dst_range;
 	int brightness, contrast, saturation;
@@ -1557,13 +1559,13 @@ int FFVideoConvert::convert_vframe_picture(VFrame *frame, AVFrame *op, AVFrame *
 	case BC_COLORS_JPEG:  color_range = 1;  break;
 	case BC_COLORS_MPEG:  color_range = 0;  break;
 	}
-	int ff_color_space = SWS_CS_ITU601;
+	int color_space = SWS_CS_ITU601;
 	switch( preferences->yuv_color_space ) {
-	case BC_COLORS_BT601:  ff_color_space = SWS_CS_ITU601;  break;
-	case BC_COLORS_BT709:  ff_color_space = SWS_CS_ITU709;  break;
-	case BC_COLORS_BT2020: ff_color_space = SWS_CS_BT2020;  break;
+	case BC_COLORS_BT601:  color_space = SWS_CS_ITU601;  break;
+	case BC_COLORS_BT709:  color_space = SWS_CS_ITU709;  break;
+	case BC_COLORS_BT2020: color_space = SWS_CS_BT2020;  break;
 	}
-	const int *color_table = sws_getCoefficients(ff_color_space);
+	const int *color_table = sws_getCoefficients(color_space);
 
 	int *inv_table, *table, src_range, dst_range;
 	int brightness, contrast, saturation;
@@ -2004,6 +2006,20 @@ void FFMPEG::load_video_options(Asset *asset, EDL *edl)
 		scan_video_options(asset, edl);
 }
 
+void FFMPEG::scan_format_options(Asset *asset, EDL *edl)
+{
+}
+
+void FFMPEG::load_format_options(Asset *asset, EDL *edl)
+{
+	char options_path[BCTEXTLEN];
+	set_option_path(options_path, "format/%s", asset->fformat);
+	if( !load_options(options_path,
+			asset->ff_format_options,
+			sizeof(asset->ff_format_options)) )
+		scan_format_options(asset, edl);
+}
+
 int FFMPEG::load_defaults(const char *path, const char *type,
 		 char *codec, char *codec_options, int len)
 {
@@ -2029,6 +2045,8 @@ void FFMPEG::set_asset_format(Asset *asset, EDL *edl, const char *text)
 	if( asset->format != FILE_FFMPEG ) return;
 	if( text != asset->fformat )
 		strcpy(asset->fformat, text);
+	if( !asset->ff_format_options[0] )
+		load_format_options(asset, edl);
 	if( asset->audio_data && !asset->ff_audio_options[0] ) {
 		if( !load_defaults("audio", text, asset->acodec,
 				asset->ff_audio_options, sizeof(asset->ff_audio_options)) )
@@ -2100,8 +2118,10 @@ int FFMPEG::scan_options(const char *options, AVDictionary *&opts, AVStream *st)
 	if( !fp ) return 0;
 	int ret = read_options(fp, options, opts);
 	fclose(fp);
-	AVDictionaryEntry *tag = av_dict_get(opts, "id", NULL, 0);
-	if( tag ) st->id = strtol(tag->value,0,0);
+	if( !ret && st ) {
+		AVDictionaryEntry *tag = av_dict_get(opts, "id", NULL, 0);
+		if( tag ) st->id = strtol(tag->value,0,0);
+	}
 	return ret;
 }
 
@@ -2245,16 +2265,23 @@ int FFMPEG::info(char *text, int len)
 	if( ffvideo.size() > 0 )
 		report("\n%d video stream%s\n",ffvideo.size(), ffvideo.size()!=1 ? "s" : "");
 	for( int vidx=0; vidx<ffvideo.size(); ++vidx ) {
+		const char *unkn = _("(unkn)");
 		FFVideoStream *vid = ffvideo[vidx];
 		AVStream *st = vid->st;
 		AVCodecID codec_id = st->codecpar->codec_id;
 		report(_("vid%d (%d),  id 0x%06x:\n"), vid->idx, vid->fidx, codec_id);
 		const AVCodecDescriptor *desc = avcodec_descriptor_get(codec_id);
-		report("  video%d %s", vidx+1, desc ? desc->name : " (unkn)");
+		report("  video%d %s ", vidx+1, desc ? desc->name : unkn);
 		report(" %dx%d %5.2f", vid->width, vid->height, vid->frame_rate);
 		AVPixelFormat pix_fmt = (AVPixelFormat)st->codecpar->format;
 		const char *pfn = av_get_pix_fmt_name(pix_fmt);
-		report(" pix %s\n", pfn ? pfn : "(unkn)");
+		report(" pix %s\n", pfn ? pfn : unkn);
+		enum AVColorSpace space = st->codecpar->color_space;
+		const char *nm = av_color_space_name(space);
+		report("    color space:%s", nm ? nm : unkn);
+    		enum AVColorRange range = st->codecpar->color_range;
+		const char *rg = av_color_range_name(range);
+		report("/ range:%s\n", rg ? rg : unkn);
 		double secs = to_secs(st->duration, st->time_base);
 		int64_t length = secs * vid->frame_rate + 0.5;
 		double ofs = to_secs((vid->nudge - st->start_time), st->time_base);
@@ -2415,6 +2442,35 @@ int FFMPEG::open_decoder()
 			vid->width = avpar->width;
 			vid->height = avpar->height;
 			vid->frame_rate = !framerate.den ? 0 : (double)framerate.num / framerate.den;
+			switch( avpar->color_range ) {
+			case AVCOL_RANGE_MPEG:
+				vid->color_range = BC_COLORS_MPEG;
+				break;
+			case AVCOL_RANGE_JPEG:
+				vid->color_range = BC_COLORS_JPEG;
+				break;
+			default:
+				vid->color_range = !file_base ? BC_COLORS_JPEG :
+					file_base->file->preferences->yuv_color_range;
+				break;
+			}
+			switch( avpar->color_space ) {
+			case AVCOL_SPC_BT470BG:
+			case AVCOL_SPC_SMPTE170M:
+				vid->color_space = BC_COLORS_BT601;
+				break;
+			case AVCOL_SPC_BT709:
+				vid->color_space = BC_COLORS_BT709;
+				break;
+			case AVCOL_SPC_BT2020_NCL:
+			case AVCOL_SPC_BT2020_CL:
+				vid->color_space = BC_COLORS_BT2020;
+				break;
+			default:
+				vid->color_space = !file_base ? BC_COLORS_BT601 :
+					file_base->file->preferences->yuv_color_space;
+				break;
+			}
 			double secs = to_secs(st->duration, st->time_base);
 			vid->length = secs * vid->frame_rate;
 			vid->aspect_ratio = (double)st->sample_aspect_ratio.num / st->sample_aspect_ratio.den;
@@ -2647,7 +2703,19 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 			vid->width = asset->width;
 			vid->height = asset->height;
 			vid->frame_rate = asset->frame_rate;
-
+			if( (vid->color_range = asset->ff_color_range) < 0 )
+				vid->color_range = file_base->file->preferences->yuv_color_range;
+			switch( vid->color_range ) {
+			case BC_COLORS_MPEG:  ctx->color_range = AVCOL_RANGE_MPEG;  break;
+			case BC_COLORS_JPEG:  ctx->color_range = AVCOL_RANGE_JPEG;  break;
+			}
+			if( (vid->color_space = asset->ff_color_space) < 0 )
+				vid->color_space = file_base->file->preferences->yuv_color_space;
+			switch( vid->color_space ) {
+			case BC_COLORS_BT601:  ctx->colorspace = AVCOL_SPC_SMPTE170M;  break;
+			case BC_COLORS_BT709:  ctx->colorspace = AVCOL_SPC_BT709;      break;
+			case BC_COLORS_BT2020: ctx->colorspace = AVCOL_SPC_BT2020_NCL; break;
+			}
 			AVPixelFormat pix_fmt = av_get_pix_fmt(asset->ff_pixel_format);
 			if( opt_hw_dev != 0 ) {
 				AVHWDeviceType hw_type = vid->encode_hw_activate(opt_hw_dev);
@@ -2937,7 +3005,13 @@ int FFMPEG::encode_activate()
 		char option_path[BCTEXTLEN];
 		set_option_path(option_path, "format/%s", file_format);
 		read_options(option_path, fopts, 1);
-		ret = avformat_write_header(fmt_ctx, &fopts);
+		av_dict_copy(&fopts, opts, 0);
+		if( scan_options(file_base->asset->ff_format_options, fopts, 0) ) {
+			eprintf(_("bad format options %s\n"), file_base->asset->path);
+			ret = -1;
+		}
+		if( ret >= 0 )
+			ret = avformat_write_header(fmt_ctx, &fopts);
 		if( ret < 0 ) {
 			ff_err(ret, "FFMPEG::encode_activate: write header failed %s\n",
 				fmt_ctx->url);
@@ -3250,6 +3324,16 @@ const char* FFMPEG::ff_video_format(int stream)
 	AVCodecID id = st->codecpar->codec_id;
 	const AVCodecDescriptor *desc = avcodec_descriptor_get(id);
 	return desc ? desc->name : _("Unknown");
+}
+
+int FFMPEG::ff_color_range(int stream)
+{
+	return ffvideo[stream]->color_range;
+}
+
+int FFMPEG::ff_color_space(int stream)
+{
+	return ffvideo[stream]->color_space;
 }
 
 double FFMPEG::ff_frame_rate(int stream)

@@ -73,6 +73,10 @@ void FormatPopup::create_objects()
 		post_item(FILE_AMPEG);
 		post_item(FILE_VMPEG);
 #endif
+#ifdef HAVE_OGG
+		post_item(FILE_VORBIS);
+		post_item(FILE_OGG);
+#endif
 		post_item(FILE_PCM);
 	}
 
