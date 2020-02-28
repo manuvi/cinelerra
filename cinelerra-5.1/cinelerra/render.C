@@ -338,7 +338,7 @@ void Render::handle_close_event(int result)
 	}
 	EDL *edl = mwindow->edl;
 	if( !result && use_labels && !edl->labels->first ) {
-		eprintf(_("render file per label and no labels\n"));
+		eprintf(_("Create new file at labels checked, but no labels\n"));
 		result = 1;
 	}
 	if( !result && asset->video_data ) {

@@ -1,40 +1,66 @@
-Mayús-clic en un fotograma clave de la curva para ajustarlo a los valores vecinos.
+Con Mayús-clic en un fotograma clave permite ajustarlo de manera rápida a los valores vecinos.
 
-Cuando se configuren efectos lentos, deshabilitar la reproducción para la pista. Después de haberle configurado,
-re-habilitar la reproducción para procesar un solo fotograma.
+Cuando se configuren efectos lentos, deshabilitar la reproducción de la pista. 
+Después de haberla configurado, re-habilitar la reproducción para procesar un solo
+fotograma.
 
-Ctrl + cualquier comando de la línea de tiempo provoca que
-" "el playback solo afecte a la región definida por los puntos Entrada/Salida.
+Ctrl+cualquier comando de reproducción en la línea de tiempo provoca que sólo se 
+reproduzca la región definida por los puntos Entrada/Salida. Por ejemplo Ctrl+Espacio.
 
-Mayús + clic en una de las opciones de las pistas provoca que todas
-las demás se deshabiliten/habiliten
+Mayús+clic en una de las opciones de las pistas provoca que todas las demás se 
+deshabiliten o habiliten. Funciona de manera conmutada.
 
-Al hacer clic en un parche y arrastrando a través de otras vías provoca
-el otros parches para que coincida con la primera.
+Podemos cargar múltiples clips haciendo clic en uno de ellos y Mayús+clic sobre
+el/los otros.  Ctrl+clic habilita/deshabilita ficheros individuales.
 
- Mayús + clic en el borde del efecto hace que el arrastrar afecte
-solamente el efecto.
+Ctrl+clic izquierdo en la barra de tiempo cambia el formato de tiempo hacia adelante.
+Ctrl+botón central del ratón en la barra de tiempo cambia hacia atrás el formato de tiempo.
 
-Cargar ficheros múltiples haciendo clic en uno de ellos y  Mayús + clic sobre
-el/los otros.  Ctrl + clic habilita  ficheros individuales.
+En el monitor de previsualización, compositor, podemos hacer zoom con las
+teclas + y - del teclado alfanumérico. (Debemos tener el ratón sobre él)
 
-Ctrl + clic izquierdo en la barra de tiempo avanza hacia adelante un formato de hora.
-Ctrl + botón central del ratón en la barra de tiempo desplaza hacia atrás un formato de hora.
+Con el cursor del ratón sobre una pista, si pulsamos el tabulador, bloquearemos
+esta pista, si pulsamos Mayús+Tabulador bloquearemos todas las demás.
 
-Usar las teclas +/- de la ventana del Compositor para acercarse y alejarse.
+Audio-> Map 1:1 asigna cada pista de audio grabable a un canal diferente.
+Map 5.1:2 mapea 6 pistas grabables de AC3 a 2 canales.
 
-Presionar Alt haciendo clic en la ventana de recorte provoca la conversión de
-todos los 4 puntos.
+Alt + flecha izquierda coloca el cursor de reproducción en el corte anterior
+Alt + flecha derecha coloca el cursor de reproducción en el corte posterior
 
-Presionando Tab sobre una pista cambia el estado de grabación.
-Presionando Mayús-Tab sobre una pista cambia el estado de grabación de todas las otras pistas.
+Activar la opción de Configuración -> "Fotogramas clave sin tipo" permite pegar
+fotogramas clave de cualquier pista a cualquier otra pista de audio o video.
 
-Audio-> Map 1: 1 mapa cada pista de audio grabable a un canal diferente.
-Map 5.1:2 mapa 6 pistas recordable AC3 a 2 canales.
+Si pulsas con el botón central del ratón sobre la línea de tiempo se abre un
+menú contextual con útiles opciones de edición.
 
-Alt + izquierda permite gestionar la edición anterior.
-Alt +  derecha para gestionar la próxima edición.
+Si pulsas Alt cuando cambias el valor de un fotograma clave, sólo podrás mover
+éste en su vertical, de este modo se evita cambiar su posición.
 
-Configuración-> fotogramas claves typeless permite a los fotogramas clave de cualquier pista ser pegados en cualquiera
- de las pistas audio o vídeo .
+Con el efecto de Dibujo podrás dibujar formás básicas sobre tus vídeos o en 
+espacios sin clips. Mira la ayuda del propio efecto para saber como usarlo.
+
+Algunos efectos llevan un botón de ayuda, que despliega unos útiles consejos
+sobre su uso. Este botón suele estar abajo.
+
+Lo efectos son como clips de vídeo, los puedes estirar, encoger, mover...
+copiar y pegar.
+
+¿Te has hecho un lio con las ventanas? De manera rápida las puedes colocar a su
+posición por defecto mediante el comando Ctrl+P. Este no abre las ventanas cerradas.
+Puedes volver a abrirlas desde el menú "Ventanas".
+
+Puedes guardar tus configuraciones de posición de las diferentes ventanas desde el 
+propio menú "Ventanas" para recuperar estas personalizaciones de manera rápida.
+
+En la linea de tiempo puedes hacer zoom usando las flechas arriba ↑ y abajo ↓ para 
+reducir o aumentar la vista. También puedes hacer uso de la rueda del ratón mientras
+mantienes pulsada la tecla de mayúsculas. (Debes tener el cursor del ratón sobre ella)
+
+En la línea de tiempo de puedes desplazar hacia adelante o atrás haciendo uso de las 
+flechas izquierda ← y derecha →. También puedes hacerlo con la rueda del ratón mientras 
+mantienes pulsada la tecla Ctrl.
+
+La tecla "F" pulsada sobre la línea de tiempo ajusta el contenido a la ventana. La misma 
+tecla sobre los monitores de recorte o previsualización, los pone a pantalla completa.
 

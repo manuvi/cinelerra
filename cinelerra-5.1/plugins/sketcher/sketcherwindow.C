@@ -493,7 +493,7 @@ void SketcherWindow::create_objects()
 		   "drag point\n"
 		   "drag all curves\n"
 		   "new fill point"))); dy = bmax(dy, notes1->get_h());
-	add_subwindow(notes2 = new BC_Title(x+xS(220), y,
+	add_subwindow(notes2 = new BC_Title(x+xS(280), y,
 		 _("      RMB\n"
 		   "new arc point\n"
 		   "select curve\n"
@@ -503,9 +503,9 @@ void SketcherWindow::create_objects()
 	y += dy + margin + yS(10);
 
 	add_subwindow(notes3 = new BC_Title(x, y,
-		   "Wheel: rotate, centered on cursor\n"
+		 _("Wheel: rotate, centered on cursor\n"
 		   "Wheel: shift: scale, centered on cursor\n"
-		   "Key DEL= delete point, +Shift= delete curve\n"));
+		   "Key DEL= delete point, +Shift= delete curve\n")));
 
 	resize_window(get_w(), help_y);
 	show_window(1);
@@ -1279,7 +1279,7 @@ int SketcherPointDn::handle_event()
 }
 
 SketcherDrag::SketcherDrag(SketcherWindow *gui, int x, int y)
- : BC_CheckBox(x, y, gui->plugin->config.drag, _("Drag"))
+ : BC_CheckBox(x, y, gui->plugin->config.drag, (C_("Drag")))
 {
 	this->gui = gui;
 }

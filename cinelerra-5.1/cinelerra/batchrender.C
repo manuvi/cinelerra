@@ -513,7 +513,7 @@ int BatchRenderThread::test_edl_files()
 	if( !ret && mwindow )
 		ret = test_errmsg(no_rendering, _("%d job EDLs no audio or video in render asset format\n"), 0);
 	if( !ret && mwindow )
-		ret = test_errmsg(no_labels, _("%d job EDLs render file per label and no labels\n"), 0);
+		ret = test_errmsg(no_labels, _("%d job EDLs Create new file at labels checked, but no labels\n"), 0);
 	if( ret )
 		is_rendering = 0;
 	return ret;
