@@ -1,4 +1,4 @@
-%define ver 20200131
+%define ver 20200229
 %define cin cinelerra
 Summary: Multimedia Editing and construction
 
@@ -52,7 +52,7 @@ BuildRequires: texinfo
 BuildRequires: gtk2-devel
 BuildRequires: libva-devel
 BuildRequires: libvdpau-devel
-BuildRequires: pulseaudio-libs-devel
+%{?rhat:BuildRequires: pulseaudio-libs-devel}
 %{?rhat:BuildRequires: alsa-lib-devel}
 %{?rhat:BuildRequires: bzip2-devel}
 %{?rhat:BuildRequires: xorg-x11-fonts-cyrillic}
@@ -61,6 +61,7 @@ BuildRequires: pulseaudio-libs-devel
 %{?rhat:BuildRequires: xorg-x11-fonts-ISO8859-1-75dpi}
 %{?rhat:BuildRequires: xorg-x11-fonts-misc}
 %{?rhat:BuildRequires: xorg-x11-fonts-Type1}
+%{?suse:BuildRequires: libpulse-devel}
 %{?suse:BuildRequires: alsa-devel}
 %{?suse:BuildRequires: libbz2-devel}
 %{?suse:BuildRequires: bitstream-vera-fonts}

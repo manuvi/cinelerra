@@ -11307,8 +11307,7 @@ msgstr "Compensación vertical"
 #: plugins/downsample/downsample.C:378 plugins/reframert/reframert.C:241
 msgid "Downsample"
 msgstr ""
-"Pixelar\n"
-"Bajar Resolución"
+"Pixelizar"
 
 #: plugins/echo/echo.C:147
 msgid "Level: "

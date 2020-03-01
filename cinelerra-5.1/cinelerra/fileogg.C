@@ -1027,6 +1027,7 @@ int FileOGG::ogg_get_page_of_sample(ogg_page *og, int64_t sample)
 int FileOGG::ogg_seek_to_sample(int64_t ogg_sample)
 {
 	ogg_page og;
+	ogg_packet op;
 	if( !ogg_get_page_of_sample(&og, ogg_sample) ) {
 		eprintf(_("Seeking to sample's page failed\n"));
 		return 0;
@@ -1038,13 +1039,13 @@ int FileOGG::ogg_seek_to_sample(int64_t ogg_sample)
 		while( (ret=audiosync->ogg_get_prev_page(to.serialno, &og)) &&
 			(ogg_page_packets(&og) == 0 && ogg_page_continued(&og)) );
 	}
-	audio_eos = 0;
-	ogg_stream_reset(&vo);
-	ogg_stream_pagein(&vo, &og);
-	vorbis_synthesis_restart(&vd);
-	ogg_packet op;
-	while( (ret=ogg_get_audio_packet(&op)) != 0 &&
-		op.granulepos < 0 );
+	if( ret ) {
+		audio_eos = 0;
+		ogg_stream_reset(&vo);
+		ogg_stream_pagein(&vo, &og);
+		vorbis_synthesis_restart(&vd);
+		ret = ogg_get_audio_packet(&op);
+	}
 	if( ret && !vorbis_synthesis(&vb, &op) ) {
 		vorbis_synthesis_blockin(&vd, &vb);
 		if( vorbis_synthesis_pcmout(&vd, 0) )
@@ -1055,7 +1056,7 @@ int FileOGG::ogg_seek_to_sample(int64_t ogg_sample)
 		return 0;
 	}
 
-	while( ogg_sample >= next_pos ) {
+	while( ogg_sample > next_pos ) {
 		if( !(ret=ogg_get_audio_packet(&op)) ) break;
 		if( vorbis_synthesis(&vb, &op) ) continue;
 		vorbis_synthesis_blockin(&vd, &vb);
@@ -1270,13 +1271,9 @@ int FileOGG::read_frame(VFrame *frame)
 		}
 		expect_keyframe = 1;
 	}
-	int frames_remaining = asset->video_length - (video_pos - start_frame);
-	if( decode_frames > frames_remaining ) decode_frames = frames_remaining;
 	int ret = 0;
 	ogg_packet op;
-	while( decode_frames > 0 && !video_eos ) {
-		if( video_pos-start_frame >= asset->video_length )
-			return 0;
+	while( decode_frames > 0 ) {
 		if( !ogg_get_video_packet(&op) ) break;
 		if( expect_keyframe ) {
 			expect_keyframe = 0;
@@ -1343,7 +1340,6 @@ int FileOGG::ogg_decode_more_samples()
 		}
 	}
 	ogg_sample_position = -11;
-	if( audio_eos ) return 0;
 	eprintf(_("Cannot find next page while trying to decode more samples\n"));
 	return 0;
 }
@@ -1446,22 +1442,28 @@ int FileOGG::read_samples(double *buffer, int64_t len)
 			int64_t sample_demand = samples_to_read - samples_read;
 			int64_t sample_count = MIN(samples_avail, sample_demand);
 			if( sample_count > 0 ) {
-				for( int i=0; i<asset->channels; ++i ) {
-					float *input = vorbis_buffer[i];
-					float *output = pcm_history[i] + hole_start;
-					int sz = sample_count*sizeof(*output);
-					if( samples_waiting )
+				int sz = sample_count*sizeof(float);
+				if( samples_waiting ) {
+					for( int i=0; i<asset->channels; ++i ) {
+						float *input = vorbis_buffer[i];
+						float *output = pcm_history[i] + hole_start;
 						memcpy(output, input, sz);
-					else
-						memset(output, 0, sz);
+					}
+					vorbis_synthesis_read(&vd, sample_count);
 				}
-				vorbis_synthesis_read(&vd, sample_count);
-				samples_read += sample_count;
+				else {
+					for( int i=0; i<asset->channels; ++i ) {
+						float *output = pcm_history[i] + hole_start;
+						memset(output, 0, sz);
+					}
+				}
 				ogg_sample_position += sample_count;
 				hole_start += sample_count;
+				samples_read += sample_count;
+				if( samples_read >= hole_len ) break;
 			}
-
-			if( !ogg_decode_more_samples() ) break;
+			if( samples_read < hole_len && !ogg_decode_more_samples() )
+				break;
 		}
 	}
 

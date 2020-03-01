@@ -7,6 +7,13 @@ Cinfinity icons selected in Preferences Sam (CC BY 3.0,
 Cakewalk and Neophyte themes by Olaf Wolff (CC BY 4.0,
   https://creativecommons.org/licenses/by/4.0/)
 .
+February 2020 New Features of note:
+  New ColorSpace plugin to convert color space/range.
+  Updated 17 thirdparty libraries to keep up to date.
+  Rewrote and replaced OGG/Theora/Vorbis file codec.
+  Shortcut for "Delete last track" has changed.
+  PulseAudio option is now built in as audio choice.
+.
 January 2020 New Features of note:
   Updated reference Manual using LaTeX now complete.
   File by Reference capability now available.

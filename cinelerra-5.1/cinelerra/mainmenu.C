@@ -1247,8 +1247,10 @@ int DeleteFirstTrack::handle_event()
 }
 
 DeleteLastTrack::DeleteLastTrack(MWindow *mwindow)
- : BC_MenuItem(_("Delete last track"), "d", 'd')
+ : BC_MenuItem(_("Delete last track"), "Ctrl-Shift-D", 'D')
 {
+	set_ctrl(1);
+	set_shift(1);
 	this->mwindow = mwindow;
 }
 

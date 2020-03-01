@@ -552,8 +552,7 @@ clean:
 	rm -f shuttle_keys.h
 
 tags:
-	ctags -R -h default --langmap=c:+.inc . ../guicast/ ../libzmpeg3 ../plugins ../thirdparty/ffmpeg-* \
-		../thirdparty/libtheora* ../thirdparty/libvorbis* ../thirdparty/libogg*
+	ctags -R -h default --langmap=c:+.inc . ../guicast/ ../libzmpeg3 ../plugins ../thirdparty/ffmpeg-*
 
 $(OBJDIR)/fileexr.o:	BFLAGS:= -Wno-deprecated
 $(OBJDIR)/sha1.o:	BFLAGS:= -O3
