@@ -12,10 +12,10 @@ index 5531330..ad671f5 100644
  MAKEJ := $(MAKE) $(jobs)
  
 diff --git a/cinelerra-5.1/cinelerra/Makefile b/cinelerra-5.1/cinelerra/Makefile
-index f8e5fd8..d26ba05 100644
+index f4e536b..9b76136 100644
 --- a/cinelerra-5.1/cinelerra/Makefile
 +++ b/cinelerra-5.1/cinelerra/Makefile
-@@ -510,7 +510,7 @@ all:	$(OUTPUT) $(CUTADS) $(BDWRITE) $(LV2UI)
+@@ -512,7 +512,7 @@ all:	$(OUTPUT) $(CUTADS) $(BDWRITE) $(LV2UI)
  $(OUTPUT): $(OBJS) $(THEME_DATA) $(DCRAW) $(LIBRARIES)
  	$(LINKER) `cat $(OBJDIR)/objs`
  	$(if $(findstring -g,$(CFLAGS)),objcopy --only-keep-debug $(OUTPUT) $(OUTPUT_G))
@@ -107,10 +107,10 @@ index f4587fc..dd0c883 100644
  
  #define DVD_PAL_4x3	0
 diff --git a/cinelerra-5.1/cinelerra/file.C b/cinelerra-5.1/cinelerra/file.C
-index 1fec188..c9180a0 100644
+index f9571c9..d1197c3 100644
 --- a/cinelerra-5.1/cinelerra/file.C
 +++ b/cinelerra-5.1/cinelerra/file.C
-@@ -1545,7 +1545,10 @@ int File::record_fd()
+@@ -1589,7 +1589,10 @@ int File::record_fd()
  void File::get_exe_path(char *result, char *bnp)
  {
  // Get executable path, basename
@@ -138,7 +138,7 @@ index 87b8853..ad75d24 100644
  // check for isofs volume_id for dvd/cdrom
  
 diff --git a/cinelerra-5.1/configure.ac b/cinelerra-5.1/configure.ac
-index bfb39ed..a9856e5 100644
+index ee75006..071d8e7 100644
 --- a/cinelerra-5.1/configure.ac
 +++ b/cinelerra-5.1/configure.ac
 @@ -18,8 +18,18 @@ CFG_CFLAGS+=" -Wno-unused-result"
@@ -169,7 +169,7 @@ index bfb39ed..a9856e5 100644
    WANT_JOBS=`expr $CPUS + $CPUS / 2 + 2`
  fi
  
-@@ -1091,6 +1101,11 @@ if test "x$CFG_LDFLAGS" != "x" ; then
+@@ -1132,6 +1142,11 @@ if test "x$CFG_LDFLAGS" != "x" ; then
    echo ""
  fi
  
@@ -179,9 +179,9 @@ index bfb39ed..a9856e5 100644
 +  echo "CFLAGS += -DNO_GDB"
 +fi
  if test "x$CYGWIN" != "x" ; then
-   echo 'FF_DIR ?= /usr/local'
-   echo 'CFLAGS += -I$(FF_DIR)/include'
-@@ -1106,11 +1121,6 @@ if test "x$CYGWIN" != "x" ; then
+   echo 'FF_PATH ?= /usr/local'
+   echo 'LDFLAGS += -L$(FF_PATH)/lib'
+@@ -1147,11 +1162,6 @@ if test "x$CYGWIN" != "x" ; then
  else
    LDFLAGS+=" -z noexecstack"
  fi
@@ -492,7 +492,7 @@ index 50b52a4..321ab4f 100644
  	thread->finished = true;
  	if( !thread->synchronous ) {
 diff --git a/cinelerra-5.1/plugins/Makefile b/cinelerra-5.1/plugins/Makefile
-index 22bc7dd..3459bd0 100644
+index e63682d..072653b 100644
 --- a/cinelerra-5.1/plugins/Makefile
 +++ b/cinelerra-5.1/plugins/Makefile
 @@ -36,7 +36,6 @@ DIRS = $(OPENCV_OBJS) \
@@ -503,7 +503,7 @@ index 22bc7dd..3459bd0 100644
  	chorus \
  	chromakey \
  	chromakeyhsv \
-@@ -176,6 +175,8 @@ DIRS = $(OPENCV_OBJS) \
+@@ -177,6 +176,8 @@ DIRS = $(OPENCV_OBJS) \
  #	denoisemjpeg \
  # duplicate
  #	vocoder \
