@@ -415,7 +415,7 @@ public:
 	int ff_color_range(int stream);
 	int ff_color_space(int stream);
 	double ff_frame_rate(int stream);
-	const char *ff_video_format(int stream);
+	const char *ff_video_codec(int stream);
 	int64_t ff_video_frames(int stream);
 	int ff_video_pid(int stream);
 	int ff_video_mpeg_color_range(int stream);

@@ -161,15 +161,17 @@ public:
 	FFMPEGConfigWindow(const char *title, BC_WindowBase *parent_window,
 		int x, int y, int w, int h, Asset *asset, EDL *edl);
 	~FFMPEGConfigWindow();
-	virtual char *get_options() = 0;
-	virtual int get_options_len() = 0;
-	void start(const void *obj);
+	virtual void read_options() = 0;
+	virtual void save_options() = 0;
+	void start(AVCodecContext *avctx);
+	void start(AVFormatContext *fmt_ctx);
 
 	BC_WindowBase *parent_window;
 	FFOptionsDialog *ff_options_dialog;
 	Asset *asset;
 	EDL *edl;
-	const void *obj;
+	AVCodecContext *avctx;
+	AVFormatContext *fmt_ctx;
 	char *format_name;
 	char *codec_name;
 };
@@ -184,8 +186,8 @@ public:
 	void create_objects();
 	int close_event();
 	void load_options();
-	char *get_options();
-	int get_options_len();
+	void read_options();
+	void save_options();
 
 	FFMpegSampleFormat *sample_format;
 	ArrayList<BC_ListBoxItem*> presets;
@@ -222,8 +224,8 @@ public:
 	FFMPEGConfigVideo(BC_WindowBase *parent_window,
 		int x, int y, Asset *asset, EDL *edl);
 	~FFMPEGConfigVideo();
-	char *get_options();
-	int get_options_len();
+	void read_options();
+	void save_options();
 
 	void create_objects();
 	int close_event();
@@ -263,8 +265,9 @@ public:
 	FFMPEGConfigFormat(FFOptionsFormatViewDialog *view_dialog,
 		int x, int y, Asset *asset, EDL *edl);
 	~FFMPEGConfigFormat();
-	char *get_options();
-	int get_options_len();
+	void read_options();
+	void save_options();
+	void save_changes();
 
 	void create_objects();
 	int close_event();
@@ -348,7 +351,7 @@ public:
 	AVCodecContext *avctx;
 	const void *obj;
 
-	void initialize(FFOptionsWindow *win, int k);
+	void initialize(FFOptionsWindow *win, int kind);
 	static int cmpr(const void *a, const void *b);
 	int update();
 	void dump(FILE *fp);
@@ -525,12 +528,12 @@ public:
 class FFOptionsViewFormat : public BC_GenericButton
 {
 public:
-	FFOptionsViewFormat(BC_WindowBase *parent_window,
+	FFOptionsViewFormat(FFMPEGConfigWindow *cfg_window,
 	 	EDL *edl, Asset *asset, int x, int y, const char *text);
 	~FFOptionsViewFormat();
 
 	int handle_event();
-	BC_WindowBase *parent_window;
+	FFMPEGConfigWindow *cfg_window;
 	EDL *edl;
 	Asset *asset;
 	FFOptionsFormatViewDialog *format_dialog;

@@ -3318,7 +3318,7 @@ float FFMPEG::ff_aspect_ratio(int stream)
 	return ffvideo[stream]->aspect_ratio;
 }
 
-const char* FFMPEG::ff_video_format(int stream)
+const char* FFMPEG::ff_video_codec(int stream)
 {
 	AVStream *st = ffvideo[stream]->st;
 	AVCodecID id = st->codecpar->codec_id;

@@ -226,6 +226,7 @@ rgbtestsrc
 rotate
 sab
 scale 200:100
+#scale_cuda ###Operation not implemented when you try to use it
 #scale_vaapi ###Operation not permitted
 #scale2ref ###Input/output error
 #select ###Operation not permitted
@@ -302,6 +303,7 @@ weave
 xbr
 #xmedian
 yadif
+#yadif_cuda ###Operation not implemented when you try to use it
 yuvtestsrc
 zoompan
 ; new in 3.4.1
