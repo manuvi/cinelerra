@@ -864,10 +864,10 @@ void FFMPEGConfigFormat::save_options()
 }
 void FFMPEGConfigFormat::save_changes()
 {
+	read_options();
 	char *options = asset->ff_format_options;
 	int options_len = sizeof(asset->ff_format_options)-1;
 	ff_options_dialog->store_options(options, options_len);
-	format_options->update(options);
 }
 
 void FFMPEGConfigFormat::load_options()
@@ -1974,11 +1974,8 @@ BC_Window *FFOptionsFormatViewDialog::new_gui()
 
 void FFOptionsFormatViewDialog::handle_done_event(int result)
 {
-	if( !result ) {
-		cfg_window->lock_window("FFOptionsFormatViewDialog::handle_done_event");
+	if( !result )
 		cfg_window->save_changes();
-		cfg_window->unlock_window();
-	}
 	cfg_window = 0;
 }
 

@@ -119,6 +119,7 @@ public:
 	AVFilterContext *buffersrc_ctx;
 	AVFilterGraph *filter_graph;
 	AVFrame *frame, *fframe;
+	AVFrame *probe_frame;
 	AVBSFContext *bsfc;
 
 	FFPacket ipkt;

@@ -275,6 +275,7 @@ FFStream::FFStream(FFMPEG *ffmpeg, AVStream *st, int fidx)
 	flushed = 0;
 	need_packet = 1;
 	frame = fframe = 0;
+	probe_frame = 0;
 	bsfc = 0;
 	stats_fp = 0;
 	stats_filename = 0;
@@ -293,6 +294,7 @@ FFStream::~FFStream()
 	if( filter_graph ) avfilter_graph_free(&filter_graph);
 	if( frame ) av_frame_free(&frame);
 	if( fframe ) av_frame_free(&fframe);
+	if( probe_frame ) av_frame_free(&probe_frame);
 	delete frm_lock;
 	if( stats_fp ) fclose(stats_fp);
 	if( stats_in ) av_freep(&stats_in);
@@ -428,30 +430,31 @@ int FFStream::decode_activate()
 				ret = avcodec_open2(avctx, decoder, &copts);
 			}
 			if( ret >= 0 && hw_type != AV_HWDEVICE_TYPE_NONE ) {
-				if( need_packet ) {
-					need_packet = 0;
-					ret = read_packet();
+				AVFrame *frame = av_frame_alloc();
+				if( !frame ) {
+					fprintf(stderr, "FFStream::decode_activate: av_frame_alloc failed\n");
+					ret = AVERROR(ENOMEM);
 				}
-				if( ret >= 0 ) {
-					AVPacket *pkt = (AVPacket*)ipkt;
-					ret = avcodec_send_packet(avctx, pkt);
-					if( ret < 0 || hw_pix_fmt == AV_PIX_FMT_NONE ) {
-						ff_err(ret, "HW device init failed, using SW decode.\nfile:%s\n",
-							ffmpeg->fmt_ctx->url);
-						avcodec_close(avctx);
-						avcodec_free_context(&avctx);
-						av_buffer_unref(&hw_device_ctx);
-						hw_device_ctx = 0;
-						hw_type = AV_HWDEVICE_TYPE_NONE;
-						int flags = AVSEEK_FLAG_BACKWARD | AVSEEK_FLAG_ANY;
-						int idx = st->index;
-						av_seek_frame(fmt_ctx, idx, INT64_MIN, flags);
-						need_packet = 1;  flushed = 0;
-						seeked = 1;  st_eof(0);
-						ret = 0;
-						continue;
-					}
+				if( ret >= 0 )
+					ret = decode(frame);
+				if( ret < 0 || hw_pix_fmt == AV_PIX_FMT_NONE ) {
+					ff_err(ret, "HW device init failed, using SW decode.\nfile:%s\n",
+						ffmpeg->fmt_ctx->url);
+					avcodec_close(avctx);
+					avcodec_free_context(&avctx);
+					av_buffer_unref(&hw_device_ctx);
+					hw_device_ctx = 0;
+					av_frame_free(&frame);
+					hw_type = AV_HWDEVICE_TYPE_NONE;
+					int flags = AVSEEK_FLAG_BACKWARD | AVSEEK_FLAG_ANY;
+					int idx = st->index;
+					av_seek_frame(fmt_ctx, idx, INT64_MIN, flags);
+					need_packet = 1;  flushed = 0;
+					seeked = 1;  st_eof(0);
+					ret = 0;
+					continue;
 				}
+				probe_frame = frame;
 			}
 			if( ret >= 0 ) {
 				reading = 1;
@@ -483,6 +486,11 @@ int FFStream::read_packet()
 
 int FFStream::decode(AVFrame *frame)
 {
+	if( probe_frame ) { // hw probe reads first frame
+		av_frame_ref(frame, probe_frame);
+		av_frame_free(&probe_frame);
+		return 1;
+	}
 	int ret = 0;
 	int retries = MAX_RETRY;
 
@@ -720,7 +728,7 @@ int FFStream::seek(int64_t no, double rate)
 	tstmp = av_rescale_q(tstmp, time_base, AV_TIME_BASE_Q);
 	idx = -1;
 #endif
-
+	av_frame_free(&probe_frame);
 	avcodec_flush_buffers(avctx);
 	avformat_flush(fmt_ctx);
 #if 0

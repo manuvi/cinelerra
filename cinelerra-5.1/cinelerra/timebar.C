@@ -918,9 +918,8 @@ int TimeBar::select_region(double position)
 	}
 
 // Que the CWindow
-	mwindow->cwindow->gui->lock_window("TimeBar::select_region");
+	unlock_window();
 	mwindow->cwindow->update(1, 0, 0);
-	mwindow->cwindow->gui->unlock_window();
 	mwindow->gui->lock_window("TimeBar::select_region");
 	mwindow->gui->hide_cursor(0);
 	mwindow->gui->draw_cursor(1);
@@ -928,6 +927,7 @@ int TimeBar::select_region(double position)
 	mwindow->gui->activate_timeline();
 	mwindow->gui->zoombar->update();
 	mwindow->gui->unlock_window();
+	lock_window("TimeBar::select_region");
 	update_highlights();
 	return 0;
 }
