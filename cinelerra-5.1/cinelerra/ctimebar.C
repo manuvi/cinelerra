@@ -112,16 +112,14 @@ void CTimeBar::select_label(double position)
 	}
 
 // Que the CWindow
+	unlock_window();
 	mwindow->cwindow->update(1, 0, 0, 0, 1);
-
-//printf("CTimeBar::select_label 1\n");
-
 	mwindow->gui->lock_window();
 	mwindow->gui->hide_cursor(0);
 	mwindow->gui->draw_cursor(1);
 	mwindow->gui->update(0, NORMAL_DRAW, 1, 0, 1, 1, 0);
 	mwindow->gui->unlock_window();
 	mwindow->update_plugin_guis();
-//printf("CTimeBar::select_label 2\n");
+	lock_window("CTimeBar::select_label");
 }
 
