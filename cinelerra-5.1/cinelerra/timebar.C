@@ -746,7 +746,8 @@ int TimeBar::button_press_event()
 			stop_playback();
 
 // Select region between two labels
-			if( !is_vwindow() && get_double_click() ) {
+			if( !is_vwindow() && get_double_click() &&
+			    get_edl()->labels->first ) {
 				int x = get_relative_cursor_x();
 				double position = pixel_to_position(x);
 // Test labels
@@ -920,14 +921,14 @@ int TimeBar::select_region(double position)
 // Que the CWindow
 	unlock_window();
 	mwindow->cwindow->update(1, 0, 0);
-	mwindow->gui->lock_window("TimeBar::select_region");
+	mwindow->gui->lock_window("TimeBar::select_region 3");
 	mwindow->gui->hide_cursor(0);
 	mwindow->gui->draw_cursor(1);
 	mwindow->gui->flash_canvas(0);
 	mwindow->gui->activate_timeline();
 	mwindow->gui->zoombar->update();
 	mwindow->gui->unlock_window();
-	lock_window("TimeBar::select_region");
+	lock_window("TimeBar::select_region 4");
 	update_highlights();
 	return 0;
 }

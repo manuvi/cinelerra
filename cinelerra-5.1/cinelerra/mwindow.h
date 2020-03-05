@@ -318,6 +318,7 @@ public:
 	int prev_edit_handle(int shift_down);
 // seek to keyframes
 	int nearest_plugin_keyframe(int shift_down, int dir);
+	int nearest_auto_keyframe(int shift_down, int dir);
 // offset is pixels to add to track_start
 	void trackmovement(int offset, int pane_number);
 // view_start is pixels

@@ -160,6 +160,10 @@ Edit* PluginSet::insert_edit_after(Edit *previous_edit)
 
 KeyFrame *PluginSet::nearest_keyframe(int64_t pos, int dir)
 {
+	if( first && pos < first->startproject )
+		pos = first->startproject;
+	else if( last && pos > last->startproject+last->length )
+		pos = last->startproject+last->length;
 	Plugin *plugin = (Plugin*)editof(pos, dir, 0);
 	if( !plugin ) return 0;
 	KeyFrame *keyframe = (KeyFrame *)(dir == PLAY_FORWARD ?

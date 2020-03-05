@@ -1084,11 +1084,21 @@ int MWindowGUI::keypress_event()
 
 	switch( get_keypress() ) {
 	case 'A':
-		if( !ctrl_down() || !shift_down() || alt_down() ) break;
-		mwindow->edl->tracks->clear_selected_edits();
-		draw_overlays(1);
+		if( !alt_down() ) {
+			if( !ctrl_down() || !shift_down() ) break;
+			mwindow->edl->tracks->clear_selected_edits();
+			draw_overlays(1);
+			result = 1;
+			break;
+		} // fall thru
+	case 'a':
+		if( !alt_down() ) break;
+		stop_transport("MWindowGUI::keypress_event 1");
+		mwindow->nearest_auto_keyframe(shift_down(),
+			!ctrl_down() ? PLAY_FORWARD : PLAY_REVERSE);
 		result = 1;
 		break;
+
 	case 'e':
 		mwindow->toggle_editing_mode();
 		result = 1;
@@ -1096,7 +1106,7 @@ int MWindowGUI::keypress_event()
 
 	case 'k': case 'K':
 		if( alt_down() ) break;
-		stop_transport("MWindowGUI::keypress_event 1");
+		stop_transport("MWindowGUI::keypress_event 2");
 		mwindow->nearest_plugin_keyframe(shift_down(),
 			!ctrl_down() ? PLAY_FORWARD : PLAY_REVERSE);
 		result = 1;

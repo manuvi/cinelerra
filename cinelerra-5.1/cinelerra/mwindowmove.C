@@ -644,13 +644,55 @@ int MWindow::nearest_plugin_keyframe(int shift_down, int dir)
 	KeyFrame *keyframe = 0;
 	double start = edl->local_session->get_selectionstart(1);
 	double end = edl->local_session->get_selectionend(1);
-	double position = dir == PLAY_FORWARD ? end : start, new_position = 0;
+	double position = dir == PLAY_FORWARD ? end : start;
+	double new_position = dir == PLAY_FORWARD ? start : end;
 	for( Track *track=edl->tracks->first; track; track=track->next ) {
 		if( !track->record ) continue;
 		for( int i=0; i<track->plugin_set.size(); ++i ) {
 			PluginSet *plugin_set = track->plugin_set[i];
 			int64_t pos = track->to_units(position, 0);
 			KeyFrame *key = plugin_set->nearest_keyframe(pos, dir);
+			if( !key ) continue;
+			double key_position = track->from_units(key->position);
+			if( keyframe && (dir == PLAY_FORWARD ?
+				key_position >= new_position :
+				new_position >= key_position ) ) continue;
+			keyframe = key;  new_position = key_position;
+		}
+	}
+
+	new_position = keyframe ?
+		keyframe->autos->track->from_units(keyframe->position) :
+		dir == PLAY_FORWARD ? edl->tracks->total_length() : 0;
+
+	if( !shift_down )
+		start = end = new_position;
+	else if( dir == PLAY_FORWARD )
+		end = new_position;
+	else
+		start = new_position;
+
+	edl->local_session->set_selectionstart(start);
+	edl->local_session->set_selectionend(end);
+	return find_selection(new_position);
+}
+
+int MWindow::nearest_auto_keyframe(int shift_down, int dir)
+{
+	Auto *keyframe = 0;
+	double start = edl->local_session->get_selectionstart(1);
+	double end = edl->local_session->get_selectionend(1);
+	double position = dir == PLAY_FORWARD ? end : start;
+	double new_position = dir == PLAY_FORWARD ? start : end;
+	for( Track *track=edl->tracks->first; track; track=track->next ) {
+		if( !track->record ) continue;
+		int64_t pos = track->to_units(position, 0);
+		for( int i=0; i<AUTOMATION_TOTAL; ++i ) {
+			Autos *autos = track->automation->autos[i];
+			if( !autos ) continue;
+			Auto *key = dir == PLAY_FORWARD ?
+				 autos->nearest_after(pos) :
+				 autos->nearest_before(pos);
 			if( !key ) continue;
 			double key_position = track->from_units(key->position);
 			if( keyframe && (dir == PLAY_FORWARD ?
