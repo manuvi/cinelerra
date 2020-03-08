@@ -52,6 +52,7 @@ Edit::Edit(EDL *edl, Track *track)
 	this->track = track;
 	if(track) this->edits = track->edits;
 	id = EDL::next_id();
+	orig_id = id;
 }
 
 Edit::Edit(EDL *edl, Edits *edits)
@@ -61,6 +62,7 @@ Edit::Edit(EDL *edl, Edits *edits)
 	this->edits = edits;
 	if(edits) this->track = edits->track;
 	id = EDL::next_id();
+	orig_id = id;
 }
 
 Edit::~Edit()
@@ -254,6 +256,7 @@ void Edit::set_selected(int v)
 
 void Edit::copy_from(Edit *edit)
 {
+	this->orig_id = edit->orig_id;
 	this->nested_edl = edl->nested_edls.get_nested(edit->nested_edl);
 	this->asset = edl->assets->update(edit->asset);
 	this->startsource = edit->startsource;

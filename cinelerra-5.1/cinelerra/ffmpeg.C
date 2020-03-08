@@ -2973,7 +2973,20 @@ int FFMPEG::encode_activate()
 				fmt_ctx->url);
 			return -1;
 		}
-
+		if( !strcmp(file_format, "image2") ) {
+			Asset *asset = file_base->asset;
+			const char *filename = asset->path;
+			FILE *fp = fopen(filename,"w");
+			if( !fp ) {
+				eprintf(_("Cant write image2 header file: %s\n  %m"), filename);
+				return 1;
+			}
+			fprintf(fp, "IMAGE2\n");
+			fprintf(fp, "# Frame rate: %f\n", asset->frame_rate);
+			fprintf(fp, "# Width: %d\n", asset->width);
+			fprintf(fp, "# Height: %d\n", asset->height);
+			fclose(fp);
+		}
 		int prog_id = 1;
 		AVProgram *prog = av_new_program(fmt_ctx, prog_id);
 		for( int i=0; i< ffvideo.size(); ++i )

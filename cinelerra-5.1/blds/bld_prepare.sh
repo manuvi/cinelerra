@@ -27,7 +27,7 @@ case "$dir" in
     libsndfile-devel libtheora-devel linux-firmware ivtv-firmware \
     libvorbis-devel texinfo xz-devel lzma-devel cmake udftools git \
     autoconf automake rpm-build jbigkit-devel libvdpau-devel libva-devel \
-    alsa-lib-devel gtk2-devel pulseaudio-libs-devel
+    alsa-lib-devel gtk2-devel pulseaudio-libs-devel libtool
     yasm=yasm-1.3.0-3.fc24.x86_64.rpm
     release=http://archives.fedoraproject.org/pub/fedora/linux/releases/24
     url=$release/Everything/x86_64/os/Packages/y/$yasm
@@ -55,7 +55,7 @@ case "$dir" in
     ctags patch gcc-c++ perl-XML-XPath libtiff-devel python dvdauthor \
     gettext-devel inkscape udftools autoconf automake numactl-devel \
     jbigkit-devel libvdpau-devel libva-devel gtk2-devel mesa-vdpau-drivers \
-    pulseaudio-libs-devel
+    pulseaudio-libs-devel libtool
   ;;
 "suse" | "leap" | "tumbleweed")
   zypper -n install nasm gcc gcc-c++ zlib-devel texinfo libpng16-devel \
@@ -67,7 +67,7 @@ case "$dir" in
     ilmbase-devel fftw3-devel libsndfile-devel libtheora-devel flac-devel \
     libtiff-devel inkscape cmake patch libnuma-devel lzma-devel udftools git \
     yasm autoconf automake rpm-build libjbig-devel libvdpau-devel libva-devel \
-    gtk2-devel libusb-1_0-devel libpulse-devel
+    gtk2-devel libusb-1_0-devel libpulse-devel libtool
     if [ ! -f /usr/lib64/libtermcap.so ]; then
       ln -s libtermcap.so.2 /usr/lib64/libtermcap.so
     fi
@@ -94,7 +94,7 @@ case "$dir" in
     libdc1394-22-dev libiec61883-dev libflac-dev libjbig-dev libusb-1.0-0-dev \
     libvdpau-dev libva-dev libsndfile1-dev libtheora-dev cmake udftools \
     libxml2-utils git inkscape autoconf automake debhelper libgtk2.0-dev \
-    libpulse-dev
+    libpulse-dev libtool
   ;;
  *)
   echo "unknown os: $dir"

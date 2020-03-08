@@ -81,7 +81,7 @@ public:
 	void paste_video_transition(PluginServer *server, int first_track = 0);
 
 // Only tests effects
-	int plugin_exists(Plugin *plugin);
+	Plugin *plugin_exists(int plugin_id);
 	int track_exists(Track *track);
 
 	void paste_transition(PluginServer *server, Edit *dest_edit);

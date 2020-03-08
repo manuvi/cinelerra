@@ -38,7 +38,7 @@ AttachmentPoint::AttachmentPoint(RenderEngine *renderengine,
 {
 	reset_parameters();
 	this->plugin = plugin;
-	this->plugin_id = plugin->id;
+	this->plugin_id = plugin->orig_id;
 	this->renderengine = renderengine;
 	this->data_type = data_type;
 	plugin_server = MWindow::scan_plugindb(plugin->title,

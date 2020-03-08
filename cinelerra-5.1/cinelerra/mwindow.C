@@ -3258,10 +3258,9 @@ void MWindow::show_keyframe_gui(Plugin *plugin)
 {
 	keyframe_gui_lock->lock("MWindow::show_keyframe_gui");
 // Find existing thread
-	for(int i = 0; i < keyframe_threads->size(); i++)
-	{
-		if(keyframe_threads->get(i)->plugin == plugin)
-		{
+	for( int i=0; i<keyframe_threads->size(); ++i ) {
+		int plugin_id = keyframe_threads->get(i)->plugin_id;
+		if( plugin_id == plugin->orig_id ) {
 			keyframe_threads->get(i)->start_window(plugin, 0);
 			keyframe_gui_lock->unlock();
 			return;
@@ -3269,10 +3268,8 @@ void MWindow::show_keyframe_gui(Plugin *plugin)
 	}
 
 // Find unused thread
-	for(int i = 0; i < keyframe_threads->size(); i++)
-	{
-		if(!keyframe_threads->get(i)->plugin)
-		{
+	for( int i=0; i<keyframe_threads->size(); ++i ) {
+		if( keyframe_threads->get(i)->plugin_id < 0 ) {
 			keyframe_threads->get(i)->start_window(plugin, 0);
 			keyframe_gui_lock->unlock();
 			return;
@@ -3283,7 +3280,6 @@ void MWindow::show_keyframe_gui(Plugin *plugin)
 	KeyFrameThread *thread = new KeyFrameThread(this);
 	keyframe_threads->append(thread);
 	thread->start_window(plugin, 0);
-
 	keyframe_gui_lock->unlock();
 }
 
@@ -3301,14 +3297,12 @@ SET_TRACE
 //printf("MWindow::show_plugin %d\n", __LINE__);
 SET_TRACE
 
-
 	plugin_gui_lock->lock("MWindow::show_plugin");
-	for(int i = 0; i < plugin_guis->total; i++)
-	{
-// Pointer comparison
-		if(plugin_guis->get(i)->plugin == plugin)
-		{
-			plugin_guis->get(i)->raise_window();
+	for( int i=0; i<plugin_guis->total; ++i ) {
+// Pointer/id comparison
+		PluginServer *plugin_gui = plugin_guis->get(i);
+		if( plugin_gui->plugin_id == plugin->orig_id ) {
+			plugin_gui->raise_window();
 			done = 1;
 			break;
 		}
@@ -3348,23 +3342,26 @@ SET_TRACE
 void MWindow::hide_plugin(Plugin *plugin, int lock)
 {
 	plugin->show = 0;
+	return hide_plugin(plugin->orig_id, lock);
+}
+
+void MWindow::hide_plugin(int plugin_id, int lock)
+{
 // Update the toggle
 	gui->lock_window("MWindow::hide_plugin");
 	gui->update(0, NORMAL_DRAW, 0, 0, 0, 0, 0);
 	gui->unlock_window();
 
 	if(lock) plugin_gui_lock->lock("MWindow::hide_plugin");
-	for(int i = 0; i < plugin_guis->total; i++)
-	{
-		if(plugin_guis->get(i)->plugin == plugin)
-		{
-			PluginServer *ptr = plugin_guis->get(i);
-			plugin_guis->remove(ptr);
+	for( int i=0; i<plugin_guis->total; ++i ) {
+		PluginServer *plugin_gui = plugin_guis->get(i);
+		if( plugin_gui->plugin_id == plugin_id ) {
+			plugin_guis->remove(plugin_gui);
 			if(lock) plugin_gui_lock->unlock();
 // Last command executed in client side close
 // Schedule for deletion
-			ptr->hide_gui();
-			delete_plugin(ptr);
+			plugin_gui->hide_gui();
+			delete_plugin(plugin_gui);
 //sleep(1);
 			return;
 		}
@@ -3413,11 +3410,10 @@ void MWindow::hide_keyframe_guis()
 void MWindow::hide_keyframe_gui(Plugin *plugin)
 {
 	keyframe_gui_lock->lock("MWindow::hide_keyframe_gui");
-	for(int i = 0; i < keyframe_threads->size(); i++)
-	{
-		if(keyframe_threads->get(i)->plugin == plugin)
-		{
-			keyframe_threads->get(i)->close_window();
+	for( int i = 0; i < keyframe_threads->size(); i++) {
+		KeyFrameThread *keyframe_gui = keyframe_threads->get(i);
+		if( keyframe_gui->plugin_id == plugin->orig_id ) {
+			keyframe_gui->close_window();
 			break;
 		}
 	}
@@ -3491,15 +3487,13 @@ void MWindow::update_keyframe_guis()
 {
 // Send new configuration to keyframe GUI's
 	keyframe_gui_lock->lock("MWindow::update_keyframe_guis");
-	for(int i = 0; i < keyframe_threads->size(); i++)
-	{
-		KeyFrameThread *ptr = keyframe_threads->get(i);
-		if(edl->tracks->plugin_exists(ptr->plugin))
-			ptr->update_gui(1);
+	for( int i=0; i<keyframe_threads->size(); ++i ) {
+		KeyFrameThread *keyframe_gui = keyframe_threads->get(i);
+		Plugin *plugin = edl->tracks->plugin_exists(keyframe_gui->plugin_id);
+		if( plugin )
+			keyframe_gui->update_gui(1);
 		else
-		{
-			ptr->close_window();
-		}
+			keyframe_gui->close_window();
 	}
 	keyframe_gui_lock->unlock();
 }
@@ -3509,55 +3503,42 @@ void MWindow::update_plugin_guis(int do_keyframe_guis)
 // Send new configuration to plugin GUI's
 	plugin_gui_lock->lock("MWindow::update_plugin_guis");
 
-	for(int i = 0; i < plugin_guis->size(); i++)
-	{
-		PluginServer *ptr = plugin_guis->get(i);
-		if(edl->tracks->plugin_exists(ptr->plugin))
-			ptr->update_gui();
-		else
-		{
-// Schedule for deletion if no plugin
-			plugin_guis->remove_number(i);
-			i--;
-
-			ptr->hide_gui();
-			delete_plugin(ptr);
+	for( int i=0; i<plugin_guis->size(); ++i ) {
+		PluginServer *plugin_gui = plugin_guis->get(i);
+		Plugin *plugin = edl->tracks->plugin_exists(plugin_gui->plugin_id);
+		if( plugin && plugin->show )
+			plugin_gui->update_gui();
+		else {
+// Schedule for deletion if no plugin or not shown
+			plugin_guis->remove_number(i--);
+			plugin_gui->hide_gui();
+			delete_plugin(plugin_gui);
 		}
 	}
 
 
 // Change plugin variable if not visible
 	Track *track = edl->tracks->first;
-	while(track)
-	{
-		for(int i = 0; i < track->plugin_set.size(); i++)
-		{
+	for( ; track; track=track->next ) {
+		for( int i=0; i < track->plugin_set.size(); ++i ) {
 			Plugin *plugin = (Plugin*)track->plugin_set[i]->first;
-			while(plugin)
-			{
+			for( ; plugin; plugin = (Plugin*)plugin->next ) {
 				int got_it = 0;
-				for(int i = 0; i < plugin_guis->size(); i++)
-				{
+				for( int i=0; i<plugin_guis->size(); ++i ) {
 					PluginServer *server = plugin_guis->get(i);
-					if(server->plugin == plugin)
-					{
+					if( server->plugin_id == plugin->orig_id ) {
 						got_it = 1;
 						break;
 					}
 				}
-
-				if(!got_it) plugin->show = 0;
-				plugin = (Plugin*)plugin->next;
+				if( !got_it ) plugin->show = 0;
 			}
 		}
-
-		track = track->next;
 	}
 
 	plugin_gui_lock->unlock();
-
-
-	if(do_keyframe_guis) update_keyframe_guis();
+	if( do_keyframe_guis )
+		update_keyframe_guis();
 }
 
 void MWindow::stop_plugin_guis()
@@ -3566,10 +3547,8 @@ void MWindow::stop_plugin_guis()
 	plugin_gui_lock->lock("MWindow::stop_plugin_guis");
 
 	for( int i=0; i<plugin_guis->size(); ++i ) {
-		PluginServer *ptr = plugin_guis->get(i);
-		if( edl->tracks->plugin_exists(ptr->plugin) ) {
-			ptr->render_stop();
-		}
+		PluginServer *plugin_gui = plugin_guis->get(i);
+		plugin_gui->render_stop();
 	}
 	plugin_gui_lock->unlock(); 
 }
@@ -3643,39 +3622,15 @@ int MWindow::get_tracking_direction()
 void MWindow::update_plugin_states()
 {
 	plugin_gui_lock->lock("MWindow::update_plugin_states");
-	for(int i = 0; i < plugin_guis->total; i++)
-	{
-		int result = 0;
+	for( int i=0; i<plugin_guis->total; ++i ) {
 // Get a plugin GUI
-		Plugin *src_plugin = plugin_guis->get(i)->plugin;
 		PluginServer *src_plugingui = plugin_guis->get(i);
-
-// Search for plugin in EDL.  Only the master EDL shows plugin GUIs.
-		for(Track *track = edl->tracks->first;
-			track && !result;
-			track = track->next)
-		{
-			for(int j = 0;
-				j < track->plugin_set.total && !result;
-				j++)
-			{
-				PluginSet *plugin_set = track->plugin_set[j];
-				for(Plugin *plugin = (Plugin*)plugin_set->first;
-					plugin && !result;
-					plugin = (Plugin*)plugin->next)
-				{
-					if(plugin == src_plugin &&
-						!strcmp(plugin->title, src_plugingui->title)) result = 1;
-				}
-			}
-		}
-
-
+		int plugin_id = src_plugingui->plugin_id;
+		Plugin *src_plugin = edl->tracks->plugin_exists(plugin_id);
 // Doesn't exist anymore
-		if(!result)
-		{
-			hide_plugin(src_plugin, 0);
-			i--;
+		if( !src_plugin ) {
+			hide_plugin(plugin_id, 0);
+			--i;
 		}
 	}
 	plugin_gui_lock->unlock();
@@ -3684,10 +3639,8 @@ void MWindow::update_plugin_states()
 
 void MWindow::update_plugin_titles()
 {
-	for(int i = 0; i < plugin_guis->total; i++)
-	{
+	for( int i=0; i<plugin_guis->total; ++i )
 		plugin_guis->get(i)->update_title();
-	}
 }
 
 int MWindow::asset_to_edl(EDL *new_edl,

@@ -68,6 +68,7 @@ BC_Window* TransitionLengthThread::new_gui()
 
 void TransitionLengthThread::handle_close_event(int result)
 {
+	if( mwindow->in_destructor ) return;
 	if( !result ) {
 		if( transition )
 			mwindow->set_transition_length(transition, new_length);

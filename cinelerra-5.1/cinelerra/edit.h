@@ -105,8 +105,8 @@ public:
 	int64_t length;
 // Channel or layer of source
 	int channel;
-// ID for resource pixmaps
-	int id;
+// ID for resource pixmaps, plugins
+	int id, orig_id;
 // ID for selection groups
 	int group_id;
 // User defined title for timeline

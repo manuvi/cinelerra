@@ -104,8 +104,9 @@ void FindObjWindow::create_objects()
 
 	y1 = y;
 	add_subwindow(title = new BC_Title(x1, y + ys10, _("Scene X:")));
-	Track *track = plugin->server->plugin->track;
-	int trk_w = track->track_w, trk_h = track->track_h;
+	Track *track = plugin->get_plugin_track();
+	int trk_w = track ? track->track_w : plugin->get_edl()->session->output_w;
+	int trk_h = track ? track->track_h : plugin->get_edl()->session->output_h;
 	float drag_w = trk_w * plugin->config.scene_w / 100.;
 	float drag_h = trk_h * plugin->config.scene_h / 100.;
 	float ctr_x  = trk_w * plugin->config.scene_x / 100.;
@@ -535,15 +536,17 @@ int FindObjDragScene::handle_event()
 	plugin->send_configure_change();
 	return ret;
 }
+
 Track *FindObjDragScene::get_drag_track()
 {
-	return !plugin->server->plugin ? 0 :
-		plugin->server->plugin->track;
+        return plugin->get_plugin_track();
 }
+
 int64_t FindObjDragScene::get_drag_position()
 {
 	return plugin->get_source_position();
 }
+
 void FindObjDragScene::update_gui()
 {
 	bound();
@@ -577,15 +580,17 @@ int FindObjDragObject::handle_event()
 	plugin->send_configure_change();
 	return ret;
 }
+
 Track *FindObjDragObject::get_drag_track()
 {
-	return !plugin->server->plugin ? 0 :
-		plugin->server->plugin->track;
+        return plugin->get_plugin_track();
 }
+
 int64_t FindObjDragObject::get_drag_position()
 {
 	return plugin->get_source_position();
 }
+
 void FindObjDragObject::update_gui()
 {
 	bound();
@@ -621,13 +626,14 @@ int FindObjDragReplace::handle_event()
 }
 Track *FindObjDragReplace::get_drag_track()
 {
-	return !plugin->server->plugin ? 0 :
-		plugin->server->plugin->track;
+        return plugin->get_plugin_track();
 }
+
 int64_t FindObjDragReplace::get_drag_position()
 {
 	return plugin->get_source_position();
 }
+
 void FindObjDragReplace::update_gui()
 {
 	bound();

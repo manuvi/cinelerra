@@ -49,6 +49,7 @@
 #include "theme.h"
 #include "transition.h"
 #include "transportque.h"
+#include "tracks.h"
 #include <string.h>
 
 
@@ -501,13 +502,9 @@ if(debug) printf("AModule::render %d %jd\n", __LINE__, fragment_len);
 
 // Clamp to end of transition
 			int64_t transition_len = 0;
-
-			if(transition &&
-				previous_edit)
-			{
-				transition_len = transition->length *
-					sample_rate /
-					edl_rate;
+			Plugin *transition = get_edl()->tracks->plugin_exists(transition_id);
+			if( transition && previous_edit ) {
+				transition_len = transition->length * sample_rate / edl_rate;
 				if(direction == PLAY_FORWARD &&
 					start_position < edit_startproject + transition_len &&
 					start_position + fragment_len > edit_startproject + transition_len)

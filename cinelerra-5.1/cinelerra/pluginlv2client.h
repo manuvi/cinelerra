@@ -22,8 +22,8 @@ public:
 	PluginLV2ParentUI *del_ui(PluginLV2Client *client);
 	PluginLV2ParentUI *del_ui(PluginLV2ClientWindow *gui);
 	PluginLV2ParentUI *add_ui(PluginLV2ParentUI *ui, PluginLV2Client *client);
-	PluginLV2ParentUI *search_ui(Plugin *plugin);
-	PluginLV2ParentUI *find_ui(Plugin *plugin);
+	PluginLV2ParentUI *search_ui(int plugin_id);
+	PluginLV2ParentUI *find_ui(int plugin_id);
 	PluginLV2ParentUI *get_ui(PluginLV2Client *client);
 
 };
@@ -31,7 +31,7 @@ public:
 class PluginLV2ParentUI : public ForkParent
 {
 public:
-	PluginLV2ParentUI(Plugin *plugin);
+	PluginLV2ParentUI(int plugin_id);
 	~PluginLV2ParentUI();
 	ForkChild* new_fork();
 	void start_parent(PluginLV2Client *client);
@@ -41,14 +41,10 @@ public:
 	PluginLV2Client *client;
 	PluginLV2ClientWindow *gui;
 
+	int plugin_id;
 	int hidden;
 	int show();
 	int hide();
-
-//from Plugin::identitical_location
-	int64_t position;
-	int set_no;
-	int track_no;
 
 	static PluginLV2UIs plugin_lv2;
 };

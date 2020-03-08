@@ -368,6 +368,7 @@ public:
 
 // client origin
 	int plugin_type;
+	int plugin_id;
 
 // buffers
 	int64_t out_buffer_size;   // size of a send buffer to the plugin
@@ -431,8 +432,6 @@ public:
 // Pointer to keyframe when plugin is not available
 	KeyFrame *keyframe;
 	AttachmentPoint *attachment;
-// Storage of keyframes and GUI status
-	Plugin *plugin;
 
 // Storage of session parameters
 	EDL *edl;

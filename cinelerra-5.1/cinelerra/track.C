@@ -1795,26 +1795,21 @@ int64_t Track::frame_align(int64_t position, int round)
 	return position;
 }
 
-int Track::plugin_exists(Plugin *plugin)
+Plugin *Track::plugin_exists(int plugin_id)
 {
-	for(int number = 0; number < plugin_set.size(); number++)
-	{
-		PluginSet *ptr = plugin_set.get(number);
-		for(Plugin *current_plugin = (Plugin*)ptr->first;
-			current_plugin;
-			current_plugin = (Plugin*)current_plugin->next)
-		{
-			if(current_plugin == plugin) return 1;
+	for( int i=0; i<plugin_set.size(); ++i ) {
+		PluginSet *set = plugin_set.get(i);
+		Plugin *plugin = (Plugin*)set->first;
+		for( ; plugin; plugin=(Plugin*)plugin->next ) {
+			if( plugin->orig_id == plugin_id )
+				return plugin;
 		}
 	}
-
-	for(Edit *current = edits->first; current; current = NEXT)
-	{
-		if(current->transition &&
-			(Plugin*)current->transition == plugin) return 1;
+	for( Edit *current=edits->first; current; current=NEXT ) {
+		Plugin *plugin = (Plugin *)current->transition;
+		if( plugin && plugin->orig_id == plugin_id )
+			return plugin;
 	}
-
-
 	return 0;
 }
 

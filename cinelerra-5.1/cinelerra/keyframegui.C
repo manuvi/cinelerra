@@ -46,7 +46,7 @@ KeyFrameThread::KeyFrameThread(MWindow *mwindow)
  : BC_DialogThread()
 {
 	this->mwindow = mwindow;
-	plugin = 0;
+	plugin_id = -1;
 	keyframe = 0;
 	keyframe_data = new ArrayList<BC_ListBoxItem*>[KEYFRAME_COLUMNS];
 	plugin_title[0] = 0;
@@ -92,7 +92,8 @@ void KeyFrameThread::update_values()
 
 // Must lock main window to read keyframe
 	mwindow->gui->lock_window("KeyFrameThread::update_values");
-	if( !plugin || !mwindow->edl->tracks->plugin_exists(plugin) ) {
+	Plugin *plugin = mwindow->edl->tracks->plugin_exists(plugin_id);
+	if( !plugin ) {
 		mwindow->gui->unlock_window();
 		return;
 	}
@@ -147,9 +148,9 @@ void KeyFrameThread::start_window(Plugin *plugin, KeyFrame *keyframe)
 {
 
 	if( !BC_DialogThread::is_running() ) {
-		if( !mwindow->edl->tracks->plugin_exists(plugin) ) return;
+		if( !mwindow->edl->tracks->plugin_exists(plugin->orig_id) ) return;
 		this->keyframe = keyframe;
-		this->plugin = plugin;
+		this->plugin_id = plugin->orig_id;
 		this->preset_text[0] = 0;
 		plugin->calculate_title(plugin_title, 0);
 		sprintf(window_title, _("%s: %s Keyframe"), _(PROGRAM_NAME), plugin_title);
@@ -213,7 +214,7 @@ void KeyFrameThread::handle_done_event(int result)
 
 void KeyFrameThread::handle_close_event(int result)
 {
-	plugin = 0;
+	plugin_id = -1;
 	keyframe = 0;
 }
 
@@ -292,7 +293,8 @@ void KeyFrameThread::save_preset(const char *title, int is_factory)
 	mwindow->gui->lock_window("KeyFrameThread::save_preset");
 	
 // Test EDL for plugin existence
-	if( !mwindow->edl->tracks->plugin_exists(plugin) ) {
+	Plugin *plugin = mwindow->edl->tracks->plugin_exists(plugin_id);
+	if( !plugin ) {
 		mwindow->gui->unlock_window();
 		get_gui()->lock_window("KeyFrameThread::save_preset 2");
 		return;
@@ -323,7 +325,8 @@ void KeyFrameThread::delete_preset(const char *title, int is_factory)
 	mwindow->gui->lock_window("KeyFrameThread::save_preset");
 	
 // Test EDL for plugin existence
-	if( !mwindow->edl->tracks->plugin_exists(plugin) ) {
+	Plugin *plugin = mwindow->edl->tracks->plugin_exists(plugin_id);
+	if( !plugin ) {
 		mwindow->gui->unlock_window();
 		get_gui()->lock_window("KeyFrameThread::delete_preset 1");
 		return;
@@ -348,7 +351,8 @@ void KeyFrameThread::apply_preset(const char *title, int is_factory)
 		mwindow->gui->lock_window("KeyFrameThread::apply_preset");
 
 // Test EDL for plugin existence
-		if( !mwindow->edl->tracks->plugin_exists(plugin) ) {
+		Plugin *plugin = mwindow->edl->tracks->plugin_exists(plugin_id);
+		if( !plugin ) {
 			mwindow->gui->unlock_window();
 			get_gui()->lock_window("KeyFrameThread::apply_preset 1");
 			return;
@@ -402,7 +406,8 @@ void KeyFrameThread::apply_value()
 
 	get_gui()->unlock_window();
 	mwindow->gui->lock_window("KeyFrameThread::apply_value");
-	if( plugin && mwindow->edl->tracks->plugin_exists(plugin) ) {
+	Plugin *plugin = mwindow->edl->tracks->plugin_exists(plugin_id);
+	if( plugin ) {
 		mwindow->undo->update_undo_before();
 		if( mwindow->session->keyframedialog_all ) {
 // Search for all keyframes in selection but don't create a new one.

@@ -21,6 +21,8 @@
 #include "affine.h"
 #include "bccolors.h"
 #include "clip.h"
+#include "edl.h"
+#include "edlsession.h"
 #include "filexml.h"
 #include "language.h"
 #include "findobj.h"
@@ -30,6 +32,7 @@
 #include "plugin.h"
 #include "pluginserver.h"
 #include "track.h"
+#include "tracks.h"
 
 #include <errno.h>
 #include <exception>
@@ -309,6 +312,13 @@ void FindObjMain::read_data(KeyFrame *keyframe)
 	}
 
 	config.boundaries();
+}
+
+Track *FindObjMain::get_plugin_track()
+{
+        int plugin_id = server->plugin_id;
+        Plugin *plugin = server->edl->tracks->plugin_exists(plugin_id);
+        return !plugin ? 0 : plugin->track;
 }
 
 void FindObjMain::draw_line(VFrame *vframe, int x1, int y1, int x2, int y2)
@@ -716,9 +726,9 @@ int FindObjMain::process_buffer(VFrame **frame, int64_t start_position, double f
 	object_layer = config.object_layer;
 	scene_layer = config.scene_layer;
 	replace_layer = config.replace_layer;
-	Track *track = server->plugin->track;
-	w = track->track_w;
-	h = track->track_h;
+	Track *track = get_plugin_track();
+	w = track ? track->track_w : get_edl()->session->output_w;
+	h = track ? track->track_h : get_edl()->session->output_h;
 
 	int max_layer = PluginClient::get_total_buffers() - 1;
 	object_layer = bclip(config.object_layer, 0, max_layer);

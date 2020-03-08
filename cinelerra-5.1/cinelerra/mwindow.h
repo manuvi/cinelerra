@@ -341,6 +341,7 @@ public:
 	void load_backup();
 	void show_plugin(Plugin *plugin);
 	void hide_plugin(Plugin *plugin, int lock);
+	void hide_plugin(int plugin_id, int lock);
 	void hide_plugins();
 	void delete_plugin(PluginServer *plugin);
 // Update plugins with configuration changes.

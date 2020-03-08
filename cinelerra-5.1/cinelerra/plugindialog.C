@@ -44,7 +44,7 @@ PluginDialogThread::PluginDialogThread(MWindow *mwindow)
  : BC_DialogThread()
 {
 	this->mwindow = mwindow;
-	this->plugin = 0;
+	this->plugin_id = -1;
 	this->plugin_type = PLUGIN_NONE;
 }
 
@@ -62,7 +62,6 @@ void PluginDialogThread::start_window(Track *track,
 //		mwindow->gui->lock_window("PluginDialogThread::start_window");
 		this->track = track;
 		this->data_type = data_type;
-		this->plugin = plugin;
 		this->is_mainmenu = is_mainmenu;
 		single_standalone = mwindow->edl->session->single_standalone;
 
@@ -71,6 +70,7 @@ void PluginDialogThread::start_window(Track *track,
 			plugin->calculate_title(plugin_title, 0);
 			this->shared_location = plugin->shared_location;
 			this->plugin_type = plugin->plugin_type;
+			this->plugin_id = plugin->orig_id;
 		}
 		else
 		{
@@ -78,6 +78,7 @@ void PluginDialogThread::start_window(Track *track,
 			this->shared_location.plugin = -1;
 			this->shared_location.module = -1;
 			this->plugin_type = PLUGIN_NONE;
+			this->plugin_id = -1;
 		}
 
 		strcpy(this->window_title, title);
@@ -413,7 +414,7 @@ void PluginDialog::clear_selection()
 	selected_available = -1;
 	selected_shared = -1;
 	selected_modules = -1;
-	thread->plugin = 0;
+	thread->plugin_id = -1;
 	thread->plugin_type = PLUGIN_NONE;
 }
 
@@ -444,17 +445,14 @@ void PluginDialogThread::apply()
 				data_type, plugin_type, single_standalone);
 		}
 		else {
+			Plugin *plugin = mwindow->edl->tracks->plugin_exists(plugin_id);
 			if( plugin ) {
-				if( mwindow->edl->tracks->plugin_exists(plugin) ) {
-					plugin->change_plugin(plugin_title,
-						&shared_location, plugin_type);
-				}
+				plugin->change_plugin(plugin_title,
+					&shared_location, plugin_type);
 			}
-			else {
-				if( mwindow->edl->tracks->track_exists(track) ) {
+			else if( mwindow->edl->tracks->track_exists(track) ) {
 					mwindow->insert_effect(plugin_title, &shared_location,
-						track, 0, 0, 0, plugin_type);
-				}
+					track, 0, 0, 0, plugin_type);
 			}
 		}
 
@@ -466,7 +464,7 @@ void PluginDialogThread::apply()
 		mwindow->gui->update(1, NORMAL_DRAW, 0, 0, 1, 0, 0);
 		mwindow->gui->unlock_window();
 	}
-	plugin = 0;
+	plugin_id = -1;
 }
 
 PluginDialogApply::PluginDialogApply(PluginDialog *dialog, int x, int y)

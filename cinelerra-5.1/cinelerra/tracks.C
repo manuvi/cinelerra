@@ -695,13 +695,14 @@ int Tracks::total_playable_vtracks()
 	return result;
 }
 
-int Tracks::plugin_exists(Plugin *plugin)
+Plugin *Tracks::plugin_exists(int plugin_id)
 {
-	for(Track *track = first; track; track = track->next)
-	{
-		if(track->plugin_exists(plugin)) return 1;
+	if( plugin_id < 0 ) return 0;
+	Plugin *plugin = 0;
+	for( Track *track=first; !plugin && track; track=track->next ) {
+		plugin = track->plugin_exists(plugin_id);
 	}
-	return 0;
+	return plugin;
 }
 
 int Tracks::track_exists(Track *track)

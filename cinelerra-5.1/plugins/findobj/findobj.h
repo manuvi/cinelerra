@@ -43,6 +43,7 @@
 #include "findobj.inc"
 #include "overlayframe.inc"
 #include "pluginvclient.h"
+#include "track.inc"
 #include "vframe.inc"
 
 #define Mutex CvMutex
@@ -162,6 +163,7 @@ public:
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
+	Track *get_plugin_track();
 
 	PLUGIN_CLASS_MEMBERS2(FindObjConfig)
 

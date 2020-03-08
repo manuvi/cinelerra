@@ -2134,6 +2134,7 @@ void EDL::paste_edits(EDL *clip, Track *first_track, double position, int overwr
 					Plugin *new_plugin = dst_plugin_set->insert_plugin(plugin->title,
 						start, end-start, plugin->plugin_type, &plugin->shared_location,
 						(KeyFrame*)plugin->keyframes->default_auto, 0);
+					new_plugin->on = plugin->on;
 					KeyFrame *keyframe = (KeyFrame*)plugin->keyframes->first;
 					for( ; keyframe; keyframe=(KeyFrame*)keyframe->next ) {
 						int64_t keyframe_pos = pos + keyframe->position;

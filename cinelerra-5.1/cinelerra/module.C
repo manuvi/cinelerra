@@ -50,7 +50,7 @@ Module::Module(RenderEngine *renderengine,
 	this->commonrender = commonrender;
 	this->plugin_array = plugin_array;
 	this->track = track;
-	transition = 0;
+	transition_id = -1;
 	transition_server = 0;
 	attachments = 0;
 	total_attachments = 0;
@@ -283,8 +283,9 @@ int Module::test_plugins()
 void Module::update_transition(int64_t current_position,
 	int direction)
 {
-	transition = track->get_current_transition(current_position,
+	Plugin *transition = track->get_current_transition(current_position,
 		direction, 0, 0);
+	transition_id = transition ? transition->orig_id : -1;
 
 // For situations where we had a transition but not anymore,
 // keep the server open.
@@ -295,13 +296,14 @@ void Module::update_transition(int64_t current_position,
 // If the current transition differs from the previous transition, delete the
 // server.
 	if (transition && transition_server) {
-		if (strcmp(transition->title, transition_server->plugin->title)) {
+		Plugin *plugin = transition->edl->tracks->plugin_exists(transition_server->plugin_id);
+		if (!plugin || strcmp(transition->title, plugin->title)) {
 			transition_server->close_plugin();
 			delete transition_server;
 			transition_server = 0;
 		}
 		else {
-			transition_server->plugin = transition;
+			transition_server->plugin_id = transition_id;
 		}
 	}
 

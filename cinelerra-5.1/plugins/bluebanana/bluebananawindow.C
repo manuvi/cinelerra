@@ -22,16 +22,18 @@
 #include <math.h>
 #include "bcdisplayinfo.h"
 #include "bcsignals.h"
+#include "brender.h"
 #include "cursors.h"
+#include "edl.h"
+#include "keys.h"
+#include "language.h"
+#include "plugin.h"
+#include "tracks.h"
+
 #include "bluebanana.h"
 #include "bluebananaconfig.h"
 #include "bluebananaslider.h"
 #include "bluebananawindow.h"
-#include "keys.h"
-#include "language.h"
-#include "plugin.h"
-#include "brender.h"
-
 #include "bluebananacolor.c"
 
 
@@ -2478,8 +2480,10 @@ int BluebananaWindow::repeat_event(int64_t d){
     if(config_consume!=config_produce)
       flush_config_change();
   }
-  if(!plugin->server->plugin) return 0;
-  if(!plugin->server->plugin->on) return 0;
+  PluginServer *server = plugin->server;
+  int plugin_id = server->plugin_id;
+  Plugin *gui_plugin = server->edl->tracks->plugin_exists(plugin_id);
+  if(!gui_plugin || !gui_plugin->on) return 0;
   if(d==207){
 
     /* if background render is active and we're showing the zebra, mark

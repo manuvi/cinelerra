@@ -99,8 +99,8 @@ public:
 // TRACK_AUDIO or TRACK_VIDEO
 	int data_type;
 
-// Pointer to transition in EDL
-	Plugin *transition;
+// transition in EDL
+	int transition_id;
 // PluginServer for transition
 	PluginServer *transition_server;
 

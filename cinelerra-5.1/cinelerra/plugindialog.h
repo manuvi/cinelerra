@@ -57,7 +57,7 @@ public:
 	int data_type;
 	Transition *transition;
 // Plugin being modified if there is one
-	Plugin *plugin;
+	int plugin_id;
 	char window_title[BCTEXTLEN];
 // If attaching from main menu
 	int is_mainmenu;

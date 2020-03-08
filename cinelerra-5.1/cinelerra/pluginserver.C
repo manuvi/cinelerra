@@ -53,6 +53,7 @@
 #include "mainsession.h"
 #include "theme.h"
 #include "trackcanvas.h"
+#include "tracks.h"
 #include "transportque.h"
 #include "vdevicex11.h"
 #include "vframe.h"
@@ -81,6 +82,7 @@ void PluginServer::init()
 	nodes = new ArrayList<VirtualNode*>;
 	tip = 0;
 	gui_id = -1;
+	plugin_id = -1;
 }
 
 PluginServer::PluginServer()
@@ -204,7 +206,7 @@ int PluginServer::cleanup_plugin()
 	new_buffers = 0;
 	written_samples = written_frames = 0;
 	gui_on = 0;
-	plugin = 0;
+	plugin_id = -1;
 	plugin_open = 0;
 	return 0;
 }
@@ -300,6 +302,7 @@ void PluginServer::generate_display_title(char *string)
 	else
 		BC_Resources::encode(BC_Resources::encoding, 0,
 				_(title),strlen(title)+1, ltitle,BCTEXTLEN);
+	Plugin *plugin = edl->tracks->plugin_exists(plugin_id);
 	if( plugin && plugin->track )
 		sprintf(string, "%s: %s", plugin->track->title, ltitle);
 	else
@@ -347,7 +350,7 @@ int PluginServer::open_plugin(int master,
 	if( plugin_open ) return 0;
 
 	this->preferences = preferences;
-	this->plugin = plugin;
+	this->plugin_id = plugin ? plugin->orig_id : -1;
 	this->edl = edl;
 	if( !is_ffmpeg() && !is_lv2() && !is_executable() && !load_obj() ) {
 // If the load failed, can't use error string to detect executable
@@ -427,14 +430,7 @@ int PluginServer::open_plugin(int master,
 int PluginServer::close_plugin()
 {
 	if( !plugin_open ) return 0;
-
-	if( client ) {
-// Defaults are saved in the thread.
-//		if( client->defaults ) client->save_defaults();
-		delete client;
-	}
-
-// shared object is persistent since plugin deletion would unlink its own object
+	delete client;
 	plugin_open = 0;
 	cleanup_plugin();
 	return 0;
@@ -443,10 +439,10 @@ int PluginServer::close_plugin()
 void PluginServer::client_side_close()
 {
 // Last command executed in client thread
+	Plugin *plugin = edl->tracks->plugin_exists(plugin_id);
 	if( plugin )
 		mwindow->hide_plugin(plugin, 1);
-	else
-	if( prompt ) {
+	else if( prompt ) {
 		prompt->lock_window();
 		prompt->set_done(1);
 		prompt->unlock_window();
@@ -568,6 +564,7 @@ void PluginServer::process_buffer(VFrame **frame,
 		vclient->output[i] = frame[i];
 	}
 
+	Plugin *plugin = edl->tracks->plugin_exists(plugin_id);
 	if( plugin ) {
 		vclient->source_start = (int64_t)plugin->startproject *
 			frame_rate / vclient->project_frame_rate;
@@ -608,6 +605,7 @@ void PluginServer::process_buffer(Samples **buffer,
 	aclient->in_buffer_size = aclient->out_buffer_size = fragment_size;
 	aclient->output_buffers = buffer;
 
+	Plugin *plugin = edl->tracks->plugin_exists(plugin_id);
 	if( plugin )
 		aclient->source_start = plugin->startproject *
 			sample_rate /
@@ -686,7 +684,9 @@ PluginServer *PluginGUIs::gui_server(int gui_id)
 
 void PluginServer::reset_gui_frames()
 {
-	mwindow->reset_plugin_gui_frames(plugin);
+	Plugin *plugin = edl->tracks->plugin_exists(plugin_id);
+	if( plugin )
+		mwindow->reset_plugin_gui_frames(plugin);
 }
 
 void PluginServer::reset_plugin_gui_frames()
@@ -697,7 +697,9 @@ void PluginServer::reset_plugin_gui_frames()
 
 void PluginServer::render_gui_frames(PluginClientFrames *frames)
 {
-	mwindow->render_plugin_gui_frames(frames, plugin);
+	Plugin *plugin = edl->tracks->plugin_exists(plugin_id);
+	if( plugin )
+		mwindow->render_plugin_gui_frames(frames, plugin);
 }
 
 void PluginServer::render_plugin_gui_frames(PluginClientFrames *frames)
@@ -897,6 +899,7 @@ int PluginServer::read_frame(VFrame *buffer,
 // Called by client
 int PluginServer::get_gui_status()
 {
+	Plugin *plugin = edl->tracks->plugin_exists(plugin_id);
 	if( plugin )
 		return plugin->show ? GUI_ON : GUI_OFF;
 	else
@@ -912,6 +915,7 @@ void PluginServer::raise_window()
 void PluginServer::show_gui()
 {
 	if( !plugin_open ) return;
+	Plugin *plugin = edl->tracks->plugin_exists(plugin_id);
 	if( plugin ) {
 		plugin->gui_id = gui_id;
 		client->total_len = plugin->length;
@@ -936,6 +940,7 @@ void PluginServer::show_gui()
 void PluginServer::hide_gui()
 {
 	if( !plugin_open ) return;
+	Plugin *plugin = edl->tracks->plugin_exists(plugin_id);
 	if( plugin ) plugin->gui_id = -1;
 	if( client->defaults ) client->save_defaults();
 	client->hide_gui();
@@ -943,7 +948,9 @@ void PluginServer::hide_gui()
 
 void PluginServer::update_gui()
 {
-	if( !plugin_open || !plugin ) return;
+	if( !plugin_open ) return;
+	Plugin *plugin = edl->tracks->plugin_exists(plugin_id);
+	if( !plugin ) return;
 
 	client->total_len = plugin->length;
 	client->source_start = plugin->startproject;
@@ -1006,14 +1013,24 @@ void PluginServer::run_opengl(PluginClient *plugin_client)
 
 void PluginServer::get_defaults_path(char *path)
 {
-// Get plugin name from path
-	char *ptr1 = strrchr(get_path(), '/');
-	char *ptr2 = strrchr(get_path(), '.');
-	if( !ptr1 ) ptr1 = get_path();
-	if( !ptr2 ) ptr2 = get_path() + strlen(get_path());
-	char string2[BCTEXTLEN], *ptr3 = string2;
-	while( ptr1 < ptr2 ) *ptr3++ = *ptr1++;
-	*ptr3 = 0;
+	char string2[BCTEXTLEN];
+	switch( plugin_type ) {
+	case PLUGIN_TYPE_FFMPEG:
+	case PLUGIN_TYPE_LV2:
+		strcpy(string2, client->plugin_title());
+		break;
+	case PLUGIN_TYPE_BUILTIN:
+	case PLUGIN_TYPE_LADSPA:
+	default: { // Get plugin name from path
+		char *ptr1 = strrchr(get_path(), '/');
+		char *ptr2 = strrchr(get_path(), '.');
+		if( !ptr1 ) ptr1 = get_path();
+		if( !ptr2 ) ptr2 = get_path() + strlen(get_path());
+		char *ptr3 = string2;
+		while( ptr1 < ptr2 ) *ptr3++ = *ptr1++;
+		*ptr3 = 0;
+		break; }
+	}
 	sprintf(path, "%s/%s.xml", File::get_config_path(), string2);
 }
 
@@ -1118,6 +1135,7 @@ void PluginServer::save_data(KeyFrame *keyframe)
 KeyFrame* PluginServer::get_prev_keyframe(int64_t position)
 {
 	KeyFrame *result = 0;
+	Plugin *plugin = edl->tracks->plugin_exists(plugin_id);
 	if( plugin )
 		result = plugin->get_prev_keyframe(position, client->direction);
 	else
@@ -1127,6 +1145,7 @@ KeyFrame* PluginServer::get_prev_keyframe(int64_t position)
 
 KeyFrame* PluginServer::get_next_keyframe(int64_t position)
 {
+	Plugin *plugin = edl->tracks->plugin_exists(plugin_id);
 	KeyFrame *result = !plugin ? 0 :
 		plugin->get_next_keyframe(position, client->direction);
 	return result;
@@ -1135,6 +1154,7 @@ KeyFrame* PluginServer::get_next_keyframe(int64_t position)
 // Called for
 KeyFrame* PluginServer::get_keyframe()
 {
+	Plugin *plugin = edl->tracks->plugin_exists(plugin_id);
 	if( plugin )
 // Realtime plugin case
 		return plugin->get_keyframe();
@@ -1145,6 +1165,7 @@ KeyFrame* PluginServer::get_keyframe()
 
 void PluginServer::apply_keyframe(KeyFrame *src)
 {
+	Plugin *plugin = edl->tracks->plugin_exists(plugin_id);
 	if( !plugin )
 		keyframe->copy_data(src);
 	else
@@ -1156,19 +1177,26 @@ void PluginServer::apply_keyframe(KeyFrame *src)
 void PluginServer::get_camera(float *x, float *y, float *z,
 	int64_t position, int direction)
 {
-	plugin->track->automation->get_camera(x, y, z, position, direction);
+	Plugin *plugin = edl->tracks->plugin_exists(plugin_id);
+	if( plugin )
+		plugin->track->automation->get_camera(x, y, z, position, direction);
 }
 
 void PluginServer::get_projector(float *x, float *y, float *z,
 	int64_t position, int direction)
 {
-	plugin->track->automation->get_projector(x, y, z, position, direction);
+	Plugin *plugin = edl->tracks->plugin_exists(plugin_id);
+	if( plugin )
+		plugin->track->automation->get_projector(x, y, z, position, direction);
 }
 
 
 int PluginServer::get_interpolation_type()
 {
-	return plugin->edl->session->interpolation_type;
+	Plugin *plugin = edl->tracks->plugin_exists(plugin_id);
+	if( plugin )
+		return plugin->edl->session->interpolation_type;
+	return NEAREST_NEIGHBOR;
 }
 
 Theme* PluginServer::new_theme()
@@ -1247,10 +1275,12 @@ void PluginServer::sync_parameters()
 
 int64_t PluginServer::get_startproject()
 {
+	Plugin *plugin = edl->tracks->plugin_exists(plugin_id);
 	return !plugin ? -1 : plugin->startproject;
 }
 int64_t PluginServer::get_endproject()
 {
+	Plugin *plugin = edl->tracks->plugin_exists(plugin_id);
 	return !plugin ? -1 : plugin->startproject + plugin->length;
 }
 

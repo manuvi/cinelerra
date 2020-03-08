@@ -43,6 +43,7 @@
 #include "preferences.h"
 #include "renderengine.h"
 #include "track.h"
+#include "tracks.h"
 #include "transportque.h"
 
 #include <stdio.h>
@@ -73,7 +74,6 @@ PluginClientThread::PluginClientThread(PluginClient *client)
 
 PluginClientThread::~PluginClientThread()
 {
-	join();
 	delete window;
 	delete init_complete;
 }
@@ -102,11 +102,9 @@ void PluginClientThread::run()
 		window->lock_window("PluginClientThread::run");
 //printf("PluginClientThread::run %p %d\n", this, __LINE__);
 		window->hide_window(1);
+		client->save_defaults_xml(); // needs window lock
 		window->unlock_window();
 		window->done_event(result);
-// Can't save defaults in the destructor because it's not called immediately
-// after closing.
-		/* if(client->defaults) */ client->save_defaults_xml();
 /* This is needed when the GUI is closed from itself */
 		if(result) client->client_side_close();
 	}
@@ -457,13 +455,8 @@ void PluginClient::hide_gui()
 {
 	if(thread && thread->window)
 	{
-//printf("PluginClient::delete_thread %d\n", __LINE__);
-/* This is needed when the GUI is closed from elsewhere than itself */
-/* Since we now use autodelete, this is all that has to be done, thread will take care of itself ... */
-/* Thread join will wait if this was not called from the thread itself or go on if it was */
 		thread->window->lock_window("PluginClient::hide_gui");
 		thread->window->set_done(0);
-//printf("PluginClient::hide_gui %d thread->window=%p\n", __LINE__, thread->window);
 		thread->window->unlock_window();
 	}
 }
@@ -946,9 +939,10 @@ double PluginClient::get_project_framerate()
 
 const char *PluginClient::get_source_path()
 {
-	if( server->plugin ) return 0;
-	int64_t source_position = server->plugin->startproject;
-	Edit *edit = server->plugin->track->edits->editof(source_position,PLAY_FORWARD,0);
+	EDL *edl = get_edl();
+	Plugin *plugin = edl->tracks->plugin_exists(server->plugin_id);
+	int64_t source_position = plugin->startproject;
+	Edit *edit = plugin->track->edits->editof(source_position,PLAY_FORWARD,0);
 	Indexable *indexable = edit ? edit->get_source() : 0;
 	return indexable ? indexable->path : 0;
 }
@@ -1130,7 +1124,8 @@ void PluginClient::output_to_track(float ox, float oy, float &tx, float &ty)
 	EDL *edl = get_edl();
 	projector_x += edl->session->output_w / 2;
 	projector_y += edl->session->output_h / 2;
-	Track *track = server->plugin ? server->plugin->track : 0;
+	Plugin *plugin = edl->tracks->plugin_exists(server->plugin_id);
+	Track *track = plugin ? plugin->track : 0;
 	int track_w = track ? track->track_w : edl->session->output_w;
 	int track_h = track ? track->track_h : edl->session->output_h;
 	tx = (ox - projector_x) / projector_z + track_w / 2;
@@ -1145,7 +1140,8 @@ void PluginClient::track_to_output(float tx, float ty, float &ox, float &oy)
 	EDL *edl = get_edl();
 	projector_x += edl->session->output_w / 2;
 	projector_y += edl->session->output_h / 2;
-	Track *track = server->plugin ? server->plugin->track : 0;
+	Plugin *plugin = edl->tracks->plugin_exists(server->plugin_id);
+	Track *track = plugin ? plugin->track : 0;
 	int track_w = track ? track->track_w : edl->session->output_w;
 	int track_h = track ? track->track_h : edl->session->output_h;
 	ox = (tx - track_w / 2) * projector_z + projector_x;

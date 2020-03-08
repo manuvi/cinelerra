@@ -132,7 +132,7 @@ void Plugin::copy_base(Edit *edit)
 	this->startsource = edit->startsource;
 	this->startproject = edit->startproject;
 	this->length = edit->length;
-
+	this->orig_id = edit->orig_id;
 
 	this->plugin_type = plugin->plugin_type;
 	this->in = plugin->in;

@@ -693,6 +693,7 @@ int VModule::render(VFrame *output,
 	VEdit* previous_edit = 0;
 //printf("VModule::render %d %p %ld %d\n", __LINE__, current_edit, start_position_project, direction);
 
+	Plugin *transition = get_edl()->tracks->plugin_exists(transition_id);
 	if( debug_render )
 		printf("    VModule::render %d %d %jd %s transition=%p opengl=%d current_edit=%p output=%p\n",
 			__LINE__, use_nudge, start_position_project, track->title,

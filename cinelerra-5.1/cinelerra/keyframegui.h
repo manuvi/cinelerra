@@ -58,7 +58,7 @@ public:
 	void close_window();
 
 	ArrayList<BC_ListBoxItem*> *keyframe_data;
-	Plugin *plugin;
+	int plugin_id;
 	KeyFrame *keyframe;
 	MWindow *mwindow;
 	char window_title[BCTEXTLEN];

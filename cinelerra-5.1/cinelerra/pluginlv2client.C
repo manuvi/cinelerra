@@ -39,6 +39,7 @@
 #include "pluginset.h"
 #include "samples.h"
 #include "track.h"
+#include "tracks.h"
 
 #include <ctype.h>
 #include <string.h>
@@ -95,46 +96,40 @@ PluginLV2ParentUI *PluginLV2UIs::add_ui(PluginLV2ParentUI *ui, PluginLV2Client *
 	return ui;
 }
 
-PluginLV2ParentUI *PluginLV2UIs::search_ui(Plugin *plugin)
+PluginLV2ParentUI *PluginLV2UIs::search_ui(int plugin_id)
 {
-	int64_t position = plugin->startproject;
-	PluginSet *plugin_set = plugin->plugin_set;
-	int set_no = plugin_set->get_number();
-	int track_no = plugin_set->track->number_of();
-
 	PluginLV2ParentUI *ui = 0;
 	for( int i=size(); !ui && --i>=0; ) {
 		PluginLV2ParentUI *parent_ui = get(i);
-		if( parent_ui->position != position ) continue;
-		if( parent_ui->set_no != set_no ) continue;
-		if( parent_ui->track_no == track_no ) ui = parent_ui;
+		if( parent_ui->plugin_id == plugin_id )
+			ui = parent_ui;
 	}
 	return ui;
 }
 
-PluginLV2ParentUI *PluginLV2UIs::find_ui(Plugin *plugin)
+PluginLV2ParentUI *PluginLV2UIs::find_ui(int plugin_id)
 {
-	if( !plugin ) return 0;
+	if( plugin_id < 0 ) return 0;
 	lock("PluginLV2UIs::find_ui");
-	PluginLV2ParentUI *ui = search_ui(plugin);
+	PluginLV2ParentUI *ui = search_ui(plugin_id);
 	unlock();
 	return ui;
 }
 PluginLV2ParentUI *PluginLV2Client::find_ui()
 {
-	return PluginLV2ParentUI::plugin_lv2.find_ui(server->plugin);
+	return PluginLV2ParentUI::plugin_lv2.find_ui(server->plugin_id);
 }
 PluginLV2ParentUI *PluginLV2ClientWindow::find_ui()
 {
-	return PluginLV2ParentUI::plugin_lv2.find_ui(client->server->plugin);
+	return PluginLV2ParentUI::plugin_lv2.find_ui(client->server->plugin_id);
 }
 
 PluginLV2ParentUI *PluginLV2UIs::get_ui(PluginLV2Client *client)
 {
 	lock("PluginLV2UIs::get_ui");
-	Plugin *plugin = client->server->plugin;
-	PluginLV2ParentUI *ui = search_ui(plugin);
-	if( !ui ) ui = add_ui(new PluginLV2ParentUI(plugin), client);
+	int plugin_id = client->server->plugin_id;
+	PluginLV2ParentUI *ui = plugin_id >= 0 ? search_ui(plugin_id) : 0;
+	if( !ui ) ui = add_ui(new PluginLV2ParentUI(plugin_id), client);
 	unlock();
 	return ui;
 }
@@ -251,8 +246,10 @@ void PluginLV2Client::read_data(KeyFrame *keyframe)
 		if( !input.tag.title_is(name) ) continue;
 		for( int i=0; i<config.size(); ++i ) {
 			PluginLV2Client_Opt *opt = config[i];
-			float value = input.tag.get_property(opt->get_symbol(), 0.);
-			opt->set_value(value);
+			float v = opt->get_value();
+			float value = input.tag.get_property(opt->get_symbol(), v);
+			if( value != v )
+				opt->set_value(value);
 		}
 	}
 }
@@ -415,17 +412,9 @@ printf("LOAD: %s\n", uri);
 	return 0;
 }
 
-PluginLV2ParentUI::PluginLV2ParentUI(Plugin *plugin)
+PluginLV2ParentUI::PluginLV2ParentUI(int plugin_id)
 {
-	this->position = plugin->startproject;
-	PluginSet *plugin_set = plugin->plugin_set;
-	if( plugin_set ) {
-		this->set_no = plugin_set->get_number();
-		this->track_no = plugin_set->track->number_of();
-	}
-	else
-		this->track_no = this->set_no = -1;
-
+	this->plugin_id = plugin_id;
 	output_bfr = new Condition(0, "PluginLV2ParentUI::output_bfr", 1);
 	client = 0;
 	gui = 0;

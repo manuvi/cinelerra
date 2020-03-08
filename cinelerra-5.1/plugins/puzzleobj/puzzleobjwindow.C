@@ -41,7 +41,7 @@ PuzzleObjWindow::~PuzzleObjWindow()
 
 void PuzzleObjWindow::create_objects()
 {
-	int xs10 = xS(10), xs50 = xS(50), xs80 = xS(80), xs180 = xS(180);
+	int xs10 = xS(10), xs80 = xS(80), xs180 = xS(180);
 	int ys10 = yS(10);
 	int x = xs10, y = ys10;
 	BC_Title *title = new BC_Title(x, y, _("PuzzleObj"));

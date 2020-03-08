@@ -40,6 +40,7 @@
 #include "pluginserver.h"
 #include "theme.h"
 #include "track.h"
+#include "tracks.h"
 #include "titlerwindow.h"
 #include "bcfontentry.h"
 
@@ -1237,8 +1238,10 @@ TitleDrag::TitleDrag(TitleMain *client, TitleWindow *window, int x, int y)
 
 Track *TitleDrag::get_drag_track()
 {
-	return !client->server->plugin ? 0 :
-		client->server->plugin->track;
+	PluginServer *server = client->server;
+	int plugin_id = server->plugin_id;
+	Plugin *plugin = server->edl->tracks->plugin_exists(plugin_id);
+	return !plugin ? 0 : plugin->track;
 }
 int64_t TitleDrag::get_drag_position()
 {
