@@ -62,7 +62,7 @@ public:
 	Automation(EDL *edl, Track *track);
 	virtual ~Automation();
 
-	int autogrouptype(int autoidx, Track *track);
+	static int autogrouptype(int type, Track *track);
 	virtual void create_objects();
 	void equivalent_output(Automation *automation, int64_t *result);
 	virtual Automation& operator=(Automation& automation);

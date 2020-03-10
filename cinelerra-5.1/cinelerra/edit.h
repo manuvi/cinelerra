@@ -54,13 +54,12 @@ public:
 	Indexable* get_source();
 // Copy from different EDL
 	virtual void copy_from(Edit *edit);
+	virtual void clone_from(Edit *edit);
 // Compare with edit in same EDL
 	virtual int identical(Edit &edit);
-	virtual Edit& operator=(Edit& edit);
 // Called by Edits and PluginSet.
 // Compare with edit in different EDL
 	virtual void equivalent_output(Edit *edit, int64_t *result);
-	virtual int operator==(Edit& edit);
 // When inherited by a plugin need to resample keyframes
 	virtual void synchronize_params(Edit *edit);
 // Used by Edits::insert_edits to shift plugin keyframes

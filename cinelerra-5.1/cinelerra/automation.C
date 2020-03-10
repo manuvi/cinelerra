@@ -62,37 +62,36 @@ Automation::~Automation()
 	}
 }
 
-int Automation::autogrouptype(int autoidx, Track *track)
+int Automation::autogrouptype(int type, Track *track)
 {
-	int autogrouptype = -1;
-	switch (autoidx)
-	{
-		case AUTOMATION_CAMERA_X:
-		case AUTOMATION_PROJECTOR_X:
-			autogrouptype = AUTOGROUPTYPE_X;
-			break;
-		case AUTOMATION_CAMERA_Y:
-		case AUTOMATION_PROJECTOR_Y:
-			autogrouptype = AUTOGROUPTYPE_Y;
-			break;
-		case AUTOMATION_CAMERA_Z:
-		case AUTOMATION_PROJECTOR_Z:
-			autogrouptype = AUTOGROUPTYPE_ZOOM;
-			break;
-		case AUTOMATION_SPEED:
-			autogrouptype = AUTOGROUPTYPE_SPEED;
-			break;
-		case AUTOMATION_FADE:
-			if (track->data_type == TRACK_AUDIO)
-				autogrouptype = AUTOGROUPTYPE_AUDIO_FADE;
-			else
-				autogrouptype = AUTOGROUPTYPE_VIDEO_FADE;
-			break;
-		case AUTOMATION_MUTE:
-			autogrouptype = AUTOGROUPTYPE_INT255;
-			break;
+	int group = -1;
+	switch( type ) {
+	case AUTOMATION_CAMERA_X:
+	case AUTOMATION_PROJECTOR_X:
+		group = AUTOGROUPTYPE_X;
+		break;
+	case AUTOMATION_CAMERA_Y:
+	case AUTOMATION_PROJECTOR_Y:
+		group = AUTOGROUPTYPE_Y;
+		break;
+	case AUTOMATION_CAMERA_Z:
+	case AUTOMATION_PROJECTOR_Z:
+		group = AUTOGROUPTYPE_ZOOM;
+		break;
+	case AUTOMATION_SPEED:
+		group = AUTOGROUPTYPE_SPEED;
+		break;
+	case AUTOMATION_FADE:
+		if (track->data_type == TRACK_AUDIO)
+			group = AUTOGROUPTYPE_AUDIO_FADE;
+		else
+			group = AUTOGROUPTYPE_VIDEO_FADE;
+		break;
+	case AUTOMATION_MUTE:
+		group = AUTOGROUPTYPE_INT255;
+		break;
 	}
-	return (autogrouptype);
+	return group;
 }
 
 void Automation::create_objects()

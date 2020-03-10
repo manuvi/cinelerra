@@ -78,28 +78,6 @@ Plugin::~Plugin()
 	delete keyframes;
 }
 
-Edit& Plugin::operator=(Edit& edit)
-{
-	copy_from(&edit);
-	return *this;
-}
-
-Plugin& Plugin::operator=(Plugin& edit)
-{
-	copy_from(&edit);
-	return *this;
-}
-
-int Plugin::operator==(Plugin& that)
-{
-	return identical(&that);
-}
-
-int Plugin::operator==(Edit& that)
-{
-	return identical((Plugin*)&that);
-}
-
 int Plugin::silence()
 {
 	return plugin_type == PLUGIN_NONE ? 1 : 0;
@@ -579,8 +557,8 @@ void Plugin::shift(int64_t difference)
 
 void Plugin::dump(FILE *fp)
 {
-	fprintf(fp,"    PLUGIN: type=%d title=\"%s\" on=%d track=%d plugin=%d gui_id=%d\n",
-		plugin_type, title, on, shared_location.module, shared_location.plugin, gui_id);
+	fprintf(fp,"    PLUGIN: type=%d, id %d, orig_id %d, title=\"%s\" on=%d track=%d plugin=%d gui_id=%d\n",
+		plugin_type, id, orig_id, title, on, shared_location.module, shared_location.plugin, gui_id);
 	fprintf(fp,"    startproject %jd length %jd\n", startproject, length);
 
 	keyframes->dump(fp);

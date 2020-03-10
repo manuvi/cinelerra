@@ -37,6 +37,7 @@
 #include "filexml.h"
 #include "floatauto.h"
 #include "floatautos.h"
+#include "gwindowgui.h"
 #include "keys.h"
 #include "language.h"
 #include "localsession.h"
@@ -52,6 +53,7 @@
 #include "tracks.h"
 #include "trackcanvas.h"
 #include "transportque.h"
+#include "zoombar.h"
 
 
 CWindowTool::CWindowTool(MWindow *mwindow, CWindowGUI *gui)
@@ -343,25 +345,149 @@ void CWindowToolGUI::draw_preview(int changed_edl)
 }
 
 
-CWindowCoord::CWindowCoord(CWindowToolGUI *gui, int x, int y, float value, int log_increment = 0)
+CWindowCoord::CWindowCoord(CWindowToolGUI *gui, int x, int y, float value, int type)
  : BC_TumbleTextBox(gui, (float)value, (float)-65536, (float)65536, x, y, xS(70), 3)
 {
 	this->gui = gui;
-	set_log_floatincrement(log_increment);
+	this->type = type;
+	slider = 0;
+	range = 0;
 }
 
-CWindowCoord::CWindowCoord(CWindowToolGUI *gui, int x, int y, int value)
+CWindowCoord::CWindowCoord(CWindowToolGUI *gui, int x, int y, int value, int type)
  : BC_TumbleTextBox(gui, (int64_t)value, (int64_t)-65536, (int64_t)65536, x, y, xS(70))
 {
 	this->gui = gui;
+	this->type = type;
+	slider = 0;
+	range = 0;
 }
+
+void CWindowCoord::create_objects()
+{
+	BC_TumbleTextBox::create_objects();
+	if( type >= 0 ) {
+		int x1 = get_x() + BC_TumbleTextBox::get_w() + xS(10), y1 = get_y();
+		int group = Automation::autogrouptype(type, 0);
+		float min = gui->mwindow->edl->local_session->automation_mins[group];
+		float max = gui->mwindow->edl->local_session->automation_maxs[group];
+		float v = atof(get_text());
+		gui->add_subwindow(slider = new CWindowCoordSlider(this,
+				x1, y1, xS(150), min, max, v));
+		x1 += slider->get_w() + xS(5);
+		gui->add_subwindow(range = new CWindowCoordRange(this, x1, y1));
+	}
+}
+
+void CWindowCoord::update_gui(float value)
+{
+	BC_TumbleTextBox::update(value);
+	if( slider ) {
+		int group = Automation::autogrouptype(type, 0);
+		LocalSession *local_session = gui->mwindow->edl->local_session;
+		slider->update(slider->get_pointer_motion_range(), value,
+			local_session->automation_mins[group],
+			local_session->automation_maxs[group]);
+		int x1 = range->get_x() + range->get_w() + xS(5);
+		int y1 = range->get_y() - yS(2), d = xS(16);
+		gui->set_color(GWindowGUI::auto_colors[type]);
+		gui->draw_disc(x1, y1, d, d);
+	}
+}
+
 int CWindowCoord::handle_event()
 {
+	if( slider )
+		slider->update(atof(get_text()));
 	gui->event_caller = this;
 	gui->handle_event();
 	return 1;
 }
 
+CWindowCoordSlider::CWindowCoordSlider(CWindowCoord *coord,
+		int x, int y, int w, float mn, float mx, float value)
+ : BC_FSlider(x, y, 0, w, w, mn, mx, value)
+{
+	this->coord = coord;
+	set_precision(0.01);
+}
+
+CWindowCoordSlider::~CWindowCoordSlider()
+{
+}
+
+int CWindowCoordSlider::handle_event()
+{
+	float value = get_value();
+	coord->update(value);
+	coord->gui->event_caller = coord;
+	coord->gui->handle_event();
+	return 1;
+}
+
+CWindowCoordRange::CWindowCoordRange(CWindowCoord *coord, int x, int y)
+ : BC_Tumbler(x, y)
+{
+	this->coord = coord;
+}
+CWindowCoordRange::~CWindowCoordRange()
+{
+}
+
+int CWindowCoordRange::update(float scale)
+{
+	MWindow *mwindow = coord->gui->mwindow;
+	LocalSession *local_session = mwindow->edl->local_session;
+	int group = Automation::autogrouptype(coord->type, 0);
+	float min = local_session->automation_mins[group];
+	float max = local_session->automation_maxs[group];
+	if( min >= max ) {
+		switch( group ) {
+		case AUTOGROUPTYPE_ZOOM: min = 0.005;  max = 5.0;  break;
+		case AUTOGROUPTYPE_X:    min = -100;   max = 100;  break;
+		case AUTOGROUPTYPE_Y:    min = -100;   max = 100;  break;
+		}
+	}
+	float range = max - min;
+	min -= range * scale;
+	max += range * scale;
+	switch( group ) {
+	case AUTOGROUPTYPE_ZOOM:
+		if( min < 0.001 ) min = 0.001;
+		if( max > 1000. ) max = 1000.;
+		break;
+	case AUTOGROUPTYPE_X:
+	case AUTOGROUPTYPE_Y:
+		if( min < -32767 ) min = -32767;
+		if( max >  32767 ) max =  32767;
+		break;
+	}
+	CWindowCoordSlider *slider = coord->slider;
+	coord->slider->update(slider->get_pointer_motion_range(),
+			slider->get_value(), min, max);
+	unlock_window();
+	MWindowGUI *mgui = mwindow->gui;
+	mgui->lock_window("CWindowCoordRange::update");
+	local_session->zoombar_showautotype = group;
+	local_session->automation_mins[group] = min;
+	local_session->automation_maxs[group] = max;
+	mgui->zoombar->update_autozoom();
+	mgui->draw_overlays(0);
+	mgui->update_patchbay();
+	mgui->flash_canvas(1);
+	mgui->unlock_window();
+	lock_window("CWindowCoordRange::update");
+	return 1;
+}
+
+int CWindowCoordRange::handle_up_event()
+{
+	return update(0.5);
+}
+int CWindowCoordRange::handle_down_event()
+{
+	return update(-0.25);
+}
 
 CWindowCropApply::CWindowCropApply(MWindow *mwindow, CWindowCropGUI *crop_gui, int x, int y)
  : BC_GenericButton(x, y, _("Apply"))
@@ -796,7 +922,7 @@ int CWindowEyedropCheckBox::handle_event()
 
 
 CWindowCameraGUI::CWindowCameraGUI(MWindow *mwindow, CWindowTool *thread)
- : CWindowToolGUI(mwindow, thread, _(PROGRAM_NAME ": Camera"), xS(170), yS(170))
+ : CWindowToolGUI(mwindow, thread, _(PROGRAM_NAME ": Camera"), xS(340), yS(170))
 {
 }
 CWindowCameraGUI::~CWindowCameraGUI()
@@ -807,7 +933,7 @@ void CWindowCameraGUI::create_objects()
 {
 	int xs10 = xS(10), xs15 = xS(15);
 	int ys10 = yS(10), ys30 = yS(30);
-	int x = xs10, y = ys10, x1;
+	int x = xs10, y = ys10;
 	Track *track = mwindow->cwindow->calculate_affected_track();
 	FloatAuto *x_auto = 0, *y_auto = 0, *z_auto = 0;
 	BC_Title *title;
@@ -820,27 +946,25 @@ void CWindowCameraGUI::create_objects()
 	}
 
 	add_subwindow(title = new BC_Title(x, y, "X:"));
-	x += title->get_w();
-	this->x = new CWindowCoord(this, x, y,
-		x_auto ? x_auto->get_value() : (float)0);
+	int x1 = x + title->get_w() + xS(3);
+	float xvalue = x_auto ? x_auto->get_value() : 0;
+	this->x = new CWindowCoord(this, x1, y, xvalue, AUTOMATION_CAMERA_X);
 	this->x->create_objects();
-
-
+	this->x->range->set_tooltip(_("expand X range"));
 	y += ys30;
-	x = xs10;
-	add_subwindow(title = new BC_Title(x, y, "Y:"));
-	x += title->get_w();
-	this->y = new CWindowCoord(this, x, y,
-		y_auto ? y_auto->get_value() : (float)0);
+	add_subwindow(title = new BC_Title(x = xs10, y, "Y:"));
+	float yvalue = y_auto ? y_auto->get_value() : 0;
+	this->y = new CWindowCoord(this, x1, y, yvalue, AUTOMATION_CAMERA_Y);
 	this->y->create_objects();
+	this->y->range->set_tooltip(_("expand Y range"));
 	y += ys30;
-	x = xs10;
-	add_subwindow(title = new BC_Title(x, y, "Z:"));
+	add_subwindow(title = new BC_Title(x = xs10, y, "Z:"));
 	x += title->get_w();
-	this->z = new CWindowCoord(this, x, y,
-		z_auto ? z_auto->get_value() : (float)1);
+	float zvalue = z_auto ? z_auto->get_value() : 1;
+	this->z = new CWindowCoord(this, x1, y, zvalue, AUTOMATION_CAMERA_Z);
 	this->z->create_objects();
 	this->z->set_increment(0.01);
+	this->z->range->set_tooltip(_("expand Zoom range"));
 
 	y += ys30;
 	x1 = xs10;
@@ -943,20 +1067,23 @@ void CWindowCameraGUI::update()
 			&x_auto, &y_auto, &z_auto, 1, 0, 0, 0);
 	}
 
-	if(x_auto)
-		x->update(x_auto->get_value());
-	if(y_auto)
-		y->update(y_auto->get_value());
-	if(z_auto) {
-		float value = z_auto->get_value();
-		z->update(value);
+	if( x_auto ) {
+		float xvalue = x_auto->get_value();
+		x->update_gui(xvalue);
+	}
+	if( y_auto ) {
+		float yvalue = y_auto->get_value();
+		y->update_gui(yvalue);
+	}
+	if( z_auto ) {
+		float zvalue = z_auto->get_value();
+		z->update_gui(zvalue);
 		thread->gui->lock_window("CWindowCameraGUI::update");
-		thread->gui->composite_panel->cpanel_zoom->update(value);
+		thread->gui->composite_panel->cpanel_zoom->update(zvalue);
 		thread->gui->unlock_window();
 	}
 
-	if( x_auto && y_auto && z_auto )
-	{
+	if( x_auto && y_auto && z_auto ) {
 		t_smooth->check_toggle_state(x_auto, y_auto, z_auto);
 		t_linear->check_toggle_state(x_auto, y_auto, z_auto);
 	}
@@ -1207,7 +1334,7 @@ int CWindowCameraReset::handle_event()
 
 
 CWindowProjectorGUI::CWindowProjectorGUI(MWindow *mwindow, CWindowTool *thread)
- : CWindowToolGUI(mwindow, thread, _(PROGRAM_NAME ": Projector"), xS(170), yS(170))
+ : CWindowToolGUI(mwindow, thread, _(PROGRAM_NAME ": Projector"), xS(340), yS(170))
 {
 }
 CWindowProjectorGUI::~CWindowProjectorGUI()
@@ -1231,29 +1358,28 @@ void CWindowProjectorGUI::create_objects()
 			&x_auto, &y_auto, &z_auto, 0, 0, 0, 0);
 	}
 
-	add_subwindow(title = new BC_Title(x, y, "X:"));
-	x += title->get_w();
-	this->x = new CWindowCoord(this, x, y,
-		x_auto ? x_auto->get_value() : (float)0);
+	add_subwindow(title = new BC_Title(x = xs10, y, "X:"));
+	int x1 = x + title->get_w() + xS(3);
+	float xvalue = x_auto ? x_auto->get_value() : 0;
+	this->x = new CWindowCoord(this, x1, y, xvalue, AUTOMATION_PROJECTOR_X);
 	this->x->create_objects();
+	this->x->range->set_tooltip(_("expand X range"));
 	y += ys30;
-	x = xs10;
-	add_subwindow(title = new BC_Title(x, y, "Y:"));
-	x += title->get_w();
-	this->y = new CWindowCoord(this, x, y,
-		y_auto ? y_auto->get_value() : (float)0);
+	add_subwindow(title = new BC_Title(x = xs10, y, "Y:"));
+	float yvalue = y_auto ? y_auto->get_value() : 0;
+	this->y = new CWindowCoord(this, x1, y, yvalue, AUTOMATION_PROJECTOR_Y);
 	this->y->create_objects();
+	this->y->range->set_tooltip(_("expand Y range"));
 	y += ys30;
-	x = xs10;
-	add_subwindow(title = new BC_Title(x, y, "Z:"));
-	x += title->get_w();
-	this->z = new CWindowCoord(this, x, y,
-		z_auto ? z_auto->get_value() : (float)1);
+	add_subwindow(title = new BC_Title(x = xs10, y, "Z:"));
+	float zvalue = z_auto ? z_auto->get_value() : 1;
+	this->z = new CWindowCoord(this, x1, y, zvalue, AUTOMATION_PROJECTOR_Z);
 	this->z->create_objects();
+	this->z->range->set_tooltip(_("expand Zoom range"));
 	this->z->set_increment(0.01);
 
 	y += ys30;
-	int x1 = xs10;
+	x1 = xs10;
 	add_subwindow(button = new CWindowProjectorLeft(mwindow, this, x1, y));
 	x1 += button->get_w();
 	add_subwindow(button = new CWindowProjectorCenter(mwindow, this, x1, y));
@@ -1352,20 +1478,23 @@ void CWindowProjectorGUI::update()
 			&x_auto, &y_auto, &z_auto, 0, 0, 0, 0);
 	}
 
-	if(x_auto)
-		x->update(x_auto->get_value());
-	if(y_auto)
-		y->update(y_auto->get_value());
-	if(z_auto) {
-		float value = z_auto->get_value();
-		z->update(value);
+	if( x_auto ) {
+		float xvalue = x_auto->get_value();
+		x->update_gui(xvalue);
+	}
+	if( y_auto ) {
+		float yvalue = y_auto->get_value();
+		y->update_gui(yvalue);
+	}
+	if( z_auto ) {
+		float zvalue = z_auto->get_value();
+		z->update_gui(zvalue);
 		thread->gui->lock_window("CWindowProjectorGUI::update");
-		thread->gui->composite_panel->cpanel_zoom->update(value);
+		thread->gui->composite_panel->cpanel_zoom->update(zvalue);
 		thread->gui->unlock_window();
 	}
 
-	if( x_auto && y_auto && z_auto )
-	{
+	if( x_auto && y_auto && z_auto ) {
 		t_smooth->check_toggle_state(x_auto, y_auto, z_auto);
 		t_linear->check_toggle_state(x_auto, y_auto, z_auto);
 	}

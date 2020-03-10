@@ -102,15 +102,6 @@ void Edits::copy_from(Edits *edits)
 	}
 }
 
-
-Edits& Edits::operator=(Edits& edits)
-{
-printf("Edits::operator= 1\n");
-	copy_from(&edits);
-	return *this;
-}
-
-
 void Edits::insert_asset(Asset *asset, EDL *nested_edl,
 	int64_t length, int64_t position, int track_number)
 {
@@ -178,7 +169,7 @@ void Edits::insert_edits(Edits *source_edits,
 // Open destination area
 		Edit *dest_edit = insert_new_edit(position + source_edit->startproject);
 
-		dest_edit->copy_from(source_edit);
+		dest_edit->clone_from(source_edit);
 		dest_edit->asset = dest_asset;
 		dest_edit->nested_edl = dest_nested_edl;
 		dest_edit->startproject = position + source_edit->startproject;
@@ -242,7 +233,7 @@ Edit* Edits::split_edit(int64_t position)
 
 	Edit *new_edit = create_edit();
 	insert_after(edit, new_edit);
-	new_edit->copy_from(edit);
+	new_edit->clone_from(edit);
 	new_edit->length = new_edit->startproject + new_edit->length - position;
 	edit->length = position - edit->startproject;
 	if( !new_edit->length || edit->silence() )

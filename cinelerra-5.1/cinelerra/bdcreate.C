@@ -80,9 +80,10 @@ const double CreateBD_Thread::BD_KAUDIO_RATE = 192;
 const int CreateBD_Thread::BD_INTERLACE_MODE = ILACE_MODE_NOTINTERLACED;
 
 CreateBD_MenuItem::CreateBD_MenuItem(MWindow *mwindow)
- : BC_MenuItem(_("BD Render..."), _("Ctrl-d"), 'd')
+ : BC_MenuItem(_("BD Render..."), _("Ctrl-Shift-D"), 'D')
 {
 	set_ctrl(1);
+	set_shift(1);
 	this->mwindow = mwindow;
 }
 

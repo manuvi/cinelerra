@@ -59,9 +59,6 @@ public:
 		const char *title);
 	virtual ~Plugin();
 
-	virtual Plugin& operator=(Plugin& edit);
-	virtual Edit& operator=(Edit& edit);
-
 // Called by Edits::equivalent_output to override the keyframe behavior and check
 // title.
 	void equivalent_output(Edit *edit, int64_t *result);
@@ -71,9 +68,6 @@ public:
 // Descends the plugin tree without creating a virtual console.
 	int is_synthesis(int64_t position, int direction, int depth);
 
-	virtual int operator==(Plugin& that);
-	virtual int operator==(Edit& that);
-
 	void init(const char *title,
 		int64_t unit_position, int64_t unit_length, int plugin_type,
 		SharedLocation *shared_location, KeyFrame *default_keyframe);
@@ -81,7 +75,6 @@ public:
 	virtual void copy_from(Edit *edit);
 
 
-// Called by == operators, Edit::equivalent output
 // to test title and keyframe of transition.
 	virtual int identical(Plugin *that);
 	virtual void synchronize_params(Edit *edit);

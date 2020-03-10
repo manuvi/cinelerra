@@ -21,6 +21,8 @@
 
 #include "apatchgui.inc"
 #include "clip.h"
+#include "cwindow.h"
+#include "cwindowgui.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "keys.h"
@@ -188,6 +190,18 @@ void ZoomBar::update_autozoom(int color)
 	auto_zoom_text->update(string);
 	const char *group_name = AutoTypeMenu::to_text(autogroup_type);
 	auto_type->set_text(group_name);
+	switch( autogroup_type ) {
+	case AUTOGROUPTYPE_ZOOM:
+	case AUTOGROUPTYPE_X:
+	case AUTOGROUPTYPE_Y:
+		CWindowGUI *cgui = mwindow->cwindow->gui;
+		unlock_window();
+		cgui->lock_window("ZoomBar::update_autozoom");
+		cgui->update_tool();
+		cgui->unlock_window();
+		lock_window("ZoomBar::update_autozoom");
+		break;
+	}
 }
 
 

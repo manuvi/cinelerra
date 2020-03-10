@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: cinelerra 5.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-12-18 10:15+0100\n"
-"PO-Revision-Date: 2019-12-18 11:54+0100\n"
+"PO-Revision-Date: 2019-12-29 14:28+0100\n"
 "Last-Translator: Olaf <cinmail@womentie.de>\n"
 "Language-Team: Language-Team German <olaf@localhost>\n"
 "Language: de\n"
@@ -458,7 +458,7 @@ msgstr "Frames pro Fuß:"
 #: plugins/chromakeyhsv/chromakey.C:187 plugins/sketcher/sketcherwindow.C:334
 #: plugins/sketcher/sketcherwindow.C:335 plugins/titler/titlerwindow.C:352
 msgid "Color:"
-msgstr "Farbe:"
+msgstr "Farben:"
 
 #: cinelerra/appearanceprefs.C:175
 msgid "Highlighting Inversion color:"
@@ -466,7 +466,7 @@ msgstr "Hervorhebung der Inversionsfarbe"
 
 #: cinelerra/appearanceprefs.C:182
 msgid "Composer BG Color:"
-msgstr "Composer HG Farbe:"
+msgstr "Composer Leinwand Farbe:"
 
 #: cinelerra/appearanceprefs.C:192
 msgid "YUV color space:"
@@ -5852,7 +5852,7 @@ msgid "Nest sequence"
 msgstr "Nest-Sequenz"
 
 #: cinelerra/loadmode.C:118 cinelerra/loadmode.C:167
-msgid "Load strategy:"
+msgid "Insertion strategy:"
 msgstr "Einfügestrategie:"
 
 #: cinelerra/localsession.C:63
@@ -6412,7 +6412,7 @@ msgstr "%d Zeichen aus: a-Z 0-9 _"
 
 #: cinelerra/mainmenu.C:1948
 msgid "Load Recent..."
-msgstr ""
+msgstr "Zuletzt geöffnet …"
 
 #: cinelerra/mainprogress.C:169
 #, c-format
@@ -13300,7 +13300,7 @@ msgstr "Hochgestellt"
 msgid "Font:"
 msgstr "Schrift:"
 
-# Textlänge!
+# Textlänge! Grundlinienabstand (line spacing) wäre korrekt.
 #: plugins/titler/titlerwindow.C:248
 msgid "Pitch:"
 msgstr ""

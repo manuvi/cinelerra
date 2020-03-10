@@ -279,6 +279,12 @@ void Edit::copy_from(Edit *edit)
 	this->channel = edit->channel;
 }
 
+void Edit::clone_from(Edit *edit)
+{
+	copy_from(edit);
+	edit->orig_id = edit->id;
+}
+
 void Edit::equivalent_output(Edit *edit, int64_t *result)
 {
 // End of edit changed
@@ -320,13 +326,6 @@ void Edit::equivalent_output(Edit *edit, int64_t *result)
 }
 
 
-Edit& Edit::operator=(Edit& edit)
-{
-//printf("Edit::operator= called\n");
-	copy_from(&edit);
-	return *this;
-}
-
 void Edit::synchronize_params(Edit *edit)
 {
 	copy_from(edit);
@@ -344,11 +343,6 @@ int Edit::identical(Edit &edit)
 		this->transition == edit.transition &&
 		this->channel == edit.channel);
 	return result;
-}
-
-int Edit::operator==(Edit &edit)
-{
-	return identical(edit);
 }
 
 double Edit::frames_per_picon()
@@ -386,8 +380,8 @@ int Edit::picon_h()
 int Edit::dump(FILE *fp)
 {
 	fprintf(fp,"     EDIT %p\n", this); fflush(fp);
-	fprintf(fp,"      nested_edl=%p %s asset=%p %s\n",
-		nested_edl, nested_edl ? nested_edl->path : "",
+	fprintf(fp,"      id %d, orig_id %d, nested_edl=%p %s asset=%p %s\n",
+		id, orig_id, nested_edl, nested_edl ? nested_edl->path : "",
 		asset, asset ? asset->path : "");
 	fflush(fp);
 	fprintf(fp,"      channel %d, color %08x, hard lt/rt %d/%d"

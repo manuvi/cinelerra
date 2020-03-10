@@ -25,6 +25,8 @@
 class CWindowTool;
 class CWindowToolGUI;
 class CWindowCoord;
+class CWindowCoordSlider;
+class CWindowCoordRange;
 class CWindowCropApply;
 class CWindowCropOpMode;
 class CWindowCropOpItem;

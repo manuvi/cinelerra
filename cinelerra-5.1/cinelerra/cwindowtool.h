@@ -90,6 +90,7 @@ public:
 	virtual void handle_event() {};
 // Update text boxes from keyframe here
 	virtual void update() {};
+
 // Update EDL and preview only
 	void update_preview(int changed_edl=0);
 	void draw_preview(int changed_edl);
@@ -107,16 +108,42 @@ public:
 class CWindowCoord : public BC_TumbleTextBox
 {
 public:
-	CWindowCoord(CWindowToolGUI *gui, int x, int y,
-			float value, int logincrement);
-	CWindowCoord(CWindowToolGUI *gui, int x, int y,
-			int value);
-
+	CWindowCoord(CWindowToolGUI *gui, int x, int y, float value, int group=-1);
+	CWindowCoord(CWindowToolGUI *gui, int x, int y, int value, int group=-1);
+	void create_objects();
+	void update_gui(float value);
 // Calls the window's handle_event
 	int handle_event();
 
 	CWindowToolGUI *gui;
+	CWindowCoordSlider *slider;
+	CWindowCoordRange *range;
+	int type;
 };
+
+class CWindowCoordSlider : public BC_FSlider
+{
+public:
+	CWindowCoordSlider(CWindowCoord *coord, int x, int y, int w,
+		float mn, float mx, float value);
+	~CWindowCoordSlider();
+	int handle_event();
+
+	CWindowCoord *coord;
+};
+
+class CWindowCoordRange : public BC_Tumbler
+{
+public:
+	CWindowCoordRange(CWindowCoord *coord, int x, int y);
+	~CWindowCoordRange();
+	int update(float scale);
+	int handle_up_event();
+	int handle_down_event();
+
+	CWindowCoord *coord;
+};
+
 
 class CWindowCropApply : public BC_GenericButton
 {

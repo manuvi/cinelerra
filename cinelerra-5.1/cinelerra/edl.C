@@ -1925,7 +1925,7 @@ EDL *EDL::selected_edits_to_clip(int packed,
 			}
 			int64_t clip_start_pos = startproject;
 			Edit *clip_edit = new Edit(new_edl, new_track);
-			clip_edit->copy_from(edit);
+			clip_edit->clone_from(edit);
 			clip_edit->startproject = startproject;
 			startproject += clip_edit->length;
 			new_track->edits->append(clip_edit);
@@ -2055,7 +2055,7 @@ void EDL::paste_edits(EDL *clip, Track *first_track, double position, int overwr
 				if( overwrite )
 					track->edits->clear(start, end);
 				Edit *dst = track->edits->insert_new_edit(start);
-				dst->copy_from(edit);
+				dst->clone_from(edit);
 				dst->startproject = start;
 				dst->is_selected = 1;
 				while( (dst=dst->next) != 0 )
