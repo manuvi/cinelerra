@@ -64,17 +64,12 @@ public:
 	Transition(EDL *edl, Edit *edit, const char *title, long unit_length);
 
 	Edit *edit;
-
-
-
 	void save_xml(FileXML *file);
 	void load_xml(FileXML *file);
 
-
-
-
 	Transition(Transition *that, Edit *edit);
 	~Transition();
+	int is_transition() { return 1; }
 
 	KeyFrame* get_keyframe();
 	int reset_parameters();

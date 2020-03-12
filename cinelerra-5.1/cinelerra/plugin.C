@@ -40,7 +40,6 @@
 Plugin::Plugin(EDL *edl, Track *track, const char *title)
  : Edit(edl, track)
 {
-	is_plugin = 1;
 	this->track = track;
 	this->plugin_set = 0;
 	strcpy(this->title, title);
@@ -58,7 +57,6 @@ Plugin::Plugin(EDL *edl, Track *track, const char *title)
 Plugin::Plugin(EDL *edl, PluginSet *plugin_set, const char *title)
  : Edit(edl, plugin_set)
 {
-	is_plugin = 1;
 	this->track = plugin_set->track;
 	this->plugin_set = plugin_set;
 	strcpy(this->title, title);
@@ -76,6 +74,28 @@ Plugin::~Plugin()
 {
 	while(keyframes->last) delete keyframes->last;
 	delete keyframes;
+}
+
+Edit& Plugin::operator=(Edit& edit)
+{
+	copy_from(&edit);
+	return *this;
+}
+
+Plugin& Plugin::operator=(Plugin& edit)
+{
+	copy_from(&edit);
+	return *this;
+}
+
+int Plugin::operator==(Plugin& that)
+{
+	return identical(&that);
+}
+
+int Plugin::operator==(Edit& that)
+{
+	return identical((Plugin*)&that);
 }
 
 int Plugin::silence()

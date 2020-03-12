@@ -1168,6 +1168,8 @@ void PluginServer::apply_keyframe(KeyFrame *src)
 	Plugin *plugin = edl->tracks->plugin_exists(plugin_id);
 	if( !plugin )
 		keyframe->copy_data(src);
+	else if( plugin->is_transition() )
+		plugin->get_keyframe()->copy_data(src);
 	else
 // Span keyframes
 		plugin->keyframes->update_parameter(src);

@@ -160,8 +160,7 @@ void Transition::save_xml(FileXML *file)
 	file->tag.set_property("TITLE", title);
 	file->tag.set_property("LENGTH", length);
 	file->append_tag();
-	if(on)
-	{
+	if( on ) {
 		file->tag.set_title("ON");
 		file->append_tag();
 		file->tag.set_title("/ON");
@@ -175,34 +174,18 @@ void Transition::save_xml(FileXML *file)
 
 void Transition::load_xml(FileXML *file)
 {
-	int result = 0;
 	file->tag.get_property("TITLE", title);
 	Plugin::fix_plugin_title(title);
 	length = file->tag.get_property("LENGTH", length);
 	on = 0;
 
-	do{
-		result = file->read_tag();
-		if(!result)
-		{
-			if(file->tag.title_is("/TRANSITION"))
-			{
-				result = 1;
-			}
-			else
-			if(file->tag.title_is("ON"))
-			{
-				on = 1;
-			}
-			else
-			if(file->tag.title_is("KEYFRAME"))
-			{
-				keyframes->default_auto->load(file);;
-			}
-		}
-	}while(!result);
+	while( !file->read_tag() ) {
+		if( file->tag.title_is("/TRANSITION") ) break;
+		if( file->tag.title_is("ON") ) { on = 1;  continue; }
+		if( file->tag.title_is("KEYFRAME") )
+			keyframes->default_auto->load(file);;
+	}
 }
-
 
 
 int Transition::popup_transition(int x, int y)

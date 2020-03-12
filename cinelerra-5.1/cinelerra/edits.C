@@ -102,6 +102,15 @@ void Edits::copy_from(Edits *edits)
 	}
 }
 
+
+Edits& Edits::operator=(Edits& edits)
+{
+printf("Edits::operator= 1\n");
+	copy_from(&edits);
+	return *this;
+}
+
+
 void Edits::insert_asset(Asset *asset, EDL *nested_edl,
 	int64_t length, int64_t position, int track_number)
 {
@@ -403,8 +412,8 @@ int Edits::optimize()
 				if( is_glitch(next_edit) )
 					break;
 // both edits are silence & not a plugin
-				if( !current->is_plugin && current->silence() &&
-				    !next_edit->is_plugin && next_edit->silence() )
+				if( !current->is_plugin() && current->silence() &&
+				    !next_edit->is_plugin() && next_edit->silence() )
 					break;
 // source channels are identical & assets are identical
 				if( !result && current->channel == next_edit->channel &&

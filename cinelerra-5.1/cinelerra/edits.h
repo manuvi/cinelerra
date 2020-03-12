@@ -43,6 +43,7 @@ public:
 
 	void equivalent_output(Edits *edits, int64_t *result);
 	virtual void copy_from(Edits *edits);
+	virtual Edits& operator=(Edits& edits);
 // Insert edits from different EDL
 	void insert_edits(Edits *edits,
 		int64_t position,

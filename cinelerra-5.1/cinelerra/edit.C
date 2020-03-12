@@ -85,7 +85,6 @@ void Edit::reset()
 	channel = 0;
 	user_title[0] = 0;
 	nested_edl = 0;
-	is_plugin = 0;
 	is_selected = 0;
 	hard_left = 0;
 	hard_right = 0;
@@ -326,6 +325,13 @@ void Edit::equivalent_output(Edit *edit, int64_t *result)
 }
 
 
+Edit& Edit::operator=(Edit& edit)
+{
+//printf("Edit::operator= called\n");
+	copy_from(&edit);
+	return *this;
+}
+
 void Edit::synchronize_params(Edit *edit)
 {
 	copy_from(edit);
@@ -343,6 +349,11 @@ int Edit::identical(Edit &edit)
 		this->transition == edit.transition &&
 		this->channel == edit.channel);
 	return result;
+}
+
+int Edit::operator==(Edit &edit)
+{
+	return identical(edit);
 }
 
 double Edit::frames_per_picon()

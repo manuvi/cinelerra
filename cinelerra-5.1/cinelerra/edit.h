@@ -57,13 +57,17 @@ public:
 	virtual void clone_from(Edit *edit);
 // Compare with edit in same EDL
 	virtual int identical(Edit &edit);
+	virtual Edit& operator=(Edit& edit);
 // Called by Edits and PluginSet.
 // Compare with edit in different EDL
 	virtual void equivalent_output(Edit *edit, int64_t *result);
+	virtual int operator==(Edit& edit);
 // When inherited by a plugin need to resample keyframes
 	virtual void synchronize_params(Edit *edit);
 // Used by Edits::insert_edits to shift plugin keyframes
 	virtual void shift_keyframes(int64_t position) {};
+	virtual int is_plugin() { return 0; }
+	virtual int is_transition() { return 0; }
 
 // Get size of frame to draw on timeline
 	double picon_w();
@@ -110,7 +114,7 @@ public:
 	int group_id;
 // User defined title for timeline
 	char user_title[BCTEXTLEN];
-	int is_plugin, is_selected;
+	int is_selected;
 // edge cannot be optimized
 	int hard_left, hard_right;
 // title bar color
