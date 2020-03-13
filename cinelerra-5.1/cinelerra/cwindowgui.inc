@@ -22,7 +22,14 @@
 #ifndef CWINDOWGUI_INC
 #define CWINDOWGUI_INC
 
-
 class CWindowGUI;
+class CWindowEditing;
+class CWindowMeters;
+class CWindowZoom;
+class CWindowSlider;
+class CWindowReset;
+class CWindowTransport;
+class CWindowCanvasToggleControls;
+class CWindowCanvas;
 
 #endif

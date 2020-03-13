@@ -194,12 +194,30 @@ int ZWindowGUI::draw_overlays()
 	return 1;
 }
 
+
+ZWindowCanvasTileMixers::ZWindowCanvasTileMixers(ZWindowCanvas *canvas)
+ : BC_MenuItem(_("Tile Mixers"))
+{
+	this->canvas = canvas;
+}
+int ZWindowCanvasTileMixers::handle_event()
+{
+	canvas->mwindow->tile_mixers();
+	return 1;
+}
+
 ZWindowCanvas::ZWindowCanvas(MWindow *mwindow, ZWindowGUI *gui,
 		int x, int y, int w, int h)
  : Canvas(mwindow, gui, x,y, w,h, 0,0,0)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
+}
+
+void ZWindowCanvas::create_objects(EDL *edl)
+{
+	Canvas::create_objects(edl);
+	canvas_menu->add_item(new ZWindowCanvasTileMixers(this));
 }
 
 void ZWindowCanvas::close_source()
@@ -213,7 +231,6 @@ void ZWindowCanvas::close_source()
 		edl->remove_user();
 	}
 }
-
 
 void ZWindowCanvas::draw_refresh(int flush)
 {
@@ -259,3 +276,33 @@ float ZWindowCanvas::get_auto_zoom()
 	return zoom_x < zoom_y ? zoom_x : zoom_y;
 }
 
+float ZWindowCanvas::get_zoom()
+{
+        return gui->zwindow->zoom;
+}
+void ZWindowCanvas::update_zoom(int x, int y, float zoom)
+{
+        gui->zwindow->zoom = zoom;
+}
+
+void ZWindowCanvas::zoom_auto()
+{
+	EDL *edl = gui->zwindow->edl;
+	if( !edl ) edl = mwindow->edl;
+        set_zoom(edl, 0);
+}
+
+void ZWindowCanvas::zoom_resize_window(float zoom)
+{
+	if( !zoom ) zoom = get_auto_zoom();
+	EDL *edl = gui->zwindow->edl;
+	if( !edl ) edl = mwindow->edl;
+	int ow = edl->session->output_w, oh = edl->session->output_h;
+	int canvas_w, canvas_h;
+	calculate_sizes(mwindow->edl->get_aspect_ratio(), ow, oh,
+		zoom, canvas_w, canvas_h);
+	int new_w = canvas_w + xS(20);
+	int new_h = canvas_h + yS(20);
+	gui->resize_window(new_w, new_h);
+	gui->resize_event(new_w, new_h);
+}

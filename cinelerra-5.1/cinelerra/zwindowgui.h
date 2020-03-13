@@ -59,15 +59,28 @@ public:
 	int highlighted;
 };
 
+class ZWindowCanvasTileMixers : public BC_MenuItem
+{
+public:
+	ZWindowCanvasTileMixers(ZWindowCanvas *canvas);
+	int handle_event();
+	ZWindowCanvas *canvas;
+};
+
 class ZWindowCanvas : public Canvas
 {
 public:
 	ZWindowCanvas(MWindow *mwindow, ZWindowGUI *gui,
 		int x, int y, int w, int h);
 
+	void create_objects(EDL *edl);
 	void close_source();
 	void draw_refresh(int flush = 1);
 	float get_auto_zoom();
+	float get_zoom();
+	void update_zoom(int x, int y, float zoom);
+	void zoom_auto();
+	void zoom_resize_window(float percentage);
 
 	MWindow *mwindow;
 	ZWindowGUI *gui;

@@ -27,6 +27,7 @@
 #include "cpanel.inc"
 #include "ctimebar.inc"
 #include "cwindow.inc"
+#include "cwindowgui.inc"
 #include "cwindowtool.inc"
 #include "editpanel.h"
 #include "floatauto.inc"
@@ -41,15 +42,6 @@
 #include "thread.h"
 #include "track.inc"
 #include "zoompanel.h"
-
-class CWindowZoom;
-class CWindowSlider;
-class CWindowReset;
-class CWindowDestination;
-class CWindowMeters;
-class CWindowTransport;
-class CWindowCanvas;
-class CWindowEditing;
 
 
 #define AUTO_ZOOM N_("Auto")
@@ -249,16 +241,6 @@ public:
 	MWindow *mwindow;
 };
 
-// class CWindowDestination : public BC_PopupTextBox
-// {
-// public:
-// 	CWindowDestination(MWindow *mwindow, CWindowGUI *cwindow, int x, int y);
-// 	~CWindowDestination();
-// 	int handle_event();
-// 	CWindowGUI *cwindow;
-// 	MWindow *mwindow;
-// };
-
 class CWindowTransport : public PlayTransport
 {
 public:
@@ -272,12 +254,21 @@ public:
 	CWindowGUI *gui;
 };
 
+class CWindowCanvasToggleControls : public BC_MenuItem
+{
+public:
+	CWindowCanvasToggleControls(CWindowCanvas *canvas);
+	int handle_event();
+	static const char *calculate_text(int cwindow_controls);
+	CWindowCanvas *canvas;
+};
 
 class CWindowCanvas : public Canvas
 {
 public:
 	CWindowCanvas(MWindow *mwindow, CWindowGUI *gui);
 
+	void create_objects(EDL *edl);
 	void status_event();
 	void zoom_resize_window(float percentage);
 	void update_zoom(int x, int y, float zoom);
@@ -287,11 +278,8 @@ public:
 	void zoom_auto();
 	int do_scroll(EDL *edl, float cursor_x, float cursor_y);
 	int do_eyedrop(int &rerender, int button_press, int draw);
-	int do_mask(int &redraw,
-		int &rerender,
-		int button_press,
-		int cursor_motion,
-		int draw);
+	int do_mask(int &redraw, int &rerender,
+		int button_press, int cursor_motion, int draw);
 	int do_mask_focus();
 	void draw_refresh(int flash = 1);
 	int need_overlays();
@@ -305,10 +293,7 @@ public:
 	int button_release_event();
 	int test_crop(int button_press, int &redraw);
 	int test_bezier(int button_press,
-		int &redraw,
-		int &redraw_canvas,
-		int &rerender,
-		int do_camera);
+		int &redraw, int &redraw_canvas, int &rerender, int do_camera);
 	int do_ruler(int draw, int motion, int button_press, int button_release);
 	int test_zoom(int &redraw);
 	void create_keyframe(int do_camera);
@@ -324,12 +309,13 @@ public:
 	void draw_outlines(int do_camera);
 	void draw_crop();
 	void calculate_origin();
-	void toggle_controls();
-	int get_cwindow_controls();
 	int get_clear_color();
+	int get_controls();
+	void toggle_controls();
 
 	MWindow *mwindow;
 	CWindowGUI *gui;
+	CWindowCanvasToggleControls *controls;
 	float last_xscroll, last_yscroll;
 	float last_zoom;
 };

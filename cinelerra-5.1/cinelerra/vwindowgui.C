@@ -237,7 +237,6 @@ void VWindowGUI::create_objects()
 
 	canvas = new VWindowCanvas(mwindow, this);
 	canvas->create_objects(mwindow->edl);
-	canvas->use_vwindow();
 	char vsplash_path[BCTEXTLEN];
 	int vsplash_len = sizeof(vsplash_path)-1;
 	snprintf(vsplash_path, vsplash_len, "%s/vsplash.png", File::get_cindat_path());
@@ -772,6 +771,12 @@ VWindowCanvas::VWindowCanvas(MWindow *mwindow, VWindowGUI *gui)
 //printf("VWindowCanvas::VWindowCanvas %d %d\n", __LINE__, mwindow->theme->vcanvas_x);
 	this->mwindow = mwindow;
 	this->gui = gui;
+}
+
+void VWindowCanvas::create_objects(EDL *edl)
+{
+	Canvas::create_objects(edl);
+	canvas_menu->add_item(new CanvasPopupRemoveSource(this));
 }
 
 void VWindowCanvas::zoom_resize_window(float percentage)

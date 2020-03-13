@@ -38,7 +38,6 @@ class CanvasPopupResetCamera;
 class CanvasPopupResetProjector;
 class CanvasPopupCameraKeyframe;
 class CanvasPopupProjectorKeyframe;
-class CanvasToggleControls;
 class CanvasFullScreenItem;
 class CanvasPopupResetTranslation;
 class CanvasPopupRemoveSource;

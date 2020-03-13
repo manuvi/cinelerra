@@ -86,10 +86,6 @@ public:
 	int cursor_enter_event_base(BC_WindowBase *caller);
 	int button_press_event_base(BC_WindowBase *caller);
 	int keypress_event(BC_WindowBase *caller);
-// Use menu different options for different windows
-	void use_cwindow();
-	void use_rwindow();
-	void use_vwindow();
 	void use_auxwindow(BC_WindowBase *aux);
 
 // Provide canvas dimensions since a BC_Bitmap containing obsolete dimensions
@@ -283,8 +279,6 @@ public:
 	CanvasFullScreenPopup(Canvas *canvas);
 
 	void create_objects();
-	void use_cwindow();
-
 	Canvas *canvas;
 };
 
@@ -303,12 +297,7 @@ public:
 	~CanvasPopup();
 
 	void create_objects();
-	void use_cwindow();
-	void use_rwindow();
-	void use_vwindow();
-
 	Canvas *canvas;
-	CanvasToggleControls *toggle_controls;
 };
 
 class CanvasZoomSize : public BC_MenuItem
@@ -377,15 +366,6 @@ public:
 	Canvas *canvas;
 };
 
-class CanvasToggleControls : public BC_MenuItem
-{
-public:
-	CanvasToggleControls(Canvas *canvas);
-	int handle_event();
-	static char* calculate_text(int cwindow_controls);
-	Canvas *canvas;
-};
-
 class CanvasFullScreenItem : public BC_MenuItem
 {
 public:
@@ -402,7 +382,6 @@ public:
 	Canvas *canvas;
 };
 
-
 class CanvasPopupRemoveSource : public BC_MenuItem
 {
 public:
@@ -410,9 +389,5 @@ public:
 	int handle_event();
 	Canvas *canvas;
 };
-
-
-
-
 
 #endif

@@ -23,5 +23,14 @@
 #define VWINDOWGUI_INC
 
 class VWindowGUI;
+class VWindowMeters;
+class VWindowCanvasPopupRemoveSource;
+class VWindowCanvas;
+class VWindowEditing;
+class VWindowZoom;
+class VWindowSource;
+class VWindowTransport;
+class VWindowInPoint;
+class VWindowOutPoint;
 
 #endif

@@ -354,7 +354,6 @@ void RecordMonitorGUI::create_objects()
 			mwindow->theme->rmonitor_canvas_w,
 			mwindow->theme->rmonitor_canvas_h);
 		canvas->create_objects(0);
-		canvas->use_rwindow();
 
 #ifdef HAVE_DVB
 		if( driver == CAPTURE_DVB ) {
@@ -778,6 +777,12 @@ RecordMonitorCanvas::RecordMonitorCanvas(MWindow *mwindow,
 
 RecordMonitorCanvas::~RecordMonitorCanvas()
 {
+}
+
+void RecordMonitorCanvas::create_objects(EDL *edl)
+{
+	Canvas::create_objects(edl);
+	canvas_menu->add_item(new CanvasPopupResetTranslation(this));
 }
 
 int RecordMonitorCanvas::get_output_w()

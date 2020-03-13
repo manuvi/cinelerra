@@ -565,20 +565,40 @@ void ShapeWipeMain::reset_pattern_image()
 	float scale = feather ? 1/feather : 0xff; \
 	type  **in_rows = (type**)input->get_rows(); \
 	type **out_rows = (type**)output->get_rows(); \
-	for( int y=y1; y<y2; ++y ) { \
-		type *in_row = (type*) in_rows[y]; \
-		type *out_row = (type*)out_rows[y]; \
-		unsigned char *pattern_row = pattern_image[y]; \
-		for( int x=0; x<w; ++x ) { \
-			tmp_type d = (pattern_row[x] - threshold) * scale; \
-			if( d > 0xff ) d = 0xff; \
-			else if( d < -0xff ) d = -0xff; \
-			tmp_type a = (d + 0xff) / 2, b = 0xff - a; \
-			for( int i=0; i<components; ++i ) { \
-				type ic = in_row[i], oc = out_row[i]; \
-				out_row[i] = (ic * a + oc * b) / 0xff; \
+	if( !dir ) { \
+		for( int y=y1; y<y2; ++y ) { \
+			type *in_row = (type*) in_rows[y]; \
+			type *out_row = (type*)out_rows[y]; \
+			unsigned char *pattern_row = pattern_image[y]; \
+			for( int x=0; x<w; ++x ) { \
+				tmp_type d = (pattern_row[x] - threshold) * scale; \
+				if( d > 0xff ) d = 0xff; \
+				else if( d < -0xff ) d = -0xff; \
+				tmp_type a = (d + 0xff) / 2, b = 0xff - a; \
+				for( int i=0; i<components; ++i ) { \
+					type ic = in_row[i], oc = out_row[i]; \
+					out_row[i] = (ic * a + oc * b) / 0xff; \
+				} \
+				in_row += components; out_row += components; \
 			} \
-			in_row += components; out_row += components; \
+		} \
+	} \
+	else { \
+		for( int y=y1; y<y2; ++y ) { \
+			type *in_row = (type*) in_rows[y]; \
+			type *out_row = (type*)out_rows[y]; \
+			unsigned char *pattern_row = pattern_image[y]; \
+			for( int x=0; x<w; ++x ) { \
+				tmp_type d = (pattern_row[x] - threshold) * scale; \
+				if( d > 0xff ) d = 0xff; \
+				else if( d < -0xff ) d = -0xff; \
+				tmp_type b = (d + 0xff) / 2, a = 0xff - b; \
+				for( int i=0; i<components; ++i ) { \
+					type ic = in_row[i], oc = out_row[i]; \
+					out_row[i] = (ic * a + oc * b) / 0xff; \
+				} \
+				in_row += components; out_row += components; \
+			} \
 		} \
 	} \
 }
@@ -646,6 +666,7 @@ void ShapeUnit::process_package(LoadPackage *package)
 	VFrame *input = server->plugin->input;
 	VFrame *output = server->plugin->output;
 	int w = input->get_w();
+	int dir = server->plugin->config.direction;
 
 	unsigned char **pattern_image = server->plugin->pattern_image;
 	unsigned char threshold = server->plugin->threshold;

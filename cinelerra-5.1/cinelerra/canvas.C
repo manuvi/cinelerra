@@ -114,22 +114,6 @@ void Canvas::use_auxwindow(BC_WindowBase *aux)
 	canvas_auxwindow = aux;
 }
 
-void Canvas::use_cwindow()
-{
-	canvas_menu->use_cwindow();
-	fullscreen_menu->use_cwindow();
-}
-
-void Canvas::use_rwindow()
-{
-	canvas_menu->use_rwindow();
-}
-
-void Canvas::use_vwindow()
-{
-	canvas_menu->use_vwindow();
-}
-
 int Canvas::get_fullscreen()
 {
 	return is_fullscreen;
@@ -914,11 +898,6 @@ void CanvasFullScreenPopup::create_objects()
 	add_item(new CanvasSubWindowItem(canvas));
 }
 
-void CanvasFullScreenPopup::use_cwindow()
-{
-	add_item(new CanvasPopupAuto(canvas));
-}
-
 CanvasSubWindowItem::CanvasSubWindowItem(Canvas *canvas)
  : BC_MenuItem(_("Windowed"), "f", 'f')
 {
@@ -974,26 +953,6 @@ void CanvasPopup::create_objects()
 	submenu->add_submenuitem(new CanvasPopupSize(canvas, _("Zoom 200%"), 2.0));
 	submenu->add_submenuitem(new CanvasPopupSize(canvas, _("Zoom 300%"), 3.0));
 	submenu->add_submenuitem(new CanvasPopupSize(canvas, _("Zoom 400%"), 4.0));
-}
-
-void CanvasPopup::use_cwindow()
-{
-	add_item(new CanvasPopupAuto(canvas));
-	add_item(new CanvasPopupResetCamera(canvas));
-	add_item(new CanvasPopupResetProjector(canvas));
-	add_item(new CanvasPopupCameraKeyframe(canvas));
-	add_item(new CanvasPopupProjectorKeyframe(canvas));
-	add_item(toggle_controls = new CanvasToggleControls(canvas));
-}
-
-void CanvasPopup::use_rwindow()
-{
-	add_item(new CanvasPopupResetTranslation(canvas));
-}
-
-void CanvasPopup::use_vwindow()
-{
-	add_item(new CanvasPopupRemoveSource(canvas));
 }
 
 
@@ -1074,7 +1033,6 @@ int CanvasPopupProjectorKeyframe::handle_event()
 }
 
 
-
 CanvasPopupResetTranslation::CanvasPopupResetTranslation(Canvas *canvas)
  : BC_MenuItem(_("Reset translation"))
 {
@@ -1084,25 +1042,6 @@ int CanvasPopupResetTranslation::handle_event()
 {
 	canvas->reset_translation();
 	return 1;
-}
-
-
-
-CanvasToggleControls::CanvasToggleControls(Canvas *canvas)
- : BC_MenuItem(calculate_text(canvas->get_cwindow_controls()))
-{
-	this->canvas = canvas;
-}
-int CanvasToggleControls::handle_event()
-{
-	canvas->toggle_controls();
-	set_text(calculate_text(canvas->get_cwindow_controls()));
-	return 1;
-}
-
-char* CanvasToggleControls::calculate_text(int cwindow_controls)
-{
-	return !cwindow_controls ? _("Show controls") : _("Hide controls");
 }
 
 

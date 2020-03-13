@@ -188,6 +188,7 @@ ZWindow::ZWindow(MWindow *mwindow)
 	highlighted = 0;
 	title[0] = 0;
 	zgui = 0;
+	zoom = 0;
 }
 
 ZWindow::~ZWindow()

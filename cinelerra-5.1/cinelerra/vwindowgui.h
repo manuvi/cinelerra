@@ -30,21 +30,11 @@
 #include "meterpanel.h"
 #include "mwindow.inc"
 #include "playtransport.h"
-
 #include "timebar.h"
-
 #include "vtimebar.inc"
 #include "vwindow.inc"
+#include "vwindowgui.inc"
 #include "zoompanel.h"
-
-class VWindowZoom;
-class VWindowSource;
-class VWindowTransport;
-class VWindowEditing;
-class VWindowCanvas;
-class VWindowMeters;
-class VWindowInPoint;
-class VWindowOutPoint;
 
 class VWindowGUI : public BC_Window
 {
@@ -110,11 +100,19 @@ public:
 };
 
 
+class VWindowCanvasPopupRemoveSource : public BC_MenuItem
+{
+public:
+	VWindowCanvasPopupRemoveSource(Canvas *canvas);
+	int handle_event();
+	Canvas *canvas;
+};
+
 class VWindowCanvas : public Canvas
 {
 public:
 	VWindowCanvas(MWindow *mwindow, VWindowGUI *gui);
-
+	void create_objects(EDL *edl);
 	void zoom_resize_window(float percentage);
 	void draw_refresh(int flush = 1);
 	int need_overlays();

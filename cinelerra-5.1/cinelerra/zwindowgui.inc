@@ -23,5 +23,7 @@
 #define __ZWINDOWGUI_INC__
 
 class ZWindowGUI;
+class ZWindowCanvasTileMixers;
+class ZWindowCanvas;
 
 #endif

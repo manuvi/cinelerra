@@ -163,8 +163,6 @@ void CWindowGUI::create_objects()
 	canvas = new CWindowCanvas(mwindow, this);
 
 	canvas->create_objects(mwindow->edl);
-	canvas->use_cwindow();
-
 
 	add_subwindow(timebar = new CTimeBar(mwindow,
 		this,
@@ -972,6 +970,22 @@ void CWindowTransport::goto_end()
 	gui->lock_window("CWindowTransport::goto_end 2");
 }
 
+CWindowCanvasToggleControls::CWindowCanvasToggleControls(CWindowCanvas *canvas)
+ : BC_MenuItem(calculate_text(canvas->get_controls()))
+{
+	this->canvas = canvas;
+}
+int CWindowCanvasToggleControls::handle_event()
+{
+	canvas->toggle_controls();
+	set_text(calculate_text(canvas->get_controls()));
+	return 1;
+}
+
+const char *CWindowCanvasToggleControls::calculate_text(int controls)
+{
+	return !controls ? _("Show controls") : _("Hide controls");
+}
 
 
 CWindowCanvas::CWindowCanvas(MWindow *mwindow, CWindowGUI *gui)
@@ -985,6 +999,19 @@ CWindowCanvas::CWindowCanvas(MWindow *mwindow, CWindowGUI *gui)
 	last_xscroll = 0;
 	last_yscroll = 0;
 	last_zoom = 0;
+	controls = 0;
+}
+
+void CWindowCanvas::create_objects(EDL *edl)
+{
+	Canvas::create_objects(edl);
+	canvas_menu->add_item(new CanvasPopupAuto(this));
+	canvas_menu->add_item(new CanvasPopupResetCamera(this));
+	canvas_menu->add_item(new CanvasPopupResetProjector(this));
+	canvas_menu->add_item(new CanvasPopupCameraKeyframe(this));
+	canvas_menu->add_item(new CanvasPopupProjectorKeyframe(this));
+	canvas_menu->add_item(controls = new CWindowCanvasToggleControls(this));
+	fullscreen_menu->add_item(new CanvasPopupAuto(this));
 }
 
 void CWindowCanvas::status_event()
@@ -3373,7 +3400,7 @@ void CWindowCanvas::toggle_controls()
 	gui->resize_event(gui->get_w(), gui->get_h());
 }
 
-int CWindowCanvas::get_cwindow_controls()
+int CWindowCanvas::get_controls()
 {
 	return mwindow->session->cwindow_controls;
 }

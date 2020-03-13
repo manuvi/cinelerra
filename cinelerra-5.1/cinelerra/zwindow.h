@@ -84,6 +84,7 @@ public:
 	int idx;
 	int highlighted;
 	char title[BCTEXTLEN];
+	float zoom;
 };
 
 #endif

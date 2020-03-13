@@ -22,8 +22,46 @@
 #ifndef RECORDGUI_INC
 #define RECORDGUI_INC
 
+class RecordGUIBatches;
 class RecordGUI;
+class RecordGUISave;
+class RecordGUICancel;
+class RecordGUIOK;
+class RecordGUIStartBatches;
+class RecordGUIStopBatches;
+class RecordGUIActivateBatch;
+class RecordGUIStartOver;
+class EndRecordThread;
+class RecordStartoverThread;
+class RecordBatch;
+class RecordPath;
+class RecordStart;
+class RecordDuration;
+class RecordSource;
+class RecordNews;
+class RecordGUIDropFrames;
+class RecordGUIFillFrames;
+class RecordGUIPowerOff;
+class RecordGUICommCheck;
+class RecordGUIDelaceItem;
+class RecordGUIDeinterlace;
+class RecordGUIMonitorVideo;
+class RecordGUIMonitorAudio;
+class RecordGUIAudioMeters;
+class RecordGUINewBatch;
+class RecordGUIDeleteBatch;
+class RecordGUILabel;
+class RecordGUIClearLabels;
+class RecordStatusThread;
+class RecordGUIFlash;
+class RecordGUIModeMenu;
+class RecordGUIModeTextBox;
+class RecordGUIModeListBox;
+class RecordGUIModeMenu;
+class RecordGUIDCOffset;
 class RecordGUIDCOffsetText;
+class RecordGUIReset;
+class RecordGUIResetTranslation;
 class RecordMonitor;
 
 #endif

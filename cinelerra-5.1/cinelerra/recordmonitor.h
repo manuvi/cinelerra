@@ -221,6 +221,7 @@ public:
 		Record *record, int x, int y, int w, int h);
 	~RecordMonitorCanvas();
 
+	void create_objects(EDL *edl);
 	void zoom_resize_window(float percentage);
 	int button_press_event();
 	int button_release_event();

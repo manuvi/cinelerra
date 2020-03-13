@@ -1022,8 +1022,8 @@ if( debug && event->type != ClientMessage ) {
 
 //printf("BC_WindowBase::dispatch_event %d %d\n", __LINE__, button_number);
 		event_win = event->xany.window;
-		if (button_number < 6) {
-			if(button_number < 4)
+		if( button_number < 6 ) {
+			if( button_number < 4 )
 				button_down = 1;
 			button_pressed = event->xbutton.button;
 			button_time1 = button_time2;
@@ -1036,23 +1036,20 @@ if( debug && event->type != ClientMessage ) {
 			drag_x2 = cursor_x + get_resources()->drag_radius;
 			drag_y1 = cursor_y - get_resources()->drag_radius;
 			drag_y2 = cursor_y + get_resources()->drag_radius;
-
-			if((long)(button_time3 - button_time1) < resources->double_click * 2)
-			{
-				triple_click = 1;
-				button_time3 = button_time2 = button_time1 = 0;
+			if( button_number < 4 ) {
+				if((long)(button_time3 - button_time1) < resources->double_click * 2) {
+					triple_click = 1;
+					button_time3 = button_time2 = button_time1 = 0;
+				}
+				if((long)(button_time3 - button_time2) < resources->double_click) {
+					double_click = 1;
+//					button_time3 = button_time2 = button_time1 = 0;
+				}
+				else {
+					triple_click = 0;
+					double_click = 0;
+				}
 			}
-			if((long)(button_time3 - button_time2) < resources->double_click)
-			{
-				double_click = 1;
-//				button_time3 = button_time2 = button_time1 = 0;
-			}
-			else
-			{
-				triple_click = 0;
-				double_click = 0;
-			}
-
 			dispatch_button_press();
 		}
 		break;
