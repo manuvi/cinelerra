@@ -61,15 +61,6 @@ public:
 	MainMenu *mmenu;
 };
 
-class SaveFileWindow : public BC_FileBox
-{
-public:
-	SaveFileWindow(MWindow *mwindow, char *init_directory);
-	~SaveFileWindow();
-	MWindow *mwindow;
-};
-
-
 class SaveProjectModeItem : public BC_MenuItem
 {
 public:

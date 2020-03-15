@@ -65,37 +65,10 @@ void Save::create_objects(SaveAs *saveas)
 
 int Save::handle_event()
 {
-	if(mwindow->session->filename[0] == 0)
-	{
-		saveas->start();
-	}
-	else
-	{
-// save it
-// TODO: Move this into mwindow.
-		FileXML file;
-		mwindow->edl->save_xml(&file, mwindow->session->filename);
-		file.terminate_string();
-
-		if(file.write_to_file(mwindow->session->filename))
-		{
-			char string2[256];
-			sprintf(string2, _("Couldn't open %s"), mwindow->session->filename);
-			ErrorBox error(_(PROGRAM_NAME ": Error"),
-				mwindow->gui->get_abs_cursor_x(1),
-				mwindow->gui->get_abs_cursor_y(1));
-			error.create_objects(string2);
-			error.raise_window();
-			error.run_window();
-			return 1;
-		}
-		else
-		{
-			char string[BCTEXTLEN];
-			sprintf(string, _("\"%s\" %dC written"),
-				 mwindow->session->filename, (int)strlen(file.string()));
-			mwindow->gui->show_message(string);
-		}
+	mwindow->gui->unlock_window();
+	int ret = mwindow->save(0);
+	mwindow->gui->lock_window("Save::handle_event");
+	if( !ret ) {
 		mwindow->session->changes_made = 0;
 // Last command in program
 		if( saveas->quit_now )
@@ -136,97 +109,13 @@ int SaveAs::handle_event()
 
 void SaveAs::run()
 {
-// ======================================= get path from user
-	int result;
-//printf("SaveAs::run 1\n");
-	char directory[1024], filename[1024];
-	sprintf(directory, "~");
-	mwindow->defaults->get("DIRECTORY", directory);
-
-// Loop if file exists
-	do{
-		SaveFileWindow *window;
-
-		window = new SaveFileWindow(mwindow, directory);
-		window->lock_window("SaveAs::run");
-		window->create_objects();
-		window->unlock_window();
-		result = window->run_window();
-		mwindow->defaults->update("DIRECTORY", window->get_submitted_path());
-		strcpy(filename, window->get_submitted_path());
-		delete window;
-
-// Extend the filename with .xml
-		if(strlen(filename) < 4 ||
-			strcasecmp(&filename[strlen(filename) - 4], ".xml"))
-		{
-			strcat(filename, ".xml");
-		}
-
-// ======================================= try to save it
-		if(filename[0] == 0) return;              // no filename given
-		if(result == 1) return;          // user cancelled
-		result = ConfirmSave::test_file(mwindow, filename);
-	}while(result);        // file exists so repeat
-
-//printf("SaveAs::run 6 %s\n", filename);
-
-
-
-
-// save it
-	FileXML file;
-	mwindow->gui->lock_window("SaveAs::run 1");
-// update the project name
-	mwindow->set_filename(filename);
-	mwindow->edl->save_xml(&file, filename);
-	mwindow->gui->unlock_window();
-	file.terminate_string();
-
-	if(file.write_to_file(filename))
-	{
-		char string2[256];
-		mwindow->set_filename("");      // update the project name
-		sprintf(string2, _("Couldn't open %s."), filename);
-		ErrorBox error(_(PROGRAM_NAME ": Error"),
-			mwindow->gui->get_abs_cursor_x(1),
-			mwindow->gui->get_abs_cursor_y(1));
-		error.create_objects(string2);
-		error.raise_window();
-		error.run_window();
+	if( mwindow->save(1) )
 		return;
-	}
-	else
-	{
-		char string[BCTEXTLEN];
-		sprintf(string, _("\"%s\" %dC written"), filename, (int)strlen(file.string()));
-		mwindow->gui->lock_window("SaveAs::run 2");
-		mwindow->gui->show_message(string);
-		mwindow->gui->unlock_window();
-	}
-
-
 	mwindow->session->changes_made = 0;
-	mmenu->add_load(filename);
-// Last command in program
 	if( quit_now )
 		mwindow->quit();
 	return;
 }
-
-
-SaveFileWindow::SaveFileWindow(MWindow *mwindow, char *init_directory)
- : BC_FileBox(mwindow->gui->get_abs_cursor_x(1),
-	mwindow->gui->get_abs_cursor_y(1) - BC_WindowBase::get_resources()->filebox_h / 2,
-	init_directory,
-	_(PROGRAM_NAME ": Save"),
-	_("Enter a filename to save as"))
-{
-	this->mwindow = mwindow;
-}
-
-SaveFileWindow::~SaveFileWindow() {}
-
 
 
 int SaveProjectModeItem::handle_event()

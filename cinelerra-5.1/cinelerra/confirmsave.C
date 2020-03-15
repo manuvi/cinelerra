@@ -20,12 +20,11 @@
  */
 
 #include "asset.h"
+#include "bchash.h"
 #include "confirmsave.h"
 #include "language.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
-
-
 
 
 ConfirmSave::ConfirmSave()
@@ -34,6 +33,38 @@ ConfirmSave::ConfirmSave()
 
 ConfirmSave::~ConfirmSave()
 {
+}
+
+int ConfirmSave::get_save_path(MWindow *mwindow, char *filename)
+{
+	int result = 1;
+	char directory[BCTEXTLEN];
+	sprintf(directory, "~");
+	mwindow->defaults->get("DIRECTORY", directory);
+	while( result ) {
+ 		int mx, my;  mwindow->gui->get_abs_cursor(mx, my);
+		my -= BC_WindowBase::get_resources()->filebox_h / 2;
+		char string[BCTEXTLEN];
+		sprintf(string, _("Enter a filename to save as"));
+		BC_FileBox *filebox = new BC_FileBox(mx, my, directory,
+			_(PROGRAM_NAME ": Save"), string);
+		filebox->lock_window("ConfirmSave::get_save_path");
+		filebox->create_objects();
+		filebox->unlock_window();
+		result = filebox->run_window();
+		mwindow->defaults->update("DIRECTORY", filebox->get_submitted_path());
+		strcpy(filename, filebox->get_submitted_path());
+		delete filebox;
+		if( result == 1 ) return 1;	// user cancelled
+		if( !filename[0] ) return 1;	// no filename given
+// Extend the filename with .xml
+		if( strlen(filename) < 4 ||
+		    strcasecmp(&filename[strlen(filename) - 4], ".xml") ) {
+			strcat(filename, ".xml");
+		}
+		result = ConfirmSave::test_file(mwindow, filename);
+	}
+	return result;
 }
 
 int ConfirmSave::test_file(MWindow *mwindow, char *path)

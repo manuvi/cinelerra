@@ -35,12 +35,12 @@ public:
 	ConfirmSave();
 	~ConfirmSave();
 
+	static int get_save_path(MWindow *mwindow, char *filename);
 // Return values:
 // 1 cancel
 // 0 replace or doesn't exist yet
 	static int test_file(MWindow *mwindow, char *path);
 	static int test_files(MWindow *mwindow, ArrayList<char*> *paths);
-
 };
 
 class ConfirmSaveWindow : public BC_Window

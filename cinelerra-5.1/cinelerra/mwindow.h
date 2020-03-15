@@ -169,6 +169,7 @@ public:
 	int load_defaults();
 	int save_defaults();
 	int set_filename(const char *filename);
+	int set_titlebar(const char *filename);
 // Total vertical pixels in timeline
 	int get_tracks_height();
 // Total horizontal pixels in timeline
@@ -176,6 +177,9 @@ public:
 // session stack
 	void stack_push(EDL *edl, Indexable *idxbl);
 	void stack_pop();
+	int save(EDL *edl, char *filename, int stat);
+	int save(int save_as);
+	void show_plugins();
 	void clip_to_media();
 	void media_to_clip();
 	int create_ref(Asset *asset, EDL *ref);

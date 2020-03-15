@@ -2261,27 +2261,7 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 	if(got_indexes) mainindexes->start_build();
 
 // Open plugin GUIs
-	Track *track = edl->tracks->first;
-	while( track ) {
-		for( int j = 0; j < track->plugin_set.size(); j++ ) {
-			PluginSet *plugins = track->plugin_set[j];
-			Plugin *plugin = plugins->get_first_plugin();
-
-			while(plugin) {
-				if( load_mode == LOADMODE_REPLACE ||
-				    load_mode == LOADMODE_REPLACE_CONCATENATE ) {
-					if( plugin->plugin_type == PLUGIN_STANDALONE &&
-					    plugin->show ) {
-						show_plugin(plugin);
-					}
-				}
-
-				plugin = (Plugin*)plugin->next;
-			}
-		}
-
-		track = track->next;
-	}
+	show_plugins();
 
 	// opening new session
 	if( ( load_mode == LOADMODE_REPLACE ||
@@ -3823,6 +3803,7 @@ void MWindow::stack_push(EDL *new_edl, Indexable *idxbl)
 	gui->lock_window("MWindow::stack_push");
 	if( stack.size() < 9 ) {
 		save_backup();
+		hide_plugins();
 		undo_before();
 		StackItem &item = stack.append();
 		item.edl = edl;
@@ -3845,6 +3826,7 @@ void MWindow::stack_push(EDL *new_edl, Indexable *idxbl)
 		update_project(LOADMODE_REPLACE);
 	}
 	gui->unlock_window();
+	show_plugins();
 }
 
 void MWindow::stack_pop()
@@ -3852,6 +3834,7 @@ void MWindow::stack_pop()
 	if( !stack.size() ) return;
 // writes on config_path/backup%d.xml
 	save_backup();
+	hide_plugins();
 // already have gui lock
 	StackItem &item = stack.last();
 // session edl replaced, overwrite and save clip data
@@ -3876,6 +3859,7 @@ void MWindow::stack_pop()
 	strcpy(session->filename, edl->path);
 	update_project(LOADMODE_REPLACE);
 	undo_after(_("open edl"), LOAD_ALL);
+	show_plugins();
 	gui->stack_button->update();
 	if( mtime && idxbl && idxbl->is_asset ) {
 		struct stat st;
@@ -3886,6 +3870,77 @@ void MWindow::stack_pop()
 			snprintf(text, sizeof(text),
 				 _("Warning: Asset not updated: %s"), asset->path);
 			show_warning(&preferences->warn_stack, text);
+		}
+	}
+}
+
+int MWindow::save(EDL *edl, char *filename, int stat)
+{
+	FileXML file;
+	edl->save_xml(&file, filename);
+	file.terminate_string();
+	if( file.write_to_file(filename) ) {
+		eprintf(_("Couldn't open %s"), filename);
+		return 1;
+	}
+	if( stat ) {
+		char string[BCTEXTLEN];
+		char *filename = stack.size() ?
+			stack[0].edl->path : session->filename;
+		sprintf(string, _("\"%s\" %jdC written"),
+			 filename, file.length());
+		gui->lock_window("SaveAs::run");
+		gui->show_message(string);
+		gui->unlock_window();
+	}
+	return 0;
+}
+
+int MWindow::save(int save_as)
+{
+	char new_path[BCTEXTLEN];  new_path[0] = 0;
+	char *path = stack.size() ? stack[0].edl->path : session->filename;
+	if( save_as || !path[0] ) {
+		if( ConfirmSave::get_save_path(this, new_path) )
+			return 1;
+		if( stack.size() ) {
+			strcpy(path, new_path);
+			set_titlebar(new_path);
+		}
+		else
+			set_filename(new_path);
+		gui->mainmenu->add_load(new_path);
+		path = new_path;
+	}
+	for( int i=stack.size(); --i>=0;  ) {
+		StackItem &item = stack[i];
+		Indexable *idxbl = item.idxbl;
+		if( idxbl->is_asset ) {
+			Asset *asset = (Asset *)idxbl;
+			if( asset->format == FILE_REF ) {
+				if( save(item.new_edl, asset->path, 0) )
+					return 1;
+			}
+		}
+		else if( item.new_edl != item.idxbl )
+			item.new_edl->overwrite_clip((EDL*)item.idxbl);
+	}
+	EDL *new_edl = stack.size() ? stack[0].edl : edl;
+	save(new_edl, path, 1);
+	return 0;
+}
+
+void MWindow::show_plugins()
+{
+	for( Track *track=edl->tracks->first; track; track=track->next ) {
+		for( int i=0; i<track->plugin_set.size(); ++i ) {
+			PluginSet *plugins = track->plugin_set[i];
+			Plugin *plugin = plugins->get_first_plugin();
+			for( ; plugin; plugin=(Plugin*)plugin->next ) {
+				if( plugin->plugin_type == PLUGIN_STANDALONE &&
+				    plugin->show )
+					show_plugin(plugin);
+			}
 		}
 	}
 }
@@ -4724,30 +4779,23 @@ int MWindow::set_filename(const char *filename)
 		strcpy(session->filename, filename);
 	if( filename != edl->path )
 		strcpy(edl->path, filename);
-
-	if(gui)
-	{
-		if(filename[0] == 0)
-		{
-			gui->set_title(PROGRAM_NAME);
-		}
-		else
-		{
-			FileSystem dir;
-			char string[BCTEXTLEN], string2[BCTEXTLEN];
-			dir.extract_name(string, filename);
-			sprintf(string2, PROGRAM_NAME ": %s", string);
-			gui->set_title(string2);
-		}
-	}
-	return 0;
+	return set_titlebar(filename);
 }
 
-
-
-
-
-
+int MWindow::set_titlebar(const char *filename)
+{
+	if( !gui ) return 0;
+	if( filename[0] ) {
+		FileSystem dir;
+		char string[BCTEXTLEN], string2[BCTEXTLEN];
+		dir.extract_name(string, filename);
+		sprintf(string2, PROGRAM_NAME ": %s", string);
+		gui->set_title(string2);
+	}
+	else
+		gui->set_title(PROGRAM_NAME);
+	return 0;
+}
 
 
 int MWindow::set_loop_boundaries()
