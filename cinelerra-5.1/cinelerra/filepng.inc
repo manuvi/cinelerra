@@ -23,5 +23,11 @@
 #define FILEPNG_INC
 
 class FilePNG;
+class PNGUnit;
+class PNGConfigVideo;
+class PNGUseAlpha;
+class PNGCompression;
+class PNGDepth8bit;
+class PNGDepth16bit;
 
 #endif

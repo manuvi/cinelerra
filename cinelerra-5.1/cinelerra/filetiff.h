@@ -53,29 +53,20 @@ public:
 	int write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit);
 	FrameWriterUnit* new_writer_unit(FrameWriter *writer);
 
-	enum
-	{
-		NONE,
+	enum { NONE,
 // values stored in Asset::tiff_cmodel
 // Data types
-		RGB_888,
-		RGB_161616,
-		RGBA_8888,
-		RGBA_16161616,
-		RGB_FLOAT,
-		RGBA_FLOAT,
-		GREYSCALE,
+		RGB_888, RGB_161616, RGBA_8888, RGBA_16161616,
+		RGB_FLOAT, RGBA_FLOAT, GREYSCALE,
 // values stored in Asset::tiff_compression
 // Compression types
-		LZW,
-		PACK_BITS,
-		DEFLATE,
-		JPEG
+		LZW, PACK_BITS, DEFLATE, JPEG,
+		PIXARFILM, PIXARLOG, JP2000, ADOBE_DEFLATE,
+		SGILOG, LZMA
 	};
 
 	Mutex *unit_lock;
 };
-
 
 // For each write frame call, since multiple write_frames are running concurrently.
 class FileTIFFUnit : public FrameWriterUnit
@@ -89,8 +80,6 @@ public:
 	VFrame *temp;
 	FileTIFF *file;
 };
-
-
 
 
 class TIFFConfigVideo : public  BC_Window
@@ -127,9 +116,6 @@ public:
 	int value;
 };
 
-
-
-
 class TIFFCompression : public BC_PopupMenu
 {
 public:
@@ -147,9 +133,5 @@ public:
 	TIFFConfigVideo *gui;
 	int value;
 };
-
-
-
-
 
 #endif

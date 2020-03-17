@@ -48,25 +48,16 @@ public:
 	FrameWriterUnit* new_writer_unit(FrameWriter *writer);
 
 // exr_compression values
-	enum
-	{
-		NONE,
-		PIZ,
-		ZIP,
-		ZIPS,
-		RLE,
-		PXR24
-	};
+	enum { NONE,
+		PIZ, ZIP, ZIPS, RLE, PXR24,
+		B44, B44A, DWAA, DWAB, };
 
 	static const char* compression_to_str(int compression);
 	static int str_to_compression(char *string);
 	static int compression_to_exr(int compression);
 
-	int native_cmodel;
-	int is_yuv;
-	float *temp_y;
-	float *temp_u;
-	float *temp_v;
+	int native_cmodel, is_yuv;
+	float *temp_y, *temp_u, *temp_v;
 };
 
 class EXRUnit : public FrameWriterUnit

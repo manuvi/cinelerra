@@ -733,8 +733,8 @@ void RenderThread::render_single(int test_overwrite, Asset *asset, EDL *edl,
 			render->result = 1;
 		}
 	}
-
-	render_frames = render->default_asset->frame_rate * total_length;
+// prevent single frame truncation to zero frames
+	render_frames = render->default_asset->frame_rate * total_length + 1e-4;
 
 // Generate packages
 	if( !render->result ) {

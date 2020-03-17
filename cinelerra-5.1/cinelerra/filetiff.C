@@ -102,34 +102,34 @@ int FileTIFF::check_sig(Asset *asset)
 
 const char* FileTIFF::compression_to_str(int value)
 {
-	switch(value)
-	{
-		case FileTIFF::NONE: return "None"; break;
-		case FileTIFF::LZW: return "LZW"; break;
-		case FileTIFF::PACK_BITS: return "Pack Bits"; break;
-		case FileTIFF::DEFLATE: return "Deflate"; break;
-		case FileTIFF::JPEG: return "JPEG"; break;
-		default:
-			return "None";
-			break;
+	switch( value ) {
+	case FileTIFF::NONE:		break;
+	case FileTIFF::LZW:		return "LZW";
+	case FileTIFF::PACK_BITS:	return "Pack Bits";
+	case FileTIFF::DEFLATE:		return "Deflate";
+	case FileTIFF::JPEG:		return "JPEG";
+	case FileTIFF::PIXARFILM:	return "PIXARFILM";
+	case FileTIFF::PIXARLOG:	return "PIXARLOG";
+	case FileTIFF::JP2000:		return "JP2000";
+	case FileTIFF::SGILOG:		return "SGILOG";
+	case FileTIFF::LZMA:		return "LZMA";
+	case FileTIFF::ADOBE_DEFLATE:	return "Adobe Deflate";
 	}
+	return _("None");
 }
 
 const char* FileTIFF::cmodel_to_str(int value)
 {
-	switch(value)
-	{
-		case FileTIFF::GREYSCALE: return "Greyscale"; break;
-		case FileTIFF::RGB_888: return "RGB-8 Bit"; break;
-		case FileTIFF::RGB_161616: return "RGB-16 Bit"; break;
-		case FileTIFF::RGBA_8888: return "RGBA-8 Bit"; break;
-		case FileTIFF::RGBA_16161616: return "RGBA-16 Bit"; break;
-		case FileTIFF::RGB_FLOAT: return "RGB-FLOAT"; break;
-		case FileTIFF::RGBA_FLOAT: return "RGBA-FLOAT"; break;
-		default:
-			return "RGB-8 Bit";
-			break;
+	switch( value ) {
+	case FileTIFF::RGB_888:		return "RGB-8 Bit";
+	case FileTIFF::RGB_161616:	return "RGB-16 Bit";
+	case FileTIFF::RGBA_8888:	return "RGBA-8 Bit";
+	case FileTIFF::RGBA_16161616:	return "RGBA-16 Bit";
+	case FileTIFF::RGB_FLOAT:	return "RGB-FLOAT";
+	case FileTIFF::RGBA_FLOAT:	return "RGBA-FLOAT";
+	case FileTIFF::GREYSCALE:	return "Greyscale";
 	}
+	return "RGB-8 Bit";
 }
 
 
@@ -404,79 +404,51 @@ int FileTIFF::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 	int components, color_model, bits, compression;
 	int sampleformat = SAMPLEFORMAT_UINT;
 	//int bytesperrow, type;
-	switch(asset->tiff_cmodel)
-	{
-		case FileTIFF::RGB_888:
-			components = 3;
-			color_model = BC_RGB888;
-			bits = 8;
-			//type = TIFF_BYTE;
-			//bytesperrow = 3 * asset->width;
+	switch( asset->tiff_cmodel ) {
+	case FileTIFF::RGB_888:
+		components = 3;  color_model = BC_RGB888;  bits = 8;
+		//type = TIFF_BYTE;  bytesperrow = 3 * asset->width;
+		break;
+	case FileTIFF::RGB_161616:
+		components = 3;  color_model = BC_RGB_FLOAT;  bits = 16;
+		//type = TIFF_SHORT;  bytesperrow = 6 * asset->width;
 			break;
-		case FileTIFF::RGB_161616:
-			components = 3;
-			color_model = BC_RGB_FLOAT;
-			bits = 16;
-			//type = TIFF_SHORT;
-			//bytesperrow = 6 * asset->width;
-			break;
-		case FileTIFF::RGBA_8888:
-			components = 4;
-			color_model = BC_RGBA8888;
-			bits = 8;
-			//type = TIFF_BYTE;
-			//bytesperrow = 4 * asset->width;
-			break;
-		case FileTIFF::RGBA_16161616:
-			components = 4;
-			color_model = BC_RGBA_FLOAT;
-			bits = 16;
-			//type = TIFF_SHORT;
-			//bytesperrow = 8 * asset->width;
-			break;
-		case FileTIFF::RGB_FLOAT:
-			components = 3;
-			color_model = BC_RGB_FLOAT;
-			bits = 32;
-			//type = TIFF_FLOAT;
-			sampleformat = SAMPLEFORMAT_IEEEFP;
-			//bytesperrow = 12 * asset->width;
-			break;
-		case FileTIFF::RGBA_FLOAT:
-			components = 4;
-			color_model = BC_RGBA_FLOAT;
-			bits = 32;
-			//type = TIFF_FLOAT;
-			sampleformat = SAMPLEFORMAT_IEEEFP;
-			//bytesperrow = 16 * asset->width;
-			break;
-		default:
-			components = 3;
-			color_model = BC_RGB888;
-			bits = 8;
-			//type = TIFF_BYTE;
-			//bytesperrow = 3 * asset->width;
-			break;
+	case FileTIFF::RGBA_8888:
+		components = 4;  color_model = BC_RGBA8888;  bits = 8;
+		//type = TIFF_BYTE;  bytesperrow = 4 * asset->width;
+		break;
+	case FileTIFF::RGBA_16161616:
+		components = 4;  color_model = BC_RGBA_FLOAT;  bits = 16;
+		//type = TIFF_SHORT;  bytesperrow = 8 * asset->width;
+		break;
+	case FileTIFF::RGB_FLOAT:
+		components = 3;  color_model = BC_RGB_FLOAT;  bits = 32;
+		//type = TIFF_FLOAT;  bytesperrow = 12 * asset->width;
+		sampleformat = SAMPLEFORMAT_IEEEFP;
+		break;
+	case FileTIFF::RGBA_FLOAT:
+		components = 4;  color_model = BC_RGBA_FLOAT;  bits = 32;
+		//type = TIFF_FLOAT;  bytesperrow = 16 * asset->width;
+		sampleformat = SAMPLEFORMAT_IEEEFP;
+		break;
+	default:
+		components = 3;  color_model = BC_RGB888;  bits = 8;
+		//type = TIFF_BYTE;  bytesperrow = 3 * asset->width;
+		break;
 	}
 
-
-	switch(asset->tiff_compression)
-	{
-		case FileTIFF::LZW:
-			compression = COMPRESSION_LZW;
-			break;
-		case FileTIFF::PACK_BITS:
-			compression = COMPRESSION_PACKBITS;
-			break;
-		case FileTIFF::DEFLATE:
-			compression = COMPRESSION_DEFLATE;
-			break;
-		case FileTIFF::JPEG:
-			compression = COMPRESSION_JPEG;
-			break;
-		default:
-			compression = COMPRESSION_NONE;
-			break;
+	switch(asset->tiff_compression) {
+	case FileTIFF::LZW:           compression = COMPRESSION_LZW;        break;
+	case FileTIFF::PACK_BITS:     compression = COMPRESSION_PACKBITS;   break;
+	case FileTIFF::DEFLATE:       compression = COMPRESSION_DEFLATE;    break;
+	case FileTIFF::JPEG:          compression = COMPRESSION_JPEG;       break;
+	case FileTIFF::PIXARFILM:     compression = COMPRESSION_PIXARFILM;  break;
+	case FileTIFF::PIXARLOG:      compression = COMPRESSION_PIXARLOG;   break;
+	case FileTIFF::JP2000:        compression = COMPRESSION_JP2000;     break;
+	case FileTIFF::LZMA:          compression = COMPRESSION_LZMA;       break;
+	case FileTIFF::SGILOG:        compression = COMPRESSION_SGILOG;     break;
+	case FileTIFF::ADOBE_DEFLATE: compression = ADOBE_DEFLATE;          break;
+	default:                      compression = COMPRESSION_NONE;       break;
 	}
 
 	TIFFSetField(stream, TIFFTAG_IMAGEWIDTH, asset->width);
@@ -484,7 +456,11 @@ int FileTIFF::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 	TIFFSetField(stream, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
 	TIFFSetField(stream, TIFFTAG_SAMPLESPERPIXEL, components);
 	TIFFSetField(stream, TIFFTAG_BITSPERSAMPLE, bits);
-    TIFFSetField(stream, TIFFTAG_SAMPLEFORMAT, sampleformat);
+        TIFFSetField(stream, TIFFTAG_SAMPLEFORMAT, sampleformat);
+        if( components == 4 ) {
+		uint16 out[1];  out[0] = EXTRASAMPLE_UNASSALPHA;
+		TIFFSetField(stream, TIFFTAG_EXTRASAMPLES, 1, &out);
+	}
 	TIFFSetField(stream, TIFFTAG_COMPRESSION, compression);
 	TIFFSetField(stream, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
  	TIFFSetField(stream, TIFFTAG_ROWSPERSTRIP,
@@ -493,26 +469,17 @@ int FileTIFF::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 // 		(8 * 1024) / bytesperrow);
 	TIFFSetField(stream, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
 
-	if(frame->get_color_model() == color_model)
-	{
-		for(int i = 0; i < asset->height; i++)
-		{
-			TIFFWriteScanline(stream, frame->get_rows()[i], i, 0);
-		}
+	if( frame->get_color_model() == color_model ) {
+		for( int y=0; y<asset->height; ++y )
+			TIFFWriteScanline(stream, frame->get_rows()[y], y, 0);
 	}
-	else
-	{
-		if(tiff_unit->temp &&
-			tiff_unit->temp->get_color_model() != color_model)
-		{
-			delete tiff_unit->temp;
-			tiff_unit->temp = 0;
+	else {
+		if( tiff_unit->temp &&
+		    tiff_unit->temp->get_color_model() != color_model ) {
+			delete tiff_unit->temp;  tiff_unit->temp = 0;
 		}
-		if(!tiff_unit->temp)
-		{
-			tiff_unit->temp =
-				new VFrame(asset->width, asset->height, color_model, 0);
-		}
+		if( !tiff_unit->temp )
+			tiff_unit->temp = new VFrame(asset->width, asset->height, color_model, 0);
 
 		BC_CModels::transfer(tiff_unit->temp->get_rows(), frame->get_rows(),
 			tiff_unit->temp->get_y(), tiff_unit->temp->get_u(), tiff_unit->temp->get_v(),
@@ -521,10 +488,8 @@ int FileTIFF::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 			0, 0, frame->get_w(), frame->get_h(),
 			frame->get_color_model(), color_model,
 			0, frame->get_w(), frame->get_w());
-		for(int i = 0; i < asset->height; i++)
-		{
-			TIFFWriteScanline(stream, tiff_unit->temp->get_rows()[i], i, 0);
-		}
+		for( int y=0; y<asset->height; ++y )
+			TIFFWriteScanline(stream, tiff_unit->temp->get_rows()[y], y, 0);
 	}
 
 	TIFFClose(stream);
@@ -604,10 +569,7 @@ int TIFFConfigVideo::close_event()
 
 
 TIFFColorspace::TIFFColorspace(TIFFConfigVideo *gui, int x, int y, int w)
- : BC_PopupMenu(x,
- 	y,
-	w,
-	FileTIFF::cmodel_to_str(gui->asset->tiff_cmodel))
+ : BC_PopupMenu(x, y, w, FileTIFF::cmodel_to_str(gui->asset->tiff_cmodel))
 {
 	this->gui = gui;
 }
@@ -656,14 +618,17 @@ int TIFFCompression::handle_event()
 void TIFFCompression::create_objects()
 {
 	add_item(new TIFFCompressionItem(gui, FileTIFF::NONE));
-//	add_item(new TIFFCompressionItem(gui, FileTIFF::LZW));
+	add_item(new TIFFCompressionItem(gui, FileTIFF::LZW)); // patent expired in 2004 ?
 	add_item(new TIFFCompressionItem(gui, FileTIFF::PACK_BITS));
-//	add_item(new TIFFCompressionItem(gui, FileTIFF::DEFLATE));
+	add_item(new TIFFCompressionItem(gui, FileTIFF::DEFLATE)); // works!
+//	add_item(new TIFFCompressionItem(gui, FileTIFF::SGILOG));  scanline encoding not implemented
+	add_item(new TIFFCompressionItem(gui, FileTIFF::LZMA)); // works, a bit new for data exchange?
+//	add_item(new TIFFCompressionItem(gui, FileTIFF::ADOBE_DEFLATE)); scanline encoding not implemented
+//	add_item(new TIFFCompressionItem(gui, FileTIFF::PIXARFILM)); not supported for scanline encoding
+//	add_item(new TIFFCompressionItem(gui, FileTIFF::PIXARLOG)); only 8 bit ?
+//	add_item(new TIFFCompressionItem(gui, FileTIFF::JP2000)); doesn't support scanline encoding
 //	add_item(new TIFFCompressionItem(gui, FileTIFF::JPEG));
 }
-
-
-
 
 
 TIFFCompressionItem::TIFFCompressionItem(TIFFConfigVideo *gui, int value)
@@ -677,6 +642,4 @@ int TIFFCompressionItem::handle_event()
 	gui->asset->tiff_compression = value;
 	return 0;
 }
-
-
 

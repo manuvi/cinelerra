@@ -133,6 +133,8 @@ int Asset::init_values()
 	ac3_bitrate = 128;
 
 	png_use_alpha = 0;
+	png_depth = 8;
+	png_compression = 0;
 
 	exr_use_alpha = 0;
 	exr_compression = 0;
@@ -279,13 +281,14 @@ void Asset::copy_format(Asset *asset, int do_index)
 	ac3_bitrate = asset->ac3_bitrate;
 
 	png_use_alpha = asset->png_use_alpha;
+	png_depth = asset->png_depth;
+	png_compression = asset->png_compression;
 	exr_use_alpha = asset->exr_use_alpha;
 	exr_compression = asset->exr_compression;
 
 	tiff_cmodel = asset->tiff_cmodel;
 	tiff_compression = asset->tiff_compression;
-	
-	
+
 	mov_sphere = asset->mov_sphere;
 	jpeg_sphere = asset->jpeg_sphere;
 }
@@ -803,6 +806,8 @@ void Asset::load_defaults(BC_Hash *defaults,
 	ac3_bitrate = GET_DEFAULT("AC3_BITRATE", ac3_bitrate);
 
 	png_use_alpha = GET_DEFAULT("PNG_USE_ALPHA", png_use_alpha);
+	png_depth = GET_DEFAULT("PNG_DEPTH", png_depth);
+	png_compression = GET_DEFAULT("PNG_COMPRESSION", png_compression);
 	exr_use_alpha = GET_DEFAULT("EXR_USE_ALPHA", exr_use_alpha);
 	exr_compression = GET_DEFAULT("EXR_COMPRESSION", exr_compression);
 	tiff_cmodel = GET_DEFAULT("TIFF_CMODEL", tiff_cmodel);
@@ -899,6 +904,8 @@ void Asset::save_defaults(BC_Hash *defaults,
 
 
 		UPDATE_DEFAULT("PNG_USE_ALPHA", png_use_alpha);
+		UPDATE_DEFAULT("PNG_DEPTH", png_depth);
+		UPDATE_DEFAULT("PNG_COMPRESSION", png_compression);
 		UPDATE_DEFAULT("EXR_USE_ALPHA", exr_use_alpha);
 		UPDATE_DEFAULT("EXR_COMPRESSION", exr_compression);
 		UPDATE_DEFAULT("TIFF_CMODEL", tiff_cmodel);

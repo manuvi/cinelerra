@@ -27,7 +27,9 @@
 #include "file.inc"
 #include "filebase.h"
 #include "filelist.h"
+#include "filepng.inc"
 #include "vframe.inc"
+
 
 class FilePNG : public FileList
 {
@@ -74,11 +76,15 @@ public:
 
 	void create_objects();
 	int close_event();
+	int update_depth(int depth);
 
 	BC_WindowBase *parent_window;
 	Asset *asset;
+	PNGUseAlpha *use_alpha;
+	PNGCompression *compression;
+	PNGDepth8bit *depth8;
+	PNGDepth16bit *depth16;
 };
-
 
 class PNGUseAlpha : public BC_CheckBox
 {
@@ -88,5 +94,30 @@ public:
 	PNGConfigVideo *gui;
 };
 
+class PNGCompression : public BC_TumbleTextBox
+{
+public:
+        PNGCompression(PNGConfigVideo *gui, int x, int y);
+        int handle_event();
+        PNGConfigVideo *gui;
+};
+
+class PNGDepth8bit : public BC_Radial
+{
+public:
+	PNGDepth8bit(PNGConfigVideo *gui, int x, int y);
+	int handle_event();
+
+	PNGConfigVideo *gui;
+};
+
+class PNGDepth16bit : public BC_Radial
+{
+public:
+	PNGDepth16bit(PNGConfigVideo *gui, int x, int y);
+	int handle_event();
+
+	PNGConfigVideo *gui;
+};
 
 #endif

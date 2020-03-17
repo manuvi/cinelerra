@@ -501,10 +501,6 @@ int FileMPEG::open_file(int rd, int wr)
 				{
 					append_vcommand_line("-a");
 // Square pixels
-					if(EQUIV((double)asset->width / asset->height,
-						asset->aspect_ratio))
-						append_vcommand_line("1");
-					else
 					if(EQUIV(asset->aspect_ratio, 1.333))
 						append_vcommand_line("2");
 					else
@@ -513,6 +509,10 @@ int FileMPEG::open_file(int rd, int wr)
 					else
 					if(EQUIV(asset->aspect_ratio, 2.11))
 						append_vcommand_line("4");
+					else
+					if(EQUIV((double)asset->width / asset->height,
+						asset->aspect_ratio))
+						append_vcommand_line("1");
 				}
 
 				append_vcommand_line(asset->vmpeg_derivative == 1 ? "-1" : "");

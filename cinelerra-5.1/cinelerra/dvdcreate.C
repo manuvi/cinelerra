@@ -177,7 +177,7 @@ char *DVD_BatchRenderJob::create_script(EDL *edl, ArrayList<Indexable *> *idxbls
 	int file_seq = farmed || labeled ? 1 : 0;
  	if( !muxed ) {
 		if( file_seq ) {
-			fprintf(fp, "cat > $dir/dvd.m2v $dir/dvd.m2v0*\n");
+			fprintf(fp, "cat > $dir/dvd.m2v $dir/dvd.m2v[0-9]*\n");
 			fprintf(fp, "mplex -M -f 8 -o $dir/dvd.mpg $dir/dvd.m2v $dir/dvd.ac3\n");
 			file_seq = 0;
 		}

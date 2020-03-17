@@ -61,6 +61,10 @@ inc_path=$(call if_pkg,$(1),$(inc_$(1)), $(call pkg_conf,$(1),--cflags))
 ld_path=$(call if_pkg,$(1),-L$(call bld_path,$(1),$(2)) $(lib_$(1)))
 if_ena=$(if $(or $(ver_$(1)),$(filter $(1),$(shared_pkgs))),$(2))
 if_want=$(if $(filter x$(WANT_$(1)),xyes),$(2),$(3))
+sysincs:=usr/include usr/local/include
+syslibs:=usr/lib usr/lib32 usr/lib64 lib lib32 lib64 usr/local/lib usr/local/lib32 usr/local/lib64
+pkg_incl=$(lastword $(wildcard $(foreach f,$(sysincs), $(call bld_path,$(1),$(f)))))
+pkg_libs=$(lastword $(wildcard $(foreach f,$(syslibs), $(call bld_path,$(1),$(f)))))
 
 #$(eval $(call std-build,pkg,deps...))
 #$(pkg.cflags) added as CFLAGS+=$(cflags) to pkg.vars
@@ -241,7 +245,10 @@ opencv.cfg_params?= -DBUILD_SHARED_LIBS:BOOL=OFF
 openexr.cfg_vars?=LD_LIBRARY_PATH=$(call bld_path,ilmbase,usr/lib)
 openexr.cfg_params?=--enable-shared=no --with-ilmbase-prefix=$(call bld_path,ilmbase,usr)
 speech_tools.mak_params?=-j1
-tiff.cfg_params+= --enable-shared=no --disable-zstd $(call if_npkg,libwebp,--without-webp)
+tiff.cfg_vars+=LIBS+=" -lpthread"
+tiff.cfg_params+= --enable-shared=no --disable-zstd $(call if_pkg,libwebp,\
+ --with-webp-include-dir=$(call pkg_incl,libwebp)\
+ --with-webp-lib-dir=$(call pkg_libs,libwebp))
 twolame.cfg_params?=--enable-shared=no
 x264.cfg_params?= --enable-static --enable-pic
 x265.cfg_vars?=$(call cmake_config,source)
@@ -343,7 +350,7 @@ $(call rules,$(call std-build,openexr, ilmbase))
 $(call rules,$(call std-build,openjpeg))
 $(call rules,$(call std-build,opus))
 $(call rules,$(call std-build,speech_tools))
-$(call rules,$(call std-build,tiff))
+$(call rules,$(call std-build,tiff, libwebp))
 $(call rules,$(call std-build,twolame))
 $(call rules,$(call std-build,x264))
 $(call rules,$(call std-build,x265))

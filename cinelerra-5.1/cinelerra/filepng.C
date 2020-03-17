@@ -102,31 +102,27 @@ int FilePNG::can_copy_from(Asset *asset, int64_t position)
 	return 0;
 }
 
-
 int FilePNG::colormodel_supported(int colormodel)
 {
-	if( ((colormodel == BC_RGBA8888)  && (native_cmodel == BC_RGBA16161616)) ||
-	    ((colormodel == BC_RGB161616) && (native_cmodel == BC_RGBA16161616)) ||
-	     (colormodel == BC_RGB888) || (colormodel == BC_RGBA8888) )
+	if( colormodel == BC_RGB888 || colormodel == BC_RGBA8888 )
 		return colormodel;
-	if( (colormodel == BC_RGB161616) && (native_cmodel == BC_RGBA8888) )
-		return BC_RGB888;
+	if( colormodel == BC_RGB161616 && native_cmodel == BC_RGBA16161616 )
+		return colormodel;
 	if( native_cmodel >= 0 )
 		return native_cmodel;
-	return asset->png_use_alpha ? BC_RGBA8888 : BC_RGB888;
+	int use_16bit = BC_CModels::is_float(colormodel) ||
+		 BC_CModels::calculate_max(colormodel) > 255 ? 1 : 0;
+	return BC_CModels::has_alpha(colormodel) ?
+		(use_16bit ? BC_RGBA16161616 : BC_RGBA8888) :
+		(use_16bit ? BC_RGB161616 : BC_RGB888);
 }
-
 
 int FilePNG::get_best_colormodel(Asset *asset, int driver)
 {
-	if(asset->png_use_alpha)
-		return BC_RGBA8888;
-	else
-		return BC_RGB888;
+	return asset->png_depth == 16 ?
+		(asset->png_use_alpha ? BC_RGBA16161616 : BC_RGB161616) :
+		(asset->png_use_alpha ? BC_RGBA8888 : BC_RGB888);
 }
-
-
-
 
 int FilePNG::read_frame_header(char *path)
 {
@@ -207,21 +203,19 @@ int FilePNG::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 	PNGUnit *png_unit = (PNGUnit*)unit;
 	png_structp png_ptr = 0;
 	png_infop info_ptr = 0;
-	VFrame *output_frame;
+	VFrame *output_frame = frame;
 	int result = 1;
 	data->set_compressed_size(0);
 //printf("FilePNG::write_frame 1\n");
-	native_cmodel = asset->png_use_alpha ? BC_RGBA8888 : BC_RGB888;
-	if(frame->get_color_model() != native_cmodel)
-	{
-		if(!png_unit->temp_frame) png_unit->temp_frame =
-			new VFrame(asset->width, asset->height, native_cmodel, 0);
-
+	native_cmodel = asset->png_depth == 16 ?
+		(asset->png_use_alpha ?  BC_RGBA16161616 : BC_RGB161616) :
+		(asset->png_use_alpha ?  BC_RGBA8888 : BC_RGB888) ;
+	if( frame->get_color_model() != native_cmodel ) {
+		VFrame::get_temp(png_unit->temp_frame,
+			asset->width, asset->height, native_cmodel);
 		png_unit->temp_frame->transfer_from(frame);
 		output_frame = png_unit->temp_frame;
 	}
-	else
-		output_frame = frame;
 
 //printf("FilePNG::write_frame 1\n");
 	png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);
@@ -230,11 +224,13 @@ int FilePNG::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 			info_ptr = png_create_info_struct(png_ptr);
 			png_set_write_fn(png_ptr, data,
 				(png_rw_ptr)write_function, (png_flush_ptr)flush_function);
-			png_set_compression_level(png_ptr, 5);
-
-			png_set_IHDR(png_ptr, info_ptr, asset->width, asset->height, 8,
+			png_set_compression_level(png_ptr, asset->png_compression);
+			png_set_IHDR(png_ptr, info_ptr, asset->width, asset->height, asset->png_depth,
 				asset->png_use_alpha ?  PNG_COLOR_TYPE_RGB_ALPHA : PNG_COLOR_TYPE_RGB,
 				PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+// does not work (gg 2020/03/17 libpng16 fc31)
+//			if( asset->png_depth == 16 && BC_Resources::little_endian )
+//				png_set_swap(png_ptr);
 			png_write_info(png_ptr, info_ptr);
 			png_write_image(png_ptr, output_frame->get_rows());
 			png_write_end(png_ptr, info_ptr);
@@ -351,21 +347,39 @@ PNGUnit::~PNGUnit()
 PNGConfigVideo::PNGConfigVideo(BC_WindowBase *parent_window, Asset *asset)
  : BC_Window(_(PROGRAM_NAME ": Video Compression"),
 	parent_window->get_abs_cursor_x(1), parent_window->get_abs_cursor_y(1),
-	xS(200), yS(100))
+	xS(240), yS(160))
 {
 	this->parent_window = parent_window;
 	this->asset = asset;
+	use_alpha = 0;
+	compression = 0;
+	depth8 = 0;
+	depth16 = 0;
 }
 
 PNGConfigVideo::~PNGConfigVideo()
 {
+	delete compression;
 }
 
 void PNGConfigVideo::create_objects()
 {
 	lock_window("PNGConfigVideo::create_objects");
-	int x = xS(10), y = yS(10);
-	add_subwindow(new PNGUseAlpha(this, x, y));
+	BC_Title *title;
+	int xs5 = xS(5), ys5 = yS(5), xs10 = xS(10), ys10 = yS(10);
+	int x = xs10, y = ys10;
+	add_subwindow(use_alpha = new PNGUseAlpha(this, x, y));
+	y += use_alpha->get_h() + ys10;
+	add_subwindow(title = new BC_Title(x,y,_("Compression:")));
+	int x1 = x + title->get_w() + xs10;
+	compression = new PNGCompression(this, x1, y);
+	compression->create_objects();
+	y += compression->get_h() + ys5;
+	add_subwindow(title = new BC_Title(x,y,_("Depth:")));
+	x1 = x + title->get_w() + xs10;
+	add_subwindow(depth8 = new PNGDepth8bit(this, x1, y));
+	x1 += depth8->get_w() + xs5;
+	add_subwindow(depth16 = new PNGDepth16bit(this, x1, y));
 	add_subwindow(new BC_OKButton(this));
 	show_window(1);
 	unlock_window();
@@ -375,6 +389,14 @@ int PNGConfigVideo::close_event()
 {
 	set_done(0);
 	return 1;
+}
+
+int PNGConfigVideo::update_depth(int depth)
+{
+	asset->png_depth = depth;
+        depth8->update(depth == 8);
+        depth16->update(depth == 16);
+        return 1;
 }
 
 
@@ -388,5 +410,40 @@ int PNGUseAlpha::handle_event()
 {
 	gui->asset->png_use_alpha = get_value();
 	return 1;
+}
+
+PNGCompression::PNGCompression(PNGConfigVideo *gui, int x, int y)
+ : BC_TumbleTextBox(gui, (int64_t)gui->asset->png_compression,
+	(int64_t)0, (int64_t)9, x, y, xS(40))
+{
+	this->gui = gui;
+}
+
+int PNGCompression::handle_event()
+{
+	gui->asset->png_compression = atol(get_text());
+	return 1;
+}
+
+PNGDepth8bit::PNGDepth8bit(PNGConfigVideo *gui, int x, int y)
+ : BC_Radial(x, y, gui->asset->png_depth==8,_("8 Bit"))
+{
+	this->gui = gui;
+}
+
+int PNGDepth8bit::handle_event()
+{
+	return gui->update_depth(8);
+}
+
+PNGDepth16bit::PNGDepth16bit(PNGConfigVideo *gui, int x, int y)
+ : BC_Radial(x, y, gui->asset->png_depth==16,_("16 Bit"))
+{
+	this->gui = gui;
+}
+
+int PNGDepth16bit::handle_event()
+{
+	return gui->update_depth(16);
 }
 

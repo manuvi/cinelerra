@@ -24,6 +24,7 @@
 #include "asset.h"
 #include "bcsignals.h"
 #include "clip.h"
+#include "file.h"
 #include "fileexr.h"
 #include "filesystem.h"
 #include "interlacemodes.h"
@@ -120,15 +121,6 @@ void EXRIStream::clear()
 }
 
 
-
-
-
-
-
-
-
-
-
 EXROStream::EXROStream(VFrame *data)
  : Imf::OStream("mypath")
 {
@@ -160,15 +152,6 @@ void EXROStream::seekp(Imf::Int64 pos)
 }
 
 
-
-
-
-
-
-
-
-
-
 FileEXR::FileEXR(Asset *asset, File *file)
  : FileList(asset, file, "EXRLIST", ".exr", FILE_EXR, FILE_EXR_LIST)
 {
@@ -181,54 +164,58 @@ FileEXR::FileEXR(Asset *asset, File *file)
 
 FileEXR::~FileEXR()
 {
-	if(temp_y) delete [] temp_y;
-	if(temp_u) delete [] temp_u;
-	if(temp_v) delete [] temp_v;
+	delete [] temp_y;
+	delete [] temp_u;
+	delete [] temp_v;
 }
 
 const char* FileEXR::compression_to_str(int compression)
 {
-	switch(compression)
-	{
-		case FileEXR::NONE: return "None"; break;
-		case FileEXR::PIZ: return "PIZ"; break;
-		case FileEXR::ZIP: return "ZIP"; break;
-		case FileEXR::ZIPS: return "ZIPS"; break;
-		case FileEXR::RLE: return "RLE"; break;
-		case FileEXR::PXR24: return "PXR24"; break;
+	switch( compression ) {
+	case NONE:	break;
+	case PIZ:	return "PIZ";
+	case ZIP:	return "ZIP";
+	case ZIPS:	return "ZIPS";
+	case RLE:	return "RLE";
+	case PXR24:	return "PXR24";
+	case B44:	return "B44";
+	case B44A:	return "B44A";
+	case DWAB:	return "DWAB";
+	case DWAA:	return "DWAA";
 	}
 	return _("None");
 }
 
 int FileEXR::compression_to_exr(int compression)
 {
-	switch(compression)
-	{
-		case FileEXR::NONE: return (int)Imf::NO_COMPRESSION; break;
-		case FileEXR::PIZ: return (int)Imf::PIZ_COMPRESSION; break;
-		case FileEXR::ZIP: return (int)Imf::ZIP_COMPRESSION; break;
-		case FileEXR::ZIPS: return (int)Imf::ZIPS_COMPRESSION; break;
-		case FileEXR::RLE: return (int)Imf::RLE_COMPRESSION; break;
-		case FileEXR::PXR24: return (int)Imf::PXR24_COMPRESSION; break;
+	switch( compression ) {
+	case NONE:	return Imf::NO_COMPRESSION;
+	case PIZ:	return Imf::PIZ_COMPRESSION;
+	case ZIP:	return Imf::ZIP_COMPRESSION;
+	case ZIPS:	return Imf::ZIPS_COMPRESSION;
+	case RLE:	return Imf::RLE_COMPRESSION;
+	case PXR24:	return Imf::PXR24_COMPRESSION;
+	case B44:	return Imf::B44_COMPRESSION;
+	case B44A:	return Imf::B44A_COMPRESSION;
+	case DWAA:	return Imf::DWAA_COMPRESSION;
+	case DWAB:	return Imf::DWAB_COMPRESSION;
 	}
 	return Imf::NO_COMPRESSION;
 }
 
 int FileEXR::str_to_compression(char *string)
 {
-	if(!strcmp(compression_to_str(FileEXR::NONE), string))
-		return FileEXR::NONE;
-	if(!strcmp(compression_to_str(FileEXR::PIZ), string))
-		return FileEXR::PIZ;
-	if(!strcmp(compression_to_str(FileEXR::ZIP), string))
-		return FileEXR::ZIP;
-	if(!strcmp(compression_to_str(FileEXR::ZIPS), string))
-		return FileEXR::ZIPS;
-	if(!strcmp(compression_to_str(FileEXR::RLE), string))
-		return FileEXR::RLE;
-	if(!strcmp(compression_to_str(FileEXR::PXR24), string))
-		return PXR24;
-	return FileEXR::NONE;
+	if( !strcmp(compression_to_str(NONE), string) ) return NONE;
+	if( !strcmp(compression_to_str(PIZ), string)  ) return PIZ;
+	if( !strcmp(compression_to_str(ZIP), string)  ) return ZIP;
+	if( !strcmp(compression_to_str(ZIPS), string) ) return ZIPS;
+	if( !strcmp(compression_to_str(RLE), string)  ) return RLE;
+	if( !strcmp(compression_to_str(RLE), string)  ) return B44;
+	if( !strcmp(compression_to_str(RLE), string)  ) return B44A;
+	if( !strcmp(compression_to_str(RLE), string)  ) return DWAA;
+	if( !strcmp(compression_to_str(RLE), string)  ) return DWAB;
+	if( !strcmp(compression_to_str(PXR24),string) ) return PXR24;
+	return NONE;
 }
 
 int FileEXR::check_sig(Asset *asset, char *test)
@@ -247,8 +234,7 @@ void FileEXR::get_parameters(BC_WindowBase *parent_window,
 	Asset *asset, BC_WindowBase* &format_window,
 	int audio_options, int video_options, EDL *edl)
 {
-	if(video_options)
-	{
+	if( video_options ) {
 		EXRConfigVideo *window = new EXRConfigVideo(parent_window, asset);
 		format_window = window;
 		window->create_objects();
@@ -264,10 +250,7 @@ int FileEXR::colormodel_supported(int colormodel)
 
 int FileEXR::get_best_colormodel(Asset *asset, int driver)
 {
-	if(asset->exr_use_alpha)
-		return BC_RGBA_FLOAT;
-	else
-		return BC_RGB_FLOAT;
+	return asset->exr_use_alpha ? BC_RGBA_FLOAT : BC_RGB_FLOAT;
 }
 
 int64_t FileEXR::get_memory_usage()
@@ -328,20 +311,19 @@ int FileEXR::read_frame_header(char *path)
 
 int FileEXR::read_frame(VFrame *frame, VFrame *data)
 {
+	Imf::setGlobalThreadCount(file->cpus);
 	EXRIStream exr_stream((char*)data->get_data(), data->get_compressed_size());
 	Imf::InputFile file(exr_stream);
 	Imath::Box2i dw = file.header().dataWindow();
-    int dx = dw.min.x;
-    int dy = dw.min.y;
+	int dx = dw.min.x, dy = dw.min.y;
 	Imf::FrameBuffer framebuffer;
 	float **rows = (float**)frame->get_rows();
 	int components = BC_CModels::components(frame->get_color_model());
 
-	if(is_yuv)
-	{
-		if(!temp_y) temp_y = new float[asset->width * asset->height];
-		if(!temp_u) temp_u = new float[asset->width * asset->height / 4];
-		if(!temp_v) temp_v = new float[asset->width * asset->height / 4];
+	if( is_yuv ) {
+		if( !temp_y ) temp_y = new float[asset->width * asset->height];
+		if( !temp_u ) temp_u = new float[asset->width * asset->height / 4];
+		if( !temp_v ) temp_v = new float[asset->width * asset->height / 4];
 		framebuffer.insert("Y", Imf::Slice(Imf::FLOAT,
 			(char*)(temp_y - dy * asset->width - dx),
 			sizeof(float),
@@ -359,8 +341,7 @@ int FileEXR::read_frame(VFrame *frame, VFrame *data)
 			2,
 			2));
 	}
-	else
-	{
+	else {
 		framebuffer.insert("R", Imf::Slice(Imf::FLOAT,
 			(char*)(&rows[-dy][-dx * components]),
 			sizeof(float) * components,
@@ -376,8 +357,7 @@ int FileEXR::read_frame(VFrame *frame, VFrame *data)
 	}
 
 // Alpha always goes directly to the output frame
-	if(components == 4)
-	{
+	if( components == 4 ) {
 		framebuffer.insert("A", Imf::Slice(Imf::FLOAT,
 			(char*)(&rows[-dy][-dx * components + 3]),
 			sizeof(float) * components,
@@ -387,23 +367,20 @@ int FileEXR::read_frame(VFrame *frame, VFrame *data)
 	file.setFrameBuffer(framebuffer);
 	file.readPixels (dw.min.y, dw.max.y);
 
-	if(is_yuv)
-	{
+	if( is_yuv ) {
 // Convert to RGB using crazy ILM equations
 		Imath::V3f yw;
 		Imf::Chromaticities cr;
 		yw = Imf::RgbaYca::computeYw(cr);
 
-		for(int i = 0; i < asset->height - 1; i += 2)
-		{
+		for( int i=0; i<asset->height-1; i+=2 ) {
 			float *y_row1 = temp_y + i * asset->width;
 			float *y_row2 = temp_y + (i + 1) * asset->width;
 			float *u_row = temp_u + (i * asset->width / 4);
 			float *v_row = temp_v + (i * asset->width / 4);
 			float *out_row1 = rows[i];
 			float *out_row2 = rows[i + 1];
-			for(int j = 0; j < asset->width - 1; j += 2)
-			{
+			for( int j=0; j<asset->width-1; j+=2 ) {
 				float v = *u_row++;
 				float u = *v_row++;
 				float y;
@@ -451,22 +428,19 @@ int FileEXR::read_frame(VFrame *frame, VFrame *data)
 }
 
 
-
-
 int FileEXR::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 {
 	EXRUnit *exr_unit = (EXRUnit*)unit;
 
 	VFrame *output_frame;
 	data->set_compressed_size(0);
-
+	Imf::setGlobalThreadCount(file->cpus);
 
 	int native_cmodel = asset->exr_use_alpha ? BC_RGBA_FLOAT : BC_RGB_FLOAT;
 	int components = BC_CModels::components(native_cmodel);
 
-	if(frame->get_color_model() != native_cmodel)
-	{
-		if(!exr_unit->temp_frame) exr_unit->temp_frame =
+	if( frame->get_color_model() != native_cmodel ) {
+		if( !exr_unit->temp_frame ) exr_unit->temp_frame =
 			new VFrame(asset->width, asset->height, native_cmodel, 0);
 		BC_CModels::transfer(exr_unit->temp_frame->get_rows(), /* Leave NULL if non existent */
 			frame->get_rows(),
@@ -538,16 +512,6 @@ FrameWriterUnit* FileEXR::new_writer_unit(FrameWriter *writer)
 }
 
 
-
-
-
-
-
-
-
-
-
-
 EXRUnit::EXRUnit(FileEXR *file, FrameWriter *writer)
  : FrameWriterUnit(writer)
 {
@@ -559,15 +523,6 @@ EXRUnit::~EXRUnit()
 {
 	if(temp_frame) delete temp_frame;
 }
-
-
-
-
-
-
-
-
-
 
 
 EXRConfigVideo::EXRConfigVideo(BC_WindowBase *parent_window, Asset *asset)
@@ -634,6 +589,10 @@ void EXRCompression::create_objects()
 	add_item(new EXRCompressionItem(gui, FileEXR::ZIPS));
 	add_item(new EXRCompressionItem(gui, FileEXR::RLE));
 	add_item(new EXRCompressionItem(gui, FileEXR::PXR24));
+	add_item(new EXRCompressionItem(gui, FileEXR::B44));
+	add_item(new EXRCompressionItem(gui, FileEXR::B44A));
+	add_item(new EXRCompressionItem(gui, FileEXR::DWAA));
+	add_item(new EXRCompressionItem(gui, FileEXR::DWAB));
 }
 
 int EXRCompression::handle_event()

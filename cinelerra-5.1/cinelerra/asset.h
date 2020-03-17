@@ -189,6 +189,7 @@ public:
 // for jpeg compression
 	int jpeg_quality;
 
+
 // for mpeg video compression
 	int vmpeg_iframe_distance;
 	int vmpeg_progressive;
@@ -220,7 +221,8 @@ public:
 
 // PNG video compression
 	int png_use_alpha;
-
+	int png_depth;
+	int png_compression;
 // EXR video compression
 	int exr_use_alpha;
 	int exr_compression;
