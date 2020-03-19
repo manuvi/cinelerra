@@ -402,12 +402,11 @@ void PlaybackEngine::run()
 // Dispatch the command
 			start_render_engine();
 			break;
-
-		case SINGLE_FRAME_FWD:
-		case SINGLE_FRAME_REWIND:
 // fall through
 		default:
 			is_playing_back = 1;
+		case REWIND:
+		case GOTO_END:
 			perform_change();
 			arm_render_engine();
 
@@ -462,7 +461,6 @@ void PlaybackEngine::send_command(int command, EDL *edl, int wait_tracking, int 
 {
 //printf("PlaybackEngine::send_command 1 %d\n", command);
 // Stop requires transferring the output buffer to a refresh buffer.
-	int do_stop = 0;
 	int curr_command = is_playing_back ? this->command->command : STOP;
 	int curr_single_frame = TransportCommand::single_frame(curr_command);
 	int curr_audio = this->command->toggle_audio ?
@@ -470,9 +468,12 @@ void PlaybackEngine::send_command(int command, EDL *edl, int wait_tracking, int 
 	int single_frame = TransportCommand::single_frame(command);
 	int next_audio = next_command->toggle_audio ? !single_frame : single_frame;
 	float next_speed = next_command->speed;
-
+	int cmd = -1;
 // Dispatch command
 	switch( command ) {
+	case STOP:
+		transport_stop(wait_tracking);
+		break;
 	case FAST_REWIND:	// Commands that play back
 	case NORMAL_REWIND:
 	case SLOW_REWIND:
@@ -487,38 +488,39 @@ void PlaybackEngine::send_command(int command, EDL *edl, int wait_tracking, int 
 		if( next_speed ) curr_command = COMMAND_NONE;
 // Same direction pressed twice, not shuttle, and no change in audio state,  Stop
 		if( curr_command == command && !curr_single_frame &&
-		    curr_audio == next_audio ) { do_stop = 1;  break; }
-
+		    curr_audio == next_audio ) {
+			transport_stop(wait_tracking);
+			break;
+		}
 // Resume or change direction
 		switch( curr_command ) {
-		default:
-			transport_stop(0);
-			next_command->resume = 1;
-// fall through
+		case REWIND:
+		case GOTO_END:
 		case STOP:
 		case COMMAND_NONE:
 		case SINGLE_FRAME_FWD:
 		case SINGLE_FRAME_REWIND:
 		case CURRENT_FRAME:
 		case LAST_FRAME:
-			next_command->realtime = 1;
-// Start from scratch
-			transport_command(command, CHANGE_NONE, edl, use_inout);
+// already stopped
+			break;
+		default:
+			transport_stop(0);
+			next_command->resume = 1;
 			break;
 		}
+		next_command->realtime = 1;
+		cmd = command;
 		break;
-
-// Commands that stop
-	case STOP:
 	case REWIND:
 	case GOTO_END:
-		do_stop = 1;
+		transport_stop(1);
+		next_command->realtime = 1;
+		cmd = command;
 		break;
 	}
-
-	if( do_stop ) {
-		transport_stop(wait_tracking);
-	}
+	if( cmd >= 0 )
+		transport_command(cmd, CHANGE_NONE, edl, use_inout);
 }
 
 int PlaybackEngine::put_command(TransportCommand *command, int reset)

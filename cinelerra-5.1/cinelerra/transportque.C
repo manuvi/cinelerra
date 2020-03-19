@@ -197,12 +197,16 @@ void TransportCommand::set_playback_range(EDL *edl, int use_inout, int do_displa
 			}
 			break;
 
+		case REWIND:
+			start_position = 0;
 		case CURRENT_FRAME:
 		case LAST_FRAME:
 		case SINGLE_FRAME_FWD:
 			end_position = start_position + frame_period;
 			break;
 
+		case GOTO_END:
+			end_position = length;
 		case SINGLE_FRAME_REWIND:
 			start_position = end_position - frame_period;
 			break;

@@ -239,15 +239,6 @@ PKG_3RD([giflib],[yes],
     libutil.a ],
   [ . ])
 
-PKG_3RD([ilmbase],[auto],
-  [ilmbase-2.2.1],
-  [ Iex/.libs/libIex.a \
-    IexMath/.libs/libIexMath.a \
-    Half/.libs/libHalf.a \
-    Imath/.libs/libImath.a \
-    IlmThread/.libs/libIlmThread.a ],
-  [ Iex Half Imath config IlmThread ])
-
 PKG_DEF([ladspa], [ladspa-0.4.17], [], [])
 
 PKG_3RD([lame],[auto],
@@ -338,10 +329,18 @@ PKG_3RD([mjpegtools],[yes],
   [ .  lavtools utils ])
 
 PKG_3RD([openexr],[auto],
-  [openexr-2.2.1],
-  [ IlmImf/.libs/libIlmImf.a \
-    IlmImfUtil/.libs/libIlmImfUtil.a ],
-  [ IlmImf config ])
+  [openexr-2.4.1],
+  [ usr/local/lib/libHalf.a \
+    usr/local/lib/libIex.a \
+    usr/local/lib/libIexMath.a \
+    usr/local/lib/libIlmThread.a \
+    usr/local/lib/libImath.a \
+    usr/local/lib/libIlmImf.a \
+    usr/local/lib/libIlmImfUtil.a ],
+  [ usr/local/include/OpenEXR ])
+
+PKG_3RD([openExr],[auto], [openExr], [] [])
+PKG_3RD([ilmBase],[auto], [ilmBase], [] [])
 
 #PKG_3RD([festival],[no],
 #  [festival],
@@ -415,7 +414,7 @@ PKG_3RD([libaom],[auto],
   [ usr/local/include ])
 
 PKG_3RD([dav1d],[auto],
-  [dav1d-0.6.0],
+  [dav1d-0.5.1],
   [ usr/local/lib*/libdav1d*.a ],
   [ usr/local/include ])
 
@@ -895,7 +894,7 @@ PKG_PROVIDE([ffmpeg])
 PKG_PROVIDE([fftw])
 PKG_PROVIDE([flac])
 PKG_PROVIDE([giflib])
-PKG_PROVIDE([ilmbase], [$WANT_OPENEXR])
+PKG_PROVIDE([ilmBase], [$WANT_OPENEXR])
 PKG_PROVIDE([ladspa],[$WANT_LADSPA_BUILD])
 PKG_PROVIDE([lame])
 PKG_PROVIDE([libavc1394],[$WANT_FIREWIRE])
@@ -912,6 +911,7 @@ PKG_PROVIDE([mjpegtools])
 PKG_PROVIDE([libaom])
 PKG_PROVIDE([dav1d])
 PKG_PROVIDE([libwebp])
+PKG_PROVIDE([openExr], [$WANT_OPENEXR])
 PKG_PROVIDE([openexr], [$WANT_OPENEXR])
 PKG_PROVIDE([openjpeg])
 PKG_PROVIDE([tiff])

@@ -924,7 +924,7 @@ CanvasPopup::~CanvasPopup()
 }
 
 CanvasZoomSize::CanvasZoomSize(Canvas *canvas)
- : BC_MenuItem(_("Zoom..."))
+ : BC_MenuItem(_("Resize Window..."))
 {
 	this->canvas = canvas;
 }
