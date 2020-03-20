@@ -97,15 +97,11 @@ int Tracking::stop_playback()
 // Not working in NPTL for some reason
 //		Thread::cancel();
 		Thread::join();
-
-		mwindow->stop_mixers();
-// Final position is updated continuously during playback
-// Get final position
-		double position = get_tracking_position();
-// Update cursor
-		update_tracker(position);
-
 		stop_meters();
+		stop_mixers();
+// tracking_position is updated continuously during playback
+//  and when render ends, update cursor with final position
+		update_tracker(get_tracking_position());
 	}
 	return 0;
 }
@@ -159,7 +155,10 @@ void Tracking::stop_meters()
 	mwindow->lwindow->gui->unlock_window();
 }
 
-
+void Tracking::stop_mixers()
+{
+	mwindow->stop_mixers();
+}
 
 
 void Tracking::update_tracker(double position)

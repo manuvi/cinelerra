@@ -70,7 +70,7 @@ public:
 	virtual int brender_available(long position);
 // For normal playback tracking and the cursor are started
 	virtual void init_tracking();
-	virtual void stop_tracking();
+	virtual void stop_tracking(double position);
 	virtual void init_meters();
 // The playback cursor calls this to calculate the current tracking position
 	virtual double get_tracking_position();

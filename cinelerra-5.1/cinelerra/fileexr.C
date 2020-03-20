@@ -281,7 +281,7 @@ int FileEXR::read_frame_header(char *path)
 // 	EXRIStream exr_stream(buffer, size);
 // 	Imf::InputFile file(exr_stream);
 
-
+	if( access(path, R_OK) ) return 1;
 	Imf::InputFile file(path);
 
 	Imath::Box2i dw = file.header().dataWindow();

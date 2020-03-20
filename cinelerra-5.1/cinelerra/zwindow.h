@@ -82,7 +82,7 @@ public:
 	EDL* edl;
 
 	int idx;
-	int highlighted;
+	int highlighted, playable;
 	char title[BCTEXTLEN];
 	float zoom;
 };

@@ -51,6 +51,7 @@ public:
 // Update meters
 	virtual void update_meters(int64_t position);
 	virtual void stop_meters();
+	virtual void stop_mixers();
 //	int get_pixel(double position);
 
 // Erase cursor if it's visible.  Called by start_playback

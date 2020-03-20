@@ -169,11 +169,19 @@ void TransportCommand::set_playback_range(EDL *edl, int use_inout, int do_displa
 	end_position = use_inout && edl->local_session->outpoint_valid() ?
 		edl->local_session->get_outpoint() :
 		!loop_play ? edl->local_session->get_selectionend(1) : length;
+	if( start_position >= length )
+		length = edl->tracks->total_length();
 
-	if( !use_inout && EQUIV(start_position, end_position) ) {
+	if( command == REWIND ) {
+		start_position = end_position = 0;
+		command = CURRENT_FRAME;
+	}
+	else if( command == GOTO_END ) {
+		start_position = end_position = length;
+		command = LAST_FRAME;
+	}
+	else if( !use_inout && EQUIV(start_position, end_position) ) {
 // starting play at or past end_position, play to end_position of media (for mixers)
-		if( start_position >= length )
-			length = edl->tracks->total_length();
 		switch( command ) {
 		case SLOW_FWD:
 		case FAST_FWD:
@@ -184,6 +192,7 @@ void TransportCommand::set_playback_range(EDL *edl, int use_inout, int do_displa
 			    start_position > edl->local_session->loop_end ) {
 				start_position = edl->local_session->loop_start;
 			}
+			displacement = realtime && do_displacement ? frame_period : 0;
 			break; }
 
 		case SLOW_REWIND:
@@ -197,31 +206,20 @@ void TransportCommand::set_playback_range(EDL *edl, int use_inout, int do_displa
 			}
 			break;
 
-		case REWIND:
-			start_position = 0;
+		case SINGLE_FRAME_FWD:
+			displacement = realtime && do_displacement ? frame_period : 0;
 		case CURRENT_FRAME:
 		case LAST_FRAME:
-		case SINGLE_FRAME_FWD:
 			end_position = start_position + frame_period;
 			break;
 
-		case GOTO_END:
-			end_position = length;
 		case SINGLE_FRAME_REWIND:
 			start_position = end_position - frame_period;
 			break;
 		}
-
-		if( realtime && do_displacement ) {
-			if( (command != CURRENT_FRAME && get_direction() == PLAY_FORWARD ) ||
-			    (command != LAST_FRAME    && get_direction() == PLAY_REVERSE ) ) {
-				start_position += frame_period;
-				end_position += frame_period;
-				displacement = 1;
-			}
-		}
+		start_position += displacement;
+		end_position += displacement;
 	}
-
 //	if( start_position < 0 )
 //		start_position = 0;
 //	if( end_position > length )

@@ -47,6 +47,7 @@ ZWindowGUI::ZWindowGUI(MWindow *mwindow, ZWindow *zwindow, Mixer *mixer)
 	canvas = 0;
 	playback_engine = 0;
 	highlighted = 0;
+	playable = zwindow->playable;
 }
 
 ZWindowGUI::~ZWindowGUI()
@@ -183,15 +184,38 @@ int ZWindowGUI::draw_overlays()
 {
 	BC_WindowBase *cvs = canvas->get_canvas();
 	if( !cvs || cvs->get_video_on() ) return 0;
-	if( highlighted != zwindow->highlighted ) {
-		highlighted = zwindow->highlighted;
-		cvs->set_color(WHITE);
-		cvs->set_inverse();
-		cvs->draw_rectangle(0, 0, cvs->get_w(), cvs->get_h());
-		cvs->draw_rectangle(1, 1, cvs->get_w() - 2, cvs->get_h() - 2);
-		cvs->set_opaque();
-	}
+	set_highlighted(zwindow->highlighted);
+	if( !playable ) set_playable(-1);
 	return 1;
+}
+
+void ZWindowGUI::set_highlighted(int v)
+{
+	if( highlighted == v ) return;
+	highlighted = v;
+	BC_WindowBase *cvs = canvas->get_canvas();
+	cvs->set_color(WHITE);
+	cvs->set_inverse();
+	cvs->draw_rectangle(0, 0, cvs->get_w(), cvs->get_h());
+	cvs->draw_rectangle(1, 1, cvs->get_w() - 2, cvs->get_h() - 2);
+	cvs->set_opaque();
+}
+
+void ZWindowGUI::set_playable(int v)
+{
+	if( playable == v ) return;
+	playable = v>0 ? 1 : 0;
+	zwindow->playable = playable;
+	BC_WindowBase *cvs = canvas->get_canvas();
+	cvs->set_color(WHITE);
+	cvs->set_inverse();
+	int dx = cvs->get_w()/16+1, dy = cvs->get_h()/16+1;
+	int x = xS(5), y = yS(5), lw = (dx + dy)/16+1;
+	cvs->set_line_width(lw);
+	cvs->draw_line(x, y, x+dx, y+dy);
+	cvs->draw_line(x, y+dy, x+dx, y);
+	cvs->set_opaque();
+	cvs->set_line_width(1);
 }
 
 
@@ -203,6 +227,21 @@ ZWindowCanvasTileMixers::ZWindowCanvasTileMixers(ZWindowCanvas *canvas)
 int ZWindowCanvasTileMixers::handle_event()
 {
 	canvas->mwindow->tile_mixers();
+	return 1;
+}
+
+ZWindowCanvasPlayable::ZWindowCanvasPlayable(ZWindowCanvas *canvas)
+ : BC_MenuItem(_("Playable"))
+{
+	this->canvas = canvas;
+	set_checked(canvas->gui->zwindow->playable);
+}
+int ZWindowCanvasPlayable::handle_event()
+{
+	int v = !get_checked() ? 1 : 0;
+	set_checked(v);
+	canvas->gui->set_playable(v);
+	canvas->get_canvas()->flash(1);
 	return 1;
 }
 
@@ -218,6 +257,7 @@ void ZWindowCanvas::create_objects(EDL *edl)
 {
 	Canvas::create_objects(edl);
 	canvas_menu->add_item(new ZWindowCanvasTileMixers(this));
+	canvas_menu->add_item(new ZWindowCanvasPlayable(this));
 }
 
 void ZWindowCanvas::close_source()
@@ -257,7 +297,6 @@ void ZWindowCanvas::draw_refresh(int flush)
 	
 	if( gui->draw_overlays() )
 		dirty = 1;
-
 	if( dirty )
 		cvs->flash(flush);
 }
@@ -306,3 +345,4 @@ void ZWindowCanvas::zoom_resize_window(float zoom)
 	gui->resize_window(new_w, new_h);
 	gui->resize_event(new_w, new_h);
 }
+

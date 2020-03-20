@@ -186,6 +186,7 @@ ZWindow::ZWindow(MWindow *mwindow)
 	idx = -1;
 	edl = 0;
 	highlighted = 0;
+	playable = 1;
 	title[0] = 0;
 	zgui = 0;
 	zoom = 0;
@@ -235,6 +236,7 @@ void ZWindow::stop_playback(int wait)
 void ZWindow::handle_mixer(int command, int wait_tracking,
 		int use_inout, int toggle_audio, int loop_play, float speed)
 {
+	if( !playable ) return;
 	PlaybackEngine *engine = zgui->playback_engine;
 	engine->next_command->toggle_audio = toggle_audio;
 	engine->next_command->loop_play = loop_play;

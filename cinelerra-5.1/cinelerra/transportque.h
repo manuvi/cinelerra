@@ -62,8 +62,8 @@ public:
 	int infinite;
 // Position used when starting playback
 	double playbackstart;
-// start at this=0/next=1 frame
-	int displacement;
+// playback offset for always show next frame pref
+	double displacement;
 // Send output to device
 	int realtime;
 // command must execute

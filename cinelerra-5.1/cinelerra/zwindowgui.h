@@ -50,13 +50,15 @@ public:
 	int cursor_motion_event();
 	int select_window(int n);
 	int draw_overlays();
+	void set_highlighted(int v);
+	void set_playable(int v);
 
 	MWindow *mwindow;
 	ZWindow *zwindow;
 	ZWindowCanvas *canvas;
 
 	PlaybackEngine *playback_engine;
-	int highlighted;
+	int highlighted, playable;
 };
 
 class ZWindowCanvasTileMixers : public BC_MenuItem
@@ -66,6 +68,15 @@ public:
 	int handle_event();
 	ZWindowCanvas *canvas;
 };
+
+class ZWindowCanvasPlayable : public BC_MenuItem
+{
+public:
+	ZWindowCanvasPlayable(ZWindowCanvas *canvas);
+	int handle_event();
+	ZWindowCanvas *canvas;
+};
+
 
 class ZWindowCanvas : public Canvas
 {

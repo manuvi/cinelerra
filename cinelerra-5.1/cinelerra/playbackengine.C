@@ -258,8 +258,9 @@ void PlaybackEngine::init_tracking()
 	init_meters();
 }
 
-void PlaybackEngine::stop_tracking()
+void PlaybackEngine::stop_tracking(double position)
 {
+	tracking_position = position;
 	tracking_active = 0;
 	stop_cursor();
 	tracking_done->unlock();
@@ -468,7 +469,6 @@ void PlaybackEngine::send_command(int command, EDL *edl, int wait_tracking, int 
 	int single_frame = TransportCommand::single_frame(command);
 	int next_audio = next_command->toggle_audio ? !single_frame : single_frame;
 	float next_speed = next_command->speed;
-	int cmd = -1;
 // Dispatch command
 	switch( command ) {
 	case STOP:
@@ -510,17 +510,16 @@ void PlaybackEngine::send_command(int command, EDL *edl, int wait_tracking, int 
 			break;
 		}
 		next_command->realtime = 1;
-		cmd = command;
+		transport_command(command, CHANGE_NONE, edl, use_inout);
 		break;
 	case REWIND:
 	case GOTO_END:
 		transport_stop(1);
 		next_command->realtime = 1;
-		cmd = command;
+		transport_command(command, CHANGE_NONE, edl, use_inout);
+		stop_tracking(this->command->playbackstart);
 		break;
 	}
-	if( cmd >= 0 )
-		transport_command(cmd, CHANGE_NONE, edl, use_inout);
 }
 
 int PlaybackEngine::put_command(TransportCommand *command, int reset)
