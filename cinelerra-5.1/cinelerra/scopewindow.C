@@ -843,8 +843,8 @@ void ScopeGUI::draw_overlays(int overlays, int borders, int flush)
 				int text_x = wave_x - get_text_width(SMALLFONT, string) - theme->widget_border;
 				draw_text(text_x, text_y, string);
 
-				int y1 = CLAMP(y, 0, waveform->get_h() - 1);
-				waveform->draw_line(0, y1, wave_w, y1);
+				CLAMP(y, 0, waveform->get_h() - 1);
+				waveform->draw_line(0, y, wave_w, y);
 				//waveform->draw_rectangle(0, 0, wave_w, wave_h);
 			}
 			set_line_dashes(0);

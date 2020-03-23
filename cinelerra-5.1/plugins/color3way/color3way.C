@@ -179,13 +179,13 @@ Color3WayUnit::Color3WayUnit(Color3WayMain *plugin,
 	r = r + TOTAL_TRANSFER(r, r_factor); \
 	g = g + TOTAL_TRANSFER(g, g_factor); \
 	b = b + TOTAL_TRANSFER(b, b_factor); \
-	r = CLAMP(r,0,1); g = CLAMP(g,0,1); b = CLAMP(b,0,1); \
+	CLAMP(r,0,1);  CLAMP(g,0,1); CLAMP(b,0,1); \
 /* Apply saturation/value */ \
 	float h, s, v; \
 	HSV::rgb_to_hsv(r, g, b, h, s, v); \
 	v += TOTAL_TRANSFER(v, v_factor); \
 	s += TOTAL_TRANSFER(s, s_factor); \
-	s = CLAMP(s,0,1); v = CLAMP(v,0,1); \
+	CLAMP(s,0,1);  CLAMP(v,0,1); \
 	HSV::hsv_to_rgb(r, g, b, h, s, v);
 
 

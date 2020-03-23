@@ -208,7 +208,8 @@ libwebp.cfg_vars?= mkdir build && cd build && $(call cmake_config,..)
 libwebp.mak_params?= -C build all install DESTDIR=$(call bld_path,libwebp)
 mjpegtools.cflags?="$(call inc_path,libjpeg) $(call ld_path,libjpeg,build)"
 mjpegtools.cfg_vars?= ./autogen.sh; 
-mjpegtools.cfg_params?= --enable-shared=no --without-libsdl --without-sdlgfx --without-v4l
+mjpegtools.cfg_params?= --enable-shared=no --without-libquicktime --without-libdv \
+ --without-libpng --without-dga --without-gtk --without-libsdl --without-sdlgfx
 mjpegtools.mak_params?= all
 ladspa.cfg_vars?= CFLAGS+=' -Dinline="" '
 ladspa.mak_params?=; $(MAKE) -C ladspa* install DESTDIR=$(call bld_path,ladspa)
@@ -261,15 +262,15 @@ define waf-setup
 $(1).cfg_vars+=./waf --version; find .waf* -type f -name "*.py" | \
  while read f; do sed -e '/StopIter/d' -i "$(DS)f"; done; \
  echo 'exec ./waf configure "$(DS)@"' > ./configure; chmod +x \
- ./configure;  PKG_CONFIG_PATH=$(LV2_PKGCFG) LD_LIBRARY_PATH=$(LV2_LIBPATH) 
+ ./configure;  PKG_CONFIG_PATH=$(LV2_PKGCFG):$(PKG_CONFIG_PATH)  LD_LIBRARY_PATH=$(LV2_LIBPATH)
 $(1).cfg_params+=\
  CFLAGS="-I$(call bld_path,lv2) $(foreach f,$(2), $(call inc_path,$(f))) -fPIC -std=c99"\
- LDFLAGS="-lm $(foreach f,$(2), $(call ld_path,$(f),usr/local/lib)) "
+ LDFLAGS="-lm `pkg-config --libs x11` $(foreach f,$(2), $(call ld_path,$(f),usr/local/lib)) "
 $(1).mak_vars=(echo "all:"; echo "	./waf -v build") > $(call bld_path,$(1),Makefile); 
 $(1).mak_params+=; ( cd $(1)*; ./waf install --destdir=$(call bld_path,$(1)) )
 endef
 
-SYS_LIB:=$(notdir $(lastword $(wildcard /usr/lib /usrlib32 /usr/lib64)))
+SYS_LIB:=$(notdir $(lastword $(wildcard /usr/lib /usr/lib32 /usr/lib64)))
 SYS_LV2:=$(lastword $(wildcard /usr/$(SYS_LIB)/lv2 /usr/local/$(SYS_LIB)/lv2))
 $(if $(SYS_LV2),,$(eval SYS_LV2:=/usr/$(SYS_LIB)/lv2))
 lv2.cfg_params?= --lv2dir=$(SYS_LV2)
@@ -281,7 +282,7 @@ sratom.cfg_params?= --static --no-shared
 serd.cfg_params?= --static --no-shared
 sord.cfg_params?= --static --no-shared
 lilv.cfg_params?= --static --dyn-manifest
-suil.cfg_params?= --static --no-qt
+suil.cfg_params?= --static --no-qt --no-qt5
 
 $(eval $(call waf-setup,lv2))
 $(eval $(call waf-setup,serd))

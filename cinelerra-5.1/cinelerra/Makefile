@@ -554,7 +554,7 @@ clean:
 tags:
 	ctags -R -h default --langmap=c:+.inc . ../guicast/ ../libzmpeg3 ../plugins ../thirdparty/ffmpeg-*
 
-$(OBJDIR)/fileexr.o:	BFLAGS:= -Wno-deprecated
+$(OBJDIR)/fileexr.o:	BFLAGS:= -Wno-deprecated -std=c++11
 $(OBJDIR)/sha1.o:	BFLAGS:= -O3
 $(OVERLAYS):		BFLAGS:= -Ofast -g0
 

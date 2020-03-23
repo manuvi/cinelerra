@@ -79,12 +79,12 @@ dvl_uninstall:
 # with-libzmpeg3
 zmp_install:
 	cd bin; $(inst_sh) "$(DESTDIR)$(bindir)" \
-		zmpeg3{cat,cc2txt,ifochk,show,toc}
+		zmpeg3{cc2txt,ifochk}
 	cd bin; $(inst_sh) "$(DESTDIR)$(WANT_CINLIB_DIR)" \
 		hveg2enc mpeg2enc mplex mplexlo
 
 zmp_uninstall:
-	rm -f "$(DESTDIR)$(bindir)"/zmpeg3{cat,cc2txt,ifochk,show,toc}
+	rm -f "$(DESTDIR)$(bindir)"/zmpeg3{cc2txt,ifochk}
 
 # with-commercial
 com_install:
