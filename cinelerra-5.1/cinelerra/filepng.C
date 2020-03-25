@@ -228,9 +228,6 @@ int FilePNG::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 			png_set_IHDR(png_ptr, info_ptr, asset->width, asset->height, asset->png_depth,
 				asset->png_use_alpha ?  PNG_COLOR_TYPE_RGB_ALPHA : PNG_COLOR_TYPE_RGB,
 				PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
-// does not work (gg 2020/03/17 libpng16 fc31)
-			if( asset->png_depth == 16 && BC_Resources::little_endian )
-				png_set_swap(png_ptr);
 			png_write_info(png_ptr, info_ptr);
 			png_write_image(png_ptr, output_frame->get_rows());
 			png_write_end(png_ptr, info_ptr);

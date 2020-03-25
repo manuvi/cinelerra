@@ -64,6 +64,8 @@ $(srcdir)/$(opencv_tar):
 $(opencv).src: $(srcdir)/$(opencv_tar)
 	cd $(blddir) && rm -rf opencv opencv_contrib opencv.*
 	tar -C $(blddir) -xzf $(srcdir)/$(opencv_tar);
+	$(foreach pch,$(sort $(wildcard $(srcdir)/$(opencv_tar).patch*)),\
+		patch -d $(blddir) -p1 < $(pch);)
 	touch $@
 else
 $(error src not git/tar)
@@ -88,7 +90,7 @@ $(opencv)/build: $(opencv).src
 LFLAGS += -Wl,--start-group
 LFLAGS += $(shell find $(opencv_prefix)/lib* -name "libopencv_*.a" 2> /dev/null)
 #opencv4 breaks SIFT/SURF findobj
-LFLAGS += $(shell find $(opencv_prefix)/lib64/opencv4/3rdparty/lib* -name "lib*.a" 2> /dev/null)
+LFLAGS += $(shell find $(opencv_prefix)/lib*/opencv4/3rdparty/lib* -name "lib*.a" 2> /dev/null)
 LFLAGS += $(shell find $(opencv_prefix)/share/OpenCV/3rdparty/lib* -name "lib*.a" 2> /dev/null)
 LFLAGS += -Wl,--end-group
 else ifeq ($(bld),dyn)
