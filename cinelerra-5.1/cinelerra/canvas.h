@@ -126,6 +126,10 @@ public:
 // Redraws the refresh_frame
 	virtual void draw_refresh(int flush = 1) {};
 	virtual void clear(int flash=1);
+// draw scope
+	virtual int scope_on() { return 0; }
+	virtual void draw_scope(VFrame *frame) {}
+	void process_scope(VideoDevice *video, VFrame *frame);
 
 // Get top left offset of canvas relative to output.
 // Normally negative.  Can be positive if output is smaller than canvas.

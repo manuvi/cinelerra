@@ -87,6 +87,8 @@ public:
 
 // Update preferences window
 	void update_framerate(float framerate);
+// update canvas scope gui
+	void update_scope(VFrame *frame);
 
 // Copy of command
 	TransportCommand *command;
@@ -98,7 +100,6 @@ public:
 	Preferences *preferences;
 // Canvas if being used for CWindow
 	Canvas *output;
-
 
 // Lock out new commands until completion
 	Condition *input_lock;

@@ -557,7 +557,8 @@ VWindowEditing::VWindowEditing(MWindow *mwindow, VWindow *vwindow)
 		0, // use_cut
 		0, // use_commerical
 		0, // use_goto
-		1) // use_clk2play
+		1, // use_clk2play
+		1) // use_scope
 {
 	this->mwindow = mwindow;
 	this->vwindow = vwindow;
@@ -826,6 +827,17 @@ void VWindowCanvas::close_source()
 	gui->vwindow->delete_source(1, 1);
 }
 
+int VWindowCanvas::scope_on()
+{
+	return !gui->edit_panel->scope_dialog ? 0 :
+		gui->edit_panel->scope_dialog->running();
+}
+
+void VWindowCanvas::draw_scope(VFrame *output)
+{
+	if( gui->edit_panel->scope_dialog )
+		gui->edit_panel->scope_dialog->process(output);
+}
 
 void VWindowCanvas::draw_refresh(int flush)
 {

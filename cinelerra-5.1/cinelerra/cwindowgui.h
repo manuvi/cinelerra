@@ -304,6 +304,8 @@ public:
 	void reset_projector();
 	void draw_crophandle(int x, int y);
 	int set_fullscreen(int on, int unlock);
+	int scope_on();
+	void draw_scope(VFrame *output);
 
 // Draw the camera/projector overlay in different colors.
 	void draw_outlines(int do_camera);

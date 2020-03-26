@@ -22,6 +22,7 @@
 #include "asset.h"
 #include "bcsignals.h"
 #include "cache.h"
+#include "canvas.h"
 #include "clip.h"
 #include "condition.h"
 #include "datatype.h"
@@ -98,10 +99,9 @@ Module* VRender::new_module(Track *track)
 
 int VRender::flash_output()
 {
-	if(video_out)
-		return renderengine->video->write_buffer(video_out, renderengine->get_edl());
-	else
-		return 0;
+	if( !video_out ) return 0;
+	renderengine->update_scope(video_out);
+	return renderengine->video->write_buffer(video_out, renderengine->get_edl());
 }
 
 int VRender::process_buffer(VFrame *video_out,

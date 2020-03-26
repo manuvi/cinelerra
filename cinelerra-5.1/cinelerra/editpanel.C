@@ -34,18 +34,21 @@
 #include "language.h"
 #include "localsession.h"
 #include "mainclock.h"
+#include "mainsession.h"
 #include "mainundo.h"
+#include "manualgoto.h"
 #include "mbuttons.h"
 #include "meterpanel.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "playbackengine.h"
+#include "preferences.h"
+#include "scopewindow.h"
 #include "theme.h"
 #include "timebar.h"
 #include "trackcanvas.h"
 #include "transportque.h"
 #include "zoombar.h"
-#include "manualgoto.h"
 
 
 
@@ -70,7 +73,8 @@ EditPanel::EditPanel(MWindow *mwindow,
 	int use_cut,
 	int use_commercial,
 	int use_goto,
-	int use_clk2play)
+	int use_clk2play,
+	int use_scope)
 {
 	this->window_id = window_id;
 	this->editing_mode = editing_mode;
@@ -92,6 +96,7 @@ EditPanel::EditPanel(MWindow *mwindow,
 	this->use_commercial = use_commercial;
 	this->use_goto = use_goto;
 	this->use_clk2play = use_clk2play;
+	this->use_scope = use_scope;
 
 	this->x = x;
 	this->y = y;
@@ -121,11 +126,14 @@ EditPanel::EditPanel(MWindow *mwindow,
 	this->span_keyframe = 0;
 	this->mangoto = 0;
 	this->click2play = 0;
+	this->scope = 0;
+	this->scope_dialog = 0;
 	locklabels = 0;
 }
 
 EditPanel::~EditPanel()
 {
+	delete scope_dialog;
 }
 
 void EditPanel::set_meters(MeterPanel *meter_panel)
@@ -310,9 +318,16 @@ void EditPanel::create_buttons()
 	}
 
 	if( use_clk2play ) {
-		click2play = new EditClick2Play(mwindow, this, x1, y1+5);
+		click2play = new EditClick2Play(mwindow, this, x1, y1+yS(3));
 		subwindow->add_subwindow(click2play);
 		x1 += click2play->get_w();
+	}
+
+	if( use_scope ) {
+		scope = new EditPanelScope(mwindow, this, x1, y1-yS(1));
+		subwindow->add_subwindow(scope);
+		x1 += scope->get_w();
+		scope_dialog = new EditPanelScopeDialog(mwindow, this);
 	}
 
 	if( use_commercial ) {
@@ -423,8 +438,12 @@ void EditPanel::reposition_buttons(int x, int y)
 		x1 += mangoto->get_w();
 	}
 	if( use_clk2play ) {
-		click2play->reposition_window(x1, y1+5);
+		click2play->reposition_window(x1, y1+yS(3));
 		x1 += click2play->get_w();
+	}
+	if( use_scope ) {
+		scope->reposition_window(x1, y1-yS(1));
+		x1 += scope->get_w();
 	}
 }
 
@@ -1128,6 +1147,131 @@ int EditRedo::keypress_event()
 int EditRedo::handle_event()
 {
 	mwindow->redo_entry(panel->subwindow);
+	return 1;
+}
+
+
+EditPanelScopeDialog::EditPanelScopeDialog(MWindow *mwindow, EditPanel *panel)
+ : BC_DialogThread()
+{
+	this->mwindow = mwindow;
+	this->panel = panel;
+	scope_gui = 0;
+	gui_lock = new Mutex("EditPanelScopeDialog::gui_lock");
+}
+
+EditPanelScopeDialog::~EditPanelScopeDialog()
+{
+	close_window();
+	delete gui_lock;
+}
+
+void EditPanelScopeDialog::handle_done_event(int result)
+{
+	gui_lock->lock("EditPanelScopeDialog::handle_done_event");
+	scope_gui = 0;
+	gui_lock->unlock();
+
+	panel->subwindow->lock_window("EditPanelScopeDialog::handle_done_event");
+	panel->scope->update(0);
+	panel->subwindow->unlock_window();
+}
+
+BC_Window* EditPanelScopeDialog::new_gui()
+{
+	EditPanelScopeGUI *gui = new EditPanelScopeGUI(mwindow, this);
+	gui->create_objects();
+	scope_gui = gui;
+	return gui;
+}
+
+void EditPanelScopeDialog::process(VFrame *output_frame)
+{
+	if( panel->scope_dialog ) {
+		panel->scope_dialog->gui_lock->lock("EditPanelScopeDialog::process");
+		if( panel->scope_dialog->scope_gui ) {
+			EditPanelScopeGUI *gui = panel->scope_dialog->scope_gui;
+			gui->process(output_frame);
+		}
+		panel->scope_dialog->gui_lock->unlock();
+	}
+}
+
+EditPanelScopeGUI::EditPanelScopeGUI(MWindow *mwindow, EditPanelScopeDialog *dialog)
+ : ScopeGUI(mwindow->theme,
+	mwindow->session->scope_x, mwindow->session->scope_y,
+	mwindow->session->scope_w, mwindow->session->scope_h,
+	mwindow->preferences->processors)
+{
+	this->mwindow = mwindow;
+	this->dialog = dialog;
+}
+
+EditPanelScopeGUI::~EditPanelScopeGUI()
+{
+}
+
+void EditPanelScopeGUI::create_objects()
+{
+	MainSession *session = mwindow->session;
+	use_hist = session->use_hist;
+	use_wave = session->use_wave;
+	use_vector = session->use_vector;
+	use_hist_parade = session->use_hist_parade;
+	use_wave_parade = session->use_wave_parade;
+	ScopeGUI::create_objects();
+}
+
+void EditPanelScopeGUI::toggle_event()
+{
+	MainSession *session = mwindow->session;
+	session->use_hist = use_hist;
+	session->use_wave = use_wave;
+	session->use_vector = use_vector;
+	session->use_hist_parade = use_hist_parade;
+	session->use_wave_parade = use_wave_parade;
+}
+
+int EditPanelScopeGUI::translation_event()
+{
+	ScopeGUI::translation_event();
+	MainSession *session = mwindow->session;
+	session->scope_x = get_x();
+	session->scope_y = get_y();
+	return 0;
+}
+
+int EditPanelScopeGUI::resize_event(int w, int h)
+{
+	ScopeGUI::resize_event(w, h);
+	MainSession *session = mwindow->session;
+	session->scope_w = w;
+	session->scope_h = h;
+	return 0;
+}
+
+EditPanelScope::EditPanelScope(MWindow *mwindow, EditPanel *panel, int x, int y)
+ : BC_Toggle(x, y, mwindow->theme ?
+		mwindow->theme->get_image_set("scope_toggle") : 0, 0)
+{
+	this->mwindow = mwindow;
+	this->panel = panel;
+	set_tooltip(_("View scope"));
+}
+
+EditPanelScope::~EditPanelScope()
+{
+}
+
+int EditPanelScope::handle_event()
+{
+	unlock_window();
+	int v = get_value();
+	if( v )
+		panel->scope_dialog->start();
+	else
+		panel->scope_dialog->close_window();
+	lock_window("EditPanelScope::handle_event");
 	return 1;
 }
 

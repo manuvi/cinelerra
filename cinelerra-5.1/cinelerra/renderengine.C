@@ -24,6 +24,7 @@
 #include "asset.h"
 #include "audiodevice.h"
 #include "bcsignals.h"
+#include "canvas.h"
 #include "condition.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -489,5 +490,13 @@ void RenderEngine::wait_done()
 {
 	render_active->lock("RenderEngine::wait_done");
 	render_active->unlock();
+}
+
+void RenderEngine::update_scope(VFrame *frame)
+{
+	if( !video || !output || !output->scope_on() ) return;
+	output->lock_canvas("RenderEngine::update_scope");
+	output->process_scope(video, frame);
+	output->unlock_canvas();
 }
 

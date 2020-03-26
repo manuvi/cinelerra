@@ -52,6 +52,10 @@ class EditNextEdit;
 class ArrowButton;
 class IBeamButton;
 class KeyFrameButton;
+class SpanKeyFrameButton;
 class LockLabelsButton;
+class EditPanelScopeGUI;
+class EditPanelScopeDialog;
+class EditPanelScope;
 
 #endif

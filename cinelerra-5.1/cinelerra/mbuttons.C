@@ -142,7 +142,8 @@ MainEditing::MainEditing(MWindow *mwindow, MButtons *mbuttons, int x, int y)
 		1, // use_cut
 		mwindow->has_commercials(), // use_commerical
 		1, // use_goto
-		0) // use_clk2play
+		0, // use_clk2play
+		0) // use_scope
 {
 	this->mwindow = mwindow;
 	this->mbuttons = mbuttons;

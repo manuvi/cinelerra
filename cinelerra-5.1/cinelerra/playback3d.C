@@ -509,62 +509,62 @@ void Playback3D::copy_from_sync(Playback3DCommand *command)
 	if( window ) {
 		window->enable_opengl();
 		glFinish();
+		int copy_to_ram = 0;
 		int w = command->input->get_w();
 		int h = command->input->get_h();
-
-		if(command->input->get_opengl_state() == VFrame::SCREEN &&
-			w == command->frame->get_w() && h == command->frame->get_h())
-		{
+		if( command->input->get_opengl_state() == VFrame::SCREEN &&
+		    w == command->frame->get_w() && h == command->frame->get_h() ) {
 // printf("Playback3D::copy_from_sync 1 %d %d %d %d %d\n",
-// command->input->get_w(),
-// command->input->get_h(),
-// command->frame->get_w(),
-// command->frame->get_h(),
+// command->input->get_w(), command->input->get_h(),
+// command->frame->get_w(), command->frame->get_h(),
 // command->frame->get_color_model());
 #ifdef GLx4
 // With NVidia at least
-			if(w % 4)
-			{
+			if(w % 4) {
 				printf("Playback3D::copy_from_sync: w=%d not supported because it is not divisible by 4.\n", w);
 			}
 			else
 #endif
 // Copy to texture
-			if(command->want_texture)
-			{
+			if( command->want_texture ) {
 //printf("Playback3D::copy_from_sync 1 dst=%p src=%p\n", command->frame, command->input);
 // Screen_to_texture requires the source pbuffer enabled.
 				command->input->enable_opengl();
 				command->frame->screen_to_texture();
 				command->frame->set_opengl_state(VFrame::TEXTURE);
 			}
-			else
-// Copy to RAM
-			{
+			else {
 				command->input->to_texture();
-				command->input->bind_texture(0);
-				command->frame->enable_opengl();
-				command->frame->init_screen();
-				unsigned int shader = BC_CModels::is_yuv(command->input->get_color_model()) ?
-					VFrame::make_shader(0, yuv_to_rgb_frag, 0) : 0;
-				if( shader > 0 ) {
-					glUseProgram(shader);
-					int variable = glGetUniformLocation(shader, "tex");
-					glUniform1i(variable, 0);
-					BC_GL_YUV_TO_RGB(shader);
-				}
-				else
-					glUseProgram(0);
-				command->input->draw_texture(1);
-				command->frame->screen_to_ram();
-				glUseProgram(0);
+				copy_to_ram = 1;
 			}
 		}
-		else
-		{
+		else if( command->input->get_opengl_state() == VFrame::TEXTURE &&
+			w == command->frame->get_w() && h == command->frame->get_h() ) {
+				copy_to_ram = 1;
+		}
+		else {
 			printf("Playback3D::copy_from_sync: invalid formats opengl_state=%d %dx%d -> %dx%d\n",
 				command->input->get_opengl_state(), w, h,
 				command->frame->get_w(), command->frame->get_h());
+		}
+
+		if( copy_to_ram ) {
+			command->input->bind_texture(0);
+			command->frame->enable_opengl();
+			command->frame->init_screen();
+			unsigned int shader = BC_CModels::is_yuv(command->input->get_color_model()) ?
+				VFrame::make_shader(0, yuv_to_rgb_frag, 0) : 0;
+			if( shader > 0 ) {
+				glUseProgram(shader);
+				int variable = glGetUniformLocation(shader, "tex");
+				glUniform1i(variable, 0);
+				BC_GL_YUV_TO_RGB(shader);
+			}
+			else
+				glUseProgram(0);
+			command->input->draw_texture(1);
+			command->frame->screen_to_ram();
+			glUseProgram(0);
 		}
 	}
 	command->canvas->unlock_canvas();

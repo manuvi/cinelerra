@@ -22,11 +22,15 @@
 #ifndef EDITPANEL_H
 #define EDITPANEL_H
 
+#include "bcdialog.h"
 #include "guicast.h"
 #include "editpanel.inc"
 #include "meterpanel.inc"
 #include "mwindow.inc"
 #include "manualgoto.inc"
+#include "scopewindow.h"
+
+
 
 class EditPanel;
 
@@ -341,6 +345,49 @@ public:
 };
 
 
+class EditPanelScopeGUI : public ScopeGUI
+{
+public:
+	EditPanelScopeGUI(MWindow *mwindow, EditPanelScopeDialog *dialog);
+	~EditPanelScopeGUI();
+
+	void create_objects();
+	void toggle_event();
+	int translation_event();
+	int resize_event(int w, int h);
+
+	MWindow *mwindow;
+	EditPanelScopeDialog *dialog;
+};
+
+class EditPanelScopeDialog : public BC_DialogThread
+{
+public:
+	EditPanelScopeDialog(MWindow *mwindow, EditPanel *panel);
+	~EditPanelScopeDialog();
+
+	void handle_done_event(int result);
+	BC_Window* new_gui();
+	void process(VFrame *output_frame);
+
+	MWindow *mwindow;
+	EditPanel *panel;
+	EditPanelScopeGUI *scope_gui;
+	Mutex *gui_lock;
+	VFrame *output_frame;
+};
+
+class EditPanelScope : public BC_Toggle
+{
+public:
+	EditPanelScope(MWindow *mwindow, EditPanel *panel, int x, int y);
+	~EditPanelScope();
+	int handle_event();
+	EditPanel *panel;
+	MWindow *mwindow;
+};
+
+
 class EditPanel
 {
 public:
@@ -362,7 +409,8 @@ public:
 		int use_cut,
 		int use_commerical,
 		int use_goto,
-		int use_clk2play);
+		int use_clk2play,
+		int use_scope);
 	~EditPanel();
 
 	void set_meters(MeterPanel *meter_panel);
@@ -424,6 +472,7 @@ public:
 	int use_commercial;
 	int use_goto;
 	int use_clk2play;
+	int use_scope;
 
 	EditFit *fit;
 	EditFitAutos *fit_autos;
@@ -438,6 +487,8 @@ public:
 	EditCommercial *commercial;
 	EditManualGoto *mangoto;
 	EditClick2Play *click2play;
+	EditPanelScope *scope;
+	EditPanelScopeDialog *scope_dialog;
 	EditCopy *copy;
 	EditPaste *paste;
 	EditLabelbutton *labelbutton;

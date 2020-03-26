@@ -690,6 +690,7 @@ int Canvas::keypress_event(BC_WindowBase *caller)
 	return 1;
 }
 
+// process_scope uses the refresh frame for opengl
 void Canvas::update_refresh(VideoDevice *device, VFrame *output_frame)
 {
 	int best_color_model = output_frame->get_color_model();
@@ -732,6 +733,20 @@ void Canvas::update_refresh(VideoDevice *device, VFrame *output_frame)
 	}
 	else
 		refresh_frame->transfer_from(output_frame, -1);
+}
+
+void Canvas::process_scope(VideoDevice *video, VFrame *frame)
+{
+	if( !scope_on() ) return;
+	int use_opengl =
+		video->out_config->driver == PLAYBACK_X11_GL &&
+		frame->get_opengl_state() != VFrame::RAM;
+	if( use_opengl ) {
+		update_refresh(video, frame);
+		frame = refresh_frame;
+	}
+	if( frame )
+		draw_scope(frame);
 }
 
 void Canvas::clear(int flash)

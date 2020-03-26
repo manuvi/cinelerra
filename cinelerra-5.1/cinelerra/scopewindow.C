@@ -26,20 +26,12 @@
 #include "scopewindow.h"
 #include "theme.h"
 
-
 #include <string.h>
-
-
 
 ScopePackage::ScopePackage()
  : LoadPackage()
 {
 }
-
-
-
-
-
 
 ScopeUnit::ScopeUnit(ScopeGUI *gui,
 	ScopeEngine *server)
@@ -48,16 +40,8 @@ ScopeUnit::ScopeUnit(ScopeGUI *gui,
 	this->gui = gui;
 }
 
-
-
-
-
 void ScopeUnit::draw_point(unsigned char **rows,
-	int x,
-	int y,
-	int r,
-	int g,
-	int b)
+	int x, int y, int r, int g, int b)
 {
 	unsigned char *pixel = rows[y] + x * 4;
 	pixel[0] = b;
@@ -65,18 +49,14 @@ void ScopeUnit::draw_point(unsigned char **rows,
 	pixel[2] = r;
 }
 
-#define PROCESS_PIXEL(column) \
-{ \
+#define PROCESS_PIXEL(column) { \
 /* Calculate histogram */ \
-	if(use_hist) \
-	{ \
+	if(use_hist) { \
 		int v_i = (intensity - FLOAT_MIN) * (TOTAL_BINS / (FLOAT_MAX - FLOAT_MIN)); \
 		CLAMP(v_i, 0, TOTAL_BINS - 1); \
 		bins[3][v_i]++; \
 	} \
-	else \
-	if(use_hist_parade) \
-	{ \
+	else if(use_hist_parade) { \
 		int r_i = (r - FLOAT_MIN) * (TOTAL_BINS / (FLOAT_MAX - FLOAT_MIN)); \
 		int g_i = (g - FLOAT_MIN) * (TOTAL_BINS / (FLOAT_MAX - FLOAT_MIN)); \
 		int b_i = (b - FLOAT_MIN) * (TOTAL_BINS / (FLOAT_MAX - FLOAT_MIN)); \
@@ -87,123 +67,74 @@ void ScopeUnit::draw_point(unsigned char **rows,
 		bins[1][g_i]++; \
 		bins[2][b_i]++; \
 	} \
- \
 /* Calculate waveform */ \
-	if(use_wave || use_wave_parade) \
-	{ \
-		x = (column) * wave_w / w; \
-		if(x >= 0 && x < wave_w)  \
-		{ \
-			if(use_wave_parade) \
-			{ \
-				y = wave_h -  \
-					(int)((r - FLOAT_MIN) /  \
-						(FLOAT_MAX - FLOAT_MIN) * \
-						wave_h); \
-	 \
-				if(y >= 0 && y < wave_h)  \
-					draw_point(waveform_rows, x / 3, y, 0xff, 0x0, 0x0);  \
-	 \
-				y = wave_h -  \
-					(int)((g - FLOAT_MIN) /  \
-						(FLOAT_MAX - FLOAT_MIN) * \
-						wave_h); \
-	 \
-				if(y >= 0 && y < wave_h)  \
-					draw_point(waveform_rows, x / 3 + wave_w / 3, y, 0x0, 0xff, 0x0);  \
-	 \
-				y = wave_h -  \
-					(int)((b - FLOAT_MIN) /  \
-						(FLOAT_MAX - FLOAT_MIN) * \
-						wave_h); \
-	 \
-				if(y >= 0 && y < wave_h)  \
-					draw_point(waveform_rows, x / 3 + wave_w / 3 * 2, y, 0x0, 0x0, 0xff);  \
-	 \
+	if(use_wave || use_wave_parade) { \
+		int ix = (column) * wave_w / w; \
+		if(ix >= 0 && ix < wave_w) { \
+			if(use_wave_parade) { \
+				int iy = wave_h - (int)((r - FLOAT_MIN) /  \
+						(FLOAT_MAX - FLOAT_MIN) * wave_h); \
+				if(iy >= 0 && iy < wave_h) \
+					draw_point(waveform_rows, ix / 3, iy, 0xff, 0x0, 0x0);  \
+				iy = wave_h - (int)((g - FLOAT_MIN) /  \
+						(FLOAT_MAX - FLOAT_MIN) * wave_h); \
+				if(iy >= 0 && iy < wave_h)  \
+					draw_point(waveform_rows, ix / 3 + wave_w / 3, iy, 0x0, 0xff, 0x0);  \
+				iy = wave_h - (int)((b - FLOAT_MIN) /  \
+						(FLOAT_MAX - FLOAT_MIN) * wave_h); \
+				if(iy >= 0 && iy < wave_h)  \
+					draw_point(waveform_rows, ix / 3 + wave_w / 3 * 2, iy, 0x0, 0x0, 0xff);  \
 			} \
-			else \
-			{ \
-				y = wave_h -  \
-					(int)((intensity - FLOAT_MIN) /  \
-						(FLOAT_MAX - FLOAT_MIN) * \
-						wave_h); \
-			 \
-				if(y >= 0 && y < wave_h)  \
-					draw_point(waveform_rows,  \
-						x,  \
-						y,  \
-						0xff,  \
-						0xff,  \
-						0xff);  \
+			else { \
+				int iy = wave_h - (int)((intensity - FLOAT_MIN) /  \
+						(FLOAT_MAX - FLOAT_MIN) * wave_h); \
+				if(iy >= 0 && iy < wave_h)  \
+					draw_point(waveform_rows, ix, iy, 0xff, 0xff, 0xff);  \
 			} \
 		} \
 	} \
- \
 /* Calculate vectorscope */ \
-	if(use_vector) \
-	{ \
+	if(use_vector) { \
 		float adjacent = cos((h + 90) / 360 * 2 * M_PI); \
 		float opposite = sin((h + 90) / 360 * 2 * M_PI); \
-	 \
-		x = (int)(vector_w / 2 +  \
-			adjacent * (s) / (FLOAT_MAX) * radius); \
-	 \
-		y = (int)(vector_h / 2 -  \
-			opposite * (s) / (FLOAT_MAX) * radius); \
-	 \
-	 \
-		CLAMP(x, 0, vector_w - 1); \
+		int ix = vector_w / 2 + adjacent * (s) / (FLOAT_MAX) * radius; \
+		int y = vector_h / 2 - opposite * (s) / (FLOAT_MAX) * radius; \
+		CLAMP(ix, 0, vector_w - 1); \
 		CLAMP(y, 0, vector_h - 1); \
-	 \
 	/* Get color with full saturation & value */ \
 		float r_f, g_f, b_f; \
-		HSV::hsv_to_rgb(r_f, \
-				g_f,  \
-				b_f,  \
-				h,  \
-				s,  \
-				1); \
-	 \
-		draw_point(vector_rows, \
-			x,  \
-			y,  \
+		HSV::hsv_to_rgb(r_f, g_f, b_f, h, s, 1); \
+		draw_point(vector_rows, ix, y, \
 			(int)(CLIP(r_f, 0, 1) * 255),  \
 			(int)(CLIP(g_f, 0, 1) * 255),  \
 			(int)(CLIP(b_f, 0, 1) * 255)); \
 	} \
 }
 
-#define PROCESS_RGB_PIXEL(column, max) \
-{ \
+#define PROCESS_RGB_PIXEL(column, max) { \
 	r = (float)*row++ / max; \
 	g = (float)*row++ / max; \
 	b = (float)*row++ / max; \
-	HSV::rgb_to_hsv(r,  \
-		g,  \
-		b,  \
-		h,  \
-		s,  \
-		v); \
+	HSV::rgb_to_hsv(r, g, b, h, s, v); \
 	intensity = v; \
 	PROCESS_PIXEL(column) \
 }
 
-#define PROCESS_YUV_PIXEL(column,  \
-	y_in,  \
-	u_in,  \
-	v_in) \
-{ \
+#define PROCESS_BGR_PIXEL(column, max) { \
+	b = (float)*row++ / max; \
+	g = (float)*row++ / max; \
+	r = (float)*row++ / max; \
+	HSV::rgb_to_hsv(r, g, b, h, s, v); \
+	intensity = v; \
+	PROCESS_PIXEL(column) \
+}
+
+#define PROCESS_YUV_PIXEL(column, y_in, u_in, v_in) { \
 	YUV::yuv.yuv_to_rgb_f(r, g, b, (float)y_in / 255, (float)(u_in - 0x80) / 255, (float)(v_in - 0x80) / 255); \
-	HSV::rgb_to_hsv(r,  \
-		g,  \
-		b,  \
-		h,  \
-		s,  \
-		v); \
+	HSV::rgb_to_hsv(r, g, b, h, s, v); \
 	intensity = v; \
 	PROCESS_PIXEL(column) \
 }
-
 
 void ScopeUnit::process_package(LoadPackage *package)
 {
@@ -211,7 +142,6 @@ void ScopeUnit::process_package(LoadPackage *package)
 
 	float r, g, b;
 	float h, s, v;
-	int x, y;
 	float intensity;
 	int use_hist = gui->use_hist;
 	int use_hist_parade = gui->use_hist_parade;
@@ -227,131 +157,113 @@ void ScopeUnit::process_package(LoadPackage *package)
 
 	int w = gui->output_frame->get_w();
 	float radius = MIN(gui->vector_w / 2, gui->vector_h / 2);
-
-
-
-
 	unsigned char **waveform_rows = waveform_bitmap->get_row_pointers();
 	unsigned char **vector_rows = vector_bitmap->get_row_pointers();
+	unsigned char **rows = gui->output_frame->get_rows();
 
-
-	switch(gui->output_frame->get_color_model())
-	{
-		case BC_RGB888:
-			for(int i = pkg->row1; i < pkg->row2; i++)
-			{
-				unsigned char *row = gui->output_frame->get_rows()[i];
-				for(int j = 0; j < w; j++)
-				{
-					PROCESS_RGB_PIXEL(j, 255)
-				}
+	switch( gui->output_frame->get_color_model() ) {
+	case BC_RGB888:
+		for( int y=pkg->row1; y<pkg->row2; ++y ) {
+			unsigned char *row = rows[y];
+			for( int x=0; x<w; ++x ) {
+				PROCESS_RGB_PIXEL(x, 255)
 			}
-			break;
-
-		case BC_RGBA8888:
-			for(int i = pkg->row1; i < pkg->row2; i++)
-			{
-				unsigned char *row = gui->output_frame->get_rows()[i];
-				for(int j = 0; j < w; j++)
-				{
-					PROCESS_RGB_PIXEL(j, 255)
-					row++;
-				}
+		}
+		break;
+	case BC_RGBA8888:
+		for( int y=pkg->row1; y<pkg->row2; ++y ) {
+			unsigned char *row = rows[y];
+			for( int x=0; x<w; ++x ) {
+				PROCESS_RGB_PIXEL(x, 255)
+				++row;
 			}
-			break;
-
-		case BC_RGB_FLOAT:
-			for(int i = pkg->row1; i < pkg->row2; i++)
-			{
-				float *row = (float*)gui->output_frame->get_rows()[i];
-				for(int j = 0; j < w; j++)
-				{
-					PROCESS_RGB_PIXEL(j, 1.0)
-				}
+		}
+		break;
+	case BC_BGR888:
+		for( int y=pkg->row1; y<pkg->row2; ++y ) {
+			unsigned char *row = rows[y];
+			for( int x=0; x<w; ++x ) {
+				PROCESS_BGR_PIXEL(x, 255)
 			}
-			break;
-
-		case BC_RGBA_FLOAT:
-			for(int i = pkg->row1; i < pkg->row2; i++)
-			{
-				float *row = (float*)gui->output_frame->get_rows()[i];
-				for(int j = 0; j < w; j++)
-				{
-					PROCESS_RGB_PIXEL(j, 1.0)
-					row++;
-				}
+		}
+		break;
+	case BC_BGR8888:
+		for( int y=pkg->row1; y<pkg->row2; ++y ) {
+			unsigned char *row = rows[y];
+			for( int x=0; x<w; ++x ) {
+				PROCESS_BGR_PIXEL(x, 255)
+				++row;
 			}
-			break;
-
-		case BC_YUV888:
-			for(int i = pkg->row1; i < pkg->row2; i++)
-			{
-				unsigned char *row = gui->output_frame->get_rows()[i];
-				for(int j = 0; j < w; j++)
-				{
-					PROCESS_YUV_PIXEL(j, row[0], row[1], row[2])
-					row += 3;
-				}
+		}
+		break;
+	case BC_RGB_FLOAT:
+		for( int y=pkg->row1; y<pkg->row2; ++y ) {
+			float *row = (float*)rows[y];
+			for( int x=0; x<w; ++x ) {
+				PROCESS_RGB_PIXEL(x, 1.0)
 			}
-			break;
-
-		case BC_YUVA8888:
-			for(int i = pkg->row1; i < pkg->row2; i++)
-			{
-				unsigned char *row = gui->output_frame->get_rows()[i];
-				for(int j = 0; j < w; j++)
-				{
-					PROCESS_YUV_PIXEL(j, row[0], row[1], row[2])
-					row += 4;
-				}
+		}
+		break;
+	case BC_RGBA_FLOAT:
+		for( int y=pkg->row1; y<pkg->row2; ++y ) {
+			float *row = (float*)rows[y];
+			for( int x=0; x<w; ++x ) {
+				PROCESS_RGB_PIXEL(x, 1.0)
+				++row;
 			}
-			break;
-
-
-		case BC_YUV420P:
-			for(int i = pkg->row1; i < pkg->row2; i++)
-			{
-				unsigned char *y_row = gui->output_frame->get_y() + i * gui->output_frame->get_w();
-				unsigned char *u_row = gui->output_frame->get_u() + (i / 2) * (gui->output_frame->get_w() / 2);
-				unsigned char *v_row = gui->output_frame->get_v() + (i / 2) * (gui->output_frame->get_w() / 2);
-				for(int j = 0; j < w; j += 2)
-				{
-					PROCESS_YUV_PIXEL(j, *y_row, *u_row, *v_row);
-					y_row++;
-					PROCESS_YUV_PIXEL(j + 1, *y_row, *u_row, *v_row);
-					y_row++;
-
-					u_row++;
-					v_row++;
-				}
+		}
+		break;
+	case BC_YUV888:
+		for( int y=pkg->row1; y<pkg->row2; ++y ) {
+			unsigned char *row = rows[y];
+			for( int x=0; x<w; ++x ) {
+				PROCESS_YUV_PIXEL(x, row[0], row[1], row[2])
+				row += 3;
 			}
-			break;
+		}
+		break;
 
-		case BC_YUV422:
-			for(int i = pkg->row1; i < pkg->row2; i++)
-			{
-				unsigned char *row = gui->output_frame->get_rows()[i];
-				for(int j = 0; j < gui->output_frame->get_w(); j += 2)
-				{
-					PROCESS_YUV_PIXEL(j, row[0], row[1], row[3]);
-					PROCESS_YUV_PIXEL(j + 1, row[2], row[1], row[3]);
-					row += 4;
-				}
+	case BC_YUVA8888:
+		for( int y=pkg->row1; y<pkg->row2; ++y ) {
+			unsigned char *row = rows[y];
+			for( int x=0; x<w; ++x ) {
+				PROCESS_YUV_PIXEL(x, row[0], row[1], row[2])
+				row += 4;
 			}
-			break;
+		}
+		break;
+	case BC_YUV420P: {
+		unsigned char *yp = gui->output_frame->get_y();
+		unsigned char *up = gui->output_frame->get_u();
+		unsigned char *vp = gui->output_frame->get_v();
+		for( int y=pkg->row1; y<pkg->row2; ++y ) {
+			unsigned char *y_row = yp + y * w;
+			unsigned char *u_row = up + (y / 2) * (w / 2);
+			unsigned char *v_row = vp + (y / 2) * (w / 2);
+			for( int x=0; x<w; x+=2 ) {
+				PROCESS_YUV_PIXEL(x, *y_row, *u_row, *v_row);      ++y_row;
+				PROCESS_YUV_PIXEL(x + 1, *y_row, *u_row, *v_row);  ++y_row;
+				++u_row;  ++v_row;
+			}
+		}
+		break; }
+	case BC_YUV422:
+		for( int y=pkg->row1; y<pkg->row2; ++y ) {
+			unsigned char *row = rows[y];
+			for( int x=0; x<w; x+=2 ) {
+				PROCESS_YUV_PIXEL(x, row[0], row[1], row[3]);
+				PROCESS_YUV_PIXEL(x + 1, row[2], row[1], row[3]);
+				row += 4;
+			}
+		}
+		break;
 
-		default:
-			printf("ScopeUnit::process_package %d: color_model=%d unrecognized\n",
-				__LINE__,
-				gui->output_frame->get_color_model());
-			break;
+	default:
+		printf("ScopeUnit::process_package %d: color_model=%d unrecognized\n",
+			__LINE__, gui->output_frame->get_color_model());
+		break;
 	}
-
 }
-
-
-
-
 
 
 ScopeEngine::ScopeEngine(ScopeGUI *gui, int cpus)
@@ -367,17 +279,16 @@ ScopeEngine::~ScopeEngine()
 
 void ScopeEngine::init_packages()
 {
-	for(int i = 0; i < LoadServer::get_total_packages(); i++)
-	{
+	int y = 0, h = gui->output_frame->get_h();
+	for( int i=0,n=LoadServer::get_total_packages(); i<n; ) {
 		ScopePackage *pkg = (ScopePackage*)get_package(i);
-		pkg->row1 = gui->output_frame->get_h() * i / LoadServer::get_total_packages();
-		pkg->row2 = gui->output_frame->get_h() * (i + 1) / LoadServer::get_total_packages();
+		pkg->row1 = y;
+		pkg->row2 = y = (++i * h) / n;
 	}
 
-	for(int i = 0; i < get_total_clients(); i++)
-	{
+	for( int i=0,n=LoadServer::get_total_packages(); i<n; ++i ) {
 		ScopeUnit *unit = (ScopeUnit*)get_client(i);
-		for(int j = 0; j < HIST_SECTIONS; j++)
+		for( int j=0; j<HIST_SECTIONS; ++j )
 			bzero(unit->bins[j], sizeof(int) * TOTAL_BINS);
 	}
 }
@@ -400,13 +311,10 @@ void ScopeEngine::process()
 	for(int i = 0; i < HIST_SECTIONS; i++)
 		bzero(gui->bins[i], sizeof(int) * TOTAL_BINS);
 
-	for(int i = 0; i < get_total_clients(); i++)
-	{
+	for(int i=0,n=get_total_clients(); i<n; ++i ) {
 		ScopeUnit *unit = (ScopeUnit*)get_client(i);
-		for(int j = 0; j < HIST_SECTIONS; j++)
-		{
-			for(int k = 0; k < TOTAL_BINS; k++)
-			{
+		for( int j=0; j<HIST_SECTIONS; ++j ) {
+			for( int k=0; k<TOTAL_BINS; ++k ) {
 				gui->bins[j][k] += unit->bins[j][k];
 			}
 		}
@@ -414,21 +322,10 @@ void ScopeEngine::process()
 }
 
 
-
 ScopeGUI::ScopeGUI(Theme *theme,
-	int x,
-	int y,
-	int w,
-	int h,
-	int cpus)
+	int x, int y, int w, int h, int cpus)
  : PluginClientWindow(_(PROGRAM_NAME ": Scopes"),
- 	x,
-	y,
-	w,
-	h,
-	MIN_SCOPE_W,
-	MIN_SCOPE_H,
-	1)
+	x, y, w, h, MIN_SCOPE_W, MIN_SCOPE_H, 1)
 {
 	this->x = x;
 	this->y = y;
@@ -439,15 +336,8 @@ ScopeGUI::ScopeGUI(Theme *theme,
 	reset();
 }
 
-ScopeGUI::ScopeGUI(PluginClient *plugin,
-	int w,
-	int h)
- : PluginClientWindow(plugin,
- 	w,
-	h,
-	MIN_SCOPE_W,
-	MIN_SCOPE_H,
-	1)
+ScopeGUI::ScopeGUI(PluginClient *plugin, int w, int h)
+ : PluginClientWindow(plugin, w, h, MIN_SCOPE_W, MIN_SCOPE_H, 1)
 {
 	this->x = get_x();
 	this->y = get_y();
@@ -485,53 +375,27 @@ void ScopeGUI::reset()
 
 void ScopeGUI::create_objects()
 {
-	if(use_hist && use_hist_parade)
-	{
+	if( use_hist && use_hist_parade )
 		use_hist = 0;
-	}
-
-	if(use_wave && use_wave_parade)
-	{
+	if( use_wave && use_wave_parade )
 		use_wave = 0;
-	}
-
-	if(!engine) engine = new ScopeEngine(this,
-		cpus);
+	if( !engine ) engine = new ScopeEngine(this, cpus);
 
 	lock_window("ScopeGUI::create_objects");
-
-
 	int x = theme->widget_border;
 	int y = theme->widget_border;
-
-
-	add_subwindow(hist_on = new ScopeToggle(this,
-		x,
-		y,
-		&use_hist));
+	add_subwindow(hist_on = new ScopeToggle(this, x, y, &use_hist));
 	x += hist_on->get_w() + theme->widget_border;
 
-	add_subwindow(hist_parade_on = new ScopeToggle(this,
-		x,
-		y,
-		&use_hist_parade));
+	add_subwindow(hist_parade_on = new ScopeToggle(this, x, y, &use_hist_parade));
 	x += hist_parade_on->get_w() + theme->widget_border;
 
-	add_subwindow(waveform_on = new ScopeToggle(this,
-		x,
-		y,
-		&use_wave));
+	add_subwindow(waveform_on = new ScopeToggle(this, x, y, &use_wave));
 	x += waveform_on->get_w() + theme->widget_border;
-	add_subwindow(waveform_parade_on = new ScopeToggle(this,
-		x,
-		y,
-		&use_wave_parade));
+	add_subwindow(waveform_parade_on = new ScopeToggle(this, x, y, &use_wave_parade));
 	x += waveform_parade_on->get_w() + theme->widget_border;
 
-	add_subwindow(vector_on = new ScopeToggle(this,
-		x,
-		y,
-		&use_vector));
+	add_subwindow(vector_on = new ScopeToggle(this, x, y, &use_vector));
 	x += vector_on->get_w() + theme->widget_border;
 
 	add_subwindow(value_text = new BC_Title(x, y, ""));
@@ -539,116 +403,65 @@ void ScopeGUI::create_objects()
 
 	y += vector_on->get_h() + theme->widget_border;
 
-
-//PRINT_TRACE
-
 	create_panels();
-//PRINT_TRACE
-
-
-
-
-
-
 
 	update_toggles();
 	show_window();
 	unlock_window();
 }
 
-
-
 void ScopeGUI::create_panels()
 {
 	calculate_sizes(get_w(), get_h());
-
-
-	if((use_wave || use_wave_parade))
-	{
-		if(!waveform)
-		{
+	if( (use_wave || use_wave_parade) ) {
+		if( !waveform ) {
 			add_subwindow(waveform = new ScopeWaveform(this,
-				wave_x,
-				wave_y,
-				wave_w,
-				wave_h));
+				wave_x, wave_y, wave_w, wave_h));
 			waveform->create_objects();
 		}
-		else
-		{
-			waveform->reposition_window(wave_x,
-				wave_y,
-				wave_w,
-				wave_h);
+		else {
+			waveform->reposition_window(
+				wave_x, wave_y, wave_w, wave_h);
 			waveform->clear_box(0, 0, wave_w, wave_h);
 		}
 	}
-	else
-	if(!(use_wave || use_wave_parade) && waveform)
-	{
-		delete waveform;
-		waveform = 0;
+	else if( !(use_wave || use_wave_parade) && waveform ) {
+		delete waveform;  waveform = 0;
 	}
 
-	if(use_vector)
-	{
-		if(!vectorscope)
-		{
+	if( use_vector ) {
+		if( !vectorscope ) {
 			add_subwindow(vectorscope = new ScopeVectorscope(this,
-				vector_x,
-				vector_y,
-				vector_w,
-				vector_h));
+				vector_x, vector_y, vector_w, vector_h));
 			vectorscope->create_objects();
 		}
-		else
-		{
-			vectorscope->reposition_window(vector_x,
-				vector_y,
-				vector_w,
-				vector_h);
+		else {
+			vectorscope->reposition_window(
+				vector_x, vector_y, vector_w, vector_h);
 			vectorscope->clear_box(0, 0, vector_w, vector_h);
 		}
 	}
-	else
-	if(!use_vector && vectorscope)
-	{
-		delete vectorscope;
-		vectorscope = 0;
+	else if( !use_vector && vectorscope ) {
+		delete vectorscope;  vectorscope = 0;
 	}
 
-	if((use_hist || use_hist_parade))
-	{
-		if(!histogram)
-		{
-// printf("ScopeGUI::create_panels %d %d %d %d %d\n", __LINE__, hist_x,
-// hist_y,
-// hist_w,
-// hist_h);
+	if( (use_hist || use_hist_parade) ) {
+		if( !histogram ) {
+// printf("ScopeGUI::create_panels %d %d %d %d %d\n", __LINE__,
+//  hist_x, hist_y, hist_w, hist_h);
 			add_subwindow(histogram = new ScopeHistogram(this,
-				hist_x,
-				hist_y,
-				hist_w,
-				hist_h));
+				hist_x, hist_y, hist_w, hist_h));
 			histogram->create_objects();
 		}
-		else
-		{
-			histogram->reposition_window(hist_x,
-				hist_y,
-				hist_w,
-				hist_h);
+		else {
+			histogram->reposition_window(
+				hist_x, hist_y, hist_w, hist_h);
 			histogram->clear_box(0, 0, hist_w, hist_h);
 		}
 	}
-	else
-	if(!(use_hist || use_hist_parade))
-	{
-		delete histogram;
-		histogram = 0;
+	else if( !(use_hist || use_hist_parade) ) {
+		delete histogram;  histogram = 0;
 	}
-
-
 
 	allocate_bitmaps();
 	clear_points(0);
@@ -657,17 +470,22 @@ void ScopeGUI::create_panels()
 
 void ScopeGUI::clear_points(int flash)
 {
-	if(histogram) histogram->clear_point();
-	if(waveform) waveform->clear_point();
-	if(vectorscope) vectorscope->clear_point();
-	if(histogram && flash) histogram->flash(0);
-	if(waveform && flash) waveform->flash(0);
-	if(vectorscope && flash) vectorscope->flash(0);
+	if( histogram )
+		histogram->clear_point();
+	if( waveform )
+		waveform->clear_point();
+	if( vectorscope )
+		vectorscope->clear_point();
+	if( histogram && flash )
+		histogram->flash(0);
+	if( waveform && flash )
+		waveform->flash(0);
+	if( vectorscope && flash )
+		vectorscope->flash(0);
 }
 
 void ScopeGUI::toggle_event()
 {
-
 }
 
 void ScopeGUI::calculate_sizes(int w, int h)
@@ -683,38 +501,33 @@ void ScopeGUI::calculate_sizes(int w, int h)
 // Vectorscope determines the size of everything else
 // Always last panel
 	vector_w = 0;
-	if(use_vector)
-	{
+	if( use_vector ) {
 		vector_x = w - panel_w + text_w;
 		vector_w = w - margin - vector_x;
 		vector_y = vector_on->get_h() + margin * 2;
 		vector_h = h - vector_y - margin;
 
-		if(vector_w > vector_h)
-		{
+		if( vector_w > vector_h ) {
 			vector_w = vector_h;
 			vector_x = w - theme->widget_border - vector_w;
 		}
-
-		total_panels--;
+		--total_panels;
 		if(total_panels > 0)
 			panel_w = (vector_x - text_w - margin) / total_panels;
 	}
 
 // Histogram is always 1st panel
-	if(use_hist || use_hist_parade)
-	{
+	if( use_hist || use_hist_parade ) {
 		hist_x = x;
 		hist_y = vector_on->get_h() + margin * 2;
 		hist_w = panel_w - margin;
 		hist_h = h - hist_y - margin;
 
-		total_panels--;
+		--total_panels;
 		x += panel_w;
 	}
 
-	if(use_wave || use_wave_parade)
-	{
+	if( use_wave || use_wave_parade ) {
 		wave_x = x + text_w;
 		wave_y = vector_on->get_h() + margin * 2;
 		wave_w = panel_w - margin - text_w;
@@ -729,14 +542,9 @@ void ScopeGUI::allocate_bitmaps()
 	if(waveform_bitmap) delete waveform_bitmap;
 	if(vector_bitmap) delete vector_bitmap;
 
-	int w;
-	int h;
-// printf("ScopeGUI::allocate_bitmaps %d %d %d %d %d\n",
-// __LINE__,
-// wave_w,
-// wave_h,
-// vector_w,
-// vector_h);
+	int w, h;
+//printf("ScopeGUI::allocate_bitmaps %d %d %d %d %d\n", __LINE__,
+// wave_w, wave_h, vector_w, vector_h);
 	int xs16 = xS(16), ys16 = yS(16);
 	w = MAX(wave_w, xs16);
 	h = MAX(wave_h, ys16);
@@ -754,30 +562,24 @@ int ScopeGUI::resize_event(int w, int h)
 	this->h = h;
 	calculate_sizes(w, h);
 
-	if(waveform)
-	{
+	if( waveform ) {
 		waveform->reposition_window(wave_x, wave_y, wave_w, wave_h);
 		waveform->clear_box(0, 0, wave_w, wave_h);
 	}
 
-	if(histogram)
-	{
+	if( histogram ) {
 		histogram->reposition_window(hist_x, hist_y, hist_w, hist_h);
 		histogram->clear_box(0, 0, hist_w, hist_h);
 	}
 
-	if(vectorscope)
-	{
+	if( vectorscope ) {
 		vectorscope->reposition_window(vector_x, vector_y, vector_w, vector_h);
 		vectorscope->clear_box(0, 0, vector_w, vector_h);
 	}
 
 	allocate_bitmaps();
-
-
 	clear_points(0);
 	draw_overlays(1, 1, 1);
-
 	return 1;
 }
 
@@ -785,7 +587,6 @@ int ScopeGUI::translation_event()
 {
 	x = get_x();
 	y = get_y();
-
 	PluginClientWindow::translation_event();
 	return 0;
 }
@@ -795,32 +596,24 @@ void ScopeGUI::draw_overlays(int overlays, int borders, int flush)
 {
 	BC_Resources *resources = BC_WindowBase::get_resources();
 	int text_color = GREEN;
-	if(resources->bg_color == 0xffffff)
-	{
+	if( resources->bg_color == 0xffffff ) {
 		text_color = BLACK;
 	}
 
-	if(overlays && borders)
-	{
+	if( overlays && borders ) {
 		clear_box(0, 0, get_w(), get_h());
 	}
 
-	if(overlays)
-	{
+	if( overlays ) {
 		set_line_dashes(1);
 		set_color(text_color);
 		set_font(SMALLFONT);
 
-		if(histogram && (use_hist || use_hist_parade))
-		{
-			histogram->draw_line(hist_w * -FLOAT_MIN / (FLOAT_MAX - FLOAT_MIN),
-					0,
-					hist_w * -FLOAT_MIN / (FLOAT_MAX - FLOAT_MIN),
-					hist_h);
-			histogram->draw_line(hist_w * (1.0 - FLOAT_MIN) / (FLOAT_MAX - FLOAT_MIN),
-					0,
-					hist_w * (1.0 - FLOAT_MIN) / (FLOAT_MAX - FLOAT_MIN),
-					hist_h);
+		if( histogram && (use_hist || use_hist_parade) ) {
+			histogram->draw_line(hist_w * -FLOAT_MIN / (FLOAT_MAX - FLOAT_MIN), 0,
+					hist_w * -FLOAT_MIN / (FLOAT_MAX - FLOAT_MIN), hist_h);
+			histogram->draw_line(hist_w * (1.0 - FLOAT_MIN) / (FLOAT_MAX - FLOAT_MIN), 0,
+					hist_w * (1.0 - FLOAT_MIN) / (FLOAT_MAX - FLOAT_MIN), hist_h);
 			set_line_dashes(0);
 			histogram->draw_point();
 			set_line_dashes(1);
@@ -828,17 +621,14 @@ void ScopeGUI::draw_overlays(int overlays, int borders, int flush)
 		}
 
 // Waveform overlay
-		if(waveform && (use_wave || use_wave_parade))
-		{
+		if( waveform && (use_wave || use_wave_parade) ) {
 			set_color(text_color);
-			for(int i = 0; i <= WAVEFORM_DIVISIONS; i++)
-			{
+			for( int i=0; i<=WAVEFORM_DIVISIONS; ++i ) {
 				int y = wave_h * i / WAVEFORM_DIVISIONS;
 				int text_y = y + wave_y + get_text_ascent(SMALLFONT) / 2;
 				CLAMP(text_y, waveform->get_y() + get_text_ascent(SMALLFONT), waveform->get_y() + waveform->get_h() - 1);
 				char string[BCTEXTLEN];
-				sprintf(string, "%d",
-					(int)((FLOAT_MAX -
+				sprintf(string, "%d", (int)((FLOAT_MAX -
 					i * (FLOAT_MAX - FLOAT_MIN) / WAVEFORM_DIVISIONS) * 100));
 				int text_x = wave_x - get_text_width(SMALLFONT, string) - theme->widget_border;
 				draw_text(text_x, text_y, string);
@@ -855,12 +645,10 @@ void ScopeGUI::draw_overlays(int overlays, int borders, int flush)
 
 
 // Vectorscope overlay
-		if(vectorscope && use_vector)
-		{
+		if( vectorscope && use_vector ) {
 			set_color(text_color);
 			int radius = MIN(vector_w / 2, vector_h / 2);
-			for(int i = 1; i <= VECTORSCOPE_DIVISIONS; i += 2)
-			{
+			for( int i=1; i<=VECTORSCOPE_DIVISIONS; i+=2 ) {
 				int x = vector_w / 2 - radius * i / VECTORSCOPE_DIVISIONS;
 				int y = vector_h / 2 - radius * i / VECTORSCOPE_DIVISIONS;
 				int text_y = y + vector_y + get_text_ascent(SMALLFONT) / 2;
@@ -892,42 +680,18 @@ void ScopeGUI::draw_overlays(int overlays, int borders, int flush)
 		set_line_dashes(0);
 	}
 
-	if(borders)
-	{
-		if(use_hist || use_hist_parade)
-		{
-			draw_3d_border(hist_x - 2,
-				hist_y - 2,
-				hist_w + 4,
-				hist_h + 4,
-				get_bg_color(),
-				BLACK,
-				MDGREY,
-				get_bg_color());
+	if( borders ) {
+		if( use_hist || use_hist_parade ) {
+			draw_3d_border(hist_x - 2, hist_y - 2, hist_w + 4, hist_h + 4,
+				get_bg_color(), BLACK, MDGREY, get_bg_color());
 		}
-
-		if(use_wave || use_wave_parade)
-		{
-			draw_3d_border(wave_x - 2,
-				wave_y - 2,
-				wave_w + 4,
-				wave_h + 4,
-				get_bg_color(),
-				BLACK,
-				MDGREY,
-				get_bg_color());
+		if( use_wave || use_wave_parade ) {
+			draw_3d_border(wave_x - 2, wave_y - 2, wave_w + 4, wave_h + 4,
+				get_bg_color(), BLACK, MDGREY, get_bg_color());
 		}
-
-		if(use_vector)
-		{
-			draw_3d_border(vector_x - 2,
-				vector_y - 2,
-				vector_w + 4,
-				vector_h + 4,
-				get_bg_color(),
-				BLACK,
-				MDGREY,
-				get_bg_color());
+		if( use_vector ) {
+			draw_3d_border(vector_x - 2, vector_y - 2, vector_w + 4, vector_h + 4,
+				get_bg_color(), BLACK, MDGREY, get_bg_color());
 		}
 	}
 
@@ -943,33 +707,16 @@ void ScopeGUI::process(VFrame *output_frame)
 	this->output_frame = output_frame;
 	frame_w = output_frame->get_w();
 	//float radius = MIN(vector_w / 2, vector_h / 2);
-
 	bzero(waveform_bitmap->get_data(), waveform_bitmap->get_data_size());
 	bzero(vector_bitmap->get_data(), vector_bitmap->get_data_size());
-
-
 	engine->process();
 
-	if(histogram)
-	{
+	if( histogram )
 		histogram->draw(0, 0);
-	}
-
-	if(waveform)
-	{
-		waveform->draw_bitmap(waveform_bitmap,
-			1,
-			0,
-			0);
-	}
-
-	if(vectorscope)
-	{
-		vectorscope->draw_bitmap(vector_bitmap,
-			1,
-			0,
-			0);
-	}
+	if( waveform )
+		waveform->draw_bitmap(waveform_bitmap, 1, 0, 0);
+	if( vectorscope )
+		vectorscope->draw_bitmap(vector_bitmap, 1, 0, 0);
 
 	draw_overlays(1, 0, 1);
 	unlock_window();
@@ -986,19 +733,7 @@ void ScopeGUI::update_toggles()
 }
 
 
-
-
-
-
-
-
-
-
-ScopePanel::ScopePanel(ScopeGUI *gui,
-	int x,
-	int y,
-	int w,
-	int h)
+ScopePanel::ScopePanel(ScopeGUI *gui, int x, int y, int w, int h)
  : BC_SubWindow(x, y, w, h, BLACK)
 {
 	this->gui = gui;
@@ -1025,10 +760,8 @@ void ScopePanel::clear_point()
 
 int ScopePanel::button_press_event()
 {
-	if(is_event_win() && cursor_inside())
-	{
+	if( is_event_win() && cursor_inside() ) {
 		gui->clear_points(1);
-
 		is_dragging = 1;
 		int x = get_cursor_x();
 		int y = get_cursor_y();
@@ -1043,8 +776,7 @@ int ScopePanel::button_press_event()
 
 int ScopePanel::cursor_motion_event()
 {
-	if(is_dragging)
-	{
+	if( is_dragging ) {
 		int x = get_cursor_x();
 		int y = get_cursor_y();
 		CLAMP(x, 0, get_w() - 1);
@@ -1058,8 +790,7 @@ int ScopePanel::cursor_motion_event()
 
 int ScopePanel::button_release_event()
 {
-	if(is_dragging)
-	{
+	if( is_dragging ) {
 		is_dragging = 0;
 		return 1;
 	}
@@ -1067,18 +798,8 @@ int ScopePanel::button_release_event()
 }
 
 
-
-
-
-
-
-
-
 ScopeWaveform::ScopeWaveform(ScopeGUI *gui,
-		int x,
-		int y,
-		int w,
-		int h)
+		int x, int y, int w, int h)
  : ScopePanel(gui, x, y, w, h)
 {
 	drag_x = -1;
@@ -1092,12 +813,10 @@ void ScopeWaveform::update_point(int x, int y)
 	drag_y = y;
 	int frame_x = x * gui->frame_w / get_w();
 
-	if(gui->use_wave_parade)
-	{
-		if(x > get_w() / 3 * 2)
+	if( gui->use_wave_parade ) {
+		if( x > get_w() / 3 * 2 )
 			frame_x = (x - get_w() / 3 * 2) * gui->frame_w / (get_w() / 3);
-		else
-		if(x > get_w() / 3)
+		else if( x > get_w() / 3 )
 			frame_x = (x - get_w() / 3) * gui->frame_w / (get_w() / 3);
 		else
 			frame_x = x * gui->frame_w / (get_w() / 3);
@@ -1115,8 +834,7 @@ void ScopeWaveform::update_point(int x, int y)
 
 void ScopeWaveform::draw_point()
 {
-	if(drag_x >= 0)
-	{
+	if( drag_x >= 0 ) {
 		set_inverse();
 		set_color(0xffffff);
 		set_line_width(2);
@@ -1134,17 +852,8 @@ void ScopeWaveform::clear_point()
 	drag_y = -1;
 }
 
-
-
-
-
-
-
 ScopeVectorscope::ScopeVectorscope(ScopeGUI *gui,
-		int x,
-		int y,
-		int w,
-		int h)
+		int x, int y, int w, int h)
  : ScopePanel(gui, x, y, w, h)
 {
 	drag_radius = 0;
@@ -1172,7 +881,7 @@ void ScopeVectorscope::update_point(int x, int y)
 
 	float saturation = (float)drag_radius / radius * FLOAT_MAX;
 	float hue = -drag_angle * 360 / 2 / M_PI - 90;
-	if(hue < 0) hue += 360;
+	if( hue < 0 ) hue += 360;
 
 	char string[BCTEXTLEN];
 	sprintf(string, "Hue: %.3f Sat: %.3f", hue, saturation);
@@ -1185,19 +894,14 @@ void ScopeVectorscope::update_point(int x, int y)
 
 void ScopeVectorscope::draw_point()
 {
-	if(drag_radius > 0)
-	{
+	if( drag_radius > 0 ) {
 		int radius = MIN(get_w() / 2, get_h() / 2);
 		set_inverse();
 		set_color(0xff0000);
 		set_line_width(2);
-		draw_circle(get_w() / 2 - drag_radius,
-			get_h() / 2 - drag_radius,
-			drag_radius * 2,
-			drag_radius * 2);
-
-		draw_line(get_w() / 2,
-			get_h() / 2,
+		draw_circle(get_w() / 2 - drag_radius, get_h() / 2 - drag_radius,
+			drag_radius * 2, drag_radius * 2);
+		draw_line(get_w() / 2, get_h() / 2,
 			get_w() / 2 + radius * cos(drag_angle),
 			get_h() / 2 + radius * sin(drag_angle));
 		set_line_width(1);
@@ -1208,10 +912,7 @@ void ScopeVectorscope::draw_point()
 
 
 ScopeHistogram::ScopeHistogram(ScopeGUI *gui,
-		int x,
-		int y,
-		int w,
-		int h)
+		int x, int y, int w, int h)
  : ScopePanel(gui, x, y, w, h)
 {
 	drag_x = -1;
@@ -1226,8 +927,7 @@ void ScopeHistogram::clear_point()
 
 void ScopeHistogram::draw_point()
 {
-	if(drag_x >= 0)
-	{
+	if( drag_x >= 0 ) {
 		set_inverse();
 		set_color(0xffffff);
 		set_line_width(2);
@@ -1257,30 +957,21 @@ void ScopeHistogram::draw_mode(int mode, int color, int y, int h)
 {
 // Highest of all bins
 	int normalize = 0;
-	for(int i = 0; i < TOTAL_BINS; i++)
-	{
+	for( int i=0; i<TOTAL_BINS; ++i ) {
 		if(gui->bins[mode][i] > normalize) normalize = gui->bins[mode][i];
 	}
-
-
-
 	set_color(color);
-	for(int i = 0; i < get_w(); i++)
-	{
+	for( int i=0; i<get_w(); ++i ) {
 		int accum_start = (int)(i * TOTAL_BINS / get_w());
 		int accum_end = (int)((i + 1) * TOTAL_BINS / get_w());
 		CLAMP(accum_start, 0, TOTAL_BINS);
 		CLAMP(accum_end, 0, TOTAL_BINS);
-
 		int max = 0;
-		for(int k = accum_start; k < accum_end; k++)
-		{
+		for(int k=accum_start; k<accum_end; ++k ) {
 			max = MAX(gui->bins[mode][k], max);
 		}
-
-//			max = max * h / normalize;
+//		max = max * h / normalize;
 		max = (int)(log(max) / log(normalize) * h);
-
 		draw_line(i, y + h - max, i, y + h);
 	}
 }
@@ -1289,14 +980,12 @@ void ScopeHistogram::draw(int flash, int flush)
 {
 	clear_box(0, 0, get_w(), get_h());
 
-	if(gui->use_hist_parade)
-	{
+	if( gui->use_hist_parade ) {
 		draw_mode(0, 0xff0000, 0, get_h() / 3);
 		draw_mode(1, 0x00ff00, get_h() / 3, get_h() / 3);
 		draw_mode(2, 0x0000ff, get_h() / 3 * 2, get_h() / 3);
 	}
-	else
-	{
+	else {
 		draw_mode(3, LTGREY, 0, get_h());
 	}
 
@@ -1304,70 +993,44 @@ void ScopeHistogram::draw(int flash, int flush)
 	if(flush) this->flush();
 }
 
-
-
-
-
-
-ScopeToggle::ScopeToggle(ScopeGUI *gui,
-	int x,
-	int y,
-	int *value)
- : BC_Toggle(x,
- 	y,
-	get_image_set(gui, value),
-	*value)
+ScopeToggle::ScopeToggle(ScopeGUI *gui, int x, int y, int *value)
+ : BC_Toggle(x, y, get_image_set(gui, value), *value)
 {
 	this->gui = gui;
 	this->value = value;
-	if(value == &gui->use_hist_parade)
-	{
+	if( value == &gui->use_hist_parade ) {
 		set_tooltip(_("Histogram Parade"));
 	}
-	else
-	if(value == &gui->use_hist)
+	else if( value == &gui->use_hist )
 	{
 		set_tooltip(_("Histogram"));
 	}
-	else
-	if(value == &gui->use_wave_parade)
-	{
+	else if( value == &gui->use_wave_parade ) {
 		set_tooltip(_("Waveform Parade"));
 	}
-	else
-	if(value == &gui->use_wave)
-	{
+	else if( value == &gui->use_wave ) {
 		set_tooltip(_("Waveform"));
 	}
-	else
-	{
+	else {
 		set_tooltip(_("Vectorscope"));
 	}
 }
 
 VFrame** ScopeToggle::get_image_set(ScopeGUI *gui, int *value)
 {
-	if(value == &gui->use_hist_parade)
-	{
+	if( value == &gui->use_hist_parade ) {
 		return gui->theme->get_image_set("histogram_rgb_toggle");
 	}
-	else
-	if(value == &gui->use_hist)
-	{
+	else if( value == &gui->use_hist ) {
 		return gui->theme->get_image_set("histogram_toggle");
 	}
-	else
-	if(value == &gui->use_wave_parade)
-	{
+	else if( value == &gui->use_wave_parade ) {
 		return gui->theme->get_image_set("waveform_rgb_toggle");
 	}
-	else
-	if(value == &gui->use_wave)
-	{
+	else if( value == &gui->use_wave ) {
 		return gui->theme->get_image_set("waveform_toggle");
 	}
-	else
-	{
+	else {
 		return gui->theme->get_image_set("scope_toggle");
 	}
 }
@@ -1375,33 +1038,23 @@ VFrame** ScopeToggle::get_image_set(ScopeGUI *gui, int *value)
 int ScopeToggle::handle_event()
 {
 	*value = get_value();
-	if(value == &gui->use_hist_parade)
-	{
-		if(get_value()) gui->use_hist = 0;
+	if( value == &gui->use_hist_parade ) {
+		if( get_value() ) gui->use_hist = 0;
 	}
-	else
-	if(value == &gui->use_hist)
+	else if( value == &gui->use_hist )
 	{
-		if(get_value()) gui->use_hist_parade = 0;
+		if( get_value() ) gui->use_hist_parade = 0;
 	}
-	else
-	if(value == &gui->use_wave_parade)
-	{
-		if(get_value()) gui->use_wave = 0;
+	else if( value == &gui->use_wave_parade ) {
+		if( get_value() ) gui->use_wave = 0;
 	}
-	else
-	if(value == &gui->use_wave)
-	{
-		if(get_value()) gui->use_wave_parade = 0;
+	else if( value == &gui->use_wave ) {
+		if( get_value() ) gui->use_wave_parade = 0;
 	}
-
-
 	gui->toggle_event();
 	gui->update_toggles();
 	gui->create_panels();
 	gui->show_window();
 	return 1;
 }
-
-
 

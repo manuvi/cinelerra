@@ -3882,13 +3882,17 @@ int TrackCanvas::render_handle_frame(EDL *edl, int64_t pos, int mode)
 		delete video_cache;
 		mwindow->cwindow->gui->lock_window("TrackCanvas::render_handle_frame 0");
 		Canvas *canvas = mwindow->cwindow->gui->canvas;
-		int w = canvas->w, h = canvas->h, w2 = w/2, h2 = h/2;
-		int lx = 0, ly = h2/2, rx = w2, ry = h2/2;
+		float ox1, oy1, ox2, oy2, cx1, cy1, cx2, cy2;
+		canvas->get_transfers(edl, ox1, oy1, ox2, oy2, cx1, cy1, cx2, cy2);
+		float cw = canvas->w/2, ch = canvas->h/2;
+		float cdx = (cx2 - cx1)/2, cdy = (cy2 - cy1)/2;
+		int cx = cx1/2, cy = cy1/2 + ch/2;
+		int ow = ox2 - ox2, oh = oy2 - oy1;
 		BC_WindowBase *window = canvas->get_canvas();
 		window->set_color(BLACK);
 		window->clear_box(0,0, window->get_w(),window->get_h());
-		window->draw_vframe(&vlt, lx,ly, w2,h2, 0,0,vlt.get_w(),vlt.get_h());
-		window->draw_vframe(&vrt, rx,ry, w2,h2, 0,0,vrt.get_w(),vrt.get_h());
+		window->draw_vframe(&vlt, cx,cy, cdx,cdy, ox1,oy1, ow,oh);  cx += cw;
+		window->draw_vframe(&vrt, cx,cy, cdx,cdy, ox1,oy1, ow,oh);
 		window->flash(1);
 		mwindow->cwindow->gui->unlock_window();
 		break; }
