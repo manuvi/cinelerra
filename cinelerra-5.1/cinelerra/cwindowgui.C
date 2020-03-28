@@ -1100,7 +1100,7 @@ int CWindowCanvas::scope_on()
 
 void CWindowCanvas::draw_scope(VFrame *output)
 {
-	if( gui->edit_panel->scope_dialog )
+	if( gui->edit_panel->scope_dialog && output )
 		gui->edit_panel->scope_dialog->process(output);
 }
 

@@ -48,6 +48,7 @@
 #include "timebar.h"
 #include "trackcanvas.h"
 #include "transportque.h"
+#include "vwindowgui.h"
 #include "zoombar.h"
 
 
@@ -1261,6 +1262,21 @@ EditPanelScope::EditPanelScope(MWindow *mwindow, EditPanel *panel, int x, int y)
 
 EditPanelScope::~EditPanelScope()
 {
+}
+
+void EditPanelScopeGUI::update_scope()
+{
+	Canvas *canvas = 0;
+	if( dialog->panel->is_cwindow() ) {
+		CWindowGUI *cgui = (CWindowGUI *)dialog->panel->subwindow;
+		canvas = cgui->canvas;
+	}
+	else if( dialog->panel->is_vwindow() ) {
+		VWindowGUI *vgui = (VWindowGUI *)dialog->panel->subwindow;
+		canvas = vgui->canvas;
+	}
+	if( canvas && canvas->refresh_frame )
+		process(canvas->refresh_frame);
 }
 
 int EditPanelScope::handle_event()

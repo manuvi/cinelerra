@@ -21,11 +21,18 @@
 #ifndef SCOPEWINDOW_INC
 #define SCOPEWINDOW_INC
 
-
-class ScopeGUI;
+class ScopePackage;
+class ScopeUnit;
 class ScopeEngine;
-
-
+class ScopePanel;
+class ScopeWaveform;
+class ScopeVectorscope;
+class ScopeHistogram;
+class ScopeScopesOn;
+class ScopeMenu;
+class ScopeWaveDial;
+class ScopeVectDial;
+class ScopeGUI;
 
 #endif
 

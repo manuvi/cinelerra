@@ -30,6 +30,11 @@
 #include "scopewindow.inc"
 #include "theme.inc"
 
+enum {
+	SCOPE_HISTOGRAM, SCOPE_HISTOGRAM_RGB,
+	SCOPE_WAVEFORM, SCOPE_WAVEFORM_RGB, SCOPE_WAVEFORM_PLY,
+	SCOPE_VECTORSCOPE,
+};
 
 // Number of divisions in histogram.
 // 65536 + min and max range to speed up the tabulation
@@ -47,7 +52,6 @@
 #define MIN_SCOPE_H yS(320)
 
 
-
 #define WAVEFORM_DIVISIONS 12
 #define VECTORSCOPE_DIVISIONS 11
 
@@ -63,12 +67,6 @@ class ScopeUnit : public LoadClient
 {
 public:
 	ScopeUnit(ScopeGUI *gui, ScopeEngine *server);
-	void draw_point(unsigned char **rows,
-		int x,
-		int y,
-		int r,
-		int g,
-		int b);
 	void process_package(LoadPackage *package);
 	int bins[HIST_SECTIONS][TOTAL_BINS];
 	ScopeGUI *gui;
@@ -89,11 +87,7 @@ public:
 class ScopePanel : public BC_SubWindow
 {
 public:
-	ScopePanel(ScopeGUI *gui,
-		int x,
-		int y,
-		int w,
-		int h);
+	ScopePanel(ScopeGUI *gui, int x, int y, int w, int h);
 	void create_objects();
 	virtual void update_point(int x, int y);
 	virtual void draw_point();
@@ -108,11 +102,7 @@ public:
 class ScopeWaveform : public ScopePanel
 {
 public:
-	ScopeWaveform(ScopeGUI *gui,
-		int x,
-		int y,
-		int w,
-		int h);
+	ScopeWaveform(ScopeGUI *gui, int x, int y, int w, int h);
 	virtual void update_point(int x, int y);
 	virtual void draw_point();
 	virtual void clear_point();
@@ -124,11 +114,7 @@ public:
 class ScopeVectorscope : public ScopePanel
 {
 public:
-	ScopeVectorscope(ScopeGUI *gui,
-		int x,
-		int y,
-		int w,
-		int h);
+	ScopeVectorscope(ScopeGUI *gui, int x, int y, int w, int h);
 	virtual void update_point(int x, int y);
 	virtual void draw_point();
 	virtual void clear_point();
@@ -139,11 +125,7 @@ public:
 class ScopeHistogram : public ScopePanel
 {
 public:
-	ScopeHistogram(ScopeGUI *gui,
-		int x,
-		int y,
-		int w,
-		int h);
+	ScopeHistogram(ScopeGUI *gui, int x, int y, int w, int h);
 	void clear_point();
 	void update_point(int x, int y);
 	void draw_point();
@@ -152,32 +134,54 @@ public:
 	int drag_x;
 };
 
-class ScopeToggle : public BC_Toggle
+
+class ScopeScopesOn : public BC_MenuItem
 {
 public:
-	ScopeToggle(ScopeGUI *gui,
-		int x,
-		int y,
-		int *value);
-	static VFrame** get_image_set(ScopeGUI *gui, int *value);
+	ScopeScopesOn(ScopeMenu *scope_menu, const char *text, int id);
 	int handle_event();
-	ScopeGUI *gui;
-	int *value;
+
+	ScopeMenu *scope_menu;
+	int id;
 };
 
+class ScopeMenu : public BC_PopupMenu
+{
+public:
+	ScopeMenu(ScopeGUI *gui, int x, int y);
+	void create_objects();
+	void update_toggles();
+
+	ScopeGUI *gui;
+	ScopeScopesOn *hist_on;
+	ScopeScopesOn *hist_rgb_on;
+	ScopeScopesOn *wave_on;
+	ScopeScopesOn *wave_rgb_on;
+	ScopeScopesOn *wave_ply_on;
+	ScopeScopesOn *vect_on;
+};
+
+class ScopeWaveDial : public BC_FPot
+{
+public:
+	ScopeWaveDial(ScopeGUI *gui, int x, int y);
+	int handle_event();
+	ScopeGUI *gui;
+};
+
+class ScopeVectDial : public BC_FPot
+{
+public:
+	ScopeVectDial(ScopeGUI *gui, int x, int y);
+	int handle_event();
+	ScopeGUI *gui;
+};
 
 class ScopeGUI : public PluginClientWindow
 {
 public:
-	ScopeGUI(Theme *theme,
-		int x,
-		int y,
-		int w,
-		int h,
-		int cpus);
-	ScopeGUI(PluginClient *plugin,
-		int w,
-		int h);
+	ScopeGUI(Theme *theme, int x, int y, int w, int h, int cpus);
+	ScopeGUI(PluginClient *plugin, int w, int h);
 	virtual ~ScopeGUI();
 
 	void reset();
@@ -185,6 +189,7 @@ public:
 	void create_panels();
 	virtual int resize_event(int w, int h);
 	virtual int translation_event();
+	virtual void update_scope() {}
 
 // Called for user storage when toggles change
 	virtual void toggle_event();
@@ -192,32 +197,30 @@ public:
 // update toggles
 	void update_toggles();
 	void calculate_sizes(int w, int h);
-	void allocate_bitmaps();
+	void allocate_vframes();
 	void draw_overlays(int overlays, int borders, int flush);
 	void process(VFrame *output_frame);
 	void draw(int flash, int flush);
 	void clear_points(int flash);
 
-
 	Theme *theme;
 	VFrame *output_frame;
 	ScopeEngine *engine;
-	BC_Bitmap *waveform_bitmap;
-	BC_Bitmap *vector_bitmap;
+	VFrame *waveform_vframe;
+	VFrame *vector_vframe;
 	ScopeHistogram *histogram;
 	ScopeWaveform *waveform;
 	ScopeVectorscope *vectorscope;
-	ScopeToggle *hist_parade_on;
-	ScopeToggle *hist_on;
-	ScopeToggle *waveform_parade_on;
-	ScopeToggle *waveform_on;
-	ScopeToggle *vector_on;
+	ScopeMenu *scope_menu;
+	ScopeWaveDial *wave_dial;
+	ScopeVectDial *vect_dial;
 	BC_Title *value_text;
 
 	int x, y, w, h;
 	int vector_x, vector_y, vector_w, vector_h;
 	int wave_x, wave_y, wave_w, wave_h;
 	int hist_x, hist_y, hist_w, hist_h;
+	float wdial, vdial;
 
 	int cpus;
 	int use_hist, use_wave, use_vector;
@@ -227,10 +230,4 @@ public:
 	int frame_w;
 };
 
-
-
-
 #endif
-
-
-

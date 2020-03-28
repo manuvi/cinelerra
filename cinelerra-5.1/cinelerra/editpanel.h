@@ -355,6 +355,7 @@ public:
 	void toggle_event();
 	int translation_event();
 	int resize_event(int w, int h);
+	void update_scope();
 
 	MWindow *mwindow;
 	EditPanelScopeDialog *dialog;

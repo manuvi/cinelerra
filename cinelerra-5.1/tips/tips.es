@@ -64,3 +64,24 @@ mantienes pulsada la tecla Ctrl.
 La tecla "F" pulsada sobre la línea de tiempo ajusta el contenido a la ventana. La misma 
 tecla sobre los monitores de recorte o previsualización, los pone a pantalla completa.
 
+Si tienes claves de fotograma insertadas en los clips de efectos puedes ir a la siguiente
+clave con la tecla "k" y la anterior con la combinación "ctrl+k"
+
+Pulsando "Mayús+K" crearás una selección desde la posición del cursor al fotograma clave
+de la derecha, o final del clip, si no hay claves a la derecha del cursor. Con "Ctrl+Mayús+k"
+lo mismo que hemos visto, pero hacía la izquierda.
+
+Puedes crear fácilmente fundidos de entrada y salida con la transición de "Disolver"
+
+Para crear un fundido a negro entre clips en una misma pista, con la transición de disolver,
+deberás recortar el final de este clip y dejar un hueco entre clips de la duración de la
+transición.
+
+Si quieres que un clip acabe por corte y el siguiente, estando en la misma pista, empiece por
+fundido desde negro, deberás separar estos clips un fotograma como mínimo, he insertar la
+transición de disolver en el inicio del clip deseado.
+
+Puedes insertar un efecto, por ejemplo de texto, en una pista vacía sobre un clip de vídeo o
+imagen, para ello selecciona el clip, con doble clic, e inserta el efecto sobre la selección,
+en la parte alta de la pista vacía. Importante que sea en la parte de arriba de la pista.
+
