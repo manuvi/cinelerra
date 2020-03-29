@@ -708,7 +708,7 @@ void Theme::draw_mwindow_bg(MWindowGUI *gui)
 
 void Theme::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 {
-	int total_buttons = !use_commercials ? 17 : 18;
+	int total_buttons = !use_commercials ? 16 : 17;
 	int edit_w = EditPanel::calculate_w(mwindow, 1, total_buttons);
 	int transport_w = PlayTransport::get_transport_width(mwindow) + toggle_margin;
 	int zoom_w = ZoomPanel::calculate_w(czoom_w);

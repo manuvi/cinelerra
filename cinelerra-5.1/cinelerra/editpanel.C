@@ -171,19 +171,16 @@ void EditPanel::update()
 
 int EditPanel::calculate_w(MWindow *mwindow, int use_keyframe, int total_buttons)
 {
-	int result = 0;
-	int button_w = mwindow->theme->get_image_set("ibeam")[0]->get_w();
-	if( use_keyframe ) {
+	int button_w = mwindow->theme->get_image_set("meters")[0]->get_w();
+	int result = button_w * total_buttons;
+	if( use_keyframe )
 		result += 2*(button_w + mwindow->theme->toggle_margin);
-	}
-
-	result += button_w * total_buttons;
 	return result;
 }
 
 int EditPanel::calculate_h(MWindow *mwindow)
 {
-	return mwindow->theme->get_image_set("ibeam")[0]->get_h();
+	return mwindow->theme->get_image_set("meters")[0]->get_h();
 }
 
 void EditPanel::create_buttons()
@@ -1167,6 +1164,10 @@ EditPanelScopeDialog::~EditPanelScopeDialog()
 	delete gui_lock;
 }
 
+void EditPanelScopeDialog::handle_close_event(int result)
+{
+	scope_gui = 0;
+}
 void EditPanelScopeDialog::handle_done_event(int result)
 {
 	gui_lock->lock("EditPanelScopeDialog::handle_done_event");
@@ -1202,7 +1203,7 @@ EditPanelScopeGUI::EditPanelScopeGUI(MWindow *mwindow, EditPanelScopeDialog *dia
  : ScopeGUI(mwindow->theme,
 	mwindow->session->scope_x, mwindow->session->scope_y,
 	mwindow->session->scope_w, mwindow->session->scope_h,
-	mwindow->preferences->processors)
+	mwindow->get_cpus())
 {
 	this->mwindow = mwindow;
 	this->dialog = dialog;
@@ -1220,6 +1221,9 @@ void EditPanelScopeGUI::create_objects()
 	use_vector = session->use_vector;
 	use_hist_parade = session->use_hist_parade;
 	use_wave_parade = session->use_wave_parade;
+	use_wave_gain = session->use_wave_gain;
+	use_vect_gain = session->use_vect_gain;
+	use_smooth = session->use_smooth;
 	ScopeGUI::create_objects();
 }
 
@@ -1231,6 +1235,9 @@ void EditPanelScopeGUI::toggle_event()
 	session->use_vector = use_vector;
 	session->use_hist_parade = use_hist_parade;
 	session->use_wave_parade = use_wave_parade;
+	session->use_wave_gain = use_wave_gain;
+	session->use_vect_gain = use_vect_gain;
+	session->use_smooth = use_smooth;
 }
 
 int EditPanelScopeGUI::translation_event()

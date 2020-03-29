@@ -1193,7 +1193,7 @@ void NEOPHYTETHEME::initialize()
 // Re-align the Clock. theme.c:931 
 void NEOPHYTETHEME::get_vwindow_sizes(VWindowGUI *gui)
 {
-	int edit_w = EditPanel::calculate_w(mwindow, 0, xS(10));
+	int edit_w = EditPanel::calculate_w(mwindow, 0, 12);
 	int transport_w = PlayTransport::get_transport_width(mwindow) + toggle_margin;
 	vtimebar_h = yS(16);       // The height of the position indicator
 	int division_w = xS(30);
@@ -1260,7 +1260,8 @@ void NEOPHYTETHEME::get_vwindow_sizes(VWindowGUI *gui)
 
 		vdivision_x = vedit_x + edit_w + division_w;
 		vtime_x = vdivision_x + vtime_border;
-		vtime_y = vedit_y + widget_border - 7; // vertical height concentric at button height
+		// vertical height concentric at button height
+		vtime_y = vedit_y + widget_border - yS(7);
 	}
 
 	// vtimebar_x = vcanvas_x;

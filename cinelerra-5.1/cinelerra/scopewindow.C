@@ -40,25 +40,25 @@ ScopeUnit::ScopeUnit(ScopeGUI *gui,
 	this->gui = gui;
 }
 
-#define BPP 3
-#define incr_point(rows,h, n, comp) \
-if(iy >= 0 && iy < h) { int v; \
-  uint8_t *vp = rows[iy] + ix*BPP + (comp); \
-  v = *vp+(n);  *vp = v>0xff ? 0xff : v; \
+
+#define incr_point(rows,h, iv,comp) { \
+if(iy >= 0 && iy < h) { \
+  uint8_t *vp = rows[iy] + ix*3 + (comp); \
+  int v = *vp+(iv);  *vp = v>0xff ? 0xff : v; } \
 }
-#define incr_points(rows,h, rv, gv, bv) \
-if(iy >= 0 && iy < h) { int v; \
-  uint8_t *vp = rows[iy] + ix*BPP; \
-  v = *vp+(rv);  *vp++ = v>0xff ? 0xff : v; \
+#define incr_points(rows,h, rv,gv,bv) { \
+if(iy >= 0 && iy < h) { \
+  uint8_t *vp = rows[iy] + ix*3; \
+  int v = *vp+(rv);  *vp++ = v>0xff ? 0xff : v; \
   v = *vp+(gv);  *vp++ = v>0xff ? 0xff : v; \
-  v = *vp+(bv);  *vp   = v>0xff ? 0xff : v; \
+  v = *vp+(bv);  *vp = v>0xff ? 0xff : v; } \
 }
-#define clip_points(rows,h, rv, gv, bv) \
-if(iy >= 0 && iy < h) { int v; \
-  uint8_t *vp = rows[iy] + ix*BPP; \
-  v = *vp+(rv);  *vp++ = v>0xff ? 0xff : v<0 ? 0 : v; \
+#define clip_points(rows,h, rv,gv,bv) { \
+if(iy >= 0 && iy < h) { \
+  uint8_t *vp = rows[iy] + ix*3; \
+  int v = *vp+(rv);  *vp++ = v>0xff ? 0xff : v<0 ? 0 : v; \
   v = *vp+(gv);  *vp++ = v>0xff ? 0xff : v<0 ? 0 : v; \
-  v = *vp+(bv);  *vp   = v>0xff ? 0xff : v<0 ? 0 : v; \
+  v = *vp+(bv);  *vp = v>0xff ? 0xff : v<0 ? 0 : v; } \
 }
 
 #define PROCESS_PIXEL(column) { \
@@ -81,37 +81,37 @@ if(iy >= 0 && iy < h) { int v; \
 	} \
 /* Calculate waveform */ \
 	if(use_wave || use_wave_parade) { \
-		int ix = (column) * wave_w / out_w; \
-		if(ix >= 0 && ix < wave_w) { \
+		int ix = column * wave_w / dat_w; \
+		if(ix >= 0 && ix < wave_w-1) { \
 			if(use_wave_parade > 0) { \
 				ix /= 3; \
-				int iy = wave_h - (int)((r - FLOAT_MIN) /  \
+				int iy = wave_h - ((r - FLOAT_MIN) /  \
 						(FLOAT_MAX - FLOAT_MIN) * wave_h); \
-				incr_point(waveform_rows,wave_h, winc, 0); \
+				incr_point(waveform_rows,wave_h, winc,0); \
 				ix += wave_w/3; \
-				iy = wave_h - (int)((g - FLOAT_MIN) /  \
+				iy = wave_h - ((g - FLOAT_MIN) /  \
 						(FLOAT_MAX - FLOAT_MIN) * wave_h); \
-				incr_point(waveform_rows,wave_h, winc, 1); \
+				incr_point(waveform_rows,wave_h, winc,1); \
 				ix += wave_w/3; \
-				iy = wave_h - (int)((b - FLOAT_MIN) /  \
+				iy = wave_h - ((b - FLOAT_MIN) /  \
 						(FLOAT_MAX - FLOAT_MIN) * wave_h); \
-				incr_point(waveform_rows,wave_h, winc, 2); \
+				incr_point(waveform_rows,wave_h, winc,2); \
 			} \
 			else if(use_wave_parade < 0) { \
-				int iy = wave_h - (int)((r - FLOAT_MIN) /  \
+				int iy = wave_h - ((r - FLOAT_MIN) /  \
 						(FLOAT_MAX - FLOAT_MIN) * wave_h); \
-				clip_points(waveform_rows,wave_h, winc, -winc, -winc); \
-				iy = wave_h - (int)((g - FLOAT_MIN) /  \
+				clip_points(waveform_rows,wave_h, winc,-winc,-winc); \
+				iy = wave_h - ((g - FLOAT_MIN) /  \
 						(FLOAT_MAX - FLOAT_MIN) * wave_h); \
-				clip_points(waveform_rows,wave_h, -winc, winc, -winc); \
-				iy = wave_h - (int)((b - FLOAT_MIN) /  \
+				clip_points(waveform_rows,wave_h, -winc,winc,-winc); \
+				iy = wave_h - ((b - FLOAT_MIN) /  \
 						(FLOAT_MAX - FLOAT_MIN) * wave_h); \
-				clip_points(waveform_rows,wave_h, -winc, -winc, winc); \
+				clip_points(waveform_rows,wave_h, -winc,-winc,winc); \
 			} \
-			else { int yinc = 3*winc; \
-				int rinc = yinc*(r-FLOAT_MIN) / (FLOAT_MAX-FLOAT_MIN) + 3; \
-				int ginc = yinc*(g-FLOAT_MIN) / (FLOAT_MAX-FLOAT_MIN) + 3; \
-				int binc = yinc*(b-FLOAT_MIN) / (FLOAT_MAX-FLOAT_MIN) + 3; \
+			else { float yinc = 3*winc; \
+				float rinc = yinc*(r-FLOAT_MIN) / (FLOAT_MAX-FLOAT_MIN) + 3; \
+				float ginc = yinc*(g-FLOAT_MIN) / (FLOAT_MAX-FLOAT_MIN) + 3; \
+				float binc = yinc*(b-FLOAT_MIN) / (FLOAT_MAX-FLOAT_MIN) + 3; \
 				int iy = wave_h - ((intensity - FLOAT_MIN) /  \
 						(FLOAT_MAX - FLOAT_MIN) * wave_h); \
 				incr_points(waveform_rows,wave_h, rinc, ginc, binc); \
@@ -134,23 +134,25 @@ if(iy >= 0 && iy < h) { int v; \
 		int rv = CLIP(r_f, 0, 1) * vinc + 3; \
 		int gv = CLIP(g_f, 0, 1) * vinc + 3; \
 		int bv = CLIP(b_f, 0, 1) * vinc + 3; \
-		incr_points(vector_rows,vector_h, rv, gv, bv); \
+		incr_points(vector_rows,vector_h, rv,gv,bv); \
 	} \
 }
 
-#define PROCESS_RGB_PIXEL(column, max) { \
-	r = (float)*row++ / max; \
-	g = (float)*row++ / max; \
-	b = (float)*row++ / max; \
+#define PROCESS_RGB_PIXEL(type,max, column) { \
+	type *rp = (type *)row; \
+	r = (float)rp[0] / max; \
+	g = (float)rp[1] / max; \
+	b = (float)rp[2] / max; \
 	HSV::rgb_to_hsv(r, g, b, h, s, v); \
 	intensity = v; \
 	PROCESS_PIXEL(column) \
 }
 
-#define PROCESS_BGR_PIXEL(column, max) { \
-	b = (float)*row++ / max; \
-	g = (float)*row++ / max; \
-	r = (float)*row++ / max; \
+#define PROCESS_BGR_PIXEL(type,max, column) { \
+	type *rp = (type *)row; \
+	b = (float)rp[0] / max; \
+	g = (float)rp[1] / max; \
+	r = (float)rp[2] / max; \
 	HSV::rgb_to_hsv(r, g, b, h, s, v); \
 	intensity = v; \
 	PROCESS_PIXEL(column) \
@@ -181,120 +183,140 @@ void ScopeUnit::process_package(LoadPackage *package)
 	int wave_w = waveform_vframe->get_w();
 	int vector_h = vector_vframe->get_h();
 	int vector_w = vector_vframe->get_w();
-	int out_w = gui->output_frame->get_w();
-	int out_h = gui->output_frame->get_h();
-	int winc = (wave_w * wave_h) / (out_w * out_h);
+	int dat_w = gui->data_frame->get_w();
+	int dat_h = gui->data_frame->get_h();
+	int winc = (wave_w * wave_h) / (dat_w * dat_h);
 	if( use_wave_parade ) winc *= 3;
-	winc += 2;  winc *= gui->wdial;
-	int vinc = 3*(vector_w * vector_h) / (out_w * out_h) + 2;
-	vinc *= gui->vdial;
+	winc += 2;  winc *= gui->use_wave_gain;
+	int vinc = 3*(vector_w * vector_h) / (dat_w * dat_h) + 2;
+	vinc *= gui->use_vect_gain;
 	float radius = MIN(gui->vector_w / 2, gui->vector_h / 2);
-	unsigned char **waveform_rows = waveform_vframe->get_rows();
-	unsigned char **vector_rows = vector_vframe->get_rows();
-	unsigned char **rows = gui->output_frame->get_rows();
+	uint8_t **waveform_rows = waveform_vframe->get_rows();
+	uint8_t **vector_rows = vector_vframe->get_rows();
+	uint8_t **rows = gui->data_frame->get_rows();
 
-	switch( gui->output_frame->get_color_model() ) {
+	switch( gui->data_frame->get_color_model() ) {
 	case BC_RGB888:
 		for( int y=pkg->row1; y<pkg->row2; ++y ) {
-			unsigned char *row = rows[y];
-			for( int x=0; x<out_w; ++x ) {
-				PROCESS_RGB_PIXEL(x, 255)
+			uint8_t *row = rows[y];
+			for( int x=0; x<dat_w; ++x ) {
+				PROCESS_RGB_PIXEL(uint8_t,0xff, x)
+				row += 3*sizeof(uint8_t);
 			}
 		}
 		break;
 	case BC_RGBA8888:
 		for( int y=pkg->row1; y<pkg->row2; ++y ) {
-			unsigned char *row = rows[y];
-			for( int x=0; x<out_w; ++x ) {
-				PROCESS_RGB_PIXEL(x, 255)
-				++row;
+			uint8_t *row = rows[y];
+			for( int x=0; x<dat_w; ++x ) {
+				PROCESS_RGB_PIXEL(uint8_t,0xff, x)
+				row += 4*sizeof(uint8_t);
+			}
+		}
+		break;
+	case BC_RGB161616:
+		for( int y=pkg->row1; y<pkg->row2; ++y ) {
+			uint8_t *row = rows[y];
+			for( int x=0; x<dat_w; ++x ) {
+				PROCESS_RGB_PIXEL(uint16_t,0xffff, x)
+				row += 3*sizeof(uint16_t);
+			}
+		}
+		break;
+	case BC_RGBA16161616:
+		for( int y=pkg->row1; y<pkg->row2; ++y ) {
+			uint8_t *row = rows[y];
+			for( int x=0; x<dat_w; ++x ) {
+				PROCESS_RGB_PIXEL(uint16_t,0xffff, x)
+				row += 4*sizeof(uint16_t);
 			}
 		}
 		break;
 	case BC_BGR888:
 		for( int y=pkg->row1; y<pkg->row2; ++y ) {
-			unsigned char *row = rows[y];
-			for( int x=0; x<out_w; ++x ) {
-				PROCESS_BGR_PIXEL(x, 255)
+			uint8_t *row = rows[y];
+			for( int x=0; x<dat_w; ++x ) {
+				PROCESS_BGR_PIXEL(uint8_t,0xff, x)
+				row += 3*sizeof(uint8_t);
 			}
 		}
 		break;
 	case BC_BGR8888:
 		for( int y=pkg->row1; y<pkg->row2; ++y ) {
-			unsigned char *row = rows[y];
-			for( int x=0; x<out_w; ++x ) {
-				PROCESS_BGR_PIXEL(x, 255)
-				++row;
+			uint8_t *row = rows[y];
+			for( int x=0; x<dat_w; ++x ) {
+				PROCESS_BGR_PIXEL(uint8_t,0xff, x)
+				row += 4*sizeof(uint8_t);
 			}
 		}
 		break;
 	case BC_RGB_FLOAT:
 		for( int y=pkg->row1; y<pkg->row2; ++y ) {
 			float *row = (float*)rows[y];
-			for( int x=0; x<out_w; ++x ) {
-				PROCESS_RGB_PIXEL(x, 1.0)
+			for( int x=0; x<dat_w; ++x ) {
+				PROCESS_RGB_PIXEL(float,1.f, x)
+				row += 3*sizeof(float);
 			}
 		}
 		break;
 	case BC_RGBA_FLOAT:
 		for( int y=pkg->row1; y<pkg->row2; ++y ) {
 			float *row = (float*)rows[y];
-			for( int x=0; x<out_w; ++x ) {
-				PROCESS_RGB_PIXEL(x, 1.0)
-				++row;
+			for( int x=0; x<dat_w; ++x ) {
+				PROCESS_RGB_PIXEL(float,1.f, x)
+				row += 4*sizeof(float);
 			}
 		}
 		break;
 	case BC_YUV888:
 		for( int y=pkg->row1; y<pkg->row2; ++y ) {
-			unsigned char *row = rows[y];
-			for( int x=0; x<out_w; ++x ) {
+			uint8_t *row = rows[y];
+			for( int x=0; x<dat_w; ++x ) {
 				PROCESS_YUV_PIXEL(x, row[0], row[1], row[2])
-				row += 3;
+				row += 3*sizeof(uint8_t);
 			}
 		}
 		break;
 
 	case BC_YUVA8888:
 		for( int y=pkg->row1; y<pkg->row2; ++y ) {
-			unsigned char *row = rows[y];
-			for( int x=0; x<out_w; ++x ) {
+			uint8_t *row = rows[y];
+			for( int x=0; x<dat_w; ++x ) {
 				PROCESS_YUV_PIXEL(x, row[0], row[1], row[2])
-				row += 4;
+				row += 4*sizeof(uint8_t);
 			}
 		}
 		break;
 	case BC_YUV420P: {
-		unsigned char *yp = gui->output_frame->get_y();
-		unsigned char *up = gui->output_frame->get_u();
-		unsigned char *vp = gui->output_frame->get_v();
+		uint8_t *yp = gui->data_frame->get_y();
+		uint8_t *up = gui->data_frame->get_u();
+		uint8_t *vp = gui->data_frame->get_v();
 		for( int y=pkg->row1; y<pkg->row2; ++y ) {
-			unsigned char *y_row = yp + y * out_w;
-			unsigned char *u_row = up + (y / 2) * (out_w / 2);
-			unsigned char *v_row = vp + (y / 2) * (out_w / 2);
-			for( int x=0; x<out_w; x+=2 ) {
+			uint8_t *y_row = yp + y * dat_w;
+			uint8_t *u_row = up + (y / 2) * (dat_w / 2);
+			uint8_t *v_row = vp + (y / 2) * (dat_w / 2);
+			for( int x=0; x<dat_w; x+=2 ) {
 				PROCESS_YUV_PIXEL(x, *y_row, *u_row, *v_row);
 				++y_row;
 				PROCESS_YUV_PIXEL(x + 1, *y_row, *u_row, *v_row);
-				++y_row;
-				++u_row;  ++v_row;
+				++y_row;  ++u_row;  ++v_row;
 			}
 		}
 		break; }
 	case BC_YUV422:
 		for( int y=pkg->row1; y<pkg->row2; ++y ) {
-			unsigned char *row = rows[y];
-			for( int x=0; x<out_w; x+=2 ) {
+			uint8_t *row = rows[y];
+			for( int x=0; x<dat_w; x+=2 ) {
 				PROCESS_YUV_PIXEL(x, row[0], row[1], row[3]);
 				PROCESS_YUV_PIXEL(x + 1, row[2], row[1], row[3]);
-				row += 4;
+				row += 4*sizeof(uint8_t);
 			}
 		}
 		break;
 
 	default:
 		printf("ScopeUnit::process_package %d: color_model=%d unrecognized\n",
-			__LINE__, gui->output_frame->get_color_model());
+			__LINE__, gui->data_frame->get_color_model());
 		break;
 	}
 }
@@ -313,7 +335,7 @@ ScopeEngine::~ScopeEngine()
 
 void ScopeEngine::init_packages()
 {
-	int y = 0, h = gui->output_frame->get_h();
+	int y = 0, h = gui->data_frame->get_h();
 	for( int i=0,n=LoadServer::get_total_packages(); i<n; ) {
 		ScopePackage *pkg = (ScopePackage*)get_package(i);
 		pkg->row1 = y;
@@ -364,6 +386,7 @@ ScopeGUI::ScopeGUI(Theme *theme,
 	this->y = y;
 	this->w = w;
 	this->h = h;
+	this->temp_frame = 0;
 	this->theme = theme;
 	this->cpus = cpus;
 	reset();
@@ -376,6 +399,7 @@ ScopeGUI::ScopeGUI(PluginClient *plugin, int w, int h)
 	this->y = get_y();
 	this->w = w;
 	this->h = h;
+	this->temp_frame = 0;
 	this->theme = plugin->get_theme();
 	this->cpus = plugin->PluginClient::smp + 1;
 	reset();
@@ -386,14 +410,22 @@ ScopeGUI::~ScopeGUI()
 	delete waveform_vframe;
 	delete vector_vframe;
 	delete engine;
+	delete box_blur;
+	delete temp_frame;
 }
 
 void ScopeGUI::reset()
 {
+	output_frame = 0;
+	data_frame = 0;
 	frame_w = 1;
+	use_smooth = 1;
+	use_wave_gain = 5;
+	use_vect_gain = 5;
 	waveform_vframe = 0;
 	vector_vframe = 0;
 	engine = 0;
+	box_blur = 0;
 	use_hist = 0;
 	use_wave = 1;
 	use_vector = 1;
@@ -402,8 +434,8 @@ void ScopeGUI::reset()
 	waveform = 0;
 	vectorscope = 0;
 	histogram = 0;
-	wave_w = wave_h = vector_w = vector_h = 0;
-	wdial = vdial = 5.f;
+	wave_w = wave_h = 0;
+	vector_w = vector_h = 0;
 }
 
 
@@ -417,12 +449,14 @@ void ScopeGUI::create_objects()
 
 	lock_window("ScopeGUI::create_objects");
 	int x = theme->widget_border;
-	int y = theme->widget_border +
-		ScopeWaveDial::calculate_h() - ScopeMenu::calculate_h();
+	int y = theme->widget_border;
+	add_subwindow(smooth = new ScopeSmooth(this, x, y));
+	y += smooth->get_h() + theme->widget_border;
 	add_subwindow(scope_menu = new ScopeMenu(this, x, y));
 	scope_menu->create_objects();
 	x += scope_menu->get_w() + theme->widget_border;
 	add_subwindow(value_text = new BC_Title(x, y, ""));
+	y += scope_menu->get_h() + theme->widget_border;
 
 	create_panels();
 	update_toggles();
@@ -434,46 +468,47 @@ void ScopeGUI::create_objects()
 void ScopeGUI::create_panels()
 {
 	calculate_sizes(get_w(), get_h());
+	int slider_w = xS(100);
 	if( (use_wave || use_wave_parade) ) {
-		int px = wave_x + wave_w - ScopeWaveDial::calculate_w() - xS(5);
-		int py = wave_y - ScopeWaveDial::calculate_h() - yS(5);
+		int px = wave_x + wave_w - slider_w - xS(5);
+		int py = wave_y - ScopeWaveSlider::get_span(0) - yS(5);
 		if( !waveform ) {
 			add_subwindow(waveform = new ScopeWaveform(this,
 				wave_x, wave_y, wave_w, wave_h));
 			waveform->create_objects();
-			add_subwindow(wave_dial = new ScopeWaveDial(this, px, py));
+			add_subwindow(wave_slider = new ScopeWaveSlider(this, px, py, slider_w));
 		}
 		else {
 			waveform->reposition_window(
 				wave_x, wave_y, wave_w, wave_h);
 			waveform->clear_box(0, 0, wave_w, wave_h);
-			wave_dial->reposition_window(px, py);
+			wave_slider->reposition_window(px, py);
 		}
 	}
 	else if( !(use_wave || use_wave_parade) && waveform ) {
-		delete waveform;   waveform = 0;
-		delete wave_dial;  wave_dial = 0;
+		delete waveform;     waveform = 0;
+		delete wave_slider;  wave_slider = 0;
 	}
 
 	if( use_vector ) {
-		int vx = vector_x + vector_w - ScopeVectDial::calculate_w() - xS(5);
-		int vy = vector_y - ScopeVectDial::calculate_h() - yS(5);
+		int vx = vector_x + vector_w - slider_w - xS(5);
+		int vy = vector_y - ScopeVectSlider::get_span(0) - yS(5);
 		if( !vectorscope ) {
 			add_subwindow(vectorscope = new ScopeVectorscope(this,
 				vector_x, vector_y, vector_w, vector_h));
 			vectorscope->create_objects();
-			add_subwindow(vect_dial = new ScopeVectDial(this, vx, vy));
+			add_subwindow(vect_slider = new ScopeVectSlider(this, vx, vy, slider_w));
 		}
 		else {
 			vectorscope->reposition_window(
 				vector_x, vector_y, vector_w, vector_h);
 			vectorscope->clear_box(0, 0, vector_w, vector_h);
-			vect_dial->reposition_window(vx, vy);
+			vect_slider->reposition_window(vx, vy);
 		}
 	}
 	else if( !use_vector && vectorscope ) {
 		delete vectorscope;  vectorscope = 0;
-		delete vect_dial;    vect_dial = 0;
+		delete vect_slider;  vect_slider = 0;
 	}
 
 	if( (use_hist || use_hist_parade) ) {
@@ -522,7 +557,7 @@ void ScopeGUI::toggle_event()
 void ScopeGUI::calculate_sizes(int w, int h)
 {
 	int margin = theme->widget_border;
-	int menu_h = ScopeWaveDial::calculate_h() + margin * 2;
+	int menu_h = smooth->get_h() + scope_menu->get_h() + margin * 3;
 	int text_w = get_text_width(SMALLFONT, "000") + margin * 2;
 	int total_panels = ((use_hist || use_hist_parade) ? 1 : 0) +
 		((use_wave || use_wave_parade) ? 1 : 0) +
@@ -593,13 +628,14 @@ int ScopeGUI::resize_event(int w, int h)
 	this->w = w;
 	this->h = h;
 	calculate_sizes(w, h);
+	int margin = theme->widget_border;
 
 	if( waveform ) {
 		waveform->reposition_window(wave_x, wave_y, wave_w, wave_h);
 		waveform->clear_box(0, 0, wave_w, wave_h);
-		int px = wave_x + wave_w - ScopeWaveDial::calculate_w() - xS(5);
-		int py = wave_y - ScopeWaveDial::calculate_h() - yS(5);
-		wave_dial->reposition_window(px, py);
+		int px = wave_x + wave_w - wave_slider->get_w() - margin;
+		int py = wave_y - wave_slider->get_h() - margin;
+		wave_slider->reposition_window(px, py);
 	}
 
 	if( histogram ) {
@@ -610,9 +646,9 @@ int ScopeGUI::resize_event(int w, int h)
 	if( vectorscope ) {
 		vectorscope->reposition_window(vector_x, vector_y, vector_w, vector_h);
 		vectorscope->clear_box(0, 0, vector_w, vector_h);
-		int vx = vector_x + vector_w - ScopeVectDial::calculate_w() - xS(5);
-		int vy = vector_y - ScopeVectDial::calculate_h() - yS(5);
-		vect_dial->reposition_window(vx, vy);
+		int vx = vector_x + vector_w - vect_slider->get_w() - margin;
+		int vy = vector_y - vect_slider->get_h() - margin;
+		vect_slider->reposition_window(vx, vy);
 	}
 
 	allocate_vframes();
@@ -738,7 +774,17 @@ void ScopeGUI::process(VFrame *output_frame)
 {
 	lock_window("ScopeGUI::process");
 	this->output_frame = output_frame;
-	frame_w = output_frame->get_w();
+	int ow = output_frame->get_w(), oh = output_frame->get_h();
+	if( use_smooth ) {
+		VFrame::get_temp(temp_frame, ow, oh, BC_RGB161616);
+		temp_frame->transfer_from(output_frame);
+		if( !box_blur ) box_blur = new BoxBlur(cpus);
+		box_blur->blur(temp_frame, temp_frame, 2, 2);
+		data_frame = temp_frame;
+	}
+	else
+		data_frame = output_frame;
+	frame_w = data_frame->get_w();
 	//float radius = MIN(vector_w / 2, vector_h / 2);
 	bzero(waveform_vframe->get_data(), waveform_vframe->get_data_size());
 	bzero(vector_vframe->get_data(), vector_vframe->get_data_size());
@@ -747,9 +793,9 @@ void ScopeGUI::process(VFrame *output_frame)
 	if( histogram )
 		histogram->draw(0, 0);
 	if( waveform )
-		waveform->draw_vframe(waveform_vframe, 1, 0, 0);
+		waveform->draw_vframe(waveform_vframe);
 	if( vectorscope )
-		vectorscope->draw_vframe(vector_vframe, 1, 0, 0);
+		vectorscope->draw_vframe(vector_vframe);
 
 	draw_overlays(1, 0, 1);
 	unlock_window();
@@ -1076,12 +1122,14 @@ void ScopeMenu::create_objects()
 		new ScopeScopesOn(this, _("Histogram"), SCOPE_HISTOGRAM));
 	add_item(hist_rgb_on =
 		new ScopeScopesOn(this, _("Histogram RGB"), SCOPE_HISTOGRAM_RGB));
+	add_item(new BC_MenuItem("-"));
 	add_item(wave_on =
 		new ScopeScopesOn(this, _("Waveform"), SCOPE_WAVEFORM));
 	add_item(wave_rgb_on =
 		new ScopeScopesOn(this, _("Waveform RGB"), SCOPE_WAVEFORM_RGB));
 	add_item(wave_ply_on =
 		new ScopeScopesOn(this, _("Waveform ply"), SCOPE_WAVEFORM_PLY));
+	add_item(new BC_MenuItem("-"));
 	add_item(vect_on =
 		new ScopeScopesOn(this, _("Vectorscope"), SCOPE_VECTORSCOPE));
 }
@@ -1096,27 +1144,194 @@ void ScopeMenu::update_toggles()
 	vect_on->set_checked(gui->use_vector);
 }
 
-ScopeWaveDial::ScopeWaveDial(ScopeGUI *gui, int x, int y)
- : BC_FPot(x, y, gui->wdial, 1.f, 9.f)
+ScopeWaveSlider::ScopeWaveSlider(ScopeGUI *gui, int x, int y, int w)
+ : BC_ISlider(x, y, 0, w, w, 1, 9, gui->use_wave_gain)
 {
 	this->gui = gui;
 }
-int ScopeWaveDial::handle_event()
+int ScopeWaveSlider::handle_event()
 {
-	gui->wdial = get_value();
+	gui->use_wave_gain = get_value();
 	gui->update_scope();
+	gui->toggle_event();
 	return 1;
 }
 
-ScopeVectDial::ScopeVectDial(ScopeGUI *gui, int x, int y)
- : BC_FPot(x, y, gui->vdial, 1.f, 9.f)
+ScopeVectSlider::ScopeVectSlider(ScopeGUI *gui, int x, int y, int w)
+ : BC_ISlider(x, y, 0, w, w, 1, 9, gui->use_vect_gain)
 {
 	this->gui = gui;
 }
-int ScopeVectDial::handle_event()
+int ScopeVectSlider::handle_event()
 {
-	gui->vdial = get_value();
+	gui->use_vect_gain = get_value();
 	gui->update_scope();
+	gui->toggle_event();
 	return 1;
+}
+
+ScopeSmooth::ScopeSmooth(ScopeGUI *gui, int x, int y)
+ : BC_CheckBox(x, y, gui->use_smooth, _("Smooth"))
+{
+	this->gui = gui;
+}
+
+int ScopeSmooth::handle_event()
+{
+	gui->use_smooth = get_value();
+	gui->update_scope();
+	gui->toggle_event();
+	return 1;
+}
+
+// from ffmpeg vf_boxblur
+template<class dst_t, class src_t> static inline
+void blurt(dst_t *dst, int dst_step, src_t *src, int src_step, int len, int radius)
+{
+	const int length = radius*2 + 1;
+	const int inv = ((1<<16) + length/2)/length;
+	int x, n, sum = src[radius*src_step];
+
+	for( x=0; x<radius; ++x )
+		sum += src[x*src_step]<<1;
+	sum = sum*inv + (1<<15);
+
+	for( x=0; x<=radius; ++x ) {
+		sum += (src[(radius+x)*src_step] - src[(radius-x)*src_step])*inv;
+		dst[x*dst_step] = sum>>16;
+	}
+	n = len - radius;
+	for( ; x<n; ++x ) {
+		sum += (src[(radius+x)*src_step] - src[(x-radius-1)*src_step])*inv;
+		dst[x*dst_step] = sum >>16;
+	}
+
+	for ( ; x<len; ++x ) {
+		sum += (src[(2*len-radius-x-1)*src_step] - src[(x-radius-1)*src_step])*inv;
+		dst[x*dst_step] = sum>>16;
+	}
+}
+template<class dst_t, class src_t> static inline
+void blur_power(dst_t *dst, int dst_step, src_t *src, int src_step,
+		int len, int radius, int power)
+{
+	dst_t atemp[len], btemp[len];
+	dst_t *a = atemp, *b = btemp;
+	blurt(a, 1, src, src_step, len, radius);
+	while( power-- > 2 ) {
+		blurt(b, 1, a, 1, len, radius);
+		dst_t *t = a; a = b; b = t;
+        }
+	if( power > 1 )
+		blurt(dst, dst_step, a, 1, len, radius);
+	else
+                for( int i = 0; i<len; ++i ) dst[i*dst_step] = a[i];
+}
+
+
+BoxBlurPackage::BoxBlurPackage()
+ : LoadPackage()
+{
+}
+
+BoxBlurUnit::BoxBlurUnit(BoxBlur *box_blur)
+ : LoadClient(box_blur)
+{
+}
+
+template<class dst_t, class src_t>
+void BoxBlurUnit::blurt_package(LoadPackage *package)
+{
+	BoxBlur *box_blur = (BoxBlur *)server;
+	src_t *src_data = (src_t *)box_blur->src_data;
+	dst_t *dst_data = (dst_t *)box_blur->dst_data;
+	int radius = box_blur->radius;
+	int power = box_blur->power;
+	int vlen = box_blur->vlen;
+	int c0 = box_blur->c0, c1 = box_blur->c1;
+	int src_ustep = box_blur->src_ustep;
+	int dst_ustep = box_blur->dst_ustep;
+	int src_vstep = box_blur->src_vstep;
+	int dst_vstep = box_blur->dst_vstep;
+	BoxBlurPackage *pkg = (BoxBlurPackage*)package;
+	int u1 = pkg->u1, u2 = pkg->u2;
+	for( int u=u1; u<u2; ++u ) {
+		src_t *sp = src_data + u*src_ustep;
+		dst_t *dp = dst_data + u*dst_ustep;
+		for( int c=c0; c<=c1; ++c ) {
+			blur_power(dp+c, dst_vstep, sp+c, src_vstep,
+				vlen, radius, power);
+		}
+	}
+}
+
+void BoxBlurUnit::process_package(LoadPackage *package)
+{
+	blurt_package<uint16_t, const uint16_t>(package);
+}
+
+BoxBlur::BoxBlur(int cpus)
+ : LoadServer(cpus, cpus)
+{
+}
+BoxBlur::~BoxBlur()
+{
+}
+
+LoadClient* BoxBlur::new_client() { return new BoxBlurUnit(this); }
+LoadPackage* BoxBlur::new_package() { return new BoxBlurPackage(); }
+
+void BoxBlur::init_packages()
+{
+	int u = 0;
+	for( int i=0,n=LoadServer::get_total_packages(); i<n; ) {
+		BoxBlurPackage *pkg = (BoxBlurPackage*)get_package(i);
+		pkg->u1 = u;
+		pkg->u2 = u = (++i * ulen) / n;
+	}
+}
+
+//dst can equal src, requires geom(dst)==geom(src)
+//uv: 0=hblur, 1=vblur;  comp: -1=rgb,0=r,1=g,2=b
+void BoxBlur::process(VFrame *dst, VFrame *src, int uv,
+		int radius, int power, int comp)
+{
+	this->radius = radius;
+	this->power = power;
+	int src_w = src->get_w(), src_h = src->get_h();
+	ulen = !uv ? src_h : src_w;
+	vlen = !uv ? src_w : src_h;
+	c0 = comp<0 ? 0 : comp;
+	c1 = comp<0 ? 2 : comp;
+	src_data = src->get_data();
+	dst_data = dst->get_data();
+	int src_pixsz = BC_CModels::calculate_pixelsize(src->get_color_model());
+	int src_comps = BC_CModels::components(src->get_color_model());
+	int src_bpp = src_pixsz / src_comps;
+	int dst_pixsz = BC_CModels::calculate_pixelsize(dst->get_color_model());
+	int dst_comps = BC_CModels::components(dst->get_color_model());
+	int dst_bpp = dst_pixsz / dst_comps;
+	int dst_linsz = dst->get_bytes_per_line() / dst_bpp;
+	int src_linsz = src->get_bytes_per_line() / src_bpp;
+	src_ustep = !uv ? src_linsz : src_comps;
+	dst_ustep = !uv ? dst_linsz: dst_comps;
+	src_vstep = !uv ? src_comps : src_linsz;
+	dst_vstep = !uv ? dst_comps : dst_linsz;
+
+	process_packages();
+}
+
+void BoxBlur::hblur(VFrame *dst, VFrame *src, int radius, int power, int comp)
+{
+	process(dst, src, 0, radius, power, comp);
+}
+void BoxBlur::vblur(VFrame *dst, VFrame *src, int radius, int power, int comp)
+{
+	process(dst, src, 1, radius, power, comp);
+}
+void BoxBlur::blur(VFrame *dst, VFrame *src, int radius, int power, int comp)
+{
+	process(dst, src, 0, radius, power, comp);
+	process(dst, dst, 1, radius, power, comp);
 }
 

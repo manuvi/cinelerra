@@ -1036,7 +1036,7 @@ void CAKEWALKTHEME::initialize()
 }
 void CAKEWALKTHEME::get_vwindow_sizes(VWindowGUI *gui)
 {
- int edit_w = EditPanel::calculate_w(mwindow, 0, xS(10));
+ int edit_w = EditPanel::calculate_w(mwindow, 0, 12);
  int transport_w = PlayTransport::get_transport_width(mwindow) + toggle_margin;
  vtimebar_h = yS(16);
  int division_w = xS(30);
@@ -1072,7 +1072,7 @@ void CAKEWALKTHEME::get_vwindow_sizes(VWindowGUI *gui)
    get_image_set("autokeyframe")[0]->get_h() -
    widget_border;
   vdivision_x = xS(280);
-  vtime_x = vedit_x + xS(65);
+  vtime_x = vedit_x + xS(85);
   vtime_y = vedit_y + yS(28);
  } else {
   buttons_h = vtimebar_h +

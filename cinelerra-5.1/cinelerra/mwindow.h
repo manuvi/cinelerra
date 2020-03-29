@@ -797,6 +797,7 @@ public:
 	void speed_before();
 	int speed_after(int done);
 	int normalize_speed(EDL *old_edl, EDL *new_edl);
+	int get_cpus();
 //
 	void clean_indexes();
 //	TimeBomb timebomb;

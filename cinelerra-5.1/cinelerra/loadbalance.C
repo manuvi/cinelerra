@@ -228,7 +228,7 @@ LoadPackage* LoadServer::get_package(int number)
 
 LoadClient* LoadServer::get_client(int number)
 {
-	return clients[number];
+	return is_single ? single_client : clients[number];
 }
 
 int LoadServer::get_total_packages()

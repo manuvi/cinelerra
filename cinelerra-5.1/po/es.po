@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: Cinelerra 5.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-10-15 14:02-0600\n"
-"PO-Revision-Date: 2020-03-24 11:04+0100\n"
+"PO-Revision-Date: 2020-03-29 03:06+0200\n"
 "Last-Translator: Sergio Daniel Gomez <sergio.sgsistemas@gmail.com>\n"
 "Language-Team: SPANISH <LL@li.org>\n"
 "Language: es\n"
@@ -2726,12 +2726,12 @@ msgstr "Encoger"
 #: cinelerra/cwindowtool.C:462 plugins/titler/titlerwindow.C:291
 #: plugins/titler/titlerwindow.C:305
 msgid "W:"
-msgstr "W:"
+msgstr "An:"
 
 #: cinelerra/cwindowtool.C:486 plugins/titler/titlerwindow.C:292
 #: plugins/titler/titlerwindow.C:310
 msgid "H:"
-msgstr "H:"
+msgstr "Al:"
 
 #: cinelerra/cwindowtool.C:550
 msgid ": Color"
@@ -3972,11 +3972,11 @@ msgstr "Ajustar todas las automatizaciones a la pantalla ( Alt + f )"
 
 #: cinelerra/editpanel.C:889
 msgid "Drag and drop editing mode"
-msgstr "Herramienta de edición para arrastrar y soltar"
+msgstr "Herramienta de edición para arrastrar y soltar (e)"
 
 #: cinelerra/editpanel.C:909
 msgid "Cut and paste editing mode"
-msgstr "Herramienta de selección"
+msgstr "Herramienta de selección (e)"
 
 #: cinelerra/editpanel.C:930
 msgid "Generate keyframes while tweeking (j)"
@@ -9409,11 +9409,11 @@ msgstr "Nuevo tamaño del proyector:"
 
 #: cinelerra/scale.C:226 cinelerra/scale.C:228 cinelerra/setformat.C:393
 msgid "W Ratio:"
-msgstr "Proporción W:"
+msgstr "Proporción An:"
 
 #: cinelerra/scale.C:232 cinelerra/scale.C:234 cinelerra/setformat.C:402
 msgid "H Ratio:"
-msgstr "Proporción H:"
+msgstr "Proporción Al:"
 
 #: cinelerra/scale.C:343 plugins/scale/scalewin.C:234
 msgid "Constrain ratio"
@@ -11470,11 +11470,11 @@ msgstr "Escena Y:"
 
 #: plugins/findobj/findobjwindow.C:138
 msgid "Scene W:"
-msgstr "Escena W:"
+msgstr "Escena An:"
 
 #: plugins/findobj/findobjwindow.C:148
 msgid "Scene H:"
-msgstr "Escena H:"
+msgstr "Escena Al:"
 
 #: plugins/findobj/findobjwindow.C:159
 msgid "Object X:"
@@ -11486,11 +11486,11 @@ msgstr "Objeto Y:"
 
 #: plugins/findobj/findobjwindow.C:189
 msgid "Object W:"
-msgstr "Objeto W:"
+msgstr "Objeto An:"
 
 #: plugins/findobj/findobjwindow.C:199
 msgid "Object H:"
-msgstr "Objeto H:"
+msgstr "Objeto Al:"
 
 #: plugins/findobj/findobjwindow.C:210
 msgid "Replace X:"
@@ -11502,11 +11502,11 @@ msgstr "Reemplazar Y:"
 
 #: plugins/findobj/findobjwindow.C:240
 msgid "Replace W:"
-msgstr "Reemplazar W:"
+msgstr "Reemplazar An:"
 
 #: plugins/findobj/findobjwindow.C:250
 msgid "Replace H:"
-msgstr "Reemplazar H:"
+msgstr "Reemplazar Al:"
 
 #: plugins/findobj/findobjwindow.C:261
 msgid "Replace DX:"
@@ -12952,11 +12952,11 @@ msgstr "En R:"
 
 #: plugins/scaleratio/scaleratiowin.C:55 plugins/translate/translatewin.C:73
 msgid "In W:"
-msgstr "En W:"
+msgstr "En An:"
 
 #: plugins/scaleratio/scaleratiowin.C:60 plugins/translate/translatewin.C:79
 msgid "In H:"
-msgstr "En H:"
+msgstr "En Al:"
 
 #: plugins/scaleratio/scaleratiowin.C:67
 msgid "Out R:"
@@ -12965,12 +12965,12 @@ msgstr "I Salida D:"
 #: plugins/scaleratio/scaleratiowin.C:72 plugins/svg/svgwin.C:68
 #: plugins/translate/translatewin.C:101
 msgid "Out W:"
-msgstr "Salida W:"
+msgstr "Salida An:"
 
 #: plugins/scaleratio/scaleratiowin.C:77 plugins/svg/svgwin.C:77
 #: plugins/translate/translatewin.C:107
 msgid "Out H:"
-msgstr "Salida H:"
+msgstr "Salida Al:"
 
 #: plugins/scaleratio/scaleratiowin.C:92
 msgid "Src X:"
@@ -12982,11 +12982,11 @@ msgstr "Src Y:"
 
 #: plugins/scaleratio/scaleratiowin.C:103
 msgid "Src W:"
-msgstr "W Src:"
+msgstr "Src An:"
 
 #: plugins/scaleratio/scaleratiowin.C:108
 msgid "Src H:"
-msgstr "Src H:"
+msgstr "Src Al:"
 
 #: plugins/scaleratio/scaleratiowin.C:116
 msgid "Dst X:"
@@ -12998,11 +12998,11 @@ msgstr "Dst Y:"
 
 #: plugins/scaleratio/scaleratiowin.C:126
 msgid "Dst W:"
-msgstr "Dst W:"
+msgstr "Dst An:"
 
 #: plugins/scaleratio/scaleratiowin.C:131
 msgid "Dst H:"
-msgstr "Dst H:"
+msgstr "Dst Al:"
 
 #: plugins/shapewipe/shapewipe.C:92
 msgid "White to Black"
@@ -13722,7 +13722,7 @@ msgstr "Animación:"
 
 #: plugins/titler/titlerwindow.C:324
 msgid "Drop shadow:"
-msgstr "Sombra (Distancia):"
+msgstr "Sombra:"
 
 #: plugins/titler/titlerwindow.C:331
 msgid "Fade in (sec):"

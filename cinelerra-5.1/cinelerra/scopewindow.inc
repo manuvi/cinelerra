@@ -32,7 +32,12 @@ class ScopeScopesOn;
 class ScopeMenu;
 class ScopeWaveDial;
 class ScopeVectDial;
+class ScopeSmooth;
 class ScopeGUI;
+
+class BoxBlurPackage;
+class BoxBlurUnit;
+class BoxBlur;
 
 #endif
 

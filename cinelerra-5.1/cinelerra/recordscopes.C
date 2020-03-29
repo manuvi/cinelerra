@@ -45,6 +45,10 @@ RecordScopeThread::~RecordScopeThread()
 	delete gui_lock;
 }
 
+void RecordScopeThread::handle_close_event(int result)
+{
+	scope_gui = 0;
+}
 void RecordScopeThread::handle_done_event(int result)
 {
 	gui_lock->lock("RecordScopeThread::handle_done_event");
@@ -113,6 +117,9 @@ void RecordScopeGUI::create_objects()
 	use_vector = mwindow->session->use_vector;
 	use_hist_parade = mwindow->session->use_hist_parade;
 	use_wave_parade = mwindow->session->use_wave_parade;
+	use_wave_gain = mwindow->session->use_wave_gain;
+	use_vect_gain = mwindow->session->use_vect_gain;
+	use_smooth = mwindow->session->use_smooth;
 	ScopeGUI::create_objects();
 }
 
@@ -124,6 +131,9 @@ void RecordScopeGUI::toggle_event()
 	mwindow->session->use_vector = use_vector;
 	mwindow->session->use_hist_parade = use_hist_parade;
 	mwindow->session->use_wave_parade = use_wave_parade;
+	mwindow->session->use_wave_gain = use_wave_gain;
+	mwindow->session->use_vect_gain = use_vect_gain;
+	mwindow->session->use_smooth = use_smooth;
 }
 
 int RecordScopeGUI::translation_event()

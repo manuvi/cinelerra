@@ -172,7 +172,7 @@ char *BD_BatchRenderJob::create_script(EDL *edl, ArrayList<Indexable *> *idxbls)
 	fprintf(fp,"dir=`cd \"$sdir\"; pwd`\n");
 	fprintf(fp,"PATH=$PATH:%s\n",exec_path);
 	fprintf(fp,"mkdir -p $dir/udfs\n");
-	fprintf(fp,"sz=`du -cb $dir/bd.m2ts* | tail -1 | sed -e 's/[ \t].*//'`\n");
+	fprintf(fp,"sz=`du -cb $dir/bd.m2ts* | tail -1 | sed -e 's/[ 	].*//'`\n");
 	fprintf(fp,"blks=$((sz/2048 + 4096))\n");
 	fprintf(fp,"rm -f %s\n", udfs);
 	fprintf(fp,"mkudffs -b 2048 %s $blks\n", udfs);

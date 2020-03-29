@@ -106,6 +106,9 @@ MainSession::MainSession(MWindow *mwindow)
 	use_vector = 0;
 	use_hist_parade = 0;
 	use_wave_parade = 0;
+	use_wave_gain = 5;
+	use_vect_gain = 5;
+	use_smooth = 0;
 	afolders_w = 0;
 	show_vwindow = show_awindow = show_cwindow = show_gwindow = show_lwindow = 0;
 	plugindialog_w = plugindialog_h = 0;
@@ -321,6 +324,9 @@ void MainSession::default_window_positions(int window_config)
 	use_vector = 1;
 	use_hist_parade = 1;
 	use_wave_parade = 1;
+	use_wave_gain = 5;
+	use_vect_gain = 5;
+	use_smooth = 1;
 
 	if(mwindow->edl)
 		lwindow_w = MeterPanel::get_meters_width(mwindow->theme,
@@ -435,6 +441,9 @@ int MainSession::load_defaults(BC_Hash *defaults)
 	use_vector = defaults->get("USE_VECTOR", use_vector);
 	use_hist_parade = defaults->get("USE_HIST_PARADE", use_hist_parade);
 	use_wave_parade = defaults->get("USE_WAVE_PARADE", use_wave_parade);
+	use_wave_gain = defaults->get("USE_WAVE_GAIN", use_wave_gain);
+	use_vect_gain = defaults->get("USE_VECT_GAIN", use_vect_gain);
+	use_smooth = defaults->get("USE_SMOOTH", use_smooth);
 
 //printf("MainSession::load_defaults 1\n");
 
@@ -560,6 +569,9 @@ int MainSession::save_defaults(BC_Hash *defaults)
 	defaults->update("USE_VECTOR", use_vector);
 	defaults->update("USE_HIST_PARADE", use_hist_parade);
 	defaults->update("USE_WAVE_PARADE", use_wave_parade);
+	defaults->update("USE_WAVE_GAIN", use_wave_gain);
+	defaults->update("USE_VECT_GAIN", use_vect_gain);
+	defaults->update("USE_SMOOTH", use_smooth);
 
  	defaults->update("ABINS_W", afolders_w);
 

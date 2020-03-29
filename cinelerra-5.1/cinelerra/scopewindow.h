@@ -161,21 +161,30 @@ public:
 	ScopeScopesOn *vect_on;
 };
 
-class ScopeWaveDial : public BC_FPot
+class ScopeWaveSlider : public BC_ISlider
 {
 public:
-	ScopeWaveDial(ScopeGUI *gui, int x, int y);
+	ScopeWaveSlider(ScopeGUI *gui, int x, int y, int w);
 	int handle_event();
 	ScopeGUI *gui;
 };
 
-class ScopeVectDial : public BC_FPot
+class ScopeVectSlider : public BC_ISlider
 {
 public:
-	ScopeVectDial(ScopeGUI *gui, int x, int y);
+	ScopeVectSlider(ScopeGUI *gui, int x, int y, int w);
 	int handle_event();
 	ScopeGUI *gui;
 };
+
+class ScopeSmooth : public BC_CheckBox
+{
+public:
+	ScopeSmooth(ScopeGUI *gui, int x, int y);
+	int handle_event();
+	ScopeGUI *gui;
+};
+
 
 class ScopeGUI : public PluginClientWindow
 {
@@ -205,29 +214,73 @@ public:
 
 	Theme *theme;
 	VFrame *output_frame;
+	VFrame *data_frame, *temp_frame;
 	ScopeEngine *engine;
+	BoxBlur *box_blur;
 	VFrame *waveform_vframe;
 	VFrame *vector_vframe;
 	ScopeHistogram *histogram;
 	ScopeWaveform *waveform;
 	ScopeVectorscope *vectorscope;
 	ScopeMenu *scope_menu;
-	ScopeWaveDial *wave_dial;
-	ScopeVectDial *vect_dial;
+	ScopeWaveSlider *wave_slider;
+	ScopeVectSlider *vect_slider;
+	ScopeSmooth *smooth;
 	BC_Title *value_text;
 
 	int x, y, w, h;
 	int vector_x, vector_y, vector_w, vector_h;
 	int wave_x, wave_y, wave_w, wave_h;
 	int hist_x, hist_y, hist_w, hist_h;
-	float wdial, vdial;
 
 	int cpus;
 	int use_hist, use_wave, use_vector;
 	int use_hist_parade, use_wave_parade;
 
 	int bins[HIST_SECTIONS][TOTAL_BINS];
-	int frame_w;
+	int frame_w, use_smooth;
+	int use_wave_gain, use_vect_gain;
+};
+
+
+class BoxBlurPackage : public LoadPackage
+{
+public:
+	BoxBlurPackage();
+	int u1, u2;
+};
+
+class BoxBlurUnit : public LoadClient
+{
+public:
+	BoxBlurUnit(BoxBlur*server);
+	template<class dst_t, class src_t>
+		void blurt_package(LoadPackage *package);
+	void process_package(LoadPackage *package);
+};
+
+class BoxBlur : public LoadServer
+{
+public:
+	BoxBlur(int cpus);
+	virtual ~BoxBlur();
+	void init_packages();
+	LoadClient* new_client();
+	LoadPackage* new_package();
+	void process(VFrame *dst, VFrame *src, int uv,
+		int radius, int power, int comp);
+	void hblur(VFrame *dst, VFrame *src,
+		int radius, int power, int comp=-1);
+	void vblur(VFrame *dst, VFrame *src,
+		int radius, int power, int comp=-1);
+	void blur(VFrame *dst, VFrame *src,
+		int radius, int power, int comp=-1);
+	const uint8_t *src_data;
+	uint8_t *dst_data;
+	int src_ustep, dst_ustep;
+	int src_vstep, dst_vstep;
+	int radius, power;
+	int ulen, vlen, c0, c1;
 };
 
 #endif

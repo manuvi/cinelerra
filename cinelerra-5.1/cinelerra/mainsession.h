@@ -172,6 +172,9 @@ public:
 	int use_vector;
 	int use_hist_parade;
 	int use_wave_parade;
+	int use_wave_gain;
+	int use_vect_gain;
+	int use_smooth;
 
 	int afolders_w;
 	int show_vwindow, show_awindow, show_cwindow, show_gwindow, show_lwindow;

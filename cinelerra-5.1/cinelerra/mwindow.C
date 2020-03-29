@@ -5085,3 +5085,13 @@ PatchGUI *MWindow::get_patchgui(Track *track)
         return patchgui;
 }
 
+int MWindow::get_cpus()
+{
+	int out_w = edl->session->output_w;
+	int out_h = edl->session->output_h;
+	int cpus = out_w*out_h/0x80000 + 1;
+	if( cpus > preferences->processors )
+		cpus = preferences->processors;
+	return cpus;
+}
+

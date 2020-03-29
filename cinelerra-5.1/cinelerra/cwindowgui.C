@@ -281,7 +281,7 @@ int CWindowGUI::button_press_event()
 	if( current_operation == CWINDOW_NONE &&
 	    mwindow->edl != 0 && canvas->get_canvas() &&
 	    mwindow->edl->session->cwindow_click2play &&
-	    canvas->get_canvas()->get_cursor_over_window() ) {
+	    canvas->get_canvas()->cursor_above() ) {
 		switch( get_buttonpress() ) {
 		case LEFT_BUTTON:
 			if( !cwindow->playback_engine->is_playing_back ) {
@@ -744,7 +744,7 @@ CWindowEditing::CWindowEditing(MWindow *mwindow, CWindow *cwindow)
 		mwindow->theme->cedit_x, mwindow->theme->cedit_y,
 		mwindow->edl->session->editing_mode,
 		0, // use_editing_mode
-		1, // use_keyframe
+		0, // use_keyframe
 		0, // use_splice
 		0, // use_overwrite
 		1, // use_copy

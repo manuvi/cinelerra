@@ -38,6 +38,7 @@ public:
 	RecordScopeThread(MWindow *mwindow, RecordMonitor *record_monitor);
 	~RecordScopeThread();
 
+	void handle_close_event(int result);
 	void handle_done_event(int result);
 	BC_Window* new_gui();
 	void process(VFrame *output_frame);
