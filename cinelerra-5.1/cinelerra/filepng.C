@@ -229,6 +229,7 @@ int FilePNG::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 				asset->png_use_alpha ?  PNG_COLOR_TYPE_RGB_ALPHA : PNG_COLOR_TYPE_RGB,
 				PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
 			png_write_info(png_ptr, info_ptr);
+			if( BC_Resources::little_endian ) png_set_swap(png_ptr);
 			png_write_image(png_ptr, output_frame->get_rows());
 			png_write_end(png_ptr, info_ptr);
 			result = 0;
