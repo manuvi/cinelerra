@@ -43,7 +43,7 @@ public:
 	void copy_from(BoxBlurConfig &that);
 	int equivalent(BoxBlurConfig &that);
 	void interpolate(BoxBlurConfig &prev, BoxBlurConfig &next,
-		long prev_frame, long next_frame, long current_frame);
+		int64_t prev_frame, int64_t next_frame, int64_t current_frame);
 
 	int horz_radius, vert_radius, power;
 };
