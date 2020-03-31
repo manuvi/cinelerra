@@ -79,6 +79,7 @@ OBJS := $(OVERLAYS) \
 	$(OBJDIR)/bdcreate.o \
 	$(OBJDIR)/binfolder.o \
 	$(OBJDIR)/bitspopup.o \
+	$(OBJDIR)/boxblur.o \
 	$(OBJDIR)/brender.o \
 	$(OBJDIR)/browsebutton.o \
 	$(OBJDIR)/byteorderpopup.o \

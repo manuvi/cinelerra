@@ -29,6 +29,9 @@ Blue Banana:	Used for color transformation or remapping as
 		4) adjust your color choice as desired
 Blur:		Blurs a video track in horizontal and/or
 		vertical in chosen color channels.
+BoxBlur:	Blurs the input video.  This fairly fast blur is
+		based on ffmpeg's, and blurs in horizontal and/or
+		vertical with power.
 Brightness/Contrast: Use to change the brightness or
 		contrast, but could reduce quality.
 BurningTV:	Makes your video "burn" where there are

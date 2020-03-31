@@ -3081,7 +3081,6 @@ void MWindow::set_auto_keyframes(int value)
 	gui->mbuttons->edit_panel->keyframe->update(value);
 	gui->flush();
 	cwindow->gui->lock_window("MWindow::set_auto_keyframes");
-	cwindow->gui->edit_panel->keyframe->update(value);
 	cwindow->gui->flush();
 	cwindow->gui->unlock_window();
 }
@@ -3092,7 +3091,6 @@ void MWindow::set_span_keyframes(int value)
 	gui->mbuttons->edit_panel->span_keyframe->update(value);
 	gui->flush();
 	cwindow->gui->lock_window("MWindow::set_span_keyframes");
-	cwindow->gui->edit_panel->span_keyframe->update(value);
 	cwindow->gui->flush();
 	cwindow->gui->unlock_window();
 }

@@ -171,7 +171,7 @@ void EditPanel::update()
 
 int EditPanel::calculate_w(MWindow *mwindow, int use_keyframe, int total_buttons)
 {
-	int button_w = mwindow->theme->get_image_set("meters")[0]->get_w();
+	int button_w = xS(24); // mwindow->theme->get_image_set("meters")[0]->get_w();
 	int result = button_w * total_buttons;
 	if( use_keyframe )
 		result += 2*(button_w + mwindow->theme->toggle_margin);

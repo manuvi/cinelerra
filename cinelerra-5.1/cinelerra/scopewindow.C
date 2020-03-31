@@ -20,6 +20,7 @@
 
 #include "bcsignals.h"
 #include "bccolors.h"
+#include "boxblur.h"
 #include "clip.h"
 #include "cursors.h"
 #include "language.h"
@@ -252,7 +253,7 @@ void ScopeUnit::process_package(LoadPackage *package)
 		break;
 	case BC_RGB_FLOAT:
 		for( int y=pkg->row1; y<pkg->row2; ++y ) {
-			float *row = (float*)rows[y];
+			uint8_t *row = rows[y];
 			for( int x=0; x<dat_w; ++x ) {
 				PROCESS_RGB_PIXEL(float,1.f, x)
 				row += 3*sizeof(float);
@@ -261,7 +262,7 @@ void ScopeUnit::process_package(LoadPackage *package)
 		break;
 	case BC_RGBA_FLOAT:
 		for( int y=pkg->row1; y<pkg->row2; ++y ) {
-			float *row = (float*)rows[y];
+			uint8_t *row = rows[y];
 			for( int x=0; x<dat_w; ++x ) {
 				PROCESS_RGB_PIXEL(float,1.f, x)
 				row += 4*sizeof(float);
@@ -402,6 +403,8 @@ ScopeGUI::ScopeGUI(PluginClient *plugin, int w, int h)
 	this->temp_frame = 0;
 	this->theme = plugin->get_theme();
 	this->cpus = plugin->PluginClient::smp + 1;
+	wave_slider = 0;
+	vect_slider = 0;
 	reset();
 }
 
@@ -412,6 +415,8 @@ ScopeGUI::~ScopeGUI()
 	delete engine;
 	delete box_blur;
 	delete temp_frame;
+	delete wave_slider;
+	delete vect_slider;
 }
 
 void ScopeGUI::reset()
@@ -471,12 +476,13 @@ void ScopeGUI::create_panels()
 	int slider_w = xS(100);
 	if( (use_wave || use_wave_parade) ) {
 		int px = wave_x + wave_w - slider_w - xS(5);
-		int py = wave_y - ScopeWaveSlider::get_span(0) - yS(5);
+		int py = wave_y - ScopeGain::calculate_h() - yS(5);
 		if( !waveform ) {
 			add_subwindow(waveform = new ScopeWaveform(this,
 				wave_x, wave_y, wave_w, wave_h));
 			waveform->create_objects();
-			add_subwindow(wave_slider = new ScopeWaveSlider(this, px, py, slider_w));
+			wave_slider = new ScopeWaveSlider(this, px, py, slider_w);
+			wave_slider->create_objects();
 		}
 		else {
 			waveform->reposition_window(
@@ -492,12 +498,13 @@ void ScopeGUI::create_panels()
 
 	if( use_vector ) {
 		int vx = vector_x + vector_w - slider_w - xS(5);
-		int vy = vector_y - ScopeVectSlider::get_span(0) - yS(5);
+		int vy = vector_y - ScopeGain::calculate_h() - yS(5);
 		if( !vectorscope ) {
 			add_subwindow(vectorscope = new ScopeVectorscope(this,
 				vector_x, vector_y, vector_w, vector_h));
 			vectorscope->create_objects();
-			add_subwindow(vect_slider = new ScopeVectSlider(this, vx, vy, slider_w));
+			vect_slider = new ScopeVectSlider(this, vx, vy, slider_w);
+			vect_slider->create_objects();
 		}
 		else {
 			vectorscope->reposition_window(
@@ -1144,30 +1151,88 @@ void ScopeMenu::update_toggles()
 	vect_on->set_checked(gui->use_vector);
 }
 
-ScopeWaveSlider::ScopeWaveSlider(ScopeGUI *gui, int x, int y, int w)
- : BC_ISlider(x, y, 0, w, w, 1, 9, gui->use_wave_gain)
+
+ScopeGainReset::ScopeGainReset(ScopeGain *gain, int x, int y)
+ : BC_Button(x, y, gain->gui->theme->get_image_set("reset_button"))
+{
+	this->gain = gain;
+}
+
+int ScopeGainReset::calculate_w(BC_Theme *theme)
+{
+	VFrame *vfrm = *theme->get_image_set("reset_button");
+	return vfrm->get_w();
+}
+
+int ScopeGainReset::handle_event()
+{
+	gain->slider->update(5);
+	return gain->handle_event();
+}
+
+ScopeGainSlider::ScopeGainSlider(ScopeGain *gain, int x, int y, int w)
+ : BC_ISlider(x, y, 0, w, w, 1, 9, *gain->value)
+{
+	this->gain = gain;
+}
+
+int ScopeGainSlider::handle_event()
+{
+	return gain->handle_event();
+}
+
+ScopeGain::ScopeGain(ScopeGUI *gui, int x, int y, int w, int *value)
 {
 	this->gui = gui;
+	this->x = x;
+	this->y = y;
+	this->w = w;
+	this->value = value;
+
+	slider = 0;
+	reset = 0;
 }
-int ScopeWaveSlider::handle_event()
+ScopeGain::~ScopeGain()
 {
-	gui->use_wave_gain = get_value();
+	delete reset;
+	delete slider;
+}
+
+int ScopeGain::calculate_h()
+{
+	return BC_ISlider::get_span(0);
+}
+
+void ScopeGain::create_objects()
+{
+	reset_w = ScopeGainReset::calculate_w(gui->theme);
+	gui->add_subwindow(slider = new ScopeGainSlider(this, x, y, w-reset_w-xS(5)));
+	gui->add_subwindow(reset = new ScopeGainReset(this, x+w-reset_w, y));
+}
+
+int ScopeGain::handle_event()
+{
+	*value = slider->get_value();
 	gui->update_scope();
 	gui->toggle_event();
 	return 1;
 }
 
-ScopeVectSlider::ScopeVectSlider(ScopeGUI *gui, int x, int y, int w)
- : BC_ISlider(x, y, 0, w, w, 1, 9, gui->use_vect_gain)
+void ScopeGain::reposition_window(int x, int y)
 {
-	this->gui = gui;
+	this->x = x;  this->y = y;
+	slider->reposition_window(x, y);
+	reset->reposition_window(x+w-reset_w, y);
 }
-int ScopeVectSlider::handle_event()
+
+ScopeWaveSlider::ScopeWaveSlider(ScopeGUI *gui, int x, int y, int w)
+ : ScopeGain(gui, x, y, w, &gui->use_wave_gain)
 {
-	gui->use_vect_gain = get_value();
-	gui->update_scope();
-	gui->toggle_event();
-	return 1;
+}
+
+ScopeVectSlider::ScopeVectSlider(ScopeGUI *gui, int x, int y, int w)
+ : ScopeGain(gui, x, y, w, &gui->use_vect_gain)
+{
 }
 
 ScopeSmooth::ScopeSmooth(ScopeGUI *gui, int x, int y)
@@ -1182,156 +1247,5 @@ int ScopeSmooth::handle_event()
 	gui->update_scope();
 	gui->toggle_event();
 	return 1;
-}
-
-// from ffmpeg vf_boxblur
-template<class dst_t, class src_t> static inline
-void blurt(dst_t *dst, int dst_step, src_t *src, int src_step, int len, int radius)
-{
-	const int length = radius*2 + 1;
-	const int inv = ((1<<16) + length/2)/length;
-	int x, n, sum = src[radius*src_step];
-
-	for( x=0; x<radius; ++x )
-		sum += src[x*src_step]<<1;
-	sum = sum*inv + (1<<15);
-
-	for( x=0; x<=radius; ++x ) {
-		sum += (src[(radius+x)*src_step] - src[(radius-x)*src_step])*inv;
-		dst[x*dst_step] = sum>>16;
-	}
-	n = len - radius;
-	for( ; x<n; ++x ) {
-		sum += (src[(radius+x)*src_step] - src[(x-radius-1)*src_step])*inv;
-		dst[x*dst_step] = sum >>16;
-	}
-
-	for ( ; x<len; ++x ) {
-		sum += (src[(2*len-radius-x-1)*src_step] - src[(x-radius-1)*src_step])*inv;
-		dst[x*dst_step] = sum>>16;
-	}
-}
-template<class dst_t, class src_t> static inline
-void blur_power(dst_t *dst, int dst_step, src_t *src, int src_step,
-		int len, int radius, int power)
-{
-	dst_t atemp[len], btemp[len];
-	dst_t *a = atemp, *b = btemp;
-	blurt(a, 1, src, src_step, len, radius);
-	while( power-- > 2 ) {
-		blurt(b, 1, a, 1, len, radius);
-		dst_t *t = a; a = b; b = t;
-        }
-	if( power > 1 )
-		blurt(dst, dst_step, a, 1, len, radius);
-	else
-                for( int i = 0; i<len; ++i ) dst[i*dst_step] = a[i];
-}
-
-
-BoxBlurPackage::BoxBlurPackage()
- : LoadPackage()
-{
-}
-
-BoxBlurUnit::BoxBlurUnit(BoxBlur *box_blur)
- : LoadClient(box_blur)
-{
-}
-
-template<class dst_t, class src_t>
-void BoxBlurUnit::blurt_package(LoadPackage *package)
-{
-	BoxBlur *box_blur = (BoxBlur *)server;
-	src_t *src_data = (src_t *)box_blur->src_data;
-	dst_t *dst_data = (dst_t *)box_blur->dst_data;
-	int radius = box_blur->radius;
-	int power = box_blur->power;
-	int vlen = box_blur->vlen;
-	int c0 = box_blur->c0, c1 = box_blur->c1;
-	int src_ustep = box_blur->src_ustep;
-	int dst_ustep = box_blur->dst_ustep;
-	int src_vstep = box_blur->src_vstep;
-	int dst_vstep = box_blur->dst_vstep;
-	BoxBlurPackage *pkg = (BoxBlurPackage*)package;
-	int u1 = pkg->u1, u2 = pkg->u2;
-	for( int u=u1; u<u2; ++u ) {
-		src_t *sp = src_data + u*src_ustep;
-		dst_t *dp = dst_data + u*dst_ustep;
-		for( int c=c0; c<=c1; ++c ) {
-			blur_power(dp+c, dst_vstep, sp+c, src_vstep,
-				vlen, radius, power);
-		}
-	}
-}
-
-void BoxBlurUnit::process_package(LoadPackage *package)
-{
-	blurt_package<uint16_t, const uint16_t>(package);
-}
-
-BoxBlur::BoxBlur(int cpus)
- : LoadServer(cpus, cpus)
-{
-}
-BoxBlur::~BoxBlur()
-{
-}
-
-LoadClient* BoxBlur::new_client() { return new BoxBlurUnit(this); }
-LoadPackage* BoxBlur::new_package() { return new BoxBlurPackage(); }
-
-void BoxBlur::init_packages()
-{
-	int u = 0;
-	for( int i=0,n=LoadServer::get_total_packages(); i<n; ) {
-		BoxBlurPackage *pkg = (BoxBlurPackage*)get_package(i);
-		pkg->u1 = u;
-		pkg->u2 = u = (++i * ulen) / n;
-	}
-}
-
-//dst can equal src, requires geom(dst)==geom(src)
-//uv: 0=hblur, 1=vblur;  comp: -1=rgb,0=r,1=g,2=b
-void BoxBlur::process(VFrame *dst, VFrame *src, int uv,
-		int radius, int power, int comp)
-{
-	this->radius = radius;
-	this->power = power;
-	int src_w = src->get_w(), src_h = src->get_h();
-	ulen = !uv ? src_h : src_w;
-	vlen = !uv ? src_w : src_h;
-	c0 = comp<0 ? 0 : comp;
-	c1 = comp<0 ? 2 : comp;
-	src_data = src->get_data();
-	dst_data = dst->get_data();
-	int src_pixsz = BC_CModels::calculate_pixelsize(src->get_color_model());
-	int src_comps = BC_CModels::components(src->get_color_model());
-	int src_bpp = src_pixsz / src_comps;
-	int dst_pixsz = BC_CModels::calculate_pixelsize(dst->get_color_model());
-	int dst_comps = BC_CModels::components(dst->get_color_model());
-	int dst_bpp = dst_pixsz / dst_comps;
-	int dst_linsz = dst->get_bytes_per_line() / dst_bpp;
-	int src_linsz = src->get_bytes_per_line() / src_bpp;
-	src_ustep = !uv ? src_linsz : src_comps;
-	dst_ustep = !uv ? dst_linsz: dst_comps;
-	src_vstep = !uv ? src_comps : src_linsz;
-	dst_vstep = !uv ? dst_comps : dst_linsz;
-
-	process_packages();
-}
-
-void BoxBlur::hblur(VFrame *dst, VFrame *src, int radius, int power, int comp)
-{
-	process(dst, src, 0, radius, power, comp);
-}
-void BoxBlur::vblur(VFrame *dst, VFrame *src, int radius, int power, int comp)
-{
-	process(dst, src, 1, radius, power, comp);
-}
-void BoxBlur::blur(VFrame *dst, VFrame *src, int radius, int power, int comp)
-{
-	process(dst, src, 0, radius, power, comp);
-	process(dst, dst, 1, radius, power, comp);
 }
 

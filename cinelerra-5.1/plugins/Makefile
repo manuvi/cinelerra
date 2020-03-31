@@ -33,6 +33,7 @@ DIRS = $(OPENCV_OBJS) \
 	bandwipe \
 	bluebanana \
 	blur \
+	boxblur \
 	brightness \
 	burn \
 	C41 \
