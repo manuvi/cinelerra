@@ -21,6 +21,7 @@
 
 #include <errno.h>
 #include <png.h>
+#include <jpeglib.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
@@ -782,8 +783,7 @@ int VFramePng::read_png(const unsigned char *data, long sz, double xscale, doubl
 		if (src_color_model == PNG_COLOR_TYPE_GRAY && png_get_bit_depth(png_ptr, info_ptr) < 8)
 			png_set_expand(png_ptr);
 
-		if (src_color_model == PNG_COLOR_TYPE_GRAY ||
-		    src_color_model == PNG_COLOR_TYPE_GRAY_ALPHA)
+		if (src_color_model == PNG_COLOR_TYPE_GRAY_ALPHA)
 			png_set_gray_to_rgb(png_ptr);
 
 		/* expand paletted or RGB images with transparency to full alpha channels
@@ -793,26 +793,22 @@ int VFramePng::read_png(const unsigned char *data, long sz, double xscale, doubl
 			png_set_expand(png_ptr);
 		}
 
-		switch(src_color_model)
-		{
-			case PNG_COLOR_TYPE_GRAY:
-			case PNG_COLOR_TYPE_RGB:
-				new_color_model = BC_RGB888;
-				break;
-
-			case PNG_COLOR_TYPE_GRAY_ALPHA:
-			case PNG_COLOR_TYPE_RGB_ALPHA:
-			default:
-				new_color_model = BC_RGBA8888;
-				break;
-
-			case PNG_COLOR_TYPE_PALETTE:
-				if(have_alpha)
-					new_color_model = BC_RGBA8888;
-				else
-					new_color_model = BC_RGB888;
+		switch(src_color_model) {
+		case PNG_COLOR_TYPE_GRAY:
+			new_color_model = BC_GREY8;
+			break;
+		case PNG_COLOR_TYPE_RGB:
+			new_color_model = BC_RGB888;
+			break;
+		case PNG_COLOR_TYPE_PALETTE:
+			new_color_model = have_alpha ? BC_RGBA8888 : BC_RGB888;
+			break;
+		case PNG_COLOR_TYPE_GRAY_ALPHA:
+		case PNG_COLOR_TYPE_RGB_ALPHA:
+		default:
+			new_color_model = BC_RGBA8888;
+			break;
 		}
-
 		reallocate(NULL, -1, 0, 0, 0, w, h, new_color_model, -1);
 
 //printf("VFrame::read_png %d %d %d %p\n", __LINE__, w, h, get_rows());
@@ -1849,4 +1845,256 @@ void VFrame::draw_t(int x, int y, int sz)
 	draw_line(x+sz,y, x-sz,y);
 }
 
+
+// jpeg decompress
+class jpeg_err : public jpeg_error_mgr
+{
+	static void s_error_exit(j_common_ptr cp);
+	static void s_output_message(j_common_ptr cp);
+public:
+	jpeg_err() {
+		jpeg_std_error((jpeg_error_mgr *)this);
+		error_exit = s_error_exit;
+		output_message = s_output_message;
+	}
+	~jpeg_err() {}
+};
+
+class jpeg_src : public jpeg_source_mgr
+{
+	static void s_init_source(j_decompress_ptr jp);
+	static boolean s_fill_input_buffer(j_decompress_ptr jp);
+	static void s_skip_input_data(j_decompress_ptr jp, long len);
+	static void s_term_source(j_decompress_ptr jp);
+	static boolean s_resync_to_restart(j_decompress_ptr jp, int v);
+public:
+	jpeg_src();
+	~jpeg_src();
+	int jpeg_file(int fd);
+	int jpeg_mem(const unsigned char *bfr, long len);
+
+	int fd;
+	unsigned char *mbfr;
+	long mlen;
+	enum { buffer_sz=0x10000, file_sz=0x100000, };
+	unsigned char *buffer;
+	boolean fill_buffer();
+	void skip_data(long len);
+};
+
+class JpegVFrame : public jpeg_decompress_struct
+{
+public:
+	JpegVFrame();
+	~JpegVFrame();
+	int read_jpeg(VFrame *vfrm, double xs, double ys, int jpeg_model);
+
+	jpeg_err jerr;
+	jpeg_src jsrc;
+	int debug, ret;
+};
+
+
+void jpeg_err:: s_error_exit(j_common_ptr cp)
+{
+	JpegVFrame *jpeg = (JpegVFrame *)cp;
+	jpeg->ret = 1;
+	if( !jpeg->debug ) return;
+	printf("s_error_exit()\n");
+}
+
+void jpeg_err::
+s_output_message(j_common_ptr cp)
+{
+	JpegVFrame *jpeg = (JpegVFrame *)cp;
+	if( !jpeg->debug ) return;
+	char msg[JMSG_LENGTH_MAX];
+	(*cp->err->format_message)(cp, msg);
+	printf("s_output_message() = %s\n",&msg[0]);
+}
+
+
+jpeg_src::jpeg_src()
+{
+	init_source = s_init_source;
+	fill_input_buffer = s_fill_input_buffer;
+	skip_input_data = s_skip_input_data;
+	resync_to_restart = s_resync_to_restart;
+	term_source = s_term_source;
+
+	fd = -1;
+	buffer = 0;
+	mbfr = 0;
+	mlen = -1;
+}
+
+jpeg_src::~jpeg_src()
+{
+	if( mbfr ) ::munmap(mbfr, mlen);
+	delete [] buffer;
+}
+
+int jpeg_src::jpeg_file(int fd)
+{
+	this->fd = fd;
+	struct stat st;
+	if( fstat(fd, &st) || !st.st_size ) return 0;
+	if( st.st_size < file_sz ) {
+		mbfr = (unsigned char *)::mmap(0, mlen = st.st_size,
+				PROT_READ, MAP_SHARED, fd, 0);
+		if( mbfr == MAP_FAILED ) return 0;
+		next_input_byte = mbfr;
+		bytes_in_buffer = mlen;
+	}
+	else {
+		buffer = new unsigned char[buffer_sz];
+		next_input_byte = &buffer[0];
+		bytes_in_buffer = 0;
+	}
+	return 1;
+}
+int jpeg_src::jpeg_mem(const unsigned char *bfr, long len)
+{
+	next_input_byte = bfr;
+	bytes_in_buffer = len;
+	return 1;
+}
+
+void jpeg_src::s_init_source(j_decompress_ptr jp) {}
+void jpeg_src::s_term_source(j_decompress_ptr jp) {}
+
+boolean jpeg_src::s_resync_to_restart(j_decompress_ptr jp, int v)
+{
+	return jpeg_resync_to_restart(jp, v);
+}
+
+boolean jpeg_src::s_fill_input_buffer(j_decompress_ptr jp)
+{
+	JpegVFrame *jpeg = (JpegVFrame *)jp;
+	return jpeg->jsrc.fill_buffer();
+}
+
+boolean jpeg_src::fill_buffer()
+{
+	if( mbfr || fd < 0 ) return 0;
+	long n = ::read(fd, buffer, buffer_sz);
+	if( n < 0 ) perror("jpeg read");
+	if( !n ) return 0;
+	next_input_byte = buffer;
+	bytes_in_buffer = n;
+	return 1;
+}
+
+void jpeg_src::s_skip_input_data(j_decompress_ptr jp, long len)
+{
+	JpegVFrame *jpeg = (JpegVFrame *)jp;
+	jpeg->jsrc.skip_data(len);
+}
+
+void jpeg_src::skip_data(long len)
+{
+	while( len > (long) bytes_in_buffer ) {
+		len -= (long) bytes_in_buffer;
+		if( !fill_buffer() ) return;
+	}
+	next_input_byte += len;
+	bytes_in_buffer -= len;
+}
+
+
+JpegVFrame::JpegVFrame()
+{
+	jpeg_create_decompress(this);
+	debug = 1; ret = 0;
+	err = &jerr;  src = &jsrc;
+}
+JpegVFrame::~JpegVFrame()
+{
+	jpeg_destroy_decompress(this);
+}
+
+int JpegVFrame::read_jpeg(VFrame *vfrm, double xs, double ys, int jpeg_model)
+{
+	VFrame *xfrm = vfrm;
+	int color_model = xfrm->get_color_model();
+	if( color_model == BC_COMPRESSED ) color_model = jpeg_model;
+	jpeg_abort((jpeg_common_struct *)this);
+	if( jpeg_read_header(this, TRUE) != JPEG_HEADER_OK ) return 0;
+	jpeg_calc_output_dimensions(this);
+	quantize_colors = FALSE;
+	out_color_space =
+		jpeg_model == BC_YUV888 ? JCS_YCbCr :
+		jpeg_model == BC_GREY8 ? JCS_GRAYSCALE : JCS_RGB;
+	jpeg_calc_output_dimensions(this);
+	int w = bmax(image_width*xs, 1.);
+	int h = bmax(image_height*ys, 1.);
+	vfrm->reallocate(0, -1, 0, 0, 0, w, h, color_model, -1);
+	if( w != (int)image_width || h != (int)image_height ||
+	    color_model != jpeg_model )
+		xfrm = new VFrame(image_width, image_height, jpeg_model);
+	unsigned char *pic = xfrm->get_data();
+	int linesz = xfrm->get_bytes_per_line();
+	jpeg_start_decompress(this);
+	while( !ret && output_scanline < image_height ) {
+		JSAMPROW rowptr = (JSAMPROW) &pic[output_scanline * linesz];
+		jpeg_read_scanlines(this, &rowptr, (JDIMENSION) 1);
+	}
+	jpeg_finish_decompress(this);
+	if( vfrm != xfrm ) {
+		vfrm->transfer_from(xfrm);
+		delete xfrm;
+	}
+	return 1;
+}
+
+int VFrameJpeg::read_jpeg(const unsigned char *data, long sz,
+		double xscale, double yscale, int jpeg_model)
+{
+	JpegVFrame jpeg;
+	jpeg.jsrc.jpeg_mem(data, sz);
+	return jpeg.read_jpeg(this, xscale, yscale, jpeg_model);
+}
+
+VFrameJpeg::VFrameJpeg(const unsigned char *jpeg_data, double s)
+{
+	long image_size =
+		((long)jpeg_data[0] << 24) | ((long)jpeg_data[1] << 16) |
+		((long)jpeg_data[2] << 8)  |  (long)jpeg_data[3];
+	if( !s ) s = BC_WindowBase::get_resources()->icon_scale;
+	read_jpeg(jpeg_data+4, image_size, s, s, BC_RGB888);
+}
+
+VFrameJpeg::VFrameJpeg(const unsigned char *jpeg_data, long image_size, double xs, double ys)
+{
+	if( !xs ) xs = BC_WindowBase::get_resources()->icon_scale;
+	if( !ys ) ys = BC_WindowBase::get_resources()->icon_scale;
+	read_jpeg(jpeg_data, image_size, xs, ys, BC_RGB888);
+}
+
+VFrameJpeg::~VFrameJpeg()
+{
+}
+
+
+VFrame *VFrameJpeg::vframe_jpeg(int fd, double xs, double ys, int jpeg_model)
+{
+	JpegVFrame jpeg;
+	jpeg.jsrc.jpeg_file(fd);
+	VFrame *vfrm = new VFrame();
+	if( !jpeg.read_jpeg(vfrm, xs, ys, jpeg_model) ) {
+		delete vfrm;  vfrm = 0;
+	}
+	return vfrm;
+}
+
+VFrame *VFrameJpeg::vframe_jpeg(const char *jpeg_path, double xs, double ys, int jpeg_model)
+{
+	VFrame *vframe = 0;
+	int fd = ::open(jpeg_path, O_RDONLY);
+	if( fd >= 0 ) {
+		vframe = vframe_jpeg(fd, xs, ys, jpeg_model);
+		::close(fd);
+	}
+	return vframe;
+}
 

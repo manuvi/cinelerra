@@ -735,28 +735,30 @@ SET_TRACE
 
 
 		int buttons_h = get_image("rewind")->get_h() + widget_border;
+		int panel_y = mwindow->session->cwindow_h - buttons_h + yS(4);
 		ctransport_x = widget_border;
-		ctransport_y = mwindow->session->cwindow_h - buttons_h - widget_border;
 		if( ctransport_x + transport_w + widget_border +
 		    edit_w + widget_border + zoom_w + widget_border +
 		    division_w + status_w > cmeter_x ) {
-			buttons_h += EditPanel::calculate_h(mwindow) + widget_border;
-			cedit_x = widget_border;
-			cedit_y = mwindow->session->cwindow_h - buttons_h;
+			ctransport_y = panel_y;
 			czoom_x = ctransport_x + transport_w + widget_border;
-			czoom_y = ctransport_y + widget_border;
+			czoom_y = panel_y;
 			cstatus_x = xS(440);
-			cstatus_y = cedit_y + yS(20);
+			cstatus_y = panel_y - yS(2);
+			int edit_h = EditPanel::calculate_h(mwindow) + widget_border;
+			buttons_h += edit_h;  panel_y -= edit_h;
+			cedit_x = widget_border;
+			cedit_y = panel_y;
 		}
 		else {
 			ctransport_x = widget_border;
-			ctransport_y = mwindow->session->cwindow_h - buttons_h;
+			ctransport_y = panel_y;
 			cedit_x = ctransport_x + transport_w + widget_border;
-			cedit_y = ctransport_y;
+			cedit_y = panel_y;
 			czoom_x = cedit_x + edit_w + widget_border;
-			czoom_y = cedit_y + widget_border;
+			czoom_y = panel_y;
 			cstatus_x = czoom_x + zoom_w + division_w;
-			cstatus_y = ctransport_y;
+			cstatus_y = panel_y;
 		}
 		buttons_h += ctimebar_h;
 
@@ -930,27 +932,29 @@ void Theme::get_vwindow_sizes(VWindowGUI *gui)
 	vcanvas_w = vmeter_x - vcanvas_x - widget_border;
 
 	int buttons_h = get_image("rewind")->get_h() + widget_border;
+	int panel_y = mwindow->session->vwindow_h - buttons_h + yS(4);
 	vtransport_x = widget_border;
-	vtransport_y = mwindow->session->vwindow_h - buttons_h - widget_border;
 	if( vtransport_x + transport_w + widget_border +
 	    edit_w + widget_border + vtime_w + xS(40) + widget_border > vmeter_x ) {
-		buttons_h += EditPanel::calculate_h(mwindow) + widget_border;
-		vedit_x = widget_border;
-		vedit_y = mwindow->session->vwindow_h - buttons_h;
+		vtransport_y = panel_y;
 		vzoom_x = vtransport_x + transport_w + widget_border;
-		vzoom_y = vtransport_y + widget_border;
-		vdivision_x = xS(280);
+		vzoom_y = panel_y;
+		vdivision_x = xS(320);
 		vtime_x = vdivision_x;
-		vtime_y = vtransport_y + widget_border;;
+		vtime_y = panel_y;
+		int edit_h = EditPanel::calculate_h(mwindow) + widget_border;
+		buttons_h += edit_h;  panel_y -= edit_h;
+		vedit_x = widget_border;
+		vedit_y = panel_y;
 	}
 	else {
 		vtransport_x = widget_border;
-		vtransport_y = mwindow->session->vwindow_h - buttons_h;
+		vtransport_y = panel_y;
 		vedit_x = vtransport_x + transport_w + widget_border;
-		vedit_y = vtransport_y;
+		vedit_y = panel_y;
 		vdivision_x = vedit_x + edit_w + division_w;
 		vtime_x = vdivision_x + vtime_border;
-		vtime_y = vtransport_y + widget_border;;
+		vtime_y = panel_y;
 	}
 	buttons_h += vtimebar_h;
 

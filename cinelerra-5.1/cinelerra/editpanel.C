@@ -259,16 +259,6 @@ void EditPanel::create_buttons()
 		x1 += paste->get_w();
 	}
 
-	if( use_meters ) {
-		if( meter_panel ) {
-			meters = new MeterShow(mwindow, meter_panel, x1, y1);
-			subwindow->add_subwindow(meters);
-			x1 += meters->get_w();
-		}
-		else
-			printf("EditPanel::create_objects: meter_panel == 0\n");
-	}
-
 	if( use_labels ) {
 		labelbutton = new EditLabelbutton(mwindow, this, x1, y1);
 		subwindow->add_subwindow(labelbutton);
@@ -326,6 +316,16 @@ void EditPanel::create_buttons()
 		subwindow->add_subwindow(scope);
 		x1 += scope->get_w();
 		scope_dialog = new EditPanelScopeDialog(mwindow, this);
+	}
+
+	if( use_meters ) {
+		if( meter_panel ) {
+			meters = new MeterShow(mwindow, meter_panel, x1, y1);
+			subwindow->add_subwindow(meters);
+			x1 += meters->get_w();
+		}
+		else
+			printf("EditPanel::create_objects: meter_panel == 0\n");
 	}
 
 	if( use_commercial ) {
@@ -393,11 +393,6 @@ void EditPanel::reposition_buttons(int x, int y)
 		x1 += paste->get_w();
 	}
 
-	if( use_meters ) {
-		meters->reposition_window(x1, y1);
-		x1 += meters->get_w();
-	}
-
 	if( use_labels ) {
 		labelbutton->reposition_window(x1, y1);
 		x1 += labelbutton->get_w();
@@ -442,6 +437,11 @@ void EditPanel::reposition_buttons(int x, int y)
 	if( use_scope ) {
 		scope->reposition_window(x1, y1-yS(1));
 		x1 += scope->get_w();
+	}
+
+	if( use_meters ) {
+		meters->reposition_window(x1, y1);
+		x1 += meters->get_w();
 	}
 }
 

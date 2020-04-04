@@ -80,24 +80,13 @@ LocalSession::LocalSession(EDL *edl)
 		track_start[i] = 0;
 	}
 
+	reset_view_limits();
 	automation_mins[AUTOGROUPTYPE_AUDIO_FADE] = -80;
 	automation_maxs[AUTOGROUPTYPE_AUDIO_FADE] = 6;
-
 	automation_mins[AUTOGROUPTYPE_VIDEO_FADE] = 0;
 	automation_maxs[AUTOGROUPTYPE_VIDEO_FADE] = 100;
-
-	automation_mins[AUTOGROUPTYPE_ZOOM] = 0.005;
-	automation_maxs[AUTOGROUPTYPE_ZOOM] = 5.000;
-
 	automation_mins[AUTOGROUPTYPE_SPEED] = 0.005;
 	automation_maxs[AUTOGROUPTYPE_SPEED] = 5.000;
-
-	automation_mins[AUTOGROUPTYPE_X] = -100;
-	automation_maxs[AUTOGROUPTYPE_X] = 100;
-
-	automation_mins[AUTOGROUPTYPE_Y] = -100;
-	automation_maxs[AUTOGROUPTYPE_Y] = 100;
-
 	automation_mins[AUTOGROUPTYPE_INT255] = 0;
 	automation_maxs[AUTOGROUPTYPE_INT255] = 255;
 
@@ -503,5 +492,15 @@ int LocalSession::inpoint_valid()
 int LocalSession::outpoint_valid()
 {
 	return out_point >= 0;
+}
+
+void LocalSession::reset_view_limits()
+{
+	automation_mins[AUTOGROUPTYPE_ZOOM] = 0.005;
+	automation_maxs[AUTOGROUPTYPE_ZOOM] = 5.000;
+	automation_mins[AUTOGROUPTYPE_X] = -100;
+	automation_maxs[AUTOGROUPTYPE_X] = 100;
+	automation_mins[AUTOGROUPTYPE_Y] = -100;
+	automation_maxs[AUTOGROUPTYPE_Y] = 100;
 }
 

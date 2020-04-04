@@ -67,6 +67,7 @@ public:
 	void synchronize_params(LocalSession *that);
 
 	void boundaries();
+	void reset_view_limits();
 
 	EDL *edl;
 

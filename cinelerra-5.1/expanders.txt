@@ -68,6 +68,7 @@ Video Effects
 		F_deshake
 	- Blur
 		Blur
+		BoxBlur
 		Edge
 		Linear Blur
 		Motion Blur

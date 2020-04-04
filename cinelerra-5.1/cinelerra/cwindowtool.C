@@ -436,6 +436,7 @@ CWindowCoordRange::~CWindowCoordRange()
 
 int CWindowCoordRange::update(float scale)
 {
+	CWindowCoordSlider *slider = coord->slider;
 	MWindow *mwindow = coord->gui->mwindow;
 	LocalSession *local_session = mwindow->edl->local_session;
 	int group = Automation::autogrouptype(coord->type, 0);
@@ -448,22 +449,24 @@ int CWindowCoordRange::update(float scale)
 		case AUTOGROUPTYPE_Y:    min = -100;   max = 100;  break;
 		}
 	}
-	float range = max - min;
-	min -= range * scale;
-	max += range * scale;
 	switch( group ) {
-	case AUTOGROUPTYPE_ZOOM:
+	case AUTOGROUPTYPE_ZOOM: { // exp
+		float lv = log(slider->get_value());
+		float lmin = log(min), lmax = log(max);
+		float lr = (lmax - lmin) * scale;
+		min = exp(lv - 0.5*lr);
+		max = exp(lv + 0.5*lr);
 		if( min < 0.001 ) min = 0.001;
 		if( max > 1000. ) max = 1000.;
-		break;
+		break; }
 	case AUTOGROUPTYPE_X:
-	case AUTOGROUPTYPE_Y:
-		if( min < -32767 ) min = -32767;
-		if( max >  32767 ) max =  32767;
-		break;
+	case AUTOGROUPTYPE_Y: { // linear
+		float dr = (max - min) * (scale-1);
+		if( (min -= dr) < -32767 ) min = -32767;
+		if( (max += dr) >  32767 ) max =  32767;
+		break; }
 	}
-	CWindowCoordSlider *slider = coord->slider;
-	coord->slider->update(slider->get_pointer_motion_range(),
+	slider->update(slider->get_pointer_motion_range(),
 			slider->get_value(), min, max);
 	unlock_window();
 	MWindowGUI *mgui = mwindow->gui;
@@ -482,11 +485,11 @@ int CWindowCoordRange::update(float scale)
 
 int CWindowCoordRange::handle_up_event()
 {
-	return update(0.5);
+	return update(1.25);
 }
 int CWindowCoordRange::handle_down_event()
 {
-	return update(-0.25);
+	return update(0.8);
 }
 
 CWindowCropApply::CWindowCropApply(MWindow *mwindow, CWindowCropGUI *crop_gui, int x, int y)

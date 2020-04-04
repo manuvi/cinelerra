@@ -58,6 +58,7 @@
 #include "tracks.h"
 #include "transportque.h"
 #include "vtrack.h"
+#include "zoombar.h"
 
 
 static double my_zoom_table[] =
@@ -2632,6 +2633,11 @@ void CWindowCanvas::reset_keyframe(int do_camera)
 		z_keyframe->set_value(1);
 
 		gui->sync_parameters(CHANGE_PARAMS, 1, 1);
+		MWindowGUI *mgui = mwindow->gui;
+		mgui->lock_window("CWindowCanvas::reset_keyframe");
+		gui->mwindow->edl->local_session->reset_view_limits();
+		gui->mwindow->gui->zoombar->update_autozoom();
+		mgui->unlock_window();
 	}
 }
 

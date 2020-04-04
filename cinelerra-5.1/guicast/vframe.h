@@ -56,6 +56,7 @@ public:
 class VFrame
 {
 	friend class VFramePng;
+	friend class VFrameJpeg;
 	friend class PngReadFunction;
 public:
 // Create new frame with shared data if *data is nonzero.
@@ -484,6 +485,23 @@ public:
 	~VFramePng();
 	static VFrame *vframe_png(int fd, double xs=1, double ys=1);
 	static VFrame *vframe_png(const char *png_path, double xs=1, double ys=1);
+};
+
+// Create a frame with the jpeg image
+//  jpeg_model must be BC_RGB888, BC_YUV888, or BC_GREY8
+class VFrameJpeg : public VFrame
+{
+// Read a JPEG into the frame (no alpha)
+	int read_jpeg(const unsigned char *data, long sz,
+		double xscale, double yscale, int jpeg_model);
+public:
+	VFrameJpeg(const unsigned char *jpeg_data, double s=0);
+	VFrameJpeg(const unsigned char *jpeg_data, long image_size, double xs=0, double ys=0);
+	virtual ~VFrameJpeg();
+	static VFrame *vframe_jpeg(int fd,
+		double xs=1, double ys=1, int jpeg_model=BC_RGB888);
+	static VFrame *vframe_jpeg(const char *jpeg_path,
+		double xs=1, double ys=1, int jpeg_model=BC_RGB888);
 };
 
 #endif

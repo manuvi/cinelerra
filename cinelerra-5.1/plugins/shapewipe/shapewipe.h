@@ -199,8 +199,6 @@ public:
 	char current_filename[BCTEXTLEN];
 	char current_name[BCTEXTLEN];
 	unsigned char **pattern_image;
-	unsigned char min_value;
-	unsigned char max_value;
 	int frame_width;
 	int frame_height;
 	int preserve_aspect;

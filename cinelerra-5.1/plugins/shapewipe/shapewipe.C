@@ -34,6 +34,7 @@
 #include <png.h>
 #include <math.h>
 #include <stdint.h>
+#include <fcntl.h>
 #include <string.h>
 
 #define SHAPE_SEARCHPATH "/shapes"
@@ -346,8 +347,6 @@ ShapeWipeMain::ShapeWipeMain(PluginServer *server)
 	current_filename[0] = '\0';
 	current_name[0] = 0;
 	pattern_image = 0;
-	min_value = 255;
-	max_value = 0;
 	last_preserve_aspect = 0;
 	shapes_initialized = 0;
 	shape_paths.set_array_delete();
@@ -381,7 +380,7 @@ void ShapeWipeMain::init_shapes()
 {
 	if( !shapes_initialized ) {
 		FileSystem fs;
-		fs.set_filter("*.png");
+		fs.set_filter("[*.png][*.jpg]");
 		char shape_path[BCTEXTLEN];
 		sprintf(shape_path, "%s%s", get_plugin_dir(), SHAPE_SEARCHPATH);
 		fs.update(shape_path);
@@ -401,7 +400,6 @@ void ShapeWipeMain::init_shapes()
 	}
 }
 
-
 int ShapeWipeMain::load_configuration()
 {
 	read_data(get_prev_keyframe(get_source_position()));
@@ -409,89 +407,37 @@ int ShapeWipeMain::load_configuration()
 }
 
 int ShapeWipeMain::read_pattern_image(char *shape_name,
-		int new_frame_width, int new_frame_height)
+		int frame_width, int frame_height)
 {
-	png_byte header[8];
-	int is_png;
-	int row, col;
-	int pixel_width;
-	unsigned char value;
-	png_uint_32 width;
-	png_uint_32 height;
-	png_byte color_type;
-	png_byte bit_depth;
-	png_structp png_ptr = 0;
-	png_infop info_ptr = 0;
-	png_infop end_info = 0;
-	png_bytep *image = 0;
-	FILE *fp = 0;
-	frame_width = new_frame_width;
-	frame_height = new_frame_height;
-	int ret = 0;
-
+	VFrame *pattern = 0;
+	int ret = 0, fd = -1;
+	int is_png = 0;
+	unsigned char header[10];
 // Convert name to filename
-	int k = shape_paths.size();
+	int k = shape_paths.size(), hsz = sizeof(header);
 	while( --k>=0 && strcmp(shape_titles[k], shape_name) );
 	if( k < 0 ) ret = 1;
 	if( !ret ) {
 		strcpy(current_filename, shape_paths[k]);
-		fp = fopen(current_filename, "rb");
-		if( !fp ) ret = 1;
+		fd = ::open(current_filename, O_RDONLY);
+		if( fd < 0 || read(fd,header,hsz) != hsz ) ret = 1;
 	}
 	if( !ret ) {
-		fread(header, 1, 8, fp);
-		is_png = !png_sig_cmp(header, 0, 8);
-		if( !is_png ) ret = 1;
+		is_png = !png_sig_cmp(header, 0, hsz);
+		if( !is_png && strncmp("JFIF", (char*)header+6, 4) ) ret = 1;
 	}
 	if( !ret ) {
-		png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);
-		if( !png_ptr ) ret = 1;
+		lseek(fd, 0, SEEK_SET);
+		pattern = is_png ?
+			VFramePng::vframe_png(fd, 1, 1) :
+			VFrameJpeg::vframe_jpeg(fd, 1, 1, BC_GREY8);
+		if( !pattern ) ret = 1;
+	}
+	if( fd >= 0 ) {
+		close(fd);  fd = -1;
 	}
 	if( !ret ) {
-		/* Tell libpng we already checked the first 8 bytes */
-		png_set_sig_bytes(png_ptr, 8);
-		info_ptr = png_create_info_struct(png_ptr);
-		if( !info_ptr ) ret = 1;
-	}
-	if( !ret ) {
-		end_info = png_create_info_struct(png_ptr);
-		if( !end_info ) ret = 1;
-	}
-	if( !ret ) {
-		png_init_io(png_ptr, fp);
-		png_read_info(png_ptr, info_ptr);
-
-		color_type = png_get_color_type(png_ptr, info_ptr);
-		bit_depth = png_get_bit_depth(png_ptr, info_ptr);
-		width  = png_get_image_width (png_ptr, info_ptr);
-		height = png_get_image_height(png_ptr, info_ptr);
-
-		/* Skip the alpha channel if present
-		* stripping alpha currently doesn't work in conjunction with
-		* converting to grayscale in libpng */
-		pixel_width = color_type & PNG_COLOR_MASK_ALPHA ? 2 : 1;
-		/* Convert 16 bit data to 8 bit */
-		if( bit_depth == 16 ) png_set_strip_16(png_ptr);
-		/* Expand to 1 pixel per byte if necessary */
-		if( bit_depth < 8 ) png_set_packing(png_ptr);
-
-		/* Convert to grayscale */
-		if( color_type == PNG_COLOR_TYPE_RGB ||
-		    color_type == PNG_COLOR_TYPE_RGB_ALPHA )
-			png_set_rgb_to_gray_fixed(png_ptr, 1, -1, -1);
-
-		/* Allocate memory to hold the original png image */
-		image = (png_bytep*)new png_bytep[height];
-		for( row=0; row<(int)height; ++row )
-			image[row] = new png_byte[width*pixel_width];
-
-		/* Allocate memory for the pattern image that will actually be
-		* used for the wipe */
-		pattern_image = new  unsigned char*[frame_height];
-
-		png_read_image(png_ptr, image);
-		png_read_end(png_ptr, end_info);
-
+		int width = pattern->get_w(), height = pattern->get_h();
 		double row_factor, col_factor;
 		double row_offset = 0.5, col_offset = 0.5;	// for rounding
 
@@ -514,39 +460,41 @@ int ShapeWipeMain::read_pattern_image(char *shape_name,
 			row_factor = (double)(height-1)/(double)(frame_height-1);
 			col_factor = (double)(width-1)/(double)(frame_width-1);
 		}
+		int out_w = width * col_factor, out_h = height * row_factor;
+		if( out_w != width || out_h != height ) {
+			VFrame *new_pattern = new VFrame(frame_width, frame_height, BC_GREY8);
+			new_pattern->transfer_from(pattern, 0, col_offset,row_offset,
+				frame_width*col_factor, frame_height*row_factor);
+			delete pattern;  pattern = new_pattern;
+		}
+		unsigned char **rows = pattern->get_rows();
+		unsigned char min = 0xff, max = 0x00;
 		// first, determine range min..max
 		for( int y=0; y<frame_height; ++y ) {
-			row = (int)(row_factor*y + row_offset);
+			unsigned char *row = rows[y];
 			for( int x=0; x<frame_width; ++x ) {
-				col = (int)(col_factor*x + col_offset)*pixel_width;
-				value = image[row][col];
-				if( value < min_value ) min_value = value;
-				if( value > max_value ) max_value = value;
+				unsigned char value = row[x];
+				if( value < min ) min = value;
+				if( value > max ) max = value;
 			}
 		}
-		int range = max_value - min_value;
+		if( min > max ) min = max;
+		int range = max - min;
 		if( !range ) range = 1;
+		pattern_image = new  unsigned char*[frame_height];
 		// scale to fade normalized pattern_image
 		for( int y=0; y<frame_height; ++y ) {
-			row = (int)(row_factor*y + row_offset);
+			unsigned char *row = rows[y];
 			pattern_image[y] = new unsigned char[frame_width];
 			for( int x=0; x<frame_width; ++x ) {
-				col = (int)(col_factor*x + col_offset)*pixel_width;
-				value = image[row][col];
-				pattern_image[y][x] = 0xff*(value - min_value) / range;
+				unsigned char value = row[x];
+				pattern_image[y][x] = 0xff*(value-min) / range;
 			}
 		}
+		this->frame_width = frame_width;
+		this->frame_height = frame_height;
 	}
 
-	if( png_ptr || info_ptr || end_info )
-		png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
-	if( fp )
-		fclose(fp);
-	if( image ) {
-		for( row=0; row<(int)height; ++row )
-			delete [] image[row];
-		delete [] image;
-	}
 	return ret;
 }
 
@@ -556,8 +504,6 @@ void ShapeWipeMain::reset_pattern_image()
 		for( int y=0; y<frame_height; ++y )
 			delete [] pattern_image[y];
 		delete [] pattern_image;  pattern_image = 0;
-		min_value = 255;
-		max_value = 0;	// updated in read_pattern_image
 	}
 }
 

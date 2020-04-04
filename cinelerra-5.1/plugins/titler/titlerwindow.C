@@ -1549,7 +1549,7 @@ void TitlePngPopup::handle_done_event(int result)
 	if( result ) return;
 	BrowseButtonWindow *gui = (BrowseButtonWindow *)get_gui();
 	const char *path = gui->get_submitted_path();
-	char txt[BCSTRLEN];  sprintf(txt, "<%s %s>", _(KW_PNG), path);
+	char txt[BCTEXTLEN];  sprintf(txt, "<%s %s>", _(KW_PNG), path);
 	window->lock_window("TitlePngPopup::handle_done_event");
 	window->insert_ibeam(txt);
 	window->unlock_window();
