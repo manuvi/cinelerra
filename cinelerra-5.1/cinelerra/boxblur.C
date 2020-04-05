@@ -5,6 +5,7 @@ template<class dst_t, class src_t> static inline
 void blurt(dst_t *dst, int dst_step, src_t *src, int src_step,
 		int len, int radius, float s)
 {
+	if( radius > len ) radius = len;
 	const int length = radius*2 + 1;
 	const int inv = s * ((1<<16) + length/2)/length;
 	int x, n, sum = src[radius*src_step];
@@ -97,7 +98,7 @@ void BoxBlurUnit::blurt_package(LoadPackage *package)
 	int src_vstep = box_blur->src_vstep;
 	int dst_vstep = box_blur->dst_vstep;
 	BoxBlurPackage *pkg = (BoxBlurPackage*)package;
-	int u1 = pkg->u1, u2 = pkg->u2;
+	int u1 = pkg->u1, u2 = pkg->u2, v = box_blur->v1;
 	float s = 1.;
 	if( sizeof(src_t) != sizeof(dst_t) ) {
 		switch( sizeof(dst_t) ) {
@@ -107,8 +108,8 @@ void BoxBlurUnit::blurt_package(LoadPackage *package)
 		}
 	}
 	for( int u=u1; u<u2; ++u ) {
-		src_t *sp = src_data + u*src_ustep;
-		dst_t *dp = dst_data + u*dst_ustep;
+		src_t *sp = src_data + u*src_ustep + v*src_vstep;
+		dst_t *dp = dst_data + u*dst_ustep + v*dst_vstep;
 		for( int c=c0; c<=c1; ++c ) {
 			blur_power(dp+c, dst_vstep, sp+c, src_vstep,
 				vlen, radius, power, s);
@@ -119,21 +120,21 @@ void BoxBlurUnit::blurt_package(LoadPackage *package)
 void BoxBlurUnit::process_package(LoadPackage *package)
 {
 	BoxBlur *box_blur = (BoxBlur *)server;
-	int src_bpp = box_blur->src_bpp, dst_bpp = box_blur->dst_bpp;
-	switch( src_bpp ) {
-	case 1: switch( dst_bpp ) {
+	int src_bpc = box_blur->src_bpc, dst_bpc = box_blur->dst_bpc;
+	switch( src_bpc ) {
+	case 1: switch( dst_bpc ) {
 		case 1: blurt_package<uint8_t,  const uint8_t>(package);  break;
 		case 2: blurt_package<uint16_t, const uint8_t>(package);  break;
 		case 4: blurt_package<float,    const uint8_t>(package);  break;
 		}
 		break;
-	case 2: switch( dst_bpp ) {
+	case 2: switch( dst_bpc ) {
 		case 1: blurt_package<uint8_t,  const uint16_t>(package); break;
 		case 2: blurt_package<uint16_t, const uint16_t>(package); break;
 		case 4: blurt_package<float,    const uint16_t>(package); break;
 		}
 		break;
-	case 4: switch( dst_bpp ) {
+	case 4: switch( dst_bpc ) {
 		case 1: blurt_package<uint8_t,  const float>(package);    break;
 		case 2: blurt_package<uint16_t, const float>(package);    break;
 		case 4: blurt_package<float,    const float>(package);    break;
@@ -155,11 +156,12 @@ LoadPackage* BoxBlur::new_package() { return new BoxBlurPackage(); }
 
 void BoxBlur::init_packages()
 {
-	int u = 0;
+	int u = u1;
 	for( int i=0,n=LoadServer::get_total_packages(); i<n; ) {
 		BoxBlurPackage *pkg = (BoxBlurPackage*)get_package(i);
 		pkg->u1 = u;
-		pkg->u2 = u = (++i * ulen) / n;
+		u = u1 + (++i * ulen) / n;
+		pkg->u2 = u;
 	}
 }
 
@@ -171,40 +173,78 @@ void BoxBlur::process(VFrame *dst, VFrame *src, int uv,
 	this->radius = radius;
 	this->power = power;
 	this->uv = uv;
-	int src_w = src->get_w(), src_h = src->get_h();
-	ulen = !uv ? src_h : src_w;
-	vlen = !uv ? src_w : src_h;
+	this->u1 = !uv ? y1 : x1;
+	this->u2 = !uv ? y2 : x2;
+	this->v1 = !uv ? x1 : y1;
+	this->v2 = !uv ? x2 : y2;
+	if( (ulen = u2 - u1) <= 0 ) return;
+	if( (vlen = v2 - v1) <= 0 ) return;
 	c0 = comp<0 ? 0 : comp;
 	c1 = comp<0 ? 2 : comp;
 	src_data = src->get_data();
 	dst_data = dst->get_data();
 	int src_pixsz = BC_CModels::calculate_pixelsize(src->get_color_model());
 	int src_comps = BC_CModels::components(src->get_color_model());
-	src_bpp = src_pixsz / src_comps;
+	src_bpc = src_pixsz / src_comps;
 	int dst_pixsz = BC_CModels::calculate_pixelsize(dst->get_color_model());
 	int dst_comps = BC_CModels::components(dst->get_color_model());
-	dst_bpp = dst_pixsz / dst_comps;
-	int dst_linsz = dst->get_bytes_per_line() / dst_bpp;
-	int src_linsz = src->get_bytes_per_line() / src_bpp;
+	dst_bpc = dst_pixsz / dst_comps;
+	int dst_linsz = dst->get_bytes_per_line() / dst_bpc;
+	int src_linsz = src->get_bytes_per_line() / src_bpc;
 	src_ustep = !uv ? src_linsz : src_comps;
-	dst_ustep = !uv ? dst_linsz: dst_comps;
+	dst_ustep = !uv ? dst_linsz : dst_comps;
 	src_vstep = !uv ? src_comps : src_linsz;
 	dst_vstep = !uv ? dst_comps : dst_linsz;
 
 	process_packages();
 }
 
+int BoxBlur::init_box(VFrame *dst, int x, int y, int w, int h)
+{
+	x1 = x;  x2 = x+w;
+	y1 = y;  y2 = y+h;
+	if( x1 < 0 ) x1 = 0;
+	if( y1 < 0 ) y1 = 0;
+	int dw = dst->get_w(), dh = dst->get_h();
+	if( x2 > dw ) x2 = dw;
+	if( y2 > dh ) y2 = dh;
+	return x2 > x1 && y2 > y1 ? 1 : 0;
+}
+
+void BoxBlur::hblur(VFrame *dst, VFrame *src, int radius, int power, int comp,
+		int x, int y, int w, int h)
+{
+	if( !init_box(dst, x, y, w, h) ) return;
+	process(dst, src, 0, radius, power, comp);
+}
 void BoxBlur::hblur(VFrame *dst, VFrame *src, int radius, int power, int comp)
 {
-	process(dst, src, 0, radius, power, comp);
+	return hblur(dst, src, radius, power, comp,
+			0, 0, dst->get_w(), dst->get_h());
+}
+
+void BoxBlur::vblur(VFrame *dst, VFrame *src, int radius, int power, int comp,
+		int x, int y, int w, int h)
+{
+	if( !init_box(dst, x, y, w, h) ) return;
+	process(dst, src, 1, radius, power, comp);
 }
 void BoxBlur::vblur(VFrame *dst, VFrame *src, int radius, int power, int comp)
 {
-	process(dst, src, 1, radius, power, comp);
+	return vblur(dst, src, radius, power, comp,
+			0, 0, dst->get_w(), dst->get_h());
+}
+
+void BoxBlur::blur(VFrame *dst, VFrame *src, int radius, int power, int comp,
+		int x, int y, int w, int h)
+{
+	if( !init_box(dst, x, y, w, h) ) return;
+	process(dst, src, 0, radius, power, comp);
+	process(dst, dst, 1, radius, power, comp);
 }
 void BoxBlur::blur(VFrame *dst, VFrame *src, int radius, int power, int comp)
 {
-	process(dst, src, 0, radius, power, comp);
-	process(dst, dst, 1, radius, power, comp);
+	return blur(dst, src, radius, power, comp,
+			0, 0, dst->get_w(), dst->get_h());
 }
 

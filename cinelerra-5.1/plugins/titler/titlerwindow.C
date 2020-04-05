@@ -139,6 +139,8 @@ TitleWindow::~TitleWindow()
 	delete timecode_format;
 	delete title_x;
 	delete title_y;
+	delete title_w;
+	delete title_y;
 }
 
 void TitleWindow::create_objects()

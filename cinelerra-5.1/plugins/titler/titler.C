@@ -146,7 +146,7 @@ int TitleConfig::equivalent(TitleConfig &that)
 //		EQUIV(pixels_per_second, that.pixels_per_second) &&
 		wlen == that.wlen &&
 		!memcmp(wtext, that.wtext, wlen * sizeof(wchr_t)) &&
-		title_x == that.title_x && title_y == that.title_y &&
+		EQUIV(title_x, that.title_x) && EQUIV(title_y, that.title_y) &&
 		title_w == that.title_w && title_h == that.title_h &&
 //		window_w == that.window_w && window_h == that.window_h &&
 		timecode == that.timecode &&
