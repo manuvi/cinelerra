@@ -246,7 +246,8 @@ speech_tools.mak_params?=-j1
 tiff.cfg_vars+=LIBS+=" -lpthread"
 tiff.cfg_params+= --enable-shared=no --disable-zstd $(call if_pkg,libwebp,\
  --with-webp-include-dir=$(call pkg_incl,libwebp)\
- --with-webp-lib-dir=$(call pkg_libs,libwebp))
+ --with-webp-lib-dir=$(call pkg_libs,libwebp))\
+ $(call if_npkg,libwebp,--disable-webp)
 twolame.cfg_params?=--enable-shared=no
 x264.cfg_params?= --enable-static --enable-pic
 x265.cfg_vars?=$(call cmake_config,source)

@@ -87,7 +87,7 @@ OUTPUT = $(OBJDIR)/libguicast.a
 UTILS = $(OBJDIR)/bootstrap $(OBJDIR)/pngtoh $(OBJDIR)/pngtoraw
 BCXFER = xfer/$(OBJDIR)/xfer.stamp
 
-CFLAGS += -I/usr/include/freetype2
+CFLAGS += $(static_incs)
 
 $(shell echo $(CFLAGS) > $(OBJDIR)/c_flags)
 $(shell echo $(OBJS) > $(OBJDIR)/objs)

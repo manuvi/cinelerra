@@ -140,7 +140,7 @@ TitleWindow::~TitleWindow()
 	delete title_x;
 	delete title_y;
 	delete title_w;
-	delete title_y;
+	delete title_h;
 }
 
 void TitleWindow::create_objects()
@@ -574,6 +574,10 @@ void TitleWindow::update_gui()
 	title_y->update((int64_t)client->config.title_y);
 	title_w->update((int64_t)client->config.title_w);
 	title_h->update((int64_t)client->config.title_h);
+	drag->drag_x = client->config.title_x;
+	drag->drag_y = client->config.title_y;
+	drag->drag_w = client->config.title_w;
+	drag->drag_h = client->config.title_h;
 	italic->update(client->config.style & BC_FONT_ITALIC);
 	bold->update(client->config.style & BC_FONT_BOLD);
 	alias->update(client->config.style & FONT_ALIAS);

@@ -5,10 +5,11 @@ template<class dst_t, class src_t> static inline
 void blurt(dst_t *dst, int dst_step, src_t *src, int src_step,
 		int len, int radius, float s)
 {
-	if( radius > len ) radius = len;
+	int n = len/2-1;
+	if( radius > n ) radius = n;
 	const int length = radius*2 + 1;
 	const int inv = s * ((1<<16) + length/2)/length;
-	int x, n, sum = src[radius*src_step];
+	int x, sum = src[radius*src_step];
 
 	for( x=0; x<radius; ++x )
 		sum += src[x*src_step]<<1;
