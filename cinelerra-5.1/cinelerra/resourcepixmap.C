@@ -523,9 +523,9 @@ void ResourcePixmap::draw_audio_source(TrackCanvas *canvas, Edit *edit, int x, i
 				y2 = CLIP(y1, 0, y_max);
 //printf("ResourcePixmap::draw_audio_source %d %d %d\n", __LINE__, y1, y2);
 				if( !rect_audio )
-					canvas->draw_line(x1, y0, x2, y2, this);
+					canvas->draw_bline(x1, y0, x2, y2, this);
 				else
-					canvas->draw_line(x2, center_pixel, x2, y2, this);
+					canvas->draw_bline(x2, center_pixel, x2, y2, this);
 			}
 		}
 

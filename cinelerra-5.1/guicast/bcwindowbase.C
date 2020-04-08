@@ -4357,6 +4357,10 @@ void BC_WindowBase::init_resources(float scale)
 		int wx, wy, ww, wh;
 		int cins = info.xinerama_big_screen();
 		if( !info.xinerama_geometry(cins, wx, wy, ww, wh) ) {
+			int sh = ww * 9 / 16;
+			int sw = wh * 16 / 9;
+			if( sw < ww ) ww = sw;
+			if( sh < wh ) wh = sh;
 			if( (x_scale = ww/1920.) < 1 ) x_scale = 1;
 			if( (y_scale = wh/1080.) < 1 ) y_scale = 1;
 		}

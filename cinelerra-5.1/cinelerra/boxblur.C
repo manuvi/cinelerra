@@ -6,6 +6,7 @@ void blurt(dst_t *dst, int dst_step, src_t *src, int src_step,
 		int len, int radius, float s)
 {
 	int n = len/2-1;
+	if( n <= 0 ) return;
 	if( radius > n ) radius = n;
 	const int length = radius*2 + 1;
 	const int inv = s * ((1<<16) + length/2)/length;

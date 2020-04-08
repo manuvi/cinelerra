@@ -2781,6 +2781,24 @@ int TrackCanvas::test_floatauto(FloatAuto *current, int x, int y, int in_x,
 	return result;
 }
 
+static int is_linear(FloatAuto *prev, FloatAuto *next)
+{
+	if( !prev || !next ) return 1;
+	if( prev->curve_mode == FloatAuto::LINEAR ) return 1;
+	int64_t ipos, opos;
+	if( !(ipos = prev->get_control_in_position()) &&
+	    !(opos = prev->get_control_out_position()) ) return 1;
+	if( !ipos || !opos ) return 0;
+	float ival = prev->get_control_in_value();
+	float oval = prev->get_control_out_value();
+	float cval = prev->get_value(), nval = next->get_value();
+	if( !ival && !oval && EQUIV(cval, nval) ) return 1;
+	float ig = ival / ipos, og = oval / opos;
+	int64_t cpos = prev->position, npos = next->position;
+	float g = (nval - cval) / (npos - cpos);
+	if( EQUIV(ig, g) && EQUIV(og, g) ) return 1;
+	return 0;
+}
 
 // Get the float value & y for position x on the canvas
 #define X_TO_FLOATLINE(x) \
@@ -2813,43 +2831,43 @@ void TrackCanvas::draw_floatline(int center_pixel,
 	int x1, int y1, int x2, int y2,
 	int color, int autogrouptype)
 {
+	int ytop = center_pixel - yscale / 2;
+	int ybot = center_pixel + yscale / 2 - 1;
+	y1 += center_pixel;  y2 += center_pixel;
+	if( (y1 < ytop && y1 >= ybot) && (y2 < ytop || y2 >= ybot) ) return;
+// check for line draw
+	if( is_linear(previous, next) ) {
+		draw_line(x1, y1, x2, y2);
+		return;
+	}
+
 // Solve bezier equation for either every pixel or a certain large number of
 // points.
 
 // Not using slope intercept
 	x1 = MAX(0, x1);
-	int prev_y = y1 + center_pixel;
-
+	draw_pixel(x1, y1);
+	int prev_y = y1;
 
 // Call by reference fails for some reason here
 	FloatAuto *previous1 = previous, *next1 = next;
 	float automation_min = mwindow->edl->local_session->automation_mins[autogrouptype];
 	float automation_max = mwindow->edl->local_session->automation_maxs[autogrouptype];
 	float automation_range = automation_max - automation_min;
-
-	for(int x = x1; x < x2; x++)
-	{
+	for( int x=x1; x<x2; ++x ) {
 // Interpolate value between frames
 		X_TO_FLOATLINE(x)
 
-		if(/* x > x1 && */
-			y >= center_pixel - yscale / 2 &&
-			y < center_pixel + yscale / 2 - 1)
-		{
-// printf("TrackCanvas::draw_floatline y=%d min=%d max=%d\n",
-// y,
-// (int)(center_pixel - yscale / 2),
-// (int)(center_pixel + yscale / 2 - 1));
-
-//printf("draw_line(%d,%d,  %d,%d)\n", x - 1, prev_y  , x, y);
- 			draw_line(x - 1, prev_y  , x, y   );
+		if( /* x > x1 && */ y >= ytop && y < ybot ) {
+			int x1 = x-1, y1 = prev_y, x2 = x, y2 = y;
+			if( abs(y2-y1) < 2 )
+				draw_pixel(x2, y2);
+			else
+				draw_bline(x1, y1, x2, y2);
 		}
 		prev_y = y;
 	}
 }
-
-
-
 
 
 int TrackCanvas::test_floatline(int center_pixel,
@@ -3696,6 +3714,43 @@ int TrackCanvas::draw_hairline(Auto *auto_keyframe, int color, int show)
 		draw_text(ax, ay, text);
 	}
 	return 0;
+}
+
+void TrackCanvas::draw_bline(int x1, int y1, int x2, int y2, BC_Pixmap *pixmap)
+{
+// Short lines are all overhead to hw or sw setup, use bresenhams
+	if( y1 > y2 ) {
+		int tx = x1;  x1 = x2;  x2 = tx;
+		int ty = y1;  y1 = y2;  y2 = ty;
+	}
+
+	int x = x1, y = y1;
+	int dx = x2-x1, dy = y2-y1;
+	int dx2 = 2*dx, dy2 = 2*dy;
+	if( dx < 0 ) dx = -dx;
+	int r = dx > dy ? dx : dy, n = r;
+	int dir = 0;
+	if( dx2 < 0 ) dir += 1;
+	if( dy >= dx ) {
+		if( dx2 >= 0 ) do {	/* +Y, +X */
+			draw_pixel(x, y++, pixmap);
+			if( (r -= dx2) < 0 ) { r += dy2;  ++x; }
+		} while( --n >= 0 );
+		else do {		/* +Y, -X */
+			draw_pixel(x, y++, pixmap);
+			if( (r += dx2) < 0 ) { r += dy2;  --x; }
+		} while( --n >= 0 );
+	}
+	else {
+		if( dx2 >= 0 ) do {	/* +X, +Y */
+			draw_pixel(x++, y, pixmap);
+			if( (r -= dy2) < 0 ) { r += dx2;  ++y; }
+		} while( --n >= 0 );
+		else do {		/* -X, +Y */
+			draw_pixel(x--, y, pixmap);
+			if( (r -= dy2) < 0 ) { r -= dx2;  ++y; }
+		} while( --n >= 0 );
+	}
 }
 
 void TrackCanvas::draw_overlays()

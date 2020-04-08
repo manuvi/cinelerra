@@ -790,7 +790,7 @@ SET_TRACE
 // A different algorithm has to be used if it's 1 sample per pixel and the
 // index is used.  Now the min and max values are equal so we join the max samples.
 		if(mwindow->edl->local_session->zoom_sample == 1) {
-			canvas->draw_line(x2 - 1, !rect_audio ? prev_y1 : center_pixel, x2, y1, pixmap);
+			canvas->draw_bline(x2 - 1, !rect_audio ? prev_y1 : center_pixel, x2, y1, pixmap);
 		}
 		else {
 // Extend line height if it doesn't connect to previous line
@@ -801,7 +801,7 @@ SET_TRACE
 			else {
 				first_frame = 0;
 			}
-			canvas->draw_line(x2, y1, x2, !rect_audio ? y2 : center_pixel, pixmap);
+			canvas->draw_bline(x2, y1, x2, !rect_audio ? y2 : center_pixel, pixmap);
 		}
 		prev_y1 = next_y1;
 		prev_y2 = next_y2;
