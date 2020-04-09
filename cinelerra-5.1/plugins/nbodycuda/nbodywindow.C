@@ -179,10 +179,9 @@ N_BodyDrag::N_BodyDrag(N_BodyWindow *gui, int x, int y)
 int N_BodyDrag::handle_event()
 {
 	CWindowGUI *cwindow_gui = gui->plugin->server->mwindow->cwindow->gui;
-	int value = get_value();
-	if( value ) {
+	if( get_value() ) {
 		if( !gui->grab(cwindow_gui) ) {
-			update(value = 0);
+			update(*value = 0);
 			flicker(10,50);
 		}
 	}
@@ -194,7 +193,7 @@ int N_BodyDrag::handle_ungrab()
 {
 	CWindowGUI *cwindow_gui = gui->plugin->server->mwindow->cwindow->gui;
 	int ret = gui->ungrab(cwindow_gui);
-	if( ret ) update(value = 0);
+	if( ret ) update(*value = 0);
 	return ret;
 }
 
