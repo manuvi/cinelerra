@@ -396,6 +396,7 @@ public:
 	void update_gui();
 	int grab_event(XEvent *event);
 	int do_grab_event(XEvent *event);
+	int handle_ungrab();
 	int grab_button_press(XEvent *event);
 	int grab_cursor_motion();
 	void send_configure_change();

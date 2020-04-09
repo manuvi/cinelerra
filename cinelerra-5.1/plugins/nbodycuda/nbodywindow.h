@@ -41,6 +41,7 @@ public:
 	N_BodyDrag(N_BodyWindow *gui, int x, int y);
 
 	int handle_event();
+	int handle_ungrab();
 	N_BodyWindow *gui;
 };
 

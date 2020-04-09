@@ -71,7 +71,6 @@ public:
 	void draw_highlighting();
 	void draw_keyframe_reticle();
 	int draw_hairline(Auto *auto_keyframe, int color, int show);
-	void draw_bline(int x1, int y1, int x2, int y2, BC_Pixmap *pixmap=0);
 
 // User can either call draw or draw_overlays to copy a fresh
 // canvas and just draw the overlays over it

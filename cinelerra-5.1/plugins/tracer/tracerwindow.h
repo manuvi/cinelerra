@@ -231,6 +231,7 @@ public:
 	void start_color_thread();
 	int grab_event(XEvent *event);
 	int do_grab_event(XEvent *event);
+	int handle_ungrab();
 	void done_event(int result);
 	void send_configure_change();
 

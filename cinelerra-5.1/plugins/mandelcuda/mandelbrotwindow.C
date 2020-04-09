@@ -173,6 +173,13 @@ int MandelbrotDrag::handle_event()
 		gui->ungrab(cwindow_gui);
 	return 1;
 }
+int MandelbrotDrag::handle_ungrab()
+{
+	CWindowGUI *cwindow_gui = gui->plugin->server->mwindow->cwindow->gui;
+	int ret = gui->ungrab(cwindow_gui);
+	if( ret ) update(value = 0);
+	return ret;
+}
 
 MandelbrotIsJulia::MandelbrotIsJulia(MandelbrotWindow *gui, int x, int y)
  : BC_CheckBox(x, y, gui->plugin->config.is_julia, _("Julia"))

@@ -56,6 +56,7 @@ public:
 	MandelbrotDrag(MandelbrotWindow *gui, int x, int y);
 
 	int handle_event();
+	int handle_ungrab();
 	MandelbrotWindow *gui;
 };
 

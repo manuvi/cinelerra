@@ -26,6 +26,7 @@ public:
 
 	int handle_event();
 	int grab_event(XEvent *event);
+	int handle_ungrab();
 	
 	MWindow *mwindow;
 	int grabbed, dragging, pending;

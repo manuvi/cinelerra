@@ -84,6 +84,14 @@ void DragCheckBox::drag_deactivate()
 	dragging = 0;
 }
 
+int DragCheckBox::handle_ungrab()
+{
+	drag_deactivate();
+	update(*value = 0);
+	update_gui();
+	return 1;
+}
+
 int DragCheckBox::check_pending()
 {
 	if( pending && !grab_event_count() ) {

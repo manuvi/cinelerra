@@ -216,7 +216,9 @@ public:
 	virtual int selection_clear_event() { return 0; }
 // Only if opengl is enabled
 	virtual int expose_event() { return 0; };
+	virtual int handle_ungrab() { return 0; };
 	virtual int grab_event(XEvent *event) { return 0; };
+
 	virtual void create_objects() { return; };
 
 	static void init_resources(float scale);
@@ -426,7 +428,9 @@ public:
 	int draw_single_text(int draw, int font,
 		int x, int y, const wchr_t *text, int length = -1, BC_Pixmap *pixmap = 0);
 	void draw_center_text(int x, int y, const char *text, int length = -1);
+	void draw_pix(int x, int y, BC_Pixmap *pixmap = 0);
 	void draw_line(int x1, int y1, int x2, int y2, BC_Pixmap *pixmap = 0);
+	void draw_bline(int x1, int y1, int x2, int y2, BC_Pixmap *pixmap = 0);
 	void draw_polygon(ArrayList<int> *x, ArrayList<int> *y, BC_Pixmap *pixmap = 0);
 	void fill_polygon(ArrayList<int> *x, ArrayList<int> *y, BC_Pixmap *pixmap = 0);
 	void draw_rectangle(int x, int y, int w, int h);

@@ -190,6 +190,13 @@ int N_BodyDrag::handle_event()
 		gui->ungrab(cwindow_gui);
 	return 1;
 }
+int N_BodyDrag::handle_ungrab()
+{
+	CWindowGUI *cwindow_gui = gui->plugin->server->mwindow->cwindow->gui;
+	int ret = gui->ungrab(cwindow_gui);
+	if( ret ) update(value = 0);
+	return ret;
+}
 
 N_BodySetMode::N_BodySetMode(N_BodyWindow *gui, int x, int y, const char *text)
  : BC_PopupTextBox(gui, 0, text, x, y, xS(100), yS(160))

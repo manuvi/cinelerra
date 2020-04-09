@@ -545,6 +545,18 @@ int TracerDrag::handle_event()
 	gui->send_configure_change();
 	return 1;
 }
+int TracerWindow::handle_ungrab()
+{
+	CWindowGUI *cwindow_gui = plugin->server->mwindow->cwindow->gui;
+	int ret = ungrab(cwindow_gui);
+	if( ret ) {
+		drag->update(0);
+		plugin->config.drag = 0;
+		send_configure_change();
+	}
+	return ret;
+}
+
 
 TracerDraw::TracerDraw(TracerWindow *gui, int x, int y)
  : BC_CheckBox(x, y, gui->plugin->config.draw, _("Draw"))

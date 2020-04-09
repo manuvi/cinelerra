@@ -264,10 +264,8 @@ void TitleWindow::create_objects()
 	add_tool(drag = new TitleDrag(client, this, x, y + yS(80)));
 	drag->create_objects();
 	if( drag->get_w() > w1 ) w1 = drag->get_w();
-	if( client->config.drag ) {
-		if( drag->drag_activate() )
-			eprintf("drag enabled, but compositor already grabbed\n");
-	}
+	if( client->config.drag && drag->drag_activate() )
+		eprintf("drag enabled, but compositor already grabbed\n");
 
 	add_tool(alias = new TitleAlias(client, this, x, y+yS(110)));
 	if( alias->get_w() > w1 ) w1 = drag->get_w();

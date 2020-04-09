@@ -3415,14 +3415,25 @@ void BC_WindowBase::close(int return_value)
 
 int BC_WindowBase::grab(BC_WindowBase *window)
 {
-	if( window->active_grab && this != window->active_grab ) return 0;
-	window->active_grab = this;
-	this->grab_active = window;
-	return 1;
+	int ret = 1;
+	if( window->active_grab ) {
+		int locked = get_window_lock();
+		if( locked ) unlock_window();
+		BC_WindowBase *active_grab = window->active_grab;
+		active_grab->lock_window("BC_WindowBase::grab(BC_WindowBase");
+		ret = active_grab->handle_ungrab();
+		active_grab->unlock_window();
+		if( locked ) lock_window("BC_WindowBase::grab(BC_WindowBase");
+	}
+	if( ret ) {
+		window->active_grab = this;
+		this->grab_active = window;
+	}
+	return ret;
 }
 int BC_WindowBase::ungrab(BC_WindowBase *window)
 {
-	if( window->active_grab && this != window->active_grab ) return 0;
+	if( this != window->active_grab ) return 0;
 	window->active_grab = 0;
 	this->grab_active = 0;
 	return 1;

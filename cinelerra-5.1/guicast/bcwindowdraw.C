@@ -388,16 +388,60 @@ void BC_WindowBase::draw_center_text(int x, int y, const char *text, int length)
 	draw_text(x, y, text, length);
 }
 
+void BC_WindowBase::draw_pix(int x, int y, BC_Pixmap *pixmap)
+{ // draw_pixel, no BT test
+	XDrawPoint(top_level->display,
+		pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap,
+		top_level->gc, x, y);
+}
+
 void BC_WindowBase::draw_line(int x1, int y1, int x2, int y2, BC_Pixmap *pixmap)
 { BT
 // Some X drivers can't draw 0 length lines
 	if( x1 == x2 && y1 == y2 ) {
-		draw_pixel(x1, y1, pixmap);
+		draw_pix(x1, y1, pixmap);
 	}
 	else {
 		XDrawLine(top_level->display,
 			pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap,
 			top_level->gc, x1, y1, x2, y2);
+	}
+}
+
+void BC_WindowBase::draw_bline(int x1, int y1, int x2, int y2, BC_Pixmap *pixmap)
+{ BT
+// Short lines are all overhead to hw or sw setup, use bresenhams
+	if( y1 > y2 ) {
+		int tx = x1;  x1 = x2;  x2 = tx;
+		int ty = y1;  y1 = y2;  y2 = ty;
+	}
+
+	int x = x1, y = y1;
+	int dx = x2-x1, dy = y2-y1;
+	int dx2 = 2*dx, dy2 = 2*dy;
+	if( dx < 0 ) dx = -dx;
+	int r = dx > dy ? dx : dy, n = r;
+	int dir = 0;
+	if( dx2 < 0 ) dir += 1;
+	if( dy >= dx ) {
+		if( dx2 >= 0 ) do {	/* +Y, +X */
+			draw_pix(x, y++, pixmap);
+			if( (r -= dx2) < 0 ) { r += dy2;  ++x; }
+		} while( --n >= 0 );
+		else do {		/* +Y, -X */
+			draw_pix(x, y++, pixmap);
+			if( (r += dx2) < 0 ) { r += dy2;  --x; }
+		} while( --n >= 0 );
+	}
+	else {
+		if( dx2 >= 0 ) do {	/* +X, +Y */
+			draw_pix(x++, y, pixmap);
+			if( (r -= dy2) < 0 ) { r += dx2;  ++y; }
+		} while( --n >= 0 );
+		else do {		/* -X, +Y */
+			draw_pix(x--, y, pixmap);
+			if( (r -= dy2) < 0 ) { r -= dx2;  ++y; }
+		} while( --n >= 0 );
 	}
 }
 

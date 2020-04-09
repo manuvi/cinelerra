@@ -279,6 +279,8 @@ void BoxBlurWindow::create_objects()
 	add_subwindow(title = new BC_Title(x, y, _("Box Blur"), MEDIUMFONT_3D));
 	add_subwindow(drag = new BoxBlurDrag(this, plugin, t3, y));
 	drag->create_objects();
+	if( plugin->config.drag && drag->drag_activate() )
+		eprintf("drag enabled, but compositor already grabbed\n");
 	int x1 = get_w() - BoxBlurReset::calculate_w(this) - 2*margin;
 	add_subwindow(reset = new BoxBlurReset(this, x1, y));
 	y += bmax(title->get_h(), drag->get_h()) + 2*margin;
