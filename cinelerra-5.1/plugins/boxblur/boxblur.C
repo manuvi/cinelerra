@@ -25,6 +25,7 @@
 #include "edl.h"
 #include "filexml.h"
 #include "language.h"
+#include "mainerror.h"
 #include "plugin.h"
 #include "pluginserver.h"
 #include "pluginvclient.h"
