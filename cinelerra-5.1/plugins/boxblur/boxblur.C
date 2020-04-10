@@ -37,6 +37,10 @@
 #include <string.h>
 
 class BoxBlurConfig;
+class BoxBlurNumISlider;
+class BoxBlurNumIText;
+class BoxBlurNumClear;
+class BoxBlurNum;
 class BoxBlurRadius;
 class BoxBlurPower;
 class BoxBlurDrag;
@@ -66,24 +70,67 @@ public:
 };
 
 
-class BoxBlurRadius : public BC_ISlider
+class BoxBlurNumISlider : public BC_ISlider
 {
 public:
-	BoxBlurRadius(BoxBlurWindow *gui, int x, int y, int w, int *radius);
+	BoxBlurNumISlider(BoxBlurNum *num, int x, int y);
 	int handle_event();
-
-	BoxBlurWindow *gui;
-	int *radius;
+	BoxBlurNum *num;
 };
 
-class BoxBlurPower : public BC_ISlider
+class BoxBlurNumIText : public BC_TumbleTextBox
 {
 public:
-	BoxBlurPower(BoxBlurWindow *gui, int x, int y, int w, int *power);
+	BoxBlurNumIText(BoxBlurNum *num, int x, int y);
+	int handle_event();
+	BoxBlurNum *num;
+};
+
+class BoxBlurNumClear : public BC_Button
+{
+public:
+	BoxBlurNumClear(BoxBlurNum *num, int x, int y);
+	static int calculate_w(BoxBlurNum *num);
 	int handle_event();
 
+	BoxBlurNum *num;
+};
+
+class BoxBlurNum
+{
+public:
+	BoxBlurNum(BoxBlurWindow *gui, int x, int y, int w,
+		const char *name, int *iv, int imn, int imx);
+	~BoxBlurNum();
+	void create_objects();
+	void update(int value);
+	int get_w();
+	int get_h();
+
 	BoxBlurWindow *gui;
-	int *power;
+	int x, y, w, h;
+	const char *name;
+	int imn, imx, *ivalue;
+	int title_w, text_w, slider_w;
+	BC_Title *title;
+	BoxBlurNumIText *text;
+	BoxBlurNumISlider *slider;
+	BoxBlurNumClear *clear;
+};
+
+
+class BoxBlurRadius : public BoxBlurNum
+{
+public:
+	BoxBlurRadius(BoxBlurWindow *gui, int x, int y, int w,
+			const char *name, int *radius);
+};
+
+class BoxBlurPower : public BoxBlurNum
+{
+public:
+	BoxBlurPower(BoxBlurWindow *gui, int x, int y, int w,
+			const char *name, int *power);
 };
 
 class BoxBlurX : public BC_TumbleTextBox
@@ -123,12 +170,13 @@ public:
 	void update_gui();
 	Track *get_drag_track();
 	int64_t get_drag_position();
+	static int calculate_w(BoxBlurWindow *gui);
 
 	BoxBlurWindow *gui;
 	BoxBlurEffect *plugin;
 };
 
-class BoxBlurReset : public BC_Button
+class BoxBlurReset : public BC_GenericButton
 {
 public:
 	BoxBlurReset(BoxBlurWindow *gui, int x, int y);
@@ -229,42 +277,140 @@ void BoxBlurConfig::interpolate(BoxBlurConfig &prev, BoxBlurConfig &next,
 }
 
 
-BoxBlurRadius::BoxBlurRadius(BoxBlurWindow *gui, int x, int y, int w, int *radius)
- : BC_ISlider(x, y, 0, w, w, 0, 100, *radius)
+int BoxBlurNum::get_w() { return w; }
+int BoxBlurNum::get_h() { return h; }
+
+BoxBlurNumISlider::BoxBlurNumISlider(BoxBlurNum *num, int x, int y)
+ : BC_ISlider(x, y, 0, num->slider_w, num->slider_w,
+		num->imn, num->imx, *num->ivalue)
 {
-	this->gui = gui;
-	this->radius = radius;
+	this->num = num;
 }
-int BoxBlurRadius::handle_event()
+
+int BoxBlurNumISlider::handle_event()
 {
-	*radius = get_value();
-	gui->plugin->send_configure_change();
+	int iv = get_value();
+	num->update(iv);
 	return 1;
 }
 
-BoxBlurPower::BoxBlurPower(BoxBlurWindow *gui, int x, int y, int w, int *power)
- : BC_ISlider(x, y, 0, w, w, 1, 10, *power)
+BoxBlurNumIText::BoxBlurNumIText(BoxBlurNum *num, int x, int y)
+ : BC_TumbleTextBox(num->gui, *num->ivalue, num->imn, num->imx,
+			x, y, num->text_w)
+{
+	this->num = num;
+}
+
+int BoxBlurNumIText::handle_event()
+{
+	int iv = atoi(get_text());
+	num->update(iv);
+	return 1;
+}
+
+BoxBlurNumClear::BoxBlurNumClear(BoxBlurNum *num, int x, int y)
+ : BC_Button(x, y, num->gui->plugin->get_theme()->get_image_set("reset_button"))
+{
+	this->num = num;
+}
+
+int BoxBlurNumClear::calculate_w(BoxBlurNum *num)
+{
+	VFrame **imgs = num->gui->plugin->get_theme()->get_image_set("reset_button");
+	return imgs[0]->get_w();
+}
+
+int BoxBlurNumClear::handle_event()
+{
+	int v = num->imn;
+	num->update(v);
+	return 1;
+}
+
+BoxBlurNum::BoxBlurNum(BoxBlurWindow *gui, int x, int y, int w,
+		 const char *name, int *iv, int imn, int imx)
 {
 	this->gui = gui;
-	this->power = power;
+	this->x = x;
+	this->y = y;
+	this->w = w;
+	this->h = 0;
+	this->name = name;
+	this->ivalue = iv;
+	this->imn = imn;
+	this->imx = imx;
+	int margin = gui->plugin->get_theme()->widget_border;
+	int clear_w = BoxBlurNumClear::calculate_w(this);
+	int tumble_w = BC_Tumbler::calculate_w();
+	int len = w - 2*margin - clear_w - tumble_w;
+	this->title_w = xS(60);
+	this->text_w = xS(60) - tumble_w;
+	this->slider_w = len - title_w - text_w - 2*margin;
+
+	title = 0;
+	text = 0;
+	slider = 0;
+	clear = 0;
 }
-int BoxBlurPower::handle_event()
+
+BoxBlurNum::~BoxBlurNum()
 {
-	*power = get_value();
-	gui->plugin->send_configure_change();
-	return 1;
+	delete text;
+}
+
+void BoxBlurNum::create_objects()
+{
+	int x1 = this->x;
+	gui->add_subwindow(title = new BC_Title(x1, y, name));
+	int margin = gui->plugin->get_theme()->widget_border;
+	x1 += title_w + margin;
+	text = new BoxBlurNumIText(this, x1, y);
+	text->create_objects();
+	x1 += text_w + BC_Tumbler::calculate_w() + margin;
+	gui->add_subwindow(slider = new BoxBlurNumISlider(this, x1, y));
+	x1 += slider_w + 2*margin;
+	gui->add_subwindow(clear = new BoxBlurNumClear(this, x1, y));
+	h = bmax(title->get_h(), bmax(text->get_h(),
+		bmax(slider->get_h(), clear->get_h())));
+}
+
+void BoxBlurNum::update(int value)
+{
+	text->update((int64_t)value);
+	slider->update(value);
+	*ivalue = value;
+	gui->update_drag();
+}
+
+
+BoxBlurRadius::BoxBlurRadius(BoxBlurWindow *gui, int x, int y, int w,
+		const char *name, int *radius)
+ : BoxBlurNum(gui, x, y, w, name, radius, 0, 100)
+{
+}
+
+BoxBlurPower::BoxBlurPower(BoxBlurWindow *gui, int x, int y, int w,
+		const char *name, int *power)
+ : BoxBlurNum(gui, x, y, w, name, power, 1, 10)
+{
 }
 
 BoxBlurWindow::BoxBlurWindow(BoxBlurEffect *plugin)
- : PluginClientWindow(plugin, xS(250), yS(185), xS(250), yS(185), 0)
+ : PluginClientWindow(plugin, xS(360), yS(240), xS(360), yS(240), 0)
 {
 	this->plugin = plugin;
+	blur_horz = 0;
+	blur_vert = 0;
+	blur_power = 0;
 	box_x = 0;  box_y = 0;
 	box_w = 0;  box_h = 0;
 }
 
 BoxBlurWindow::~BoxBlurWindow()
 {
+	delete blur_horz;
+	delete blur_vert;
+	delete blur_power;
 	delete box_x;
 	delete box_y;
 	delete box_w;
@@ -274,17 +420,23 @@ BoxBlurWindow::~BoxBlurWindow()
 void BoxBlurWindow::create_objects()
 {
 	int x = xS(10), y = yS(10);
-	int t1 = x, t2 = t1+xS(24), t3 = get_w()/2, t4 = t3 + xS(24);
+	int t1 = x, t2 = t1+xS(24), t3 = t2+xS(100), t4 = t3+xS(24);
+	int ww = get_w() - 2*x, bar_o = xS(30), bar_m = xS(15);
 	int margin = plugin->get_theme()->widget_border;
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x, y, _("Box Blur"), MEDIUMFONT_3D));
-	add_subwindow(drag = new BoxBlurDrag(this, plugin, t3, y));
+	int x1 = ww - BoxBlurReset::calculate_w(this) - margin;
+	add_subwindow(reset = new BoxBlurReset(this, x1, y));
+	y += bmax(title->get_h(), reset->get_h()) + 2*margin;
+
+        BC_TitleBar *tbar;
+        add_subwindow(tbar = new BC_TitleBar(x, y, ww, bar_o, bar_m, _("Position")));
+        y += tbar->get_h() + margin;
+	x1 = ww - BoxBlurDrag::calculate_w(this) - margin;
+	add_subwindow(drag = new BoxBlurDrag(this, plugin, x1, y));
 	drag->create_objects();
 	if( plugin->config.drag && drag->drag_activate() )
 		eprintf("drag enabled, but compositor already grabbed\n");
-	int x1 = get_w() - BoxBlurReset::calculate_w(this) - 2*margin;
-	add_subwindow(reset = new BoxBlurReset(this, x1, y));
-	y += bmax(title->get_h(), drag->get_h()) + 2*margin;
 
 	add_subwindow(title = new BC_Title(t1, y, _("X:")));
 	box_x = new BoxBlurX(this, t2, y);
@@ -299,23 +451,22 @@ void BoxBlurWindow::create_objects()
 	add_subwindow(title = new BC_Title(t3, y, _("H:")));
 	box_h = new BoxBlurH(this, t4, y);
 	box_h->create_objects();
-	y += bmax(title->get_h(), box_h->get_h()) + margin;
+	y += bmax(title->get_h(), box_h->get_h()) + 2*margin;
 
-	y += 2*margin;
-	x1 = xS(70);
-	add_subwindow(title = new BC_Title(x, y, _("Horz:")));
-	add_subwindow(blur_horz = new BoxBlurRadius(this, x1, y, xS(160),
-		&plugin->config.horz_radius));
+	add_subwindow(tbar = new BC_TitleBar(x, y, ww, bar_o, bar_m, _("Blur")));
+	y += tbar->get_h() + margin;
+	blur_horz = new BoxBlurRadius(this, x, y, ww, _("Horz:"),
+			&plugin->config.horz_radius);
+	blur_horz->create_objects();
 	y += blur_horz->get_h() + margin;
-	add_subwindow(title = new BC_Title(x, y, _("Vert:")));
-	add_subwindow(blur_vert = new BoxBlurRadius(this, x1, y, xS(160),
-		&plugin->config.vert_radius));
+	blur_vert = new BoxBlurRadius(this, x, y, ww, _("Vert:"),
+			&plugin->config.vert_radius);
+	blur_vert->create_objects();
 	y += blur_vert->get_h() + margin;
-	add_subwindow(title = new BC_Title(x, y, _("Power:")));
-	add_subwindow(blur_power = new BoxBlurPower(this, x1, y, xS(160),
-		&plugin->config.power));
+	blur_power = new BoxBlurPower(this, x, y, ww, _("Power:"),
+			&plugin->config.power);
+	blur_power->create_objects();
 	y += blur_power->get_h() + margin;
-
 	show_window(1);
 }
 
@@ -509,6 +660,13 @@ BoxBlurDrag::BoxBlurDrag(BoxBlurWindow *gui, BoxBlurEffect *plugin, int x, int y
 	this->gui = gui;
 }
 
+int BoxBlurDrag::calculate_w(BoxBlurWindow *gui)
+{
+	int w, h;
+	calculate_extents(gui, &w, &h, _("Drag"));
+	return w;
+}
+
 Track *BoxBlurDrag::get_drag_track()
 {
 	PluginServer *server = plugin->server;
@@ -552,21 +710,22 @@ void BoxBlurWindow::update_drag()
 }
 
 BoxBlurReset::BoxBlurReset(BoxBlurWindow *gui, int x, int y)
- : BC_Button(x, y, gui->plugin->get_theme()->get_image_set("reset_button"))
+ : BC_GenericButton(x, y, _("Reset"))
 {
 	this->gui = gui;
 }
 
 int BoxBlurReset::calculate_w(BoxBlurWindow *gui)
 {
-	VFrame **imgs = gui->plugin->get_theme()->get_image_set("reset_button");
-	return imgs[0]->get_w();
+	return BC_GenericButton::calculate_w(gui,_("Reset"));
 }
 
 int BoxBlurReset::handle_event()
 {
 	BoxBlurEffect *plugin = gui->plugin;
 	plugin->config.reset();
+	gui->drag->update(0);
+	gui->drag->drag_deactivate();
 	gui->update_gui();
 	gui->update_drag();
 	return 1;
