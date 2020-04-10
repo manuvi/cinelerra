@@ -62,6 +62,7 @@ public:
 	void interpolate(BoxBlurConfig &prev, BoxBlurConfig &next,
 		int64_t prev_frame, int64_t next_frame, int64_t current_frame);
 	void reset();
+	void preset();
 
 	int horz_radius, vert_radius, power;
 	float box_x, box_y;
@@ -186,6 +187,16 @@ public:
 	BoxBlurWindow *gui;
 };
 
+class BoxBlurPreset : public BC_GenericButton
+{
+public:
+	BoxBlurPreset(BoxBlurWindow *gui, int x, int y);
+	int handle_event();
+	static int calculate_w(BoxBlurWindow *gui);
+
+	BoxBlurWindow *gui;
+};
+
 class BoxBlurWindow : public PluginClientWindow
 {
 public:
@@ -197,6 +208,7 @@ public:
 
 	BoxBlurEffect *plugin;
 	BoxBlurReset *reset;
+	BoxBlurPreset *preset;
 	BoxBlurRadius *blur_horz;
 	BoxBlurRadius *blur_vert;
 	BoxBlurPower *blur_power;
@@ -229,6 +241,16 @@ public:
 
 void BoxBlurConfig::reset()
 {
+	horz_radius = 0;
+	vert_radius = 0;
+	power = 1;
+	drag = 0;
+	box_x = box_y = 0.0;
+	box_w = box_h = 0;
+}
+
+void BoxBlurConfig::preset()
+{
 	horz_radius = 2;
 	vert_radius = 2;
 	power = 2;
@@ -237,9 +259,10 @@ void BoxBlurConfig::reset()
 	box_w = box_h = 0;
 }
 
+
 BoxBlurConfig::BoxBlurConfig()
 {
-	reset();
+	preset();
 }
 
 void BoxBlurConfig::copy_from(BoxBlurConfig &that)
@@ -423,21 +446,17 @@ void BoxBlurWindow::create_objects()
 	int t1 = x, t2 = t1+xS(24), t3 = t2+xS(100), t4 = t3+xS(24);
 	int ww = get_w() - 2*x, bar_o = xS(30), bar_m = xS(15);
 	int margin = plugin->get_theme()->widget_border;
-	BC_Title *title;
-	add_subwindow(title = new BC_Title(x, y, _("Box Blur"), MEDIUMFONT_3D));
-	int x1 = ww - BoxBlurReset::calculate_w(this) - margin;
-	add_subwindow(reset = new BoxBlurReset(this, x1, y));
-	y += bmax(title->get_h(), reset->get_h()) + 2*margin;
 
         BC_TitleBar *tbar;
-        add_subwindow(tbar = new BC_TitleBar(x, y, ww, bar_o, bar_m, _("Position")));
+        add_subwindow(tbar = new BC_TitleBar(x, y, ww, bar_o, bar_m, _("Position & Size")));
         y += tbar->get_h() + margin;
-	x1 = ww - BoxBlurDrag::calculate_w(this) - margin;
+	int x1 = ww - BoxBlurDrag::calculate_w(this) - margin;
 	add_subwindow(drag = new BoxBlurDrag(this, plugin, x1, y));
 	drag->create_objects();
 	if( plugin->config.drag && drag->drag_activate() )
 		eprintf("drag enabled, but compositor already grabbed\n");
 
+	BC_Title *title;
 	add_subwindow(title = new BC_Title(t1, y, _("X:")));
 	box_x = new BoxBlurX(this, t2, y);
 	box_x->create_objects();
@@ -467,6 +486,14 @@ void BoxBlurWindow::create_objects()
 			&plugin->config.power);
 	blur_power->create_objects();
 	y += blur_power->get_h() + margin;
+	BC_Bar *bar;
+	add_subwindow(bar = new BC_Bar(x, y, ww));
+	y += bar->get_h() + 2*margin;
+
+	add_subwindow(reset = new BoxBlurReset(this, x, y));
+	x1 = x + ww - BoxBlurPreset::calculate_w(this);
+	add_subwindow(preset = new BoxBlurPreset(this, x1, y));
+	y += bmax(title->get_h(), reset->get_h()) + 2*margin;
 	show_window(1);
 }
 
@@ -724,6 +751,28 @@ int BoxBlurReset::handle_event()
 {
 	BoxBlurEffect *plugin = gui->plugin;
 	plugin->config.reset();
+	gui->drag->update(0);
+	gui->drag->drag_deactivate();
+	gui->update_gui();
+	gui->update_drag();
+	return 1;
+}
+
+BoxBlurPreset::BoxBlurPreset(BoxBlurWindow *gui, int x, int y)
+ : BC_GenericButton(x, y, _("Default"))
+{
+	this->gui = gui;
+}
+
+int BoxBlurPreset::calculate_w(BoxBlurWindow *gui)
+{
+	return BC_GenericButton::calculate_w(gui,_("Default"));
+}
+
+int BoxBlurPreset::handle_event()
+{
+	BoxBlurEffect *plugin = gui->plugin;
+	plugin->config.preset();
 	gui->drag->update(0);
 	gui->drag->drag_deactivate();
 	gui->update_gui();
