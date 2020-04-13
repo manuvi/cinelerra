@@ -180,7 +180,7 @@ DIRS = $(OPENCV_OBJS) \
 #	vocoder \
 
 PLUGIN_DIR = $(BINDIR)/plugins
-DATA = $(PLUGIN_DIR)/fonts $(PLUGIN_DIR)/shapes
+DATA = $(PLUGIN_DIR)/fonts $(PLUGIN_DIR)/shapes $(PLUGIN_DIR)/scopes
 LADSPA_DIR = $(BINDIR)/ladspa
 
 all:	$(PLUGIN_DIR) $(DIRS) $(DATA) $(LADSPA_DIR)

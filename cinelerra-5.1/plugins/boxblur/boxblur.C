@@ -419,7 +419,7 @@ BoxBlurPower::BoxBlurPower(BoxBlurWindow *gui, int x, int y, int w,
 }
 
 BoxBlurWindow::BoxBlurWindow(BoxBlurEffect *plugin)
- : PluginClientWindow(plugin, xS(360), yS(240), xS(360), yS(240), 0)
+ : PluginClientWindow(plugin, xS(360), yS(246), xS(360), yS(246), 0)
 {
 	this->plugin = plugin;
 	blur_horz = 0;
@@ -485,7 +485,7 @@ void BoxBlurWindow::create_objects()
 	blur_power = new BoxBlurPower(this, x, y, ww, _("Power:"),
 			&plugin->config.power);
 	blur_power->create_objects();
-	y += blur_power->get_h() + margin;
+	y += blur_power->get_h() + margin + yS(8);
 	BC_Bar *bar;
 	add_subwindow(bar = new BC_Bar(x, y, ww));
 	y += bar->get_h() + 2*margin;

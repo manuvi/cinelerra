@@ -34,7 +34,7 @@
 enum {
 	SCOPE_HISTOGRAM, SCOPE_HISTOGRAM_RGB,
 	SCOPE_WAVEFORM, SCOPE_WAVEFORM_RGB, SCOPE_WAVEFORM_PLY,
-	SCOPE_VECTORSCOPE,
+	SCOPE_VECTORSCOPE, SCOPE_VECTORWHEEL,
 };
 
 // Number of divisions in histogram.
@@ -119,6 +119,9 @@ public:
 	virtual void update_point(int x, int y);
 	virtual void draw_point();
 	virtual void clear_point();
+	void draw_point(float th, float r, int color);
+	void draw_radient(float th, float r1, float r2, int color);
+
 	int drag_radius;
 	float drag_angle;
 };
@@ -160,6 +163,34 @@ public:
 	ScopeScopesOn *wave_rgb_on;
 	ScopeScopesOn *wave_ply_on;
 	ScopeScopesOn *vect_on;
+	ScopeScopesOn *vect_wheel;
+};
+
+
+class ScopeGradPaths : public ArrayList<const char *>
+{
+public:
+	ScopeGradPaths() { set_array_delete(); }
+	~ScopeGradPaths() { remove_all_objects(); }
+};
+
+class ScopeGradItem : public BC_MenuItem
+{
+public:
+	ScopeGradItem(ScopeVectGrads *vect_grads, const char *text, int idx);
+	int handle_event();
+
+	ScopeVectGrads *vect_grads;
+	int idx;
+};
+
+class ScopeVectGrads : public BC_PopupMenu
+{
+public:
+	ScopeVectGrads(ScopeGUI *gui, int x, int y);
+	void create_objects();
+
+	ScopeGUI *gui;
 };
 
 
@@ -248,6 +279,9 @@ public:
 	void calculate_sizes(int w, int h);
 	void allocate_vframes();
 	void draw_overlays(int overlays, int borders, int flush);
+	void update_gradical(int idx);
+	void draw_colorwheel(VFrame *dst, int bg_color);
+	void draw_gradical();
 	void process(VFrame *output_frame);
 	void draw(int flash, int flush);
 	void clear_points(int flash);
@@ -259,19 +293,28 @@ public:
 	BoxBlur *box_blur;
 	VFrame *waveform_vframe;
 	VFrame *vector_vframe;
+	VFrame *wheel_vframe;
 	ScopeHistogram *histogram;
 	ScopeWaveform *waveform;
 	ScopeVectorscope *vectorscope;
 	ScopeMenu *scope_menu;
 	ScopeWaveSlider *wave_slider;
 	ScopeVectSlider *vect_slider;
+	ScopeVectGrads *vect_grads;
 	ScopeSmooth *smooth;
 	BC_Title *value_text;
+	VFrame *grad_image;
+	BC_Pixmap *grad_pixmap;
 
 	int x, y, w, h;
 	int vector_x, vector_y, vector_w, vector_h;
+	int vector_cx, vector_cy, radius;
 	int wave_x, wave_y, wave_w, wave_h;
 	int hist_x, hist_y, hist_w, hist_h;
+	int text_color, dark_color;
+
+	ScopeGradPaths grad_paths;
+	int grad_idx, vector_gradical;
 
 	int cpus;
 	int use_hist, use_wave, use_vector;

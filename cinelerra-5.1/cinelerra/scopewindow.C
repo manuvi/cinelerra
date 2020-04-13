@@ -23,6 +23,8 @@
 #include "boxblur.h"
 #include "clip.h"
 #include "cursors.h"
+#include "file.h"
+#include "filesystem.h"
 #include "language.h"
 #include "scopewindow.h"
 #include "theme.h"
@@ -53,6 +55,13 @@ if(iy >= 0 && iy < h) { \
   int v = *vp+(rv);  *vp++ = v>0xff ? 0xff : v; \
   v = *vp+(gv);  *vp++ = v>0xff ? 0xff : v; \
   v = *vp+(bv);  *vp = v>0xff ? 0xff : v; } \
+}
+#define decr_points(rows,h, rv,gv,bv) { \
+if(iy >= 0 && iy < h) { \
+  uint8_t *vp = rows[iy] + ix*3; \
+  int v = *vp-(rv);  *vp++ = v<0 ? 0 : v; \
+  v = *vp-(gv);  *vp++ = v<0 ? 0 : v; \
+  v = *vp-(bv);  *vp = v<0 ? 0 : v; } \
 }
 #define clip_points(rows,h, rv,gv,bv) { \
 if(iy >= 0 && iy < h) { \
@@ -120,22 +129,25 @@ if(iy >= 0 && iy < h) { \
 		} \
 	} \
 /* Calculate vectorscope */ \
-	if(use_vector) { \
-		float th = 90 - h; \
-		if( th < 0 ) th += 360; \
-		double t = TO_RAD(th); \
-		float adjacent = -cos(t), opposite = sin(t); \
-		int ix = vector_w / 2 + adjacent * (s) / (FLOAT_MAX) * radius; \
-		int iy = vector_h / 2 - opposite * (s) / (FLOAT_MAX) * radius; \
+	if(use_vector > 0) { \
+		double t = TO_RAD(-h); \
+		float adjacent = sin(t), opposite = cos(t); \
+		int ix = vector_cx + adjacent * (s) / (FLOAT_MAX) * radius; \
+		int iy = vector_cy - opposite * (s) / (FLOAT_MAX) * radius; \
 		CLAMP(ix, 0, vector_w - 1); \
-	/* Get color with full saturation & value */ \
-		float r_f, g_f, b_f; \
-		if( (h=h-90) < 0 ) h += 360; \
-		HSV::hsv_to_rgb(r_f, g_f, b_f, h, s, 1); \
-		int rv = CLIP(r_f, 0, 1) * vinc + 3; \
-		int gv = CLIP(g_f, 0, 1) * vinc + 3; \
-		int bv = CLIP(b_f, 0, 1) * vinc + 3; \
+		HSV::hsv_to_rgb(r, g, b, h, s, vincf); \
+		int rv = r + 3; \
+		int gv = g + 3; \
+		int bv = b + 3; \
 		incr_points(vector_rows,vector_h, rv,gv,bv); \
+	} \
+	else if(use_vector < 0) { \
+		double t = TO_RAD(-h); \
+		float adjacent = sin(t), opposite = cos(t); \
+		int ix = vector_cx + adjacent * (s) / (FLOAT_MAX) * radius; \
+		int iy = vector_cy - opposite * (s) / (FLOAT_MAX) * radius; \
+		CLAMP(ix, 0, vector_w - 1); \
+		decr_points(vector_rows,vector_h, vinc,vinc,vinc); \
 	} \
 }
 
@@ -178,6 +190,9 @@ void ScopeUnit::process_package(LoadPackage *package)
 	int use_vector = gui->use_vector;
 	int use_wave = gui->use_wave;
 	int use_wave_parade = gui->use_wave_parade;
+	int vector_cx = gui->vector_cx;
+	int vector_cy = gui->vector_cy;
+	int radius = gui->radius;
 	VFrame *waveform_vframe = gui->waveform_vframe;
 	VFrame *vector_vframe = gui->vector_vframe;
 	int wave_h = waveform_vframe->get_h();
@@ -188,10 +203,10 @@ void ScopeUnit::process_package(LoadPackage *package)
 	int dat_h = gui->data_frame->get_h();
 	int winc = (wave_w * wave_h) / (dat_w * dat_h);
 	if( use_wave_parade ) winc *= 3;
-	winc += 2;  winc *= gui->use_wave_gain;
-	int vinc = 3*(vector_w * vector_h) / (dat_w * dat_h) + 2;
-	vinc *= gui->use_vect_gain;
-	float radius = MIN(gui->vector_w / 2, gui->vector_h / 2);
+	winc += 2;  winc = (winc << gui->use_wave_gain) / 4;
+	int vinc = 3*(vector_w * vector_h) / (dat_w * dat_h);
+	vinc += 2;  vinc = (vinc << gui->use_vect_gain) / 4;
+	float vincf = vinc;
 	uint8_t **waveform_rows = waveform_vframe->get_rows();
 	uint8_t **vector_rows = vector_vframe->get_rows();
 	uint8_t **rows = gui->data_frame->get_rows();
@@ -387,7 +402,6 @@ ScopeGUI::ScopeGUI(Theme *theme,
 	this->y = y;
 	this->w = w;
 	this->h = h;
-	this->temp_frame = 0;
 	this->theme = theme;
 	this->cpus = cpus;
 	reset();
@@ -400,11 +414,8 @@ ScopeGUI::ScopeGUI(PluginClient *plugin, int w, int h)
 	this->y = get_y();
 	this->w = w;
 	this->h = h;
-	this->temp_frame = 0;
 	this->theme = plugin->get_theme();
 	this->cpus = plugin->PluginClient::smp + 1;
-	wave_slider = 0;
-	vect_slider = 0;
 	reset();
 }
 
@@ -412,25 +423,38 @@ ScopeGUI::~ScopeGUI()
 {
 	delete waveform_vframe;
 	delete vector_vframe;
+	delete wheel_vframe;
 	delete engine;
 	delete box_blur;
 	delete temp_frame;
 	delete wave_slider;
 	delete vect_slider;
+	delete grad_image;
+	delete grad_pixmap;
 }
 
 void ScopeGUI::reset()
 {
+	waveform_vframe = 0;
+	vector_vframe = 0;
+	wheel_vframe = 0;
+	engine = 0;
+	box_blur = 0;
+	temp_frame = 0;
+	wave_slider = 0;
+	vect_slider = 0;
+	grad_image = 0;
+	grad_pixmap = 0;
+	vector_gradical = 0;
+	grad_idx = 0;
+	vect_grads = 0;
+
 	output_frame = 0;
 	data_frame = 0;
 	frame_w = 1;
 	use_smooth = 1;
 	use_wave_gain = 5;
 	use_vect_gain = 5;
-	waveform_vframe = 0;
-	vector_vframe = 0;
-	engine = 0;
-	box_blur = 0;
 	use_hist = 0;
 	use_wave = 1;
 	use_vector = 1;
@@ -441,8 +465,14 @@ void ScopeGUI::reset()
 	histogram = 0;
 	wave_w = wave_h = 0;
 	vector_w = vector_h = 0;
+	vector_cx = vector_cy = 0;
+	radius = 0;
+	text_color = GREEN;
+	dark_color = (text_color>>2) & 0x3f3f3f;
+	BC_Resources *resources = BC_WindowBase::get_resources();
+	if( resources->bg_color == 0xffffff )
+		text_color = dark_color;
 }
-
 
 void ScopeGUI::create_objects()
 {
@@ -505,17 +535,31 @@ void ScopeGUI::create_panels()
 			vectorscope->create_objects();
 			vect_slider = new ScopeVectSlider(this, vx, vy, slider_w);
 			vect_slider->create_objects();
+			if( use_vector < 0 ) {
+				add_subwindow(vect_grads = new ScopeVectGrads(this, vector_x, vy));
+				vect_grads->create_objects();
+			}
 		}
 		else {
 			vectorscope->reposition_window(
 				vector_x, vector_y, vector_w, vector_h);
 			vectorscope->clear_box(0, 0, vector_w, vector_h);
 			vect_slider->reposition_window(vx, vy);
+			if( use_vector > 0 ) {
+				delete vect_grads;  vect_grads = 0;
+			}
+			else if( !vect_grads ) {
+				add_subwindow(vect_grads = new ScopeVectGrads(this, vector_x, vy));
+				vect_grads->create_objects();
+			}
+			else
+				vect_grads->reposition_window(vector_x, vy);
 		}
 	}
 	else if( !use_vector && vectorscope ) {
 		delete vectorscope;  vectorscope = 0;
 		delete vect_slider;  vect_slider = 0;
+		delete vect_grads;   vect_grads = 0;
 	}
 
 	if( (use_hist || use_hist_parade) ) {
@@ -589,6 +633,9 @@ void ScopeGUI::calculate_sizes(int w, int h)
 		if(total_panels > 0)
 			panel_w = (vector_x - text_w - margin) / total_panels;
 	}
+	vector_cx = vector_w / 2;
+	vector_cy = vector_h / 2;
+	radius = bmin(vector_cx, vector_cy);
 
 // Histogram is always 1st panel
 	if( use_hist || use_hist_parade ) {
@@ -615,6 +662,7 @@ void ScopeGUI::allocate_vframes()
 {
 	if(waveform_vframe) delete waveform_vframe;
 	if(vector_vframe) delete vector_vframe;
+	if(wheel_vframe) delete wheel_vframe;
 
 	int w, h;
 //printf("ScopeGUI::allocate_vframes %d %d %d %d %d\n", __LINE__,
@@ -626,6 +674,7 @@ void ScopeGUI::allocate_vframes()
 	w = MAX(vector_w, xs16);
 	h = MAX(vector_h, ys16);
 	vector_vframe = new VFrame(w, h, BC_RGB888);
+	wheel_vframe = 0;
 }
 
 
@@ -656,6 +705,8 @@ int ScopeGUI::resize_event(int w, int h)
 		int vx = vector_x + vector_w - vect_slider->get_w() - margin;
 		int vy = vector_y - vect_slider->get_h() - margin;
 		vect_slider->reposition_window(vx, vy);
+		if( vect_grads )
+			vect_grads->reposition_window(vector_x, vy);
 	}
 
 	allocate_vframes();
@@ -676,13 +727,6 @@ int ScopeGUI::translation_event()
 
 void ScopeGUI::draw_overlays(int overlays, int borders, int flush)
 {
-	BC_Resources *resources = BC_WindowBase::get_resources();
-	int text_color = GREEN;
-	int dark_color = (text_color>>2) & 0x3f3f3f;
-	if( resources->bg_color == 0xffffff ) {
-		text_color = dark_color;
-	}
-
 	if( overlays && borders ) {
 		clear_box(0, 0, get_w(), get_h());
 	}
@@ -727,29 +771,11 @@ void ScopeGUI::draw_overlays(int overlays, int borders, int flush)
 		}
 // Vectorscope overlay
 		if( vectorscope && use_vector ) {
-			set_line_dashes(1);
-			int radius = MIN(vector_w / 2, vector_h / 2);
-			for( int i=1; i<=VECTORSCOPE_DIVISIONS; i+=2 ) {
-				int y = vector_h / 2 - radius * i / VECTORSCOPE_DIVISIONS;
-				int text_y = y + vector_y + get_text_ascent(SMALLFONT) / 2;
-				set_color(text_color);
-				char string[BCTEXTLEN];
-				sprintf(string, "%d",
-					(int)((FLOAT_MAX / VECTORSCOPE_DIVISIONS * i) * 100));
-				int text_x = vector_x - get_text_width(SMALLFONT, string) - theme->widget_border;
-				draw_text(text_x, text_y, string);
-				int x = vector_w / 2 - radius * i / VECTORSCOPE_DIVISIONS;
-				int w = radius * i / VECTORSCOPE_DIVISIONS * 2;
-				int h = radius * i / VECTORSCOPE_DIVISIONS * 2;
-				if( i+2 > VECTORSCOPE_DIVISIONS )
-					set_line_dashes(0);
-				set_color(dark_color);
-				vectorscope->draw_circle(x, y, w, h);
-			}
+			draw_gradical();
 			set_color(text_color);
 			vectorscope->draw_point();
-			set_line_dashes(1);
 			vectorscope->flash(0);
+			set_line_dashes(1);
 		}
 
 		set_font(MEDIUMFONT);
@@ -775,6 +801,95 @@ void ScopeGUI::draw_overlays(int overlays, int borders, int flush)
 	if(flush) this->flush();
 }
 
+void ScopeGUI::draw_gradical()
+{
+	if( use_vector > 0 ) {
+		int margin = theme->widget_border;
+		set_line_dashes(1);
+		for( int i=1; i<=VECTORSCOPE_DIVISIONS; i+=2 ) {
+			int y = vector_cy - radius * i / VECTORSCOPE_DIVISIONS;
+			int text_y = y + vector_y + get_text_ascent(SMALLFONT) / 2;
+			set_color(text_color);
+			char string[BCTEXTLEN];
+			sprintf(string, "%d",
+				(int)((FLOAT_MAX / VECTORSCOPE_DIVISIONS * i) * 100));
+			int text_x = vector_x - get_text_width(SMALLFONT, string) - margin;
+			draw_text(text_x, text_y, string);
+			int x = vector_cx - radius * i / VECTORSCOPE_DIVISIONS;
+			int w = radius * i / VECTORSCOPE_DIVISIONS * 2;
+			int h = radius * i / VECTORSCOPE_DIVISIONS * 2;
+			if( i+2 > VECTORSCOPE_DIVISIONS )
+				set_line_dashes(0);
+			set_color(dark_color);
+			vectorscope->draw_circle(x, y, w, h);
+		}
+		float th = TO_RAD(90 + 32.875);
+		vectorscope->draw_radient(th, 0.1f, .75f, dark_color);
+	}
+	else if( use_vector < 0 ) {
+		if( grad_image && grad_idx != vector_gradical ) {
+			delete grad_image;   grad_image = 0;
+			vector_gradical = 0;
+		}
+		if( !grad_image && grad_idx > 0 ) {
+			grad_image = VFramePng::vframe_png(grad_paths[grad_idx]);
+		}
+		int rr = 2*radius;
+		if( grad_pixmap && (!vector_gradical ||
+		      rr != grad_pixmap->get_w() || rr != grad_pixmap->get_h()) ) {
+			delete grad_pixmap;  grad_pixmap = 0;
+			vector_gradical = 0;
+		}
+		if( !grad_pixmap && grad_image ) {
+			VFrame grad(rr, rr, BC_RGBA8888);
+			grad.transfer_from(grad_image);
+			grad_pixmap = new BC_Pixmap(this, &grad, PIXMAP_ALPHA);
+			vector_gradical = grad_idx;
+		}
+		if( grad_pixmap ) {
+			int px = vector_cx - radius, py = vector_cy - radius;
+			vectorscope->draw_pixmap(grad_pixmap, px, py);
+//			vectorscope->flash(0);
+		}
+	}
+}
+
+
+void ScopeGUI::update_gradical(int idx)
+{
+	grad_idx = idx;
+	update_scope();
+}
+
+void ScopeGUI::draw_colorwheel(VFrame *dst, int bg_color)
+{
+	float cx = vector_cx, cy = vector_cy, rad = radius;
+        int color_model = dst->get_color_model();
+        int bpp = BC_CModels::calculate_pixelsize(color_model);
+	int bg_r = (bg_color>>16) & 0xff;
+	int bg_g = (bg_color>> 8) & 0xff;
+	int bg_b = (bg_color>> 0) & 0xff;
+	int w = dst->get_w(), h = dst->get_h();
+	unsigned char **rows = dst->get_rows();
+	for( int y=0; y<h; ++y ) {
+		unsigned char *row = rows[y];
+		for( int x=0; x<w; ++x,row+=bpp ) {
+			int dx = cx-x, dy = cy-y;
+			float d = sqrt(dx*dx + dy*dy);
+			float r, g, b;
+			if( d < rad ) {
+			        float h = TO_DEG(atan2(cx-x, cy-y));
+				if( h < 0 ) h += 360;
+				float s = d / rad, v = 255;
+				HSV::hsv_to_rgb(r, g, b, h, s, v);
+			}
+			else {
+				 r = bg_r; g = bg_g; b = bg_b;
+			}
+			row[0] = r; row[1] = g; row[2] = b;
+		}
+	}
+}
 
 
 void ScopeGUI::process(VFrame *output_frame)
@@ -792,9 +907,21 @@ void ScopeGUI::process(VFrame *output_frame)
 	else
 		data_frame = output_frame;
 	frame_w = data_frame->get_w();
-	//float radius = MIN(vector_w / 2, vector_h / 2);
 	bzero(waveform_vframe->get_data(), waveform_vframe->get_data_size());
-	bzero(vector_vframe->get_data(), vector_vframe->get_data_size());
+	if( use_vector > 0 )
+		bzero(vector_vframe->get_data(), vector_vframe->get_data_size());
+	else if( use_vector < 0 ) {
+		if( wheel_vframe && (
+		     wheel_vframe->get_w() != vector_w ||
+		     wheel_vframe->get_h() != vector_h ) ) {
+			delete wheel_vframe;  wheel_vframe = 0;
+		}
+		if( !wheel_vframe ) {
+			wheel_vframe = new VFrame(vector_w, vector_h, BC_RGB888);
+			draw_colorwheel(wheel_vframe, BLACK);
+		}
+		vector_vframe->copy_from(wheel_vframe);
+	}
 	engine->process();
 
 	if( histogram )
@@ -951,15 +1078,12 @@ void ScopeVectorscope::update_point(int x, int y)
 {
 // Hide it
 	draw_point();
-
-	int radius = MIN(get_w() / 2, get_h() / 2);
-	drag_radius = sqrt(SQR(x - get_w() / 2) + SQR(y - get_h() / 2));
-	drag_angle = atan2(y - get_h() / 2, x - get_w() / 2);
-
-	drag_radius = MIN(drag_radius, radius);
-
-	float saturation = (float)drag_radius / radius * FLOAT_MAX;
-	float hue = -drag_angle * 360 / 2 / M_PI - 90;
+	int dx = x - gui->vector_cx, dy = y - gui->vector_cy;
+	drag_radius = sqrt(dx*dx + dy*dy);
+	if( drag_radius > gui->radius ) drag_radius = gui->radius;
+	float saturation = (float)drag_radius / gui->radius * FLOAT_MAX;
+	drag_angle = atan2(-dy, dx);
+	float hue = TO_DEG(drag_angle) - 90;
 	if( hue < 0 ) hue += 360;
 
 	char string[BCTEXTLEN];
@@ -973,21 +1097,36 @@ void ScopeVectorscope::update_point(int x, int y)
 
 void ScopeVectorscope::draw_point()
 {
-	if( drag_radius > 0 ) {
-		int radius = MIN(get_w() / 2, get_h() / 2);
-		set_inverse();
-		set_color(0xff0000);
+	set_inverse();
+	draw_point(drag_angle, drag_radius, RED);
+	set_opaque();
+}
+
+void ScopeVectorscope::draw_point(float th, float r, int color)
+{
+	if( r > 0 ) {
+		set_color(color);
 		set_line_width(2);
-		draw_circle(get_w() / 2 - drag_radius, get_h() / 2 - drag_radius,
-			drag_radius * 2, drag_radius * 2);
-		draw_line(get_w() / 2, get_h() / 2,
-			get_w() / 2 + radius * cos(drag_angle),
-			get_h() / 2 + radius * sin(drag_angle));
+		int cx = gui->vector_cx, cy = gui->vector_cy;
+		draw_circle(cx-r, cy-r, r*2, r*2);
 		set_line_width(1);
-		set_opaque();
+		float radius = gui->radius;
+		draw_radient(th, 0.f, drag_radius/radius, color);
 	}
 }
 
+void ScopeVectorscope::draw_radient(float th, float r1, float r2, int color)
+{
+	if( r2 > 0 && r2 >= r1 ) {
+		set_color(color);
+		set_line_width(2);
+		int r = gui->radius;
+		double cth = r*cos(th), sth = -r*sin(th);
+		int cx = gui->vector_cx, cy = gui->vector_cy;
+		draw_line(cx+r1*cth, cy+r1*sth, cx+r2*cth, cy+r2*sth);
+		set_line_width(1);
+	}
+}
 
 
 ScopeHistogram::ScopeHistogram(ScopeGUI *gui,
@@ -1108,6 +1247,9 @@ int ScopeScopesOn::handle_event()
 	case SCOPE_VECTORSCOPE:
 		gui->use_vector = v;
 		break;
+	case SCOPE_VECTORWHEEL:
+		gui->use_vector = -v;
+		break;
 	}
 	gui->toggle_event();
 	gui->update_toggles();
@@ -1139,6 +1281,8 @@ void ScopeMenu::create_objects()
 	add_item(new BC_MenuItem("-"));
 	add_item(vect_on =
 		new ScopeScopesOn(this, _("Vectorscope"), SCOPE_VECTORSCOPE));
+	add_item(vect_wheel =
+		new ScopeScopesOn(this, _("VectorWheel"), SCOPE_VECTORWHEEL));
 }
 
 void ScopeMenu::update_toggles()
@@ -1148,7 +1292,57 @@ void ScopeMenu::update_toggles()
 	wave_on->set_checked(gui->use_wave);
 	wave_rgb_on->set_checked(gui->use_wave_parade>0);
 	wave_ply_on->set_checked(gui->use_wave_parade<0);
-	vect_on->set_checked(gui->use_vector);
+	vect_on->set_checked(gui->use_vector>0);
+	vect_wheel->set_checked(gui->use_vector<0);
+}
+
+
+ScopeVectGrads::ScopeVectGrads(ScopeGUI *gui, int x, int y)
+ : BC_PopupMenu(x, y, xS(40), "", 1, 0, 0)
+{
+	this->gui = gui;
+}
+
+#define SCOPE_SEARCHPATH "/scopes"
+void ScopeVectGrads::create_objects()
+{
+	gui->grad_paths.remove_all_objects();
+	ScopeGradItem *item;
+	add_item(item = new ScopeGradItem(this, _("none"), 0));
+	if( item->idx == gui->vector_gradical ) item->set_checked(1);
+	gui->grad_paths.append(0);
+	FileSystem fs;
+	fs.set_filter("[*.png][*.jpg]");
+	char scope_path[BCTEXTLEN];
+	sprintf(scope_path, "%s%s", File::get_plugin_path(), SCOPE_SEARCHPATH);
+	fs.update(scope_path);
+	for( int i=0; i<fs.total_files(); ++i ) {
+		FileItem *file_item = fs.get_entry(i);
+		if( file_item->get_is_dir() ) continue;
+		strcpy(scope_path, file_item->get_name());
+		char *cp = strrchr(scope_path, '.');
+		if( cp ) *cp = 0;
+		add_item(item = new ScopeGradItem(this, scope_path, gui->grad_paths.size()));
+		if( item->idx == gui->vector_gradical ) item->set_checked(1);
+		gui->grad_paths.append(cstrdup(file_item->get_path()));
+	}
+}
+
+ScopeGradItem::ScopeGradItem(ScopeVectGrads *vect_grads, const char *text, int idx)
+ : BC_MenuItem(text)
+{
+	this->vect_grads = vect_grads;
+	this->idx = idx;
+}
+
+int ScopeGradItem::handle_event()
+{
+	for( int i=0,n=vect_grads->total_items(); i<n; ++i ) {
+		ScopeGradItem *item = (ScopeGradItem *)vect_grads->get_item(i);
+		item->set_checked(item == this);
+	}	
+	vect_grads->gui->update_gradical(idx);
+	return 1;
 }
 
 

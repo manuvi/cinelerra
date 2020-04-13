@@ -318,7 +318,9 @@ int ChromaKeyColorThread::handle_new_color(int output, int alpha)
 	plugin->config.red = (float)(output & 0xff0000) / 0xff0000;
 	plugin->config.green = (float)(output & 0xff00) / 0xff00;
 	plugin->config.blue = (float)(output & 0xff) / 0xff;
+	gui->lock_window("ChromaKeyColorThread::handle_new_color");
 	gui->update_sample();
+	gui->unlock_window();
 	plugin->send_configure_change();
 	return 1;
 }
