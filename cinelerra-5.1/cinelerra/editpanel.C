@@ -1224,6 +1224,7 @@ void EditPanelScopeGUI::create_objects()
 	use_wave_gain = session->use_wave_gain;
 	use_vect_gain = session->use_vect_gain;
 	use_smooth = session->use_smooth;
+	use_graticule = session->use_graticule;
 	ScopeGUI::create_objects();
 }
 
@@ -1238,6 +1239,7 @@ void EditPanelScopeGUI::toggle_event()
 	session->use_wave_gain = use_wave_gain;
 	session->use_vect_gain = use_vect_gain;
 	session->use_smooth = use_smooth;
+	session->use_graticule = use_graticule;
 }
 
 int EditPanelScopeGUI::translation_event()

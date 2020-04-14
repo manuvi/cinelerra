@@ -77,7 +77,8 @@ public:
 
 	int use_hist, use_wave, use_vector;
 	int use_hist_parade, use_wave_parade;
-	int use_wave_gain, use_vect_gain, use_smooth;
+	int use_wave_gain, use_vect_gain;
+	int use_smooth, use_graticule;
 
 	int w, h;
 	VFrame *input;
@@ -108,6 +109,7 @@ void VideoScopeWindow::create_objects()
 	use_wave_gain = plugin->use_wave_gain;
 	use_vect_gain = plugin->use_vect_gain;
 	use_smooth = plugin->use_smooth;
+	use_graticule = plugin->use_graticule;
 
 	ScopeGUI::create_objects();
 }
@@ -122,6 +124,7 @@ void VideoScopeWindow::toggle_event()
 	plugin->use_wave_gain = use_wave_gain;
 	plugin->use_vect_gain = use_vect_gain;
 	plugin->use_smooth = use_smooth;
+	plugin->use_graticule = use_graticule;
 // Make it reprocess
 	plugin->send_configure_change();
 }
@@ -152,6 +155,7 @@ VideoScopeEffect::VideoScopeEffect(PluginServer *server)
 	use_wave_gain = 5;
 	use_vect_gain = 5;
 	use_smooth = 1;
+	use_graticule = 0;
 }
 
 VideoScopeEffect::~VideoScopeEffect()
@@ -184,6 +188,7 @@ void VideoScopeEffect::save_data(KeyFrame *keyframe)
 		output.tag.set_property("USE_WAVE_GAIN", use_wave_gain);
 		output.tag.set_property("USE_VECT_GAIN", use_vect_gain);
 		output.tag.set_property("USE_SMOOTH", use_smooth);
+		output.tag.set_property("USE_GRATICULE", use_graticule);
 
 	}
 	output.append_tag();
@@ -212,6 +217,7 @@ void VideoScopeEffect::read_data(KeyFrame *keyframe)
 				use_wave_gain = input.tag.get_property("USE_WAVE_GAIN", use_wave_gain);
 				use_vect_gain = input.tag.get_property("USE_VECT_GAIN", use_vect_gain);
 				use_smooth = input.tag.get_property("USE_SMOOTH", use_smooth);
+				use_graticule = input.tag.get_property("USE_GRATICULE", use_graticule);
 			}
 		}
 	}

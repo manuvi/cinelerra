@@ -279,9 +279,9 @@ public:
 	void calculate_sizes(int w, int h);
 	void allocate_vframes();
 	void draw_overlays(int overlays, int borders, int flush);
-	void update_gradical(int idx);
+	void update_graticule(int idx);
 	void draw_colorwheel(VFrame *dst, int bg_color);
-	void draw_gradical();
+	void draw_graticule();
 	void process(VFrame *output_frame);
 	void draw(int flash, int flush);
 	void clear_points(int flash);
@@ -314,7 +314,7 @@ public:
 	int text_color, dark_color;
 
 	ScopeGradPaths grad_paths;
-	int grad_idx, vector_gradical;
+	int grad_idx, use_graticule;
 
 	int cpus;
 	int use_hist, use_wave, use_vector;

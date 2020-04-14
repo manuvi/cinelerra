@@ -421,7 +421,6 @@ int FFStream::decode_activate()
 			}
 			if( ret >= 0 && hw_type != AV_HWDEVICE_TYPE_NONE ) {
 				ret = decode_hw_format(decoder, hw_type);
-				if( !ret ) hw_type = AV_HWDEVICE_TYPE_NONE;
 			}
 			if( ret >= 0 ) {
 				avcodec_parameters_to_context(avctx, st->codecpar);
@@ -437,28 +436,27 @@ int FFStream::decode_activate()
 				}
 				if( ret >= 0 )
 					ret = decode(frame);
-				if( ret < 0 || hw_pix_fmt == AV_PIX_FMT_NONE ) {
-					ff_err(ret, "HW device init failed, using SW decode.\nfile:%s\n",
-						ffmpeg->fmt_ctx->url);
-					avcodec_close(avctx);
-					avcodec_free_context(&avctx);
-					av_buffer_unref(&hw_device_ctx);
-					hw_device_ctx = 0;
-					av_frame_free(&frame);
-					hw_type = AV_HWDEVICE_TYPE_NONE;
-					int flags = AVSEEK_FLAG_BACKWARD | AVSEEK_FLAG_ANY;
-					int idx = st->index;
-					av_seek_frame(fmt_ctx, idx, INT64_MIN, flags);
-					need_packet = 1;  flushed = 0;
-					seeked = 1;  st_eof(0);
-					ret = 0;
-					continue;
-				}
-				probe_frame = frame;
 			}
-			if( ret >= 0 ) {
+			if( ret < 0 && hw_type != AV_HWDEVICE_TYPE_NONE ) {
+				ff_err(ret, "HW device init failed, using SW decode.\nfile:%s\n",
+					ffmpeg->fmt_ctx->url);
+				avcodec_close(avctx);
+				avcodec_free_context(&avctx);
+				av_buffer_unref(&hw_device_ctx);
+				hw_device_ctx = 0;
+				av_frame_free(&frame);
+				hw_type = AV_HWDEVICE_TYPE_NONE;
+				int flags = AVSEEK_FLAG_BACKWARD | AVSEEK_FLAG_ANY;
+				int idx = st->index;
+				av_seek_frame(fmt_ctx, idx, INT64_MIN, flags);
+				need_packet = 1;  flushed = 0;
+				seeked = 1;  st_eof(0);
+				ret = 0;
+				continue;
+			}
+			probe_frame = frame;
+			if( ret >= 0 )
 				reading = 1;
-			}
 			else
 				eprintf(_("open decoder failed\n"));
 		}
@@ -1104,9 +1102,11 @@ int FFVideoStream::decode_hw_format(AVCodec *decoder, AVHWDeviceType type)
 			avctx->hw_device_ctx = av_buffer_ref(hw_device_ctx);
 			ret = 1;
 		}
-		else
+		else {
 			ff_err(ret, "Failed HW device create.\ndev:%s\n",
 				av_hwdevice_get_type_name(type));
+			ret = -1;
+		}
 	}
 	return ret;
 }

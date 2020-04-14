@@ -120,6 +120,7 @@ void RecordScopeGUI::create_objects()
 	use_wave_gain = mwindow->session->use_wave_gain;
 	use_vect_gain = mwindow->session->use_vect_gain;
 	use_smooth = mwindow->session->use_smooth;
+	use_graticule = mwindow->session->use_graticule;
 	ScopeGUI::create_objects();
 }
 
@@ -134,6 +135,7 @@ void RecordScopeGUI::toggle_event()
 	mwindow->session->use_wave_gain = use_wave_gain;
 	mwindow->session->use_vect_gain = use_vect_gain;
 	mwindow->session->use_smooth = use_smooth;
+	mwindow->session->use_graticule = use_graticule;
 }
 
 int RecordScopeGUI::translation_event()

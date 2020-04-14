@@ -445,7 +445,6 @@ void ScopeGUI::reset()
 	vect_slider = 0;
 	grad_image = 0;
 	grad_pixmap = 0;
-	vector_gradical = 0;
 	grad_idx = 0;
 	vect_grads = 0;
 
@@ -460,6 +459,7 @@ void ScopeGUI::reset()
 	use_vector = 1;
 	use_hist_parade = 0;
 	use_wave_parade = 0;
+	use_graticule = 0;
 	waveform = 0;
 	vectorscope = 0;
 	histogram = 0;
@@ -481,17 +481,20 @@ void ScopeGUI::create_objects()
 	if( use_wave && use_wave_parade )
 		use_wave = 0;
 	if( !engine ) engine = new ScopeEngine(this, cpus);
+	grad_idx = use_graticule; // last graticule
+	use_graticule = 0;
 
 	lock_window("ScopeGUI::create_objects");
-	int x = theme->widget_border;
-	int y = theme->widget_border;
+	int margin = theme->widget_border;
+	int x = margin;
+	int y = margin;
 	add_subwindow(smooth = new ScopeSmooth(this, x, y));
-	y += smooth->get_h() + theme->widget_border;
+	y += smooth->get_h() + margin;
 	add_subwindow(scope_menu = new ScopeMenu(this, x, y));
 	scope_menu->create_objects();
-	x += scope_menu->get_w() + theme->widget_border;
+	x += scope_menu->get_w() + margin;
 	add_subwindow(value_text = new BC_Title(x, y, ""));
-	y += scope_menu->get_h() + theme->widget_border;
+	y += scope_menu->get_h() + margin;
 
 	create_panels();
 	update_toggles();
@@ -504,6 +507,7 @@ void ScopeGUI::create_panels()
 {
 	calculate_sizes(get_w(), get_h());
 	int slider_w = xS(100);
+	int margin = theme->widget_border;
 	if( (use_wave || use_wave_parade) ) {
 		int px = wave_x + wave_w - slider_w - xS(5);
 		int py = wave_y - ScopeGain::calculate_h() - yS(5);
@@ -536,7 +540,8 @@ void ScopeGUI::create_panels()
 			vect_slider = new ScopeVectSlider(this, vx, vy, slider_w);
 			vect_slider->create_objects();
 			if( use_vector < 0 ) {
-				add_subwindow(vect_grads = new ScopeVectGrads(this, vector_x, vy));
+				vect_grads = new ScopeVectGrads(this, vector_x, 2*margin);
+				add_subwindow(vect_grads);
 				vect_grads->create_objects();
 			}
 		}
@@ -549,11 +554,12 @@ void ScopeGUI::create_panels()
 				delete vect_grads;  vect_grads = 0;
 			}
 			else if( !vect_grads ) {
-				add_subwindow(vect_grads = new ScopeVectGrads(this, vector_x, vy));
+				vect_grads = new ScopeVectGrads(this, vector_x, 2*margin);
+				add_subwindow(vect_grads);
 				vect_grads->create_objects();
 			}
 			else
-				vect_grads->reposition_window(vector_x, vy);
+				vect_grads->reposition_window(vector_x, 2*margin);
 		}
 	}
 	else if( !use_vector && vectorscope ) {
@@ -627,7 +633,7 @@ void ScopeGUI::calculate_sizes(int w, int h)
 
 		if( vector_w > vector_h ) {
 			vector_w = vector_h;
-			vector_x = w - theme->widget_border - vector_w;
+			vector_x = w - margin - vector_w;
 		}
 		--total_panels;
 		if(total_panels > 0)
@@ -706,7 +712,7 @@ int ScopeGUI::resize_event(int w, int h)
 		int vy = vector_y - vect_slider->get_h() - margin;
 		vect_slider->reposition_window(vx, vy);
 		if( vect_grads )
-			vect_grads->reposition_window(vector_x, vy);
+			vect_grads->reposition_window(vector_x, 2*margin);
 	}
 
 	allocate_vframes();
@@ -727,6 +733,7 @@ int ScopeGUI::translation_event()
 
 void ScopeGUI::draw_overlays(int overlays, int borders, int flush)
 {
+	int margin = theme->widget_border;
 	if( overlays && borders ) {
 		clear_box(0, 0, get_w(), get_h());
 	}
@@ -756,7 +763,7 @@ void ScopeGUI::draw_overlays(int overlays, int borders, int flush)
 				char string[BCTEXTLEN];
 				sprintf(string, "%d", (int)lround((FLOAT_MAX -
 					i * (FLOAT_MAX - FLOAT_MIN) / WAVEFORM_DIVISIONS) * 100));
-				int text_x = wave_x - get_text_width(SMALLFONT, string) - theme->widget_border;
+				int text_x = wave_x - get_text_width(SMALLFONT, string) - margin;
 				set_color(text_color);
 				draw_text(text_x, text_y, string);
 				CLAMP(y, 0, waveform->get_h() - 1);
@@ -771,7 +778,7 @@ void ScopeGUI::draw_overlays(int overlays, int borders, int flush)
 		}
 // Vectorscope overlay
 		if( vectorscope && use_vector ) {
-			draw_gradical();
+			draw_graticule();
 			set_color(text_color);
 			vectorscope->draw_point();
 			vectorscope->flash(0);
@@ -801,7 +808,7 @@ void ScopeGUI::draw_overlays(int overlays, int borders, int flush)
 	if(flush) this->flush();
 }
 
-void ScopeGUI::draw_gradical()
+void ScopeGUI::draw_graticule()
 {
 	if( use_vector > 0 ) {
 		int margin = theme->widget_border;
@@ -827,24 +834,24 @@ void ScopeGUI::draw_gradical()
 		vectorscope->draw_radient(th, 0.1f, .75f, dark_color);
 	}
 	else if( use_vector < 0 ) {
-		if( grad_image && grad_idx != vector_gradical ) {
+		if( grad_image && grad_idx != use_graticule ) {
 			delete grad_image;   grad_image = 0;
-			vector_gradical = 0;
+			use_graticule = 0;
 		}
 		if( !grad_image && grad_idx > 0 ) {
 			grad_image = VFramePng::vframe_png(grad_paths[grad_idx]);
 		}
 		int rr = 2*radius;
-		if( grad_pixmap && (!vector_gradical ||
+		if( grad_pixmap && (!use_graticule ||
 		      rr != grad_pixmap->get_w() || rr != grad_pixmap->get_h()) ) {
 			delete grad_pixmap;  grad_pixmap = 0;
-			vector_gradical = 0;
+			use_graticule = 0;
 		}
 		if( !grad_pixmap && grad_image ) {
 			VFrame grad(rr, rr, BC_RGBA8888);
 			grad.transfer_from(grad_image);
 			grad_pixmap = new BC_Pixmap(this, &grad, PIXMAP_ALPHA);
-			vector_gradical = grad_idx;
+			use_graticule = grad_idx;
 		}
 		if( grad_pixmap ) {
 			int px = vector_cx - radius, py = vector_cy - radius;
@@ -855,15 +862,17 @@ void ScopeGUI::draw_gradical()
 }
 
 
-void ScopeGUI::update_gradical(int idx)
+void ScopeGUI::update_graticule(int idx)
 {
 	grad_idx = idx;
 	update_scope();
+	toggle_event();
 }
 
 void ScopeGUI::draw_colorwheel(VFrame *dst, int bg_color)
 {
-	float cx = vector_cx, cy = vector_cy, rad = radius;
+// downfactor radius to prevent extreme edge from showing behind graticule
+	float cx = vector_cx, cy = vector_cy, rad = radius * 0.99;
         int color_model = dst->get_color_model();
         int bpp = BC_CModels::calculate_pixelsize(color_model);
 	int bg_r = (bg_color>>16) & 0xff;
@@ -1298,7 +1307,7 @@ void ScopeMenu::update_toggles()
 
 
 ScopeVectGrads::ScopeVectGrads(ScopeGUI *gui, int x, int y)
- : BC_PopupMenu(x, y, xS(40), "", 1, 0, 0)
+ : BC_PopupMenu(x, y, _("Overlay"))
 {
 	this->gui = gui;
 }
@@ -1309,10 +1318,10 @@ void ScopeVectGrads::create_objects()
 	gui->grad_paths.remove_all_objects();
 	ScopeGradItem *item;
 	add_item(item = new ScopeGradItem(this, _("none"), 0));
-	if( item->idx == gui->vector_gradical ) item->set_checked(1);
+	if( item->idx == gui->grad_idx ) item->set_checked(1);
 	gui->grad_paths.append(0);
 	FileSystem fs;
-	fs.set_filter("[*.png][*.jpg]");
+	fs.set_filter("[*.png]");
 	char scope_path[BCTEXTLEN];
 	sprintf(scope_path, "%s%s", File::get_plugin_path(), SCOPE_SEARCHPATH);
 	fs.update(scope_path);
@@ -1323,7 +1332,7 @@ void ScopeVectGrads::create_objects()
 		char *cp = strrchr(scope_path, '.');
 		if( cp ) *cp = 0;
 		add_item(item = new ScopeGradItem(this, scope_path, gui->grad_paths.size()));
-		if( item->idx == gui->vector_gradical ) item->set_checked(1);
+		if( item->idx == gui->grad_idx ) item->set_checked(1);
 		gui->grad_paths.append(cstrdup(file_item->get_path()));
 	}
 }
@@ -1339,9 +1348,9 @@ int ScopeGradItem::handle_event()
 {
 	for( int i=0,n=vect_grads->total_items(); i<n; ++i ) {
 		ScopeGradItem *item = (ScopeGradItem *)vect_grads->get_item(i);
-		item->set_checked(item == this);
+		item->set_checked(item->idx == idx);
 	}	
-	vect_grads->gui->update_gradical(idx);
+	vect_grads->gui->update_graticule(idx);
 	return 1;
 }
 
