@@ -489,11 +489,10 @@ void ScopeGUI::create_objects()
 	int margin = theme->widget_border;
 	int x = margin;
 	int y = margin;
-	add_subwindow(smooth = new ScopeSmooth(this, x, y));
-	y += smooth->get_h() + margin;
 	add_subwindow(scope_menu = new ScopeMenu(this, x, y));
 	scope_menu->create_objects();
-	y += scope_menu->get_h() + margin;
+	int x1 = x + scope_menu->get_w() + 2*margin;
+	add_subwindow(smooth = new ScopeSmooth(this, x1, y));
 
 	create_panels();
 	update_toggles();
