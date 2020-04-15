@@ -26,6 +26,7 @@
 #include "file.h"
 #include "filesystem.h"
 #include "language.h"
+#include "overlayframe.h"
 #include "scopewindow.h"
 #include "theme.h"
 
@@ -49,16 +50,16 @@ if(iy >= 0 && iy < h) { \
   uint8_t *vp = rows[iy] + ix*3 + (comp); \
   int v = *vp+(iv);  *vp = v>0xff ? 0xff : v; } \
 }
-#define incr_points(rows,h, rv,gv,bv) { \
+#define incr_points(rows,h, rv,gv,bv, comps) { \
 if(iy >= 0 && iy < h) { \
-  uint8_t *vp = rows[iy] + ix*3; \
+  uint8_t *vp = rows[iy] + ix*comps; \
   int v = *vp+(rv);  *vp++ = v>0xff ? 0xff : v; \
   v = *vp+(gv);  *vp++ = v>0xff ? 0xff : v; \
   v = *vp+(bv);  *vp = v>0xff ? 0xff : v; } \
 }
-#define decr_points(rows,h, rv,gv,bv) { \
+#define decr_points(rows,h, rv,gv,bv, comps) { \
 if(iy >= 0 && iy < h) { \
-  uint8_t *vp = rows[iy] + ix*3; \
+  uint8_t *vp = rows[iy] + ix*comps; \
   int v = *vp-(rv);  *vp++ = v<0 ? 0 : v; \
   v = *vp-(gv);  *vp++ = v<0 ? 0 : v; \
   v = *vp-(bv);  *vp = v<0 ? 0 : v; } \
@@ -124,7 +125,7 @@ if(iy >= 0 && iy < h) { \
 				float binc = yinc*(b-FLOAT_MIN) / (FLOAT_MAX-FLOAT_MIN) + 3; \
 				int iy = wave_h - ((intensity - FLOAT_MIN) /  \
 						(FLOAT_MAX - FLOAT_MIN) * wave_h); \
-				incr_points(waveform_rows,wave_h, rinc, ginc, binc); \
+				incr_points(waveform_rows,wave_h, rinc, ginc, binc, 3); \
 			} \
 		} \
 	} \
@@ -139,7 +140,7 @@ if(iy >= 0 && iy < h) { \
 		int rv = r + 3; \
 		int gv = g + 3; \
 		int bv = b + 3; \
-		incr_points(vector_rows,vector_h, rv,gv,bv); \
+		incr_points(vector_rows,vector_h, rv,gv,bv, 4); \
 	} \
 	else if(use_vector < 0) { \
 		double t = TO_RAD(-h); \
@@ -147,7 +148,7 @@ if(iy >= 0 && iy < h) { \
 		int ix = vector_cx + adjacent * (s) / (FLOAT_MAX) * radius; \
 		int iy = vector_cy - opposite * (s) / (FLOAT_MAX) * radius; \
 		CLAMP(ix, 0, vector_w - 1); \
-		decr_points(vector_rows,vector_h, vinc,vinc,vinc); \
+		decr_points(vector_rows,vector_h, vinc,vinc,vinc, 4); \
 	} \
 }
 
@@ -429,8 +430,8 @@ ScopeGUI::~ScopeGUI()
 	delete temp_frame;
 	delete wave_slider;
 	delete vect_slider;
-	delete grad_image;
-	delete grad_pixmap;
+	delete grat_image;
+	delete overlay;
 }
 
 void ScopeGUI::reset()
@@ -443,10 +444,10 @@ void ScopeGUI::reset()
 	temp_frame = 0;
 	wave_slider = 0;
 	vect_slider = 0;
-	grad_image = 0;
-	grad_pixmap = 0;
-	grad_idx = 0;
-	vect_grads = 0;
+	grat_image = 0;
+	overlay = 0;
+	grat_idx = 0;
+	vect_grats = 0;
 
 	output_frame = 0;
 	data_frame = 0;
@@ -481,7 +482,7 @@ void ScopeGUI::create_objects()
 	if( use_wave && use_wave_parade )
 		use_wave = 0;
 	if( !engine ) engine = new ScopeEngine(this, cpus);
-	grad_idx = use_graticule; // last graticule
+	grat_idx = use_graticule; // last graticule
 	use_graticule = 0;
 
 	lock_window("ScopeGUI::create_objects");
@@ -492,8 +493,6 @@ void ScopeGUI::create_objects()
 	y += smooth->get_h() + margin;
 	add_subwindow(scope_menu = new ScopeMenu(this, x, y));
 	scope_menu->create_objects();
-	x += scope_menu->get_w() + margin;
-	add_subwindow(value_text = new BC_Title(x, y, ""));
 	y += scope_menu->get_h() + margin;
 
 	create_panels();
@@ -540,9 +539,9 @@ void ScopeGUI::create_panels()
 			vect_slider = new ScopeVectSlider(this, vx, vy, slider_w);
 			vect_slider->create_objects();
 			if( use_vector < 0 ) {
-				vect_grads = new ScopeVectGrads(this, vector_x, 2*margin);
-				add_subwindow(vect_grads);
-				vect_grads->create_objects();
+				vect_grats = new ScopeVectGrats(this, vx, 2*margin);
+				add_subwindow(vect_grats);
+				vect_grats->create_objects();
 			}
 		}
 		else {
@@ -551,21 +550,21 @@ void ScopeGUI::create_panels()
 			vectorscope->clear_box(0, 0, vector_w, vector_h);
 			vect_slider->reposition_window(vx, vy);
 			if( use_vector > 0 ) {
-				delete vect_grads;  vect_grads = 0;
+				delete vect_grats;  vect_grats = 0;
 			}
-			else if( !vect_grads ) {
-				vect_grads = new ScopeVectGrads(this, vector_x, 2*margin);
-				add_subwindow(vect_grads);
-				vect_grads->create_objects();
+			else if( !vect_grats ) {
+				vect_grats = new ScopeVectGrats(this, vx, 2*margin);
+				add_subwindow(vect_grats);
+				vect_grats->create_objects();
 			}
 			else
-				vect_grads->reposition_window(vector_x, 2*margin);
+				vect_grats->reposition_window(vx, 2*margin);
 		}
 	}
 	else if( !use_vector && vectorscope ) {
 		delete vectorscope;  vectorscope = 0;
 		delete vect_slider;  vect_slider = 0;
-		delete vect_grads;   vect_grads = 0;
+		delete vect_grats;   vect_grats = 0;
 	}
 
 	if( (use_hist || use_hist_parade) ) {
@@ -679,7 +678,8 @@ void ScopeGUI::allocate_vframes()
 	waveform_vframe = new VFrame(w, h, BC_RGB888);
 	w = MAX(vector_w, xs16);
 	h = MAX(vector_h, ys16);
-	vector_vframe = new VFrame(w, h, BC_RGB888);
+	vector_vframe = new VFrame(w, h, BC_RGBA8888);
+	vector_vframe->set_clear_color(BLACK, 0xff);
 	wheel_vframe = 0;
 }
 
@@ -711,14 +711,14 @@ int ScopeGUI::resize_event(int w, int h)
 		int vx = vector_x + vector_w - vect_slider->get_w() - margin;
 		int vy = vector_y - vect_slider->get_h() - margin;
 		vect_slider->reposition_window(vx, vy);
-		if( vect_grads )
-			vect_grads->reposition_window(vector_x, 2*margin);
+		if( vect_grats )
+			vect_grats->reposition_window(vx, 2*margin);
 	}
 
 	allocate_vframes();
 	clear_points(0);
-	update_scope();
 	draw_overlays(1, 1, 1);
+	update_scope();
 	return 1;
 }
 
@@ -778,7 +778,6 @@ void ScopeGUI::draw_overlays(int overlays, int borders, int flush)
 		}
 // Vectorscope overlay
 		if( vectorscope && use_vector ) {
-			draw_graticule();
 			set_color(text_color);
 			vectorscope->draw_point();
 			vectorscope->flash(0);
@@ -808,8 +807,25 @@ void ScopeGUI::draw_overlays(int overlays, int borders, int flush)
 	if(flush) this->flush();
 }
 
-void ScopeGUI::draw_graticule()
+void ScopeGUI::draw_scope()
 {
+	int graticule = use_vector < 0 ? grat_idx : 0;
+	if( grat_image && use_graticule != graticule ) {
+		delete grat_image;   grat_image = 0;
+	}
+	if( !grat_image && graticule > 0 )
+		grat_image = VFramePng::vframe_png(grat_paths[graticule]);
+	if( grat_image ) {
+		if( !overlay )
+			overlay = new OverlayFrame(1);
+		int cx = vector_cx, cy = vector_cy, r = radius;
+		int iw = grat_image->get_w(), ih = grat_image->get_h();
+		overlay->overlay(vector_vframe, grat_image,
+			0,0, iw, ih, cx-r,cy-r, cx+r, cy+r,
+			1, TRANSFER_NORMAL, CUBIC_CUBIC);
+	}
+	use_graticule = graticule;
+	vectorscope->draw_vframe(vector_vframe);
 	if( use_vector > 0 ) {
 		int margin = theme->widget_border;
 		set_line_dashes(1);
@@ -833,38 +849,12 @@ void ScopeGUI::draw_graticule()
 		float th = TO_RAD(90 + 32.875);
 		vectorscope->draw_radient(th, 0.1f, .75f, dark_color);
 	}
-	else if( use_vector < 0 ) {
-		if( grad_image && grad_idx != use_graticule ) {
-			delete grad_image;   grad_image = 0;
-			use_graticule = 0;
-		}
-		if( !grad_image && grad_idx > 0 ) {
-			grad_image = VFramePng::vframe_png(grad_paths[grad_idx]);
-		}
-		int rr = 2*radius;
-		if( grad_pixmap && (!use_graticule ||
-		      rr != grad_pixmap->get_w() || rr != grad_pixmap->get_h()) ) {
-			delete grad_pixmap;  grad_pixmap = 0;
-			use_graticule = 0;
-		}
-		if( !grad_pixmap && grad_image ) {
-			VFrame grad(rr, rr, BC_RGBA8888);
-			grad.transfer_from(grad_image);
-			grad_pixmap = new BC_Pixmap(this, &grad, PIXMAP_ALPHA);
-			use_graticule = grad_idx;
-		}
-		if( grad_pixmap ) {
-			int px = vector_cx - radius, py = vector_cy - radius;
-			vectorscope->draw_pixmap(grad_pixmap, px, py);
-//			vectorscope->flash(0);
-		}
-	}
 }
 
 
 void ScopeGUI::update_graticule(int idx)
 {
-	grad_idx = idx;
+	grat_idx = idx;
 	update_scope();
 	toggle_event();
 }
@@ -895,7 +885,7 @@ void ScopeGUI::draw_colorwheel(VFrame *dst, int bg_color)
 			else {
 				 r = bg_r; g = bg_g; b = bg_b;
 			}
-			row[0] = r; row[1] = g; row[2] = b;
+			row[0] = r; row[1] = g; row[2] = b;  row[3] = 0xff;
 		}
 	}
 }
@@ -918,7 +908,7 @@ void ScopeGUI::process(VFrame *output_frame)
 	frame_w = data_frame->get_w();
 	bzero(waveform_vframe->get_data(), waveform_vframe->get_data_size());
 	if( use_vector > 0 )
-		bzero(vector_vframe->get_data(), vector_vframe->get_data_size());
+		vector_vframe->clear_frame();
 	else if( use_vector < 0 ) {
 		if( wheel_vframe && (
 		     wheel_vframe->get_w() != vector_w ||
@@ -926,7 +916,7 @@ void ScopeGUI::process(VFrame *output_frame)
 			delete wheel_vframe;  wheel_vframe = 0;
 		}
 		if( !wheel_vframe ) {
-			wheel_vframe = new VFrame(vector_w, vector_h, BC_RGB888);
+			wheel_vframe = new VFrame(vector_w, vector_h, BC_RGBA8888);
 			draw_colorwheel(wheel_vframe, BLACK);
 		}
 		vector_vframe->copy_from(wheel_vframe);
@@ -938,7 +928,7 @@ void ScopeGUI::process(VFrame *output_frame)
 	if( waveform )
 		waveform->draw_vframe(waveform_vframe);
 	if( vectorscope )
-		vectorscope->draw_vframe(vector_vframe);
+		draw_scope();
 
 	draw_overlays(1, 0, 1);
 	unlock_window();
@@ -1008,6 +998,7 @@ int ScopePanel::button_release_event()
 {
 	if( is_dragging ) {
 		is_dragging = 0;
+		hide_tooltip();
 		return 1;
 	}
 	return 0;
@@ -1041,7 +1032,7 @@ void ScopeWaveform::update_point(int x, int y)
 	float value = ((float)get_h() - y) / get_h() * (FLOAT_MAX - FLOAT_MIN) + FLOAT_MIN;
 	char string[BCTEXTLEN];
 	sprintf(string, "X: %d Value: %.3f", frame_x, value);
-	gui->value_text->update(string, 0);
+	show_tooltip(string);
 
 	draw_point();
 	flash(1);
@@ -1097,7 +1088,7 @@ void ScopeVectorscope::update_point(int x, int y)
 
 	char string[BCTEXTLEN];
 	sprintf(string, "Hue: %.3f Sat: %.3f", hue, saturation);
-	gui->value_text->update(string, 0);
+	show_tooltip(string);
 
 // Show it
 	draw_point();
@@ -1172,7 +1163,7 @@ void ScopeHistogram::update_point(int x, int y)
 
 	char string[BCTEXTLEN];
 	sprintf(string, "Value: %.3f", value);
-	gui->value_text->update(string, 0);
+	show_tooltip(string);
 
 	draw_point();
 	flash(1);
@@ -1306,20 +1297,20 @@ void ScopeMenu::update_toggles()
 }
 
 
-ScopeVectGrads::ScopeVectGrads(ScopeGUI *gui, int x, int y)
+ScopeVectGrats::ScopeVectGrats(ScopeGUI *gui, int x, int y)
  : BC_PopupMenu(x, y, _("Overlay"))
 {
 	this->gui = gui;
 }
 
 #define SCOPE_SEARCHPATH "/scopes"
-void ScopeVectGrads::create_objects()
+void ScopeVectGrats::create_objects()
 {
-	gui->grad_paths.remove_all_objects();
-	ScopeGradItem *item;
-	add_item(item = new ScopeGradItem(this, _("none"), 0));
-	if( item->idx == gui->grad_idx ) item->set_checked(1);
-	gui->grad_paths.append(0);
+	gui->grat_paths.remove_all_objects();
+	ScopeGratItem *item;
+	add_item(item = new ScopeGratItem(this, _("none"), 0));
+	if( item->idx == gui->grat_idx ) item->set_checked(1);
+	gui->grat_paths.append(0);
 	FileSystem fs;
 	fs.set_filter("[*.png]");
 	char scope_path[BCTEXTLEN];
@@ -1331,26 +1322,26 @@ void ScopeVectGrads::create_objects()
 		strcpy(scope_path, file_item->get_name());
 		char *cp = strrchr(scope_path, '.');
 		if( cp ) *cp = 0;
-		add_item(item = new ScopeGradItem(this, scope_path, gui->grad_paths.size()));
-		if( item->idx == gui->grad_idx ) item->set_checked(1);
-		gui->grad_paths.append(cstrdup(file_item->get_path()));
+		add_item(item = new ScopeGratItem(this, scope_path, gui->grat_paths.size()));
+		if( item->idx == gui->grat_idx ) item->set_checked(1);
+		gui->grat_paths.append(cstrdup(file_item->get_path()));
 	}
 }
 
-ScopeGradItem::ScopeGradItem(ScopeVectGrads *vect_grads, const char *text, int idx)
+ScopeGratItem::ScopeGratItem(ScopeVectGrats *vect_grats, const char *text, int idx)
  : BC_MenuItem(text)
 {
-	this->vect_grads = vect_grads;
+	this->vect_grats = vect_grats;
 	this->idx = idx;
 }
 
-int ScopeGradItem::handle_event()
+int ScopeGratItem::handle_event()
 {
-	for( int i=0,n=vect_grads->total_items(); i<n; ++i ) {
-		ScopeGradItem *item = (ScopeGradItem *)vect_grads->get_item(i);
+	for( int i=0,n=vect_grats->total_items(); i<n; ++i ) {
+		ScopeGratItem *item = (ScopeGratItem *)vect_grats->get_item(i);
 		item->set_checked(item->idx == idx);
 	}	
-	vect_grads->gui->update_graticule(idx);
+	vect_grats->gui->update_graticule(idx);
 	return 1;
 }
 

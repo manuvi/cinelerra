@@ -26,6 +26,7 @@
 #include "guicast.h"
 #include "loadbalance.h"
 #include "mwindow.h"
+#include "overlayframe.inc"
 #include "pluginclient.h"
 #include "recordmonitor.inc"
 #include "scopewindow.inc"
@@ -49,7 +50,7 @@ enum {
 #define HISTOGRAM_MAX 110
 #define FLOAT_MAX 1.1
 
-#define MIN_SCOPE_W xS(640)
+#define MIN_SCOPE_W xS(320)
 #define MIN_SCOPE_H yS(320)
 
 
@@ -167,27 +168,27 @@ public:
 };
 
 
-class ScopeGradPaths : public ArrayList<const char *>
+class ScopeGratPaths : public ArrayList<const char *>
 {
 public:
-	ScopeGradPaths() { set_array_delete(); }
-	~ScopeGradPaths() { remove_all_objects(); }
+	ScopeGratPaths() { set_array_delete(); }
+	~ScopeGratPaths() { remove_all_objects(); }
 };
 
-class ScopeGradItem : public BC_MenuItem
+class ScopeGratItem : public BC_MenuItem
 {
 public:
-	ScopeGradItem(ScopeVectGrads *vect_grads, const char *text, int idx);
+	ScopeGratItem(ScopeVectGrats *vect_grats, const char *text, int idx);
 	int handle_event();
 
-	ScopeVectGrads *vect_grads;
+	ScopeVectGrats *vect_grats;
 	int idx;
 };
 
-class ScopeVectGrads : public BC_PopupMenu
+class ScopeVectGrats : public BC_PopupMenu
 {
 public:
-	ScopeVectGrads(ScopeGUI *gui, int x, int y);
+	ScopeVectGrats(ScopeGUI *gui, int x, int y);
 	void create_objects();
 
 	ScopeGUI *gui;
@@ -281,7 +282,7 @@ public:
 	void draw_overlays(int overlays, int borders, int flush);
 	void update_graticule(int idx);
 	void draw_colorwheel(VFrame *dst, int bg_color);
-	void draw_graticule();
+	void draw_scope();
 	void process(VFrame *output_frame);
 	void draw(int flash, int flush);
 	void clear_points(int flash);
@@ -300,11 +301,10 @@ public:
 	ScopeMenu *scope_menu;
 	ScopeWaveSlider *wave_slider;
 	ScopeVectSlider *vect_slider;
-	ScopeVectGrads *vect_grads;
+	ScopeVectGrats *vect_grats;
 	ScopeSmooth *smooth;
-	BC_Title *value_text;
-	VFrame *grad_image;
-	BC_Pixmap *grad_pixmap;
+	VFrame *grat_image;
+	OverlayFrame *overlay;
 
 	int x, y, w, h;
 	int vector_x, vector_y, vector_w, vector_h;
@@ -313,8 +313,8 @@ public:
 	int hist_x, hist_y, hist_w, hist_h;
 	int text_color, dark_color;
 
-	ScopeGradPaths grad_paths;
-	int grad_idx, use_graticule;
+	ScopeGratPaths grat_paths;
+	int grat_idx, use_graticule;
 
 	int cpus;
 	int use_hist, use_wave, use_vector;
