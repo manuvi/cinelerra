@@ -137,9 +137,6 @@ void LoadFileThread::load_apply()
 // No file selected
 	if( !path_list.size() ) return;
 
-	if( load_mode == LOADMODE_REPLACE )
-		mwindow->set_filename(path_list[0]);
-
 	mwindow->interrupt_indexes();
 	mwindow->gui->lock_window("LoadFileThread::run");
 	mwindow->load_filenames(&path_list, load_mode, edl_mode, 0);
