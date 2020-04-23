@@ -28,6 +28,7 @@ video := \
 	bandwipe \
 	bluebanana \
 	blur \
+	boxblur \
 	brightness \
 	burn \
 	C41 \

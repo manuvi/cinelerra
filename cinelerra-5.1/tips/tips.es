@@ -85,3 +85,19 @@ Puedes insertar un efecto, por ejemplo de texto, en una pista vacía sobre un cl
 imagen, para ello selecciona el clip, con doble clic, e inserta el efecto sobre la selección,
 en la parte alta de la pista vacía. Importante que sea en la parte de arriba de la pista.
 
+Si precisamos de hacer textos animados, podemos hacer un proyecto sin ningún clip de vídeo.
+Para insertar el efecto solo debemos hacer una selección y en ella insertar éste. Podemos
+exportar esta composición como png con transparencia, para insertarlo en otro proyecto.
+
+El teclado numérico nos sirve de control de reproducción. 1 = Avanzar un fotograma.
+4 = retroceder un fotograma. 2 y 5 para avanzar o retroceder lento. 3 y 6 para reproducir
+normal o inverso. Enter y + para avanzar o retroceder rápido.
+
+El icono en forma de llave mirando hacia arriba nos sirve para cambiar valores, de una sola 
+vez, a todos los fotogramas clave que estén en una selección. Sólo tenemos que seleccionar
+los fotogramas deseados y cambiar los valores que precisemos.
+
+El la cabecera de pista hay un icono en forma de dos círculos encadenados. Sirve para cambiar
+de manera simultanea valores en varias pistas mediante los deslizadores de cambio de valor.
+Este cambio afectará a todas las pistas activas que tengan este icono activado.
+

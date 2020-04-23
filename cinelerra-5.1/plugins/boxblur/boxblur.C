@@ -314,6 +314,7 @@ int BoxBlurNumISlider::handle_event()
 {
 	int iv = get_value();
 	num->update(iv);
+	num->gui->update_drag();
 	return 1;
 }
 
@@ -328,6 +329,7 @@ int BoxBlurNumIText::handle_event()
 {
 	int iv = atoi(get_text());
 	num->update(iv);
+	num->gui->update_drag();
 	return 1;
 }
 
@@ -347,6 +349,7 @@ int BoxBlurNumClear::handle_event()
 {
 	int v = num->imn;
 	num->update(v);
+	num->gui->update_drag();
 	return 1;
 }
 
@@ -402,7 +405,6 @@ void BoxBlurNum::update(int value)
 	text->update((int64_t)value);
 	slider->update(value);
 	*ivalue = value;
-	gui->update_drag();
 }
 
 

@@ -53,7 +53,7 @@ CHECK_WITH([git-ffmpeg],[git ffmpeg using url],[GIT_FFMPEG],[no])
 CHECK_WITH([noelision],[use noelision/libpthread],[NOELISION],[auto])
 CHECK_WITH([booby],[window lock trace booby trap],[BOOBY],[no])
 CHECK_WITH([libzmpeg],[build libzmpeg],[LIBZMPEG],[yes])
-CHECK_WITH([commercial],[enable commercial capture],[COMMERCIAL],[yes])
+CHECK_WITH([commercial],[enable commercial capture],[COMMERCIAL],[no])
 CHECK_WITH([thirdparty],[use thirdparty build],[CIN_3RDPARTY],[yes])
 CHECK_WITH([shuttle],[shuttle device],[SHUTTLE],[yes])
 CHECK_WITH([wintv],[usb 2040:826d wintv device],[WINTV],[yes])
@@ -303,7 +303,7 @@ PKG_3RD([libtheora],[auto],
   [ lib/.libs/libtheora.a \
     lib/.libs/libtheoradec.a \
     lib/.libs/libtheoraenc.a ],
-  [ . ])
+  [ include ])
 
 PKG_3RD([libuuid],[yes],
   [libuuid-1.0.3],

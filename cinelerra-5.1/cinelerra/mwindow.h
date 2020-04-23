@@ -228,6 +228,9 @@ public:
 		int edit_plugins,
 		int edit_autos,
 		int overwrite);
+	void collect_effects();
+	void paste_effects();
+
 // Reset everything for a load
 	void update_project(int load_mode);
 	void update_preferences(Preferences *prefs);

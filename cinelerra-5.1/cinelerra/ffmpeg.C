@@ -448,7 +448,7 @@ int FFStream::decode_activate()
 				hw_type = AV_HWDEVICE_TYPE_NONE;
 				int flags = AVSEEK_FLAG_BACKWARD | AVSEEK_FLAG_ANY;
 				int idx = st->index;
-				av_seek_frame(fmt_ctx, idx, INT64_MIN, flags);
+				av_seek_frame(fmt_ctx, idx, 0, flags);
 				need_packet = 1;  flushed = 0;
 				seeked = 1;  st_eof(0);
 				ret = 0;
@@ -1086,6 +1086,7 @@ int FFVideoStream::decode_hw_format(AVCodec *decoder, AVHWDeviceType type)
 		if( !config ) {
 			fprintf(stderr, "Decoder %s does not support device type %s.\n",
 				decoder->name, av_hwdevice_get_type_name(type));
+			ret = -1;
 			break;
 		}
 		if( (config->methods & AV_CODEC_HW_CONFIG_METHOD_HW_DEVICE_CTX) != 0 &&

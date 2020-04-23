@@ -2557,3 +2557,89 @@ int MWindow::speed_after(int done)
 	return result;
 }
 
+void MWindow::collect_effects()
+{
+	FileXML file;
+	const char *file_string = "";
+	EDL *group = 0;
+	int ret = edl->collect_effects(group);
+	switch( ret ) {
+	case COLLECT_EFFECTS_RECORD:
+		eprintf(_("Selected edit track not armed."));
+		break;
+	case COLLECT_EFFECTS_MULTIPLE:
+		eprintf(_("More than one edit selected on a track."));
+		break;
+	case COLLECT_EFFECTS_MISSING:
+		eprintf(_("No effects under selected edit."));
+		break;
+	case COLLECT_EFFECTS_EMPTY:
+		eprintf(_("No edits selected."));
+		break;
+	case COLLECT_EFFECTS_MASTER:
+		eprintf(_("Shared effect added without master."));
+		break;
+	case 0:
+		group->save_xml(&file, "");
+		file_string = file.string();
+		group->remove_user();
+	}
+	long file_length = strlen(file_string);
+	gui->to_clipboard(file_string, file_length, BC_PRIMARY_SELECTION);
+	gui->to_clipboard(file_string, file_length, SECONDARY_SELECTION);
+}
+
+void MWindow::paste_effects()
+{
+	char *string = 0;
+	int64_t len = gui->clipboard_len(BC_PRIMARY_SELECTION);
+	if( len ) {
+		string = new char[len];
+		gui->from_clipboard(string, len, BC_PRIMARY_SELECTION);
+	}
+	if( !string || !string[0] ) {
+		eprintf(_("Error clipboard buffer empty."));
+		return;
+	}
+	FileXML file;
+	file.read_from_string(string);
+	EDL *group = new EDL();
+	group->create_objects();
+	if( !group->load_xml(&file, LOAD_ALL) ) {
+		undo_before();
+		int ret = edl->insert_effects(group);
+		switch( ret ) {
+		case INSERT_EFFECTS_RECORD:
+			eprintf(_("Selected edit track not armed."));
+			break;
+		case INSERT_EFFECTS_TYPE:
+			eprintf(_("Track type mismatched."));
+			break;
+		case INSERT_EFFECTS_MULTIPLE:
+			eprintf(_("More than one edit selected on a track."));
+			break;
+		case INSERT_EFFECTS_MISSING:
+			eprintf(_("Too few target edits to add group effects."));
+			break;
+		case INSERT_EFFECTS_EXTRA:
+			eprintf(_("Too many target edits to add group effects."));
+			break;
+		case INSERT_EFFECTS_MASTER:
+			eprintf(_("Shared effect added without master."));
+			break;
+		case 0:
+			break;
+		}
+		save_backup();
+		undo_after(_("paste effects"), LOAD_ALL);
+		restart_brender();
+		cwindow->refresh_frame(CHANGE_EDL);
+		update_plugin_guis();
+		gui->update(1, NORMAL_DRAW, 1, 0, 0, 0, 0);
+	}
+	else
+		eprintf(_("Error loading clip from clipboard buffer."));
+	delete [] string;
+	group->remove_user();
+}
+

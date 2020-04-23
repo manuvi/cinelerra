@@ -34,5 +34,7 @@ class EditPopupMutePack;
 class EditPopupPaste;
 class EditPopupOverwrite;
 class EditPopupOverwritePlugins;
+class EditCollectEffects;
+class EditPasteEffects;
 
 #endif

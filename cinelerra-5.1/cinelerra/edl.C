@@ -2195,3 +2195,161 @@ void EDL::replace_assets(ArrayList<Indexable*> &orig_idxbls, ArrayList<Asset*> &
 	}
 }
 
+
+int EDL::collect_effects(EDL *&group)
+{
+// to remap shared plugins in copied plugin stack
+	class shared : public ArrayList<int> { public: int trk; };
+	class shared_list : public ArrayList<shared> {} shared_map;
+	int ret = 0;
+	EDL *new_edl = new EDL(parent_edl ? parent_edl : this);
+	new_edl->create_objects();
+	Tracks *new_tracks = new_edl->tracks;
+	Track *track = tracks->first;
+	for( ; !ret && track; track=track->next ) {
+		if( track->data_type != TRACK_AUDIO &&
+		    track->data_type != TRACK_VIDEO ) continue;
+		Edit *edit = track->edits->first;
+		while( edit && !edit->is_selected ) edit = edit->next;
+		if( !edit ) continue;
+		if( !track->record ) { ret = COLLECT_EFFECTS_RECORD;  break; } 
+		Track *new_track = 0;
+		shared *location = 0;
+		int64_t start_pos = edit->startproject;
+		int64_t end_pos = start_pos + edit->length;
+		int pluginsets = track->plugin_set.size();
+		for( int i=0; i<pluginsets; ++i ) {
+			PluginSet *plugins = track->plugin_set[i];
+			Plugin *plugin = (Plugin *)plugins->first;
+			for( ; plugin; plugin=(Plugin *)plugin->next ) {
+				if( plugin->silence() ) continue;
+				if( start_pos < plugin->startproject+plugin->length ) break;
+			}
+			if( !plugin || plugin->startproject >= end_pos ) continue;
+			if( !location ) {
+				location = &shared_map.append();
+				location->trk = tracks->number_of(track);
+			}
+			location->append(i);
+			if( !new_track )
+				new_track = track->data_type == TRACK_AUDIO ?
+					new_tracks->add_audio_track(0, 0) :
+					new_tracks->add_video_track(0, 0) ;
+			PluginSet *new_plugins = new PluginSet(new_edl, new_track);
+			new_track->plugin_set.append(new_plugins);
+			Plugin *new_plugin = (Plugin *)new_plugins->create_edit();
+			new_plugin->copy_base(plugin);
+			new_plugins->append(new_plugin);
+			KeyFrame *keyframe = plugin->keyframes->
+				get_prev_keyframe(start_pos, PLAY_FORWARD);
+			KeyFrame *default_auto = (KeyFrame *)
+				new_plugin->keyframes->default_auto;
+			default_auto->copy_from(keyframe);
+			default_auto->position = 0;
+			default_auto->is_default = 1;
+		}
+		if( !new_track ) { ret = COLLECT_EFFECTS_MISSING;  break; }
+		while( (edit=edit->next) && !edit->is_selected );
+		if( edit ) ret = COLLECT_EFFECTS_MULTIPLE;
+	}
+	track = new_edl->tracks->first;
+	if( !ret && !track ) ret = COLLECT_EFFECTS_EMPTY;
+// remap shared plugins in copied new_edl
+	for( ; !ret && track; track=track->next ) {
+		int pluginsets = track->plugin_set.size();
+		for( int i=0; i<pluginsets; ++i ) {
+			PluginSet *plugins = track->plugin_set[i];
+			Plugin *plugin = (Plugin *)plugins->first;
+			for( ; plugin; plugin=(Plugin *)plugin->next ) {
+				if( plugin->plugin_type != PLUGIN_SHAREDPLUGIN ) continue;
+				int trk = plugin->shared_location.module;
+				int set = plugin->shared_location.plugin;
+				int m = shared_map.size(), n = -1;
+				while( --m>=0 && shared_map[m].trk!=trk );
+				if( m >= 0 ) {
+					shared &location = shared_map[m];
+					n = location.size();
+					while( --n>=0 && location[n]!=set );
+				}
+				if( n < 0 ) { ret = COLLECT_EFFECTS_MASTER;  break; }
+				plugin->shared_location.module = m;
+				plugin->shared_location.plugin = n;
+			}
+		}
+	}
+	if( !ret )
+		group = new_edl;
+	return ret;
+}
+
+// inserts pluginsets in group to first selected edit in tracks
+int EDL::insert_effects(EDL *group, Track *first_track)
+{
+	class SharedLocations : public ArrayList<SharedLocation> {
+	public:
+		void add(int trk, int plg) {
+			SharedLocation &s = append();
+			s.module = trk;  s.plugin = plg;
+		}
+	} edl_locs, new_locs;
+	Track *new_track = group->tracks->first;
+	if( !first_track ) first_track = tracks->first;
+	Track *track = first_track;
+	for( ; track && new_track; track=track->next ) {
+		Edit *edit = track->edits->first;
+		while( edit && !edit->is_selected ) edit = edit->next;
+		if( !edit ) continue;
+		if( !track->record ) return INSERT_EFFECTS_RECORD;
+		if( track->data_type != new_track->data_type ) return INSERT_EFFECTS_TYPE;
+		int gtrk = group->tracks->number_of(new_track);
+		int trk = tracks->number_of(track);
+		int psz = track->plugin_set.size();
+		int new_pluginsets = new_track->plugin_set.size();
+		for( int i=0; i<new_pluginsets; ++psz, ++i ) {
+			new_locs.add(gtrk, i);
+			edl_locs.add(trk, psz);
+		}
+		while( (edit=edit->next) && !edit->is_selected );
+		if( edit ) return INSERT_EFFECTS_MULTIPLE;
+		new_track = new_track->next;
+	}
+	if( new_track ) return INSERT_EFFECTS_MISSING;
+	for( ; track; track=track->next ) {
+		Edit *edit = track->edits->first;
+		while( edit && !edit->is_selected ) edit = edit->next;
+		if( edit ) return INSERT_EFFECTS_EXTRA;
+	}
+	new_track = group->tracks->first;
+	track = first_track;
+	for( ; track && new_track; track=track->next ) {
+		if( !track->record ) continue;
+		Edit *edit = track->edits->first;
+		while( edit && !edit->is_selected ) edit = edit->next;
+		if( !edit ) continue;
+		int64_t start_pos = edit->startproject;
+		int64_t end_pos = start_pos + edit->length;
+		int new_pluginsets = new_track->plugin_set.size();
+		for( int i=0; i<new_pluginsets; ++i ) {
+			Plugin *new_plugin = (Plugin *)new_track->plugin_set[i]->first;
+			if( !new_plugin ) continue;
+			PluginSet *plugins = new PluginSet(this, track);
+			track->plugin_set.append(plugins);
+			SharedLocation shared_location;
+			if( new_plugin->plugin_type == PLUGIN_SHAREDPLUGIN ) {
+				SharedLocation &new_loc = new_plugin->shared_location;
+				int k = new_locs.size();
+				while( --k>=0 && !new_loc.equivalent(&new_locs[k]) );
+				if( k < 0 ) return INSERT_EFFECTS_MASTER;
+				shared_location.copy_from(&edl_locs[k]);
+			}
+			KeyFrame *default_keyframe = (KeyFrame *)new_plugin->keyframes->default_auto;
+			plugins->insert_plugin(new_plugin->title,
+				start_pos, end_pos - start_pos, new_plugin->plugin_type,
+				&shared_location, default_keyframe, 0);
+			track->expand_view = 1;
+		}
+		new_track = new_track->next;
+	}
+	return 0;
+}
+

@@ -222,6 +222,9 @@ public:
 		RecordLabels *labels = 0);
 // Insert the clip at a point in the EDL
 	int insert_clips(ArrayList<EDL*> *new_edls, int load_mode, Track *first_track = 0);
+// copy/paste group of effects
+	int collect_effects(EDL *&group);
+	int insert_effects(EDL *group, Track *first_track=0);
 // Add a copy of EDL* to the clip array.  Returns the copy.
 	EDL* add_clip(EDL *edl);
 	EDL *selected_edits_to_clip(int packed,

@@ -75,7 +75,10 @@ void EditPopup::create_objects()
 	add_item(new EditPopupMutePack(mwindow, this));
 	add_item(new EditPopupPaste(mwindow, this));
 	add_item(new EditPopupOverwrite(mwindow, this));
+	add_item(new BC_MenuItem("-"));
 	add_item(new EditPopupOverwritePlugins(mwindow, this));
+	add_item(new EditCollectEffects(mwindow, this));
+	add_item(new EditPasteEffects(mwindow, this));
 }
 
 int EditPopup::activate_menu(Track *track, Edit *edit,
@@ -303,4 +306,37 @@ int EditPopupOverwritePlugins::handle_event()
 	}
 	return 1;
 }
+
+
+EditCollectEffects::EditCollectEffects(MWindow *mwindow, EditPopup *popup)
+ : BC_MenuItem(_("Collect Effects"), "Ctrl-e", 'e')
+{
+	this->mwindow = mwindow;
+	this->popup = popup;
+	set_ctrl(1);
+}
+
+int EditCollectEffects::handle_event()
+{
+	if( mwindow->session->current_operation == NO_OPERATION )
+		mwindow->collect_effects();
+	return 1;
+}
+
+EditPasteEffects::EditPasteEffects(MWindow *mwindow, EditPopup *popup)
+ : BC_MenuItem(_("Paste Effects"), "Ctrl-Shift-E", 'E')
+{
+	this->mwindow = mwindow;
+	this->popup = popup;
+	set_ctrl(1);
+	set_shift(1);
+}
+
+int EditPasteEffects::handle_event()
+{
+	if( mwindow->session->current_operation == NO_OPERATION )
+		mwindow->paste_effects();
+	return 1;
+}
+
 

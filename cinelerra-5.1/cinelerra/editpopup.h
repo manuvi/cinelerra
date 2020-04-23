@@ -163,4 +163,22 @@ public:
 	EditPopup *popup;
 };
 
+class EditCollectEffects : public BC_MenuItem
+{
+public:
+	EditCollectEffects(MWindow *mwindow, EditPopup *popup);
+	int handle_event();
+	MWindow *mwindow;
+	EditPopup *popup;
+};
+
+class EditPasteEffects : public BC_MenuItem
+{
+public:
+	EditPasteEffects(MWindow *mwindow, EditPopup *popup);
+	int handle_event();
+	MWindow *mwindow;
+	EditPopup *popup;
+};
+
 #endif
