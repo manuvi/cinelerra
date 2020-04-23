@@ -309,7 +309,7 @@ int EditPopupOverwritePlugins::handle_event()
 
 
 EditCollectEffects::EditCollectEffects(MWindow *mwindow, EditPopup *popup)
- : BC_MenuItem(_("Collect Effects"), "Ctrl-e", 'e')
+ : BC_MenuItem(_("Collect Effects"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
@@ -324,7 +324,7 @@ int EditCollectEffects::handle_event()
 }
 
 EditPasteEffects::EditPasteEffects(MWindow *mwindow, EditPopup *popup)
- : BC_MenuItem(_("Paste Effects"), "Ctrl-Shift-E", 'E')
+ : BC_MenuItem(_("Paste Effects"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
