@@ -2199,8 +2199,7 @@ void EDL::replace_assets(ArrayList<Indexable*> &orig_idxbls, ArrayList<Asset*> &
 int EDL::collect_effects(EDL *&group)
 {
 // to remap shared plugins in copied plugin stack
-	class shared : public ArrayList<int> { public: int trk; };
-	class shared_list : public ArrayList<shared> {} shared_map;
+	edl_shared_list shared_map;
 	int ret = 0;
 	EDL *new_edl = new EDL(parent_edl ? parent_edl : this);
 	new_edl->create_objects();
@@ -2214,7 +2213,7 @@ int EDL::collect_effects(EDL *&group)
 		if( !edit ) continue;
 		if( !track->record ) { ret = COLLECT_EFFECTS_RECORD;  break; } 
 		Track *new_track = 0;
-		shared *location = 0;
+		edl_shared *location = 0;
 		int64_t start_pos = edit->startproject;
 		int64_t end_pos = start_pos + edit->length;
 		int pluginsets = track->plugin_set.size();
@@ -2267,7 +2266,7 @@ int EDL::collect_effects(EDL *&group)
 				int m = shared_map.size(), n = -1;
 				while( --m>=0 && shared_map[m].trk!=trk );
 				if( m >= 0 ) {
-					shared &location = shared_map[m];
+					edl_shared &location = shared_map[m];
 					n = location.size();
 					while( --n>=0 && location[n]!=set );
 				}
@@ -2282,16 +2281,16 @@ int EDL::collect_effects(EDL *&group)
 	return ret;
 }
 
+void edl_SharedLocations::add(int trk, int plg)
+{
+	SharedLocation &s = append();
+	s.module = trk;  s.plugin = plg;
+}
+
 // inserts pluginsets in group to first selected edit in tracks
 int EDL::insert_effects(EDL *group, Track *first_track)
 {
-	class SharedLocations : public ArrayList<SharedLocation> {
-	public:
-		void add(int trk, int plg) {
-			SharedLocation &s = append();
-			s.module = trk;  s.plugin = plg;
-		}
-	} edl_locs, new_locs;
+	edl_SharedLocations edl_locs, new_locs;
 	Track *new_track = group->tracks->first;
 	if( !first_track ) first_track = tracks->first;
 	Track *track = first_track;

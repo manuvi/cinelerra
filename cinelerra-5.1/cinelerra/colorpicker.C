@@ -252,6 +252,8 @@ void ColorGUI::create_objects()
 
 	x += hue->get_w() + xs10;
 	hsv_h = new PaletteHSV(this, x,y= y0, hsv.h, 0, 360);
+	hsv_h->set_increment(1);
+	hsv_h->set_precision(1);
 	hsv_h->create_objects();  hsv_h->set_tooltip(_("Hue"));
 	hsv_s = new PaletteHSV(this, x,y+=ys25, hsv.s, 0, 1);
 	hsv_s->create_objects();  hsv_s->set_tooltip(_("Saturation"));

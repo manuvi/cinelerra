@@ -164,11 +164,20 @@ KeyFrame *PluginSet::nearest_keyframe(int64_t pos, int dir)
 		pos = first->startproject;
 	else if( last && pos > last->startproject+last->length )
 		pos = last->startproject+last->length;
+	KeyFrame *keyframe = 0;
 	Plugin *plugin = (Plugin*)editof(pos, dir, 0);
-	if( !plugin ) return 0;
-	KeyFrame *keyframe = (KeyFrame *)(dir == PLAY_FORWARD ?
-		plugin->keyframes->nearest_after(pos) :
-		plugin->keyframes->nearest_before(pos));
+	if( dir == PLAY_FORWARD ) {
+		for( ; !keyframe && plugin; plugin=(Plugin*)plugin->next ) {
+			if( plugin->plugin_type == PLUGIN_NONE ) continue;
+			keyframe = (KeyFrame *)plugin->keyframes->nearest_after(pos);
+		}
+	}
+	else {
+		for( ; !keyframe && plugin; plugin=(Plugin*)plugin->previous ) {
+			if( plugin->plugin_type == PLUGIN_NONE ) continue;
+			keyframe = (KeyFrame *)plugin->keyframes->nearest_before(pos);
+		}
+	}
 	return keyframe;
 }
 

@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#include "arraylist.h"
 #include "asset.inc"
 #include "assets.inc"
 #include "autoconf.inc"
@@ -47,7 +48,7 @@
 #include "pluginserver.h"
 #include "preferences.inc"
 #include "recordlabel.inc"
-#include "sharedlocation.inc"
+#include "sharedlocation.h"
 #include "theme.inc"
 #include "tracks.inc"
 #include "vedit.inc"
@@ -303,6 +304,14 @@ public:
 
 // Use parent Assets if nonzero
 	EDL *parent_edl;
+};
+
+// remap plugin shares in collect/paste effects
+class edl_shared : public ArrayList<int> { public: int trk; };
+class edl_shared_list : public ArrayList<edl_shared> {};
+class edl_SharedLocations : public ArrayList<SharedLocation> {
+public:
+	void add(int trk, int plg);
 };
 
 #endif
