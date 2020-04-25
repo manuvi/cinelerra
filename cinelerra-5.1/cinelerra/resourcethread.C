@@ -252,6 +252,17 @@ void ResourceThread::add_wave(ResourcePixmap *pixmap,
 	item_lock->unlock();
 }
 
+void ResourceThread::reset(int pane_number)
+{
+	item_lock->lock("ResourceThread::reset");
+	ResourceThreadItem *item = items.first;
+	while( item ) {
+		ResourceThreadItem *next_item = item->next;
+		if( item->pane_number == pane_number ) delete item;
+		item = next_item;
+	}
+	item_lock->unlock();
+}
 
 
 
@@ -272,7 +283,8 @@ void ResourceThread::stop_draw(int reset)
 //printf("ResourceThread::stop_draw %d %d\n", __LINE__, reset);
 //BC_Signals::dump_stack();
 		if( reset ) {
-			items.remove_all_objects();
+			ResourceThreadItem *item;
+			while( (item=items.last) != 0 ) delete item;
 			++operation_count;
 		}
 		item_lock->unlock();
@@ -286,9 +298,9 @@ void ResourceThread::start_draw()
 {
 	interrupted = 0;
 // Tag last audio item to cause refresh.
-	int i = items.total;
-	while( --i>=0 && items[i]->data_type!=TRACK_AUDIO );
-	if( i >= 0 ) items[i]->last = 1;
+	ResourceThreadItem *item = items.last;
+	while( item && item->data_type!=TRACK_AUDIO ) item = item->previous;
+	if( item ) item->last = 1;
 	timer->update();
 	draw_lock->unlock();
 }
@@ -303,16 +315,11 @@ void ResourceThread::run()
 		{
 // Pull off item
 			item_lock->lock("ResourceThread::run");
-			int total_items = items.size();
-			ResourceThreadItem *item = 0;
-			if(items.size())
-			{
-				item = items[0];
-				items.remove_number(0);
-			}
+			ResourceThreadItem *item = items.first;
+			items.remove_pointer(item);
 			item_lock->unlock();
 //printf("ResourceThread::run %d %d\n", __LINE__, items.size());
-			if(!total_items) break;
+			if(!item) break;
 
 			switch( item->data_type ) {
 			case TRACK_VIDEO:

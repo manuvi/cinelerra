@@ -155,7 +155,7 @@ void ResourcePixmap::draw_data(TrackCanvas *canvas,
 	int refresh_w = 0;
 
 // Ignore if called by resourcethread.
-//	if( mode == IGNORE_THREAD ) return;
+	if( mode == IGNORE_THREAD ) return;
 
 	int y = 0;
 	if( edit->track->show_titles() )
@@ -595,7 +595,7 @@ void ResourcePixmap::draw_wave(TrackCanvas *canvas,
 {
 	int rect_audio = mwindow->preferences->rectify_audio;
 	if( rect_audio ) { low = fabs(low);  high = fabs(high); }
-	int top_pixel =  mwindow->edl->session->show_titles ? 0 :
+	int top_pixel = !mwindow->edl->session->show_titles ? 0 :
 		mwindow->theme->get_image("title_bg_data")->get_h();
 	int center_pixel = !rect_audio ?
 		mwindow->edl->local_session->zoom_track / 2 + top_pixel :

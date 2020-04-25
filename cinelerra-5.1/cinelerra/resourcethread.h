@@ -32,6 +32,7 @@
 
 
 #include "arraylist.h"
+#include "linklist.h"
 #include "bctimer.inc"
 #include "condition.inc"
 #include "file.inc"
@@ -44,7 +45,7 @@
 #include "vframe.inc"
 
 
-class ResourceThreadItem
+class ResourceThreadItem : public ListItem<ResourceThreadItem>
 {
 public:
 	ResourceThreadItem(ResourcePixmap *pixmap,
@@ -145,6 +146,7 @@ public:
 
 	void run();
 	void stop();
+	void reset(int pane_number);
 
 	void do_video(VResourceThreadItem *item);
 	void do_audio(AResourceThreadItem *item);
@@ -160,7 +162,7 @@ public:
 	MWindowGUI *gui;
 	Condition *draw_lock;
 	Mutex *item_lock;
-	ArrayList<ResourceThreadItem*> items;
+	List<ResourceThreadItem> items;
 	int interrupted;
 	int done;
 	VFrame *temp_picon;

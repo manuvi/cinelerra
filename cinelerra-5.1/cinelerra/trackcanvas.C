@@ -779,6 +779,8 @@ void TrackCanvas::draw_resources(int mode,
 		gui->resource_pixmaps.remove_all_objects();
 
 	if(debug) PRINT_TRACE
+	if(mode != IGNORE_THREAD)
+		gui->resource_thread->reset(pane->number);
 
 // Search every edit
 	for(Track *current = mwindow->edl->tracks->first;
