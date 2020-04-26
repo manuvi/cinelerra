@@ -421,7 +421,7 @@ BoxBlurPower::BoxBlurPower(BoxBlurWindow *gui, int x, int y, int w,
 }
 
 BoxBlurWindow::BoxBlurWindow(BoxBlurEffect *plugin)
- : PluginClientWindow(plugin, xS(360), yS(246), xS(360), yS(246), 0)
+ : PluginClientWindow(plugin, xS(360), yS(260), xS(360), yS(260), 0)
 {
 	this->plugin = plugin;
 	blur_horz = 0;
@@ -445,13 +445,14 @@ BoxBlurWindow::~BoxBlurWindow()
 void BoxBlurWindow::create_objects()
 {
 	int x = xS(10), y = yS(10);
+	int ys10 = yS(10), ys20 = yS(20), ys30 = yS(30), ys40 = yS(40);
 	int t1 = x, t2 = t1+xS(24), t3 = t2+xS(100), t4 = t3+xS(24);
 	int ww = get_w() - 2*x, bar_o = xS(30), bar_m = xS(15);
 	int margin = plugin->get_theme()->widget_border;
 
-        BC_TitleBar *tbar;
-        add_subwindow(tbar = new BC_TitleBar(x, y, ww, bar_o, bar_m, _("Position & Size")));
-        y += tbar->get_h() + margin;
+	BC_TitleBar *tbar;
+	add_subwindow(tbar = new BC_TitleBar(x, y, ww, bar_o, bar_m, _("Position & Size")));
+	y += ys20;
 	int x1 = ww - BoxBlurDrag::calculate_w(this) - margin;
 	add_subwindow(drag = new BoxBlurDrag(this, plugin, x1, y));
 	drag->create_objects();
@@ -465,32 +466,32 @@ void BoxBlurWindow::create_objects()
 	add_subwindow(title = new BC_Title(t3, y, _("W:")));
 	box_w = new BoxBlurW(this, t4, y);
 	box_w->create_objects();
-	y += bmax(title->get_h(), box_w->get_h()) + margin;
+	y += ys30;
 	add_subwindow(title = new BC_Title(t1, y, _("Y:")));
 	box_y = new BoxBlurY(this, t2, y);
 	box_y->create_objects();
 	add_subwindow(title = new BC_Title(t3, y, _("H:")));
 	box_h = new BoxBlurH(this, t4, y);
 	box_h->create_objects();
-	y += bmax(title->get_h(), box_h->get_h()) + 2*margin;
+	y += ys40;
 
 	add_subwindow(tbar = new BC_TitleBar(x, y, ww, bar_o, bar_m, _("Blur")));
-	y += tbar->get_h() + margin;
+	y += ys20;
 	blur_horz = new BoxBlurRadius(this, x, y, ww, _("Horz:"),
 			&plugin->config.horz_radius);
 	blur_horz->create_objects();
-	y += blur_horz->get_h() + margin;
+	y += ys30;
 	blur_vert = new BoxBlurRadius(this, x, y, ww, _("Vert:"),
 			&plugin->config.vert_radius);
 	blur_vert->create_objects();
-	y += blur_vert->get_h() + margin;
+	y += ys30;
 	blur_power = new BoxBlurPower(this, x, y, ww, _("Power:"),
 			&plugin->config.power);
 	blur_power->create_objects();
-	y += blur_power->get_h() + margin + yS(8);
+	y += ys40;
 	BC_Bar *bar;
 	add_subwindow(bar = new BC_Bar(x, y, ww));
-	y += bar->get_h() + 2*margin;
+	y += ys10;
 
 	add_subwindow(reset = new BoxBlurReset(this, x, y));
 	x1 = x + ww - BoxBlurPreset::calculate_w(this);

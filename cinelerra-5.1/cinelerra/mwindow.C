@@ -4456,11 +4456,7 @@ void MWindow::remove_from_caches(Indexable *idxbl)
 		delete gui->render_engine;
 		gui->render_engine = 0;
 	}
-	if( gui->resource_thread->render_engine_id == idxbl->id ) {
-		gui->resource_thread->render_engine_id = -1;
-		delete gui->resource_thread->render_engine;
-		gui->resource_thread->render_engine = 0;
-	}
+	gui->resource_thread->close_indexable(idxbl);
 	if( !idxbl->is_asset ) return;
 	Asset *asset = (Asset *)idxbl;
 	audio_cache->delete_entry(asset);

@@ -159,7 +159,7 @@ void MWindowGUI::create_objects()
 	lock_window("MWindowGUI::create_objects");
 	const int debug = 0;
 
-	resource_thread = new ResourceThread(mwindow, this);
+	resource_thread = new ResourceThread(mwindow);
 	resource_thread->create_objects();
 
 
@@ -1809,6 +1809,7 @@ void MWindowGUI::delete_y_pane(int cursor_y)
 
 void MWindowGUI::stop_pane_drag()
 {
+	if( !dragging_pane ) return;
 	dragging_pane = 0;
 	resource_thread->stop_draw(0);
 

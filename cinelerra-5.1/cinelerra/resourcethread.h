@@ -48,133 +48,96 @@
 class ResourceThreadItem : public ListItem<ResourceThreadItem>
 {
 public:
-	ResourceThreadItem(ResourcePixmap *pixmap,
-		int pane_number,
-		Indexable *indexable,
-		int data_type,
-		int operation_count);
+	ResourceThreadItem(ResourcePixmap *pixmap, int pane_number,
+		Indexable *indexable, int data_type, int operation_count);
 	virtual ~ResourceThreadItem();
 
 	ResourcePixmap *pixmap;
 	Indexable *indexable;
-	int data_type;
-	int operation_count;
-	int last;
-	int pane_number;
+	int data_type, pane_number;
+	int operation_count, last;
 };
 
 
 class AResourceThreadItem : public ResourceThreadItem
 {
 public:
-	AResourceThreadItem(ResourcePixmap *pixmap,
-		int pane_number,
-		Indexable *indexable,
-		int x,
-		int channel,
-		int64_t start,
-		int64_t end,
-		int operation_count);
+	AResourceThreadItem(ResourcePixmap *pixmap, int pane_number,
+		Indexable *indexable, int x, int channel,
+		int64_t start, int64_t end, int operation_count);
 	~AResourceThreadItem();
-	int x;
-	int channel;
-	int64_t start;
-	int64_t end;
+	int x, channel;
+	int64_t start, end;
 };
 
 class VResourceThreadItem : public ResourceThreadItem
 {
 public:
-	VResourceThreadItem(ResourcePixmap *pixmap,
-		int pane_number,
-		int picon_x,
-		int picon_y,
-		int picon_w,
-		int picon_h,
-		double frame_rate,
-		int64_t position,
-		int layer,
-		Indexable *indexable,
-		int operation_count);
+	VResourceThreadItem(ResourcePixmap *pixmap, int pane_number,
+		int picon_x, int picon_y, int picon_w, int picon_h,
+		double frame_rate, int64_t position, int layer,
+		Indexable *indexable, int operation_count);
 	~VResourceThreadItem();
 
-
-
-	int picon_x;
-	int picon_y;
-	int picon_w;
-	int picon_h;
+	int picon_x, picon_y;
+	int picon_w, picon_h;
 	double frame_rate;
 	int64_t position;
 	int layer;
 };
 
 
-class ResourceThread : public Thread
+class ResourceThreadBase : public Thread
 {
 public:
-	ResourceThread(MWindow *mwindow, MWindowGUI *gui);
-	~ResourceThread();
-
+	ResourceThreadBase(ResourceThread *resource_thread);
+	~ResourceThreadBase();
 
 	void create_objects();
-// reset - delete all picons.  Used for index building.
 	void stop_draw(int reset);
-	void start_draw();
+	virtual void start_draw();
+	virtual void draw_item(ResourceThreadItem *item) = 0;
+	void close_render_engine();
 
 // Be sure to stop_draw before changing the asset table,
 // closing files.
-	void add_picon(ResourcePixmap *pixmap,
-		int pane_number,
-		int picon_x,
-		int picon_y,
-		int picon_w,
-		int picon_h,
-		double frame_rate,
-		int64_t position,
-		int layer,
-		Indexable *indexable);
-
-	void add_wave(ResourcePixmap *pixmap,
-		int pane_number,
-		Indexable *indexable,
-		int x,
-		int channel,
-// samples relative to asset rate
-		int64_t source_start,
-		int64_t source_end);
-
 	void run();
 	void stop();
 	void reset(int pane_number);
 
-	void do_video(VResourceThreadItem *item);
-	void do_audio(AResourceThreadItem *item);
-
 	void open_render_engine(EDL *nested_edl,
-		int do_audio,
-		int do_video);
+		int do_audio, int do_video);
 
-	File *get_video_source(Asset *asset);
-	File *get_audio_source(Asset *asset);
-
-	MWindow *mwindow;
-	MWindowGUI *gui;
+	ResourceThread *resource_thread;
 	Condition *draw_lock;
 	Mutex *item_lock;
 	List<ResourceThreadItem> items;
 	int interrupted;
 	int done;
-	VFrame *temp_picon;
-	VFrame *temp_picon2;
 // Render engine for nested EDL
 	RenderEngine *render_engine;
 // ID of nested EDL being rendered
 	int render_engine_id;
+};
+
+class ResourceAudioThread : public ResourceThreadBase
+{
+public:
+	ResourceAudioThread(ResourceThread *resource_thread);
+	~ResourceAudioThread();
+	void start_draw();
+	File *get_audio_source(Asset *asset);
+	void draw_item(ResourceThreadItem *item);
+	void do_audio(AResourceThreadItem *item);
+
+	void add_wave(ResourcePixmap *pixmap, int pane_number,
+		Indexable *indexable, int x, int channel,
+ // samples relative to asset rate
+		int64_t source_start, int64_t source_end);
+
+	ResourceThread *resource_thread;
 	Asset *audio_asset;
 	File *audio_source;
-	Asset *video_asset;
-	File *video_source;
 
 // Current audio buffer for spanning multiple pixels
 	Samples *audio_buffer;
@@ -190,11 +153,66 @@ public:
 	int prev_x;
 	double prev_h;
 	double prev_l;
-// Incremented after every start_draw to prevent overlapping operations
-	int operation_count;
+};
+
+class ResourceVideoThread : public ResourceThreadBase
+{
+public:
+	ResourceVideoThread(ResourceThread *resource_thread);
+	~ResourceVideoThread();
+	File *get_video_source(Asset *asset);
+	void draw_item(ResourceThreadItem *item);
+	void do_video(VResourceThreadItem *item);
+
+// Be sure to stop_draw before changing the asset table,
+// closing files.
+	void add_picon(ResourcePixmap *pixmap, int pane_number,
+		int picon_x, int picon_y, int picon_w, int picon_h,
+		double frame_rate, int64_t position, int layer,
+		Indexable *indexable);
+
+	ResourceThread *resource_thread;
+	Asset *video_asset;
+	File *video_source;
+
+	VFrame *temp_picon;
+	VFrame *temp_picon2;
 };
 
 
+class ResourceThread
+{
+public:
+	ResourceThread(MWindow *mwindow);
+	~ResourceThread();
+
+	void create_objects();
+// reset - delete all picons.  Used for index building.
+	void stop_draw(int reset);
+	void start_draw();
+
+// Be sure to stop_draw before changing the asset table,
+// closing files.
+	void add_picon(ResourcePixmap *pixmap, int pane_number,
+		int picon_x, int picon_y, int picon_w, int picon_h,
+		double frame_rate, int64_t position, int layer,
+		Indexable *indexable);
+
+	void add_wave(ResourcePixmap *pixmap, int pane_number,
+		Indexable *indexable, int x, int channel,
+// samples relative to asset rate
+		int64_t source_start, int64_t source_end);
+
+	void run();
+	void stop();
+	void reset(int pane_number);
+	void close_indexable(Indexable*);
+
+	MWindow *mwindow;
+	ResourceAudioThread *audio_thread;
+	ResourceVideoThread *video_thread;
+	int operation_count;
+	int interrupted;
+};
 
 #endif
-
