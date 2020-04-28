@@ -733,6 +733,7 @@ void Canvas::update_refresh(VideoDevice *device, VFrame *output_frame)
 	}
 	else
 		refresh_frame->transfer_from(output_frame, -1);
+	draw_scope(refresh_frame, 1);
 }
 
 void Canvas::process_scope(VideoDevice *video, VFrame *frame)
@@ -746,7 +747,7 @@ void Canvas::process_scope(VideoDevice *video, VFrame *frame)
 		frame = refresh_frame;
 	}
 	if( frame )
-		draw_scope(frame);
+		draw_scope(frame, 0);
 }
 
 void Canvas::clear(int flash)

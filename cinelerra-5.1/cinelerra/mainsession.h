@@ -175,6 +175,7 @@ public:
 	int use_wave_gain;
 	int use_vect_gain;
 	int use_smooth;
+	int use_refresh;
 	int use_graticule;
 
 	int afolders_w;

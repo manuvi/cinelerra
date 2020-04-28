@@ -1095,14 +1095,19 @@ int CWindowCanvas::do_scroll(EDL *edl, float cursor_x, float cursor_y)
 
 int CWindowCanvas::scope_on()
 {
-	return !gui->edit_panel->scope_dialog ? 0 :
-		gui->edit_panel->scope_dialog->running();
+	EditPanelScopeDialog *scope_dialog = gui->edit_panel->scope_dialog;
+	if( !scope_dialog || !scope_dialog->scope_gui ) return 0;
+	if( scope_dialog->scope_gui->use_refresh ) return 0;
+	return scope_dialog->running();
 }
 
-void CWindowCanvas::draw_scope(VFrame *output)
+void CWindowCanvas::draw_scope(VFrame *output, int refresh)
 {
-	if( gui->edit_panel->scope_dialog && output )
-		gui->edit_panel->scope_dialog->process(output);
+	if( !output ) return;
+	EditPanelScopeDialog *scope_dialog = gui->edit_panel->scope_dialog;
+	if( !scope_dialog || !scope_dialog->scope_gui ) return;
+	if( scope_dialog->scope_gui->use_refresh && !refresh ) return;
+	scope_dialog->process(output);
 }
 
 void CWindowCanvas::draw_refresh(int flush)

@@ -128,7 +128,7 @@ public:
 	virtual void clear(int flash=1);
 // draw scope
 	virtual int scope_on() { return 0; }
-	virtual void draw_scope(VFrame *frame) {}
+	virtual void draw_scope(VFrame *frame, int refresh) {}
 	void process_scope(VideoDevice *video, VFrame *frame);
 
 // Get top left offset of canvas relative to output.

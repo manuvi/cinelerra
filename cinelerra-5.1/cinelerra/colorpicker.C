@@ -1364,7 +1364,7 @@ void ColorButtonPicker::update(int color, int alpha)
 int ColorButtonPicker::handle_new_color(int color, int alpha)
 {
 	color_button->lock_window("ColorButtonPicker::handle_new_color");
-	color_button->update_gui(color, alpha);
+	color_button->update_gui(color);
 	color_button->unlock_window();
 	return color_button->handle_new_color(color, alpha);
 }

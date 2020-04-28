@@ -109,6 +109,7 @@ void VideoScopeWindow::create_objects()
 	use_wave_gain = plugin->use_wave_gain;
 	use_vect_gain = plugin->use_vect_gain;
 	use_smooth = plugin->use_smooth;
+	use_refresh = -1;
 	use_graticule = plugin->use_graticule;
 
 	ScopeGUI::create_objects();

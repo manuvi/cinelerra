@@ -257,6 +257,14 @@ public:
 	ScopeGUI *gui;
 };
 
+class ScopeRefresh : public BC_CheckBox
+{
+public:
+	ScopeRefresh(ScopeGUI *gui, int x, int y);
+	int handle_event();
+	ScopeGUI *gui;
+};
+
 
 class ScopeGUI : public PluginClientWindow
 {
@@ -303,6 +311,7 @@ public:
 	ScopeVectSlider *vect_slider;
 	ScopeVectGrats *vect_grats;
 	ScopeSmooth *smooth;
+	ScopeRefresh *refresh;
 	VFrame *grat_image;
 	OverlayFrame *overlay;
 
@@ -321,7 +330,7 @@ public:
 	int use_hist_parade, use_wave_parade;
 
 	int bins[HIST_SECTIONS][TOTAL_BINS];
-	int frame_w, use_smooth;
+	int frame_w, use_smooth, use_refresh;
 	int use_wave_gain, use_vect_gain;
 };
 

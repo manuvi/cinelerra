@@ -453,6 +453,7 @@ void ScopeGUI::reset()
 	data_frame = 0;
 	frame_w = 1;
 	use_smooth = 1;
+	use_refresh = 0;
 	use_wave_gain = 5;
 	use_vect_gain = 5;
 	use_hist = 0;
@@ -493,7 +494,10 @@ void ScopeGUI::create_objects()
 	scope_menu->create_objects();
 	int x1 = x + scope_menu->get_w() + 2*margin;
 	add_subwindow(smooth = new ScopeSmooth(this, x1, y));
-
+	if( use_refresh >= 0 ) {
+		y += smooth->get_h() + margin;
+		add_subwindow(refresh = new ScopeRefresh(this, x, y));
+	}
 	create_panels();
 	update_toggles();
 	show_window();
@@ -1438,6 +1442,19 @@ int ScopeSmooth::handle_event()
 {
 	gui->use_smooth = get_value();
 	gui->update_scope();
+	gui->toggle_event();
+	return 1;
+}
+
+ScopeRefresh::ScopeRefresh(ScopeGUI *gui, int x, int y)
+ : BC_CheckBox(x, y, gui->use_refresh, _("Refresh only"))
+{
+	this->gui = gui;
+}
+
+int ScopeRefresh::handle_event()
+{
+	gui->use_refresh = get_value();
 	gui->toggle_event();
 	return 1;
 }

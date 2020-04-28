@@ -115,7 +115,7 @@ public:
 	void create_objects(EDL *edl);
 	void zoom_resize_window(float percentage);
 	int scope_on();
-	void draw_scope(VFrame *output);
+	void draw_scope(VFrame *output, int refresh);
 	void draw_refresh(int flush = 1);
 	int need_overlays();
 	void draw_overlays();

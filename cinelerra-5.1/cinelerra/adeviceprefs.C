@@ -370,6 +370,7 @@ int ADevicePrefs::create_alsa_objs()
 	ArrayList<char*> *alsa_titles = new ArrayList<char*>;
 	alsa_titles->set_array_delete();
 	AudioALSA::list_devices(alsa_titles, 0, mode);
+	AudioALSA::add_pulse_devices(mode, alsa_titles, 0);
 
 	alsa_drivers = new ArrayList<BC_ListBoxItem*>;
 	for(int i = 0; i < alsa_titles->total; i++)
