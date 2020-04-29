@@ -36,6 +36,7 @@ enum {
 	SCOPE_HISTOGRAM, SCOPE_HISTOGRAM_RGB,
 	SCOPE_WAVEFORM, SCOPE_WAVEFORM_RGB, SCOPE_WAVEFORM_PLY,
 	SCOPE_VECTORSCOPE, SCOPE_VECTORWHEEL,
+	SCOPE_SMOOTH, SCOPE_REFRESH,
 };
 
 // Number of divisions in histogram.
@@ -167,6 +168,15 @@ public:
 	ScopeScopesOn *vect_wheel;
 };
 
+class ScopeSettingOn : public BC_MenuItem
+{
+public:
+	ScopeSettingOn(ScopeSettings *settings, const char *text, int id);
+	int handle_event();
+
+	ScopeSettings *settings;
+	int id;
+};
 
 class ScopeGratPaths : public ArrayList<const char *>
 {
@@ -178,20 +188,22 @@ public:
 class ScopeGratItem : public BC_MenuItem
 {
 public:
-	ScopeGratItem(ScopeVectGrats *vect_grats, const char *text, int idx);
+	ScopeGratItem(ScopeSettings *settings, const char *text, int idx);
 	int handle_event();
 
-	ScopeVectGrats *vect_grats;
+	ScopeSettings *settings;
 	int idx;
 };
 
-class ScopeVectGrats : public BC_PopupMenu
+class ScopeSettings : public BC_PopupMenu
 {
 public:
-	ScopeVectGrats(ScopeGUI *gui, int x, int y);
+	ScopeSettings(ScopeGUI *gui, int x, int y);
 	void create_objects();
 
 	ScopeGUI *gui;
+	ScopeSettingOn *smooth_on;
+	ScopeSettingOn *refresh_on;
 };
 
 
@@ -249,23 +261,6 @@ public:
 };
 
 
-class ScopeSmooth : public BC_CheckBox
-{
-public:
-	ScopeSmooth(ScopeGUI *gui, int x, int y);
-	int handle_event();
-	ScopeGUI *gui;
-};
-
-class ScopeRefresh : public BC_CheckBox
-{
-public:
-	ScopeRefresh(ScopeGUI *gui, int x, int y);
-	int handle_event();
-	ScopeGUI *gui;
-};
-
-
 class ScopeGUI : public PluginClientWindow
 {
 public:
@@ -309,9 +304,7 @@ public:
 	ScopeMenu *scope_menu;
 	ScopeWaveSlider *wave_slider;
 	ScopeVectSlider *vect_slider;
-	ScopeVectGrats *vect_grats;
-	ScopeSmooth *smooth;
-	ScopeRefresh *refresh;
+	ScopeSettings *settings;
 	VFrame *grat_image;
 	OverlayFrame *overlay;
 

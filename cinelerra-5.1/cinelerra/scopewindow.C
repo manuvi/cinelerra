@@ -44,6 +44,7 @@ ScopeUnit::ScopeUnit(ScopeGUI *gui,
 	this->gui = gui;
 }
 
+#define SCOPE_SEARCHPATH "/scopes"
 
 #define incr_point(rows,h, iv,comp) { \
 if(iy >= 0 && iy < h) { \
@@ -447,7 +448,7 @@ void ScopeGUI::reset()
 	grat_image = 0;
 	overlay = 0;
 	grat_idx = 0;
-	vect_grats = 0;
+	settings = 0;
 
 	output_frame = 0;
 	data_frame = 0;
@@ -488,16 +489,13 @@ void ScopeGUI::create_objects()
 
 	lock_window("ScopeGUI::create_objects");
 	int margin = theme->widget_border;
-	int x = margin;
-	int y = margin;
+	int x = margin, y = margin;
 	add_subwindow(scope_menu = new ScopeMenu(this, x, y));
 	scope_menu->create_objects();
 	int x1 = x + scope_menu->get_w() + 2*margin;
-	add_subwindow(smooth = new ScopeSmooth(this, x1, y));
-	if( use_refresh >= 0 ) {
-		y += smooth->get_h() + margin;
-		add_subwindow(refresh = new ScopeRefresh(this, x, y));
-	}
+	add_subwindow(settings = new ScopeSettings(this, x1, y));
+	settings->create_objects();
+
 	create_panels();
 	update_toggles();
 	show_window();
@@ -509,7 +507,6 @@ void ScopeGUI::create_panels()
 {
 	calculate_sizes(get_w(), get_h());
 	int slider_w = xS(100);
-	int margin = theme->widget_border;
 	if( (use_wave || use_wave_parade) ) {
 		int px = wave_x + wave_w - slider_w - xS(5);
 		int py = wave_y - ScopeGain::calculate_h() - yS(5);
@@ -541,33 +538,17 @@ void ScopeGUI::create_panels()
 			vectorscope->create_objects();
 			vect_slider = new ScopeVectSlider(this, vx, vy, slider_w);
 			vect_slider->create_objects();
-			if( use_vector < 0 ) {
-				vect_grats = new ScopeVectGrats(this, vx, 2*margin);
-				add_subwindow(vect_grats);
-				vect_grats->create_objects();
-			}
 		}
 		else {
 			vectorscope->reposition_window(
 				vector_x, vector_y, vector_w, vector_h);
 			vectorscope->clear_box(0, 0, vector_w, vector_h);
 			vect_slider->reposition_window(vx, vy);
-			if( use_vector > 0 ) {
-				delete vect_grats;  vect_grats = 0;
-			}
-			else if( !vect_grats ) {
-				vect_grats = new ScopeVectGrats(this, vx, 2*margin);
-				add_subwindow(vect_grats);
-				vect_grats->create_objects();
-			}
-			else
-				vect_grats->reposition_window(vx, 2*margin);
 		}
 	}
 	else if( !use_vector && vectorscope ) {
 		delete vectorscope;  vectorscope = 0;
 		delete vect_slider;  vect_slider = 0;
-		delete vect_grats;   vect_grats = 0;
 	}
 
 	if( (use_hist || use_hist_parade) ) {
@@ -616,7 +597,7 @@ void ScopeGUI::toggle_event()
 void ScopeGUI::calculate_sizes(int w, int h)
 {
 	int margin = theme->widget_border;
-	int menu_h = smooth->get_h() + scope_menu->get_h() + margin * 3;
+	int menu_h = scope_menu->get_h() + ScopeGain::calculate_h() + margin * 3;
 	int text_w = get_text_width(SMALLFONT, "000") + margin * 2;
 	int total_panels = ((use_hist || use_hist_parade) ? 1 : 0) +
 		((use_wave || use_wave_parade) ? 1 : 0) +
@@ -714,8 +695,6 @@ int ScopeGUI::resize_event(int w, int h)
 		int vx = vector_x + vector_w - vect_slider->get_w() - margin;
 		int vy = vector_y - vect_slider->get_h() - margin;
 		vect_slider->reposition_window(vx, vy);
-		if( vect_grats )
-			vect_grats->reposition_window(vx, 2*margin);
 	}
 
 	allocate_vframes();
@@ -1263,7 +1242,7 @@ int ScopeScopesOn::handle_event()
 }
 
 ScopeMenu::ScopeMenu(ScopeGUI *gui, int x, int y)
- : BC_PopupMenu(x, y, xS(100), _("Scopes"))
+ : BC_PopupMenu(x, y, xS(110), _("Scopes"))
 {
 	this->gui = gui;
 }
@@ -1300,18 +1279,54 @@ void ScopeMenu::update_toggles()
 }
 
 
-ScopeVectGrats::ScopeVectGrats(ScopeGUI *gui, int x, int y)
- : BC_PopupMenu(x, y, _("Overlay"))
+ScopeSettingOn::ScopeSettingOn(ScopeSettings *settings, const char *text, int id)
+ : BC_MenuItem(text)
+{
+	this->settings = settings;
+	this->id = id;
+}
+
+int ScopeSettingOn::handle_event()
+{
+	int v = get_checked() ? 0 : 1;
+	set_checked(v);
+	ScopeGUI *gui = settings->gui;
+	switch( id ) {
+	case SCOPE_SMOOTH:
+		gui->use_smooth = v;
+		break;
+	case SCOPE_REFRESH:
+		gui->use_refresh = v;
+		break;
+	}
+	gui->toggle_event();
+	gui->update_toggles();
+	gui->update_scope();
+	gui->show_window();
+	return 1;
+}
+
+ScopeSettings::ScopeSettings(ScopeGUI *gui, int x, int y)
+ : BC_PopupMenu(x, y, xS(125), _("Settings"))
 {
 	this->gui = gui;
 }
 
-#define SCOPE_SEARCHPATH "/scopes"
-void ScopeVectGrats::create_objects()
+void ScopeSettings::create_objects()
 {
+	add_item(smooth_on =
+		new ScopeSettingOn(this, _("Smooth"), SCOPE_SMOOTH));
+	smooth_on->set_checked(gui->use_smooth);
+	if( gui->use_refresh >= 0 ) {
+		add_item(refresh_on =
+			new ScopeSettingOn(this, _("Realtime"), SCOPE_REFRESH));
+		refresh_on->set_checked(gui->use_refresh);
+	}
+	add_item(new BC_MenuItem(_("-Graticule-")));
+
 	gui->grat_paths.remove_all_objects();
 	ScopeGratItem *item;
-	add_item(item = new ScopeGratItem(this, _("none"), 0));
+	add_item(item = new ScopeGratItem(this, _("None"), 0));
 	if( item->idx == gui->grat_idx ) item->set_checked(1);
 	gui->grat_paths.append(0);
 	FileSystem fs;
@@ -1331,20 +1346,20 @@ void ScopeVectGrats::create_objects()
 	}
 }
 
-ScopeGratItem::ScopeGratItem(ScopeVectGrats *vect_grats, const char *text, int idx)
+ScopeGratItem::ScopeGratItem(ScopeSettings *settings, const char *text, int idx)
  : BC_MenuItem(text)
 {
-	this->vect_grats = vect_grats;
+	this->settings = settings;
 	this->idx = idx;
 }
 
 int ScopeGratItem::handle_event()
 {
-	for( int i=0,n=vect_grats->total_items(); i<n; ++i ) {
-		ScopeGratItem *item = (ScopeGratItem *)vect_grats->get_item(i);
+	for( int i=0,n=settings->total_items(); i<n; ++i ) {
+		ScopeGratItem *item = (ScopeGratItem *)settings->get_item(i);
 		item->set_checked(item->idx == idx);
 	}	
-	vect_grats->gui->update_graticule(idx);
+	settings->gui->update_graticule(idx);
 	return 1;
 }
 
@@ -1430,32 +1445,5 @@ ScopeWaveSlider::ScopeWaveSlider(ScopeGUI *gui, int x, int y, int w)
 ScopeVectSlider::ScopeVectSlider(ScopeGUI *gui, int x, int y, int w)
  : ScopeGain(gui, x, y, w, &gui->use_vect_gain)
 {
-}
-
-ScopeSmooth::ScopeSmooth(ScopeGUI *gui, int x, int y)
- : BC_CheckBox(x, y, gui->use_smooth, _("Smooth"))
-{
-	this->gui = gui;
-}
-
-int ScopeSmooth::handle_event()
-{
-	gui->use_smooth = get_value();
-	gui->update_scope();
-	gui->toggle_event();
-	return 1;
-}
-
-ScopeRefresh::ScopeRefresh(ScopeGUI *gui, int x, int y)
- : BC_CheckBox(x, y, gui->use_refresh, _("Refresh only"))
-{
-	this->gui = gui;
-}
-
-int ScopeRefresh::handle_event()
-{
-	gui->use_refresh = get_value();
-	gui->toggle_event();
-	return 1;
 }
 

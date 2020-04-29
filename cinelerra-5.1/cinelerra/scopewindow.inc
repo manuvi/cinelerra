@@ -12,13 +12,12 @@ class ScopeScopesOn;
 class ScopeMenu;
 class ScopeGratPaths;
 class ScopeGratItem;
-class ScopeVectGrats;
+class ScopeSettings;
 class ScopeGainReset;
 class ScopeGainSlider;
 class ScopeGain;
 class ScopeWaveSlider;
 class ScopeVectSlider;
-class ScopeSmooth;
 class ScopeGUI;
 
 #endif

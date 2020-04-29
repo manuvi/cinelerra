@@ -319,15 +319,14 @@ int BC_MenuItem::draw()
 	int text_line = top_level->get_text_descent(MEDIUMFONT);
 	BC_Resources *resources = top_level->get_resources();
 
-	if(!strcmp(text, "-"))
-	{
-		menu_popup->get_popup()->set_color(DKGREY);
-		menu_popup->get_popup()->draw_line(xS(5), y + h / 2, menu_popup->get_w() - xS(5), y + h / 2);
-		menu_popup->get_popup()->set_color(LTGREY);
-		menu_popup->get_popup()->draw_line(xS(5), y + h / 2 + 1, menu_popup->get_w() - xS(5), y + h / 2 + 1);
+	if(!strcmp(text, "-")) {
+		int bx = xS(5), by = y+h/2, bw = menu_popup->get_w()-xS(10);
+		draw_bar(bx, by, bw);
 	}
-	else
-	{
+	else if( text[0] == '-' && text[strlen(text)-1] == '-' ) {
+		draw_title_bar();
+	}
+	else {
 		int xoffset = 0, yoffset = 0;
 		if(highlighted)
 		{
@@ -418,6 +417,33 @@ int BC_MenuItem::draw()
 	return 0;
 }
 
+void BC_MenuItem::draw_bar(int bx, int by, int bw)
+{
+	BC_Popup *popup = menu_popup->get_popup();
+	popup->set_color(DKGREY);
+	popup->draw_line(bx, by, bx+bw, by);
+	popup->set_color(LTGREY);  ++by;
+	popup->draw_line(bx, by, bx+bw, by);
+}
+
+void BC_MenuItem::draw_title_bar()
+{
+	BC_Popup *popup = menu_popup->get_popup();
+	int len = strlen(text)-2;
+	if( len <= 0 ) return;
+	int tw = popup->get_text_width(MEDIUMFONT, text+1, len);
+	int th = popup->get_text_ascent(MEDIUMFONT);
+	int mw = menu_popup->get_w(), lw = mw - tw;
+	int x1 = xS(5), y1 = y+h/2;
+	int tx = lw/4, ty = y1 + th/2;
+	int w1 = tx - x1 - xS(5);
+	if( w1 > 0 ) draw_bar(x1, y1, w1);
+	BC_Resources *resources = top_level->get_resources();
+	popup->set_color(resources->text_background_hi);
+	popup->draw_text(tx, ty, text+1, len);
+	int x2 = tx + tw + xS(5), w2 = mw - xS(5) - x2;
+	if( w2 > 0 ) draw_bar(x2, y1, w2);
+}
 
 int BC_MenuItem::add_submenu(BC_SubMenu *submenu)
 {

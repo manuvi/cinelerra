@@ -71,6 +71,9 @@ public:
 	void set_enabled(int v);
 
 private:
+	void draw_bar(int bx, int by, int bw);
+	void draw_title_bar();
+
 	BC_WindowBase *top_level;
 	BC_MenuBar *menu_bar;
 	BC_MenuPopup *menu_popup;
