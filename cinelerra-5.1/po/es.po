@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: Cinelerra 5.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-10-15 14:02-0600\n"
-"PO-Revision-Date: 2020-04-20 02:29+0200\n"
+"PO-Revision-Date: 2020-04-29 17:17+0200\n"
 "Last-Translator: Sergio Daniel Gomez <sergio.sgsistemas@gmail.com>\n"
 "Language-Team: SPANISH <LL@li.org>\n"
 "Language: es\n"
@@ -702,7 +702,7 @@ msgstr "Ancho:"
 #: cinelerra/setformat.C:370 plugins/photoscale/photoscale.C:60
 #: plugins/photoscale/photoscale.C:76
 msgid "Height:"
-msgstr "Altura:"
+msgstr "Alto:"
 
 #: cinelerra/assetedit.C:493
 msgid "Actual width:"
@@ -889,7 +889,7 @@ msgstr "ppm"
 
 #: cinelerra/assetpopup.C:564 cinelerra/loadfile.C:47
 msgid "Load files..."
-msgstr "Cargar archivos ..."
+msgstr "Cargar archivos..."
 
 #: cinelerra/assetpopup.C:590
 msgid "Copy file list"
@@ -1442,7 +1442,7 @@ msgstr "Usar granja de renderizado"
 
 #: cinelerra/bdcreate.C:83
 msgid "BD Render..."
-msgstr "BD Render ..."
+msgstr "BD Render..."
 
 #: cinelerra/bdcreate.C:83
 msgid "Ctrl-Shift-D"
@@ -1607,7 +1607,7 @@ msgstr "Ancho"
 
 #: cinelerra/binfolder.C:52
 msgid "Height"
-msgstr "Altura"
+msgstr "Alto"
 
 #: cinelerra/binfolder.C:53 cinelerra/performanceprefs.C:227
 msgid "Framerate"
@@ -1963,7 +1963,7 @@ msgstr "Canales"
 
 #: cinelerra/channeledit.C:491
 msgid "Add..."
-msgstr "Añadir ..."
+msgstr "Añadir..."
 
 #: cinelerra/channeledit.C:521 cinelerra/pluginpopup.C:243
 #: cinelerra/trackpopup.C:124
@@ -1981,11 +1981,11 @@ msgstr "Sintonizar"
 
 #: cinelerra/channeledit.C:592 cinelerra/labelpopup.C:65
 msgid "Edit..."
-msgstr "Editar ..."
+msgstr "Editar..."
 
 #: cinelerra/channeledit.C:606
 msgid "Picture..."
-msgstr "Imagen ..."
+msgstr "Imagen..."
 
 #: cinelerra/channeledit.C:623
 msgid ": Scan confirm"
@@ -3805,7 +3805,7 @@ msgstr "salida estándar"
 #: cinelerra/dcraw.C:10558
 #, c-format
 msgid "Writing data to %s ...\n"
-msgstr "Escribiendo datos a %s ...\n"
+msgstr "Escribiendo datos en %s ...\n"
 
 #: cinelerra/defaultformats.h:42
 msgid "1080P/60"
@@ -3879,7 +3879,7 @@ msgstr "bloquear"
 
 #: cinelerra/devicedvbinput.C:494
 msgid "lost"
-msgstr "perdió"
+msgstr "perdido"
 
 #: cinelerra/devicempeginput.C:618
 #, c-format
@@ -3918,7 +3918,7 @@ msgstr "config geom %dx%d! = %dx%d best_geom\n"
 
 #: cinelerra/dvdcreate.C:86
 msgid "DVD Render..."
-msgstr "DVD Render ..."
+msgstr "DVD Render..."
 
 #: cinelerra/dvdcreate.C:86
 msgid "Alt-d"
@@ -5600,7 +5600,7 @@ msgstr "ArchivoVorvis::abrir_archivo %s: flujo de bits invalido.\n"
 
 #: cinelerra/flipbook.C:32
 msgid "Flipbook..."
-msgstr "Flipbook ..."
+msgstr "Flipbook..."
 
 #: cinelerra/floatauto.C:436 cinelerra/scopewindow.C:1239
 #: plugins/titler/titlerwindow.C:686
@@ -6446,7 +6446,7 @@ msgstr "Deshacer"
 #: cinelerra/mainmenu.C:647
 #, c-format
 msgid "Undo %s"
-msgstr "Deshacer %s"
+msgstr "Deshacer: %s"
 
 #: cinelerra/mainmenu.C:653
 msgid "Redo"
@@ -6459,7 +6459,7 @@ msgstr "Mayús-Z"
 #: cinelerra/mainmenu.C:668
 #, c-format
 msgid "Redo %s"
-msgstr "Rehacer %s"
+msgstr "Rehacer: %s"
 
 #: cinelerra/mainmenu.C:674
 msgid "Cut keyframes"
@@ -6837,7 +6837,7 @@ msgstr " encontrar frame_id línea de tiempo (%d) fracasado\n"
 
 #: cinelerra/menuattacheffect.C:29
 msgid "Attach Effect..."
-msgstr "Adjuntar Efecto ..."
+msgstr "Adjuntar Efecto..."
 
 #: cinelerra/menuattacheffect.C:45
 msgid "Attach Effect"
@@ -6877,7 +6877,7 @@ msgstr "Alinear ediciones"
 
 #: cinelerra/menueffects.C:58
 msgid "Render effect..."
-msgstr "Renderizar efecto ..."
+msgstr "Renderizar efecto..."
 
 #: cinelerra/menueffects.C:147
 #, c-format
@@ -7459,7 +7459,7 @@ msgstr "recortar"
 
 #: cinelerra/mwindowedit.C:592
 msgid "blade"
-msgstr "cuchilla"
+msgstr "dividir"
 
 #: cinelerra/mwindowedit.C:612
 msgid "split | cut"
@@ -7491,7 +7491,7 @@ msgstr "gestiona arrastrar"
 
 #: cinelerra/mwindowedit.C:949
 msgid "match output size"
-msgstr "ajusta a la dimensión de la salida"
+msgstr "ajustar a la dimensión de la salida"
 
 #: cinelerra/mwindowedit.C:984
 msgid "del edit"
@@ -8645,7 +8645,7 @@ msgstr ""
 
 #: cinelerra/preferencesthread.C:74
 msgid "Preferences..."
-msgstr "Preferencias ..."
+msgstr "Preferencias..."
 
 #: cinelerra/preferencesthread.C:74
 msgid "Shift-P"
@@ -8839,7 +8839,7 @@ msgstr ""
 
 #: cinelerra/record.C:87
 msgid "Record..."
-msgstr "Grabar ..."
+msgstr "Grabar..."
 
 #: cinelerra/record.C:556
 msgid "Deleting"
@@ -9206,7 +9206,7 @@ msgstr ": RemoteWindow"
 
 #: cinelerra/render.C:85
 msgid "Render..."
-msgstr "Renderizar ..."
+msgstr "Renderizar..."
 
 #: cinelerra/render.C:85
 msgid "Shift-R"
@@ -9247,11 +9247,11 @@ msgstr "Formato de imagen y no dato de vídeo"
 #: cinelerra/render.C:472
 #, c-format
 msgid "Rendering %s..."
-msgstr "Rendering %s ..."
+msgstr "Rendering %s..."
 
 #: cinelerra/render.C:476
 msgid "Rendering..."
-msgstr "Renderizando ..."
+msgstr "Renderizando..."
 
 #: cinelerra/render.C:494
 #, c-format
@@ -9429,7 +9429,7 @@ msgstr "Guardar"
 
 #: cinelerra/savefile.C:90
 msgid "Save as..."
-msgstr "Guardar como ..."
+msgstr "Guardar como..."
 
 #: cinelerra/savefile.C:132
 msgid "SymLink"
@@ -9461,7 +9461,7 @@ msgstr "Exportar Proyecto..."
 
 #: cinelerra/scale.C:36
 msgid "Resize..."
-msgstr "Cambiar el tamaño ..."
+msgstr "Redimensionar..."
 
 #: cinelerra/scale.C:197
 msgid ": Scale"
@@ -9522,7 +9522,7 @@ msgstr "Vectorscopio"
 
 #: cinelerra/setformat.C:50
 msgid "Format..."
-msgstr "Formato ..."
+msgstr "Formato..."
 
 #: cinelerra/setformat.C:50
 msgid "Shift-F"
@@ -9587,7 +9587,7 @@ msgstr ": Cargando"
 
 #: cinelerra/splashgui.C:52
 msgid "Loading..."
-msgstr "Cargando ..."
+msgstr "Cargando..."
 
 #: cinelerra/statusbar.C:131
 msgid "Welcome to Cinelerra."
@@ -9780,7 +9780,7 @@ msgstr "borde_duro"
 
 #: cinelerra/trackpopup.C:102
 msgid "Attach effect..."
-msgstr "Adjuntar efecto ..."
+msgstr "Adjuntar efecto..."
 
 #: cinelerra/trackpopup.C:117
 msgid ": Attach Effect"
@@ -9788,7 +9788,7 @@ msgstr ": Adjuntar Efecto"
 
 #: cinelerra/trackpopup.C:157
 msgid "Resize track..."
-msgstr "Cambiar el tamaño de la pista ..."
+msgstr "Redimensionar pista..."
 
 #: cinelerra/trackpopup.C:176
 msgid "Match output size"
@@ -9879,7 +9879,7 @@ msgstr "Tiempo: %2.2f seg"
 
 #: cinelerra/transitionpopup.C:278
 msgid "Attach..."
-msgstr "Adjuntar ..."
+msgstr "Adjuntar..."
 
 #: cinelerra/transitionpopup.C:351
 msgid "Length"
@@ -9955,7 +9955,7 @@ msgstr "Aritmética..."
 
 #: cinelerra/vpatchgui.C:331
 msgid "PorterDuff..."
-msgstr "PorterDuff ..."
+msgstr "PuertoSinValor..."
 
 #: cinelerra/vpatchgui.C:343
 msgid "Logical..."
@@ -10651,7 +10651,7 @@ msgstr "Umbral:"
 
 #: plugins/chromakey/chromakey.C:201 plugins/chromakeyhsv/chromakey.C:308
 msgid "Color..."
-msgstr "Color ..."
+msgstr "Color..."
 
 #: plugins/chromakey/chromakey.C:260
 msgid "Use value"
@@ -10807,7 +10807,7 @@ msgstr "Preservar luminosidad"
 
 #: plugins/colorbalance/colorbalancewindow.C:164
 msgid "Lock parameters"
-msgstr "Bloquear parámetros"
+msgstr "Encadenar parámetros"
 
 #: plugins/colorspace/colorspace.C:61
 msgid "ColorSpace"
@@ -13486,11 +13486,11 @@ msgstr "→ Alfa"
 
 #: plugins/swapframes/swapframes.C:118
 msgid "Swap 0-1, 2-3, 4-5..."
-msgstr "Intercambiar 0-1, 2-3, 4-5 ..."
+msgstr "Intercambiar 0-1, 2-3, 4-5..."
 
 #: plugins/swapframes/swapframes.C:144
 msgid "Swap 1-2, 3-4, 5-6..."
-msgstr "Intercambiar 1-2, 3-4, 5-6 ..."
+msgstr "Intercambiar 1-2, 3-4, 5-6..."
 
 #: plugins/swapframes/swapframes.C:255
 msgid "Swap Frames"
@@ -14093,3 +14093,11 @@ msgstr "Y Ampliación:"
 #: plugins/zoomblur/zoomblur.C:352
 msgid "Zoom Blur"
 msgstr "Desenfoque Zoom"
+
+#: cinelerra/scopewindow.C:1267
+msgid "VectorWheel"
+msgstr "RuedaCromática"
+
+#: plugins/boxblur/boxblur.C:454
+msgid "Position & Size"
+msgstr "Posición y Tamaño"

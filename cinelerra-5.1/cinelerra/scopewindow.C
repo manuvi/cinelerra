@@ -1319,10 +1319,10 @@ void ScopeSettings::create_objects()
 	smooth_on->set_checked(gui->use_smooth);
 	if( gui->use_refresh >= 0 ) {
 		add_item(refresh_on =
-			new ScopeSettingOn(this, _("Realtime"), SCOPE_REFRESH));
+			new ScopeSettingOn(this, _("Refresh on Stop"), SCOPE_REFRESH));
 		refresh_on->set_checked(gui->use_refresh);
 	}
-	add_item(new BC_MenuItem(_("-Graticule-")));
+	add_item(new BC_MenuItem(_("-VectorWheel Grids-")));
 
 	gui->grat_paths.remove_all_objects();
 	ScopeGratItem *item;

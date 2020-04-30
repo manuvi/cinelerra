@@ -7,7 +7,13 @@ Cinfinity icons selected in Preferences Sam (CC BY 3.0,
 Cakewalk and Neophyte themes by Olaf Wolff (CC BY 4.0,
   https://creativecommons.org/licenses/by/4.0/)
 .
-March 2020 New Feature of note:
+April 2020 New Features of note:
+  Potential Performance improvements added.
+  New way of creating and using a stack of Effects.
+  Additional ShapeWipe transitions are now available.
+  BoxBlur plugin allows forjust blurring an area.
+  The Drag box for plugins automatically turns on/off.  
+March 2020 New Features of note:
   Videoscope is now on the Compositor and Viewer.
   Additional enhancements made for the Videoscope.
   Several new Shape Wipe transitions are included.
@@ -19,7 +25,6 @@ February 2020 New Features of note:
   Rewrote and replaced OGG/Theora/Vorbis file codec.
   Shortcut for "Delete last track" has changed.
   PulseAudio option is now built in as audio choice.
-.
 January 2020 New Features of note:
   Updated reference Manual using LaTeX now complete.
   File by Reference capability now available.
