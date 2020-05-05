@@ -76,6 +76,7 @@ public:
 							Track *track) { return 0; };
 	virtual VirtualNode* create_plugin(Plugin *real_plugin) { return 0; };
 
+	int check_circular(Track *track);
 
 // Called by read_data to get the previous plugin in a parent node's subnode
 // table.

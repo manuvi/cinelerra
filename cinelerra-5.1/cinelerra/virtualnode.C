@@ -28,6 +28,7 @@
 #include "floatautos.h"
 #include "intauto.h"
 #include "intautos.h"
+#include "mainerror.h"
 #include "mwindow.h"
 #include "module.h"
 #include "panauto.h"
@@ -286,29 +287,29 @@ int VirtualNode::expand_as_plugin(int duplicate)
 	return 0;
 }
 
-int VirtualNode::attach_virtual_module(Plugin *plugin,
-	int plugin_number,
-	int duplicate,
-	int64_t current_position)
+int VirtualNode::check_circular(Track *track)
 {
-	if(plugin->on)
-	{
-		int real_module_number = plugin->shared_location.module;
-		Module *real_module = vconsole->module_number(real_module_number);
+	if( real_module && real_module->track == track ) return 1;
+	return !parent_node ? 0 : parent_node->check_circular(track);
+}
+
+int VirtualNode::attach_virtual_module(Plugin *plugin, int plugin_set_no,
+		int duplicate, int64_t current_position)
+{
+	if( plugin->on ) {
+		int shared_track_no = plugin->shared_location.module;
+		Module *real_module = vconsole->module_number(shared_track_no);
 // If a track is deleted real_module is not found
-		if(!real_module) return 1;
-
-		Track *track = real_module->track;
-
+		if( !real_module ) return 1;
+		Track *real_track = real_module->track;
 // Switch off if circular reference.  This happens if a track is deleted.
-		if(this->real_module && track == this->real_module->track) return 1;
-
-
-
-
-		VirtualNode *virtual_module = create_module(plugin,
-			real_module,
-			track);
+		if( check_circular(real_track) ) {
+			int plugin_track_no = plugin->track->get_item_number();
+			eprintf("circular references, track %d, plugin_set %d, plugin %d\n",
+				plugin_track_no, plugin_set_no, plugin->get_item_number());
+			return 1;
+		}
+		VirtualNode *virtual_module = create_module(plugin, real_module, real_track);
 
 		subnodes.append(virtual_module);
 		virtual_module->expand(duplicate, current_position);

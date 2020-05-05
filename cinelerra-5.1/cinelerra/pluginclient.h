@@ -426,6 +426,7 @@ public:
 // Plugin must call this before performing OpenGL operations.
 // Returns 1 if the user supports opengl buffers.
 	int get_use_opengl();
+	int to_ram(VFrame *vframe);
 
 // Get total tracks to process
 	int get_total_buffers();

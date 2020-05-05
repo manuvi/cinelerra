@@ -216,6 +216,7 @@ public:
 	void set_use_opengl(int value, VideoDevice *vdevice);
 // Plugin must call this before performing OpenGL operations.
 	int get_use_opengl();
+	int to_ram(VFrame *vframe);
 
 // Called from plugin client
 // Returns 1 if a GUI is open so OpenGL routines can determine if

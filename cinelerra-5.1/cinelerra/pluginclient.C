@@ -1044,6 +1044,11 @@ int PluginClient::get_use_opengl()
 	return server->get_use_opengl();
 }
 
+int PluginClient::to_ram(VFrame *vframe)
+{
+	return server->to_ram(vframe);
+}
+
 int PluginClient::get_total_buffers()
 {
 	return total_in_buffers;

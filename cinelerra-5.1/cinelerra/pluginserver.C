@@ -509,6 +509,8 @@ void PluginServer::process_transition(VFrame *input,
 {
 	if( !plugin_open ) return;
 	PluginVClient *vclient = (PluginVClient*)client;
+	to_ram(input);
+	to_ram(output);
 
 	vclient->source_position = current_position;
 	vclient->source_start = 0;
@@ -1002,6 +1004,15 @@ int PluginServer::get_use_opengl()
 	return use_opengl;
 }
 
+int PluginServer::to_ram(VFrame *vframe)
+{
+	if( vframe->get_opengl_state() == VFrame::RAM ) return 0;
+	if( !vdevice ) return -1;
+	VDeviceX11 *vdevice_x11 = (VDeviceX11*) vdevice->get_output_base();
+	int vw = vframe->get_w(), vh = vframe->get_h();
+	vdevice_x11->do_camera(vframe, vframe, 0,0,vw,vh, 0,0,vw,vh); // copy to ram
+	return 1;
+}
 
 void PluginServer::run_opengl(PluginClient *plugin_client)
 {
