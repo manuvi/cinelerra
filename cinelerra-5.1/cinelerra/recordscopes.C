@@ -121,6 +121,7 @@ void RecordScopeGUI::create_objects()
 	use_vect_gain = mwindow->session->use_vect_gain;
 	use_smooth = mwindow->session->use_smooth;
 	use_refresh = -1;
+	use_release = 0;
 	use_graticule = mwindow->session->use_graticule;
 	ScopeGUI::create_objects();
 }
@@ -137,6 +138,7 @@ void RecordScopeGUI::toggle_event()
 	mwindow->session->use_vect_gain = use_vect_gain;
 	mwindow->session->use_smooth = use_smooth;
 	mwindow->session->use_refresh = 0;
+	mwindow->session->use_release = 0;
 	mwindow->session->use_graticule = use_graticule;
 }
 

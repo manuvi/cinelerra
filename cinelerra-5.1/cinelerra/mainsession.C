@@ -110,6 +110,7 @@ MainSession::MainSession(MWindow *mwindow)
 	use_vect_gain = 5;
 	use_smooth = 0;
 	use_refresh = 0;
+	use_release = 0;
 	use_graticule = 0;
 	afolders_w = 0;
 	show_vwindow = show_awindow = show_cwindow = show_gwindow = show_lwindow = 0;
@@ -330,6 +331,7 @@ void MainSession::default_window_positions(int window_config)
 	use_vect_gain = 5;
 	use_smooth = 1;
 	use_refresh = 0;
+	use_release = 0;
 	use_graticule = 0;
 
 	if(mwindow->edl)
@@ -449,6 +451,7 @@ int MainSession::load_defaults(BC_Hash *defaults)
 	use_vect_gain = defaults->get("USE_VECT_GAIN", use_vect_gain);
 	use_smooth = defaults->get("USE_SMOOTH", use_smooth);
 	use_refresh = defaults->get("USE_REFRESH", use_refresh);
+	use_release = defaults->get("USE_RELEASE", use_release);
 	use_graticule = defaults->get("USE_GRATICULE", use_graticule);
 
 //printf("MainSession::load_defaults 1\n");
@@ -579,6 +582,7 @@ int MainSession::save_defaults(BC_Hash *defaults)
 	defaults->update("USE_VECT_GAIN", use_vect_gain);
 	defaults->update("USE_SMOOTH", use_smooth);
 	defaults->update("USE_REFRESH", use_refresh);
+	defaults->update("USE_RELEASE", use_release);
 	defaults->update("USE_GRATICULE", use_graticule);
 
  	defaults->update("ABINS_W", afolders_w);

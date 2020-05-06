@@ -176,6 +176,7 @@ public:
 	int use_vect_gain;
 	int use_smooth;
 	int use_refresh;
+	int use_release;
 	int use_graticule;
 
 	int afolders_w;

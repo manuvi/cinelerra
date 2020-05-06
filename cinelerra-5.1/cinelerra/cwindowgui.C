@@ -1098,6 +1098,7 @@ int CWindowCanvas::scope_on()
 	EditPanelScopeDialog *scope_dialog = gui->edit_panel->scope_dialog;
 	if( !scope_dialog || !scope_dialog->scope_gui ) return 0;
 	if( scope_dialog->scope_gui->use_refresh ) return 0;
+	if( scope_dialog->scope_gui->use_release ) return 0;
 	return scope_dialog->running();
 }
 
@@ -1107,6 +1108,7 @@ void CWindowCanvas::draw_scope(VFrame *output, int refresh)
 	EditPanelScopeDialog *scope_dialog = gui->edit_panel->scope_dialog;
 	if( !scope_dialog || !scope_dialog->scope_gui ) return;
 	if( scope_dialog->scope_gui->use_refresh && !refresh ) return;
+	if( scope_dialog->scope_gui->use_release && refresh >= 0 ) return;
 	scope_dialog->process(output);
 }
 
@@ -3342,6 +3344,9 @@ int CWindowCanvas::button_release_event()
 {
 	int result = 0;
 	const char *undo_label = 0;
+	BC_WindowBase *window = get_canvas();
+	if( window && !window->get_video_on() )
+		draw_scope(refresh_frame, -1);
 
 	switch( gui->current_operation ) {
 	case CWINDOW_SCROLL:

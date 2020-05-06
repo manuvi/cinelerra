@@ -1225,6 +1225,7 @@ void EditPanelScopeGUI::create_objects()
 	use_vect_gain = session->use_vect_gain;
 	use_smooth = session->use_smooth;
 	use_refresh = session->use_refresh;
+	use_release = session->use_release;
 	use_graticule = session->use_graticule;
 	ScopeGUI::create_objects();
 }
@@ -1241,6 +1242,7 @@ void EditPanelScopeGUI::toggle_event()
 	session->use_vect_gain = use_vect_gain;
 	session->use_smooth = use_smooth;
 	session->use_refresh = use_refresh;
+	session->use_release = use_release;
 	session->use_graticule = use_graticule;
 }
 

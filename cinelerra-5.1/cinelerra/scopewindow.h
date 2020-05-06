@@ -36,7 +36,7 @@ enum {
 	SCOPE_HISTOGRAM, SCOPE_HISTOGRAM_RGB,
 	SCOPE_WAVEFORM, SCOPE_WAVEFORM_RGB, SCOPE_WAVEFORM_PLY,
 	SCOPE_VECTORSCOPE, SCOPE_VECTORWHEEL,
-	SCOPE_SMOOTH, SCOPE_REFRESH,
+	SCOPE_SMOOTH, SCOPE_REFRESH, SCOPE_RELEASE,
 };
 
 // Number of divisions in histogram.
@@ -200,10 +200,12 @@ class ScopeSettings : public BC_PopupMenu
 public:
 	ScopeSettings(ScopeGUI *gui, int x, int y);
 	void create_objects();
+	void update_toggles();
 
 	ScopeGUI *gui;
 	ScopeSettingOn *smooth_on;
 	ScopeSettingOn *refresh_on;
+	ScopeSettingOn *release_on;
 };
 
 
@@ -323,7 +325,8 @@ public:
 	int use_hist_parade, use_wave_parade;
 
 	int bins[HIST_SECTIONS][TOTAL_BINS];
-	int frame_w, use_smooth, use_refresh;
+	int frame_w, use_smooth;
+	int use_refresh, use_release;
 	int use_wave_gain, use_vect_gain;
 };
 

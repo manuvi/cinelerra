@@ -455,6 +455,7 @@ void ScopeGUI::reset()
 	frame_w = 1;
 	use_smooth = 1;
 	use_refresh = 0;
+	use_release = 0;
 	use_wave_gain = 5;
 	use_vect_gain = 5;
 	use_hist = 0;
@@ -919,6 +920,7 @@ void ScopeGUI::process(VFrame *output_frame)
 void ScopeGUI::update_toggles()
 {
 	scope_menu->update_toggles();
+	settings->update_toggles();
 }
 
 ScopePanel::ScopePanel(ScopeGUI *gui, int x, int y, int w, int h)
@@ -1297,7 +1299,11 @@ int ScopeSettingOn::handle_event()
 		break;
 	case SCOPE_REFRESH:
 		gui->use_refresh = v;
+		gui->use_release = 0;
 		break;
+	case SCOPE_RELEASE:
+		gui->use_release = v;
+		gui->use_refresh = 0;
 	}
 	gui->toggle_event();
 	gui->update_toggles();
@@ -1310,6 +1316,8 @@ ScopeSettings::ScopeSettings(ScopeGUI *gui, int x, int y)
  : BC_PopupMenu(x, y, xS(125), _("Settings"))
 {
 	this->gui = gui;
+	refresh_on = 0;
+	release_on = 0;
 }
 
 void ScopeSettings::create_objects()
@@ -1320,7 +1328,10 @@ void ScopeSettings::create_objects()
 	if( gui->use_refresh >= 0 ) {
 		add_item(refresh_on =
 			new ScopeSettingOn(this, _("Refresh on Stop"), SCOPE_REFRESH));
+		add_item(release_on =
+			new ScopeSettingOn(this, _("Refresh on Release"), SCOPE_RELEASE));
 		refresh_on->set_checked(gui->use_refresh);
+		release_on->set_checked(gui->use_release);
 	}
 	add_item(new BC_MenuItem(_("-VectorWheel Grids-")));
 
@@ -1344,6 +1355,14 @@ void ScopeSettings::create_objects()
 		if( item->idx == gui->grat_idx ) item->set_checked(1);
 		gui->grat_paths.append(cstrdup(file_item->get_path()));
 	}
+}
+
+void ScopeSettings::update_toggles()
+{
+	if( refresh_on )
+		refresh_on->set_checked(gui->use_refresh);
+	if( release_on )
+		release_on->set_checked(gui->use_release);
 }
 
 ScopeGratItem::ScopeGratItem(ScopeSettings *settings, const char *text, int idx)

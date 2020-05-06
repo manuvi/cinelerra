@@ -113,6 +113,7 @@ class VWindowCanvas : public Canvas
 public:
 	VWindowCanvas(MWindow *mwindow, VWindowGUI *gui);
 	void create_objects(EDL *edl);
+	int button_release_event();
 	void zoom_resize_window(float percentage);
 	int scope_on();
 	void draw_scope(VFrame *output, int refresh);
