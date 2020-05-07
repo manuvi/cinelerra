@@ -1313,7 +1313,7 @@ int ScopeSettingOn::handle_event()
 }
 
 ScopeSettings::ScopeSettings(ScopeGUI *gui, int x, int y)
- : BC_PopupMenu(x, y, xS(125), _("Settings"))
+ : BC_PopupMenu(x, y, xS(150), _("Settings"))
 {
 	this->gui = gui;
 	refresh_on = 0;

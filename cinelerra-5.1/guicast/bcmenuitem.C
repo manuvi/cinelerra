@@ -201,10 +201,10 @@ int BC_MenuItem::dispatch_button_press()
 
 int BC_MenuItem::dispatch_button_release(int &redraw)
 {
+	int len = strlen(text);
+	if( len > 0 && text[0] == '-' && text[len-1] == '-' ) return 0;
+
 	int result = 0;
-
-	if(!strcmp(text, "-")) return 0;
-
 	if(submenu)
 	{
 		result = submenu->dispatch_button_release();

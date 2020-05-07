@@ -849,21 +849,21 @@ int TimeBar::button_release_event()
 //printf("TimeBar::button_release_event %d %d\n", __LINE__, current_operation);
 	int result = 0;
 	int need_redraw = 0;
-	switch( current_operation )
-	{
-		case TIMEBAR_DRAG:
-			mwindow->gui->get_focused_pane()->canvas->stop_dragscroll();
+	switch( current_operation ) {
+	case TIMEBAR_DRAG: {
+		mwindow->gui->get_focused_pane()->canvas->stop_dragscroll();
+		current_operation = TIMEBAR_NONE;
+		need_redraw = 1;
+		CWindowCanvas *canvas = mwindow->cwindow->gui->canvas;
+		canvas->draw_scope(canvas->refresh_frame, -1);
+		result = 1;
+		break; }
+	default:
+		if( current_operation != TIMEBAR_NONE ) {
 			current_operation = TIMEBAR_NONE;
-			need_redraw = 1;
 			result = 1;
-			break;
-
-		default:
-			if( current_operation != TIMEBAR_NONE ) {
-				current_operation = TIMEBAR_NONE;
-				result = 1;
-			}
-			break;
+		}
+		break;
 	}
 
 	if( (!cursor_above() && highlighted) || need_redraw ) {
