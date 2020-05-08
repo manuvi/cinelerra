@@ -281,13 +281,12 @@ int AModule::import_samples(AEdit *edit,
 		edit_sample_rate = nested_edl->session->sample_rate;
 		int command = direction == PLAY_REVERSE ?
 			NORMAL_REWIND : NORMAL_FWD;
-		if( !nested_command ) {
+		if( !nested_command )
 			nested_command = new TransportCommand;
-			nested_command->command = command;
-			nested_command->get_edl()->copy_all(nested_edl);
-			nested_command->change_type = CHANGE_ALL;
-			nested_command->realtime = renderengine->command->realtime;
-		}
+		nested_command->command = command;
+		nested_command->get_edl()->copy_all(nested_edl);
+		nested_command->change_type = CHANGE_ALL;
+		nested_command->realtime = renderengine->command->realtime;
 		if( !nested_renderengine ) {
 			nested_renderengine = new RenderEngine(0, get_preferences(), 0, 1);
 			nested_renderengine->set_acache(get_cache());
