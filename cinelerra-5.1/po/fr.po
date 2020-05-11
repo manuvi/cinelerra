@@ -918,11 +918,11 @@ msgstr "Effets audio"
 
 #: cinelerra/awindowgui.C:89
 msgid "Video Effects"
-msgstr "Video Effects"
+msgstr "Effets vidéo"
 
 #: cinelerra/awindowgui.C:90
 msgid "Audio Transitions"
-msgstr "Audio Transitions"
+msgstr "Transitions audio"
 
 #: cinelerra/awindowgui.C:91
 msgid "Video Transitions"

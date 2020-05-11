@@ -158,7 +158,7 @@ RotateFine::RotateFine(RotateWindow *window, RotateEffect *plugin, int x, int y)
 {
 	this->window = window;
 	this->plugin = plugin;
-	set_precision(0.01);
+	set_precision(0.1);
 	set_use_caption(0);
 }
 
@@ -471,8 +471,6 @@ int RotateEffect::process_buffer(VFrame *frame,
 	double frame_rate)
 {
 	load_configuration();
-	int w = frame->get_w();
-	int h = frame->get_h();
 //printf("RotateEffect::process_buffer %d\n", __LINE__);
 
 
@@ -534,65 +532,27 @@ int RotateEffect::process_buffer(VFrame *frame,
 //printf("RotateEffect::process_buffer %d draw_pivot=%d\n", __LINE__, config.draw_pivot);
 
 // Draw center
-#define CENTER_H xS(20)
-#define CENTER_W yS(20)
-#define DRAW_CENTER(components, type, max) \
-{ \
-	type **rows = (type**)get_output()->get_rows(); \
-	if( (center_x >= 0 && center_x < w) && (center_y >= 0 && center_y < h) ) \
-	{ \
-		for(int i = center_x - CENTER_W / 2; i <= center_x + CENTER_W / 2; i++) \
-		{ \
-			if(i >= 0 && i < w) \
-			{ \
-				type *hrow = rows[center_y] + components * i; \
-				hrow[0] = max - hrow[0]; \
-				hrow[1] = max - hrow[1]; \
-				hrow[2] = max - hrow[2]; \
-				hrow += components; \
-			} \
-		} \
- \
-		for(int i = center_y - CENTER_W / 2; i <= center_y + CENTER_W / 2; i++) \
-		{ \
-			if(i >= 0 && i < h) \
-			{ \
-				type *vrow = rows[i] + center_x * components; \
-				vrow[0] = max - vrow[0]; \
-				vrow[1] = max - vrow[1]; \
-				vrow[2] = max - vrow[2]; \
-			} \
-		} \
-	} \
-}
-
-	if(config.draw_pivot)
-	{
-		int center_x = (int)(config.pivot_x * w / 100); \
-		int center_y = (int)(config.pivot_y * h / 100); \
-
-//printf("RotateEffect::process_buffer %d %d %d\n", __LINE__, center_x, center_y);
-		switch(get_output()->get_color_model())
-		{
-			case BC_RGB_FLOAT:
-				DRAW_CENTER(3, float, 1.0)
-				break;
-			case BC_RGBA_FLOAT:
-				DRAW_CENTER(4, float, 1.0)
-				break;
-			case BC_RGB888:
-				DRAW_CENTER(3, unsigned char, 0xff)
-				break;
-			case BC_RGBA8888:
-				DRAW_CENTER(4, unsigned char, 0xff)
-				break;
-			case BC_YUV888:
-				DRAW_CENTER(3, unsigned char, 0xff)
-				break;
-			case BC_YUVA8888:
-				DRAW_CENTER(4, unsigned char, 0xff)
-				break;
-		}
+	if(config.draw_pivot) {
+		VFrame *vframe = get_output();
+		int w = vframe->get_w(), h = vframe->get_h();
+		int mx = w > h ? w : h;
+		int lw = mx/400 + 1, cxy = mx/80;
+		int center_x = (int)(config.pivot_x * w/100);
+		int center_y = (int)(config.pivot_y * h/100);
+		int x1 = center_x - cxy, x2 = center_x + cxy;
+		int y1 = center_y - cxy, y2 = center_y + cxy;
+		vframe->set_pixel_color(WHITE);
+		for( int i=0; i<lw; ++i )
+			frame->draw_line(x1-i,center_y-i, x2-i,center_y-i);
+		vframe->set_pixel_color(BLACK);
+		for( int i=1; i<=lw; ++i )
+			frame->draw_line(x1+i,center_y+i, x2+i,center_y+i);
+		vframe->set_pixel_color(WHITE);
+		for( int i=0; i<lw; ++i )
+			frame->draw_line(center_x-i,y1-i, center_x-i,y2-i);
+		vframe->set_pixel_color(BLACK);
+		for( int i=1; i<=lw; ++i )
+			frame->draw_line(center_x+i,y1+i, center_x+i,y2+i);
 	}
 
 // Conserve memory by deleting large frames
@@ -618,29 +578,41 @@ int RotateEffect::handle_opengl()
 
 	if(config.draw_pivot)
 	{
-		int w = get_output()->get_w();
-		int h = get_output()->get_h();
-		int center_x = (int)(config.pivot_x * w / 100);
-		int center_y = (int)(config.pivot_y * h / 100);
-
+		VFrame *vframe = get_output();
+		int w = vframe->get_w(), h = vframe->get_h();
+		int mx = w > h ? w : h;
+		int lw = mx/400 + 1, cxy = mx/80;
+		int center_x = (int)(config.pivot_x * w/100);
+		int center_y = (int)(config.pivot_y * h/100);
+		int x1 = center_x - cxy, x2 = center_x + cxy;
+		int y1 = center_y - cxy, y2 = center_y + cxy;
 		glDisable(GL_TEXTURE_2D);
-		glColor4f(0.0, 0.0, 0.0, 1.0);
+		int is_yuv = BC_CModels::is_yuv(vframe->get_color_model());
+		float rwt = 1, gwt = is_yuv? 0.5 : 1, bwt = is_yuv? 0.5 : 1;
+		float rbk = 0, gbk = is_yuv? 0.5 : 0, bbk = is_yuv? 0.5 : 0;
 		glBegin(GL_LINES);
-		glVertex3f(center_x, -h + center_y - CENTER_H / 2, 0.0);
-		glVertex3f(center_x, -h + center_y + CENTER_H / 2, 0.0);
+		glColor4f(rwt, gwt, bwt, 1.0);
+		for( int i=0; i<lw; ++i ) {
+			glVertex3f(x1-i, center_y-i - h, 0.0);
+			glVertex3f(x2-i, center_y-i - h, 0.0);
+		}
+		glColor4f(rbk, gbk, bbk, 1.0);
+		for( int i=1; i<=lw; ++i ) {
+			glVertex3f(x1+i, center_y+i - h, 0.0);
+			glVertex3f(x2+i, center_y+i - h, 0.0);
+		}
 		glEnd();
 		glBegin(GL_LINES);
-		glVertex3f(center_x - CENTER_W / 2, -h + center_y, 0.0);
-		glVertex3f(center_x + CENTER_W / 2, -h + center_y, 0.0);
-		glEnd();
-		glColor4f(1.0, 1.0, 1.0, 1.0);
-		glBegin(GL_LINES);
-		glVertex3f(center_x - 1, -h + center_y - CENTER_H / 2 - 1, 0.0);
-		glVertex3f(center_x - 1, -h + center_y + CENTER_H / 2 - 1, 0.0);
-		glEnd();
-		glBegin(GL_LINES);
-		glVertex3f(center_x - CENTER_W / 2 - 1, -h + center_y - 1, 0.0);
-		glVertex3f(center_x + CENTER_W / 2 - 1, -h + center_y - 1, 0.0);
+		glColor4f(rwt, gwt, bwt, 1.0);
+		for( int i=0; i<lw; ++i ) {
+			glVertex3f(center_x-i, y1-i - h, 0.0);
+			glVertex3f(center_x-i, y2-i - h, 0.0);
+		}
+		glColor4f(rbk, gbk, bbk, 1.0);
+		for( int i=1; i<=lw; ++i ) {
+			glVertex3f(center_x+i, y1+i - h, 0.0);
+			glVertex3f(center_x+i, y2+i - h, 0.0);
+		}
 		glEnd();
 	}
 #endif
