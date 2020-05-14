@@ -57,6 +57,7 @@ Track::Track(EDL *edl, Tracks *tracks) : ListItem<Track>()
 	this->edl = edl;
 	this->tracks = tracks;
 	y_pixel = 0;
+	data_h = 64;
 	expand_view = 0;
 	draw = 1;
 	gang = 1;
@@ -92,6 +93,7 @@ int Track::copy_settings(Track *track)
 	this->nudge = track->nudge;
 	this->mixer_id = track->mixer_id;
 	this->play = track->play;
+	this->data_h = track->data_h;
 	this->track_w = track->track_w;
 	this->track_h = track->track_h;
 	this->masks = track->masks;
@@ -207,7 +209,7 @@ int Track::vertical_span(Theme *theme)
 	if( show_titles() )
 		result += theme->get_image("title_bg_data")->get_h();
 	if( show_assets() )
-		result += edl->local_session->zoom_track;
+		result += data_h;
 	if( expand_view )
 		result += plugin_set.total * theme->get_image("plugin_bg_data")->get_h();
 	result = MAX(result, theme->title_h);
@@ -321,6 +323,7 @@ int Track::load(FileXML *file, int track_offset, uint32_t load_flags)
 	nudge = file->tag.get_property("NUDGE", nudge);
 	mixer_id = file->tag.get_property("MIXER_ID", mixer_id);
 	expand_view = file->tag.get_property("EXPAND", expand_view);
+	data_h = file->tag.get_property("DATA_H", data_h);
 	track_w = file->tag.get_property("TRACK_W", track_w);
 	track_h = file->tag.get_property("TRACK_H", track_h);
 	masks = file->tag.get_property("MASKS", masks);
@@ -856,28 +859,12 @@ int Track::dump(FILE *fp)
 	return 0;
 }
 
-
-Track::Track() : ListItem<Track>()
-{
-	y_pixel = 0;
-}
-
 // ======================================== accounting
 
 int Track::number_of()
 {
 	return tracks->number_of(this);
 }
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1025,6 +1012,7 @@ int Track::copy(int copy_flags, double start, double end,
 	file->tag.set_property("GANG", gang);
 	file->tag.set_property("DRAW", draw);
 	file->tag.set_property("EXPAND", expand_view);
+	file->tag.set_property("DATA_H", data_h);
 	file->tag.set_property("TRACK_W", track_w);
 	file->tag.set_property("TRACK_H", track_h);
 	file->tag.set_property("MASKS", masks);

@@ -53,7 +53,8 @@ public:
 	MWindowGUI *gui;
 	SampleZoomPanel *sample_zoom;
 	AmpZoomPanel *amp_zoom;
-	TrackZoomPanel *track_zoom;
+	ATrackZoomPanel *atrack_zoom;
+	VTrackZoomPanel *vtrack_zoom;
 	AutoZoom *auto_zoom;
 	AutoTypeMenu *auto_type;
 	ZoomTextBox *auto_zoom_text;
@@ -84,10 +85,19 @@ public:
 	ZoomBar *zoombar;
 };
 
-class TrackZoomPanel : public ZoomPanel
+class ATrackZoomPanel : public ZoomPanel
 {
 public:
-	TrackZoomPanel(MWindow *mwindow, ZoomBar *zoombar, int x, int y);
+	ATrackZoomPanel(MWindow *mwindow, ZoomBar *zoombar, int x, int y);
+	int handle_event();
+	MWindow *mwindow;
+	ZoomBar *zoombar;
+};
+
+class VTrackZoomPanel : public ZoomPanel
+{
+public:
+	VTrackZoomPanel(MWindow *mwindow, ZoomBar *zoombar, int x, int y);
 	int handle_event();
 	MWindow *mwindow;
 	ZoomBar *zoombar;

@@ -1013,8 +1013,8 @@ void TrackCanvas::get_pixmap_size(Edit *edit,
 // 		}
 // 	}
 
-	pixmap_h = mwindow->edl->local_session->zoom_track;
 	Track *track = edit->edits->track;
+	pixmap_h = track->data_h;
 	if( track->show_titles() )
 		pixmap_h += mwindow->theme->get_image("title_bg_data")->get_h();
 //printf("get_pixmap_size %d %d %d %d\n", edit_x, edit_w, pixmap_x, pixmap_w);
@@ -1041,7 +1041,7 @@ void TrackCanvas::edit_dimensions(Edit *edit,
 	if( edit->track->show_titles() )
 		edit_h += mwindow->theme->get_image("title_bg_data")->get_h();
 	if( edit->track->show_assets() )
-		edit_h += resource_h();
+		edit_h += edit->track->data_h;
 	h = edit_h;
 }
 
@@ -1297,16 +1297,12 @@ void TrackCanvas::plugin_dimensions(Plugin *plugin, int64_t &x, int64_t &y, int6
 	if( plugin->track->show_titles() )
 		y += mwindow->theme->get_image("title_bg_data")->get_h();
 	if( plugin->track->show_assets() )
-		y += resource_h();
+		y += plugin->track->data_h;
 	y += plugin->plugin_set->get_number() *
 			mwindow->theme->get_image("plugin_bg_data")->get_h();
 	h = mwindow->theme->get_image("plugin_bg_data")->get_h();
 }
 
-int TrackCanvas::resource_h()
-{
-	return mwindow->edl->local_session->zoom_track;
-}
 
 void TrackCanvas::draw_highlight_rectangle(int x, int y, int w, int h)
 {
@@ -1434,11 +1430,11 @@ void TrackCanvas::get_transition_coords(Edit *edit,
 	int has_titles = edit->track->show_titles();
 	int has_assets = edit->track->show_assets();
 	double title_bg_h = mwindow->theme->get_image("title_bg_data")->get_h();
-	double asset_h = resource_h();
-	double ys = has_assets ? asset_h : has_titles ? title_bg_h : 0;
+	int data_h = edit->track->data_h;
+	double ys = has_assets ? data_h : has_titles ? title_bg_h : 0;
 	double dy = has_titles ?
-		( has_assets ? title_bg_h + asset_h/2 : title_bg_h/2 ) :
-		( has_assets ? asset_h/2 : 0) ;
+		( has_assets ? title_bg_h + data_h/2 : title_bg_h/2 ) :
+		( has_assets ? data_h/2 : 0) ;
 	double title_h = mwindow->theme->title_h;
 	if( dy < title_h / 2 ) { ys = title_h;  dy = ys / 2; }
 	y += dy;
@@ -1906,7 +1902,7 @@ void TrackCanvas::draw_hard_edges()
 			if( track->show_titles() )
 				y1 += mwindow->theme->get_image("title_bg_data")->get_h();
 			if( track->show_assets() )
-				y1 += resource_h();
+				y1 += track->data_h;
 			if( y1 == y )
 				y1 += mwindow->theme->title_h;
 			if( edit->hard_left ) {
@@ -2388,11 +2384,8 @@ void TrackCanvas::draw_keyframe_reticle()
 	}
 }
 
-void TrackCanvas::draw_auto(Auto *current,
-	int x,
-	int y,
-	int center_pixel,
-	int zoom_track)
+void TrackCanvas::draw_auto(Auto *current, int x, int y,
+		int center_pixel, int data_h)
 {
 	int x1, y1, x2, y2;
 
@@ -2401,8 +2394,8 @@ void TrackCanvas::draw_auto(Auto *current,
 	y1 = center_pixel + y - HANDLE_W / 2;
 	y2 = center_pixel + y + HANDLE_W / 2;
 
-	if(y1 < center_pixel + -zoom_track / 2) y1 = center_pixel + -zoom_track / 2;
-	if(y2 > center_pixel + zoom_track / 2) y2 = center_pixel + zoom_track / 2;
+	if( y1 < center_pixel - data_h/2 ) y1 = center_pixel - data_h/2;
+	if( y2 > center_pixel + data_h/2 ) y2 = center_pixel + data_h/2;
 
 	draw_box(x1, y1, x2 - x1, y2 - y1);
 }
@@ -2455,23 +2448,16 @@ void TrackCanvas::draw_cropped_line(int x1,
 }
 
 
-void TrackCanvas::draw_floatauto(FloatAuto *current,
-	int x,
-	int y,
-	int in_x,
-	int in_y,
-	int out_x,
-	int out_y,
-	int center_pixel,
-	int zoom_track,
-	int color)
+void TrackCanvas::draw_floatauto(FloatAuto *current, int x, int y,
+		int in_x, int in_y, int out_x, int out_y,
+		int center_pixel, int data_h, int color)
 {
 	int x1 = x - HANDLE_W / 2; // Center
 	int x2 = x + HANDLE_W / 2;
 	int y1 = center_pixel + y - HANDLE_H / 2;
 	int y2 = center_pixel + y + HANDLE_H / 2;
-	int ymin = center_pixel - zoom_track / 2;
-	int ymax = center_pixel + zoom_track / 2;
+	int ymin = center_pixel - data_h / 2;
+	int ymax = center_pixel + data_h / 2;
 	CLAMP(y1, ymin, ymax);
 	CLAMP(y2, ymin, ymax);
 
@@ -2501,22 +2487,22 @@ void TrackCanvas::draw_floatauto(FloatAuto *current,
 		return;
 
 	if(in_x != x)
-		draw_floatauto_ctrlpoint(x, y, in_x, in_y, center_pixel, zoom_track, color);
+		draw_floatauto_ctrlpoint(x, y, in_x, in_y, center_pixel, data_h, color);
 	if(out_x != x)
-		draw_floatauto_ctrlpoint(x, y, out_x, out_y, center_pixel, zoom_track, color);
+		draw_floatauto_ctrlpoint(x, y, out_x, out_y, center_pixel, data_h, color);
 }
 
 inline int quantize(float f) { return (int)floor(f + 0.5); }
 
 inline void TrackCanvas::draw_floatauto_ctrlpoint(
-	int x, int y, int cp_x, int cp_y, int center_pixel,
-	int zoom_track, int color)
+		int x, int y, int cp_x, int cp_y, int center_pixel,
+		int data_h, int color)
 // draw the tangent and a handle for given bézier ctrl point
 {
-	bool handle_visible = (abs(cp_y) <= zoom_track / 2);
+	bool handle_visible = (abs(cp_y) <= data_h/2);
 
 	float slope = (float)(cp_y - y)/(cp_x - x);
-	CLAMP(cp_y, -zoom_track / 2, zoom_track / 2);
+	CLAMP(cp_y, -data_h/2, data_h/2);
 	if(slope != 0)
 		cp_x = x + quantize((cp_y - y) / slope);
 
@@ -2558,7 +2544,7 @@ inline void TrackCanvas::draw_floatauto_ctrlpoint(
 
 
 int TrackCanvas::test_auto(Auto *current,
-	int x, int y, int center_pixel, int zoom_track,
+	int x, int y, int center_pixel, int data_h,
 	int cursor_x, int cursor_y, int buttonpress)
 {
 	int x1, y1, x2, y2;
@@ -2568,8 +2554,8 @@ int TrackCanvas::test_auto(Auto *current,
 	x2 = x + HANDLE_W / 2;
 	y1 = center_pixel + y - HANDLE_H / 2;
 	y2 = center_pixel + y + HANDLE_H / 2;
-	int ymin = center_pixel - zoom_track / 2;
-	int ymax = center_pixel + zoom_track / 2;
+	int ymin = center_pixel - data_h/2;
+	int ymax = center_pixel + data_h/2;
 	CLAMP(y1, ymin, ymax);
 	CLAMP(y2, ymin, ymax);
 
@@ -2645,7 +2631,7 @@ float TrackCanvas::value_to_percentage(float auto_value, int autogrouptype)
 
 
 int TrackCanvas::test_floatauto(FloatAuto *current, int x, int y, int in_x,
-	int in_y, int out_x, int out_y, int center_pixel, int zoom_track,
+	int in_y, int out_x, int out_y, int center_pixel, int data_h,
 	int cursor_x, int cursor_y, int buttonpress, int autogrouptype)
 {
 	int result = 0;
@@ -2654,8 +2640,8 @@ int TrackCanvas::test_floatauto(FloatAuto *current, int x, int y, int in_x,
 	int x2 = x + HANDLE_W / 2;
 	int y1 = center_pixel + y - HANDLE_W / 2;
 	int y2 = center_pixel + y + HANDLE_W / 2;
-	int ymin = center_pixel - zoom_track / 2;
-	int ymax = center_pixel + zoom_track / 2;
+	int ymin = center_pixel - data_h/2;
+	int ymax = center_pixel + data_h/2;
 	CLAMP(y1, ymin, ymax);
 	CLAMP(y2, ymin, ymax);
 
@@ -3084,12 +3070,12 @@ void TrackCanvas::calculate_viewport(Track *track,
 	int has_titles = track->show_titles();
 	int has_assets = track->show_assets();
 	double title_bg_h = mwindow->theme->get_image("title_bg_data")->get_h();
-	double asset_h = resource_h();
 	double title_h = mwindow->theme->title_h;
-	double ys = has_assets ? asset_h : has_titles ? title_bg_h : 0;
+	double data_h = track->data_h;
+	double ys = has_assets ? data_h : has_titles ? title_bg_h : 0;
 	double dy = has_titles ?
-		( has_assets ? title_bg_h + asset_h/2 : title_bg_h/2) :
-		( has_assets ? asset_h/2 : 0) ;
+		( has_assets ? title_bg_h + data_h/2 : title_bg_h/2) :
+		( has_assets ? data_h/2 : 0) ;
 	if( dy < title_h/2 ) { ys = title_h;  dy = ys / 2; }
 	yscale = ys;
 	center_pixel = y + dy;
@@ -3590,7 +3576,7 @@ int TrackCanvas::do_plugin_autos(Track *track, int cursor_x, int cursor_y,
 		if( track->show_titles() )
 			center_pixel += mwindow->theme->get_image("title_bg_data")->get_h();
 		if( track->show_assets() )
-			center_pixel += resource_h();
+			center_pixel += track->data_h;
 		center_pixel += (i + 0.5) * mwindow->theme->get_image("plugin_bg_data")->get_h();
 
 		for(Plugin *plugin = (Plugin*)plugin_set->first;

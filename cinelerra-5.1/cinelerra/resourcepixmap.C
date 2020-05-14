@@ -85,7 +85,7 @@ ResourcePixmap::ResourcePixmap(MWindow *mwindow,
 		source_framerate = edit->nested_edl->session->frame_rate;
 		source_samplerate = edit->nested_edl->session->sample_rate;
 	}
-
+	data_h = edit->track->data_h;
 	project_framerate = edit->edl->session->frame_rate;
 	project_samplerate = edit->edl->session->sample_rate;
 	edit_id = edit->id;  pixmap_w = w;  pixmap_h = h;
@@ -103,8 +103,6 @@ void ResourcePixmap::reset()
 	pixmap_w = 0;
 	pixmap_h = 0;
 	zoom_sample = 0;
-	zoom_track = 0;
-	zoom_y = 0;
 	visible = 1;
 }
 
@@ -140,8 +138,6 @@ void ResourcePixmap::update_settings(Edit *edit,
 	project_framerate = edit->edl->session->frame_rate;
 	project_samplerate = edit->edl->session->sample_rate;
 	zoom_sample = mwindow->edl->local_session->zoom_sample;
-	zoom_track = mwindow->edl->local_session->zoom_track;
-	zoom_y = mwindow->edl->local_session->zoom_y;
 }
 
 void ResourcePixmap::draw_data(TrackCanvas *canvas,
@@ -192,20 +188,20 @@ void ResourcePixmap::draw_data(TrackCanvas *canvas,
 // Redraw everything
 	refresh_x = 0;
 	refresh_w = pixmap_w;
+	Track *track = edit->track;
 
 // Draw background image
 	if( refresh_w > 0 ) {
 		int x1 = refresh_x, x2 = x1 + refresh_w;
-		int y1 = y, y2 = y1 + mwindow->edl->local_session->zoom_track;
+		int y1 = y, y2 = y1 + track->data_h;
 		int color = mwindow->get_title_color(edit);
 		mwindow->theme->draw_resource_bg(canvas, this, color,
-			edit_x, edit_w, pixmap_x, x1,y1, x2,y2);
+			edit, edit_x, edit_w, pixmap_x, x1,y1, x2,y2);
 	}
 //printf("ResourcePixmap::draw_data 70\n");
 
 
 // Draw media which already exists
-	Track *track = edit->track;
 	if( track->draw ) {
 		switch( track->data_type )
 		{
@@ -406,10 +402,9 @@ SET_TRACE
 
 int ResourcePixmap::calculate_center_pixel(Track *track)
 {
+	int data_h = track->data_h;
 	int rect_audio = mwindow->preferences->rectify_audio;
-	int center_pixel = !rect_audio ?
-		mwindow->edl->local_session->zoom_track / 2 :
-		mwindow->edl->local_session->zoom_track ;
+	int center_pixel = !rect_audio ? data_h/2 : data_h;
 	if( track->show_titles() )
 		center_pixel += mwindow->theme->get_image("title_bg_data")->get_h();
 	return center_pixel;
@@ -421,9 +416,10 @@ void ResourcePixmap::draw_audio_source(TrackCanvas *canvas, Edit *edit, int x, i
 	Indexable *indexable = edit->get_source();
 	int center_pixel = calculate_center_pixel(edit->track);
 	int rect_audio = mwindow->preferences->rectify_audio;
-	int64_t scale_y = !rect_audio ?
-		mwindow->edl->local_session->zoom_y :
-		mwindow->edl->local_session->zoom_y * 2;
+	int data_h = edit->track->data_h;
+	int zoom_y = mwindow->edl->local_session->zoom_y * data_h /
+			mwindow->edl->local_session->zoom_atrack;
+	int64_t scale_y = !rect_audio ? zoom_y : zoom_y*2;
 	int y_max = center_pixel + scale_y / 2 - 1;
 
 	double project_zoom = mwindow->edl->local_session->zoom_sample;
@@ -591,19 +587,17 @@ void ResourcePixmap::draw_audio_source(TrackCanvas *canvas, Edit *edit, int x, i
 }
 
 void ResourcePixmap::draw_wave(TrackCanvas *canvas,
-	int x, double high, double low)
+		int x, double high, double low)
 {
 	int rect_audio = mwindow->preferences->rectify_audio;
 	if( rect_audio ) { low = fabs(low);  high = fabs(high); }
 	int top_pixel = !mwindow->edl->session->show_titles ? 0 :
 		mwindow->theme->get_image("title_bg_data")->get_h();
-	int center_pixel = !rect_audio ?
-		mwindow->edl->local_session->zoom_track / 2 + top_pixel :
-		mwindow->edl->local_session->zoom_track + top_pixel ;
-	int scale_y = !rect_audio ?
-		mwindow->edl->local_session->zoom_y / 2 :
-		mwindow->edl->local_session->zoom_y ;
-	int bottom_pixel = top_pixel + mwindow->edl->local_session->zoom_track;
+	int center_pixel = !rect_audio ? data_h/2 + top_pixel : data_h + top_pixel;
+	int zoom_y = mwindow->edl->local_session->zoom_y * (int64_t)data_h /
+			mwindow->edl->local_session->zoom_atrack;
+	int scale_y = !rect_audio ? zoom_y/2 : zoom_y;
+	int bottom_pixel = top_pixel + data_h;
 	int y1 = (int)(center_pixel - low * scale_y);
 	int y2 = (int)(center_pixel - high * scale_y);
 	CLAMP(y1, top_pixel, bottom_pixel);
@@ -695,21 +689,18 @@ void ResourcePixmap::draw_subttl_resource(TrackCanvas *canvas, Edit *edit, int x
 	SEdit *sedit = (SEdit *)edit;
 	char *text = sedit->get_text();
 	if( !*text || w < xS(10) ) return;
-	int center_pixel = canvas->resource_h() / 2;
+	int data_h = edit->track->data_h, center_pixel = data_h/2;
 	if( edit->track->show_titles() )
 		center_pixel += mwindow->theme->get_image("title_bg_data")->get_h();
-	int64_t scale_y = mwindow->edl->local_session->zoom_y;
 	int x0 = edit_x;
 	if( x0 < 0 ) x0 = -x0;
 	int x1 = (int)(pixmap_x - x0 + x);
-	int y_max = center_pixel + scale_y / 2 - 1;
-	int font = MEDIUMFONT, color = WHITE;
+	int font = data_h >= yS(24) ? MEDIUMFONT : SMALLFONT, color = WHITE;
+	int ascent = canvas->get_text_ascent(font);
+	int y1 = center_pixel + ascent/2;
+	if( y1 < 0 ) y1 = 0;
 	canvas->set_font(font);
 	canvas->set_color(color);
-	int ch = canvas->get_text_height(font);
-	int hh = canvas->get_text_height(font,text) + ch/2;
-	int y1 = y_max - hh - yS(10);
-	if( y1 < 0 ) y1 = 0;
 	canvas->draw_text(x1, y1, text, -1, this);
 }
 

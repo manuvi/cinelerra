@@ -291,12 +291,12 @@ void BoxBlurConfig::interpolate(BoxBlurConfig &prev, BoxBlurConfig &next,
 	double v = 1. - u;
 	this->horz_radius = u*prev.horz_radius + v*next.horz_radius;
 	this->vert_radius = u*prev.vert_radius + v*next.vert_radius;
-	this->power = u*prev.power + v*next.power;
+	this->power = u*prev.power + v*next.power + 1e-6; // avoid truncation jitter
 	this->drag = prev.drag;
 	this->box_x = u*prev.box_x + v*next.box_x;
 	this->box_y = u*prev.box_y + v*next.box_y;
-	this->box_w = u*prev.box_w + v*next.box_w;
-	this->box_h = u*prev.box_h + v*next.box_h;
+	this->box_w = u*prev.box_w + v*next.box_w + 1e-6;
+	this->box_h = u*prev.box_h + v*next.box_h + 1e-6;
 }
 
 

@@ -99,41 +99,18 @@ public:
 	void draw_automation();
 	void draw_hard_edges();
 	void draw_inout_points();
-	void draw_auto(Auto *current,
-		int x,
-		int y,
-		int center_pixel,
-		int zoom_track);
-	void draw_floatauto(FloatAuto *current,
-		int x,
-		int y,
-		int in_x,
-		int in_y,
-		int out_x,
-		int out_y,
-		int center_pixel,
-		int zoom_track,
-		int color);
-	int test_auto(Auto *current,
-		int x,
-		int y,
-		int center_pixel,
-		int zoom_track,
-		int cursor_x,
-		int cursor_y,
-		int buttonpress);
-	int test_floatauto(FloatAuto *current,
-		int x,
-		int y,
-		int in_x,
-		int in_y,
-		int out_x,
-		int out_y,
-		int center_pixel,
-		int zoom_track,
-		int cursor_x,
-		int cursor_y,
-		int buttonpress,
+	void draw_auto(Auto *current, int x, int y,
+		int center_pixel, int data_h);
+	void draw_floatauto(FloatAuto *current, int x, int y,
+		int in_x, int in_y, int out_x, int out_y,
+		int center_pixel, int data_h, int color);
+	int test_auto(Auto *current, int x, int y,
+		int center_pixel, int data_h,
+		int cursor_x, int cursor_y, int buttonpress);
+	int test_floatauto(FloatAuto *current, int x, int y,
+		int in_x, int in_y, int out_x, int out_y,
+		int center_pixel, int data_h,
+		int cursor_x, int cursor_y, int buttonpress,
 		int autogrouptype);
 	void draw_floatline(int center_pixel,
 		FloatAuto *previous,
@@ -366,7 +343,6 @@ public:
 	void update_drag_caption();
 
 	int get_title_h();
-	int resource_h();
 
 // Display hourglass if timer expired
 	void test_timer();

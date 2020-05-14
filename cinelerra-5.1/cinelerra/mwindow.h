@@ -303,7 +303,8 @@ public:
 	int zoom_sample(int64_t zoom_sample);
 	void zoom_autos(float min, float max);
 	void zoom_amp(int64_t zoom_amp);
-	void zoom_track(int64_t zoom_track);
+	void zoom_atrack(int64_t zoom);
+	void zoom_vtrack(int64_t zoom);
 	int fit_sample();
 	int move_left(int64_t distance = 0);
 	int move_right(int64_t distance = 0);

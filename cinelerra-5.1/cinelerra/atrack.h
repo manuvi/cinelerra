@@ -37,7 +37,6 @@ class ATrack : public Track
 {
 public:
 	ATrack(EDL *edl, Tracks *tracks);
-	ATrack() { };
 	~ATrack();
 
 	void create_objects();

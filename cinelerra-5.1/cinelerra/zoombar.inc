@@ -25,7 +25,8 @@
 class ZoomBar;
 class SampleZoomPanel;
 class AmpZoomPanel;
-class TrackZoomPanel;
+class ATrackZoomPanel;
+class VTrackZoomPanel;
 class AutoZoom;
 class AutoTypeMenu;
 class ZoomTextBox;

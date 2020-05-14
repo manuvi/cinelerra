@@ -52,6 +52,7 @@ VTrack::VTrack(EDL *edl, Tracks *tracks)
  : Track(edl, tracks)
 {
 	data_type = TRACK_VIDEO;
+	data_h = edl->local_session->zoom_vtrack;
 	draw = 1;
 }
 

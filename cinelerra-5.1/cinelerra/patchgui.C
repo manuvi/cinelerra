@@ -63,6 +63,7 @@ PatchGUI::PatchGUI(MWindow *mwindow,
 	gang = 0;
 	draw = 0;
 	mute = 0;
+	zoom = 0;
 	expand = 0;
 	nudge = 0;
 	mix = 0;
@@ -80,6 +81,7 @@ PatchGUI::~PatchGUI()
 	delete gang;
 	delete draw;
 	delete mute;
+	delete zoom;
 	delete expand;
 	delete nudge;
 	delete mix;
@@ -118,6 +120,7 @@ int PatchGUI::reposition(int x, int y)
 			x1 += draw->get_w();
 			mute->reposition_window(mute->get_x(), y1 + y);
 			x1 += mute->get_w();
+			zoom->reposition_window(zoom->get_x(), y1 + y);
 		}
 		y1 += mwindow->theme->play_h;
 	}
@@ -171,6 +174,7 @@ int PatchGUI::update(int x, int y)
 			delete gang;    gang = 0;
 			delete draw;    draw = 0;
 			delete mute;    mute = 0;
+			delete zoom;    zoom = 0;
 		}
 		else {
 			play->update(track->play);
@@ -192,6 +196,7 @@ int PatchGUI::update(int x, int y)
 		x1 += draw->get_w();
 		patchbay->add_subwindow(mute = new MutePatch(mwindow, this, x1 + x, y1 + y));
 		x1 += mute->get_w();
+		patchbay->add_subwindow(zoom = new ZoomPatch(mwindow, this, x1 + x, y1 + y));
 	}
 	if( play )
 		y1 = y2;
@@ -573,6 +578,31 @@ int MutePatch::button_release_event()
 	return result;
 }
 
+
+ZoomPatch::ZoomPatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
+ : BC_Tumbler(x, y)
+{
+	this->mwindow = mwindow;
+	this->patch = patch;
+	set_tooltip(_("Track Data Height"));
+}
+
+int ZoomPatch::handle_up_event()
+{
+	patch->track->data_h *= 2;
+	bclamp(patch->track->data_h,  MIN_TRACK_ZOOM, MAX_TRACK_ZOOM);
+	mwindow->edl->tracks->update_y_pixels(mwindow->theme);
+	mwindow->gui->draw_trackmovement();
+	return 1;
+}
+int ZoomPatch::handle_down_event()
+{
+	patch->track->data_h /= 2;
+	bclamp(patch->track->data_h,  MIN_TRACK_ZOOM, MAX_TRACK_ZOOM);
+	mwindow->edl->tracks->update_y_pixels(mwindow->theme);
+	mwindow->gui->draw_trackmovement();
+	return 1;
+}
 
 
 ExpandPatch::ExpandPatch(MWindow *mwindow, PatchGUI *patch, int x, int y)

@@ -72,7 +72,8 @@ LocalSession::LocalSession(EDL *edl)
 	preview_start = 0;  preview_end = -1;
 	zoom_sample = DEFAULT_ZOOM_TIME;
 	zoom_y = 0;
-	zoom_track = 0;
+	zoom_atrack = 0;
+	zoom_vtrack = 0;
 	x_pane = y_pane = -1;
 
 	for(int i = 0; i < TOTAL_PANES; i++) {
@@ -128,7 +129,8 @@ void LocalSession::copy_from(LocalSession *that)
 
 	zoom_sample = that->zoom_sample;
 	zoom_y = that->zoom_y;
-	zoom_track = that->zoom_track;
+	zoom_atrack = that->zoom_atrack;
+	zoom_vtrack = that->zoom_vtrack;
 	preview_start = that->preview_start;
 	preview_end = that->preview_end;
 	red = that->red;
@@ -175,8 +177,8 @@ void LocalSession::save_xml(FileXML *file, double start)
 	file->tag.set_property("ZOOM_SAMPLE", zoom_sample);
 //printf("EDLSession::save_session 1\n");
 	file->tag.set_property("ZOOMY", zoom_y);
-//printf("EDLSession::save_session 1 %d\n", zoom_track);
-	file->tag.set_property("ZOOM_TRACK", zoom_track);
+	file->tag.set_property("ZOOM_ATRACK", zoom_atrack);
+	file->tag.set_property("ZOOM_VTRACK", zoom_vtrack);
 
 	double preview_start = this->preview_start - start;
 	if( preview_start < 0 ) preview_start = 0;
@@ -277,7 +279,10 @@ void LocalSession::load_xml(FileXML *file, unsigned long load_flags)
 
 		zoom_sample = file->tag.get_property("ZOOM_SAMPLE", zoom_sample);
 		zoom_y = file->tag.get_property("ZOOMY", zoom_y);
-		zoom_track = file->tag.get_property("ZOOM_TRACK", zoom_track);
+		int64_t zoom_track = file->tag.get_property("ZOOM_TRACK", 0);
+		if( zoom_track > 0 ) zoom_atrack = zoom_vtrack = zoom_track;
+		zoom_atrack = file->tag.get_property("ZOOM_ATRACK", zoom_atrack);
+		zoom_vtrack = file->tag.get_property("ZOOM_VTRACK", zoom_vtrack);
 		preview_start = file->tag.get_property("PREVIEW_START", preview_start);
 		preview_end = file->tag.get_property("PREVIEW_END", preview_end);
 		red = file->tag.get_property("RED", red);
@@ -341,7 +346,10 @@ int LocalSession::load_defaults(BC_Hash *defaults)
 //	view_start = defaults->get("VIEW_START", 0);
 	zoom_sample = defaults->get("ZOOM_SAMPLE", DEFAULT_ZOOM_TIME);
 	zoom_y = defaults->get("ZOOMY", 64);
-	zoom_track = defaults->get("ZOOM_TRACK", 64);
+	int64_t zoom_track = defaults->get("ZOOM_TRACK", 0);
+	if( zoom_track == 0 ) zoom_track = 64;
+	zoom_atrack = defaults->get("ZOOM_ATRACK", zoom_track);
+	zoom_vtrack = defaults->get("ZOOM_VTRACK", zoom_track);
 	red = defaults->get("RED", 0.0);
 	green = defaults->get("GREEN", 0.0);
 	blue = defaults->get("BLUE", 0.0);
@@ -375,7 +383,8 @@ int LocalSession::save_defaults(BC_Hash *defaults)
 //	defaults->update("VIEW_START", view_start);
 	defaults->update("ZOOM_SAMPLE", zoom_sample);
 	defaults->update("ZOOMY", zoom_y);
-	defaults->update("ZOOM_TRACK", zoom_track);
+	defaults->update("ZOOM_ATRACK", zoom_atrack);
+	defaults->update("ZOOM_VTRACK", zoom_vtrack);
 	defaults->update("RED", red);
 	defaults->update("GREEN", green);
 	defaults->update("BLUE", blue);

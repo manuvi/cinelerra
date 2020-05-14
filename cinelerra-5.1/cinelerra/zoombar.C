@@ -56,7 +56,8 @@ ZoomBar::~ZoomBar()
 {
 	delete sample_zoom;
 	delete amp_zoom;
-	delete track_zoom;
+	delete atrack_zoom;
+	delete vtrack_zoom;
 }
 
 void ZoomBar::create_objects()
@@ -74,10 +75,14 @@ void ZoomBar::create_objects()
 	amp_zoom->create_objects();
 	amp_zoom->set_tooltip(_("Audio waveform scale"));
 	x += amp_zoom->get_w();
-	track_zoom = new TrackZoomPanel(mwindow, this, x, y);
-	track_zoom->create_objects();
-	track_zoom->set_tooltip(_("Height of tracks in the timeline"));
-	x += track_zoom->get_w() + xs10;
+	atrack_zoom = new ATrackZoomPanel(mwindow, this, x, y);
+	atrack_zoom->create_objects();
+	atrack_zoom->set_tooltip(_("Height of audio tracks in the timeline"));
+	x += atrack_zoom->get_w() + xs10;
+	vtrack_zoom = new VTrackZoomPanel(mwindow, this, x, y);
+	vtrack_zoom->create_objects();
+	vtrack_zoom->set_tooltip(_("Height of video tracks in the timeline"));
+	x += vtrack_zoom->get_w() + xs10;
 
 	int wid = xS(120);
 	for( int i=AUTOGROUPTYPE_AUDIO_FADE; i<=AUTOGROUPTYPE_Y; ++i ) {
@@ -90,12 +95,7 @@ void ZoomBar::create_objects()
 #define DEFAULT_TEXT "000.00 to 000.00"
 	add_subwindow(auto_zoom = new AutoZoom(mwindow, this, x, y, 0));
 	x += auto_zoom->get_w();
-	add_subwindow(auto_zoom_text = new ZoomTextBox(
-		mwindow,
-		this,
-		x,
-		y,
-		DEFAULT_TEXT));
+	add_subwindow(auto_zoom_text = new ZoomTextBox(mwindow, this, x, y, DEFAULT_TEXT));
 	x += auto_zoom_text->get_w() + xs5;
 	add_subwindow(auto_zoom = new AutoZoom(mwindow, this, x, y, 1));
 	update_autozoom();
@@ -209,7 +209,8 @@ int ZoomBar::update()
 {
 	sample_zoom->update(mwindow->edl->local_session->zoom_sample);
 	amp_zoom->update(mwindow->edl->local_session->zoom_y);
-	track_zoom->update(mwindow->edl->local_session->zoom_track);
+	atrack_zoom->update(mwindow->edl->local_session->zoom_atrack);
+	vtrack_zoom->update(mwindow->edl->local_session->zoom_vtrack);
 	update_autozoom();
 	update_clocks();
 	return 0;
@@ -380,7 +381,7 @@ int SampleZoomPanel::handle_event()
 
 AmpZoomPanel::AmpZoomPanel(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
  : ZoomPanel(mwindow, zoombar, mwindow->edl->local_session->zoom_y,
-		x, y, xS(100), MIN_AMP_ZOOM, MAX_AMP_ZOOM, ZOOM_LONG)
+		x, y, xS(80), MIN_AMP_ZOOM, MAX_AMP_ZOOM, ZOOM_LONG)
 {
 	this->mwindow = mwindow;
 	this->zoombar = zoombar;
@@ -391,21 +392,32 @@ int AmpZoomPanel::handle_event()
 	return 1;
 }
 
-TrackZoomPanel::TrackZoomPanel(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
- : ZoomPanel(mwindow, zoombar, mwindow->edl->local_session->zoom_track,
-		x, y, xS(90), MIN_TRACK_ZOOM, MAX_TRACK_ZOOM, ZOOM_LONG)
+ATrackZoomPanel::ATrackZoomPanel(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
+ : ZoomPanel(mwindow, zoombar, mwindow->edl->local_session->zoom_atrack,
+		x, y, xS(64), MIN_TRACK_ZOOM, MAX_TRACK_ZOOM, ZOOM_LONG)
 {
 	this->mwindow = mwindow;
 	this->zoombar = zoombar;
 }
-int TrackZoomPanel::handle_event()
+int ATrackZoomPanel::handle_event()
 {
-	mwindow->zoom_track((int64_t)get_value());
+	mwindow->zoom_atrack((int64_t)get_value());
 	zoombar->amp_zoom->update(mwindow->edl->local_session->zoom_y);
 	return 1;
 }
 
-
+VTrackZoomPanel::VTrackZoomPanel(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
+ : ZoomPanel(mwindow, zoombar, mwindow->edl->local_session->zoom_vtrack,
+		x, y, xS(64), MIN_TRACK_ZOOM, MAX_TRACK_ZOOM, ZOOM_LONG)
+{
+	this->mwindow = mwindow;
+	this->zoombar = zoombar;
+}
+int VTrackZoomPanel::handle_event()
+{
+	mwindow->zoom_vtrack((int64_t)get_value());
+	return 1;
+}
 
 
 AutoZoom::AutoZoom(MWindow *mwindow, ZoomBar *zoombar, int x, int y, int changemax)

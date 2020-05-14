@@ -353,26 +353,43 @@ void MWindow::zoom_amp(int64_t zoom_amp)
 	gui->flush();
 }
 
-void MWindow::zoom_track(int64_t zoom_track)
+void MWindow::zoom_atrack(int64_t zoom)
 {
+	int64_t old_zoom = edl->local_session->zoom_atrack;
 // scale waveforms
 	edl->local_session->zoom_y = (int64_t)((float)edl->local_session->zoom_y *
-		zoom_track /
-		edl->local_session->zoom_track);
+			zoom / old_zoom);
 	CLAMP(edl->local_session->zoom_y, MIN_AMP_ZOOM, MAX_AMP_ZOOM);
 
 // scale tracks
-	double scale = (double)zoom_track / edl->local_session->zoom_track;
-	edl->local_session->zoom_track = zoom_track;
-
-// shift row position
-	for(int i = 0; i < TOTAL_PANES; i++)
-	{
-		edl->local_session->track_start[i] *= scale;
+	edl->local_session->zoom_atrack = zoom;
+	for( Track *track= edl->tracks->first; track; track=track->next ) {
+		if( track->data_type != TRACK_AUDIO ) continue;
+		track->data_h = track->data_h * zoom / old_zoom;
+		bclamp(track->data_h, MIN_TRACK_ZOOM, MAX_TRACK_ZOOM);
 	}
+// shift row position
+	for( int i=0; i<TOTAL_PANES; ++i ) edl->local_session->track_start[i] =
+		(edl->local_session->track_start[i] * zoom) / old_zoom;
 	edl->tracks->update_y_pixels(theme);
 	gui->draw_trackmovement();
-//printf("MWindow::zoom_track %d %d\n", edl->local_session->zoom_y, edl->local_session->zoom_track);
+}
+
+void MWindow::zoom_vtrack(int64_t zoom)
+{
+	int64_t old_zoom = edl->local_session->zoom_vtrack;
+// scale tracks
+	edl->local_session->zoom_vtrack = zoom;
+	for( Track *track= edl->tracks->first; track; track=track->next ) {
+		if( track->data_type != TRACK_VIDEO ) continue;
+		track->data_h = track->data_h * zoom / old_zoom;
+		bclamp(track->data_h, MIN_TRACK_ZOOM, MAX_TRACK_ZOOM);
+	}
+// shift row position
+	for( int i=0; i<TOTAL_PANES; ++i ) edl->local_session->track_start[i] =
+		(edl->local_session->track_start[i] * zoom) / old_zoom;
+	edl->tracks->update_y_pixels(theme);
+	gui->draw_trackmovement();
 }
 
 void MWindow::trackmovement(int offset, int pane_number)
@@ -405,16 +422,14 @@ void MWindow::trackmovement(int offset, int pane_number)
 void MWindow::move_up(int64_t distance)
 {
 	TimelinePane *pane = gui->get_focused_pane();
-	if(distance == 0) distance = edl->local_session->zoom_track;
-
+	if(distance == 0) distance = pane->canvas->get_h() / 10;
 	trackmovement(-distance, pane->number);
 }
 
 void MWindow::move_down(int64_t distance)
 {
 	TimelinePane *pane = gui->get_focused_pane();
-	if(distance == 0) distance = edl->local_session->zoom_track;
-
+	if(distance == 0) distance = pane->canvas->get_h() / 10;
 	trackmovement(distance, pane->number);
 }
 
@@ -423,10 +438,8 @@ int MWindow::goto_end()
 	TimelinePane *pane = gui->get_focused_pane();
 	int64_t old_view_start = edl->local_session->view_start[pane->number];
 
-	if(edl->tracks->total_length() > (double)pane->canvas->get_w() *
-		edl->local_session->zoom_sample /
-		edl->session->sample_rate)
-	{
+	if( edl->tracks->total_length() > (double)pane->canvas->get_w() *
+		edl->local_session->zoom_sample / edl->session->sample_rate ) {
 		edl->local_session->view_start[pane->number] =
 			Units::round(edl->tracks->total_length() *
 				edl->session->sample_rate /
@@ -785,18 +798,24 @@ int MWindow::zoom_in_y()
 
 int MWindow::expand_t()
 {
-	int result = edl->local_session->zoom_track * 2;
-	result = MIN(result, MAX_TRACK_ZOOM);
-	zoom_track(result);
+	int zoom = edl->local_session->zoom_atrack * 2;
+	zoom = MIN(zoom, MAX_TRACK_ZOOM);
+	zoom_atrack(zoom);
+	zoom = edl->local_session->zoom_vtrack * 2;
+	zoom = MIN(zoom, MAX_TRACK_ZOOM);
+	zoom_vtrack(zoom);
 	gui->zoombar->update();
 	return 0;
 }
 
 int MWindow::zoom_in_t()
 {
-	int result = edl->local_session->zoom_track / 2;
-	result = MAX(result, MIN_TRACK_ZOOM);
-	zoom_track(result);
+	int zoom = edl->local_session->zoom_atrack / 2;
+	zoom = MAX(zoom, MIN_TRACK_ZOOM);
+	zoom_atrack(zoom);
+	zoom = edl->local_session->zoom_vtrack / 2;
+	zoom = MAX(zoom, MIN_TRACK_ZOOM);
+	zoom_vtrack(zoom);
 	gui->zoombar->update();
 	return 0;
 }

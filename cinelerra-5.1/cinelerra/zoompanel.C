@@ -120,7 +120,7 @@ void ZoomPanel::update_menu()
 void ZoomPanel::create_objects()
 {
 	subwindow->add_subwindow(zoom_text = new ZoomPopup(mwindow, this, x, y));
-	x += zoom_text->get_w();
+	x += zoom_text->get_w() - xS(3);
 	subwindow->add_subwindow(zoom_tumbler = new ZoomTumbler(mwindow, this, x, y));
 	calculate_menu();
 }
@@ -267,7 +267,7 @@ double ZoomPanel::text_to_zoom(char *text, int use_table)
 
 ZoomPopup::ZoomPopup(MWindow *mwindow, ZoomPanel *panel, int x, int y)
  : BC_PopupMenu(x, y, panel->w, panel->value_to_text(panel->value, 0),
-	1, mwindow->theme->get_image_set("zoombar_menu", 0))
+	1, mwindow->theme->get_image_set("zoombar_menu", 0), 0)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;

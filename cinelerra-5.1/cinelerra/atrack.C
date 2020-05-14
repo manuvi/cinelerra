@@ -51,6 +51,7 @@ ATrack::ATrack(EDL *edl, Tracks *tracks)
  : Track(edl, tracks)
 {
 	data_type = TRACK_AUDIO;
+	data_h = edl->local_session->zoom_atrack;
 }
 
 ATrack::~ATrack()

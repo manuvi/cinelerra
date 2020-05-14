@@ -38,6 +38,7 @@ class AutoPatch;
 class GangPatch;
 class DrawPatch;
 class MutePatch;
+class ZoomPatch;
 class ExpandPatch;
 class NudgePatch;
 class MixPatch;
@@ -82,6 +83,7 @@ public:
 	GangPatch *gang;
 	DrawPatch *draw;
 	MutePatch *mute;
+	ZoomPatch *zoom;
 	ExpandPatch *expand;
 	NudgePatch *nudge;
 	MixPatch *mix;
@@ -156,6 +158,16 @@ public:
 	MutePatch(MWindow *mwindow, PatchGUI *patch, int x, int y);
 	int button_press_event();
 	int button_release_event();
+	MWindow *mwindow;
+	PatchGUI *patch;
+};
+
+class ZoomPatch : public BC_Tumbler
+{
+public:
+	ZoomPatch(MWindow *mwindow, PatchGUI *patch, int x, int y);
+	int handle_up_event();
+	int handle_down_event();
 	MWindow *mwindow;
 	PatchGUI *patch;
 };

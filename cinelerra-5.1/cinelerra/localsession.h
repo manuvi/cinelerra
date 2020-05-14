@@ -100,7 +100,8 @@ public:
 // Amplitude zoom
 	int64_t zoom_y;
 // Track zoom
-	int64_t zoom_track;
+	int64_t zoom_atrack;
+	int64_t zoom_vtrack;
 // Vertical automation scale
 
 	float automation_mins[AUTOGROUPTYPE_COUNT];

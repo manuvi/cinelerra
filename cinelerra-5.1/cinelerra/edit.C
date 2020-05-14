@@ -379,12 +379,12 @@ double Edit::picon_w()
 		w = nested_edl->session->output_w;
 		h = nested_edl->session->output_h;
 	}
-	return w>0 && h>0 ? ((double)edl->local_session->zoom_track*w)/h : 0;
+	return w>0 && h>0 ? ((double)track->data_h*w)/h : 0;
 }
 
 int Edit::picon_h()
 {
-	return edl->local_session->zoom_track;
+	return track->data_h;
 }
 
 

@@ -46,7 +46,6 @@ class STrack : public Track
 {
 public:
 	STrack(EDL *edl, Tracks *tracks);
-	STrack() {};
 	~STrack();
 
 	int load_defaults(BC_Hash *defaults);

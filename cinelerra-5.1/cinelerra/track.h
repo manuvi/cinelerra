@@ -57,7 +57,6 @@ class Track : public ListItem<Track>
 {
 public:
 	Track(EDL *edl, Tracks *tracks);
-	Track();
 	virtual ~Track();
 
 	void create_objects();
@@ -177,6 +176,8 @@ public:
 
 // Vertical offset from top of timeline
 	int y_pixel;
+// Vertical height of the track asset
+	int data_h;
 	int expand_view;
 	int draw;
 // There is some debate on whether to expand gang from faders to

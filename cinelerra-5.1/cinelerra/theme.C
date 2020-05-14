@@ -24,6 +24,7 @@
 #include "clip.h"
 #include "bccolors.h"
 #include "cwindowgui.h"
+#include "edit.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "keyframegui.h"
@@ -46,6 +47,7 @@
 #include "resourcepixmap.h"
 #include "statusbar.h"
 #include "theme.h"
+#include "track.h"
 #include "timebar.h"
 #include "trackcanvas.h"
 #include "vframe.h"
@@ -871,12 +873,13 @@ void Theme::draw_rwindow_bg(RecordGUI *gui)
 }
 
 
-void Theme::draw_resource_bg(TrackCanvas *canvas, ResourcePixmap *pixmap, int color,
-	int edit_x, int edit_w, int pixmap_x, int x1, int y1, int x2, int y2)
+void Theme::draw_resource_bg(TrackCanvas *canvas, ResourcePixmap *pixmap,
+		int color, Edit *edit, int edit_x, int edit_w,
+		int pixmap_x, int x1, int y1, int x2, int y2)
 {
 	VFrame *image = 0;
-
-	switch(mwindow->edl->local_session->zoom_track) {
+	int data_h = edit->track->data_h;
+	switch( data_h ) {
 		case 1024: image = get_image("resource1024");  break;
 		case 512: image = get_image("resource512");  break;
 		case 256: image = get_image("resource256");  break;

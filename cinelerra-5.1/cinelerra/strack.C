@@ -18,6 +18,7 @@ STrack::STrack(EDL *edl, Tracks *tracks)
  : Track(edl, tracks)
 {
 	data_type = TRACK_SUBTITLE;
+	data_h = edl->local_session->zoom_atrack;
 }
 
 STrack::~STrack()
@@ -65,8 +66,10 @@ void STrack::create_objects()
 int STrack::vertical_span(Theme *theme)
 {
 	int track_h = Track::vertical_span(theme);
-	int patch_h = 0;
-	return track_h + patch_h;
+	int patch_h = theme->title_h;
+	if( expand_view )
+		patch_h += theme->play_h;
+	return MAX(track_h, patch_h);
 }
 
 

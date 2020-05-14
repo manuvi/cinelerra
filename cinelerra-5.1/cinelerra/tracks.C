@@ -652,7 +652,7 @@ int Tracks::totalpixels()
 	int result = 0;
 	for(Track* current = first; current; current = NEXT)
 	{
-		result += edl->local_session->zoom_track;
+		result += current->data_h;
 	}
 	return result;
 }

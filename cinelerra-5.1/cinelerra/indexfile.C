@@ -707,10 +707,9 @@ SET_TRACE
 // Start and length of fragment to read from file in bytes.
 	float *buffer = 0;
 	int buffer_shared = 0;
-	int rect_audio = mwindow->preferences->rectify_audio;;
-	int center_pixel = !rect_audio ?
-		mwindow->edl->local_session->zoom_track / 2 :
-		mwindow->edl->local_session->zoom_track;
+	int rect_audio = mwindow->preferences->rectify_audio;
+	int data_h = edit->track->data_h;
+	int center_pixel = !rect_audio ? data_h/2 : data_h;
 	if( edit->track->show_titles() )
 		center_pixel += mwindow->theme->get_image("title_bg_data")->get_h();
 
@@ -747,9 +746,9 @@ SET_TRACE
 	int prev_y1 = center_pixel;
 	int prev_y2 = center_pixel;
 	int first_frame = 1;
-	int zoom_y = !rect_audio ?
-		mwindow->edl->local_session->zoom_y / 2 :
-		mwindow->edl->local_session->zoom_y;
+	int zoom_y = mwindow->edl->local_session->zoom_y * data_h /
+			mwindow->edl->local_session->zoom_atrack;
+	if( !rect_audio ) zoom_y /= 2;
 	int max_y = center_pixel + zoom_y - 1;
 	edit_position = (x + pixmap->pixmap_x - virtual_edit_x) * project_zoom;
 	int64_t speed_position = edit->startsource;

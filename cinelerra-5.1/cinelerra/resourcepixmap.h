@@ -77,11 +77,12 @@ public:
 	MWindowGUI *gui;
 // Visible in entire track canvas
 	int visible;
+	int data_h;
 // Section drawn
 	int64_t edit_id;
 	int pane_number;
 	int64_t edit_x, pixmap_x, pixmap_w, pixmap_h;
-	int64_t zoom_sample, zoom_track, zoom_y;
+	int64_t zoom_sample;
 	int64_t startsource;
 	double source_framerate, project_framerate;
 	int64_t source_samplerate, project_samplerate;
