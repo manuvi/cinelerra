@@ -338,6 +338,13 @@ public:
 	PreferencesWindow *pwindow;
 };
 
+class PrefsUseHWDevItems : public ArrayList<BC_ListBoxItem *>
+{
+public:
+	PrefsUseHWDevItems() {}
+	~PrefsUseHWDevItems() { remove_all_objects(); }
+};
+
 class PrefsUseHWDev : public BC_PopupTextBox
 {
 public:
@@ -347,7 +354,7 @@ public:
 	int handle_event();
 
 	PreferencesWindow *pwindow;
-	ArrayList<BC_ListBoxItem *> hw_dev_names;
+	PrefsUseHWDevItems hw_dev_names;
 };
 
 

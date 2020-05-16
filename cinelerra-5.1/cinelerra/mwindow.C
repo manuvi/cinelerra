@@ -4642,6 +4642,14 @@ void MWindow::dump_exe(FILE *fp)
 	fprintf(fp, "\n");
 }
 
+void MWindow::dump_caches(FILE *fp)
+{
+	fprintf(fp, "audio cache: ");
+	audio_cache->dump(fp);
+	fprintf(fp, "video cache: ");
+	video_cache->dump(fp);
+}
+
 void MWindow::trap_hook(FILE *fp, void *vp)
 {
 	MWindow *mwindow = (MWindow *)vp;
@@ -4653,6 +4661,8 @@ void MWindow::trap_hook(FILE *fp, void *vp)
 	mwindow->dump_undo(fp);
 	fprintf(fp, "\nEXE: %s\n", AboutPrefs::build_timestamp);
 	mwindow->dump_exe(fp);
+	fprintf(fp, "\nCACHES:\n");
+	mwindow->dump_caches(fp);
 }
 
 

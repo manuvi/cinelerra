@@ -1856,7 +1856,7 @@ void BC_Resources::encode_to_utf8(char *buffer, int buflen)
 {
         if(BC_Resources::locale_utf8) return;
 	char lbuf[buflen];
-	encode(encoding, 0, buffer, buflen, lbuf, buflen);
+	encode(encoding, 0, buffer, -1, lbuf, buflen);
 	strcpy(buffer, lbuf);
 }
 

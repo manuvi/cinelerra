@@ -2278,6 +2278,8 @@ int EDL::collect_effects(EDL *&group)
 	}
 	if( !ret )
 		group = new_edl;
+	else
+		new_edl->remove_user();
 	return ret;
 }
 

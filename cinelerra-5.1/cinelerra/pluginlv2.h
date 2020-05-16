@@ -137,7 +137,7 @@ public:
 	LV2_Worker_Schedule schedule;
 	PluginLV2Work *work_avail, *work_input;
 	PluginLV2Work *work_output, **work_tail;
-	pthread_mutex_t worker_lock;
+	pthread_mutex_t startup_lock, worker_lock;
 	pthread_cond_t worker_ready;
 	int worker_done;
 };

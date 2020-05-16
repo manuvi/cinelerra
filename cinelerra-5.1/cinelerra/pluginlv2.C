@@ -52,6 +52,8 @@ PluginLV2::PluginLV2()
 	schedule.schedule_work = lv2_worker_schedule;
 	worker_iface = 0;  worker_done = -1;
 	pthread_mutex_init(&worker_lock, 0);
+	pthread_mutex_init(&startup_lock, 0);
+	pthread_mutex_lock(&startup_lock);
 	pthread_cond_init(&worker_ready, 0);
 	work_avail = 0;   work_input = 0;
 	work_output = 0;  work_tail = &work_output;
@@ -417,6 +419,7 @@ PluginLV2Work *PluginLV2::get_work()
 void *PluginLV2::worker_func()
 {
 	pthread_mutex_lock(&worker_lock);
+	pthread_mutex_unlock(&startup_lock);
 	for(;;) {
 		while( !worker_done && !work_input )
 			pthread_cond_wait(&worker_ready, &worker_lock);
@@ -440,6 +443,7 @@ void *PluginLV2::worker_func(void* vp)
 void PluginLV2::worker_start()
 {
 	pthread_create(&worker_thread, 0, worker_func, this);
+	pthread_mutex_lock(&startup_lock);
 }
 
 void PluginLV2::worker_stop()

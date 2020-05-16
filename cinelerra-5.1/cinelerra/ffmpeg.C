@@ -428,14 +428,14 @@ int FFStream::decode_activate()
 					avctx->thread_count = ffmpeg->ff_cpus();
 				ret = avcodec_open2(avctx, decoder, &copts);
 			}
+			AVFrame *hw_frame = 0;
 			if( ret >= 0 && hw_type != AV_HWDEVICE_TYPE_NONE ) {
-				AVFrame *frame = av_frame_alloc();
-				if( !frame ) {
+				if( !(hw_frame=av_frame_alloc()) ) {
 					fprintf(stderr, "FFStream::decode_activate: av_frame_alloc failed\n");
 					ret = AVERROR(ENOMEM);
 				}
 				if( ret >= 0 )
-					ret = decode(frame);
+					ret = decode(hw_frame);
 			}
 			if( ret < 0 && hw_type != AV_HWDEVICE_TYPE_NONE ) {
 				ff_err(ret, "HW device init failed, using SW decode.\nfile:%s\n",
@@ -444,7 +444,7 @@ int FFStream::decode_activate()
 				avcodec_free_context(&avctx);
 				av_buffer_unref(&hw_device_ctx);
 				hw_device_ctx = 0;
-				av_frame_free(&frame);
+				av_frame_free(&hw_frame);
 				hw_type = AV_HWDEVICE_TYPE_NONE;
 				int flags = AVSEEK_FLAG_BACKWARD | AVSEEK_FLAG_ANY;
 				int idx = st->index;
@@ -454,7 +454,7 @@ int FFStream::decode_activate()
 				ret = 0;
 				continue;
 			}
-			probe_frame = frame;
+			probe_frame = hw_frame;
 			if( ret >= 0 )
 				reading = 1;
 			else

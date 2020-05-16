@@ -104,10 +104,7 @@ public:
 // deletes oldest assets until under the memory limit
 	int age();
 
-
-	void dump();
-
-
+	void dump(FILE *fp);
 private:
 
 // for deleting items
