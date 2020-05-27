@@ -139,7 +139,7 @@ int EditPopupOpenEDL::handle_event()
 		eprintf(_("Edit is not EDL: %s"), edit_title);
 		return 1;
 	}
-	mwindow->stack_push(edl, idxbl);
+	mwindow->stack_push(edl, idxbl, edit);
 	return 1;
 }
 

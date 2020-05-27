@@ -114,6 +114,8 @@ AssetVIcon::AssetVIcon(AssetPicon *picon, int w, int h, double framerate, int64_
 
 AssetVIcon::~AssetVIcon()
 {
+	if( picon->gui->vicon_thread->solo == this )
+		picon->gui->vicon_thread->solo = 0;
 	picon->gui->vicon_thread->del_vicon(this);
 	delete temp;
 }

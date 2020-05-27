@@ -3779,7 +3779,7 @@ void MWindow::update_project(int load_mode)
 	if(debug) PRINT_TRACE
 }
 
-void MWindow::stack_push(EDL *new_edl, Indexable *idxbl)
+void MWindow::stack_push(EDL *new_edl, Indexable *idxbl, Edit *edit)
 {
 	int got_indexes = 0;
 	for( int i=0; i<new_edl->nested_edls.size(); ++i ) {
@@ -3805,7 +3805,9 @@ void MWindow::stack_push(EDL *new_edl, Indexable *idxbl)
 		undo_before();
 		StackItem &item = stack.append();
 		item.edl = edl;
+		item.edit = edit;
 		item.new_edl = new_edl;
+		item.duration = new_edl->tracks->total_length();
 		item.undo = undo;
 		item.idxbl = idxbl;
 		item.mtime = 0;
@@ -3838,6 +3840,17 @@ void MWindow::stack_pop()
 // session edl replaced, overwrite and save clip data
 	if( item.new_edl != edl )
 		item.new_edl->overwrite_clip(edl);
+	Edit *edit = item.edit;
+// resize the referring edit if the edl duration changed
+	if( edit ) {
+		double duration = item.new_edl->tracks->total_length();
+		double dt = duration - item.duration;
+		if( fabs(dt) > 1e-4 ) {
+			int64_t du = edit->track->to_units(dt,0);
+			if( (edit->length+=du) < 0 )
+				edit->length = 0;
+		}
+	}
 	edl->remove_user();
 	edl = item.edl;
 	delete undo;
@@ -3950,6 +3963,7 @@ void MWindow::clip_to_media()
 		return;
 	}
 	undo_before();
+	awindow->gui->stop_vicon_drawing();
 	int clips_total = session->drag_clips->total;
 	for( int i=0; i<clips_total; ++i ) {
 		EDL *clip = session->drag_clips->values[i];

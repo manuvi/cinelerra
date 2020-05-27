@@ -120,6 +120,11 @@ void BlondCVTheme::initialize()
 		"tumble_hi.png",
 		"tumble_botdn.png",
 		"tumble_topdn.png");
+	resources->tumblepatch_data = new_image_set(4,
+		"tumblepatch_up.png",
+		"tumblepatch_hi.png",
+		"tumblepatch_bottom.png",
+		"tumblepatch_top.png");
 	resources->listbox_button = new_image_set(4,
 		"listbox_button_up.png",
 		"listbox_button_hi.png",

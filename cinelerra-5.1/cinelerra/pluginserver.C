@@ -1028,7 +1028,7 @@ void PluginServer::get_defaults_path(char *path)
 	switch( plugin_type ) {
 	case PLUGIN_TYPE_FFMPEG:
 	case PLUGIN_TYPE_LV2:
-		strcpy(string2, client->plugin_title());
+		strcpy(string2, title);
 		break;
 	case PLUGIN_TYPE_BUILTIN:
 	case PLUGIN_TYPE_LADSPA:

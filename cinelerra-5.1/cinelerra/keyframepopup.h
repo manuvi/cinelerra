@@ -196,8 +196,6 @@ public:
 	void create_objects();
 	void update(float v);
 	void update_speed(float v);
-	int cursor_enter_event();
-	int cursor_leave_event();
 
 	MWindow *mwindow;
 	PatchGUI *patch;

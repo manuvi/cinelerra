@@ -623,22 +623,7 @@ void KeySpeedPatch::create_objects()
 	add_subwindow(key_speed_ok = new KeySpeedOK(this, x, y, lok_images));
 	activate();
 	show_window();
-}
-
-int KeySpeedPatch::cursor_enter_event()
-{
-	if( is_event_win() )
-		mwindow->speed_before();
-	return 1;
-}
-
-int KeySpeedPatch::cursor_leave_event()
-{
-	if( is_event_win() ) {
-		mwindow->speed_after(1);
-		mwindow->resync_guis();
-	}
-	return 1;
+	mwindow->speed_before();
 }
 
 void KeySpeedPatch::update(float v)
@@ -662,7 +647,7 @@ void KeySpeedPatch::update_speed(float v)
 	current->set_value(v);
 	if( track->gang && track->record ) {
 		TrackCanvas *track_canvas = patch->patchbay->pane->canvas;
-		track_canvas->fill_ganged_autos(1, change, track, current);
+		track_canvas->fill_ganged_autos(-1, change, track, current);
 		track_canvas->update_ganged_autos(0, track, current);
 		track_canvas->clear_ganged_autos();
 	}

@@ -179,6 +179,7 @@ Theme::Theme()
 	statusbar_cancel_data = 0;
 	timebar_view_data = 0;
 	transition_data = 0;
+	tumblepatch_data = 0;
 	uptriangle_data = 0;
 	viewasset_data = 0;
 	vtimebar_bg_data = 0;

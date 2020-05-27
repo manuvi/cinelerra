@@ -112,8 +112,10 @@ class StackItem
 public:
 	EDL *edl, *new_edl;
 	Indexable *idxbl;
+	Edit *edit;
 	MainUndo *undo;
 	int64_t mtime;
+	double duration;
 };
 
 class Stack : public ArrayList<StackItem>
@@ -175,7 +177,7 @@ public:
 // Total horizontal pixels in timeline
 	int get_tracks_width();
 // session stack
-	void stack_push(EDL *edl, Indexable *idxbl);
+	void stack_push(EDL *edl, Indexable *idxbl, Edit *edit=0);
 	void stack_pop();
 	int save(EDL *edl, char *filename, int stat);
 	int save(int save_as);

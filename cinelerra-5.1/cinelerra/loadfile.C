@@ -136,23 +136,19 @@ void LoadFileThread::load_apply()
 
 // No file selected
 	if( !path_list.size() ) return;
+	int replaced = load_mode == LOADMODE_REPLACE ||
+            load_mode == LOADMODE_REPLACE_CONCATENATE ? 1 : 0;
 
 	mwindow->interrupt_indexes();
 	mwindow->gui->lock_window("LoadFileThread::run");
-	mwindow->load_filenames(&path_list, load_mode, edl_mode, 0);
+	mwindow->load_filenames(&path_list, load_mode, edl_mode, replaced);
 	mwindow->gui->mainmenu->add_load(path_list.values[0]);
 	mwindow->gui->unlock_window();
 	path_list.remove_all_objects();
 
 	mwindow->save_backup();
-
 	mwindow->restart_brender();
-
-	if( load_mode == LOADMODE_REPLACE ||
-	    load_mode == LOADMODE_REPLACE_CONCATENATE )
-		mwindow->session->changes_made = 0;
-	else
-		mwindow->session->changes_made = 1;
+	mwindow->session->changes_made = !replaced ? 1 : 0;
 }
 
 

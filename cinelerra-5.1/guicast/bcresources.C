@@ -785,6 +785,7 @@ new_vframes(10,default_vscroll_data,
 	button_uphighlighted = RED;   // upper side when highlighted
 
 	tumble_data = 0;
+	tumblepatch_data = 0;
 	tumble_duration = 150;
 
 	ok_images = default_ok_images;

@@ -446,6 +446,11 @@ void BlondTheme::initialize()
 		"tumble_hi.png",
 		"tumble_bottom.png",
 		"tumble_top.png");
+	resources->tumblepatch_data = new_image_set(4,
+		"tumblepatch_up.png",
+		"tumblepatch_hi.png",
+		"tumblepatch_bottom.png",
+		"tumblepatch_top.png");
 	resources->listbox_button = new_button4("listbox_button.png",
 		"editpanel_up.png",
 		"editpanel_hi.png",

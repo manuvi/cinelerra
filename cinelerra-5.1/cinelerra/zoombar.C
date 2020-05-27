@@ -77,11 +77,11 @@ void ZoomBar::create_objects()
 	x += amp_zoom->get_w();
 	atrack_zoom = new ATrackZoomPanel(mwindow, this, x, y);
 	atrack_zoom->create_objects();
-	atrack_zoom->set_tooltip(_("Height of audio tracks in the timeline"));
+	atrack_zoom->set_tooltip(_("Height of audio tracks"));
 	x += atrack_zoom->get_w() + xs10;
 	vtrack_zoom = new VTrackZoomPanel(mwindow, this, x, y);
 	vtrack_zoom->create_objects();
-	vtrack_zoom->set_tooltip(_("Height of video tracks in the timeline"));
+	vtrack_zoom->set_tooltip(_("Height of video tracks"));
 	x += vtrack_zoom->get_w() + xs10;
 
 	int wid = xS(120);

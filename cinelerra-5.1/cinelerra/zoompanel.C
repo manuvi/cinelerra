@@ -120,7 +120,7 @@ void ZoomPanel::update_menu()
 void ZoomPanel::create_objects()
 {
 	subwindow->add_subwindow(zoom_text = new ZoomPopup(mwindow, this, x, y));
-	x += zoom_text->get_w() - xS(3);
+	x += zoom_text->get_w();
 	subwindow->add_subwindow(zoom_tumbler = new ZoomTumbler(mwindow, this, x, y));
 	calculate_menu();
 }

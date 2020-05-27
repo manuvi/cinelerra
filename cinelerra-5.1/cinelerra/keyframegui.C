@@ -208,7 +208,9 @@ void KeyFrameThread::handle_done_event(int result)
 {
 // Apply the preset
 	if( !result ) {
+		get_gui()->lock_window("KeyFrameThread::handle_done_event");
 		apply_preset(preset_text, is_factory);
+		get_gui()->unlock_window();
 	}
 }
 

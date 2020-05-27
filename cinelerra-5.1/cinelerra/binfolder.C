@@ -393,8 +393,8 @@ double BinFolders::matches_indexable(int folder, Indexable *idxbl)
 	BinFolder *bin_folder = 0;
 	while( --k>=0 && (bin_folder=get(k)) && bin_folder->awindow_folder!=folder );
 	if( k < 0 ) return -1;
-	if( bin_folder->is_clips && idxbl->is_asset ) return -1;
-	if( !bin_folder->is_clips && !idxbl->is_asset ) return -1;
+	if( bin_folder->is_clips && idxbl->folder_no != AW_CLIP_FOLDER ) return -1;
+	if( !bin_folder->is_clips && idxbl->folder_no != AW_MEDIA_FOLDER ) return -1;
 	return bin_folder->matches_indexable(idxbl);
 }
 

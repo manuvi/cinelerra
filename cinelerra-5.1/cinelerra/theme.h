@@ -374,6 +374,7 @@ public:
 	VFrame **statusbar_cancel_data;
 	VFrame *timebar_view_data;
 	VFrame **transition_data;
+	VFrame **tumblepatch_data;
 	VFrame **uptriangle_data;
 	VFrame **viewasset_data;
 	VFrame *vtimebar_bg_data;

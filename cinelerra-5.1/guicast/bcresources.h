@@ -215,6 +215,7 @@ public:
 	VFrame *check;
 
 	VFrame **tumble_data;
+	VFrame **tumblepatch_data;
 	int tumble_duration;
 
 // Horizontal bar

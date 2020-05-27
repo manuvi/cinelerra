@@ -101,3 +101,15 @@ El la cabecera de pista hay un icono en forma de dos círculos encadenados. Sirv
 de manera simultanea valores en varias pistas mediante los deslizadores de cambio de valor.
 Este cambio afectará a todas las pistas activas que tengan este icono activado.
 
+La manera rápida de colocar el cursor de reproducción en el principio, o final de un clip, es
+acercando el ratón a uno de sus extremos y cuando el cursor del ratón se convierte en una
+flecha, hacer clic. Junto con la tecla Mayúsculas, podemos hacer selecciones precisas.
+
+En el canal de youtube de Cinelerra GG tienes muchos tutoriales para poder resolver cualquier
+duda o proyecto que quieras afrontar. Hay listas en español e incluso mudos.
+Busca en youtube "Canal Cinelerra GG"
+
+Con el efecto de "Desenfoque de Caja" puedes definir la zona donde se aplica el desenfoque.
+Y este marco se puede animar, lo que lo convierte en una herramienta perfecta para tapar
+caras u objetos de manera rápida.
+
