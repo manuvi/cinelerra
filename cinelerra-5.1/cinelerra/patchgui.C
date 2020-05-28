@@ -580,7 +580,7 @@ int MutePatch::button_release_event()
 
 
 ZoomPatch::ZoomPatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
- : BC_Tumbler(x, y)
+ : BC_Tumbler(x, y, mwindow->theme->get_image_set("tumblepatch_data"))
 {
 	this->mwindow = mwindow;
 	this->patch = patch;

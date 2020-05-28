@@ -549,7 +549,7 @@ void NEOPHYTETHEME::initialize()
 		"tumble_hi.png",
 		"tumble_bottom.png",
 		"tumble_top.png");
-	resources->tumblepatch_data = new_image_set(4,
+	new_image_set("tumblepatch_data", 4,
 		"tumblepatch_up.png",
 		"tumblepatch_hi.png",
 		"tumblepatch_bottom.png",
