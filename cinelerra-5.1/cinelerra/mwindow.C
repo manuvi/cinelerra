@@ -3860,6 +3860,7 @@ void MWindow::stack_pop()
 	stack.remove();
 	if( idxbl ) {
 		gui->unlock_window();
+		gui->resource_thread->close_indexable(idxbl);
 		remove_from_caches(idxbl);
 		remove_indexfile(idxbl);
 		mainindexes->add_indexable(idxbl);

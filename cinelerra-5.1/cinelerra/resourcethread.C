@@ -680,7 +680,7 @@ void ResourceThread::close_indexable(Indexable *idxbl)
 {
 	if( audio_thread && audio_thread->render_engine_id == idxbl->id )
 		audio_thread->close_render_engine();
-	if( video_thread && audio_thread->render_engine_id == idxbl->id )
+	if( video_thread && video_thread->render_engine_id == idxbl->id )
 		video_thread->close_render_engine();
 }
 
