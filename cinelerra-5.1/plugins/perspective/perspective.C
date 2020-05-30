@@ -810,6 +810,12 @@ int PerspectiveMain::process_buffer(VFrame *frame,
 	    EQUIV(config.x3, 100) && EQUIV(config.y3, 100) &&
 	    EQUIV(config.x4, 0)   && EQUIV(config.y4, 100) )
 		return 1;
+	if( config.mode == AffineEngine::PERSPECTIVE &&
+	    ( (EQUIV(config.x1, config.x2) && EQUIV(config.x3, config.x4)) ||
+	      (EQUIV(config.y1, config.y3) && EQUIV(config.y2, config.y4)) ) ) {
+		frame->clear_frame();
+		return 0;
+	}
 
 	if( !engine ) {
 		int cpus = get_project_smp() + 1;

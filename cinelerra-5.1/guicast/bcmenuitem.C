@@ -136,7 +136,7 @@ int BC_MenuItem::deactivate_submenus(BC_MenuPopup *exclude)
 	return 0;
 }
 
-int BC_MenuItem::get_enabled(int v)
+int BC_MenuItem::get_enabled()
 {
 	return enabled;
 }

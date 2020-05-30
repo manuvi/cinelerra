@@ -67,7 +67,7 @@ public:
 	BC_WindowBase* get_top_level();
 	BC_PopupMenu* get_popup_menu();
 	BC_SubMenu *get_submenu();
-	int get_enabled(int v);
+	int get_enabled();
 	void set_enabled(int v);
 
 private:
