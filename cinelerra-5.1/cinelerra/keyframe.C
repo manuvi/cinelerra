@@ -25,6 +25,8 @@
 #include "cstrdup.h"
 #include "filexml.h"
 #include "keyframe.h"
+#include "keyframes.h"
+#include "transportque.inc"
 
 #include <stdio.h>
 #include <string.h>
@@ -181,7 +183,7 @@ void KeyFrame::update_parameter(BC_Hash *params,
 
 		output.append_tag();
 // Write anonymous text & duplicate the rest
-		output.append_text(text ? text : this_text);
+		output.append_data(text ? text : this_text);
 		output.append_data(extra ? extra : this_extra);
 		output.terminate_string();
 // Move output to input
@@ -230,6 +232,27 @@ void KeyFrame::get_diff(KeyFrame *src,
 	delete [] this_extra;
 	delete [] src_text;
 	delete [] src_extra;
+}
+
+void KeyFrame::span_keyframes(int64_t start, int64_t end)
+{
+	BC_Hash *params = 0;
+	char *text = 0, *extra = 0;
+// The first one determines the changed parameters since it is the one displayed
+	KeyFrames *keyframes = (KeyFrames *)autos;
+	KeyFrame *current = keyframes->get_prev_keyframe(start, PLAY_FORWARD);
+	current->get_diff(this, &params, &text, &extra);
+// Always update the first one
+	current->update_parameter(params, text, extra);
+
+// Replace changed parameter in all selected keyframes.
+	for( current = (KeyFrame*)NEXT; current;  current = (KeyFrame*)NEXT ) {
+		if( current->position >= end ) break;
+		current->update_parameter(params, text, extra);
+	}
+	delete params;
+	delete [] text,
+	delete [] extra;
 }
 
 int KeyFrame::operator==(Auto &that)

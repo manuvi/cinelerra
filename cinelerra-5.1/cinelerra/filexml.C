@@ -452,8 +452,9 @@ int FileXML::append_text(const char *text, long len)
 
 char* FileXML::get_data()
 {
+	char *data = (char *)buffer->cstr();
 	long ofs = buffer->itell();
-	return (char *)buffer->pos(ofs);
+	return data + ofs;
 }
 char* FileXML::string()
 {
@@ -470,18 +471,34 @@ char* FileXML::read_text()
 	int ch = buffer->next();
 // filter out first char is new line
 	if( ch == '\n' ) ch = buffer->next();
-	long ipos = buffer->itell()-1;
+	long ipos = buffer->itell();
+	if( ch >= 0 ) --ipos;
+	long pos = ipos;
 // scan for delimiter
-	while( ch >= 0 && ch != left_delm ) ch = buffer->next();
-	long pos = buffer->itell()-1;
-	if( ch >= 0 ) buffer->iseek(pos);
+	while( ch >= 0 ) {
+		while( ch >= 0 && ch != left_delm ) ch = buffer->next();
+		if( ch < 0 ) break;
+		pos = buffer->itell()-1;
+		if( (ch = buffer->next()) != '/' ) continue;
+		char *cp = tag.title;
+		while( (ch=buffer->next()) >= 0 && ch == *cp ) ++cp;
+		if( ch < 0 ) break;
+		if( *cp ) continue;
+		while( ch == ' ' ) ch = buffer->next();
+		if( ch == right_delm ) break;
+	}
+	if( ch < 0 )
+		pos = buffer->itell();
+	buffer->iseek(pos);
 	long len = pos - ipos;
 	if( len >= output_length ) {
 		delete [] output;
 		output_length = len+1;
 		output = new char[output_length];
 	}
-	decode(output,(const char *)buffer->pos(ipos), len);
+	if( len > 0 )
+		decode(output,(const char *)buffer->pos(ipos), len);
+	output[len] = 0;
 	return output;
 }
 

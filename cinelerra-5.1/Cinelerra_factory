@@ -94,5 +94,5 @@
 <KEYFRAME TITLE="gear360 sideways, 7k"><SPHERECAM ENABLED_0=1 FOV_0=194 CENTER_X_0=2.520000e+01 CENTER_Y_0=5.139998e+01 ROTATE_X_0=50 ROTATE_Y_0=50 ROTATE_Z_0=90 ENABLED_1=1 FOV_1=1.946000e+02 CENTER_X_1=7.499999e+01 CENTER_Y_1=5.079997e+01 ROTATE_X_1=0 ROTATE_Y_1=4.990000e+01 ROTATE_Z_1=-8.900002e+01 FEATHER=1 DRAW_GUIDES=0 MODE=1></KEYFRAME>
 </PLUGIN>
 <PLUGIN TITLE=F_drawgrid>
-<KEYFRAME TITLE=rule_of_3rds>&lt;F_DRAWGRID x=-1 y=-1 width=iw/3 w=iw/3 height=ih/3 h=ih/3 color=invert c=invert thickness=2 t=2&gt;</KEYFRAME>
+<KEYFRAME TITLE=rule_of_3rds><F_DRAWGRID x=-1 y=-1 width=iw/3 w=iw/3 height=ih/3 h=ih/3 color=invert c=invert thickness=2 t=2></KEYFRAME>
 </PLUGIN>

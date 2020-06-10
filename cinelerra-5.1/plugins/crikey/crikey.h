@@ -44,6 +44,7 @@ public:
 
 	CriKeyPoint(int tag, int e, float x, float y, float t);
 	~CriKeyPoint();
+	void update_parameter(CriKeyPoint *prev, CriKeyPoint *src);
 };
 class CriKeyPoints : public ArrayList<CriKeyPoint *>
 {
@@ -58,6 +59,8 @@ public:
 	CriKeyConfig();
 	~CriKeyConfig();
 
+	void save_data(KeyFrame *keyframe);
+	void read_data(KeyFrame *keyframe);
 	int equivalent(CriKeyConfig &that);
 	void copy_from(CriKeyConfig &that);
 	void interpolate(CriKeyConfig &prev, CriKeyConfig &next,
@@ -128,6 +131,9 @@ public:
 	void draw_edge(VFrame *frm);
 	void draw_mask(VFrame *frm);
 	void draw_point(VFrame *msk, CriKeyPoint *pt);
+	void span_keyframes(KeyFrame *src, int64_t start, int64_t end);
+	void update_parameter(CriKeyConfig &prev_config, CriKeyConfig &src_config,
+                KeyFrame *keyframe);
 
 	CriKeyEngine *engine;
 	VFrame *src, *edg, *msk;

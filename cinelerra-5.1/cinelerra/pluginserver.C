@@ -1174,16 +1174,28 @@ KeyFrame* PluginServer::get_keyframe()
 }
 
 
-void PluginServer::apply_keyframe(KeyFrame *src)
+void PluginServer::apply_keyframe(Plugin *plugin, KeyFrame *src)
 {
-	Plugin *plugin = edl->tracks->plugin_exists(plugin_id);
-	if( !plugin )
-		keyframe->copy_data(src);
-	else if( plugin->is_transition() )
-		plugin->get_keyframe()->copy_data(src);
-	else
-// Span keyframes
-		plugin->keyframes->update_parameter(src);
+	KeyFrame* dst = !plugin ? keyframe :
+		plugin->is_transition() ? plugin->get_keyframe() : 0;
+	if( !dst ) {
+		if( edl->session->span_keyframes ) {
+			double selection_start = edl->local_session->get_selectionstart(0);
+			double selection_end = edl->local_session->get_selectionend(0);
+			selection_start = edl->align_to_frame(selection_start, 0);
+			selection_end = edl->align_to_frame(selection_end, 0);
+			Track *track = plugin->track;
+			int64_t start = track->to_units(selection_start, 1);
+			int64_t end = track->to_units(selection_end, 1);
+			if( start != end ) {
+				client->span_keyframes(src, start, end);
+				return;
+			}
+		}
+		dst = get_keyframe();
+	}
+	if( dst )
+		dst->copy_data(src);
 }
 
 

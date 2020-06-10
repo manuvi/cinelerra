@@ -37,6 +37,7 @@ public:
 
 	TracerPoint(float x, float y);
 	~TracerPoint();
+	void update_parameter(TracerPoint *prev, TracerPoint *src);
 };
 class TracerPoints : public ArrayList<TracerPoint *>
 {
@@ -51,6 +52,8 @@ public:
 	TracerConfig();
 	~TracerConfig();
 
+	void save_data(KeyFrame *keyframe);
+	void read_data(KeyFrame *keyframe);
 	int equivalent(TracerConfig &that);
 	void copy_from(TracerConfig &that);
 	void interpolate(TracerConfig &prev, TracerConfig &next,
@@ -113,6 +116,10 @@ public:
 	int smooth();
 	void feather(int r, double s);
 	int load_configuration1();
+	void span_keyframes(KeyFrame *src, int64_t start, int64_t end);
+	void update_parameter(TracerPoint *prev, TracerPoint *src);
+	void update_parameter(TracerConfig &prev_config, TracerConfig &src_config,
+                KeyFrame *keyframe);
 
 	VFrame *edg, *msk, *frm;
 	uint8_t **edg_rows;

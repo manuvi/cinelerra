@@ -28,6 +28,7 @@
 #include "autos.h"
 #include "filexml.inc"
 #include "keyframe.inc"
+#include "plugin.inc"
 
 
 // Keyframes inherit from Autos to reuse the editing commands but
@@ -38,7 +39,7 @@
 class KeyFrames : public Autos
 {
 public:
-	KeyFrames(EDL *edl, Track *track);
+	KeyFrames(EDL *edl, Plugin *plugin);
 	~KeyFrames();
 
 // Get keyframes for editing with automatic creation if enabled.
@@ -46,14 +47,7 @@ public:
 	virtual KeyFrame* get_keyframe();
 // Get the previous, first, or default keyframe depending on how many keyframes
 // exist.
-	KeyFrame* get_prev_keyframe(int64_t position,
-		int direction);
-
-// Keyframe updates using rules.
-// If a range is selected, the changed parameter is copied to all
-// the keyframes.
-// If no range is selected, a keyframe is created based on auto keyframe rules.
-	void update_parameter(KeyFrame *src);
+	KeyFrame* get_prev_keyframe(int64_t position, int direction);
 
 	Auto* new_auto();
 	void dump(FILE *fp=stdout);

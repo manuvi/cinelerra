@@ -329,7 +329,7 @@ void PresetsDBPlugin::load(FileXML *file, int is_factory)
 				const char *keyframe_title = file->tag.get_property("TITLE", string);
 				PresetsDBKeyframe *keyframe = new PresetsDBKeyframe(keyframe_title, is_factory);
 				XMLBuffer data;
-				file->read_text_until("/KEYFRAME", &data);
+				file->read_data_until("/KEYFRAME", &data);
 				keyframe->set_data(data.cstr());
 				keyframes.append(keyframe);
 		
@@ -352,7 +352,7 @@ void PresetsDBPlugin::save(FileXML *file)
 			file->tag.set_title("KEYFRAME");
 			file->tag.set_property("TITLE", keyframe->title);
 			file->append_tag();
-			file->append_text(keyframe->data);
+			file->append_data(keyframe->data);
 			file->tag.set_title("/KEYFRAME");
 			file->append_tag();
 			file->append_newline();

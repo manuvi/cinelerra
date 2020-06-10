@@ -363,9 +363,16 @@ void KeyFrameThread::apply_preset(const char *title, int is_factory)
 		mwindow->undo->update_undo_before();
 
 #ifdef USE_KEYFRAME_SPANNING
-		KeyFrame keyframe;
-		presets_db->load_preset(plugin_title, title, &keyframe, is_factory);
-		plugin->keyframes->update_parameter(&keyframe);
+		ArrayList<PluginServer*> &plugindb = *mwindow->plugindb;
+		int k = plugindb.size();
+		while( --k>=0 && strcmp(plugindb[k]->title, plugin->title) );
+		if( k >= 0 ) {
+			PluginServer server(*plugindb[k]);
+			server.open_plugin(0, mwindow->preferences, mwindow->edl, plugin);
+			KeyFrame keyframe(mwindow->edl, plugin->keyframes);
+			presets_db->load_preset(plugin_title, title, &keyframe, is_factory);
+			server.apply_keyframe(plugin, &keyframe);
+		}
 #else
 		KeyFrame *keyframe = plugin->get_keyframe();
 		presets_db->load_preset(plugin_title, title, keyframe, is_factory);

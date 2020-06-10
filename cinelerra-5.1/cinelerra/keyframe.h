@@ -66,6 +66,7 @@ public:
 	void get_contents(BC_Hash *ptr, char **text, char **extra);
 // Update a single parameter or the anonymous text depending on which argument is nonzero
 	void update_parameter(BC_Hash *params, const char *text, const char *extra);
+	void span_keyframes(int64_t start, int64_t end);
 
 	XMLBuffer *xbuf;
 };

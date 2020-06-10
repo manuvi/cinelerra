@@ -41,6 +41,24 @@
 
 class RotateEffect;
 class RotateWindow;
+class RotateToggle;
+class RotateDrawPivot;
+class RotateInterpolate;
+class RotateAngleText;
+class RotateAngleSlider;
+class RotatePivotXText;
+class RotatePivotXSlider;
+class RotatePivotYText;
+class RotatePivotYSlider;
+class RotateClr;
+class RotateReset;
+
+
+#define RESET_DEFAULT_SETTINGS 10
+#define RESET_ALL     0
+#define RESET_ANGLE   1
+#define RESET_PIVOT_X 2
+#define RESET_PIVOT_Y 3
 
 
 class RotateConfig
@@ -48,7 +66,7 @@ class RotateConfig
 public:
 	RotateConfig();
 
-	void reset();
+	void reset(int clear);
 	int equivalent(RotateConfig &that);
 	void copy_from(RotateConfig &that);
 	void interpolate(RotateConfig &prev,
@@ -102,10 +120,10 @@ public:
 	RotateEffect *plugin;
 };
 
-class RotateFine : public BC_FPot
+class RotateAngleText : public BC_TumbleTextBox
 {
 public:
-	RotateFine(RotateWindow *window,
+	RotateAngleText(RotateWindow *window,
 		RotateEffect *plugin,
 		int x,
 		int y);
@@ -115,35 +133,23 @@ public:
 	RotateWindow *window;
 };
 
-class RotateX : public BC_FPot
+class RotateAngleSlider : public BC_FSlider
 {
 public:
-	RotateX(RotateWindow *window,
+	RotateAngleSlider(RotateWindow *window,
 		RotateEffect *plugin,
-		int x,
-		int y);
+		int x, int y, int w);
 	int handle_event();
-	RotateEffect *plugin;
-	RotateWindow *window;
-};
 
-class RotateY : public BC_FPot
-{
-public:
-	RotateY(RotateWindow *window,
-		RotateEffect *plugin,
-		int x,
-		int y);
-	int handle_event();
 	RotateEffect *plugin;
 	RotateWindow *window;
 };
 
 
-class RotateText : public BC_TextBox
+class RotatePivotXText : public BC_TumbleTextBox
 {
 public:
-	RotateText(RotateWindow *window,
+	RotatePivotXText(RotateWindow *window,
 		RotateEffect *plugin,
 		int x,
 		int y);
@@ -152,11 +158,66 @@ public:
 	RotateEffect *plugin;
 	RotateWindow *window;
 };
+
+class RotatePivotXSlider : public BC_FSlider
+{
+public:
+	RotatePivotXSlider(RotateWindow *window,
+		RotateEffect *plugin,
+		int x, int y, int w);
+	int handle_event();
+
+	RotateEffect *plugin;
+	RotateWindow *window;
+};
+
+
+class RotatePivotYText : public BC_TumbleTextBox
+{
+public:
+	RotatePivotYText(RotateWindow *window,
+		RotateEffect *plugin,
+		int x,
+		int y);
+	int handle_event();
+
+	RotateEffect *plugin;
+	RotateWindow *window;
+};
+
+class RotatePivotYSlider : public BC_FSlider
+{
+public:
+	RotatePivotYSlider(RotateWindow *window,
+		RotateEffect *plugin,
+		int x, int y, int w);
+	int handle_event();
+
+	RotateEffect *plugin;
+	RotateWindow *window;
+};
+
+
+
+
+class RotateClr : public BC_Button
+{
+public:
+	RotateClr(RotateWindow *window, RotateEffect *plugin,
+		int x, int y, int clear);
+	~RotateClr();
+	int handle_event();
+	RotateEffect *plugin;
+	RotateWindow *window;
+	int clear;
+};
+
 
 class RotateReset : public BC_GenericButton
 {
 public:
-	RotateReset(RotateEffect *plugin, RotateWindow *window, int x, int y);
+	RotateReset(RotateEffect *plugin, RotateWindow *window,
+	int x, int y);
 	~RotateReset();
 	int handle_event();
 	RotateEffect *plugin;
@@ -172,20 +233,31 @@ public:
 	void create_objects();
 
 	int update();
-	int update_fine();
-	int update_text();
+	int update_sliders();
+	int update_texts();
 	int update_toggles();
 
 	RotateEffect *plugin;
+	RotateToggle *toggle180neg;
+	RotateToggle *toggle90neg;
 	RotateToggle *toggle0;
 	RotateToggle *toggle90;
 	RotateToggle *toggle180;
-	RotateToggle *toggle270;
+
+	RotateAngleText *rotate_angle_text;
+	RotateAngleSlider *rotate_angle_slider;
+	RotateClr *rotate_angle_clr;
+
 	RotateDrawPivot *draw_pivot;
-	RotateFine *fine;
-	RotateText *text;
-	RotateX *x;
-	RotateY *y;
+
+	RotatePivotXText *rotate_pivot_x_text;
+	RotatePivotXSlider *rotate_pivot_x_slider;
+	RotateClr *rotate_pivot_x_clr;
+
+	RotatePivotYText *rotate_pivot_y_text;
+	RotatePivotYSlider *rotate_pivot_y_slider;
+	RotateClr *rotate_pivot_y_clr;
+
 //	RotateInterpolate *bilinear;
 	RotateReset *reset;
 };

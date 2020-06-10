@@ -82,8 +82,8 @@ File* CICache::check_out(Asset *asset, EDL *edl, int block)
 			current = new CICacheItem(this, edl, asset);
 			append(current);  current->checked_out = tid;
 			file = current->file;
-			total_lock->unlock();
 			int result = file->open_file(preferences, asset, 1, 0);
+			total_lock->unlock();
 			if( result ) {
 SET_TRACE
 				delete file;

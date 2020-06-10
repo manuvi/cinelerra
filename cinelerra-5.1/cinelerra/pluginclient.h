@@ -381,7 +381,7 @@ public:
 // console.  This gets a keyframe from the EDL, with the position set to the
 // EDL tracking position.
 	int send_configure_change();
-
+	virtual void span_keyframes(KeyFrame *src, int64_t start, int64_t end);
 
 // Called from process_buffer
 // Returns 1 if a GUI is open so OpenGL routines can determine if

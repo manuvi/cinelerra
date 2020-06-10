@@ -109,6 +109,7 @@ public:
 	void save_data(FileXML &output);
 	void read_data(FileXML &input);
 	static const char *types[ARC_SZ];
+	void update_parameter(SketcherPoint *the, SketcherPoint *src);
 };
 class SketcherPoints : public ArrayList<SketcherPoint *>
 {
@@ -140,6 +141,7 @@ public:
 
 	SketcherVPen *new_vpen(VFrame *out);
 	void draw(VFrame *img, int flags);
+	void update_parameter(SketcherCurve *the, SketcherCurve *src);
 };
 class SketcherCurves : public ArrayList<SketcherCurve *>
 {
@@ -154,6 +156,8 @@ class SketcherConfig
 public:
 	SketcherConfig();
 	~SketcherConfig();
+	void read_data(KeyFrame *keyframe);
+	void save_data(KeyFrame *keyframe);
 
 	SketcherCurves curves;
 	int equivalent(SketcherConfig &that);
@@ -180,6 +184,9 @@ public:
 	void update_gui();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
+	void span_keyframes(KeyFrame *src, int64_t start, int64_t end);
+	void update_parameter(SketcherConfig &prev_config, SketcherConfig &src_config,
+		KeyFrame *keyframe);
 	int new_curve(int pen, int width, int color);
 	int new_curve();
 	int new_point(SketcherCurve *cv, int arc, coord x, coord y, int idx=-1);

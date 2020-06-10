@@ -1083,9 +1083,12 @@ int PluginClient::send_configure_change()
 	if(server->mwindow)
 		server->mwindow->undo->update_undo_before(_("tweek"), this);
 #ifdef USE_KEYFRAME_SPANNING
-	KeyFrame keyframe;
+	EDL *edl = server->edl;
+        Plugin *plugin = edl->tracks->plugin_exists(server->plugin_id);
+	KeyFrames *keyframes = plugin ? plugin->keyframes : 0;
+	KeyFrame keyframe(edl, keyframes);
 	save_data(&keyframe);
-	server->apply_keyframe(&keyframe);
+	server->apply_keyframe(plugin, &keyframe);
 #else
 	KeyFrame* keyframe = server->get_keyframe();
 // Call save routine in plugin
@@ -1095,6 +1098,14 @@ int PluginClient::send_configure_change()
 		server->mwindow->undo->update_undo_after(_("tweek"), LOAD_AUTOMATION);
 	server->sync_parameters();
 	return 0;
+}
+
+// virtual default spanning keyframe update.  If a range is selected,
+// then changed parameters are copied to (prev + selected) keyframes.
+// redefine per client for custom keyframe updates, see tracer, sketcher, crikey
+void PluginClient::span_keyframes(KeyFrame *src, int64_t start, int64_t end)
+{
+	src->span_keyframes(start, end);
 }
 
 
@@ -1163,4 +1174,5 @@ int PluginClient::gui_open()
 {
 	return server->gui_open();
 }
+
 

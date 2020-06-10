@@ -21,8 +21,12 @@
 
 
 #include "rotate.h"
+#include "theme.h"
 
-#define MAXANGLE 360
+#define MAXANGLE 360.00
+#define MINPIVOT   0.00
+#define MAXPIVOT 100.00
+
 
 REGISTER_PLUGIN(RotateEffect)
 
@@ -31,15 +35,30 @@ REGISTER_PLUGIN(RotateEffect)
 
 RotateConfig::RotateConfig()
 {
-	reset();
+	reset(RESET_DEFAULT_SETTINGS);
 }
 
-void RotateConfig::reset()
+void RotateConfig::reset(int clear)
 {
-	angle = 0.0;
-	pivot_x = 50.0;
-	pivot_y = 50.0;
-	draw_pivot = 0;
+	switch(clear) {
+		case RESET_ANGLE :
+			angle = 0.0;
+			break;
+		case RESET_PIVOT_X :
+			pivot_x = 50.0;
+			break;
+		case RESET_PIVOT_Y :
+			pivot_y = 50.0;
+			break;
+		case RESET_ALL :
+		case RESET_DEFAULT_SETTINGS :
+		default:
+			angle = 0.0;
+			pivot_x = 50.0;
+			pivot_y = 50.0;
+			draw_pivot = 0;
+			break;
+	}
 }
 
 int RotateConfig::equivalent(RotateConfig &that)
@@ -149,95 +168,136 @@ int RotateDrawPivot::handle_event()
 
 
 
-RotateFine::RotateFine(RotateWindow *window, RotateEffect *plugin, int x, int y)
- : BC_FPot(x,
- 	y,
-	(float)plugin->config.angle,
-	(float)-360,
-	(float)360)
+RotateAngleText::RotateAngleText(RotateWindow *window, RotateEffect *plugin, int x, int y)
+ : BC_TumbleTextBox(window, (float)plugin->config.angle,
+	(float)-MAXANGLE, (float)MAXANGLE, x, y, xS(60), 2)
 {
 	this->window = window;
 	this->plugin = plugin;
-	set_precision(0.1);
-	set_use_caption(0);
 }
 
-int RotateFine::handle_event()
-{
-	plugin->config.angle = get_value();
-	window->update_toggles();
-	window->update_text();
-	plugin->send_configure_change();
-	return 1;
-}
-
-
-
-RotateText::RotateText(RotateWindow *window,
-	RotateEffect *plugin,
-	int x,
-	int y)
- : BC_TextBox(x,
- 	y,
-	xS(90),
-	1,
-	(float)plugin->config.angle)
-{
-	this->window = window;
-	this->plugin = plugin;
-	set_precision(4);
-}
-
-int RotateText::handle_event()
+int RotateAngleText::handle_event()
 {
 	plugin->config.angle = atof(get_text());
 	window->update_toggles();
-	window->update_fine();
+	window->update_sliders();
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+RotateAngleSlider::RotateAngleSlider(RotateWindow *window, RotateEffect *plugin, int x, int y, int w)
+ : BC_FSlider(x, y, 0, w, w, (float)-MAXANGLE, (float)MAXANGLE, (float)plugin->config.angle)
+{
+	this->window = window;
+	this->plugin = plugin;
+	enable_show_value(0); // Hide caption
+	set_precision(0.1);
+}
+
+int RotateAngleSlider::handle_event()
+{
+	plugin->config.angle = get_value();
+	window->update_toggles();
+	window->update_texts();
 	plugin->send_configure_change();
 	return 1;
 }
 
 
 
-RotateX::RotateX(RotateWindow *window, RotateEffect *plugin, int x, int y)
- : BC_FPot(x,
- 	y,
-	(float)plugin->config.pivot_x,
-	(float)0,
-	(float)100)
+RotatePivotXText::RotatePivotXText(RotateWindow *window, RotateEffect *plugin, int x, int y)
+ : BC_TumbleTextBox(window, (float)plugin->config.pivot_x,
+	(float)MINPIVOT, (float)MAXPIVOT, x, y, xS(60), 2)
 {
 	this->window = window;
 	this->plugin = plugin;
-	set_precision(0.01);
-	set_use_caption(1);
 }
 
-int RotateX::handle_event()
+int RotatePivotXText::handle_event()
+{
+	plugin->config.pivot_x = atof(get_text());
+	window->update_sliders();
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+RotatePivotXSlider::RotatePivotXSlider(RotateWindow *window, RotateEffect *plugin, int x, int y, int w)
+ : BC_FSlider(x, y, 0, w, w, (float)MINPIVOT, (float)MAXPIVOT, (float)plugin->config.pivot_x)
+{
+	this->window = window;
+	this->plugin = plugin;
+	enable_show_value(0); // Hide caption
+	set_precision(0.1);
+}
+
+int RotatePivotXSlider::handle_event()
 {
 	plugin->config.pivot_x = get_value();
+	window->update_toggles();
+	window->update_texts();
 	plugin->send_configure_change();
 	return 1;
 }
 
-RotateY::RotateY(RotateWindow *window, RotateEffect *plugin, int x, int y)
- : BC_FPot(x,
- 	y,
-	(float)plugin->config.pivot_y,
-	(float)0,
-	(float)100)
+
+RotatePivotYText::RotatePivotYText(RotateWindow *window, RotateEffect *plugin, int x, int y)
+ : BC_TumbleTextBox(window, (float)plugin->config.pivot_y,
+	(float)MINPIVOT, (float)MAXPIVOT, x, y, xS(60), 2)
 {
 	this->window = window;
 	this->plugin = plugin;
-	set_precision(0.01);
-	set_use_caption(1);
 }
 
-int RotateY::handle_event()
+int RotatePivotYText::handle_event()
 {
-	plugin->config.pivot_y = get_value();
+	plugin->config.pivot_y = atof(get_text());
 	plugin->send_configure_change();
 	return 1;
 }
+
+
+RotatePivotYSlider::RotatePivotYSlider(RotateWindow *window, RotateEffect *plugin, int x, int y, int w)
+ : BC_FSlider(x, y, 0, w, w, (float)MINPIVOT, (float)MAXPIVOT, (float)plugin->config.pivot_y)
+{
+	this->window = window;
+	this->plugin = plugin;
+	enable_show_value(0); // Hide caption
+	set_precision(0.1);
+}
+
+int RotatePivotYSlider::handle_event()
+{
+	plugin->config.pivot_y = get_value();
+	window->update_toggles();
+	window->update_texts();
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+
+RotateClr::RotateClr(RotateWindow *window, RotateEffect *plugin, int x, int y, int clear)
+ : BC_Button(x, y, plugin->get_theme()->get_image_set("reset_button"))
+{
+	this->window = window;
+	this->plugin = plugin;
+	this->clear = clear;
+}
+
+RotateClr::~RotateClr()
+{
+}
+
+int RotateClr::handle_event()
+{
+	plugin->config.reset(clear);
+	window->update();
+	plugin->send_configure_change();
+	return 1;
+}
+
 
 
 RotateReset::RotateReset(RotateEffect *plugin, RotateWindow *window, int x, int y)
@@ -251,7 +311,7 @@ RotateReset::~RotateReset()
 }
 int RotateReset::handle_event()
 {
-	plugin->config.reset();
+	plugin->config.reset(RESET_ALL);
 	window->update();
 	plugin->send_configure_change();
 	return 1;
@@ -263,7 +323,7 @@ int RotateReset::handle_event()
 
 
 RotateWindow::RotateWindow(RotateEffect *plugin)
- : PluginClientWindow(plugin, xS(300), yS(230), xS(300), yS(230), 0)
+ : PluginClientWindow(plugin, xS(420), yS(260), xS(420), yS(260), 0)
 {
 	this->plugin = plugin;
 }
@@ -272,42 +332,69 @@ RotateWindow::RotateWindow(RotateEffect *plugin)
 
 void RotateWindow::create_objects()
 {
-	int xs10 = xS(10), xs50 = xS(50), xs150 = xS(150);
-	int ys10 = yS(10), ys20 = yS(20), ys25 = yS(25), ys50 = yS(50), ys60 = yS(60);
+	int xs10 = xS(10), xs20 = xS(20), xs64 = xS(64), xs200 = xS(200);
+	int ys10 = yS(10), ys20 = yS(20), ys30 = yS(30), ys40 = yS(40);
+	int x2 = xS(80), x3 = xS(180);
 	int x = xs10, y = ys10;
-	BC_Title *title;
-	add_tool(new BC_Title(x, y, _("Rotate")));
-	x += xs50;  y += ys20;
+	int clr_x = get_w()-x - xS(22); // note: clrBtn_w = 22
+
+	BC_TitleBar *title_bar;
+	BC_Bar *bar;
+
+// Angle section
+	add_subwindow(title_bar = new BC_TitleBar(x, y, get_w()-2*x, xs20, xs10, _("Rotation")));
+	x = xs10;  y += ys20;
+	add_tool(new BC_Title(x, y, _("Preset:")));
+	x = x + x2; 
+	add_tool(toggle180neg = new RotateToggle(this, plugin,
+		plugin->config.angle == -180, x, y, -180, "-180°"));
+	x += xs64;
+	add_tool(toggle90neg = new RotateToggle(this, plugin,
+		plugin->config.angle == -90, x, y, -90, "-90°"));
+	x += xs64;
 	add_tool(toggle0 = new RotateToggle(this, plugin,
-		plugin->config.angle == 0, x, y, 0, "0"));
-    x += RADIUS;  y += RADIUS;
+		plugin->config.angle == 0, x, y, 0, "0°"));
+	x += xs64;
 	add_tool(toggle90 = new RotateToggle(this, plugin,
-		plugin->config.angle == 90, x, y, 90, "90"));
-    x -= RADIUS;  y += RADIUS;
+		plugin->config.angle == 90, x, y, 90, "+90°"));
+	x += xs64;
 	add_tool(toggle180 = new RotateToggle(this, plugin,
-		plugin->config.angle == 180, x, y, 180, "180"));
-    x -= RADIUS;  y -= RADIUS;
-	add_tool(toggle270 = new RotateToggle(this, plugin,
-		plugin->config.angle == 270, x, y, 270, "270"));
+		plugin->config.angle == 180, x, y, 180, "+180°"));
 //	add_subwindow(bilinear = new RotateInterpolate(plugin, xs10, y + ys60));
-	x += xs150;  y -= ys50;
-	add_tool(fine = new RotateFine(this, plugin, x, y));
-	y += fine->get_h() + ys10;
-	add_tool(text = new RotateText(this, plugin, x, y));
-	y += ys25;
-	add_tool(new BC_Title(x, y, _("Degrees")));
+	x = xs10;  y += ys30;
+	add_tool(new BC_Title(x, y, _("Angle:")));
+	rotate_angle_text = new RotateAngleText(this, plugin, (x + x2), y);
+	rotate_angle_text->create_objects();
+	add_tool(rotate_angle_slider = new RotateAngleSlider(this, plugin, x3, y, xs200));
+	add_tool(rotate_angle_clr = new RotateClr(this, plugin,
+		clr_x, y, RESET_ANGLE));
+	y += ys40;
 
-	y += text->get_h() + ys10;
-	add_subwindow(title = new BC_Title(x, y, _("Pivot (x,y):")));
-	y += title->get_h() + ys10;
-	add_subwindow(this->x = new RotateX(this, plugin, x, y));
-	x += this->x->get_w() + xs10;
-	add_subwindow(this->y = new RotateY(this, plugin, x, y));
-
-//	y += this->y->get_h() + ys10;
-	x = xs10;
+// Pivot section
+	add_subwindow(title_bar = new BC_TitleBar(x, y, get_w()-2*x, xs20, xs10, _("Pivot")));
+	y += ys20;
 	add_subwindow(draw_pivot = new RotateDrawPivot(this, plugin, x, y));
-	y += ys60;
+	y += ys30;
+	add_tool(new BC_Title(x, y, _("X:")));
+	add_tool(new BC_Title((x2-x), y, _("%")));
+	rotate_pivot_x_text = new RotatePivotXText(this, plugin, (x + x2), y);
+	rotate_pivot_x_text->create_objects();
+	add_tool(rotate_pivot_x_slider = new RotatePivotXSlider(this, plugin, x3, y, xs200));
+	add_tool(rotate_pivot_x_clr = new RotateClr(this, plugin,
+		clr_x, y, RESET_PIVOT_X));
+	y += ys30;
+	add_tool(new BC_Title(x, y, _("Y:")));
+	add_tool(new BC_Title((x2-x), y, _("%")));
+	rotate_pivot_y_text = new RotatePivotYText(this, plugin, (x + x2), y);
+	rotate_pivot_y_text->create_objects();
+	add_tool(rotate_pivot_y_slider = new RotatePivotYSlider(this, plugin, x3, y, xs200));
+	add_tool(rotate_pivot_y_clr = new RotateClr(this, plugin,
+		clr_x, y, RESET_PIVOT_Y));
+	y += ys40;
+
+// Reset section
+	add_subwindow(bar = new BC_Bar(x, y, get_w()-2*x));
+	y += ys10;
 	add_subwindow(reset = new RotateReset(plugin, this, x, y));
 
 	show_window();
@@ -317,33 +404,36 @@ void RotateWindow::create_objects()
 
 int RotateWindow::update()
 {
-	update_fine();
+	update_sliders();
 	update_toggles();
-	update_text();
+	update_texts();
 //	bilinear->update(plugin->config.bilinear);
 	return 0;
 }
 
-int RotateWindow::update_fine()
+int RotateWindow::update_sliders()
 {
-	fine->update(plugin->config.angle);
-	x->update(plugin->config.pivot_x);
-	y->update(plugin->config.pivot_y);
+	rotate_angle_slider->update(plugin->config.angle);
+	rotate_pivot_x_slider->update(plugin->config.pivot_x);
+	rotate_pivot_y_slider->update(plugin->config.pivot_y);
 	return 0;
 }
 
-int RotateWindow::update_text()
+int RotateWindow::update_texts()
 {
-	text->update(plugin->config.angle);
+	rotate_angle_text->update(plugin->config.angle);
+	rotate_pivot_x_text->update(plugin->config.pivot_x);
+	rotate_pivot_y_text->update(plugin->config.pivot_y);
 	return 0;
 }
 
 int RotateWindow::update_toggles()
 {
+	toggle180neg->update(EQUIV(plugin->config.angle, -180));
+	toggle90neg->update(EQUIV(plugin->config.angle, -90));
 	toggle0->update(EQUIV(plugin->config.angle, 0));
 	toggle90->update(EQUIV(plugin->config.angle, 90));
 	toggle180->update(EQUIV(plugin->config.angle, 180));
-	toggle270->update(EQUIV(plugin->config.angle, 270));
 	draw_pivot->update(plugin->config.draw_pivot);
 	return 0;
 }

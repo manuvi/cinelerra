@@ -185,6 +185,7 @@ public:
 		int &x3, int &y3, int &x4, int &y4);
 
 	PerspectiveCanvas *canvas;
+	BC_Title *curr_point;
 	PerspectiveCoord *x, *y;
 	PerspectiveReset *reset;
 	PerspectiveZoomView *zoom_view;

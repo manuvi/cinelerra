@@ -27,13 +27,15 @@
 #include "keyframe.h"
 #include "keyframes.h"
 #include "localsession.h"
+#include "plugin.h"
 #include "track.h"
 #include "transportque.inc"
 
-KeyFrames::KeyFrames(EDL *edl, Track *track)
- : Autos(edl, track)
+KeyFrames::KeyFrames(EDL *edl, Plugin *plugin)
+ : Autos(edl, plugin->track)
 {
 	type = Autos::AUTOMATION_TYPE_PLUGIN;
+	plugin = plugin;
 }
 
 KeyFrames::~KeyFrames()
@@ -90,44 +92,6 @@ KeyFrame* KeyFrames::get_keyframe()
 			result = (KeyFrame*)insert_auto(pos);
 	}
 	return result;
-}
-
-
-void KeyFrames::update_parameter(KeyFrame *src)
-{
-// Create new keyframe if auto keyframes or replace entire keyframe.
-	double selection_start = edl->local_session->get_selectionstart(0);
-	double selection_end = edl->local_session->get_selectionend(0);
-	selection_start = edl->align_to_frame(selection_start, 0);
-	selection_end = edl->align_to_frame(selection_end, 0);
-
-	if( !edl->session->span_keyframes ||
-	    EQUIV(selection_start, selection_end) ) {
-// Search for keyframe to write
-		KeyFrame *dst = get_keyframe();
-		dst->copy_data(src);
-	}
-	else {
-// Replace changed parameter in all selected keyframes.
-		BC_Hash *params = 0;
-		char *text = 0, *extra = 0;
-// Search all keyframes in selection but don't create a new one.
-		int64_t start = track->to_units(selection_start, 0);
-		int64_t end = track->to_units(selection_end, 0);
-		KeyFrame *current = get_prev_keyframe(start, PLAY_FORWARD);
-// The first one determines the changed parameters since it is the one displayed
-		current->get_diff(src, &params, &text, &extra);
-// Always update the first one
-		current->update_parameter(params, text, extra);
-
-		for( current = (KeyFrame*)NEXT; current;  current = (KeyFrame*)NEXT ) {
-			if( current->position >= end ) break;
-			current->update_parameter(params, text, extra);
-		}
-		delete params;
-		delete [] text,
-		delete [] extra;
-	}
 }
 
 Auto* KeyFrames::new_auto()

@@ -30,11 +30,13 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
+#include "keyframes.h"
 #include "overlayframe.h"
 #include "pluginserver.h"
 #include "preferences.h"
 #include "sketcher.h"
 #include "sketcherwindow.h"
+#include "transportque.inc"
 #include "language.h"
 #include "vframe.h"
 
@@ -356,21 +358,21 @@ int Sketcher::is_synthesis() { return 1; }
 NEW_WINDOW_MACRO(Sketcher, SketcherWindow);
 LOAD_CONFIGURATION_MACRO(Sketcher, SketcherConfig)
 
-void Sketcher::save_data(KeyFrame *keyframe)
+void SketcherConfig::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
 // cause data to be stored directly in text
 	output.set_shared_output(keyframe->xbuf);
 
 	output.tag.set_title("SKETCHER");
-	output.tag.set_property("DRAG", config.drag);
-	output.tag.set_property("ALIASING", config.aliasing);
-	output.tag.set_property("CV_SELECTED", config.cv_selected);
-	output.tag.set_property("PT_SELECTED", config.pt_selected);
+	output.tag.set_property("DRAG", drag);
+	output.tag.set_property("ALIASING", aliasing);
+	output.tag.set_property("CV_SELECTED", cv_selected);
+	output.tag.set_property("PT_SELECTED", pt_selected);
 	output.append_tag();
 	output.append_newline();
-	for( int i=0,n=config.curves.size(); i<n; ++i ) {
-		config.curves[i]->save_data(output);
+	for( int i=0,n=curves.size(); i<n; ++i ) {
+		curves[i]->save_data(output);
 	}
 	output.tag.set_title("/SKETCHER");
 	output.append_tag();
@@ -378,25 +380,30 @@ void Sketcher::save_data(KeyFrame *keyframe)
 	output.terminate_string();
 }
 
-void Sketcher::read_data(KeyFrame *keyframe)
+void Sketcher::save_data(KeyFrame *keyframe)
+{
+	config.save_data(keyframe);
+}
+
+void SketcherConfig::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 	input.set_shared_input(keyframe->xbuf);
-	config.curves.remove_all_objects();
+	curves.remove_all_objects();
 	int result = 0;
 	SketcherCurve *cv = 0;
 
 	while( !(result=input.read_tag()) ) {
 		if( input.tag.title_is("SKETCHER") ) {
-			config.drag = input.tag.get_property("DRAG", config.drag);
-			config.aliasing = input.tag.get_property("ALIASING", config.aliasing);
-			config.cv_selected = input.tag.get_property("CV_SELECTED", 0);
-			config.pt_selected = input.tag.get_property("PT_SELECTED", 0);
+			drag = input.tag.get_property("DRAG", drag);
+			aliasing = input.tag.get_property("ALIASING", aliasing);
+			cv_selected = input.tag.get_property("CV_SELECTED", 0);
+			pt_selected = input.tag.get_property("PT_SELECTED", 0);
 		}
 		else if( !strncmp(input.tag.get_title(),"CURVE_",6) ) {
 			cv = new SketcherCurve();
 			cv->read_data(input);
-			config.curves.append(cv);
+			curves.append(cv);
 		}
 		else if( !strncmp(input.tag.get_title(),"/CURVE_",7) )
 			cv = 0;
@@ -407,13 +414,86 @@ void Sketcher::read_data(KeyFrame *keyframe)
 				cv->points.append(pt);
 			}
 			else
-				printf("Sketcher::read_data: no curve for point\n");
+				printf("SketcherConfig::read_data: no curve for point\n");
 		}
 	}
 
+	limits();
+}
+
+void Sketcher::read_data(KeyFrame *keyframe)
+{
+	config.read_data(keyframe);
 	if( !config.curves.size() )
 		new_curve();
-	config.limits();
+}
+
+
+void SketcherPoint::update_parameter(SketcherPoint *prev, SketcherPoint *src)
+{
+	if( prev->arc != src->arc ) arc = src->arc;
+	if( prev->x != src->x ) x = src->x;
+	if( prev->y != src->y ) y = src->y;
+}
+
+void SketcherCurve::update_parameter(SketcherCurve *prev, SketcherCurve *src)
+{
+	if( prev->pen != src->pen ) pen = src->pen;
+	if( prev->width != src->width ) width = src->width;
+	if( prev->color != src->color ) color = src->color;
+	int prev_points = prev->points.size();
+	int src_points = src->points.size();
+	int dst_points = this->points.size();
+	int npoints = bmin(prev_points, bmin(src_points, dst_points));
+	for( int i=0; i<npoints; ++i ) {
+		SketcherPoint *prev_point = prev->points[i];
+		SketcherPoint *src_point = src->points[i];
+		SketcherPoint *dst_point = this->points[i];
+		dst_point->update_parameter(prev_point, src_point);
+	}
+}
+
+void Sketcher::span_keyframes(KeyFrame *src, int64_t start, int64_t end)
+{
+	SketcherConfig src_config;
+	src_config.read_data(src);
+	KeyFrames *keyframes = (KeyFrames *)src->autos;
+	KeyFrame *prev = keyframes->get_prev_keyframe(start, PLAY_FORWARD);
+	SketcherConfig prev_config;
+	prev_config.read_data(prev);
+// Always update the first one
+	update_parameter(prev_config, src_config, prev);
+	KeyFrame *curr = (KeyFrame*)prev->next;
+	while( curr && curr->position < end ) {
+		update_parameter(prev_config, src_config, curr);
+		curr = (KeyFrame*)curr->next;
+	}
+}
+
+void Sketcher::update_parameter(SketcherConfig &prev_config, SketcherConfig &src_config,
+		KeyFrame *keyframe)
+{
+	SketcherConfig dst_config;
+	dst_config.read_data(keyframe);
+	if( prev_config.drag != src_config.drag )
+		dst_config.drag = src_config.drag;
+	if( prev_config.aliasing != src_config.aliasing )
+		dst_config.aliasing = src_config.aliasing;
+	if( prev_config.cv_selected != src_config.cv_selected )
+		dst_config.cv_selected = src_config.cv_selected;
+	if( prev_config.pt_selected != src_config.pt_selected )
+		dst_config.pt_selected = src_config.pt_selected;
+	int src_curves = src_config.curves.size();
+	int dst_curves = dst_config.curves.size();
+	int prev_curves = prev_config.curves.size();
+	int ncurves = bmin(prev_curves, bmin(src_curves, dst_curves));
+	for( int i=0; i<ncurves; ++i ) {
+		SketcherCurve *prev_curve = prev_config.curves[i];
+		SketcherCurve *src_curve = src_config.curves[i];
+		SketcherCurve *dst_curve = dst_config.curves[i];
+		dst_curve->update_parameter(prev_curve, src_curve);
+	}
+	dst_config.save_data(keyframe);
 }
 
 void Sketcher::update_gui()

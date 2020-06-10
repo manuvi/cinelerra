@@ -170,7 +170,7 @@ public:
 	KeyFrame* get_keyframe();
 // Apply new settings from the plugin GUI.  Called by PluginClient::send_configure_change
 // Used in keyframe spanning mode.
-	void apply_keyframe(KeyFrame *src);
+	void apply_keyframe(Plugin *plugin, KeyFrame *src);
 
 // Create new theme object.  Used by theme plugins.
 	Theme* new_theme();

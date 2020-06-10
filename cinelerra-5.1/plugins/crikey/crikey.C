@@ -32,7 +32,10 @@
 #include "filexml.h"
 #include "crikey.h"
 #include "crikeywindow.h"
+#include "keyframe.h"
+#include "keyframes.h"
 #include "language.h"
+#include "transportque.inc"
 #include "vframe.h"
 
 // chroma interpolated key, crikey
@@ -270,7 +273,7 @@ int CriKey::new_point()
 	return config.add_point(-1, 0, x, y, 0.5f);
 }
 
-void CriKey::save_data(KeyFrame *keyframe)
+void CriKeyConfig::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
 
@@ -278,17 +281,17 @@ void CriKey::save_data(KeyFrame *keyframe)
 	output.set_shared_output(keyframe->xbuf);
 
 	output.tag.set_title("CRIKEY");
-	output.tag.set_property("THRESHOLD", config.threshold);
-	output.tag.set_property("DRAW_MODE", config.draw_mode);
-	output.tag.set_property("DRAG", config.drag);
-	output.tag.set_property("SELECTED", config.selected);
+	output.tag.set_property("THRESHOLD", threshold);
+	output.tag.set_property("DRAW_MODE", draw_mode);
+	output.tag.set_property("DRAG", drag);
+	output.tag.set_property("SELECTED", selected);
 	output.append_tag();
 	output.append_newline();
 	output.tag.set_title("/CRIKEY");
 	output.append_tag();
 	output.append_newline();
-	for( int i=0, n = config.points.size(); i<n; ++i ) {
-		CriKeyPoint *pt = config.points[i];
+	for( int i=0, n = points.size(); i<n; ++i ) {
+		CriKeyPoint *pt = points[i];
 		char point[BCSTRLEN];
 		sprintf(point,"/POINT_%d",pt->tag);
 		output.tag.set_title(point+1);
@@ -304,20 +307,25 @@ void CriKey::save_data(KeyFrame *keyframe)
 	output.terminate_string();
 }
 
-void CriKey::read_data(KeyFrame *keyframe)
+void CriKey::save_data(KeyFrame *keyframe)
+{
+	config.save_data(keyframe);
+}
+
+void CriKeyConfig::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 	input.set_shared_input(keyframe->xbuf);
-	config.points.remove_all_objects();
+	points.remove_all_objects();
 	int result = 0;
 
 	while( !(result=input.read_tag()) ) {
 		if( input.tag.title_is("CRIKEY") ) {
-			config.threshold = input.tag.get_property("THRESHOLD", config.threshold);
-			config.draw_mode = input.tag.get_property("DRAW_MODE", config.draw_mode);
-			config.drag = input.tag.get_property("DRAG", config.drag);
-			config.selected = input.tag.get_property("SELECTED", 0);
-			config.limits();
+			threshold = input.tag.get_property("THRESHOLD", threshold);
+			draw_mode = input.tag.get_property("DRAW_MODE", draw_mode);
+			drag = input.tag.get_property("DRAG", drag);
+			selected = input.tag.get_property("SELECTED", 0);
+			limits();
 		}
 		else if( !strncmp(input.tag.get_title(),"POINT_",6) ) {
 			int tag = atoi(input.tag.get_title() + 6);
@@ -325,11 +333,70 @@ void CriKey::read_data(KeyFrame *keyframe)
 			float x = input.tag.get_property("X", 0.f);
 			float y = input.tag.get_property("Y", 0.f);
 			float t = input.tag.get_property("T", .5f);
-			config.add_point(tag, e, x, y, t);
+			add_point(tag, e, x, y, t);
 		}
 	}
+}
 
+void CriKey::read_data(KeyFrame *keyframe)
+{
+	config.read_data(keyframe);
 	if( !config.points.size() ) new_point();
+}
+
+void CriKey::span_keyframes(KeyFrame *src, int64_t start, int64_t end)
+{
+	CriKeyConfig src_config;
+	src_config.read_data(src);
+	KeyFrames *keyframes = (KeyFrames *)src->autos;
+	KeyFrame *prev = keyframes->get_prev_keyframe(start, PLAY_FORWARD);
+	CriKeyConfig prev_config;
+	prev_config.read_data(prev);
+// Always update the first one
+	update_parameter(prev_config, src_config, prev);
+	KeyFrame *curr = (KeyFrame*)prev->next;
+	while( curr && curr->position < end ) {
+		update_parameter(prev_config, src_config, curr);
+		curr = (KeyFrame*)curr->next;
+	}
+}
+
+void CriKeyPoint::update_parameter(CriKeyPoint *prev, CriKeyPoint *src)
+{
+	if( prev->e != src->e ) e = src->e;
+	if( prev->x != src->x ) x = src->x;
+	if( prev->y != src->y ) y = src->y;
+	if( prev->t != src->t ) t = src->t;
+}
+
+void CriKey::update_parameter(CriKeyConfig &prev_config, CriKeyConfig &src_config,
+		KeyFrame *keyframe)
+{
+	CriKeyConfig dst_config;
+	dst_config.read_data(keyframe);
+	if( !EQUIV(prev_config.threshold, src_config.threshold) )
+		dst_config.threshold = src_config.threshold;
+	if( prev_config.draw_mode != src_config.draw_mode )
+		dst_config.draw_mode = src_config.draw_mode;
+	if( prev_config.drag != src_config.drag )
+		dst_config.drag = src_config.drag;
+	int src_points = src_config.points.size();
+	int dst_points = dst_config.points.size();
+	int prev_points = prev_config.points.size();
+	int npoints = bmin(prev_points, bmin(src_points, dst_points));
+	for( int i=0; i<npoints; ++i ) {
+		CriKeyPoint *src_point = src_config.points[i];
+		int tag = src_point->tag, k = prev_points;
+		while( --k >= 0 && tag != prev_config.points[k]->tag );
+		if( k < 0 ) continue;
+		CriKeyPoint *prev_point = prev_config.points[k];
+		k = dst_points;
+		while( --k >= 0 && tag != dst_config.points[k]->tag );
+		if( k < 0 ) continue;
+		CriKeyPoint *dst_point = dst_config.points[k];
+		dst_point->update_parameter(prev_point, src_point);
+	}
+	dst_config.save_data(keyframe);
 }
 
 void CriKey::update_gui()
@@ -666,14 +733,14 @@ LoadClient* CriKeyEngine::new_client()
 			float a00 = 0, a01 = 0, a10 = 0, a11 = 0; \
 			for( int c=0; c<comps; ++c,++r0,++r1 ) { \
 				float t = target_color[c]; \
-                                a00 += fabs(t - r0[0]); \
+				a00 += fabs(t - r0[0]); \
 				a01 += fabs(t - r0[components]); \
 				a10 += fabs(t - r1[0]); \
 				a11 += fabs(t - r1[components]); \
 			} \
 			float mx = scale * bmax(bmax(a00, a01), bmax(a10, a11)); \
 			if( mx < threshold ) continue; \
-                        float mn = scale * bmin(bmin(a00, a01), bmin(a10, a11)); \
+			float mn = scale * bmin(bmin(a00, a01), bmin(a10, a11)); \
 			if( mn >= threshold ) continue; \
 			*edgp += (mx - mn); \
 		} \

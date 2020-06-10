@@ -120,7 +120,7 @@ PerspectiveWindow::~PerspectiveWindow()
 
 void PerspectiveWindow::create_objects()
 {
-	int xs10 = xS(10), xs20 = xS(20), xs80 = xS(80), xs100 = xS(100), xs120 = xS(120);
+	int xs10 = xS(10), xs20 = xS(20), xs100 = xS(100), xs120 = xS(120);
 	int ys5 = yS(5), ys10 = yS(10), ys30 = yS(30), ys40 = yS(40);
 	int x = xs10, y = ys10;
 
@@ -128,16 +128,24 @@ void PerspectiveWindow::create_objects()
 		x, y, get_w() - xs20, get_h() - yS(290)));
 	canvas->set_cursor(CROSS_CURSOR, 0, 0);
 	y += canvas->get_h() + ys10;
-	add_subwindow(new BC_Title(x, y, _("Current X:")));
-	x += xs80;
+	int x1 = x;
+	BC_Title *title;
+	add_subwindow(title = new BC_Title(x1, y, _("Current: ")));
+	x1 += title->get_w() + xs10;
+	char string[BCSTRLEN];
+	sprintf(string, "%d", plugin->config.current_point+1);
+	add_subwindow(curr_point = new BC_Title(x1, y, string));
+	x1 += xs20;
+	add_subwindow(title = new BC_Title(x1, y, _("X:")));
+	x1 += title->get_w() + xs10;
 	this->x = new PerspectiveCoord(this,
-		x, y, plugin->get_current_x(), 1);
+		x1, y, plugin->get_current_x(), 1);
 	this->x->create_objects();
-	x += xS(140);
-	add_subwindow(new BC_Title(x, y, _("Y:")));
-	x += xs20;
+	x1 += this->x->get_w() + xs20;
+	add_subwindow(new BC_Title(x1, y, _("Y:")));
+	x1 += title->get_w() + xs10;
 	this->y = new PerspectiveCoord(this,
-		x, y, plugin->get_current_y(), 0);
+		x1, y, plugin->get_current_y(), 0);
 	this->y->create_objects();
 	x = xs10;   y += ys30;
 	add_subwindow(mode_perspective = new PerspectiveMode(this,
@@ -156,9 +164,9 @@ void PerspectiveWindow::create_objects()
 	update_canvas();
 
 	x = xs10;   y += ys30;
-	BC_Title *title;
 	add_subwindow(title = new BC_Title(x, y, _("Zoom view:")));
-	int x1 = x + title->get_w() + xs10, w1 = get_w() - x1 - xs10;
+	x1 = x + title->get_w() + xs10;
+	int w1 = get_w() - x1 - xs10;
 	add_subwindow(zoom_view = new PerspectiveZoomView(this, x1, y, w1));
 	y += ys30;
 
@@ -266,6 +274,12 @@ void PerspectiveWindow::update_canvas()
 	canvas->draw_line(vx2, vy2, vx1, vy2);
 	canvas->draw_line(vx1, vy2, vx1, vy1);
 
+	canvas->set_color(YELLOW);
+	canvas->draw_text(x1, y1,"1");
+	canvas->draw_text(x2, y2,"2");
+	canvas->draw_text(x3, y3,"3");
+	canvas->draw_text(x4, y4,"4");
+
 //printf("PerspectiveWindow::update_canvas %d,%d %d,%d %d,%d %d,%d\n",
 // x1, y1, x2, y2, x3, y3, x4, y4);
 // Draw divisions
@@ -321,6 +335,9 @@ void PerspectiveWindow::update_mode()
 
 void PerspectiveWindow::update_coord()
 {
+	char string[BCSTRLEN];
+	sprintf(string, "%d", plugin->config.current_point+1);
+	curr_point->update(string);
 	x->update(plugin->get_current_x());
 	y->update(plugin->get_current_y());
 }

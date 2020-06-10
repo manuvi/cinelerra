@@ -11,7 +11,7 @@ public:
 
 	int get_item_number() { return !list ? -1 : list->number_of((TYPE*)this); }
 	ListItem() { list = 0;  previous = next = 0; }
-	ListItem(List<TYPE> &me) { list = me;  previous = next = 0; }
+	ListItem(List<TYPE> *me) { list = me;  previous = next = 0; }
 	virtual ~ListItem() { if( list ) list->remove_pointer(this); }
 };
 
