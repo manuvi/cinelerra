@@ -121,6 +121,8 @@ BatchRenderJob *BatchRenderJob::copy()
 void BatchRenderJob::load(FileXML *file)
 {
 	int result = 0;
+	char job_title[BCSTRLEN];
+	strcpy(job_title, file->tag.title);
 
 	enabled = file->tag.get_property("ENABLED", enabled);
 	farmed = file->tag.get_property("FARMED", farmed);
@@ -138,7 +140,7 @@ void BatchRenderJob::load(FileXML *file)
 // coding maintenance.  The defaults must now be stuffed into the XML for
 // unique storage.
 			BC_Hash defaults;
-			defaults.load_string(file->read_text());
+			defaults.load_string(file->read_text(job_title));
 			asset->load_defaults(&defaults,
 				"", 0, 1, 0, 0, 0);
 		}
@@ -1196,6 +1198,7 @@ void BatchRenderLoadList::run()
 
 	int result2 = filewindow.run_window();
 	if( !result2 ) {
+		thread->gui->lock_window("BatchRenderLoadList::run");
 		strcpy(thread->batch_path, filewindow.get_submitted_path());
 		thread->gui->batch_path->update(thread->batch_path);
 		thread->mwindow->defaults->update("DEFAULT_BATCHLOADPATH", thread->batch_path);
@@ -1203,6 +1206,7 @@ void BatchRenderLoadList::run()
 		thread->gui->create_list(1);
 		thread->current_job = 0;
 		thread->gui->change_job();
+		thread->gui->unlock_window();
 	}
 
 	startup_lock->lock("BatchRenderLoadList::run");

@@ -136,7 +136,7 @@ public:
 	int append_data(const char *text);
 	int append_data(const char *text, long len);
 
-	char *read_text();
+	char *read_text(const char *tag_title=0);
 	int read_data_until(const char *tag_end, XMLBuffer *xbfr, int skip=0);
 	int read_text_until(const char *tag_end, XMLBuffer *xbfr, int skip=0);
 	int read_tag();

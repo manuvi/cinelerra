@@ -466,8 +466,9 @@ long FileXML::length()
 	return buffer->otell();
 }
 
-char* FileXML::read_text()
+char* FileXML::read_text(const char *tag_title)
 {
+	if( !tag_title ) tag_title = tag.title;
 	int ch = buffer->next();
 // filter out first char is new line
 	if( ch == '\n' ) ch = buffer->next();
@@ -480,7 +481,7 @@ char* FileXML::read_text()
 		if( ch < 0 ) break;
 		pos = buffer->itell()-1;
 		if( (ch = buffer->next()) != '/' ) continue;
-		char *cp = tag.title;
+		const char *cp = tag_title;
 		while( (ch=buffer->next()) >= 0 && ch == *cp ) ++cp;
 		if( ch < 0 ) break;
 		if( *cp ) continue;
