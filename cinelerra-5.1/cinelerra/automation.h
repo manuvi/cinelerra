@@ -45,14 +45,14 @@
 		CLAMP(value, 0, 100);					\
 	if (autogrouptype == AUTOGROUPTYPE_ZOOM && value < 0)		\
 		value = 0;						\
-	else if (autogrouptype == AUTOGROUPTYPE_SPEED && value < 0.001)	\
-		value = 0.001;
+	else if (autogrouptype == AUTOGROUPTYPE_SPEED && value < SPEED_MIN) \
+		value = SPEED_MIN;
 
 #define AUTOMATIONVIEWCLAMPS(value, autogrouptype)			\
 	if (autogrouptype == AUTOGROUPTYPE_ZOOM && value < 0)		\
 		value = 0;						\
-	else if (autogrouptype == AUTOGROUPTYPE_SPEED && value < 0)	\
-		value = 0;
+	else if (autogrouptype == AUTOGROUPTYPE_SPEED && value < SPEED_MIN)	\
+		value = SPEED_MIN;
 
 
 class Automation

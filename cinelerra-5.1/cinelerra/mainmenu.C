@@ -949,9 +949,7 @@ Clear::Clear(MWindow *mwindow)
 int Clear::handle_event()
 {
 	if( mwindow->session->current_operation == NO_OPERATION ) {
-		mwindow->cwindow->gui->lock_window("Clear::handle_event");
 		mwindow->clear_entry();
-		mwindow->cwindow->gui->unlock_window();
 	}
 	return 1;
 }

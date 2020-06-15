@@ -54,6 +54,7 @@ void VAutomation::create_objects()
 
 	autos[AUTOMATION_SPEED] = new FloatAutos(edl, track, 1.);
 	autos[AUTOMATION_SPEED]->create_objects();
+	((FloatAutos*)autos[AUTOMATION_SPEED])->set_float_min(SPEED_MIN);
 
 	autos[AUTOMATION_MODE] = new IntAutos(edl, track, TRANSFER_NORMAL);
 	autos[AUTOMATION_MODE]->create_objects();

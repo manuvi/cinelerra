@@ -70,6 +70,10 @@ public:
 	void dump();
 	Auto* new_auto();
 	float default_;
+
+	float float_min, float_max;
+	void set_float_min(float mn) { float_min = mn; }
+	void set_float_max(float mx) { float_max = mx; }
 };
 
 

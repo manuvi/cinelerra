@@ -189,9 +189,13 @@ void FloatAuto::toggle_curve_mode()
 }
 
 
-void FloatAuto::set_value(float newvalue)
+void FloatAuto::set_value(float value)
 {
-	this->value=newvalue;
+	float float_min = ((FloatAutos*)autos)->float_min;
+	if( value < float_min ) value = float_min;
+	float float_max = ((FloatAutos*)autos)->float_max;
+	if( value > float_max ) value = float_max;
+	this->value = value;
 	this->adjust_curves();
 	if(previous) ((FloatAuto*)previous)->adjust_curves();
 	if(next)     ((FloatAuto*)next)->adjust_curves();
@@ -356,6 +360,10 @@ inline void FloatAuto::set_ctrl_positions(FloatAuto *prev, FloatAuto* next)
 void FloatAuto::adjust_to_new_coordinates(int64_t position, float value)
 // define new position and value in one step, do necessary re-adjustments
 {
+	float float_min = ((FloatAutos*)autos)->float_min;
+	if( value < float_min ) value = float_min;
+	float float_max = ((FloatAutos*)autos)->float_max;
+	if( value > float_max ) value = float_max;
 	this->value = value;
 	this->position = position;
 	adjust_ctrl_positions();
@@ -415,6 +423,10 @@ void FloatAuto::copy(int64_t start, int64_t end, FileXML *file, int default_auto
 void FloatAuto::load(FileXML *file)
 {
 	value = file->tag.get_property("VALUE", value);
+	float float_min = ((FloatAutos*)autos)->float_min;
+	if( value < float_min ) value = float_min;
+	float float_max = ((FloatAutos*)autos)->float_max;
+	if( value > float_max ) value = float_max;
 	control_in_value = file->tag.get_property("CONTROL_IN_VALUE", control_in_value);
 	control_out_value = file->tag.get_property("CONTROL_OUT_VALUE", control_out_value);
 	curve_mode = (t_mode)file->tag.get_property("TANGENT_MODE", (int)FREE);

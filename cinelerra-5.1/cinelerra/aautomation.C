@@ -48,6 +48,7 @@ void AAutomation::create_objects()
 
 	autos[AUTOMATION_SPEED] = new FloatAutos(edl, track, 1.0);
 	autos[AUTOMATION_SPEED]->create_objects();
+	((FloatAutos*)autos[AUTOMATION_SPEED])->set_float_min(SPEED_MIN);
 
 	autos[AUTOMATION_PAN] = new PanAutos(edl, track);
 	autos[AUTOMATION_PAN]->create_objects();

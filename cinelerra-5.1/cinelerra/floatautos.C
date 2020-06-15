@@ -37,6 +37,8 @@ FloatAutos::FloatAutos(EDL *edl,
 {
 	this->default_ = default_;
 	type = AUTOMATION_TYPE_FLOAT;
+	float_min = -FLT_MAX;
+	float_max = FLT_MAX;
 }
 
 FloatAutos::~FloatAutos()

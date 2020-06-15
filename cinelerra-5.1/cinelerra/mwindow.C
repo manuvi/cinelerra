@@ -301,6 +301,7 @@ MWindow::~MWindow()
 	gui->del_keyboard_listener(
 		(int (BC_WindowBase::*)(BC_WindowBase *))
 		&MWindowGUI::keyboard_listener);
+	reset_caches();
 #if 0
 // release the hounds
 	if( awindow && awindow->gui ) awindow->gui->close(0);
@@ -329,7 +330,6 @@ MWindow::~MWindow()
 	gui->close(0);
 	join();
 #endif
-	reset_caches();
 	dead_plugins->remove_all_objects();
 // must delete theme before destroying plugindb
 //  theme destructor will be deleted by delete_plugins
@@ -3964,7 +3964,7 @@ void MWindow::clip_to_media()
 		return;
 	}
 	undo_before();
-	awindow->gui->stop_vicon_drawing();
+	awindow->gui->close_view_popup();
 	int clips_total = session->drag_clips->total;
 	for( int i=0; i<clips_total; ++i ) {
 		EDL *clip = session->drag_clips->values[i];
@@ -4441,6 +4441,7 @@ int MWindow::create_aspect_ratio(float &w, float &h, int width, int height)
 
 void MWindow::reset_caches()
 {
+	awindow->gui->close_view_popup();
 	frame_cache->remove_all();
 	wave_cache->remove_all();
 	audio_cache->remove_all();
@@ -4464,6 +4465,7 @@ void MWindow::reset_caches()
 
 void MWindow::remove_from_caches(Indexable *idxbl)
 {
+	awindow->gui->close_view_popup();
 	frame_cache->remove_item(idxbl);
 	wave_cache->remove_item(idxbl);
 	if( gui->render_engine &&
@@ -4497,6 +4499,7 @@ void MWindow::remove_from_caches(Indexable *idxbl)
 		if( zwindow->zgui->playback_engine->video_cache )
 			zwindow->zgui->playback_engine->video_cache->delete_entry(asset);
 	}
+	awindow->gui->start_vicon_drawing();
 }
 
 void MWindow::remove_assets_from_project(int push_undo, int redraw, int delete_indexes,

@@ -2842,6 +2842,8 @@ void TrackCanvas::draw_floatline(int center_pixel,
 	float automation_min = mwindow->edl->local_session->automation_mins[autogrouptype];
 	float automation_max = mwindow->edl->local_session->automation_maxs[autogrouptype];
 	float automation_range = automation_max - automation_min;
+	if( autogrouptype == AUTOGROUPTYPE_SPEED && automation_range < SPEED_MIN )
+		automation_range = SPEED_MIN;
 	for( int x=x1; x<x2; ++x ) {
 // Interpolate value between frames
 		X_TO_FLOATLINE(x)
@@ -2876,6 +2878,8 @@ int TrackCanvas::test_floatline(int center_pixel,
 	float automation_min = mwindow->edl->local_session->automation_mins[autogrouptype];
 	float automation_max = mwindow->edl->local_session->automation_maxs[autogrouptype];
 	float automation_range = automation_max - automation_min;
+	if( autogrouptype == AUTOGROUPTYPE_SPEED && automation_range < SPEED_MIN )
+		automation_range = SPEED_MIN;
 	FloatAuto *previous1 = 0, *next1 = 0;
 	X_TO_FLOATLINE(cursor_x);
 
@@ -3124,6 +3128,8 @@ void TrackCanvas::calculate_auto_position(double *x, double *y,
 	float automation_min = mwindow->edl->local_session->automation_mins[autogrouptype];
 	float automation_max = mwindow->edl->local_session->automation_maxs[autogrouptype];
 	float automation_range = automation_max - automation_min;
+	if( autogrouptype == AUTOGROUPTYPE_SPEED && automation_range < SPEED_MIN )
+		automation_range = SPEED_MIN;
 	FloatAuto *ptr = (FloatAuto*)current;
 	*x = (double)(ptr->position - unit_start) / zoom_units;
 	*y = ((ptr->get_value() - automation_min) / automation_range - 0.5) * -yscale;

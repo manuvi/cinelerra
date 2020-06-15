@@ -87,4 +87,6 @@ enum
 	AUTOMATION_TYPE_PAN
 };
 
+#define SPEED_MIN 0.005
+
 #endif

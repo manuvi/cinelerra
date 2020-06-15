@@ -285,6 +285,7 @@ FFStream::FFStream(FFMPEG *ffmpeg, AVStream *st, int fidx)
 
 FFStream::~FFStream()
 {
+	frm_lock->lock("FFStream::~FFStream");
 	if( reading > 0 || writing > 0 ) avcodec_close(avctx);
 	if( avctx ) avcodec_free_context(&avctx);
 	if( fmt_ctx ) avformat_close_input(&fmt_ctx);
@@ -295,6 +296,7 @@ FFStream::~FFStream()
 	if( frame ) av_frame_free(&frame);
 	if( fframe ) av_frame_free(&fframe);
 	if( probe_frame ) av_frame_free(&probe_frame);
+	frm_lock->unlock();
 	delete frm_lock;
 	if( stats_fp ) fclose(stats_fp);
 	if( stats_in ) av_freep(&stats_in);
@@ -491,7 +493,7 @@ int FFStream::decode(AVFrame *frame)
 	}
 	int ret = 0;
 	int retries = MAX_RETRY;
-
+	frm_lock->lock("FFStream::decode");
 	while( ret >= 0 && !flushed && --retries >= 0 ) {
 		if( need_packet ) {
 			if( (ret=read_packet()) < 0 ) break;
@@ -514,6 +516,7 @@ int FFStream::decode(AVFrame *frame)
 			flushed = st_eof();
 		}
 	}
+	frm_lock->unlock();
 
 	if( retries < 0 ) {
 		fprintf(stderr, "FFStream::decode: Retry limit\n");
@@ -726,6 +729,7 @@ int FFStream::seek(int64_t no, double rate)
 	tstmp = av_rescale_q(tstmp, time_base, AV_TIME_BASE_Q);
 	idx = -1;
 #endif
+	frm_lock->lock("FFStream::seek");
 	av_frame_free(&probe_frame);
 	avcodec_flush_buffers(avctx);
 	avformat_flush(fmt_ctx);
@@ -772,6 +776,7 @@ int FFStream::seek(int64_t no, double rate)
 			break;
 		}
 	}
+	frm_lock->unlock();
 	if( ret < 0 ) {
 printf("** seek fail %jd, %jd\n", pos, tstmp);
 		seeked = need_packet = 0;

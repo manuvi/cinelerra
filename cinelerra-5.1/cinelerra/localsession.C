@@ -86,7 +86,7 @@ LocalSession::LocalSession(EDL *edl)
 	automation_maxs[AUTOGROUPTYPE_AUDIO_FADE] = 6;
 	automation_mins[AUTOGROUPTYPE_VIDEO_FADE] = 0;
 	automation_maxs[AUTOGROUPTYPE_VIDEO_FADE] = 100;
-	automation_mins[AUTOGROUPTYPE_SPEED] = 0.005;
+	automation_mins[AUTOGROUPTYPE_SPEED] = SPEED_MIN;
 	automation_maxs[AUTOGROUPTYPE_SPEED] = 5.000;
 	automation_mins[AUTOGROUPTYPE_INT255] = 0;
 	automation_maxs[AUTOGROUPTYPE_INT255] = 255;
@@ -296,7 +296,9 @@ void LocalSession::load_xml(FileXML *file, unsigned long load_flags)
 		for (int i = 0; i < AUTOGROUPTYPE_COUNT; i++) {
 			if (!Automation::autogrouptypes_fixedrange[i]) {
 				automation_mins[i] = file->tag.get_property(xml_autogrouptypes_titlesmin[i],automation_mins[i]);
+				AUTOMATIONCLAMPS(automation_mins[i], i);
 				automation_maxs[i] = file->tag.get_property(xml_autogrouptypes_titlesmax[i],automation_maxs[i]);
+				AUTOMATIONCLAMPS(automation_maxs[i], i);
 			}
 		}
 		floatauto_type = file->tag.get_property("FLOATAUTO_TYPE", floatauto_type);
@@ -361,7 +363,9 @@ int LocalSession::load_defaults(BC_Hash *defaults)
 	for (int i = 0; i < AUTOGROUPTYPE_COUNT; i++) {
 		if (!Automation::autogrouptypes_fixedrange[i]) {
 			automation_mins[i] = defaults->get(xml_autogrouptypes_titlesmin[i], automation_mins[i]);
+			AUTOMATIONCLAMPS(automation_mins[i], i);
 			automation_maxs[i] = defaults->get(xml_autogrouptypes_titlesmax[i], automation_maxs[i]);
+			AUTOMATIONCLAMPS(automation_maxs[i], i);
 		}
 	}
 
