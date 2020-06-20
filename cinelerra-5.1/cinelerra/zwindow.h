@@ -33,12 +33,12 @@
 
 class Mixer {
 public:
-	int idx;
+	int idx, show;
 	int x, y, w, h;
 	ArrayList<int> mixer_ids;
 	char title[BCSTRLEN];
 
-	Mixer(int idx);
+	Mixer(int idx, int show);
 	void save(FileXML *file);
 	int load(FileXML *file);
 	void copy_from(Mixer &that);
@@ -51,9 +51,9 @@ class Mixers : public ArrayList<Mixer *>
 public:
 	Mixers();
 	~Mixers();
-	Mixer *new_mixer();
+	Mixer *new_mixer(int show=0);
 	Mixer *get_mixer(int idx);
-	void del_mixer(int idx);
+	void del_mixer(Mixer *mixer);
 	void save(FileXML *file);
 	int load(FileXML *file);
 	void copy_from(Mixers &that);

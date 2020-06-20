@@ -50,6 +50,7 @@
 #include "trackcanvas.inc"
 #include "tracks.inc"
 #include "transition.inc"
+#include "zwindow.inc"
 
 // UNITS ARE SAMPLES FOR ALL
 
@@ -165,6 +166,7 @@ public:
 	void change_plugins(SharedLocation &old_location, SharedLocation &new_location, int do_swap);
 	void change_modules(int old_location, int new_location, int do_swap);
 	Plugin *plugin_exists(int plugin_id);
+	int index_in(Mixer *mixer);
 
 	EDL *edl;
 	Tracks *tracks;

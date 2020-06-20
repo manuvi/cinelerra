@@ -46,14 +46,14 @@ Mixers::~Mixers()
 	remove_all_objects();
 }
 
-Mixer *Mixers::new_mixer()
+Mixer *Mixers::new_mixer(int show)
 {
 	int idx = 0;
 	for( int i=0; i<size(); ++i ) {
 		Mixer *mixer = get(i);
 		if( idx < mixer->idx ) idx = mixer->idx;
 	}
-	return append(new Mixer(idx+1));
+	return append(new Mixer(idx+1, show));
 }
 
 Mixer *Mixers::get_mixer(int idx)
@@ -65,10 +65,9 @@ Mixer *Mixers::get_mixer(int idx)
 	return 0;
 }
 
-void Mixers::del_mixer(int idx)
+void Mixers::del_mixer(Mixer *mixer)
 {
-	Mixer *mixer = get_mixer(idx);
-	if( mixer ) remove_object(mixer);
+	remove_object(mixer);
 }
 
 void Mixer::set_title(const char *tp)
@@ -100,6 +99,7 @@ int Mixers::load(FileXML *file)
 		if( file->tag.title_is("MIXER") ) {
 			Mixer *mixer = new_mixer();
 			file->tag.get_property("TITLE", mixer->title);
+			mixer->show = file->tag.get_property("SHOW", 1);
 			mixer->x = file->tag.get_property("X", mixer->x);
 			mixer->y = file->tag.get_property("Y", mixer->y);
 			mixer->w = file->tag.get_property("W", mixer->w);
@@ -122,6 +122,7 @@ void Mixers::copy_from(Mixers &that)
 void Mixer::save(FileXML *file)
 {
 	file->tag.set_title("MIXER");
+	file->tag.set_property("SHOW",show);
 	file->tag.set_property("TITLE",title);
 	file->tag.set_property("X",x);
 	file->tag.set_property("Y",y);
@@ -142,9 +143,10 @@ void Mixer::save(FileXML *file)
 	file->append_newline();
 }
 
-Mixer::Mixer(int idx)
+Mixer::Mixer(int idx, int show)
 {
 	this->idx = idx;
+	this->show = show;
 	title[0] = 0;
 	x = y = 100 + idx*64;
 	w = 400;  h = 300;
@@ -202,6 +204,7 @@ ZWindow::~ZWindow()
 BC_Window* ZWindow::new_gui()
 {
 	Mixer *mixer = mwindow->edl->mixers.get_mixer(idx);
+	mixer->show = 1;
 	zgui = new ZWindowGUI(mwindow, this, mixer);
 	zgui->create_objects();
 	return zgui;
@@ -210,8 +213,15 @@ BC_Window* ZWindow::new_gui()
 void ZWindow::handle_done_event(int result)
 {
 	stop_playback(1);
-	if( result )
-		mwindow->del_mixer(this);
+	if( result ) {
+		mwindow->close_mixer(this);
+		Mixer *mixer = mwindow->edl->mixers.get_mixer(idx);
+		if( mixer ) mixer->show = 0;
+		Track *track = mixer ? mwindow->edl->tracks->first : 0;
+		while( track && track->index_in(mixer) < 0 ) track = track->next;
+// if no refs to tracks, delete it
+		if( !track ) mwindow->edl->mixers.del_mixer(mixer);
+	}
 	idx = -1;
 }
 void ZWindow::handle_close_event(int result)

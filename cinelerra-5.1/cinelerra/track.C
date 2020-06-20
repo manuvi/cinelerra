@@ -1851,3 +1851,11 @@ void Track::set_camera(float x, float y, float z)
 	set_fauto_xyz(AUTOMATION_CAMERA_X, x, y, z);
 }
 
+int Track::index_in(Mixer *mixer)
+{
+	if( !mixer || mixer_id ) return -1;
+	int k = mixer->mixer_ids.size();
+	while( --k >= 0 && mixer_id != mixer->mixer_ids[k] );
+	return k;
+}
+

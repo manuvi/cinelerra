@@ -762,7 +762,9 @@ int FFStream::seek(int64_t no, double rate)
 			if( pkt_ts >= tstmp ) break;
 		}
 		if( retry < 0 ) {
-			fprintf(stderr,"FFStream::seek: retry limit, pos=%jd tstmp=%jd\n",pos,tstmp);
+			ff_err(AVERROR(EIO), "FFStream::seek: %s\n"
+				" retry limit, pos=%jd tstmp=%jd, ",
+				ffmpeg->fmt_ctx->url, pos, tstmp);
 			ret = -1;
 		}
 		if( ret < 0 ) break;

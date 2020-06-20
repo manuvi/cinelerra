@@ -37,6 +37,7 @@
 #include "dvdcreate.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "exportedl.h"
 #include "file.h"
 #include "filesystem.h"
 #include "filexml.h"
@@ -78,7 +79,8 @@
 #include "transportque.h"
 #include "viewmenu.h"
 #include "zoombar.h"
-#include "exportedl.h"
+#include "zwindow.h"
+#include "zwindowgui.h"
 
 #include <string.h>
 
@@ -1628,45 +1630,96 @@ void MixerItems::create_objects()
 {
 	BC_SubMenu *mixer_submenu = new BC_SubMenu();
 	add_submenu(mixer_submenu);
-	mixer_submenu->add_submenuitem(new MixerViewer(mwindow));
-	mixer_submenu->add_submenuitem(new TileMixers(mwindow));
-	mixer_submenu->add_submenuitem(new AlignMixers(mwindow));
+	mixer_submenu->add_submenuitem(new MixerViewer(this));
+	mixer_submenu->add_submenuitem(new TileMixers(this));
+	mixer_submenu->add_submenuitem(new AlignMixers(this));
 }
 
-MixerViewer::MixerViewer(MWindow *mwindow)
- : BC_MenuItem(_("Mixer Viewer"), _("Shift-M"), 'M')
+int MixerItems::activate_submenu()
 {
-	this->mwindow = mwindow;
+	BC_SubMenu *mixer_submenu = (BC_SubMenu *)get_submenu();
+	int k = mixer_submenu->total_items();
+	while( --k >= 0 ) {
+		MixerItem *mixer_item = (MixerItem *)mixer_submenu->get_item(k);
+		if( mixer_item->idx < 0 ) continue;
+		mixer_submenu->del_item(mixer_item);
+	}
+	int n = mwindow->edl->mixers.size();
+	for( int i=0; i<n; ++i ) {
+		Mixer *mixer = mwindow->edl->mixers[i];
+		if( !mixer ) continue;
+		MixerItem *mixer_item = new MixerItem(this, mixer->title, mixer->idx);
+		mixer_submenu->add_submenuitem(mixer_item);
+	}
+	return BC_MenuItem::activate_submenu();
+}
+
+MixerItem::MixerItem(MixerItems *mixer_items, const char *text, int idx)
+ : BC_MenuItem(text)
+{
+	this->mixer_items = mixer_items;
+	this->idx = idx;
+}
+
+MixerItem::MixerItem(MixerItems *mixer_items, const char *text, const char *hotkey_text, int hotkey)
+ : BC_MenuItem(text, hotkey_text, hotkey)
+{
+	this->mixer_items = mixer_items;
+	this->idx = -1;
+}
+
+int MixerItem::handle_event()
+{
+	if( idx < 0 ) return 0;
+	MWindow *mwindow = mixer_items->mwindow;
+	Mixer *mixer = mwindow->edl->mixers.get_mixer(idx);
+	if( !mixer ) return 0;
+        ZWindow *zwindow = mwindow->get_mixer(mixer);
+	if( !zwindow->zgui ) {
+		zwindow->set_title(mixer->title);
+		zwindow->start();
+	}
+	zwindow->zgui->lock_window("MixerItem::handle_event");
+	zwindow->zgui->raise_window();
+	zwindow->zgui->unlock_window();
+	mwindow->refresh_mixers();
+	return 1;
+}
+
+MixerViewer::MixerViewer(MixerItems *mixer_items)
+ : MixerItem(mixer_items, _("Mixer Viewer"), _("Shift-M"), 'M')
+{
 	set_shift(1);
 }
 
 int MixerViewer::handle_event()
 {
+	MWindow *mwindow = mixer_items->mwindow;
 	mwindow->start_mixer();
 	return 1;
 }
 
-TileMixers::TileMixers(MWindow *mwindow)
- : BC_MenuItem(_("Tile mixers"), "Alt-t", 't')
+TileMixers::TileMixers(MixerItems *mixer_items)
+ : MixerItem(mixer_items, _("Tile mixers"), "Alt-t", 't')
 {
-	this->mwindow = mwindow;
 	set_alt();
 }
 
 int TileMixers::handle_event()
 {
+	MWindow *mwindow = mixer_items->mwindow;
 	mwindow->tile_mixers();
 	return 1;
 }
 
-AlignMixers::AlignMixers(MWindow *mwindow)
- : BC_MenuItem(_("Align mixers"))
+AlignMixers::AlignMixers(MixerItems *mixer_items)
+ : MixerItem(mixer_items, _("Align mixers"), "", 0)
 {
-	this->mwindow = mwindow;
 }
 
 int AlignMixers::handle_event()
 {
+	MWindow *mwindow = mixer_items->mwindow;
 	int wx, wy;
 	mwindow->gui->get_abs_cursor(wx, wy);
 	mwindow->mixers_align->start_dialog(wx, wy);

@@ -164,27 +164,25 @@ VFrame *AssetVIcon::frame()
 	}
 	if( seq_no >= images.size() ) {
 		MWindow *mwindow = picon->mwindow;
-		File *file = mwindow->video_cache->check_out(asset, mwindow->edl, 1);
-		if( !file ) {
-			broken = 1;
-			return 0;
-		}
 		if( temp && (temp->get_w() != asset->width || temp->get_h() != asset->height) ) {
 			delete temp;  temp = 0;
 		}
 		if( !temp )
 			temp = new VFrame(0, -1, asset->width, asset->height, BC_RGB888, -1);
-		while( seq_no >= images.size() ) {
-			mwindow->video_cache->check_in(asset);
-			Thread::yield();
-			file = mwindow->video_cache->check_out(asset, mwindow->edl, 0);
-			if( !file ) { usleep(1000);  continue; }
-			file->set_layer(0);
+		File *file = mwindow->video_cache->check_out(asset, mwindow->edl, 1);
+		while( file && seq_no >= images.size() ) {
 			int64_t pos = images.size() / picon->gui->vicon_thread->refresh_rate * frame_rate;
 			file->set_video_position(pos,0);
+			file->set_layer(0);
 			if( file->read_frame(temp) ) temp->clear_frame();
 			add_image(temp, vw, vh, vicon_cmodel);
+			mwindow->video_cache->check_in(asset);
+			Thread::yield();
+			file = 0;
+			for( int retries=1000; !file && --retries>=0; usleep(10000) )
+				file = mwindow->video_cache->check_out(asset, mwindow->edl, 0);
 		}
+		if( !file ) { broken = 1;  return 0; }
 		mwindow->video_cache->check_in(asset);
 	}
 	return *images[seq_no];

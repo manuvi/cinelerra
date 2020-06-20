@@ -501,31 +501,41 @@ class MixerItems : public BC_MenuItem
 public:
 	MixerItems(MWindow *mwindow);
 	void create_objects();
+	int activate_submenu();
+
 	MWindow *mwindow;
 };
 
-class MixerViewer : public BC_MenuItem
+class MixerItem : public BC_MenuItem
 {
 public:
-	MixerViewer(MWindow *mwindow);
-	int handle_event();
-	MWindow *mwindow;
+	MixerItem(MixerItems *mixer_items, const char *text, int idx);
+	MixerItem(MixerItems *mixer_items, const char *text, const char *hotkey_text, int hotkey);
+	virtual int handle_event();
+
+	MixerItems *mixer_items;
+	int idx;
 };
 
-class TileMixers : public BC_MenuItem
+class MixerViewer : public MixerItem
 {
 public:
-	TileMixers(MWindow *mwindow);
+	MixerViewer(MixerItems *mixer_items);
 	int handle_event();
-	MWindow *mwindow;
 };
 
-class AlignMixers : public BC_MenuItem
+class TileMixers : public MixerItem
 {
 public:
-	AlignMixers(MWindow *mwindow);
+	TileMixers(MixerItems *mixer_items);
 	int handle_event();
-	MWindow *mwindow;
+};
+
+class AlignMixers : public MixerItem
+{
+public:
+	AlignMixers(MixerItems *mixer_items);
+	int handle_event();
 };
 
 // ======================================== audio

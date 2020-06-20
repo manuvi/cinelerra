@@ -667,18 +667,12 @@ int FileSystem::extract_dir(char *out, const char *in)
 
 int FileSystem::extract_name(char *out, const char *in, int test_dir)
 {
-	int i;
-
 	if(test_dir && is_dir(in))
 		out[0] = 0; // complete string is directory
-	else
-	{
-		for(i = strlen(in)-1; i > 0 && in[i] != '/'; i--)
-		{
-			;
-		}
-		if(in[i] == '/') i++;
-		strcpy(out, &in[i]);
+	else {
+		const char *cp = strrchr(in, '/');
+		const char *bp = !cp ? in : cp + 1;
+		strcpy(out, bp);
 	}
 	return 0;
 }

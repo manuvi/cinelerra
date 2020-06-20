@@ -81,14 +81,10 @@ File* CICache::check_out(Asset *asset, EDL *edl, int block)
  		if(!current) { // Create new item
 			current = new CICacheItem(this, edl, asset);
 			append(current);  current->checked_out = tid;
+			total_lock->unlock();
 			file = current->file;
 			int result = file->open_file(preferences, asset, 1, 0);
-			total_lock->unlock();
-			if( result ) {
-SET_TRACE
-				delete file;
-				file = 0;
-			}
+			if( result ) { delete file; file = 0; }
 			total_lock->lock("CICache::check_out 2");
 			if( !file ) {
 				remove_pointer(current);
@@ -101,7 +97,7 @@ SET_TRACE
 		}
 		else {
 			file = current->file;
-			if(!current->checked_out) {
+			if( !current->checked_out ) {
 // Return existing/new item
 				current->Garbage::add_user();
 				current->age = EDL::next_id();
@@ -113,7 +109,7 @@ SET_TRACE
 				current = 0;
 		}
 		total_lock->unlock();
-		if(current || !file || !block) break;
+		if( current || !file || !block ) break;
 // Try again after blocking
 		check_out_lock->lock("CICache::check_out");
 	}
@@ -148,42 +144,47 @@ int CICache::check_in(Asset *asset)
 
 void CICache::remove_all()
 {
-	CICacheItem *current, *temp;
 	List<CICacheItem> removed;
-	total_lock->lock("CICache::remove_all");
-	for(current=first; current; current=temp)
-	{
-		temp = NEXT;
-// Must not be checked out because we need the pointer to check back in.
-// Really need to give the user the CacheItem.
-		if(!current->checked_out)
-		{
-//printf("CICache::remove_all: %s\n", current->asset->path);
-			remove_pointer(current);
-			removed.append(current);
+	for(;;) {
+		total_lock->lock("CICache::remove_all");
+		CICacheItem *current = first;
+		while( current ) {
+			CICacheItem *next_item = current->next;
+			if( !current->checked_out ) {
+				remove_pointer(current);
+				removed.append(current);
+			}
+			current = next_item;
 		}
-	}
-	total_lock->unlock();
-	while( (current=removed.first) != 0 )
-	{
-		removed.remove_pointer(current);
-		current->Garbage::remove_user();
+		total_lock->unlock();
+		while( removed.first ) {
+			CICacheItem *current = removed.first;
+			removed.remove_pointer(current);
+			current->Garbage::remove_user();
+		}
+		if( !first ) break;
+		check_out_lock->lock();
 	}
 }
 
 int CICache::delete_entry(char *path)
 {
-	total_lock->lock("CICache::delete_entry");
-	CICacheItem *current = first;
-	while( current && strcmp(current->asset->path, path) !=0 )
-		current = NEXT;
-	if(current && !current->checked_out)
-		remove_pointer(current);
-	else
-		current = 0;
-//printf("CICache::delete_entry: %s\n", current->asset->path);
+	CICacheItem *current = 0;
+	for( ;; ) {
+		total_lock->lock("CICache::delete_entry");
+		current = first;
+		while( current && strcmp(current->asset->path, path) !=0 )
+			current = NEXT;
+		if( !current ) break;
+		if( current->checked_out ) {
+			remove_pointer(current);
+			break;
+		}
+		total_lock->unlock();
+		check_out_lock->lock();
+	}
 	total_lock->unlock();
-	if(current)
+	if( current )
 		current->Garbage::remove_user();
 	return 0;
 }
@@ -247,12 +248,18 @@ int CICache::delete_oldest()
 	CICacheItem *oldest = 0;
 // at least 2
 	if( first != last ) {
-		CICacheItem *current = first;
-		oldest = current;
-		while( (current=NEXT) != 0 ) {
+		oldest = first;
+		CICacheItem *current = oldest->next;
+		while( current ) {
 			if( current->age < oldest->age )
 				oldest = current;
+			current = current->next;
 		}
+	}
+// settle for just deleting one frame
+	else if( first )
+		result = first->file->delete_oldest();
+	if( oldest ) {
 // Got the oldest file.  Try requesting cache purge from it.
 		if( oldest->file )
 			oldest->file->purge_cache();
@@ -262,9 +269,6 @@ int CICache::delete_oldest()
 		else
 			oldest = 0;
 	}
-// settle for just deleting one frame
-	else if( first )
-		result = first->file->delete_oldest();
 	total_lock->unlock();
 	if( oldest ) {
 		oldest->Garbage::remove_user();

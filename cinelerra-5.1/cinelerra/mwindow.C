@@ -1210,10 +1210,9 @@ ZWindow *MWindow::get_mixer(Mixer *&mixer)
 	return zwindow;
 }
 
-void MWindow::del_mixer(ZWindow *zwindow)
+void MWindow::close_mixer(ZWindow *zwindow)
 {
-	zwindows_lock->lock("MWindow::del_mixer 0");
-	edl->mixers.del_mixer(zwindow->idx);
+	zwindows_lock->lock("MWindow::close_mixer 0");
 	if( session->selected_zwindow >= 0 ) {
 		int i = zwindows.number_of(zwindow);
 		if( i >= 0 && i < session->selected_zwindow )
@@ -1222,7 +1221,7 @@ void MWindow::del_mixer(ZWindow *zwindow)
 			session->selected_zwindow = -1;
 	}
 	zwindows_lock->unlock();
-	gui->lock_window("MWindow::del_mixer 1");
+	gui->lock_window("MWindow::close_mixer 1");
 	gui->update_mixers(0, -1);
 	gui->unlock_window();
 }
@@ -3750,6 +3749,7 @@ void MWindow::update_project(int load_mode)
 
 		for( int i=0; i<edl->mixers.size(); ++i ) {
 			Mixer *mixer = edl->mixers[i];
+			if( !mixer->show ) continue;
 			ZWindow *zwindow = get_mixer(mixer);
 			zwindow->set_title(mixer->title);
 			zwindow->start();
@@ -3964,7 +3964,7 @@ void MWindow::clip_to_media()
 		return;
 	}
 	undo_before();
-	awindow->gui->close_view_popup();
+	awindow->gui->stop_vicon_drawing();
 	int clips_total = session->drag_clips->total;
 	for( int i=0; i<clips_total; ++i ) {
 		EDL *clip = session->drag_clips->values[i];
@@ -4441,7 +4441,7 @@ int MWindow::create_aspect_ratio(float &w, float &h, int width, int height)
 
 void MWindow::reset_caches()
 {
-	awindow->gui->close_view_popup();
+	awindow->gui->stop_vicon_drawing();
 	frame_cache->remove_all();
 	wave_cache->remove_all();
 	audio_cache->remove_all();
@@ -4465,7 +4465,7 @@ void MWindow::reset_caches()
 
 void MWindow::remove_from_caches(Indexable *idxbl)
 {
-	awindow->gui->close_view_popup();
+	awindow->gui->stop_vicon_drawing();
 	frame_cache->remove_item(idxbl);
 	wave_cache->remove_item(idxbl);
 	if( gui->render_engine &&
@@ -4505,7 +4505,7 @@ void MWindow::remove_from_caches(Indexable *idxbl)
 void MWindow::remove_assets_from_project(int push_undo, int redraw, int delete_indexes,
 		ArrayList<Indexable*> *drag_assets, ArrayList<EDL*> *drag_clips)
 {
-	awindow->gui->close_view_popup();
+	awindow->gui->stop_vicon_drawing();
 
 // Remove from VWindow.
 	if( drag_clips ) {
