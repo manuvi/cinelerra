@@ -176,7 +176,7 @@ int CICache::delete_entry(char *path)
 		while( current && strcmp(current->asset->path, path) !=0 )
 			current = NEXT;
 		if( !current ) break;
-		if( current->checked_out ) {
+		if( !current->checked_out ) {
 			remove_pointer(current);
 			break;
 		}
