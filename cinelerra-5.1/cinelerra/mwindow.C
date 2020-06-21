@@ -1210,6 +1210,20 @@ ZWindow *MWindow::get_mixer(Mixer *&mixer)
 	return zwindow;
 }
 
+ZWindow *MWindow::get_mixer(int idx)
+{
+	ZWindow *zwindow = 0;
+	zwindows_lock->lock("MWindow::get_mixer");
+	for( int i=0; !zwindow && i<zwindows.size(); ++i ) {
+		ZWindow *zwdw = zwindows[i];
+		if( !zwdw->running() ) continue;
+		if( zwdw->idx != idx ) continue;
+		zwindow = zwindows[i];
+	}
+	zwindows_lock->unlock();
+	return zwindow;
+}
+
 void MWindow::close_mixer(ZWindow *zwindow)
 {
 	zwindows_lock->lock("MWindow::close_mixer 0");

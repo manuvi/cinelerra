@@ -174,6 +174,7 @@ void Mixer::copy_from(Mixer &that)
 	mixer_ids.remove_all();
 	strncpy(title, that.title, sizeof(title));
 	title[sizeof(title)-1] = 0;
+	show = that.show;
 	x = that.x;  y = that.y;
 	w = that.w;  h = that.h;
 	for( int i=0; i<that.mixer_ids.size(); ++i )

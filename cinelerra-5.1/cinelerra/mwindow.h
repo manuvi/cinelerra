@@ -274,6 +274,7 @@ public:
 	void close_mixers(int result=1);
 	void open_mixers();
 	ZWindow *get_mixer(Mixer *&mixer);
+	ZWindow *get_mixer(int idx);
 	void close_mixer(ZWindow *zwindow);
 	int mixer_track_active(Track *track);
 	void update_mixer_tracks();

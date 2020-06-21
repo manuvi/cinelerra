@@ -1674,7 +1674,9 @@ int MixerItem::handle_event()
 	MWindow *mwindow = mixer_items->mwindow;
 	Mixer *mixer = mwindow->edl->mixers.get_mixer(idx);
 	if( !mixer ) return 0;
-        ZWindow *zwindow = mwindow->get_mixer(mixer);
+	ZWindow *zwindow = mwindow->get_mixer(idx);
+	if( !zwindow )
+		zwindow = mwindow->get_mixer(mixer);
 	if( !zwindow->zgui ) {
 		zwindow->set_title(mixer->title);
 		zwindow->start();
