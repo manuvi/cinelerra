@@ -95,6 +95,7 @@ public:
 // Determine if silence depending on existance of asset or plugin title
 	virtual int silence();
 	void set_selected(int v);
+	void select_affected_edits(int v, int gang);
 
 // Media edit information
 // Units are native units for the track.

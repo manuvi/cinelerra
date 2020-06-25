@@ -760,7 +760,8 @@ CWindowEditing::CWindowEditing(MWindow *mwindow, CWindow *cwindow)
 		0, // use_commerical
 		0, // use_goto
 		1, // use_clk2play
-		1) // use_scope
+		1, // use_scope
+		0) // use_gang_tracks
 {
 	this->mwindow = mwindow;
 	this->cwindow = cwindow;
@@ -825,6 +826,7 @@ void panel_btn(set_editing_mode,(int mode), set_editing_mode(mode))
 void panel_btn(set_auto_keyframes,(int v), set_auto_keyframes(v))
 void panel_btn(set_span_keyframes,(int v), set_span_keyframes(v))
 void panel_btn(set_labels_follow_edits,(int v), set_labels_follow_edits(v))
+void panel_btn(set_gang_tracks,(int v), set_gang_tracks(v))
 
 
 CWindowMeters::CWindowMeters(MWindow *mwindow,

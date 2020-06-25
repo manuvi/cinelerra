@@ -337,8 +337,8 @@ public:
 
 class YuvColorSpace : public BC_PopupMenu
 {
-	static const char *color_space[3];
 public:
+	static const char *color_space[3];
 	YuvColorSpace(int x, int y, PreferencesWindow *pwindow);
 	~YuvColorSpace();
 
@@ -359,8 +359,8 @@ public:
 
 class YuvColorRange : public BC_PopupMenu
 {
-	static const char *color_range[2];
 public:
+	static const char *color_range[2];
 	YuvColorRange(int x, int y, PreferencesWindow *pwindow);
 	~YuvColorRange();
 

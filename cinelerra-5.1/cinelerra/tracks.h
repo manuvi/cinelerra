@@ -57,7 +57,6 @@ public:
 
 // Construct a list of all the recordable edits which start on position
 	void clear_selected_edits();
-	void select_affected_edits(double position, Track *start_track, int sense);
 	int clear_hard_edges(double start, double end);
 	void get_selected_edits(ArrayList<Edit*> *drag_edits);
 	int next_group_id();
@@ -73,6 +72,7 @@ public:
 
 	void equivalent_output(Tracks *tracks, double *result);
 
+	void move_tracks(Track *src, Track *dst, int n);
 	int move_track_up(Track *track);        // move recordable tracks up
 	int move_track_down(Track *track);      // move recordable tracks down
 	int move_tracks_up();                   // move recordable tracks up

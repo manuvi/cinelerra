@@ -1256,18 +1256,18 @@ int MWindowGUI::keypress_event()
 			if( (this_track = pane[i]->over_patchbay()) != 0 ) break;
 		}
 
-		if( get_keypress() == TAB ) { // Switch the record button
+		if( get_keypress() == TAB ) { // Switch the armed button
 			if( this_track )
-				this_track->record = !this_track->record ? 1 : 0;
+				this_track->armed = !this_track->armed ? 1 : 0;
 		}
 		else {
 			int total_selected = mwindow->edl->tracks->total_of(Tracks::RECORD);
 			// all selected if nothing previously selected or
 			// if this patch was previously the only one selected and armed
 			int selected = !total_selected || (total_selected == 1 &&
-				this_track && this_track->record ) ? 1 : 0;
+				this_track && this_track->armed ) ? 1 : 0;
 			mwindow->edl->tracks->select_all(Tracks::RECORD, selected);
-			if( !selected && this_track ) this_track->record = 1;
+			if( !selected && this_track ) this_track->armed = 1;
 		}
 
 		update(0, NORMAL_DRAW, 0, 0, 1, 0, 1);

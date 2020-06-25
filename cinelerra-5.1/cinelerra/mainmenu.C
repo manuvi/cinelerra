@@ -1509,7 +1509,9 @@ ShowVWindow::ShowVWindow(MWindow *mwindow)
 }
 int ShowVWindow::handle_event()
 {
+	mwindow->gui->unlock_window();
 	mwindow->show_vwindow();
+	mwindow->gui->lock_window("ShowVWindow::handle_event");
 	return 1;
 }
 
@@ -1521,7 +1523,9 @@ ShowAWindow::ShowAWindow(MWindow *mwindow)
 }
 int ShowAWindow::handle_event()
 {
+	mwindow->gui->unlock_window();
 	mwindow->show_awindow();
+	mwindow->gui->lock_window("ShowAWindow::handle_event");
 	return 1;
 }
 
@@ -1533,7 +1537,9 @@ ShowCWindow::ShowCWindow(MWindow *mwindow)
 }
 int ShowCWindow::handle_event()
 {
+	mwindow->gui->unlock_window();
 	mwindow->show_cwindow();
+	mwindow->gui->lock_window("ShowCWindow::handle_event");
 	return 1;
 }
 
@@ -1548,10 +1554,12 @@ ShowGWindow::ShowGWindow(MWindow *mwindow)
 int ShowGWindow::handle_event()
 {
 	if( mwindow->session->current_operation == NO_OPERATION ) {
+		mwindow->gui->unlock_window();
 		if( !mwindow->session->show_gwindow )
 			mwindow->show_gwindow();
 		else
 			mwindow->hide_gwindow();
+		mwindow->gui->lock_window("ShowGWindow::handle_event");
 		set_checked(mwindow->session->show_gwindow);
 	}
 	return 1;
@@ -1566,7 +1574,9 @@ ShowLWindow::ShowLWindow(MWindow *mwindow)
 }
 int ShowLWindow::handle_event()
 {
+	mwindow->gui->unlock_window();
 	mwindow->show_lwindow();
+	mwindow->gui->lock_window("ShowLWindow::handle_event");
 	return 1;
 }
 

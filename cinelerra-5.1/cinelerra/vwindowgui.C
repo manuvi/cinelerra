@@ -558,7 +558,8 @@ VWindowEditing::VWindowEditing(MWindow *mwindow, VWindow *vwindow)
 		0, // use_commerical
 		0, // use_goto
 		1, // use_clk2play
-		1) // use_scope
+		1, // use_scope
+		0) // use_gang_tracks
 {
 	this->mwindow = mwindow;
 	this->vwindow = vwindow;
@@ -703,6 +704,7 @@ void VWindowEditing::panel_set_editing_mode(int mode) {}
 void VWindowEditing::panel_set_auto_keyframes(int v) {}
 void VWindowEditing::panel_set_span_keyframes(int v) {}
 void VWindowEditing::panel_set_labels_follow_edits(int v) {}
+void VWindowEditing::panel_set_gang_tracks(int v) {}
 
 
 VWindowSource::VWindowSource(MWindow *mwindow, VWindowGUI *vwindow, int x, int y)

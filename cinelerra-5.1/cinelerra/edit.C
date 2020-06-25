@@ -247,11 +247,35 @@ int Edit::silence()
 
 void Edit::set_selected(int v)
 {
-	if( group_id )
-		edl->tracks->set_group_selected(group_id, v);
+	if( !group_id ) {
+		if( v < 0 ) v = !is_selected ? 1 : 0;
+		int gang = edl->session->gang_tracks != GANG_NONE ? 1 : 0;
+		select_affected_edits(v, gang);
+	}
 	else
-		is_selected = v >= 0 ? v : !is_selected ? 1 : 0;
+		edl->tracks->set_group_selected(group_id, v);
 }
+
+// gang<0: rest of tracks, gang==0: this track, gang>0: to next master
+void Edit::select_affected_edits(int v, int gang)
+{
+	is_selected = v;
+	if( !gang ) return;
+	double position = track->from_units(startproject);
+	for( Track *current=track->next; current; current=current->next ) {
+		if( gang > 0 && current->master ) break;
+		if( !current->is_armed() ) continue;
+		for( Edit *edit=current->edits->first; edit; edit=edit->next ) {
+			if( edit->silence() ) continue;
+			double start = current->from_units(edit->startproject);
+			if( edl->equivalent(start, position) ) {
+				edit->is_selected = v;
+				break;
+			}
+		}
+	}
+}
+
 
 void Edit::copy_from(Edit *edit)
 {

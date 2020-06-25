@@ -437,7 +437,7 @@ int EDL::copy_assets(int copy_flags, double start, double end,
 	if( (copy_flags & COPY_USED_ASSETS) ) {
 // Copy just the ones being used.
 		for( current = tracks->first; current; current = NEXT ) {
-			if( !current->record ) continue;
+			if( !current->is_armed() ) continue;
 			current->copy_assets(start, end, &asset_list);
 		}
 	}
@@ -642,8 +642,8 @@ void EDL::create_nested(EDL *nested)
 {
 	int video_tracks = 0, audio_tracks = 0;
 	for( Track *track=nested->tracks->first; track!=0; track=track->next ) {
-		if( track->data_type == TRACK_VIDEO && track->record ) ++video_tracks;
-		if( track->data_type == TRACK_AUDIO && track->record ) ++audio_tracks;
+		if( track->data_type == TRACK_VIDEO && track->is_armed() ) ++video_tracks;
+		if( track->data_type == TRACK_AUDIO && track->is_armed() ) ++audio_tracks;
 	}
 // renderengine properties
 	if( video_tracks > 0 )
@@ -1049,6 +1049,7 @@ int EDL::get_tracks_height(Theme *theme)
 {
 	int total_pixels = 0;
 	for( Track *current=tracks->first; current; current=NEXT ) {
+		if( current->is_hidden() ) continue;
 		total_pixels += current->vertical_span(theme);
 	}
 	return total_pixels;
@@ -1058,6 +1059,7 @@ int64_t EDL::get_tracks_width()
 {
 	int64_t total_pixels = 0;
 	for( Track *current=tracks->first; current; current=NEXT ) {
+		if( current->is_hidden() ) continue;
 		int64_t pixels = current->horizontal_span();
 		if( pixels > total_pixels ) total_pixels = pixels;
 	}
@@ -1233,7 +1235,7 @@ void EDL::insert_asset(Asset *asset,
 	}
 
 	for( ; current && vtrack<layers; current=NEXT ) {
-		if( !current->record || current->data_type != TRACK_VIDEO ) continue;
+		if( !current->is_armed() || current->data_type != TRACK_VIDEO ) continue;
 		current->insert_asset(new_asset, new_nested_edl,
 			length, position, vtrack++);
 	}
@@ -1255,7 +1257,7 @@ void EDL::insert_asset(Asset *asset,
 
 	current = tracks->first;
 	for( ; current && atrack < channels; current=NEXT ) {
-		if( !current->record || current->data_type != TRACK_AUDIO ) continue;
+		if( !current->is_armed() || current->data_type != TRACK_AUDIO ) continue;
 		current->insert_asset(new_asset, new_nested_edl,
 			length, position, atrack++);
 	}
@@ -1309,7 +1311,7 @@ void EDL::get_shared_plugins(Track *source,
 	int data_type)
 {
 	for( Track *track=tracks->first; track; track=track->next ) {
-		if( track->record && omit_recordable ) continue;
+		if( track->is_armed() && omit_recordable ) continue;
 		if( track == source || track->data_type != data_type ) continue;
 		for( int i=0; i<track->plugin_set.size(); ++i ) {
 			Plugin *plugin = track->get_current_plugin(
@@ -1326,7 +1328,7 @@ void EDL::get_shared_tracks(Track *track,
 	int omit_recordable, int data_type)
 {
 	for( Track *current=tracks->first; current; current=NEXT ) {
-		if( omit_recordable && current->record ) continue;
+		if( omit_recordable && current->is_armed() ) continue;
 		if( current == track || current->data_type != data_type ) continue;
 		module_locations->append(new SharedLocation(tracks->number_of(current), 0));
 	}
@@ -1599,7 +1601,7 @@ double EDL::next_edit(double position)
 
 // Test for edit handles after position
 	for( Track *track=tracks->first; track; track=track->next ) {
-		if( !track->record ) continue;
+		if( !track->is_armed() ) continue;
 		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
 			double edit_end = track->from_units(edit->startproject + edit->length);
 			Units::fix_double(&edit_end);
@@ -1623,7 +1625,7 @@ double EDL::prev_edit(double position)
 
 // Test for edit handles before cursor position
 	for( Track *track=tracks->first; track; track=track->next ) {
-		if( !track->record ) continue;
+		if( !track->is_armed() ) continue;
 		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
 			double edit_end = track->from_units(edit->startproject);
 			Units::fix_double(&edit_end);
@@ -1869,7 +1871,7 @@ EDL *EDL::selected_edits_to_clip(int packed,
 	double start = DBL_MAX, end = DBL_MIN;
 	Track *first_track=0, *last_track = 0;
 	for( Track *track=tracks->first; track; track=track->next ) {
-		if( !track->record ) continue;
+		if( !track->is_armed() ) continue;
 		int empty = 1;
 		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
 			if( !edit->is_selected || edit->silence() ) continue;
@@ -1895,7 +1897,7 @@ EDL *EDL::selected_edits_to_clip(int packed,
 	new_edl->session->video_tracks = 0;
 	new_edl->session->audio_tracks = 0;
 	for( Track *track=tracks->first; track; track=track->next ) {
-		if( !track->record ) continue;
+		if( !track->is_armed() ) continue;
 		if( first_track ) {
 			if( first_track != track ) continue;
 			first_track = 0;
@@ -2045,7 +2047,7 @@ void EDL::paste_edits(EDL *clip, Track *first_track, double position, int overwr
 		first_track = tracks->first;
 	Track *src = clip->tracks->first;
 	for( Track *track=first_track; track && src; track=track->next ) {
-		if( !track->record ) continue;
+		if( !track->is_armed() ) continue;
 		int64_t pos = track->to_units(position, 0);
 		if( edit_edits ) {
 			for( Edit *edit=src->edits->first; edit; edit=edit->next ) {
@@ -2211,7 +2213,7 @@ int EDL::collect_effects(EDL *&group)
 		Edit *edit = track->edits->first;
 		while( edit && !edit->is_selected ) edit = edit->next;
 		if( !edit ) continue;
-		if( !track->record ) { ret = COLLECT_EFFECTS_RECORD;  break; } 
+		if( !track->is_armed() ) { ret = COLLECT_EFFECTS_RECORD;  break; } 
 		Track *new_track = 0;
 		edl_shared *location = 0;
 		int64_t start_pos = edit->startproject;
@@ -2300,7 +2302,7 @@ int EDL::insert_effects(EDL *group, Track *first_track)
 		Edit *edit = track->edits->first;
 		while( edit && !edit->is_selected ) edit = edit->next;
 		if( !edit ) continue;
-		if( !track->record ) return INSERT_EFFECTS_RECORD;
+		if( !track->is_armed() ) return INSERT_EFFECTS_RECORD;
 		if( track->data_type != new_track->data_type ) return INSERT_EFFECTS_TYPE;
 		int gtrk = group->tracks->number_of(new_track);
 		int trk = tracks->number_of(track);
@@ -2323,7 +2325,7 @@ int EDL::insert_effects(EDL *group, Track *first_track)
 	new_track = group->tracks->first;
 	track = first_track;
 	for( ; track && new_track; track=track->next ) {
-		if( !track->record ) continue;
+		if( !track->is_armed() ) continue;
 		Edit *edit = track->edits->first;
 		while( edit && !edit->is_selected ) edit = edit->next;
 		if( !edit ) continue;

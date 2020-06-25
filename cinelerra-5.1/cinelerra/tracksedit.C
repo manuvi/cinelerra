@@ -50,7 +50,7 @@
 int Tracks::blade(double position)
 {
 	for( Track *track=first; track!=0; track=track->next ) {
-		if( !track->record ) continue;
+		if( !track->is_armed() ) continue;
 		track->blade(position);
 	}
 	return 0;
@@ -64,7 +64,7 @@ int Tracks::clear(double start, double end, int clear_plugins, int edit_autos)
 		current_track;
 		current_track = current_track->next)
 	{
-		if(current_track->record)
+		if(current_track->is_armed())
 		{
 			current_track->clear(start,
 				end,
@@ -84,7 +84,7 @@ void Tracks::clear_automation(double selectionstart, double selectionend)
 
 	for(current_track = first; current_track; current_track = current_track->next)
 	{
-		if(current_track->record)
+		if(current_track->is_armed())
 		{
 			current_track->clear_automation(selectionstart,
 				selectionend,
@@ -100,7 +100,7 @@ void Tracks::clear_transitions(double start, double end)
 		current_track;
 		current_track = current_track->next)
 	{
-		if(current_track->record)
+		if(current_track->is_armed())
 		{
 			int64_t start_units = current_track->to_units(start, 0);
 			int64_t end_units = current_track->to_units(end, 0);
@@ -123,7 +123,7 @@ void Tracks::clear_transitions(double start, double end)
 int Tracks::clear_hard_edges(double start, double end)
 {
 	for( Track *track=first; track; track=track->next ) {
-		if( !track->record ) continue;
+		if( !track->is_armed() ) continue;
 		int64_t start_units = track->to_units(start, 0);
 		int64_t end_units = track->to_units(end, 0);
 
@@ -156,7 +156,7 @@ void Tracks::shuffle_edits(double start, double end)
 		current_track;
 		current_track = current_track->next)
 	{
-		if(current_track->record)
+		if(current_track->is_armed())
 		{
 			current_track->shuffle_edits(start, end, first_track);
 
@@ -174,7 +174,7 @@ void Tracks::reverse_edits(double start, double end)
 		current_track;
 		current_track = current_track->next)
 	{
-		if(current_track->record)
+		if(current_track->is_armed())
 		{
 			current_track->reverse_edits(start, end, first_track);
 
@@ -188,7 +188,7 @@ void Tracks::align_edits(double start, double end)
 // This doesn't affect automation or effects
 	Track *master_track = 0;
 	for( Track *track=first; track; track=track->next ) {
-		if( !track->record ) continue;
+		if( !track->is_armed() ) continue;
 		if( !master_track )
 			master_track = track;
 		else
@@ -203,7 +203,7 @@ void Tracks::set_edit_length(double start, double end, double length)
 		current_track;
 		current_track = current_track->next)
 	{
-		if(current_track->record)
+		if(current_track->is_armed())
 		{
 #define USE_FLOATING_LENGTHS
 
@@ -344,7 +344,7 @@ void Tracks::set_transition_length(double start, double end, double length)
 		current_track;
 		current_track = current_track->next)
 	{
-		if(current_track->record)
+		if(current_track->is_armed())
 		{
 			int64_t start_units = current_track->to_units(start, 0);
 			int64_t end_units = current_track->to_units(end, 0);
@@ -399,7 +399,7 @@ void Tracks::paste_transitions(double start, double end, int track_type, char* t
 {
 	int count = 0;
 	for( Track *track=first; track; track=track->next ) {
-		if( !track->record || track->data_type != track_type ) continue;
+		if( !track->is_armed() || track->data_type != track_type ) continue;
 		for( Edit *edit=track->edits->first;  edit; edit=edit->next ) {
 			if( !edit->is_selected ) continue;
 			edit->insert_transition(title);
@@ -412,7 +412,7 @@ void Tracks::paste_transitions(double start, double end, int track_type, char* t
 	}
 
 	for( Track *track=first; track; track=track->next ) {
-		if( !track->record || track->data_type != track_type ) continue;
+		if( !track->is_armed() || track->data_type != track_type ) continue;
 		int64_t start_units = track->to_units(start, 0);
 		int64_t end_units = track->to_units(end, 0);
 		if( start_units == end_units ) {
@@ -450,7 +450,7 @@ void Tracks::set_automation_mode(double selectionstart,
 
 	for(current_track = first; current_track; current_track = current_track->next)
 	{
-		if(current_track->record)
+		if(current_track->is_armed())
 		{
 			current_track->set_automation_mode(selectionstart,
 				selectionend,
@@ -463,7 +463,7 @@ int Tracks::clear_default_keyframe()
 {
 	for(Track *current = first; current; current = NEXT)
 	{
-		if(current->record)
+		if(current->is_armed())
 			current->clear_automation(0, 0, 0, 1);
 	}
 	return 0;
@@ -481,7 +481,7 @@ int Tracks::clear_handle(double start,
 
 	for(current_track = first; current_track; current_track = current_track->next)
 	{
-		if(current_track->record)
+		if(current_track->is_armed())
 		{
 			current_track->clear_handle(start,
 				end,
@@ -517,7 +517,7 @@ int Tracks::copy_automation(double selectionstart,
 		current_track;
 		current_track = current_track->next)
 	{
-		if(current_track->record)
+		if(current_track->is_armed())
 		{
 			current_track->copy_automation(selectionstart,
 				selectionend,
@@ -544,22 +544,18 @@ int Tracks::delete_tracks()
 {
 	int total_deleted = 0;
 	int done = 0;
+	int gang = edl->session->gang_tracks != GANG_NONE ? 1 : 0;
 
-	while(!done)
-	{
+	while( !done ) {
 		done = 1;
-		Track *next_track = 0;
-		for (Track* current = first; current && done; current = next_track)
-		{
-			next_track = current->next;
-			if(current->record)
-			{
-				delete_track(current);
-				current = NULL;
-				total_deleted++;
-				done = 0;
-				break;
+		for( Track* track=first, *nxt=0; done && track; track=nxt ) {
+			nxt = track->next;
+			if( gang ) {
+				while( nxt && !nxt->master ) nxt = nxt->next;
 			}
+			if( !track->is_armed() ) continue;
+			delete_track(track);
+			++total_deleted;
 		}
 	}
 	return total_deleted;
@@ -580,7 +576,7 @@ void Tracks::move_edits(ArrayList<Edit*> *in_edits, Track *track, double positio
 	int current_aedit = 0, current_vedit = 0;
 //printf("Tracks::move_edits 1\n");
 	for( Track *dest_track=track; dest_track; dest_track=dest_track->next ) {
-		if( !dest_track->record ) continue;
+		if( !dest_track->is_armed() ) continue;
 // Need a local copy of the source edit since the original source edit may
 // change in the editing operation.
 // Get source edit
@@ -736,7 +732,7 @@ int Tracks::concatenate_tracks(int edit_plugins, int edit_autos)
 			output_track;
 			output_track = output_track->next)
 			if(output_track->data_type == data_type &&
-				output_track->record) break;
+				output_track->is_armed()) break;
 
 		first_output_track = output_track;
 
@@ -747,7 +743,7 @@ int Tracks::concatenate_tracks(int edit_plugins, int edit_autos)
 		{
 			if(input_track->data_type == data_type &&
 				input_track->play &&
-				!input_track->record) break;
+				!input_track->is_armed()) break;
 		}
 
 
@@ -771,7 +767,7 @@ int Tracks::concatenate_tracks(int edit_plugins, int edit_autos)
 				{
 
 					if(input_track->data_type == data_type &&
-						!input_track->record &&
+						!input_track->is_armed() &&
 						input_track->play) break;
 				}
 
@@ -780,7 +776,7 @@ int Tracks::concatenate_tracks(int edit_plugins, int edit_autos)
 					output_track = output_track->next)
 				{
 					if(output_track->data_type == data_type &&
-						output_track->record) break;
+						output_track->is_armed()) break;
 				}
 
 				if(!output_track)
@@ -832,7 +828,7 @@ int Tracks::copy(int copy_flags, double start, double end,
 // if nothing selected
 	if( start == end && !all ) return 1;
 	for( Track *track=first; track; track=track->next ) {
-		if( track->record || all )
+		if( track->is_armed() || all )
 			track->copy(copy_flags, start, end, file, output_path);
 	}
 	return 0;
@@ -842,70 +838,73 @@ int Tracks::copy(int copy_flags, double start, double end,
 
 int Tracks::move_track_up(Track *track)
 {
-	Track *next_track = track->previous;
-	if(!next_track) next_track = last;
-
-	change_modules(number_of(track), number_of(next_track), 1);
-
-// printf("Tracks::move_track_up 1 %p %p\n", track, next_track);
-// int count = 0;
-// for(Track *current = first; current && count < 5; current = NEXT, count++)
-// 	printf("Tracks::move_track_up %p %p %p\n", current->previous, current, current->next);
-// printf("Tracks::move_track_up 2\n");
-//
-	swap(track, next_track);
-
-// count = 0;
-// for(Track *current = first; current && count < 5; current = NEXT, count++)
-// 	printf("Tracks::move_track_up %p %p %p\n", current->previous, current, current->next);
-// printf("Tracks::move_track_up 3\n");
-
+	if( first == last ) return 1;
+	int n = 1;
+	Track *src = track, *dst = src->previous;
+	if( edl->session->gang_tracks != GANG_NONE ) {
+		while( src && !src->master ) src = src->previous;
+		if( !src ) src = first;
+		Track *nxt = src->next;
+		while( nxt && !nxt->master ) { ++n;  nxt = nxt->next; }
+		dst = src->previous;
+		while( dst && !dst->master ) { dst = dst->previous; }
+	}
+	if( src == dst ) return 1;
+	move_tracks(src, dst, n);
 	return 0;
 }
 
 int Tracks::move_track_down(Track *track)
 {
-	Track *next_track = track->next;
-	if(!next_track) next_track = first;
-
-	change_modules(number_of(track), number_of(next_track), 1);
-	swap(track, next_track);
+	if( first == last ) return 1;
+	int n = 1;
+	Track *src = track, *dst = src->next;
+	if( edl->session->gang_tracks != GANG_NONE ) {
+		while( src && !src->master ) src = src->previous;
+		if( !src ) src = first;
+		Track *nxt = src->next;
+		while( nxt && !nxt->master ) { ++n;  nxt = nxt->next; }
+		if( nxt ) {
+			nxt = nxt->next;
+			while( nxt && !nxt->master ) { nxt = nxt->next; }
+		}
+		else
+			nxt = first;
+		dst = nxt;
+	}
+	else
+		dst = !dst ? first : dst->next;
+	if( src == dst ) return 1;
+	move_tracks(src, dst, n);
 	return 0;
 }
 
 
 int Tracks::move_tracks_up()
 {
-	int result = 0;
-	Track *next = first;
-	while( next ) {
-		Track *track = next;  next = track->next;
-		if( !track->record ) continue;
-		if( track->previous ) {
-			change_modules(number_of(track->previous), number_of(track), 1);
-			swap(track->previous, track);
-			result = 1;
-		}
+	if( first == last ) return 1;
+	int n = 1;
+	Track *src = first, *dst = 0;
+	if( edl->session->gang_tracks != GANG_NONE ) {
+		Track *nxt = src->next;
+		while( nxt && !nxt->master ) { ++n;  nxt = nxt->next; }
 	}
-
-	return result;
+	if( src == dst ) return 1;
+	move_tracks(src, dst, n);
+	return 0;
 }
 
 int Tracks::move_tracks_down()
 {
-	int result = 0;
-	Track *prev = last;
-	while( prev ) {
-		Track *track = prev;  prev = track->previous;
-		if( !track->record ) continue;
-		if( track->next ) {
-			change_modules(number_of(track), number_of(track->next), 1);
-			swap(track, track->next);
-			result = 1;
-		}
+	if( first == last ) return 1;
+	int n = 1;
+	Track *src = last, *dst = first;
+	if( edl->session->gang_tracks != GANG_NONE ) {
+		while( src && !src->master ) { ++n;  src = src->previous; }
 	}
-
-	return result;
+	if( src == dst ) return 1;
+	move_tracks(src, dst, n);
+	return 0;
 }
 
 
@@ -914,7 +913,7 @@ void Tracks::paste_audio_transition(PluginServer *server)
 	for(Track *current = first; current; current = NEXT)
 	{
 		if(current->data_type == TRACK_AUDIO &&
-			current->record)
+			current->is_armed())
 		{
 			int64_t position = current->to_units(
 				edl->local_session->get_selectionstart(), 0);
@@ -992,7 +991,7 @@ void Tracks::paste_automation(double selectionstart,
 					if(typeless)
 					{
 						if(!current_track) current_track = first;
-						while(current_track && !current_track->record)
+						while(current_track && !current_track->is_armed())
 							current_track = current_track->next;
 						dst_track = current_track;
 					}
@@ -1007,7 +1006,7 @@ void Tracks::paste_automation(double selectionstart,
 
 						while(current_atrack &&
 							(current_atrack->data_type != TRACK_AUDIO ||
-							!current_atrack->record))
+							!current_atrack->is_armed()))
 							current_atrack = current_atrack->next;
 						dst_track = current_atrack;
 					}
@@ -1021,7 +1020,7 @@ void Tracks::paste_automation(double selectionstart,
 
 						while(current_vtrack &&
 							(current_vtrack->data_type != TRACK_VIDEO ||
-							!current_vtrack->record))
+							!current_vtrack->is_armed()))
 							current_vtrack = current_vtrack->next;
 
 						dst_track = current_vtrack;
@@ -1068,7 +1067,7 @@ void Tracks::paste_video_transition(PluginServer *server, int first_track)
 	for(Track *current = first; current; current = NEXT)
 	{
 		if(current->data_type == TRACK_VIDEO &&
-			current->record)
+			current->is_armed())
 		{
 			int64_t position = current->to_units(
 				edl->local_session->get_selectionstart(), 0);
@@ -1101,7 +1100,7 @@ int Tracks::paste_silence(double start,
 		current_track;
 		current_track = current_track->next)
 	{
-		if(current_track->record)
+		if(current_track->is_armed())
 		{
 			current_track->paste_silence(start,
 				end,
@@ -1137,7 +1136,7 @@ int Tracks::modify_edithandles(double &oldposition, double &newposition,
 	int edit_plugins, int edit_autos, int group_id)
 {
 	for( Track *track=first; track; track=track->next ) {
-		if( !track->record ) continue;
+		if( !track->is_armed() ) continue;
 		track->modify_edithandles(oldposition, newposition,
 			currentend, handle_mode, edit_labels,
 			edit_plugins, edit_autos, group_id);
@@ -1152,7 +1151,7 @@ int Tracks::modify_pluginhandles(double &oldposition, double &newposition,
 	int edit_autos, Edits *trim_edits)
 {
 	for( Track *track=first; track; track=track->next ) {
-		if( !track->record ) continue;
+		if( !track->is_armed() ) continue;
 		track->modify_pluginhandles(oldposition, newposition,
 			currentend, handle_mode, edit_labels,
 			edit_autos, trim_edits);
@@ -1193,7 +1192,7 @@ int Tracks::scale_time(float rate_scale, int ignore_record, int scale_edits, int
 		current_track;
 		current_track = current_track->next)
 	{
-		if((current_track->record || ignore_record) &&
+		if((current_track->is_armed() || ignore_record) &&
 			current_track->data_type == TRACK_VIDEO)
 		{
 			current_track->scale_time(rate_scale, scale_edits, scale_autos, start, end);

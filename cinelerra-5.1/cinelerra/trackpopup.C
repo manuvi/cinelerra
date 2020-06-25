@@ -332,7 +332,7 @@ void TrackUserTitleDialogThread::handle_done_event(int result)
 	const char *text = window->title_text->get_text();
 	int count = 0;
 	for( Track *track=edl->tracks->first; track; track=track->next ) {
-		if( !track->record ) continue;
+		if( !track->is_armed() ) continue;
 		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
 			if( !edit->is_selected ) continue;
 			strcpy(edit->user_title, text);
@@ -474,7 +474,7 @@ void TrackTitleColorPicker::handle_done_event(int result)
 		EDL *edl = popup->mwindow->edl;
 		int count = 0;
 		for( Track *track=edl->tracks->first; track; track=track->next ) {
-			if( !track->record ) continue;
+			if( !track->is_armed() ) continue;
 			for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
 				if( !edit->is_selected ) continue;
 				edit->color = color;

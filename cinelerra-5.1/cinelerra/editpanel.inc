@@ -57,5 +57,6 @@ class LockLabelsButton;
 class EditPanelScopeGUI;
 class EditPanelScopeDialog;
 class EditPanelScope;
+class EditPanelMashMixers;
 
 #endif

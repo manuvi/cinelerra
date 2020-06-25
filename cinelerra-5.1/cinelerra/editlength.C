@@ -64,7 +64,7 @@ void EditLengthThread::start(Edit *edit)
 			track && !got_it;
 			track = track->next)
 		{
-			if(track->record)
+			if(track->is_armed())
 			{
 				int64_t start_units = track->to_units(start, 0);
 				int64_t end_units = track->to_units(end, 0);

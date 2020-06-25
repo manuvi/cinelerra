@@ -660,7 +660,7 @@ int MWindow::nearest_plugin_keyframe(int shift_down, int dir)
 	double position = dir == PLAY_FORWARD ? end : start;
 	double new_position = dir == PLAY_FORWARD ? start : end;
 	for( Track *track=edl->tracks->first; track; track=track->next ) {
-		if( !track->record ) continue;
+		if( !track->is_armed() ) continue;
 		for( int i=0; i<track->plugin_set.size(); ++i ) {
 			PluginSet *plugin_set = track->plugin_set[i];
 			int64_t pos = track->to_units(position, 0);
@@ -698,7 +698,7 @@ int MWindow::nearest_auto_keyframe(int shift_down, int dir)
 	double position = dir == PLAY_FORWARD ? end : start;
 	double new_position = dir == PLAY_FORWARD ? start : end;
 	for( Track *track=edl->tracks->first; track; track=track->next ) {
-		if( !track->record ) continue;
+		if( !track->is_armed() ) continue;
 		int64_t pos = track->to_units(position, 0);
 		for( int i=0; i<AUTOMATION_TOTAL; ++i ) {
 			Autos *autos = track->automation->autos[i];

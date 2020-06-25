@@ -203,6 +203,7 @@ public:
 	int show_assets;
 // Show titles in resources
 	int show_titles;
+	int gang_tracks;
 // Test for data before rendering a track
 	int test_playback_edits;
 // Format to display times in

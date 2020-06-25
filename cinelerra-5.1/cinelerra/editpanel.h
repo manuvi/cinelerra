@@ -379,6 +379,20 @@ public:
 	VFrame *output_frame;
 };
 
+class EditPanelGangTracks : public BC_Button
+{
+	static VFrame **gang_images[TOTAL_GANGS];
+public:
+	EditPanelGangTracks(MWindow *mwindow, EditPanel *panel, int x, int y);
+	~EditPanelGangTracks();
+	VFrame **get_images(MWindow *mwindow);
+	void update(int gang);
+	int handle_event();
+	EditPanel *panel;
+	MWindow *mwindow;
+};
+
+
 class EditPanelScope : public BC_Toggle
 {
 public:
@@ -412,7 +426,8 @@ public:
 		int use_commerical,
 		int use_goto,
 		int use_clk2play,
-		int use_scope);
+		int use_scope,
+		int use_gang_tracks);
 	~EditPanel();
 
 	void set_meters(MeterPanel *meter_panel);
@@ -450,6 +465,7 @@ public:
 	virtual void panel_set_auto_keyframes(int v) = 0;
 	virtual void panel_set_span_keyframes(int v) = 0;
 	virtual void panel_set_labels_follow_edits(int v) = 0;
+	virtual void panel_set_gang_tracks(int mode) = 0;
 
 	MWindow *mwindow;
 	BC_WindowBase *subwindow;
@@ -475,6 +491,7 @@ public:
 	int use_goto;
 	int use_clk2play;
 	int use_scope;
+	int use_gang_tracks;
 
 	EditFit *fit;
 	EditFitAutos *fit_autos;
@@ -498,6 +515,7 @@ public:
 	EditNextLabel *nextlabel;
 	EditPrevEdit *prevedit;
 	EditNextEdit *nextedit;
+	EditPanelGangTracks *gang_tracks;
 	EditUndo *undo;
 	EditRedo *redo;
 	MeterShow *meters;

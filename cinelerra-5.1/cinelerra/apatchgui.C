@@ -188,7 +188,7 @@ void APatchGUI::update_faders(float v)
 	float change = v - current->get_value();
 	current->set_value(v);
 
-	if( track->gang && track->record )
+	if( track->is_ganged() && track->is_armed() )
 		patchbay->synchronize_faders(change, TRACK_AUDIO, track);
 	mwindow->undo->update_undo_after(_("fade"), LOAD_AUTOMATION);
 	change_source = 0;

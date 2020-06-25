@@ -435,6 +435,7 @@ void PluginDialog::apply()
 
 void PluginDialogThread::apply()
 {
+	Plugin *plugin = 0;
 	if( mwindow->edl )
 		mwindow->edl->session->single_standalone = single_standalone;
 	if(plugin_type) {
@@ -444,16 +445,13 @@ void PluginDialogThread::apply()
 			mwindow->insert_effect(plugin_title, &shared_location,
 				data_type, plugin_type, single_standalone);
 		}
-		else {
-			Plugin *plugin = mwindow->edl->tracks->plugin_exists(plugin_id);
-			if( plugin ) {
-				plugin->change_plugin(plugin_title,
+		else if( (plugin=mwindow->edl->tracks->plugin_exists(plugin_id)) != 0 ) {
+			plugin->change_plugin(plugin_title,
 					&shared_location, plugin_type);
-			}
-			else if( mwindow->edl->tracks->track_exists(track) ) {
-					mwindow->insert_effect(plugin_title, &shared_location,
+		}
+		else if( mwindow->edl->tracks->track_exists(track) ) {
+			mwindow->insert_effect(plugin_title, &shared_location,
 					track, 0, 0, 0, plugin_type);
-			}
 		}
 
 		mwindow->save_backup();

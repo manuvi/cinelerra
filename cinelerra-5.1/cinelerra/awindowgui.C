@@ -170,7 +170,7 @@ VFrame *AssetVIcon::frame()
 		if( !temp )
 			temp = new VFrame(0, -1, asset->width, asset->height, BC_RGB888, -1);
 		File *file = mwindow->video_cache->check_out(asset, mwindow->edl, 1);
-		while( file && seq_no >= images.size() ) {
+		while( file && seq_no >= images.size() && !avt->interrupted ) {
 			int64_t pos = images.size() / picon->gui->vicon_thread->refresh_rate * frame_rate;
 			file->set_video_position(pos,0);
 			file->set_layer(0);
@@ -179,12 +179,15 @@ VFrame *AssetVIcon::frame()
 			mwindow->video_cache->check_in(asset);
 			Thread::yield();
 			file = 0;
-			for( int retries=1000; !file && --retries>=0; usleep(10000) )
+			for( int retries=1000; !file && --retries>=0; usleep(10000) ) {
+				if( avt->interrupted ) return 0;
 				file = mwindow->video_cache->check_out(asset, mwindow->edl, 0);
+			}
 		}
 		if( !file ) { broken = 1;  return 0; }
 		mwindow->video_cache->check_in(asset);
 	}
+	if( seq_no >= images.size() ) return 0;
 	return *images[seq_no];
 }
 
@@ -534,7 +537,7 @@ void AssetViewPopup::draw_vframe(VFrame *vframe)
 	double total_length = edl->tracks->total_length();
 	if( !total_length ) total_length = 1;
 	for( Track *track=edl->tracks->first; track!=0; track=track->next ) {
-		if( !track->record ) continue;
+		if( !track->is_armed() ) continue;
 		for( Edit *edit=track->edits->first; edit!=0; edit=edit->next ) {
 			Indexable *indexable = (Indexable *)edit->asset;
 			if( !indexable ) indexable = (Indexable *)edit->nested_edl;

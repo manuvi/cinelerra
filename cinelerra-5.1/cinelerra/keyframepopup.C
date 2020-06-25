@@ -645,7 +645,7 @@ void KeySpeedPatch::update_speed(float v)
 	FloatAuto *current = (FloatAuto*)speed_autos->get_auto_for_editing(position);
 	float change = v - current->get_value();
 	current->set_value(v);
-	if( track->gang && track->record ) {
+	if( track->is_ganged() && track->is_armed() ) {
 		TrackCanvas *track_canvas = patch->patchbay->pane->canvas;
 		track_canvas->fill_ganged_autos(-1, change, track, current);
 		track_canvas->update_ganged_autos(0, track, current);

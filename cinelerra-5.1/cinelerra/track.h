@@ -166,6 +166,11 @@ public:
 	void change_plugins(SharedLocation &old_location, SharedLocation &new_location, int do_swap);
 	void change_modules(int old_location, int new_location, int do_swap);
 	Plugin *plugin_exists(int plugin_id);
+	Track *gang_master();
+	int is_hidden();
+	int is_armed();
+	int is_ganged();
+	int armed_gang(Track *track);
 	int index_in(Mixer *mixer);
 
 	EDL *edl;
@@ -185,10 +190,10 @@ public:
 // There is some debate on whether to expand gang from faders to
 // dragging operations.  This would allow every edit in a column to get dragged
 // simultaneously.
-	int gang;
+	int ganged;
 	char title[BCTEXTLEN];
 	int play;
-	int record;
+	int armed;
 // mask enable bit flags
 	int masks;
 // Nudge in track units.  Positive shifts track earlier in time.  This way
@@ -320,7 +325,8 @@ public:
 	int pixel;   // pixel position from top of track view
 // Dimensions of this track if video
 	int track_w, track_h;
-	int mixer_id;
+// mixer set track id, gang master flag
+	int mixer_id, master;
 
 private:
 // Identification of the track

@@ -143,7 +143,8 @@ MainEditing::MainEditing(MWindow *mwindow, MButtons *mbuttons, int x, int y)
 		mwindow->has_commercials(), // use_commerical
 		1, // use_goto
 		0, // use_clk2play
-		0) // use_scope
+		0, // use_scope
+		1) // use_gang_tracks
 {
 	this->mwindow = mwindow;
 	this->mbuttons = mbuttons;
@@ -284,5 +285,10 @@ void MainEditing::panel_set_span_keyframes(int v)
 void MainEditing::panel_set_labels_follow_edits(int v)
 {
         mwindow->set_labels_follow_edits(v);
+}
+
+void MainEditing::panel_set_gang_tracks(int v)
+{
+	mwindow->set_gang_tracks(v);
 }
 

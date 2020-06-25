@@ -428,7 +428,7 @@ int SWindowGUI::update_selection()
 	Edit *edit = 0;
 	Tracks *tracks = edl->tracks;
 	for( Track *track=tracks->first; track && !edit; track=track->next ) {
-		if( !track->record ) continue;
+		if( !track->is_armed() ) continue;
 		if( track->data_type != TRACK_SUBTITLE ) continue;
 		int64_t pos = track->to_units(position,0);
 		edit = track->edits->editof(pos, PLAY_FORWARD, 0);
@@ -448,7 +448,7 @@ int MWindow::paste_subtitle_text(char *text, double start, double end)
 	Tracks *tracks = edl->tracks;
 	for( Track *track=tracks->first; track; track=track->next ) {
 		if( track->data_type != TRACK_SUBTITLE ) continue;
-		if( !track->record ) continue;
+		if( !track->is_armed() ) continue;
 		int64_t start_i = track->to_units(start, 0);
 		int64_t end_i = track->to_units(end, 1);
 		track->edits->clear(start_i,end_i);
@@ -838,7 +838,7 @@ void SWindowGUI::save_spumux_data()
 	Tracks *tracks = swindow->mwindow->edl->tracks;
 	for( Track *track=tracks->first; track; track=track->next ) {
 		if( track->data_type != TRACK_SUBTITLE ) continue;
-		if( !track->record ) continue;
+		if( !track->is_armed() ) continue;
 		char *cp = track_title, *ep = cp+sizeof(track_title)-6;
 		for( const char *bp=track->title; cp<ep && *bp!=0; ) {
 			int wch = butf8(bp); // iswalnum(wch) broken by MS port

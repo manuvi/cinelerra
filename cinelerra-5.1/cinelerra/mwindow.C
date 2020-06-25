@@ -243,6 +243,7 @@ MWindow::MWindow()
 	in_destructor = 0;
 	speed_edl = 0;
 	beeper = 0;
+	redraw_tracks = 0;
 	shuttle = 0;
 	wintv = 0;
 	x10tv = 0;
@@ -265,9 +266,10 @@ MWindow::~MWindow()
 #ifdef HAVE_DVB
 	gui->channel_info->stop();
 #endif
-	delete beeper;
-	delete create_bd;       create_bd = 0;
-	delete create_dvd;      create_dvd = 0;
+	delete beeper;		beeper = 0;
+	delete redraw_tracks;	redraw_tracks = 0;
+	delete create_bd;	create_bd = 0;
+	delete create_dvd;	create_dvd = 0;
 #ifdef HAVE_SHUTTLE
 	delete shuttle;         shuttle = 0;
 #endif
@@ -1310,11 +1312,11 @@ void MWindow::handle_mixers(EDL *edl, int command, int wait_tracking,
 			k = mixer->mixer_ids.size();
 			while( --k >= 0 && track->get_mixer_id() != mixer->mixer_ids[k] );
 			if( k >= 0 ) {
-				track->record = 1;
+				track->armed = 1;
 				track->play = track->data_type == TRACK_VIDEO ? 1 : 0;
 			}
 			else
-				track->record = track->play = 0;
+				track->armed = track->play = 0;
 		}
 		zwindow->change_source(mixer_edl);
 		zwindow->handle_mixer(command, 0,
@@ -1369,7 +1371,7 @@ ZWindow *MWindow::create_mixer(Indexable *indexable, double position)
 	Mixer *mixer = 0;
 	ZWindow *zwindow = get_mixer(mixer);
 	while( track ) {
-		track->play = track->record = 0;
+		track->play = track->armed = 0;
 		if( track->data_type == TRACK_VIDEO ) {
 			sprintf(track->title, _("Mixer %d"), zwindow->idx);
 		}
@@ -1511,6 +1513,14 @@ void MWindow::tile_mixers()
 			zx += zw;
 	}
 }
+
+void MWindow::set_gang_tracks(int v)
+{
+	edl->session->gang_tracks = v;
+	gui->update(1, 1, 0, 0, 1, 0, 0);
+	gui->flush();
+}
+
 
 void MWindow::init_cache()
 {
@@ -1782,7 +1792,7 @@ int MWindow::put_commercial()
 	//check it
 	for(Track *track=tracks->first; track && !errmsg; track=track->next) {
 		if( track->data_type != TRACK_VIDEO ) continue;
-		if( !track->record ) continue;
+		if( !track->armed ) continue;
 		if( count > 0 ) { errmsg = _("multiple video tracks"); break; }
 		++count;
 		int64_t units_start = track->to_units(start,0);
@@ -1802,7 +1812,7 @@ int MWindow::put_commercial()
 	//run it
 	for(Track *track=tracks->first; track && !errmsg; track=track->next) {
 		if( track->data_type != TRACK_VIDEO ) continue;
-		if( !track->record ) continue;
+		if( !track->armed ) continue;
 		int64_t units_start = track->to_units(start,0);
 		int64_t units_end = track->to_units(end,0);
 		Edits *edits = track->edits;
@@ -2987,6 +2997,7 @@ void MWindow::show_lwindow()
 
 void MWindow::restore_windows()
 {
+	gui->unlock_window();
 	if( !session->show_vwindow ) {
 		for( int i=0, n=vwindows.size(); i<n; ++i ) {
 			VWindow *vwindow = vwindows[i];
@@ -3031,6 +3042,7 @@ void MWindow::restore_windows()
 	else if( session->show_lwindow && lwindow->gui->is_hidden() )
 		show_lwindow();
 
+	gui->lock_window("MWindow::restore_windows");
 	gui->focus();
 }
 
@@ -5133,5 +5145,30 @@ int MWindow::get_cpus(int out_w, int out_h)
 int MWindow::get_cpus()
 {
 	return get_cpus(edl->session->output_w, edl->session->output_h);
+}
+
+void MWindow::draw_trackmovement()
+{
+	if( !redraw_tracks )
+		redraw_tracks = new DrawTrackMovement(this);
+	redraw_tracks->start();
+}
+
+DrawTrackMovement::DrawTrackMovement(MWindow *mwindow)
+ : Thread(1, 0, 0)
+{
+	this->mwindow = mwindow;
+}
+DrawTrackMovement::~DrawTrackMovement()
+{
+	join();
+}
+
+void DrawTrackMovement::run()
+{
+	mwindow->gui->lock_window("DrawTrackMovement::run");
+	mwindow->edl->tracks->update_y_pixels(mwindow->theme);
+	mwindow->gui->draw_trackmovement();
+	mwindow->gui->unlock_window();
 }
 

@@ -178,18 +178,17 @@ void AppearancePrefs::create_objects()
 		x2, y, xS(80), yS(24), clr_color, clr_alpha));
 	draw_3d_border(x2-2,y-2, xS(80)+4,xS(24)+4, 1);
 	cwdw_bg_color->create_objects();
+	x2 += cwdw_bg_color->get_w();
 	y += ys35;
 
-	x = x1;
-	add_subwindow(title = new BC_Title(x, y, _("YUV color space:")));
-	x += title->get_w() + margin;
+	add_subwindow(title = new BC_Title(x1, y, _("YUV color space:")));
+	x = x2 - xS(120);
 	add_subwindow(yuv_color_space = new YuvColorSpace(x, y, pwindow));
 	yuv_color_space->create_objects();
 	y += yuv_color_space->get_h() + ys5;
 
-	x = x1;
-	add_subwindow(title = new BC_Title(x, y, _("YUV color range:")));
-	x += title->get_w() + margin;
+	add_subwindow(title = new BC_Title(x1, y, _("YUV color range:")));
+	x = x2 - xS(100);
 	add_subwindow(yuv_color_range = new YuvColorRange(x, y, pwindow));
 	yuv_color_range->create_objects();
 	y += yuv_color_range->get_h() + ys35;

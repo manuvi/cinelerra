@@ -146,6 +146,17 @@ public:
 };
 
 
+class DrawTrackMovement : public Thread
+{
+public:
+	DrawTrackMovement(MWindow *mwindow);
+	~DrawTrackMovement();
+	void run();
+
+	MWindow *mwindow;
+};
+
+
 class MWindow : public Thread
 {
 public:
@@ -281,6 +292,7 @@ public:
 	void start_mixer();
 	int select_zwindow(ZWindow *zwindow);
 	void tile_mixers();
+	void set_gang_tracks(int v);
 	int load_filenames(ArrayList<char*> *filenames,
 		int load_mode = LOADMODE_REPLACE,
 		int edl_mode = LOADMODE_EDL_CLIP,
@@ -294,6 +306,8 @@ public:
 	int interrupt_indexes();  // Stop index building
 
 	int redraw_time_dependancies();     // after reconfiguring the time format, sample rate, frame rate
+	void draw_trackmovement();          // after reconfiguring tracks/patchbay guis
+	DrawTrackMovement *redraw_tracks;
 
 // =========================================== movement
 
@@ -445,7 +459,7 @@ public:
 
 // TrackCanvas calls this to insert multiple effects from the drag_pluginservers
 // into pluginset_highlighted.
-	void insert_effects_canvas(double start, double length);
+	void insert_effects_canvas(Track *dest_track, double start, double length);
 
 // CWindow calls this to insert multiple effects from
 // the drag_pluginservers array.

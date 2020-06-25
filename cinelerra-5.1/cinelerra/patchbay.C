@@ -283,6 +283,7 @@ int PatchBay::cursor_motion_event()
 				track;
 				track = track->next)
 			{
+				if( track->is_hidden() ) continue;
 				int y = track->y_pixel - mwindow->edl->local_session->track_start[pane->number];
 				int h = track->vertical_span(mwindow->theme);
 				if(cursor_y >= y && cursor_y < y + h)
@@ -301,16 +302,16 @@ int PatchBay::cursor_motion_event()
 							}
 							break;
 						case Tracks::RECORD:
-							if(track->record != new_status)
+							if(track->armed != new_status)
 							{
-								track->record = new_status;
+								track->armed = new_status;
 								update_gui = 1;
 							}
 							break;
 						case Tracks::GANG:
-							if(track->gang != new_status)
+							if(track->ganged != new_status)
 							{
-								track->gang = new_status;
+								track->ganged = new_status;
 								update_gui = 1;
 							}
 							break;
@@ -451,10 +452,9 @@ int PatchBay::update()
 // Every patch has a GUI regardless of whether or not it is visible.
 // Make sure GUI's are allocated for every patch and deleted for non-existant
 // patches.
-	for(Track *current = mwindow->edl->tracks->first;
-		current;
-		current = NEXT, patch_count++)
+	for(Track *current = mwindow->edl->tracks->first; current; current = NEXT)
 	{
+		if( current->is_hidden() ) continue;
 		PatchGUI *patchgui = 0;
 		int y = current->y_pixel;
 		y -= mwindow->edl->local_session->track_start[pane->number];
@@ -502,6 +502,7 @@ int PatchBay::update()
 			patches.append(patchgui);
 			patchgui->create_objects();
 		}
+		++patch_count;
 	}
 
 	while(patches.total > patch_count)
@@ -521,8 +522,8 @@ void PatchBay::synchronize_faders(float change, int data_type, Track *skip)
 		current = NEXT)
 	{
 		if(current->data_type == data_type &&
-			current->gang &&
-			current->record &&
+			current->armed_gang(skip) &&
+			current->is_armed() &&
 			current != skip)
 		{
 			FloatAutos *fade_autos = (FloatAutos*)current->automation->autos[AUTOMATION_FADE];
@@ -551,15 +552,11 @@ void PatchBay::synchronize_faders(float change, int data_type, Track *skip)
 
 void PatchBay::synchronize_nudge(int64_t value, Track *skip)
 {
-	for(Track *current = mwindow->edl->tracks->first;
-		current;
-		current = NEXT)
-	{
-		if(current->data_type == skip->data_type &&
-			current->gang &&
-			current->record &&
-			current != skip)
-		{
+	Track *current = mwindow->edl->tracks->first;
+	for( ; current; current = NEXT ) {
+		if( current->data_type == skip->data_type &&
+		    current->armed_gang(skip) && current->is_armed() &&
+		    current != skip ) {
 			current->nudge = value;
 			PatchGUI *patch = get_patch_of(current);
 			if(patch) patch->update(patch->x, patch->y);

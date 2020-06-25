@@ -39,6 +39,7 @@ class GangPatch;
 class DrawPatch;
 class MutePatch;
 class ZoomPatch;
+class MasterPatch;
 class ExpandPatch;
 class NudgePatch;
 class MixPatch;
@@ -84,6 +85,7 @@ public:
 	DrawPatch *draw;
 	MutePatch *mute;
 	ZoomPatch *zoom;
+	MasterPatch *master;
 	ExpandPatch *expand;
 	NudgePatch *nudge;
 	MixPatch *mix;
@@ -168,6 +170,15 @@ public:
 	ZoomPatch(MWindow *mwindow, PatchGUI *patch, int x, int y);
 	int handle_up_event();
 	int handle_down_event();
+	MWindow *mwindow;
+	PatchGUI *patch;
+};
+
+class MasterPatch : public BC_Toggle
+{
+public:
+	MasterPatch(MWindow *mwindow, PatchGUI *patch, int x, int y);
+	int handle_event();
 	MWindow *mwindow;
 	PatchGUI *patch;
 };

@@ -108,6 +108,7 @@ public:
 	void panel_set_auto_keyframes(int v);
 	void panel_set_span_keyframes(int v);
 	void panel_set_labels_follow_edits(int v);
+	void panel_set_gang_tracks(int v);
 
 	MWindow *mwindow;
 	MButtons *mbuttons;

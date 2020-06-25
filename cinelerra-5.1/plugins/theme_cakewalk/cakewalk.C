@@ -674,6 +674,14 @@ void CAKEWALKTHEME::initialize()
       "patch_dn.png",
       "patch_checkedhi.png",
       "drawpatch_data");
+ new_toggle("masterpatch.png",
+      "patch_up.png",
+      "patch_hi.png",
+      "patch_checked.png",
+      "patch_dn.png",
+      "patch_checkedhi.png",
+      "masterpatch_data");
+
  new_image_set("mutepatch_data",
       5,
       "mutepatch_up.png",
@@ -985,6 +993,18 @@ void CAKEWALKTHEME::initialize()
       new_image("locklabels_dn.png"),
       new_image("locklabels_unlockedhi.png"),
       "locklabels");
+ new_toggle("gang0.png",
+      editpanel_up, editpanel_hi, editpanel_checked,
+      editpanel_dn, editpanel_checkedhi,
+      "gang0");
+ new_toggle("gang1.png",
+      editpanel_up, editpanel_hi, editpanel_checked,
+      editpanel_dn, editpanel_checkedhi,
+      "gang1");
+ new_toggle("gang2.png",
+      editpanel_up, editpanel_hi, editpanel_checked,
+      editpanel_dn, editpanel_checkedhi,
+      "gang2");
  VFrame *cpanel_up = new_image("cpanel_up.png");
  VFrame *cpanel_hi = new_image("cpanel_hi.png");
  VFrame *cpanel_dn = new_image("cpanel_dn.png");

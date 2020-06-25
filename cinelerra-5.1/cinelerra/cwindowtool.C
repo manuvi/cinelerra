@@ -1740,7 +1740,7 @@ int CWindowMaskOnTrack::handle_event()
 	if( k >= 0 ) {
 		track_item = (CWindowMaskItem *)track_items[k];
 		Track *track = track_item ? mwindow->edl->tracks->get_track_by_id(track_item->id) : 0;
-		if( track && track->record ) track_id = track->get_id();
+		if( track && track->is_armed() ) track_id = track->get_id();
 	}
 	else
 		track_id = mwindow->cwindow->mask_track_id;
@@ -1764,7 +1764,7 @@ void CWindowMaskOnTrack::update_items()
 	for( Track *track=mwindow->edl->tracks->first; track; track=track->next ) {
 		if( track->data_type != TRACK_VIDEO ) continue;
 		MaskAutos *mask_autos = (MaskAutos*)track->automation->autos[AUTOMATION_MASK];
-		int color = !track->record ? RED : mask_autos->first ?  high_color : -1;
+		int color = !track->is_armed() ? RED : mask_autos->first ?  high_color : -1;
 		MaskAuto *mask_auto = (MaskAuto*)mask_autos->default_auto;
 		for( int i=0; color<0 && i<mask_auto->masks.size(); ++i )
 			if( mask_auto->masks[i]->points.size() > 0 ) color = high_color;
@@ -1812,7 +1812,7 @@ int CWindowMaskTrackTumbler::do_event(int dir)
 			track_item = items[0];
 	}
 	Track *track = track_item ? mwindow->edl->tracks->get_track_by_id(track_item->id) : 0;
-	int track_id = track_item && track && track->record ? track_item->id : -1;
+	int track_id = track_item && track && track->is_armed() ? track_item->id : -1;
 	gui->mask_on_track->set_back_color(track_id >= 0 ?
 		gui->get_resources()->text_background :
 		gui->get_resources()->text_background_disarmed);
@@ -3021,7 +3021,7 @@ void CWindowMaskGUI::update()
 //printf("CWindowMaskGUI::update 1\n");
 	get_keyframe(track, autos, keyframe, mask, point, 0);
 	mwindow->cwindow->mask_track_id = track ? track->get_id() : -1;
-	mask_on_track->set_back_color(!track || track->record ?
+	mask_on_track->set_back_color(!track || track->is_armed() ?
 		get_resources()->text_background :
 		get_resources()->text_background_disarmed);
 	mask_on_track->update_items();

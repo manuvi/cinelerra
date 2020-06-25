@@ -60,9 +60,10 @@ Track::Track(EDL *edl, Tracks *tracks) : ListItem<Track>()
 	data_h = 64;
 	expand_view = 0;
 	draw = 1;
-	gang = 1;
+	ganged = 1;
+	master = 0;
 	title[0] = 0;
-	record = 1;
+	armed = 1;
 	play = 1;
 	nudge = 0;
 	track_w = edl->session->output_w;
@@ -88,8 +89,9 @@ int Track::copy_settings(Track *track)
 {
 	this->expand_view = track->expand_view;
 	this->draw = track->draw;
-	this->gang = track->gang;
-	this->record = track->record;
+	this->ganged = track->ganged;
+	this->master = track->master;
+	this->armed = track->armed;
 	this->nudge = track->nudge;
 	this->mixer_id = track->mixer_id;
 	this->play = track->play;
@@ -316,9 +318,10 @@ int Track::load(FileXML *file, int track_offset, uint32_t load_flags)
 	int current_plugin = 0;
 
 
-	record = file->tag.get_property("RECORD", record);
+	armed = file->tag.get_property("RECORD", armed);
 	play = file->tag.get_property("PLAY", play);
-	gang = file->tag.get_property("GANG", gang);
+	ganged = file->tag.get_property("GANG", ganged);
+	master = file->tag.get_property("MASTER", 1);
 	draw = file->tag.get_property("DRAW", draw);
 	nudge = file->tag.get_property("NUDGE", nudge);
 	mixer_id = file->tag.get_property("MIXER_ID", mixer_id);
@@ -845,9 +848,10 @@ void Track::synchronize_params(Track *track)
 
 int Track::dump(FILE *fp)
 {
-	fprintf(fp,"   Data type %d, draw %d, gang %d, play %d, record %d, nudge %jd, masks 0x%04x\n",
-		data_type, draw, gang, play, record, nudge, masks);
 	fprintf(fp,"   Title %s\n", title);
+	fprintf(fp,"   Data type %d, draw %d, gang %d, master %d, mixer_id %d\n"
+		   "      play %d, armed %d, nudge %jd, masks 0x%04x\n",
+		data_type, draw, ganged, master, mixer_id, play, armed, nudge, masks);
 	fprintf(fp,"   Edits:\n");
 	for(Edit* current = edits->first; current; current = NEXT)
 		current->dump(fp);
@@ -1005,11 +1009,12 @@ int Track::copy(int copy_flags, double start, double end,
 
 
 	file->tag.set_title("TRACK");
-	file->tag.set_property("RECORD", record);
+	file->tag.set_property("RECORD", armed);
 	file->tag.set_property("NUDGE", nudge);
 	file->tag.set_property("MIXER_ID", mixer_id);
 	file->tag.set_property("PLAY", play);
-	file->tag.set_property("GANG", gang);
+	file->tag.set_property("GANG", ganged);
+	file->tag.set_property("MASTER", master);
 	file->tag.set_property("DRAW", draw);
 	file->tag.set_property("EXPAND", expand_view);
 	file->tag.set_property("DATA_H", data_h);
@@ -1850,6 +1855,48 @@ void Track::set_camera(float x, float y, float z)
 {
 	set_fauto_xyz(AUTOMATION_CAMERA_X, x, y, z);
 }
+
+Track *Track::gang_master()
+{
+	if( edl->session->gang_tracks == GANG_NONE ) return this;
+	Track *track = this;
+	while( track && !track->master ) track = track->previous;
+	return !track ? tracks->first : track;
+}
+
+int Track::is_hidden()
+{
+	if( master ) return 0;
+	if( edl->session->gang_tracks == GANG_MEDIA ) return 1;
+	if( edl->session->gang_tracks == GANG_CHANNELS ) {
+		for( Track *track=previous; track; track=track->previous ) {
+			if( track->data_type == data_type ) return 1;
+			if( track->master ) return 0;
+		}
+	}
+	return 0;
+}
+int Track::is_armed()
+{
+	return gang_master()->armed;
+}
+int Track::is_ganged()
+{
+	return gang_master()->ganged;
+}
+
+int Track::armed_gang(Track *track)
+{
+	if( edl->session->gang_tracks == GANG_NONE ) return ganged;
+	Track *current = gang_master();
+	for(;;) {
+		if( track == current ) return 1;
+		current = current->next;
+		if( !current || current->master ) return 0;
+	}
+	return 1;
+}
+
 
 int Track::index_in(Mixer *mixer)
 {

@@ -704,7 +704,7 @@ void MixersAlign::nudge_tracks()
 			while( track && track->mixer_id != id ) track = track->next;
 			if( !track ) continue;
 			double nudge = mix->nudge;
-			int record = track->record;  track->record = 1;
+			int armed = track->armed;  track->armed = 1;
 			if( nudge < 0 ) {
 				track->clear(0, -nudge, 1,
 					edl->session->labels_follow_edits,
@@ -716,7 +716,7 @@ void MixersAlign::nudge_tracks()
 					edl->session->plugins_follow_edits,
 					edl->session->autos_follow_edits);
 			}
-			track->record = record;
+			track->armed = armed;
 		}
 	}
 	edl->optimize();
@@ -736,8 +736,8 @@ void MixersAlign::nudge_selected()
 
 	ArrayList<int> track_arms;  // ugly
 	for( Track *track=edl->tracks->first; track; track=track->next ) {
-		track_arms.append(track->record);
-		track->record = 0;
+		track_arms.append(track->armed);
+		track->armed = 0;
 	}
 	for( int m, i=0; (m=ma_gui->mixer_list->get_selection_number(0,i))>=0; ++i ) {
 		if( m == midx ) continue;  // master does not move
@@ -749,7 +749,7 @@ void MixersAlign::nudge_selected()
 			while( track && track->mixer_id != id ) track = track->next;
 			if( !track ) continue;
 			double nudge = mix->nudge;
-			track->record = 1;
+			track->armed = 1;
 			double position = 0;  Track *first_track = 0;
 			EDL *clip = edl->selected_edits_to_clip(0, &position, &first_track);
 			if( clip ) {
@@ -775,12 +775,12 @@ void MixersAlign::nudge_selected()
 				position += nudge;
 				edl->paste_edits(clip, first_track, position, 1);
 			}
-			track->record = 0;
+			track->armed = 0;
 		}
 	}
 	int i = 0;
 	for( Track *track=edl->tracks->first; track; track=track->next )
-		track->record = track_arms[i++];
+		track->armed = track_arms[i++];
 	edl->optimize();
 
 	mwindow->update_gui(1);

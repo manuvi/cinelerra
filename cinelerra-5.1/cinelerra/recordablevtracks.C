@@ -33,7 +33,7 @@ RecordableVTracks::RecordableVTracks(Tracks *tracks)
 		current_track;
 		current_track = current_track->next)
 	{
-		if(current_track->record && current_track->data_type == TRACK_VIDEO)
+		if(current_track->is_armed() && current_track->data_type == TRACK_VIDEO)
 			append((VTrack*)current_track);
 	}
 }

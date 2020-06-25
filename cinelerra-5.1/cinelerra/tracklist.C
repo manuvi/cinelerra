@@ -94,7 +94,7 @@ TrackList::get_recordable_type(int data_type)
 		current_track && current_patch;
 		current_track = current_track->next, current_patch = current_patch->next)
 	{
-		if(current_patch->record && current_track->data_type == TRACK_AUDIO)
+		if(current_patch->is_armed() && current_track->data_type == TRACK_AUDIO)
 			append((ATrack*)current_track);
 	}
 }

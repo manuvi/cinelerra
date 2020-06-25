@@ -75,7 +75,8 @@ EditPanel::EditPanel(MWindow *mwindow,
 	int use_commercial,
 	int use_goto,
 	int use_clk2play,
-	int use_scope)
+	int use_scope,
+	int use_gang_tracks)
 {
 	this->window_id = window_id;
 	this->editing_mode = editing_mode;
@@ -98,6 +99,7 @@ EditPanel::EditPanel(MWindow *mwindow,
 	this->use_goto = use_goto;
 	this->use_clk2play = use_clk2play;
 	this->use_scope = use_scope;
+	this->use_gang_tracks = use_gang_tracks;
 
 	this->x = x;
 	this->y = y;
@@ -117,6 +119,7 @@ EditPanel::EditPanel(MWindow *mwindow,
 	this->nextlabel = 0;
 	this->prevedit = 0;
 	this->nextedit = 0;
+	this->gang_tracks = 0;
 	this->undo = 0;
 	this->redo = 0;
 	this->meter_panel = 0;
@@ -157,6 +160,7 @@ void EditPanel::update()
 			mwindow->edl->session->vwindow_click2play ;
 		click2play->set_value(value);
 	}
+	if( gang_tracks ) gang_tracks->update(mwindow->edl->session->gang_tracks);
 	if( meters ) {
 		if( is_cwindow() ) {
 			meters->update(mwindow->edl->session->cwindow_meter);
@@ -316,6 +320,12 @@ void EditPanel::create_buttons()
 		subwindow->add_subwindow(scope);
 		x1 += scope->get_w();
 		scope_dialog = new EditPanelScopeDialog(mwindow, this);
+	}
+
+	if( use_gang_tracks ) {
+		gang_tracks = new EditPanelGangTracks(mwindow, this, x1, y1-yS(1));
+		subwindow->add_subwindow(gang_tracks);
+		x1 += gang_tracks->get_w();
 	}
 
 	if( use_meters ) {
@@ -1301,6 +1311,49 @@ int EditPanelScope::handle_event()
 	else
 		panel->scope_dialog->close_window();
 	lock_window("EditPanelScope::handle_event");
+	return 1;
+}
+
+EditPanelGangTracks::EditPanelGangTracks(MWindow *mwindow, EditPanel *panel,
+		int x, int y)
+ : BC_Button(x, y, get_images(mwindow))
+{
+	this->mwindow = mwindow;
+	this->panel = panel;
+	set_tooltip(_("Gang Tracks"));
+}
+
+EditPanelGangTracks::~EditPanelGangTracks()
+{
+}
+
+VFrame **EditPanelGangTracks::gang_images[TOTAL_GANGS];
+
+VFrame **EditPanelGangTracks::get_images(MWindow *mwindow)
+{
+	gang_images[GANG_NONE] = mwindow->theme->get_image_set("gang0");
+	gang_images[GANG_MEDIA] = mwindow->theme->get_image_set("gang1");
+	gang_images[GANG_CHANNELS] = mwindow->theme->get_image_set("gang2");
+	int gang = mwindow->edl->session->gang_tracks;
+	return gang_images[gang];
+}
+
+void EditPanelGangTracks::update(int gang)
+{
+	set_images(gang_images[gang]);
+	draw_face();
+}
+
+int EditPanelGangTracks::handle_event()
+{
+	int gang = mwindow->edl->session->gang_tracks;
+	switch( gang ) {
+	case GANG_NONE:      gang = GANG_CHANNELS;  break;
+	case GANG_CHANNELS:  gang = GANG_MEDIA;     break;
+	case GANG_MEDIA:     gang = GANG_NONE;      break;
+	}
+	update(gang);
+	panel->panel_set_gang_tracks(gang);
 	return 1;
 }
 

@@ -364,7 +364,7 @@ void CreateBD_Thread::handle_close_event(int result)
 		Tracks *tracks = mwindow->edl->tracks;
 		for( Track *vtrk=tracks->first; vtrk; vtrk=vtrk->next ) {
 			if( vtrk->data_type != TRACK_VIDEO ) continue;
-			if( !vtrk->record ) continue;
+			if( !vtrk->is_armed() ) continue;
 			vtrk->expand_view = 1;
 			PluginSet *plugin_set = new PluginSet(mwindow->edl, vtrk);
 			vtrk->plugin_set.append(plugin_set);
@@ -874,7 +874,7 @@ insert_video_plugin(const char *title, KeyFrame *default_keyframe)
 	Tracks *tracks = mwindow->edl->tracks;
 	for( Track *vtrk=tracks->first; vtrk; vtrk=vtrk->next ) {
 		if( vtrk->data_type != TRACK_VIDEO ) continue;
-		if( !vtrk->record ) continue;
+		if( !vtrk->is_armed() ) continue;
 		vtrk->expand_view = 1;
 		PluginSet *plugin_set = new PluginSet(mwindow->edl, vtrk);
 		vtrk->plugin_set.append(plugin_set);
@@ -898,7 +898,7 @@ resize_tracks()
 	if( trk_h < bd_height ) trk_h = bd_height;
 	for( Track *vtrk=tracks->first; vtrk; vtrk=vtrk->next ) {
 		if( vtrk->data_type != TRACK_VIDEO ) continue;
-		if( !vtrk->record ) continue;
+		if( !vtrk->is_armed() ) continue;
 		vtrk->track_w = trk_w;
 		vtrk->track_h = trk_h;
 	}
@@ -933,7 +933,7 @@ option_presets()
 	max_w = 0;  max_h = 0;
 	int has_deinterlace = 0, has_scale = 0;
 	for( Track *trk=tracks->first; trk; trk=trk->next ) {
-		if( !trk->record ) continue;
+		if( !trk->is_armed() ) continue;
 		Edits *edits = trk->edits;
 		switch( trk->data_type ) {
 		case TRACK_VIDEO:
@@ -973,7 +973,7 @@ option_presets()
 		if( max_h != bd_height ) use_resize_tracks = 1;
 	}
 	for( Track *trk=tracks->first; trk && !use_resize_tracks; trk=trk->next ) {
-		if( !trk->record ) continue;
+		if( !trk->is_armed() ) continue;
 		switch( trk->data_type ) {
 		case TRACK_VIDEO:
 			if( trk->track_w != max_w ) use_resize_tracks = 1;

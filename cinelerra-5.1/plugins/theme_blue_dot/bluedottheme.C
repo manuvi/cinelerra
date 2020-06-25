@@ -697,6 +697,14 @@ void BlueDotTheme::initialize()
 		"drawpatch_dn.png",
 		"drawpatch_checkedhi.png");
 
+	new_toggle("masterpatch.png",
+		"patch_up.png",
+		"patch_hi.png",
+		"patch_checked.png",
+		"patch_dn.png",
+		"patch_checkedhi.png",
+		"masterpatch_data");
+
 
 	new_image_set("mutepatch_data",
 		5,
@@ -939,6 +947,9 @@ void BlueDotTheme::initialize()
 		   new_image("locklabels_dn.png"), // can't have seperate down for each!!??
 		   new_image("locklabels_unlockedhi.png"),
 		   "locklabels");
+	new_toggle("gang0.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "gang0");
+	new_toggle("gang1.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "gang1");
+	new_toggle("gang2.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "gang2");
 
 //Is that necessary??
 	VFrame *cpanel_up = new_image("editpanel_up.png");

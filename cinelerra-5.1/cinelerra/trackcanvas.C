@@ -210,6 +210,7 @@ int TrackCanvas::drag_cursor_motion(int cursor_x, int cursor_y,
 // Find the edit and track the cursor is over
 		for(Track *track = mwindow->edl->tracks->first; track; track = track->next)
 		{
+			if( track->is_hidden() ) continue;
 			int64_t track_x, track_y, track_w, track_h;
 			track_dimensions(track, track_x, track_y, track_w, track_h);
 
@@ -407,7 +408,7 @@ int TrackCanvas::drag_stop(int *redraw)
  						mwindow->session->edit_highlighted->length);
  				}
 				start = mwindow->edl->align_to_frame(start, 0);
-				mwindow->insert_effects_canvas(start, length);
+				mwindow->insert_effects_canvas(track, start, length);
 				*redraw = 1;
 			}
 			if( mwindow->session->track_highlighted )
@@ -787,6 +788,7 @@ void TrackCanvas::draw_resources(int mode,
 		current;
 		current = NEXT)
 	{
+		if( current->is_hidden() ) continue;
 		if(debug) PRINT_TRACE
 		for(Edit *edit = current->edits->first; edit; edit = edit->next)
 		{
@@ -1149,7 +1151,8 @@ void TrackCanvas::draw_paste_destination()
 		for(Track *dest = mwindow->session->track_highlighted;
 			dest;
 			dest = dest->next) {
-			if(dest->record) {
+			if( dest->is_hidden() ) continue;
+			if(dest->is_armed()) {
 // Get source width in pixels
 				w = -1;
 // Use start of highlighted edit
@@ -1680,7 +1683,8 @@ void TrackCanvas::draw_selected_edits(EDL *edl, int dx, int dy, int color0, int 
 {
 	int dropping = 0;
 	for( Track *track=edl->tracks->first; track; track=track->next ) {
-		if( !track->record && color1 < 0 ) {
+		if( track->is_hidden() ) continue;
+		if( !track->is_armed() && color1 < 0 ) {
 			if( dropping )
 				dy -= track->vertical_span(mwindow->theme);
 			continue;
@@ -1697,9 +1701,9 @@ void TrackCanvas::draw_selected_edits(EDL *edl, int dx, int dy, int color0, int 
 			int inner = color1 < 0 ? color0 : !edit->group_id ? color0 :
 				mwindow->get_group_color(edit->group_id);
 			int outer = color1 < 0 ? color0 : !edit->group_id ? color1 : inner;
-			set_color(track->record ? inner : outer);
+			set_color(track->is_armed() ? inner : outer);
 			draw_selected(x, y, w, h);
-			set_color(track->record ? outer : inner);
+			set_color(track->is_armed() ? outer : inner);
 			draw_selected(x-1, y-1, w+2, h+2);
 			draw_selected(x-2, y-2, w+1, h+1);
 		}
@@ -1725,6 +1729,7 @@ void TrackCanvas::draw_plugins()
 		track;
 		track = track->next)
 	{
+		if( track->is_hidden() ) continue;
 		if(track->expand_view)
 		{
 			for(int i = 0; i < track->plugin_set.total; i++)
@@ -1891,6 +1896,7 @@ void TrackCanvas::draw_hard_edges()
 	int64_t x, y, w, h;
 
 	for(Track *track = mwindow->edl->tracks->first; track; track = track->next) {
+		if( track->is_hidden() ) continue;
 		for(Edit *edit = track->edits->first; edit; edit = edit->next) {
 			if( !edit->hard_left && !edit->hard_right ) continue;
 			edit_dimensions(edit, x, y, w, h);
@@ -1954,6 +1960,7 @@ void TrackCanvas::draw_drag_handle()
 	set_line_width(3);
 
 	for( Track *track=mwindow->edl->tracks->first; track; track=track->next ) {
+		if( track->is_hidden() ) continue;
 		Edit *left = 0, *right = 0;
 		double start = DBL_MAX, end = DBL_MIN;
 		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
@@ -2012,6 +2019,7 @@ void TrackCanvas::draw_transitions()
 	int64_t x, y, w, h;
 
 	for(Track *track = mwindow->edl->tracks->first; track; track = track->next) {
+		if( track->is_hidden() ) continue;
 		if( !track->show_transitions() ) continue;
 
 		for(Edit *edit = track->edits->first; edit; edit = edit->next) {
@@ -2163,8 +2171,7 @@ int TrackCanvas::do_keyframes(int cursor_x,
 // track context menu to appear
 	int result = 0;
 	EDLSession *session = mwindow->edl->session;
-
-
+	int gang = session->gang_tracks != GANG_NONE || get_double_click() ? 1 : 0;
 
 	static BC_Pixmap *auto_pixmaps[AUTOMATION_TOTAL] =
 	{
@@ -2180,6 +2187,7 @@ int TrackCanvas::do_keyframes(int cursor_x,
 	for(Track *track = mwindow->edl->tracks->first;
 		track && !result;
 		track = track->next) {
+		if( track->is_hidden() ) continue;
 		Auto *auto_keyframe = 0;
 		Automation *automation = track->automation;
 
@@ -2271,7 +2279,7 @@ int TrackCanvas::do_keyframes(int cursor_x,
 						if (buttonpress != 3)
 						{
 							if(i == AUTOMATION_FADE || i == AUTOMATION_SPEED)
-								fill_ganged_autos(get_double_click(), 0, track,
+								fill_ganged_autos(gang, 0, track,
 									(FloatAuto*)mwindow->session->drag_auto);
 							mwindow->session->current_operation = pre_auto_operations[i];
 							update_drag_caption();
@@ -2365,6 +2373,7 @@ void TrackCanvas::draw_keyframe_reticle()
 	    keyframe_hairline == HAIRLINE_DRAGGING && dragging ) ) {
 		int show = dragging || keyframe_hairline == HAIRLINE_ALWAYS ? 1 : 0;
 		for( Track *track = mwindow->edl->tracks->first; track; track=track->next ) {
+			if( track->is_hidden() ) continue;
 			Automation *automation = track->automation;
 			for( int i=0; i<AUTOMATION_TOTAL; ++i ) {
 				if( !mwindow->edl->session->auto_conf->autos[i] ) continue;
@@ -2921,7 +2930,7 @@ int TrackCanvas::test_floatline(int center_pixel,
 
 void TrackCanvas::fill_ganged_autos(int all, float change, Track *skip, FloatAuto *fauto)
 {
-	if( !skip->gang ) return;
+	if( !skip->is_ganged() ) return;
 // Handles the special case of modifying a fadeauto
 // when there are ganged faders on several tracks
 	double position = skip->from_units(fauto->position);
@@ -2929,7 +2938,8 @@ void TrackCanvas::fill_ganged_autos(int all, float change, Track *skip, FloatAut
 
 	for(Track *current = mwindow->edl->tracks->first; current; current = NEXT) {
 		if( (all || current->data_type == skip->data_type) &&
-		    current->gang && current->record && current != skip ) {
+		    current->armed_gang(skip) && current->is_armed() &&
+		    current != skip ) {
 			FloatAutos *fade_autos = (FloatAutos*)current->automation->autos[autoidx];
 			float auto_min = mwindow->edl->local_session->automation_mins[fade_autos->autogrouptype];
 			float auto_max = mwindow->edl->local_session->automation_maxs[fade_autos->autogrouptype];
@@ -3227,7 +3237,7 @@ int TrackCanvas::do_float_autos(Track *track, Autos *autos, int cursor_x, int cu
 
 // Draw or test handle
 		if( current && !result && current != autos->default_auto ) {
-			if( !draw && track->record ) {
+			if( !draw && track->is_armed() ) {
 				result = test_floatauto((FloatAuto*)current, (int)ax2, (int)ay2,
 					(int)in_x2, (int)in_y2, (int)out_x2, (int)out_y2,
 					(int)center_pixel, (int)yscale, cursor_x, cursor_y,
@@ -3244,7 +3254,7 @@ int TrackCanvas::do_float_autos(Track *track, Autos *autos, int cursor_x, int cu
 		}
 
 // Draw or test joining line
-		if( !draw && !result && track->record /* && buttonpress != 3 */ ) {
+		if( !draw && !result && track->is_armed() /* && buttonpress != 3 */ ) {
 			result = test_floatline(center_pixel,
 				(FloatAutos*)autos, unit_start, zoom_units, yscale,
 // Exclude auto coverage from the end of the line.  The auto overlaps
@@ -3267,7 +3277,7 @@ int TrackCanvas::do_float_autos(Track *track, Autos *autos, int cursor_x, int cu
 
 	if( ax < get_w() && !result ) {
 		ax2 = get_w();  ay2 = ay;
-		if(!draw && track->record /* && buttonpress != 3 */ ) {
+		if(!draw && track->is_armed() /* && buttonpress != 3 */ ) {
 			result = test_floatline(center_pixel,
 				(FloatAutos*)autos, unit_start, zoom_units, yscale,
 				(int)ax, (int)ax2, cursor_x, cursor_y,
@@ -3372,7 +3382,7 @@ int TrackCanvas::do_int_autos(Track *track,
 			{
 				if(!draw)
 				{
-					if(track->record)
+					if(track->is_armed())
 					{
 						result = test_auto(current,
 							(int)ax2,
@@ -3401,7 +3411,7 @@ int TrackCanvas::do_int_autos(Track *track,
 		{
 			if(!result)
 			{
-				if(track->record /* && buttonpress != 3 */)
+				if(track->is_armed() /* && buttonpress != 3 */)
 				{
 					result = test_toggleline(autos,
 						center_pixel,
@@ -3432,7 +3442,7 @@ int TrackCanvas::do_int_autos(Track *track,
 		ay2 = ay;
 		if(!draw)
 		{
-			if(track->record /* && buttonpress != 3 */)
+			if(track->is_armed() /* && buttonpress != 3 */)
 			{
 				result = test_toggleline(autos,
 					center_pixel,
@@ -3946,7 +3956,7 @@ int TrackCanvas::get_drag_values(float *percentage,
 	*percentage = 0;
 	*position = 0;
 
-	if(!current->autos->track->record) return 1;
+	if(!current->autos->track->is_armed()) return 1;
 	double view_start;
 	double unit_start;
 	double view_end;
@@ -3982,7 +3992,7 @@ int TrackCanvas::get_drag_values(float *percentage,
 
 #define UPDATE_DRAG_HEAD(do_clamp) \
 	int result = 0, center_pixel; \
-	if(!current->autos->track->record) return 0; \
+	if(!current->autos->track->is_armed()) return 0; \
 	double view_start, unit_start, view_end, unit_end; \
 	double yscale, zoom_sample, zoom_units; \
  \
@@ -4734,6 +4744,7 @@ int TrackCanvas::do_edit_handles(int cursor_x, int cursor_y, int button_press,
 	int result = 0;
 
 	for( Track *track=mwindow->edl->tracks->first; track && !result; track=track->next) {
+		if( track->is_hidden() ) continue;
 		for( Edit *edit=track->edits->first; edit && !result; edit=edit->next ) {
 			int64_t edit_x, edit_y, edit_w, edit_h;
 			edit_dimensions(edit, edit_x, edit_y, edit_w, edit_h);
@@ -4830,6 +4841,7 @@ int TrackCanvas::do_edit_handles(int cursor_x, int cursor_y, int button_press,
 			if( handle_result == 1 ) edit_edge += edit_result->length;
 			double edge_position = edit_result->track->from_units(edit_edge);
 			for( Track *track=mwindow->edl->tracks->first; track!=0; track=track->next ) {
+				if( track->is_hidden() ) continue;
 				int64_t track_position = track->to_units(edge_position, 1);
 				Edit *left_edit = track->edits->editof(track_position, PLAY_FORWARD, 0);
 				if( left_edit ) {
@@ -4876,6 +4888,7 @@ int TrackCanvas::do_plugin_handles(int cursor_x,
 	for(Track *track = mwindow->edl->tracks->first;
 		track && !result;
 		track = track->next) {
+		if( track->is_hidden() ) continue;
 		for(int i = 0; i < track->plugin_set.total && !result; i++) {
 			PluginSet *plugin_set = track->plugin_set.values[i];
 			for(Plugin *plugin = (Plugin*)plugin_set->first;
@@ -4978,6 +4991,7 @@ int TrackCanvas::do_edits(int cursor_x, int cursor_y, int button_press, int drag
 	int result = 0;
 
 	for(Track *track = mwindow->edl->tracks->first; track && !result; track = track->next) {
+		if( track->is_hidden() ) continue;
 		for(Edit *edit = track->edits->first; edit && !result; edit = edit->next) {
 			int64_t edit_x, edit_y, edit_w, edit_h;
 			edit_dimensions(edit, edit_x, edit_y, edit_w, edit_h);
@@ -4989,9 +5003,7 @@ int TrackCanvas::do_edits(int cursor_x, int cursor_y, int button_press, int drag
 				if( button_press && get_buttonpress() == LEFT_BUTTON ) {
 					if( get_double_click() ) {
 						mwindow->edl->tracks->clear_selected_edits();
-						mwindow->edl->tracks->select_affected_edits(
-							edit->track->from_units(edit->startproject),
-							edit->track, 1);
+						edit->select_affected_edits(1, -1);
 						double start = edit->track->from_units(edit->startproject);
 						start =	mwindow->edl->align_to_frame(start, 0);
 						mwindow->edl->local_session->set_selectionstart(start);
@@ -5010,7 +5022,7 @@ int TrackCanvas::do_edits(int cursor_x, int cursor_y, int button_press, int drag
 						update_cursor = -1;
 					}
 				}
-				else if( drag_start && track->record ) {
+				else if( drag_start && track->is_armed() ) {
 					mwindow->session->drag_edit = edit;
 					mwindow->session->drag_origin_x = cursor_x;
 					mwindow->session->drag_origin_y = cursor_y;
@@ -5027,9 +5039,7 @@ int TrackCanvas::do_edits(int cursor_x, int cursor_y, int button_press, int drag
 							edit->set_selected(1);
 						}
 						else
-							mwindow->edl->tracks->select_affected_edits(
-								edit->track->from_units(edit->startproject),
-								edit->track, 1);
+							edit->select_affected_edits(1, -1);
 						drag_start = 1;
 					}
 // Construct list of all affected edits
@@ -5077,7 +5087,7 @@ int TrackCanvas::test_track_group(EDL *group, Track *first_track, double &pos)
 	int intersects = 0;
 	Track *src = group->tracks->first;
 	for( Track *track=first_track; track && src; track=track->next ) {
-		if( !track->record ) return -1;
+		if( !track->is_armed() ) return -1;
 		if( src->data_type != track->data_type ) return -1;
 		for( Edit *src_edit=src->edits->first; src_edit; src_edit=src_edit->next ) {
 			if( src_edit->silence() ) continue;
@@ -5197,7 +5207,7 @@ int TrackCanvas::do_plugins(int cursor_x, int cursor_y, int drag_start,
 		}
 		else
 // Move plugin
-		if( drag_start && plugin->track->record && !plugin->silence() ) {
+		if( drag_start && plugin->track->is_armed() && !plugin->silence() ) {
 			if( mwindow->edl->session->editing_mode == EDITING_ARROW ) {
 				if( plugin->track->data_type == TRACK_AUDIO )
 					mwindow->session->current_operation = DRAG_AEFFECT_COPY;
@@ -5257,6 +5267,7 @@ int TrackCanvas::do_transitions(int cursor_x, int cursor_y,
 
 
 	for( Track *track = mwindow->edl->tracks->first; track && !result; track = track->next ) {
+		if( track->is_hidden() ) continue;
 		if( !track->show_transitions() ) continue;
 
 		for( Edit *edit = track->edits->first; edit; edit = edit->next ) {

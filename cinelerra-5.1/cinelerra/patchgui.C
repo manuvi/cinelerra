@@ -64,6 +64,7 @@ PatchGUI::PatchGUI(MWindow *mwindow,
 	draw = 0;
 	mute = 0;
 	zoom = 0;
+	master = 0;
 	expand = 0;
 	nudge = 0;
 	mix = 0;
@@ -82,6 +83,7 @@ PatchGUI::~PatchGUI()
 	delete draw;
 	delete mute;
 	delete zoom;
+	delete master;
 	delete expand;
 	delete nudge;
 	delete mix;
@@ -94,6 +96,7 @@ void PatchGUI::create_objects()
 
 int PatchGUI::reposition(int x, int y)
 {
+	if( track->is_hidden() ) return 0;
 	int x1 = 0;
 	int y1 = 0;
 
@@ -121,6 +124,8 @@ int PatchGUI::reposition(int x, int y)
 			mute->reposition_window(mute->get_x(), y1 + y);
 			x1 += mute->get_w();
 			zoom->reposition_window(zoom->get_x(), y1 + y);
+			x1 += zoom->get_w();
+			master->reposition_window(master->get_x(), y1 + y);
 		}
 		y1 += mwindow->theme->play_h;
 	}
@@ -136,6 +141,7 @@ int PatchGUI::reposition(int x, int y)
 
 int PatchGUI::update(int x, int y)
 {
+	if( track->is_hidden() ) return 0;
 //TRACE("PatchGUI::update 1");
 	reposition(x, y);
 //TRACE("PatchGUI::update 10");
@@ -175,11 +181,12 @@ int PatchGUI::update(int x, int y)
 			delete draw;    draw = 0;
 			delete mute;    mute = 0;
 			delete zoom;    zoom = 0;
+			delete master;  master = 0;
 		}
 		else {
 			play->update(track->play);
-			record->update(track->record);
-			gang->update(track->gang);
+			record->update(track->armed);
+			gang->update(track->ganged);
 			draw->update(track->draw);
 			mute->update(mwindow->get_int_auto(this, AUTOMATION_MUTE)->value);
 		}
@@ -197,6 +204,8 @@ int PatchGUI::update(int x, int y)
 		patchbay->add_subwindow(mute = new MutePatch(mwindow, this, x1 + x, y1 + y));
 		x1 += mute->get_w();
 		patchbay->add_subwindow(zoom = new ZoomPatch(mwindow, this, x1 + x, y1 + y));
+		x1 += zoom->get_w();
+		patchbay->add_subwindow(master = new MasterPatch(mwindow, this, x1 + x, y1 + y));
 	}
 	if( play )
 		y1 = y2;
@@ -364,7 +373,7 @@ RecordPatch::RecordPatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
  : BC_Toggle(x,
  		y,
 		mwindow->theme->get_image_set("recordpatch_data"),
-		patch->track->record,
+		patch->track->armed,
 		"",
 		0,
 		0,
@@ -386,8 +395,8 @@ int RecordPatch::button_press_event()
 		patch->toggle_behavior(Tracks::RECORD,
 			get_value(),
 			this,
-			&patch->track->record);
-		patch->title->set_back_color(patch->track->record ?
+			&patch->track->armed);
+		patch->title->set_back_color(patch->track->armed ?
 			get_resources()->text_background :
 			get_resources()->text_background_disarmed);
 		patch->title->set_text_row(0);
@@ -421,7 +430,7 @@ int RecordPatch::button_release_event()
 GangPatch::GangPatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
  : BC_Toggle(x, y,
 		mwindow->theme->get_image_set("gangpatch_data"),
-		patch->track->gang,
+		patch->track->ganged,
 		"",
 		0,
 		0,
@@ -443,7 +452,7 @@ int GangPatch::button_press_event()
 		patch->toggle_behavior(Tracks::GANG,
 			get_value(),
 			this,
-			&patch->track->gang);
+			&patch->track->ganged);
 		return 1;
 	}
 	return 0;
@@ -605,15 +614,26 @@ int ZoomPatch::handle_down_event()
 }
 
 
+MasterPatch::MasterPatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
+ : BC_Toggle(x, y, mwindow->theme->get_image_set("masterpatch_data"),
+		patch->track->master, "", 0, 0, 0)
+{
+	this->mwindow = mwindow;
+	this->patch = patch;
+	set_tooltip(_("Master Track"));
+}
+
+int MasterPatch::handle_event()
+{
+	patch->track->master = patch->track->master ? 0 : 1;
+	mwindow->draw_trackmovement();  // delayed, can delete *this
+	return 1;
+}
+
+
 ExpandPatch::ExpandPatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
- : BC_Toggle(x,
- 		y,
-		mwindow->theme->get_image_set("expandpatch_data"),
-		patch->track->expand_view,
-		"",
-		0,
-		0,
-		0)
+ : BC_Toggle(x, y, mwindow->theme->get_image_set("expandpatch_data"),
+		patch->track->expand_view, "", 0, 0, 0)
 {
 	this->mwindow = mwindow;
 	this->patch = patch;
@@ -655,14 +675,14 @@ TitlePatch::TitlePatch(MWindow *mwindow, PatchGUI *patch, int x, int y, int w)
 {
 	this->mwindow = mwindow;
 	this->patch = patch;
-	set_back_color(patch->track->record ?
+	set_back_color(patch->track->armed ?
 			get_resources()->text_background :
 			get_resources()->text_background_disarmed);
 }
 
 void TitlePatch::update(const char *text)
 {
-	set_back_color(patch->track->record ?
+	set_back_color(patch->track->armed ?
 			get_resources()->text_background :
 			get_resources()->text_background_disarmed);
 	BC_TextBox::update(text);
@@ -706,7 +726,7 @@ void NudgePatch::set_value(int64_t value)
 	mwindow->undo->update_undo_before(_("nudge."), this);
 	patch->track->nudge = value;
 
-	if(patch->track->gang && patch->track->record)
+	if(patch->track->is_ganged() && patch->track->is_armed())
 		patch->patchbay->synchronize_nudge(patch->track->nudge, patch->track);
 
 	mwindow->undo->update_undo_after(_("nudge."), LOAD_PATCHES);

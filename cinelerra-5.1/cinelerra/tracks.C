@@ -113,27 +113,11 @@ void Tracks::clear_selected_edits()
 	}
 }
 
-void Tracks::select_affected_edits(double position, Track *start_track, int sense)
-{
-	for( Track *track=start_track; track; track=track->next ) {
-		if( !track->record ) continue;
-		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
-			if( edit->silence() ) continue;
-			double startproject = track->from_units(edit->startproject);
-			if( edl->equivalent(startproject, position) ) {
-				edit->is_selected = sense >= 0 ? sense :
-					edit->is_selected ? 0 : 1;
-				break;
-			}
-		}
-	}
-}
-
 void Tracks::get_selected_edits(ArrayList<Edit*> *drag_edits)
 {
 	drag_edits->remove_all();
 	for( Track *track=first; track; track=track->next ) {
-		if( !track->record ) continue;
+		if( !track->is_armed() ) continue;
 		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
 			if( !edit->is_selected ) continue;
 			drag_edits->append(edit);
@@ -152,7 +136,7 @@ void Tracks::get_automation_extents(float *min,
 	int coords_undefined = 1;
 	for(Track *current = first; current; current = NEXT)
 	{
-		if(current->record)
+		if(current->is_armed())
 		{
 			current->automation->get_extents(min,
 				max,
@@ -332,21 +316,26 @@ Track* Tracks::add_subttl_track(int above, Track *dst_track)
 
 int Tracks::delete_track(Track *track)
 {
-	if (!track)
-		return 0;
-
-	int old_location = number_of(track);
-	detach_shared_effects(old_location);
-
-// Shift effects referencing effects below the deleted track
-	for(Track *current = track;
-		current;
-		current = NEXT)
-	{
-		change_modules(number_of(current), number_of(current) - 1, 0);
+	if( !track ) return 0;
+	int gang = edl->session->gang_tracks != GANG_NONE ? 1 : 0;
+	Track *nxt = track->next;
+	if( gang ) {
+		while( track && !track->master && track->previous )
+			track = track->previous;
+		while( nxt && !nxt->master )
+			nxt = nxt->next;
 	}
-	if(track) delete track;
-
+	Track *current = track;
+	int old_location = number_of(current);
+	for( Track *next_track=0; current!=nxt; current=next_track ) {
+		next_track = current->next;
+		detach_shared_effects(old_location);
+		for( Track *curr=current; curr; curr=curr->next ) {
+// Shift effects referencing effects below the deleted track
+			change_modules(number_of(curr), number_of(curr)-1, 0);
+		}
+		delete current;
+	}
 	return 0;
 }
 
@@ -374,8 +363,8 @@ int Tracks::total_of(int type)
 
 		result +=
 			(current->play && type == PLAY) ||
-			(current->record && type == RECORD) ||
-			(current->gang && type == GANG) ||
+			(current->is_armed() && type == RECORD) ||
+			(current->is_ganged() && type == GANG) ||
 			(current->draw && type == DRAW) ||
 			(mute_auto->value && type == MUTE) ||
 			(current->expand_view && type == EXPAND);
@@ -387,7 +376,7 @@ int Tracks::recordable_audio_tracks()
 {
 	int result = 0;
 	for(Track *current = first; current; current = NEXT)
-		if(current->data_type == TRACK_AUDIO && current->record) result++;
+		if(current->data_type == TRACK_AUDIO && current->is_armed()) result++;
 	return result;
 }
 
@@ -396,7 +385,7 @@ int Tracks::recordable_video_tracks()
 	int result = 0;
 	for(Track *current = first; current; current = NEXT)
 	{
-		if(current->data_type == TRACK_VIDEO && current->record) result++;
+		if(current->data_type == TRACK_VIDEO && current->is_armed()) result++;
 	}
 	return result;
 }
@@ -466,7 +455,7 @@ double Tracks::total_recordable_length()
 	double total = -1;
 	for(Track *current = first; current; current = NEXT)
 	{
-		if(current->record)
+		if(current->is_armed())
 		{
 			double length = current->get_length();
 			if(length > total) total = length;
@@ -526,7 +515,7 @@ void Tracks::translate_fauto_xy(int fauto, float dx, float dy, int all)
 {
 	Track *track = first;
 	for( ; track; track=track->next ) {
-		if( !all && !track->record ) continue;
+		if( !all && !track->is_armed() ) continue;
 		if( track->data_type != TRACK_VIDEO ) continue;
 		((VTrack*)track)->translate(fauto, dx, dy, all);
 	}
@@ -548,7 +537,7 @@ void Tracks::crop_resize(float x, float y, float z)
 	float ctr_y = edl->session->output_h / 2.;
 	Track *track = first;
 	for( ; track; track=track->next ) {
-		if( !track->record ) continue;
+		if( !track->is_armed() ) continue;
 		if( track->data_type != TRACK_VIDEO ) continue;
 		float px, py, pz;
 		track->get_projector(px, py, pz);
@@ -566,7 +555,7 @@ void Tracks::crop_shrink(float x, float y, float z)
 	float ctr_y = edl->session->output_h / 2.;
 	Track *track = first;
 	for( ; track; track=track->next ) {
-		if( !track->record ) continue;
+		if( !track->is_armed() ) continue;
 		if( track->data_type != TRACK_VIDEO ) continue;
 		float cx, cy, cz, px, py, pz;
 		track->get_camera(cx, cy, cz);
@@ -589,6 +578,7 @@ void Tracks::update_y_pixels(Theme *theme)
 	{
 //printf("Tracks::update_y_pixels %d\n", y);
 		current->y_pixel = y;
+		if( current->is_hidden() ) continue;
 		y += current->vertical_span(theme);
 	}
 }
@@ -612,8 +602,8 @@ void Tracks::select_all(int type,
 		double position = edl->local_session->get_selectionstart(1);
 
 		if(type == PLAY) current->play = value;
-		if(type == RECORD) current->record = value;
-		if(type == GANG) current->gang = value;
+		if(type == RECORD) current->armed = value;
+		if(type == GANG) current->ganged = value;
 		if(type == DRAW) current->draw = value;
 
 		if(type == MUTE)
@@ -718,7 +708,7 @@ int Tracks::new_group(int id)
 {
 	int count = 0;
 	for( Track *track=first; track; track=track->next ) {
-		if( !track->record ) continue;
+		if( !track->is_armed() ) continue;
 		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
 			if( edit->group_id > 0 ) continue;
 			if( !edit->is_selected ) continue;
@@ -732,10 +722,13 @@ int Tracks::new_group(int id)
 int Tracks::set_group_selected(int id, int v)
 {
 	int count = 0;
+	int gang = edl->session->gang_tracks != GANG_NONE ? 1 : 0;
 	for( Track *track=first; track; track=track->next ) {
+		if( track->is_hidden() ) continue;
 		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
 			if( edit->group_id != id ) continue;
-			edit->is_selected = v >= 0 ? v : !edit->is_selected ? 1 : 0;
+			if( v < 0 ) v = !edit->is_selected ? 1 : 0;
+			edit->select_affected_edits(v, gang);
 			++count;
 		}
 	}
@@ -764,5 +757,23 @@ Track *Tracks::get(int idx, int data_type)
 		if( --idx < 0 ) return current;
 	}
 	return 0;
+}
+
+void Tracks::move_tracks(Track *src, Track *dst, int n)
+{
+	if( src == dst ) return;
+	while( --n >= 0 && src ) {
+		Track *nxt = src->next;
+		change_modules(number_of(src), total(), 0);
+		for( Track *track=nxt; track; track=track->next )
+			change_modules(number_of(track), number_of(track)-1, 0);
+		remove_pointer(src);
+		int ndst = dst ? number_of(dst) : total();
+		insert_before(dst, src);
+		for( Track *track=last; track && track!=src; track=track->previous ) 
+			change_modules(number_of(track)-1, number_of(track), 0);
+		change_modules(total(), ndst, 0);
+		src = nxt;
+	}
 }
 

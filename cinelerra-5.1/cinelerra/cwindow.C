@@ -124,7 +124,7 @@ Track* CWindow::calculate_affected_track()
 	Track *track = mwindow->edl->tracks->first;
 	for( ; track; track=track->next ) {
 		if( track->data_type != TRACK_VIDEO ) continue;
-		if( track->record ) break;
+		if( track->is_armed() ) break;
 	}
 	return track;
 }
@@ -134,7 +134,7 @@ Track* CWindow::calculate_mask_track()
 	Track *track = mwindow->edl->tracks->first;
 	for( ; track; track=track->next ) {
 		if( track->data_type != TRACK_VIDEO ) continue;
-		if( track->record && track->get_id() == mask_track_id ) break;
+		if( track->is_armed() && track->get_id() == mask_track_id ) break;
 	}
 	return track;
 }

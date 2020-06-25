@@ -179,7 +179,7 @@ void MWindow::asset_to_all()
 
 			for( Track *current=edl->tracks->first; current; current=NEXT ) {
 				if( current->data_type == TRACK_VIDEO /* &&
-					current->record */  ) {
+					current->is_armed() */  ) {
 					current->track_w = w;
 					current->track_h = h;
 				}
@@ -761,19 +761,40 @@ void MWindow::insert(double position, FileXML *file,
 //printf("MWindow::insert 6 %p\n", vwindow->get_edl());
 }
 
-void MWindow::insert_effects_canvas(double start,
-	double length)
+void MWindow::insert_effects_canvas(Track *dest_track, double start, double length)
 {
-	Track *dest_track = session->track_highlighted;
-	if( !dest_track ) return;
-
 	undo_before();
 
-	for( int i=0; i<session->drag_pluginservers->total; ++i ) {
-		PluginServer *plugin = session->drag_pluginservers->values[i];
-		insert_effect(plugin->title, 0, dest_track,
-			i == 0 ? session->pluginset_highlighted : 0,
-			start, length, PLUGIN_STANDALONE);
+	ArrayList<SharedLocation> shared_locations;
+	PluginSet *pluginset = session->pluginset_highlighted;
+	int gang = edl->session->gang_tracks != GANG_NONE ? 1 : 0;
+	int data_type = dest_track->data_type;
+	int first_track = 1;
+
+	for( Track *track=dest_track; track; track=track->next ) {
+		if( gang && track->master && !first_track ) break;
+		if( track->data_type != data_type ) continue;
+		if( !track->armed ) continue;
+		int module = edl->tracks->number_of(track);
+		for( int i=0; i<session->drag_pluginservers->total; ++i ) {
+			PluginServer *plugin = session->drag_pluginservers->values[i];
+			int shared = gang && plugin->multichannel ? 1 : 0;
+			int plugin_type = !first_track && shared ?
+				PLUGIN_SHAREDPLUGIN : PLUGIN_STANDALONE;
+			SharedLocation *shared_location = !first_track ?
+				&shared_locations[i] : &shared_locations.append();
+			insert_effect(plugin->title, shared_location, track,
+				pluginset, start, length, plugin_type);
+			if( first_track && shared ) {
+				shared_location->module = module;
+				shared_location->plugin = pluginset ?
+					track->plugin_set.number_of(pluginset) :
+					track->plugin_set.total-1 ;
+			}
+		}
+		if( !gang ) break;
+		first_track = 0;
+		pluginset = 0;
 	}
 
 	save_backup();
@@ -787,8 +808,6 @@ void MWindow::insert_effects_cwindow(Track *dest_track)
 {
 	if( !dest_track ) return;
 
-	undo_before();
-
 	double start = 0;
 	double length = dest_track->get_length();
 
@@ -799,34 +818,28 @@ void MWindow::insert_effects_cwindow(Track *dest_track)
 			edl->local_session->get_selectionstart();
 	}
 
-	for( int i=0; i<session->drag_pluginservers->total; ++i ) {
-		PluginServer *plugin = session->drag_pluginservers->values[i];
-		insert_effect(plugin->title, 0, dest_track, 0,
-			start, length, PLUGIN_STANDALONE);
-	}
-
-	save_backup();
-	undo_after(_("insert effect"), LOAD_EDITS | LOAD_PATCHES);
-	restart_brender();
-	sync_parameters(CHANGE_EDL);
+	insert_effects_canvas(dest_track, start, length);
 	gui->update(1, NORMAL_DRAW, 0, 0, 1, 0, 0);
 }
 
-void MWindow::insert_effect(char *title,
-	SharedLocation *shared_location,
-	int data_type,
-	int plugin_type,
-	int single_standalone)
+void MWindow::insert_effect(char *title, SharedLocation *shared_location,
+		int data_type, int plugin_type, int single_standalone)
 {
 	Track *current = edl->tracks->first;
 	SharedLocation shared_location_local;
 	shared_location_local.copy_from(shared_location);
 	int first_track = 1;
 	for( ; current; current=NEXT ) {
-		if( current->data_type == data_type &&
-			current->record ) {
+		if( current->data_type == data_type && current->is_armed() ) {
+			double start =  edl->local_session->get_selectionstart(1);
+			double end = edl->local_session->get_selectionend(1);
+			double length = end - start;
+			if( start >= end ) {
+				start = 0;
+				length = current->get_length();
+			}
 			insert_effect(title, &shared_location_local,
-				current, 0, 0, 0, plugin_type);
+				current, 0, start, length, plugin_type);
 
 			if( first_track ) {
 				if( plugin_type == PLUGIN_STANDALONE && single_standalone ) {
@@ -1522,6 +1535,7 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls, int load_mode,
 		need_new_tracks = 1;
 		for( int i=0; i<new_edls->total; ++i ) {
 			EDL *new_edl = new_edls->values[i];
+			int first_track = 1;
 			for( Track *current=new_edl->tracks->first; current; current=NEXT ) {
 				switch( current->data_type ) {
 				case TRACK_VIDEO:
@@ -1536,6 +1550,10 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls, int load_mode,
 					break;
 				default:
 					continue;
+				}
+				if( first_track ) {
+					edl->tracks->last->master = 1;
+					first_track = 0;
 				}
 // re-label only if not already labeled
 				if( new_edl->local_session->asset2edl )
@@ -1554,7 +1572,7 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls, int load_mode,
 	    load_mode == LOADMODE_PASTE ) {
 		Track *current = first_track ? first_track : edl->tracks->first;
 		for( ; current; current=NEXT ) {
-			if( current->record ) {
+			if( current->is_armed() ) {
 				destination_tracks.append(current);
 			}
 		}
@@ -1658,14 +1676,14 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls, int load_mode,
 				if( destination_track < destination_tracks.total &&
 				    destination_tracks.values[destination_track]->data_type == new_track->data_type ) {
 					Track *track = destination_tracks.values[destination_track];
-
 // Replace default keyframes if first EDL and new tracks were created.
 // This means data copied from one track and pasted to another won't retain
 // the camera position unless it's a keyframe.  If it did, previous data in the
 // track might get unknowingly corrupted.  Ideally we would detect when differing
 // default keyframes existed and create discrete keyframes for both.
 					int replace_default = (i == 0) && need_new_tracks;
-
+// master tracks are the first track in each new edl when new tracks are created
+					int master = track->master;
 //printf("MWindow::paste_edls 1 %d\n", replace_default);
 // Insert new track at current position
 					switch( load_mode ) {
@@ -1691,6 +1709,7 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls, int load_mode,
 //PRINT_TRACE
 					track->insert_track(new_track, current_position, replace_default,
 						edit_plugins, edit_autos, edl_length);
+					if( master ) track->master = 1;
 //PRINT_TRACE
 				}
 
@@ -2164,7 +2183,7 @@ void MWindow::save_clip(EDL *new_edl, const char *txt)
 	Track *track = new_edl->tracks->first;
 	const char *path = edl->path;
 	for( ; (!path || !*path) && track; track=track->next ) {
-		if( !track->record ) continue;
+		if( !track->is_armed() ) continue;
 		Edit *edit = track->edits->first;
 		if( !edit ) continue;
 		Indexable *indexable = edit->get_source();
@@ -2391,7 +2410,7 @@ void MWindow::remap_audio(int pattern)
 	int current_track = 0;
 	for( Track *current=edl->tracks->first; current; current=NEXT ) {
 		if( current->data_type == TRACK_AUDIO &&
-			current->record ) {
+			current->is_armed() ) {
 			Autos *pan_autos = current->automation->autos[AUTOMATION_PAN];
 			PanAuto *pan_auto = (PanAuto*)pan_autos->get_auto_for_editing(-1);
 
