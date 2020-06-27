@@ -35,6 +35,7 @@
 #include "panauto.h"
 #include "panautos.h"
 #include "patchbay.h"
+#include "plugin.h"
 #include "mainsession.h"
 #include "strack.h"
 #include "theme.h"
@@ -314,10 +315,11 @@ Track* Tracks::add_subttl_track(int above, Track *dst_track)
 }
 
 
-int Tracks::delete_track(Track *track)
+int Tracks::delete_track(Track *track, int gang)
 {
 	if( !track ) return 0;
-	int gang = edl->session->gang_tracks != GANG_NONE ? 1 : 0;
+	if( gang < 0 )
+		gang = edl->session->gang_tracks != GANG_NONE ? 1 : 0;
 	Track *nxt = track->next;
 	if( gang ) {
 		while( track && !track->master && track->previous )
@@ -341,13 +343,21 @@ int Tracks::delete_track(Track *track)
 
 int Tracks::detach_shared_effects(int module)
 {
-	for(Track *current = first; current; current = NEXT)
-	{
+	for( Track *current=first; current; current=NEXT ) {
 		current->detach_shared_effects(module);
 	}
-
  	return 0;
- }
+} 
+int Tracks::detach_ganged_effects(Plugin *plugin)
+{
+	if( edl->session->gang_tracks == GANG_NONE ) return 1;
+	for( Track *current=first; current; current=NEXT ) {
+		if( current == plugin->track ) continue;
+		if( !current->armed_gang(plugin->track) ) continue;
+		current->detach_ganged_effects(plugin);
+	}
+ 	return 0;
+}
 
 int Tracks::total_of(int type)
 {

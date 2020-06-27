@@ -551,7 +551,7 @@ scan_audio(int vstream, double start, double end)
 	Tracks *tracks = mwindow->edl->tracks;
 	for(Track *atrk=tracks->first; !cancelled && atrk; atrk=atrk->next) {
 		if( atrk->data_type != TRACK_AUDIO ) continue;
-		if( !atrk->record ) continue;
+		if( !atrk->is_armed() ) continue;
 		Edits *edits = atrk->edits;  Edit *next = 0;
 		for( Edit *edit=edits->first; !cancelled && edit; edit=next ) {
 			next = edit->next;
@@ -592,7 +592,7 @@ scan_video()
 	Tracks *tracks = mwindow->edl->tracks;
 	for( Track *vtrk=tracks->first; !cancelled && vtrk; vtrk=vtrk->next) {
 		if( vtrk->data_type != TRACK_VIDEO ) continue;
-		if( !vtrk->record ) continue;
+		if( !vtrk->is_armed() ) continue;
 		Edits *edits = vtrk->edits;  Edit *next = 0;
 		for( Edit *edit=edits->first; !cancelled && edit; edit=next ) {
 			next = edit->next;

@@ -118,9 +118,11 @@ public:
 //	Track* add_audio_track(int to_end = 1);
 //	Track* add_video_track(int to_end = 1);
 // delete any track
- 	int delete_track(Track* track);
+	int delete_track(Track *track, int gang=-1);
 // detach shared effects referencing module
 	int detach_shared_effects(int module);
+// detach all corresponding effects in gang
+	int detach_ganged_effects(Plugin *plugin);
 
 	EDL *edl;
 

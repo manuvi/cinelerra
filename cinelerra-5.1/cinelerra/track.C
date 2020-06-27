@@ -480,90 +480,17 @@ void Track::insert_plugin_set(Track *track,
 		shift_effects(position, min_length, edit_autos, 0);
 }
 
-
-Plugin* Track::insert_effect(const char *title,
-		SharedLocation *shared_location,
-		KeyFrame *default_keyframe,
-		PluginSet *plugin_set,
-		double start,
-		double length,
-		int plugin_type)
+Plugin* Track::insert_effect(const char *title, SharedLocation *shared_location,
+		KeyFrame *default_keyframe, PluginSet *plugin_set,
+		double start, double length, int plugin_type)
 {
-	if(!plugin_set)
-	{
+	if( !plugin_set ) {
 		plugin_set = new PluginSet(edl, this);
 		this->plugin_set.append(plugin_set);
 	}
-
-	Plugin *plugin = 0;
-
-// Position is identical to source plugin
-	if(plugin_type == PLUGIN_SHAREDPLUGIN)
-	{
-		Track *source_track = tracks->get_item_number(shared_location->module);
-		if(source_track)
-		{
-			Plugin *source_plugin = source_track->get_current_plugin(
-				edl->local_session->get_selectionstart(1),
-				shared_location->plugin,
-				PLAY_FORWARD,
-				1,
-				0);
-
-// From an attach operation
-			if(source_plugin)
-			{
-				plugin = plugin_set->insert_plugin(title,
-					source_plugin->startproject,
-					source_plugin->length,
-					plugin_type,
-					shared_location,
-					default_keyframe,
-					1);
-			}
-			else
-// From a drag operation
-			{
-				plugin = plugin_set->insert_plugin(title,
-					to_units(start, 0),
-					to_units(length, 1),
-					plugin_type,
-					shared_location,
-					default_keyframe,
-					1);
-			}
-		}
-	}
-	else
-	{
-// This should be done in the caller
-		if(EQUIV(length, 0))
-		{
-			if(edl->local_session->get_selectionend() >
-				edl->local_session->get_selectionstart())
-			{
-				start = edl->local_session->get_selectionstart();
-				length = edl->local_session->get_selectionend() - start;
-			}
-			else
-			{
-				start = 0;
-				length = get_length();
-			}
-		}
-//printf("Track::insert_effect %f %f %d %d\n", start, length, to_units(start, 0),
-//			to_units(length, 0));
-
-		plugin = plugin_set->insert_plugin(title,
-			to_units(start, 0),
-			to_units(length, 1),
-			plugin_type,
-			shared_location,
-			default_keyframe,
-			1);
-	}
-//printf("Track::insert_effect 2 %f %f\n", start, length);
-
+	Plugin *plugin = plugin_set->insert_plugin(title,
+			to_units(start, 0), to_units(length, 1), plugin_type,
+			shared_location, default_keyframe, 1);
 	expand_view = 1;
 	return plugin;
 }
@@ -641,8 +568,7 @@ void Track::remove_pluginset(PluginSet *plugin_set)
 		if(plugin_set == this->plugin_set.values[i]) break;
 
 	this->plugin_set.remove_object(plugin_set);
-	for(i++ ; i < this->plugin_set.total; i++)
-	{
+	for( ++i ; i<=this->plugin_set.total; ++i ) {
 		SharedLocation old_location, new_location;
 		new_location.module = old_location.module = tracks->number_of(this);
 		old_location.plugin = i;
@@ -668,26 +594,54 @@ void Track::shift_effects(int64_t position, int64_t length, int edit_autos, Edit
 void Track::detach_effect(Plugin *plugin)
 {
 //printf("Track::detach_effect 1\n");
-	for(int i = 0; i < plugin_set.total; i++)
-	{
-		PluginSet *plugin_set = this->plugin_set.values[i];
-		for(Plugin *dest = (Plugin*)plugin_set->first;
-			dest;
-			dest = (Plugin*)dest->next)
-		{
-			if(dest == plugin)
-			{
-				int64_t start = plugin->startproject;
-				int64_t end = plugin->startproject + plugin->length;
-
-				plugin_set->clear(start, end, 1);
-				optimize();
+	for( int i=0; i<plugin_set.size(); ++i ) {
+		PluginSet *pluginset = plugin_set[i];
+		Plugin *dest = (Plugin*)pluginset->first;
+		while( dest && dest != plugin ) dest = (Plugin*)dest->next;
+		if( !dest ) continue;
+		tracks->detach_ganged_effects(plugin);
+		int64_t start = plugin->startproject;
+		int64_t end = start + plugin->length;
+		pluginset->clear(start, end, 1);
+		optimize();
 //printf("Track::detach_effect 2 %d\n", plugin_set->length());
 // Delete 0 length pluginsets
-				return;
-			}
+		return;
+	}
+}
+
+void Track::detach_shared_effects(int module)
+{
+	for( int i=0; i<plugin_set.size(); ++i ) {
+		PluginSet *pluginset = this->plugin_set[i];
+		Plugin *dest = (Plugin*)pluginset->first;
+		for( ; dest; dest=(Plugin*)dest->next ) {
+			if( (dest->plugin_type != PLUGIN_SHAREDPLUGIN &&
+			     dest->plugin_type != PLUGIN_SHAREDMODULE) ) continue;
+			if( dest->shared_location.module != module ) continue;
+			int64_t start = dest->startproject;
+			int64_t end = start + dest->length;
+			pluginset->clear(start, end, 1);
 		}
 	}
+	optimize();
+}
+
+void Track::detach_ganged_effects(Plugin *plugin)
+{
+	for( int i=0; i<plugin_set.size(); ++i ) {
+		PluginSet *pluginset = this->plugin_set[i];
+		Plugin *dest = (Plugin*)pluginset->first;
+		for( ; dest; dest=(Plugin*)dest->next ) {
+			if( strcmp(dest->title, plugin->title) != 0 ) continue;
+			if( dest->startproject != plugin->startproject ) continue;
+			if( dest->length != plugin->length ) continue;
+			int64_t start = dest->startproject;
+			int64_t end = start + dest->length;
+			pluginset->clear(start, end, 1);
+		}
+	}
+	optimize();
 }
 
 void Track::resample(double old_rate, double new_rate)
@@ -697,25 +651,6 @@ void Track::resample(double old_rate, double new_rate)
 	for(int i = 0; i < plugin_set.total; i++)
 		plugin_set.values[i]->resample(old_rate, new_rate);
 	nudge = (int64_t)(nudge * new_rate / old_rate);
-}
-
-void Track::detach_shared_effects(int module)
-{
-	for(int i = 0; i < plugin_set.size(); i++) {
-		PluginSet *plugin_set = this->plugin_set.get(i);
-		for(Plugin *dest = (Plugin*)plugin_set->first; dest; ) {
-			if( (dest->plugin_type == PLUGIN_SHAREDPLUGIN ||
-				dest->plugin_type == PLUGIN_SHAREDMODULE) &&
-				dest->shared_location.module == module ) {
-				int64_t start = dest->startproject;
-				int64_t end = dest->startproject + dest->length;
-				plugin_set->clear(start, end, 1);
-			}
-
-			if(dest) dest = (Plugin*)dest->next;
-		}
-	}
-	optimize();
 }
 
 

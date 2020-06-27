@@ -5015,7 +5015,7 @@ int MWindow::select_asset(Asset *asset, int vstream, int astream, int delete_tra
 				track->track_h = edl->session->output_h;
 			}
 			else if( delete_tracks )
-				edl->tracks->delete_track(track);
+				edl->tracks->delete_track(track, 0);
 		}
 		edl->retrack();
 		edl->resample(old_framerate, session->frame_rate, TRACK_VIDEO);
@@ -5051,7 +5051,7 @@ int MWindow::select_asset(Asset *asset, int vstream, int astream, int delete_tra
 						delete edit;
 				}
 				if( !track->edits->first )
-					edl->tracks->delete_track(track);
+					edl->tracks->delete_track(track, 0);
 			}
 		}
 		edl->rechannel();

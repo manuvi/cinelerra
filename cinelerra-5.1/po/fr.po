@@ -456,7 +456,7 @@ msgstr "Espace de couleur YUV :"
 
 #: cinelerra/appearanceprefs.C:178
 msgid "YUV color range:"
-msgstr "Plage de couleur YUV"
+msgstr "Plage de couleur YUV :"
 
 #: cinelerra/appearanceprefs.C:416
 msgid "Use thumbnails in resource window"

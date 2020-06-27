@@ -234,8 +234,23 @@ void Edit::insert_transition(char *title)
 
 void Edit::detach_transition()
 {
-	if(transition) delete transition;
+	delete transition;
 	transition = 0;
+	if( edl->session->gang_tracks == GANG_NONE ) return;
+	double pos = track->from_units(startproject);
+	Track *current = edl->tracks->first;
+	for( ; current; current=current->next ) {
+		if( current == track ) continue;
+		if( current->data_type != track->data_type ) continue;
+		if( !current->armed_gang(track) ) continue;
+		int64_t track_pos = current->to_units(pos, 1);
+		Edit *edit = current->edits->editof(track_pos, PLAY_FORWARD, 0);
+		if( !edit ) continue;
+		double edit_pos = track->from_units(edit->startproject);
+		if( !edl->equivalent(pos, edit_pos) ) continue;
+		delete edit->transition;
+		edit->transition = 0;
+	}
 }
 
 int Edit::silence()

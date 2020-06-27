@@ -372,25 +372,39 @@ void Tracks::set_transition_length(double start, double end, double length)
 void Tracks::set_transition_length(Transition *transition, double length)
 {
 // Must verify existence of transition
-	int done = 0;
-	if(!transition) return;
-	for(Track *current_track = first;
-		current_track && !done;
-		current_track = current_track->next)
-	{
-		for(Edit *current_edit = current_track->edits->first;
-			current_edit && !done;
-			current_edit = current_edit->next)
-		{
-			if(current_edit->transition == transition)
-			{
-				transition->length = current_track->to_units(length, 1);
-				if( current_edit == current_track->edits->last &&
-				    current_edit->silence() ) {
-					current_edit->length = current_edit->transition->length;
+	int found = 0;
+	if( !transition ) return;
+	for( Track *track=first; track && !found; track=track->next ) {
+		for( Edit *edit=track->edits->first; edit && !found; edit = edit->next ) {
+			if( edit->transition == transition ) {
+				transition->length = track->to_units(length, 1);
+				if( edit == track->edits->last && edit->silence() ) {
+					edit->length = edit->transition->length;
 				}
-				done = 1;
+				found = 1;
 			}
+		}
+	}
+	if( !found ) return;
+	if( edl->session->gang_tracks == GANG_NONE ) return;
+	Track *track = transition->edit->track;
+	double pos = track->from_units(transition->edit->startproject);
+	Track *current = edl->tracks->first;
+	for( ; current; current=current->next ) {
+		if( current == track ) continue;
+		if( current->data_type != track->data_type ) continue;
+		if( !current->armed_gang(track) ) continue;
+		int64_t track_pos = current->to_units(pos, 1);
+		Edit *edit = current->edits->editof(track_pos, PLAY_FORWARD, 0);
+		if( !edit || !edit->transition ) continue;
+		double edit_pos = track->from_units(edit->startproject);
+		if( !edl->equivalent(pos, edit_pos) ) continue;
+// modify gang same transitions at same position
+		if( edit->transition->Plugin::identical(transition) ) {
+			edit->transition->length = transition->length;
+		}
+		if( edit == track->edits->last && edit->silence() ) {
+			edit->length = edit->transition->length;
 		}
 	}
 }
@@ -1060,6 +1074,20 @@ void Tracks::paste_automation(double selectionstart,
 void Tracks::paste_transition(PluginServer *server, Edit *dest_edit)
 {
 	dest_edit->insert_transition(server->title);
+	if( edl->session->gang_tracks == GANG_NONE ) return;
+	Track *track = dest_edit->track;
+	double pos = track->from_units(dest_edit->startproject);
+	for( Track *current=first; current; current=current->next ) {
+		if( current == track ) continue;
+		if( current->data_type != track->data_type ) continue;
+		if( !current->armed_gang(track) ) continue;
+		int64_t track_pos = current->to_units(pos, 1);
+		Edit *edit = current->edits->editof(track_pos, PLAY_FORWARD, 0);
+		if( !edit ) continue;
+		double edit_pos = track->from_units(edit->startproject);
+		if( !edl->equivalent(pos, edit_pos) ) continue;
+		edit->insert_transition(server->title);
+	}
 }
 
 void Tracks::paste_video_transition(PluginServer *server, int first_track)

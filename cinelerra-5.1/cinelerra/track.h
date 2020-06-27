@@ -141,7 +141,8 @@ public:
 
 // detach shared effects referencing module
 	void detach_shared_effects(int module);
-
+// detach all corresponding effects in gang
+	void detach_ganged_effects(Plugin *plugin);
 
 // Called by playable tracks to test for playable server.
 // Descends the plugin tree without creating a virtual console.

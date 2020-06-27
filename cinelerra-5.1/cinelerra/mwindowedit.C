@@ -774,17 +774,17 @@ void MWindow::insert_effects_canvas(Track *dest_track, double start, double leng
 	for( Track *track=dest_track; track; track=track->next ) {
 		if( gang && track->master && !first_track ) break;
 		if( track->data_type != data_type ) continue;
-		if( !track->armed ) continue;
+		if( !track->is_armed() ) continue;
 		int module = edl->tracks->number_of(track);
 		for( int i=0; i<session->drag_pluginservers->total; ++i ) {
 			PluginServer *plugin = session->drag_pluginservers->values[i];
-			int shared = gang && plugin->multichannel ? 1 : 0;
+			int shared = gang; // && plugin->multichannel ? 1 : 0;
 			int plugin_type = !first_track && shared ?
 				PLUGIN_SHAREDPLUGIN : PLUGIN_STANDALONE;
 			SharedLocation *shared_location = !first_track ?
 				&shared_locations[i] : &shared_locations.append();
 			insert_effect(plugin->title, shared_location, track,
-				pluginset, start, length, plugin_type);
+					pluginset, start, length, plugin_type);
 			if( first_track && shared ) {
 				shared_location->module = module;
 				shared_location->plugin = pluginset ?
@@ -829,38 +829,34 @@ void MWindow::insert_effect(char *title, SharedLocation *shared_location,
 	SharedLocation shared_location_local;
 	shared_location_local.copy_from(shared_location);
 	int first_track = 1;
+	double start_pos = edl->local_session->get_selectionstart(1);
+	double end_pos = edl->local_session->get_selectionend(1);
 	for( ; current; current=NEXT ) {
-		if( current->data_type == data_type && current->is_armed() ) {
-			double start =  edl->local_session->get_selectionstart(1);
-			double end = edl->local_session->get_selectionend(1);
-			double length = end - start;
-			if( start >= end ) {
-				start = 0;
-				length = current->get_length();
-			}
-			insert_effect(title, &shared_location_local,
+		if( current->data_type != data_type ) continue;
+		if( !current->is_armed() ) continue;
+		double start = start_pos, end = end_pos;
+		if( plugin_type == PLUGIN_STANDALONE && start >= end ) {
+			start = 0;
+			end = current->get_length();
+		}
+		double length = end - start;
+		insert_effect(title, &shared_location_local,
 				current, 0, start, length, plugin_type);
-
-			if( first_track ) {
-				if( plugin_type == PLUGIN_STANDALONE && single_standalone ) {
-					plugin_type = PLUGIN_SHAREDPLUGIN;
-					shared_location_local.module = edl->tracks->number_of(current);
-					shared_location_local.plugin = current->plugin_set.total - 1;
-				}
-				first_track = 0;
+		if( first_track ) {
+			if( plugin_type == PLUGIN_STANDALONE && single_standalone ) {
+				plugin_type = PLUGIN_SHAREDPLUGIN;
+				shared_location_local.module = edl->tracks->number_of(current);
+				shared_location_local.plugin = current->plugin_set.total - 1;
+				start_pos = start;  end_pos = end;
 			}
+			first_track = 0;
 		}
 	}
 }
 
-
 void MWindow::insert_effect(char *title,
-	SharedLocation *shared_location,
-	Track *track,
-	PluginSet *plugin_set,
-	double start,
-	double length,
-	int plugin_type)
+		SharedLocation *shared_location, Track *track, PluginSet *plugin_set,
+		double start, double length, int plugin_type)
 {
 	KeyFrame *default_keyframe = 0;
 	PluginServer *server = 0;
@@ -873,9 +869,8 @@ void MWindow::insert_effect(char *title,
 		server->save_data(default_keyframe);
 	}
 // Insert plugin object
-	track->insert_effect(title, shared_location,
-		default_keyframe, plugin_set,
-		start, length, plugin_type);
+	track->insert_effect(title, shared_location, default_keyframe,
+			plugin_set, start, length, plugin_type);
 	track->optimize();
 
 	if( plugin_type == PLUGIN_STANDALONE ) {
