@@ -271,7 +271,7 @@ public:
 	int drag_stop();
 // Collect items into the drag vectors of MainSession
 	void collect_assets(int proxy=0);
-	EDL *collect_proxy(Indexable *indexable);
+	EDL *collect_proxy(Asset *asset);
 	void create_persistent_folder(ArrayList<BC_ListBoxItem*> *output,
 		int do_audio,
 		int do_video,

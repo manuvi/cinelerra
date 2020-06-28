@@ -147,8 +147,8 @@ public:
 
 	int actual_width, actual_height;
 	int width, height;
-// scale factor or 0 if not proxy
-	int proxy_scale;
+// scale factor or 0 if not proxy, proxy_edl if proxyed from nested_edl
+	int proxy_scale, proxy_edl;
 // String or FourCC describing compression
 	char vcodec[BCTEXTLEN];
 

@@ -229,11 +229,11 @@ void ProxyRender::to_proxy_path(char *new_path, Indexable *indexable, int scale)
 //printf("ProxyRender::to_proxy_path %d %s %s\n", __LINE__, new_path), asset->path);
 }
 
-int ProxyRender::from_proxy_path(char *new_path, Indexable *indexable, int scale)
+int ProxyRender::from_proxy_path(char *new_path, Asset *asset, int scale)
 {
 	char prxy[BCTEXTLEN];
 	int n = sprintf(prxy, ".proxy%d", scale);
-	strcpy(new_path, indexable->path);
+	strcpy(new_path, asset->path);
 	char *ptr = strstr(new_path, prxy);
 	if( !ptr || (ptr[n] != '-' && ptr[n] != '.') ) return 1;
 // remove proxy, path.proxy#-sfx.ext => path.sfx
@@ -242,6 +242,12 @@ int ProxyRender::from_proxy_path(char *new_path, Indexable *indexable, int scale
 	char *cp = ptr + n;
 	for( *cp='.'; cp<ext; ++cp ) *ptr++ = *cp;
 	*ptr = 0;
+	if( asset->proxy_edl ) {
+		if( (cp = strrchr(new_path, '/')) != 0 ) {
+			for( ptr=new_path; *++cp; ) *ptr++ = *cp;
+			*ptr = 0;
+		}
+	}
 	return 0;
 }
 
@@ -307,6 +313,7 @@ Asset *ProxyRender::add_original(Indexable *idxbl, int new_scale)
 			proxy->video_length = video_frames;
 		}
 		proxy->folder_no = AW_PROXY_FOLDER;
+		proxy->proxy_edl = !idxbl->is_asset ? 1 : 0;
 		proxy->audio_data = 0;
 		proxy->video_data = 1;
 		proxy->layers = 1;

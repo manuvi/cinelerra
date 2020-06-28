@@ -165,6 +165,7 @@ void Asset::reset_video()
 	actual_width = width = 0;
 	actual_height = height = 0;
 	proxy_scale = 0; // not a proxy
+	proxy_edl = 0; // not proxy from edl
 	video_length = 0;
 	single_frame = 0;
 	vmpeg_cmodel = BC_YUV420P;
@@ -226,6 +227,7 @@ void Asset::copy_format(Asset *asset, int do_index)
 	actual_width = asset->actual_width;
 	actual_height = asset->actual_height;
 	proxy_scale = asset->proxy_scale;
+	proxy_edl = asset->proxy_edl;
 	strcpy(vcodec, asset->vcodec);
 	strcpy(acodec, asset->acodec);
 
@@ -470,6 +472,7 @@ int Asset::read_video(FileXML *file)
 	height = file->tag.get_property("HEIGHT", height);
 	width = file->tag.get_property("WIDTH", width);
 	proxy_scale = file->tag.get_property("PROXY_SCALE", 0);
+	proxy_edl = file->tag.get_property("PROXY_EDL", 0);
 	layers = file->tag.get_property("LAYERS", layers);
 	program = file->tag.get_property("PROGRAM", program);
 // This is loaded from the index file after the EDL but this
@@ -638,6 +641,7 @@ int Asset::write_video(FileXML *file)
 	file->tag.set_property("HEIGHT", height);
 	file->tag.set_property("WIDTH", width);
 	file->tag.set_property("PROXY_SCALE", proxy_scale);
+	file->tag.set_property("PROXY_EDL", proxy_edl);
 	file->tag.set_property("LAYERS", layers);
 	file->tag.set_property("PROGRAM", program);
 	file->tag.set_property("FRAMERATE", frame_rate);
@@ -741,6 +745,7 @@ void Asset::load_defaults(BC_Hash *defaults,
 		actual_height = GET_DEFAULT("ACTUAL_HEIGHT", actual_height);
 		actual_width = GET_DEFAULT("ACTUAL_WIDTH", actual_width);
 		proxy_scale = GET_DEFAULT("PROXY_SCALE", proxy_scale);
+		proxy_edl = GET_DEFAULT("PROXY_SCALE", proxy_edl);
 		program = GET_DEFAULT("PROGRAM", program);
 		layers = GET_DEFAULT("LAYERS", layers);
 		if(EQUIV(frame_rate, 0)) frame_rate = GET_DEFAULT("FRAMERATE", frame_rate);
@@ -944,6 +949,7 @@ void Asset::save_defaults(BC_Hash *defaults,
 		UPDATE_DEFAULT("ACTUAL_HEIGHT", actual_height);
 		UPDATE_DEFAULT("ACTUAL_WIDTH", actual_width);
 		UPDATE_DEFAULT("PROXY_SCALE", proxy_scale);
+		UPDATE_DEFAULT("PROXY_EDL", proxy_edl);
 		UPDATE_DEFAULT("PROGRAM", program);
 		UPDATE_DEFAULT("LAYERS", layers);
 		UPDATE_DEFAULT("FRAMERATE", frame_rate);
@@ -989,9 +995,9 @@ int Asset::dump(FILE *fp)
 		" height %d vcodec %s aspect_ratio %f ilace_mode %s\n",
 		video_data, layers, program, frame_rate, width, height,
 		vcodec, aspect_ratio,string);
-	fprintf(fp,"   actual_width %d actual_height %d proxy_scale %d"
+	fprintf(fp,"   actual_width %d actual_height %d proxy_scale %d proxy_edl %d"
 		" video_length %jd repeat %d\n",
-		actual_width, actual_height, proxy_scale, video_length,
+		actual_width, actual_height, proxy_scale, proxy_edl, video_length,
 		single_frame);
 	fprintf(fp,"   video_length %jd repeat %d\n", video_length, single_frame);
 	fprintf(fp,"   mov_sphere=%d jpeg_sphere=%d\n", mov_sphere, jpeg_sphere);

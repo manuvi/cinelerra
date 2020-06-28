@@ -601,7 +601,7 @@ void EDL::copy_indexables(EDL *edl)
 	}
 }
 
-EDL *EDL::new_nested_edl(EDL *edl, const char *path)
+EDL *EDL::new_nested_clip(EDL *edl, const char *path)
 {
 	EDL *nested = new EDL;  // no parent for nested edl
 	nested->create_objects();
@@ -614,19 +614,14 @@ EDL *EDL::new_nested_edl(EDL *edl, const char *path)
 	return nested;
 }
 
-EDL *EDL::get_nested_edl()
+EDL *EDL::get_nested_edl(const char *path)
 {
-	Track *track = tracks->first;
-	Edit *edit = track ? track->edits->first : 0;
-	EDL *nested = edit && !edit->next && !edit->asset ? edit->nested_edl : 0;
-	while( nested && (track=track->next)!=0 ) {
-		Edit *edit = track->edits->first;
-		if( !edit || edit->next ||
-		    ( edit->nested_edl != nested &&
-		      strcmp(edit->nested_edl->path, nested->path) ) )
-			nested = 0;
+	for( int i=0; i<nested_edls.size(); ++i ) {
+		EDL *nested_edl = nested_edls[i];
+		if( !strcmp(path, nested_edl->path) )
+			return nested_edl;
 	}
-	return nested;
+	return 0;
 }
 
 
@@ -642,8 +637,8 @@ void EDL::create_nested(EDL *nested)
 {
 	int video_tracks = 0, audio_tracks = 0;
 	for( Track *track=nested->tracks->first; track!=0; track=track->next ) {
-		if( track->data_type == TRACK_VIDEO && track->is_armed() ) ++video_tracks;
-		if( track->data_type == TRACK_AUDIO && track->is_armed() ) ++audio_tracks;
+		if( track->data_type == TRACK_VIDEO && track->play ) ++video_tracks;
+		if( track->data_type == TRACK_AUDIO && track->play ) ++audio_tracks;
 	}
 // renderengine properties
 	if( video_tracks > 0 )

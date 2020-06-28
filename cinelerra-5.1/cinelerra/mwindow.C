@@ -2492,8 +2492,6 @@ int MWindow::to_proxy(Asset *asset, int new_scale, int new_use_scaler)
 		for( int i=0,n=edl->nested_edls.size(); i<n; ++i ) {
 			EDL *orig_nested = edl->nested_edls[i];
 			char new_path[BCTEXTLEN];
-			if( !ProxyRender::from_proxy_path(new_path, orig_nested, proxy_scale) )
-				continue;
 			proxy_render.to_proxy_path(new_path, orig_nested, proxy_scale);
 // test if proxy asset was already added to proxy_assets
 			int got_it = 0;
@@ -3431,7 +3429,7 @@ int MWindow::get_hash_color(Edit *edit)
 	char path[BCTEXTLEN];
 	if( !edit->asset || edit->track->data_type != TRACK_VIDEO ||
 	    edl->session->proxy_scale == 1 ||
-	    ProxyRender::from_proxy_path(path, idxbl, edl->session->proxy_scale) )
+	    ProxyRender::from_proxy_path(path, (Asset*)idxbl, edl->session->proxy_scale) )
 		strcpy(path, idxbl->path);
 	char *cp = strrchr(path, '/');
 	cp = !cp ? path : cp+1;
@@ -4004,7 +4002,7 @@ void MWindow::clip_to_media()
 		char *bp = strrchr(clip->local_session->clip_title, '/');
 		bp = bp ? bp+1 : clip->local_session->clip_title;
 		cp += snprintf(cp, ep-cp, "%s", bp);
-		EDL *nested = edl->new_nested_edl(clip, path);
+		EDL *nested = edl->new_nested_clip(clip, path);
 		edl->clips.remove(clip);
 		clip->remove_user();
 		mainindexes->add_indexable(nested);

@@ -2210,14 +2210,16 @@ void AWindowGUI::sort_folders()
 	update_assets();
 }
 
-EDL *AWindowGUI::collect_proxy(Indexable *indexable)
+EDL *AWindowGUI::collect_proxy(Asset *proxy_asset)
 {
-	Asset *proxy_asset = (Asset *)indexable;
 	char path[BCTEXTLEN];
 	int proxy_scale = mwindow->edl->session->proxy_scale;
 	ProxyRender::from_proxy_path(path, proxy_asset, proxy_scale);
-	Asset *unproxy_asset = mwindow->edl->assets->get_asset(path);
-	if( !unproxy_asset || !unproxy_asset->layers ) return 0;
+	Indexable *unproxy_idxbl =
+		proxy_asset->proxy_edl ?
+			(Indexable *) mwindow->edl->get_nested_edl(path) :
+			(Indexable *) mwindow->edl->assets->get_asset(path);
+	if( !unproxy_idxbl || !unproxy_idxbl->get_video_layers() ) return 0;
 // make a clip from proxy video tracks and unproxy audio tracks
 	EDL *proxy_edl = new EDL(mwindow->edl);
 	proxy_edl->create_objects();
@@ -2226,7 +2228,7 @@ EDL *AWindowGUI::collect_proxy(Indexable *indexable)
 	strcpy(proxy_edl->local_session->clip_title, path);
 	strcpy(proxy_edl->local_session->clip_notes, _("Proxy clip"));
 	proxy_edl->session->video_tracks = proxy_asset->layers;
-	proxy_edl->session->audio_tracks = unproxy_asset->channels;
+	proxy_edl->session->audio_tracks = unproxy_idxbl->get_audio_channels();
 	proxy_edl->create_default_tracks();
 	double length = proxy_asset->frame_rate > 0 ?
 		( proxy_asset->video_length >= 0 ?
@@ -2240,11 +2242,15 @@ EDL *AWindowGUI::collect_proxy(Indexable *indexable)
 		if( current->data_type != TRACK_VIDEO ) continue;
 		current->insert_asset(proxy_asset, 0, length, 0, vtrack++);
 	}
-	length = (double)unproxy_asset->audio_length / unproxy_asset->sample_rate;
+	int64_t samples = unproxy_idxbl->get_audio_samples();
+	int sample_rate = unproxy_idxbl->get_sample_rate();
+	length = sample_rate > 0 ? (double)samples / sample_rate : 0;
 	current = proxy_edl->tracks->first;
 	for( int atrack=0; current; current=NEXT ) {
 		if( current->data_type != TRACK_AUDIO ) continue;
-		current->insert_asset(unproxy_asset, 0, length, 0, atrack++);
+		Asset *asset = unproxy_idxbl->is_asset ? (Asset *)unproxy_idxbl : 0;
+		EDL *nested_edl = unproxy_idxbl->is_asset ? 0 : (EDL *)unproxy_idxbl;
+		current->insert_asset(asset, nested_edl, length, 0, atrack++);
 	}
 	proxy_edl->folder_no = AW_PROXY_FOLDER;
 	return proxy_edl;
@@ -2260,7 +2266,7 @@ void AWindowGUI::collect_assets(int proxy)
 		Indexable *indexable = result->indexable;
 		if( proxy && indexable && indexable->is_asset &&
 		    indexable->folder_no == AW_PROXY_FOLDER ) {
-			EDL *drag_edl = collect_proxy(indexable);
+			EDL *drag_edl = collect_proxy((Asset*)indexable);
 			if( drag_edl ) mwindow->session->drag_clips->append(drag_edl);
 			continue;
 		}
@@ -2822,8 +2828,8 @@ int AWindowAssets::handle_event()
 		break;
 	}
 	if( !vwindow || !vwindow->is_running() ) return 1;
-	if( proxy && picon_idxbl ) {
-		picon_edl = gui->collect_proxy(picon_idxbl);
+	if( proxy && picon_idxbl && picon_idxbl->is_asset ) {
+		picon_edl = gui->collect_proxy((Asset*)picon_idxbl);
 		picon_idxbl = 0;
 	}
 
