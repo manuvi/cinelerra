@@ -313,6 +313,8 @@ BC_Signals::~BC_Signals()
 }
 
 
+int dump_xerror = -1;
+
 int BC_Signals::x_error_handler(Display *display, XErrorEvent *event)
 {
 	char string[1024];
@@ -320,6 +322,12 @@ int BC_Signals::x_error_handler(Display *display, XErrorEvent *event)
 	fprintf(stderr, "BC_Signals::x_error_handler: error_code=%d opcode=%d,%d id=0x%jx %s\n",
 		event->error_code, event->request_code, event->minor_code,
 		(int64_t)event->resourceid, string);
+	if( dump_xerror < 0 ) {
+		char *env = getenv("BC_TRACE_XERROR");
+		dump_xerror = !env || !atoi(env) ? 0 : 1;
+	}
+	if( dump_xerror )
+		dump_stack();
 	return 0;
 }
 

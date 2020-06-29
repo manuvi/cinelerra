@@ -1314,13 +1314,20 @@ int EditPanelScope::handle_event()
 	return 1;
 }
 
+const char *EditPanelGangTracks::gang_tips[TOTAL_GANGS] = {
+	N_("Currently: Gang None\n  Click to: Gang Channels"),
+	N_("Currently: Gang Channels\n  Click to: Gang Media"),
+	N_("Currently: Gang Media\n  Click to: Gang None"),
+};
+
 EditPanelGangTracks::EditPanelGangTracks(MWindow *mwindow, EditPanel *panel,
 		int x, int y)
  : BC_Button(x, y, get_images(mwindow))
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	set_tooltip(_("Gang Tracks"));
+	int gang = mwindow->edl->session->gang_tracks;
+	set_tooltip(_(gang_tips[gang]));
 }
 
 EditPanelGangTracks::~EditPanelGangTracks()
@@ -1342,6 +1349,7 @@ void EditPanelGangTracks::update(int gang)
 {
 	set_images(gang_images[gang]);
 	draw_face();
+	set_tooltip(_(gang_tips[gang]));
 }
 
 int EditPanelGangTracks::handle_event()

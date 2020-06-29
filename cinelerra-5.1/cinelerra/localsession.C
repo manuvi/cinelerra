@@ -347,9 +347,9 @@ int LocalSession::load_defaults(BC_Hash *defaults)
 //	track_start = defaults->get("TRACK_START", 0);
 //	view_start = defaults->get("VIEW_START", 0);
 	zoom_sample = defaults->get("ZOOM_SAMPLE", DEFAULT_ZOOM_TIME);
-	zoom_y = defaults->get("ZOOMY", 64);
+	zoom_y = defaults->get("ZOOMY", DEFAULT_ZOOM_TRACK);
 	int64_t zoom_track = defaults->get("ZOOM_TRACK", 0);
-	if( zoom_track == 0 ) zoom_track = 64;
+	if( zoom_track == 0 ) zoom_track = DEFAULT_ZOOM_TRACK;
 	zoom_atrack = defaults->get("ZOOM_ATRACK", zoom_track);
 	zoom_vtrack = defaults->get("ZOOM_VTRACK", zoom_track);
 	red = defaults->get("RED", 0.0);

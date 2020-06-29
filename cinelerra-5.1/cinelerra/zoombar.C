@@ -388,6 +388,8 @@ AmpZoomPanel::AmpZoomPanel(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
 }
 int AmpZoomPanel::handle_event()
 {
+	if( zoombar->shift_down() )
+		update(DEFAULT_ZOOM_TRACK);
 	mwindow->zoom_amp((int64_t)get_value());
 	return 1;
 }
@@ -401,6 +403,8 @@ ATrackZoomPanel::ATrackZoomPanel(MWindow *mwindow, ZoomBar *zoombar, int x, int 
 }
 int ATrackZoomPanel::handle_event()
 {
+	if( zoombar->shift_down() )
+		update(DEFAULT_ZOOM_TRACK);
 	mwindow->zoom_atrack((int64_t)get_value());
 	zoombar->amp_zoom->update(mwindow->edl->local_session->zoom_y);
 	return 1;
@@ -415,6 +419,8 @@ VTrackZoomPanel::VTrackZoomPanel(MWindow *mwindow, ZoomBar *zoombar, int x, int 
 }
 int VTrackZoomPanel::handle_event()
 {
+	if( zoombar->shift_down() )
+		update(DEFAULT_ZOOM_TRACK);
 	mwindow->zoom_vtrack((int64_t)get_value());
 	return 1;
 }

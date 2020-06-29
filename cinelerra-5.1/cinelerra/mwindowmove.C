@@ -356,17 +356,13 @@ void MWindow::zoom_amp(int64_t zoom_amp)
 void MWindow::zoom_atrack(int64_t zoom)
 {
 	int64_t old_zoom = edl->local_session->zoom_atrack;
-// scale waveforms
-	edl->local_session->zoom_y = (int64_t)((float)edl->local_session->zoom_y *
-			zoom / old_zoom);
-	CLAMP(edl->local_session->zoom_y, MIN_AMP_ZOOM, MAX_AMP_ZOOM);
+	CLAMP(zoom, MIN_TRACK_ZOOM, MAX_TRACK_ZOOM);
+	edl->local_session->zoom_atrack = zoom;
 
-// scale tracks
 	edl->local_session->zoom_atrack = zoom;
 	for( Track *track= edl->tracks->first; track; track=track->next ) {
 		if( track->data_type != TRACK_AUDIO ) continue;
-		track->data_h = track->data_h * zoom / old_zoom;
-		bclamp(track->data_h, MIN_TRACK_ZOOM, MAX_TRACK_ZOOM);
+		track->data_h = zoom;
 	}
 // shift row position
 	for( int i=0; i<TOTAL_PANES; ++i ) edl->local_session->track_start[i] =
@@ -378,12 +374,12 @@ void MWindow::zoom_atrack(int64_t zoom)
 void MWindow::zoom_vtrack(int64_t zoom)
 {
 	int64_t old_zoom = edl->local_session->zoom_vtrack;
-// scale tracks
+	CLAMP(zoom, MIN_TRACK_ZOOM, MAX_TRACK_ZOOM);
 	edl->local_session->zoom_vtrack = zoom;
+
 	for( Track *track= edl->tracks->first; track; track=track->next ) {
 		if( track->data_type != TRACK_VIDEO ) continue;
-		track->data_h = track->data_h * zoom / old_zoom;
-		bclamp(track->data_h, MIN_TRACK_ZOOM, MAX_TRACK_ZOOM);
+		track->data_h = zoom;
 	}
 // shift row position
 	for( int i=0; i<TOTAL_PANES; ++i ) edl->local_session->track_start[i] =

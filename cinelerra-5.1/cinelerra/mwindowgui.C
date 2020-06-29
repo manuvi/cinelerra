@@ -316,7 +316,7 @@ int MWindowGUI::resize_event(int w, int h)
 //printf("MWindowGUI::resize_event %d\n", __LINE__);
 	mwindow->session->mwindow_w = w;
 	mwindow->session->mwindow_h = h;
-	int x1 = get_w() - MainShBtns::calculate_w(-1, 0, -1) - xS(5);
+	int x1 = w - MainShBtns::calculate_w(-1, 0, -1) - xS(5);
 	mainshbtns->reposition_window(x1, -1);
 	int x2 = x1 - mwindow->theme->stack_button_w - xS(5);
 	stack_button->reposition_window(x2, stack_button->get_y());

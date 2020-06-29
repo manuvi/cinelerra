@@ -208,9 +208,9 @@ public:
 	void set_view_popup(AssetVIcon *v, int draw_mode);
 	void set_view_popup(AssetVIcon *v);
 	ViewPopup *new_view_window(ViewPopup *popup);
+	void stop_vicon_drawing(int wait=0);
 	void drawing_started();
 	void drawing_stopped();
-	void close_view_popup();
 
 	AWindowGUI *gui;
 	int draw_mode;
@@ -288,8 +288,7 @@ public:
 	int save_defaults(BC_Hash *defaults);
 	int load_defaults(BC_Hash *defaults);
 	int start_vicon_drawing();
-	int stop_vicon_drawing();
-	void close_view_popup();
+	int stop_vicon_drawing(int wait=0);
 	void update_picon(Indexable *indexable);
 	int cycle_assetlist_format();
 	void hide_tip_info();

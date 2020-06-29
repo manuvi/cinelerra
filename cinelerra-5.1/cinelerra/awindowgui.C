@@ -29,8 +29,9 @@
 #include "awindow.h"
 #include "awindowgui.h"
 #include "bccmodels.h"
-#include "bcsignals.h"
 #include "bchash.h"
+#include "bcsignals.h"
+#include "bctimer.h"
 #include "binfolder.h"
 #include "cache.h"
 #include "cstrdup.h"
@@ -170,6 +171,8 @@ VFrame *AssetVIcon::frame()
 		if( !temp )
 			temp = new VFrame(0, -1, asset->width, asset->height, BC_RGB888, -1);
 		File *file = mwindow->video_cache->check_out(asset, mwindow->edl, 1);
+		if( !file ) { broken = 1;  return 0; }
+		Timer timer;
 		while( file && seq_no >= images.size() && !avt->interrupted ) {
 			int64_t pos = images.size() / picon->gui->vicon_thread->refresh_rate * frame_rate;
 			file->set_video_position(pos,0);
@@ -177,14 +180,15 @@ VFrame *AssetVIcon::frame()
 			if( file->read_frame(temp) ) temp->clear_frame();
 			add_image(temp, vw, vh, vicon_cmodel);
 			mwindow->video_cache->check_in(asset);
+			if( timer.get_difference() > 500 ) return 0;
 			Thread::yield();
-			file = 0;
-			for( int retries=1000; !file && --retries>=0; usleep(10000) ) {
+			file = mwindow->video_cache->check_out(asset, mwindow->edl, 0);
+			for( int retries=10; !file && --retries>=0; usleep(1000) ) {
 				if( avt->interrupted ) return 0;
 				file = mwindow->video_cache->check_out(asset, mwindow->edl, 0);
 			}
+			if( !file ) return 0;
 		}
-		if( !file ) { broken = 1;  return 0; }
 		mwindow->video_cache->check_in(asset);
 	}
 	if( seq_no >= images.size() ) return 0;
@@ -684,11 +688,13 @@ ViewPopup *AssetVIconThread::new_view_window(ViewPopup *vpopup)
 	return av_popup;
 }
 
-void AssetVIconThread::close_view_popup()
+void AssetVIconThread::stop_vicon_drawing(int wait)
 {
 	stop_drawing();
-	drawing_started(); // waits for draw lock
-	drawing_stopped();
+	if( wait ) {
+		drawing_started(); // waits for draw lock
+		drawing_stopped();
+	}
 }
 
 
@@ -1698,17 +1704,12 @@ int AWindowGUI::start_vicon_drawing()
 	return 1;
 }
 
-int AWindowGUI::stop_vicon_drawing()
+int AWindowGUI::stop_vicon_drawing(int wait)
 {
-	if( !vicon_thread->interrupted )
-		vicon_thread->stop_drawing();
+	vicon_thread->stop_vicon_drawing(wait);
 	return 0;
 }
 
-void AWindowGUI::close_view_popup()
-{
-	vicon_thread->close_view_popup();
-}
 
 VFrame *AssetPicon::get_vicon_frame()
 {

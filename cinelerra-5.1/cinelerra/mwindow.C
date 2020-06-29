@@ -4465,7 +4465,9 @@ int MWindow::create_aspect_ratio(float &w, float &h, int width, int height)
 
 void MWindow::reset_caches()
 {
-	awindow->gui->stop_vicon_drawing();
+	int locked  = gui->get_window_lock();
+	if( locked ) gui->unlock_window();
+	awindow->gui->stop_vicon_drawing(1);
 	frame_cache->remove_all();
 	wave_cache->remove_all();
 	audio_cache->remove_all();
@@ -4485,11 +4487,12 @@ void MWindow::reset_caches()
 		if( vwindow->playback_engine->video_cache )
 			vwindow->playback_engine->video_cache->remove_all();
 	}
+	if( locked ) gui->lock_window("MWindow::reset_caches");
 }
 
 void MWindow::remove_from_caches(Indexable *idxbl)
 {
-	awindow->gui->stop_vicon_drawing();
+	awindow->gui->stop_vicon_drawing(1);
 	frame_cache->remove_item(idxbl);
 	wave_cache->remove_item(idxbl);
 	if( gui->render_engine &&
@@ -4529,7 +4532,7 @@ void MWindow::remove_from_caches(Indexable *idxbl)
 void MWindow::remove_assets_from_project(int push_undo, int redraw, int delete_indexes,
 		ArrayList<Indexable*> *drag_assets, ArrayList<EDL*> *drag_clips)
 {
-	awindow->gui->stop_vicon_drawing();
+	awindow->gui->stop_vicon_drawing(1);
 
 // Remove from VWindow.
 	if( drag_clips ) {

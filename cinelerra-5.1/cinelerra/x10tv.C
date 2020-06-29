@@ -118,7 +118,7 @@ X10TV *X10TV::probe(MWindow *mwindow)
 {
 	int ver = -1, ifds[16];
 	int nfds = open_usb_inputs(0x0bc7, 0x0004, ver, ifds, 16);
-	if( !nfds ) return 0;
+	if( nfds <= 0 ) return 0;
 	printf("detected ATI X10 remote, ver=0x%04x\n", ver);
 	return new X10TV(mwindow, ifds, nfds);
 }

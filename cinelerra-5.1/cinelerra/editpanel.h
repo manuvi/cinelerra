@@ -382,6 +382,7 @@ public:
 class EditPanelGangTracks : public BC_Button
 {
 	static VFrame **gang_images[TOTAL_GANGS];
+	static const char *gang_tips[TOTAL_GANGS];
 public:
 	EditPanelGangTracks(MWindow *mwindow, EditPanel *panel, int x, int y);
 	~EditPanelGangTracks();
