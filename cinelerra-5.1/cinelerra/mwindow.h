@@ -408,13 +408,13 @@ public:
 		AUDIO_5_1_TO_2,
 		AUDIO_1_TO_1
 	};
-	void add_audio_track_entry(int above, Track *dst);
-	int add_audio_track(int above, Track *dst);
 	void add_clip_to_edl(EDL *edl);
-	void add_video_track_entry(Track *dst = 0);
-	int add_video_track(int above, Track *dst);
-	void add_subttl_track_entry(Track *dst = 0);
-	int add_subttl_track(int above, Track *dst);
+	void add_audio_track_entry(int above, Track *dst);
+	Track *add_audio_track(int above, Track *dst);
+	void add_video_track_entry(int above, Track *dst);
+	Track *add_video_track(int above, Track *dst);
+	void add_subttl_track_entry(int above, Track *dst);
+	Track *add_subttl_track(int above, Track *dst);
 
 	void asset_to_all();
 	void asset_to_size();

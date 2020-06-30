@@ -85,7 +85,8 @@
 void MWindow::add_audio_track_entry(int above, Track *dst)
 {
 	undo_before();
-	add_audio_track(above, dst);
+	Track *track = add_audio_track(above, dst);
+	track->master = 1;
 	save_backup();
 	undo_after(_("add track"), LOAD_ALL);
 
@@ -95,10 +96,11 @@ void MWindow::add_audio_track_entry(int above, Track *dst)
 	cwindow->refresh_frame(CHANGE_EDL);
 }
 
-void MWindow::add_video_track_entry(Track *dst)
+void MWindow::add_video_track_entry(int above, Track *dst)
 {
 	undo_before();
-	add_video_track(1, dst);
+	Track *track = add_video_track(above, dst);
+	track->master = 1;
 	undo_after(_("add track"), LOAD_ALL);
 
 	restart_brender();
@@ -109,10 +111,11 @@ void MWindow::add_video_track_entry(Track *dst)
 	save_backup();
 }
 
-void MWindow::add_subttl_track_entry(Track *dst)
+void MWindow::add_subttl_track_entry(int above, Track *dst)
 {
 	undo_before();
-	add_subttl_track(1, dst);
+	Track *track = add_subttl_track(above, dst);
+	track->master = 1;
 	undo_after(_("add track"), LOAD_ALL);
 
 	restart_brender();
@@ -124,28 +127,28 @@ void MWindow::add_subttl_track_entry(Track *dst)
 }
 
 
-int MWindow::add_audio_track(int above, Track *dst)
+Track *MWindow::add_audio_track(int above, Track *dst)
 {
-	edl->tracks->add_audio_track(above, dst);
+	Track *track = edl->tracks->add_audio_track(above, dst);
 	edl->tracks->update_y_pixels(theme);
 	save_backup();
-	return 0;
+	return track;
 }
 
-int MWindow::add_video_track(int above, Track *dst)
+Track *MWindow::add_video_track(int above, Track *dst)
 {
-	edl->tracks->add_video_track(above, dst);
+	Track *track = edl->tracks->add_video_track(above, dst);
 	edl->tracks->update_y_pixels(theme);
 	save_backup();
-	return 0;
+	return track;
 }
 
-int MWindow::add_subttl_track(int above, Track *dst)
+Track *MWindow::add_subttl_track(int above, Track *dst)
 {
-	edl->tracks->add_subttl_track(above, dst);
+	Track *track = edl->tracks->add_subttl_track(above, dst);
 	edl->tracks->update_y_pixels(theme);
 	save_backup();
-	return 0;
+	return track;
 }
 
 void MWindow::asset_to_all()

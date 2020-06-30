@@ -1158,7 +1158,7 @@ AddVideoTrack::AddVideoTrack(MWindow *mwindow)
 int AddVideoTrack::handle_event()
 {
 	if( mwindow->session->current_operation == NO_OPERATION )
-		mwindow->add_video_track_entry();
+		mwindow->add_video_track_entry(1, 0);
 	return 1;
 }
 
@@ -1341,7 +1341,7 @@ AddSubttlTrack::AddSubttlTrack(MWindow *mwindow)
 int AddSubttlTrack::handle_event()
 {
 	if( mwindow->session->current_operation == NO_OPERATION )
-		mwindow->add_subttl_track_entry();
+		mwindow->add_subttl_track_entry(1, 0);
 	return 1;
 }
 

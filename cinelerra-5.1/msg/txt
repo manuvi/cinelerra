@@ -7,6 +7,11 @@ Cinfinity icons selected in Preferences Sam (CC BY 3.0,
 Cakewalk and Neophyte themes by Olaf Wolff (CC BY 4.0,
   https://creativecommons.org/licenses/by/4.0/)
 .
+June 2020 New Features of note:
+  Ganging modes added for DAW-like editing of channels.
+  Rotate plugin has been modernized and improved.
+  Debug assist added of BC_TRACE_XERROR environment variable.
+  Perspective plugin minor addition of numbered corners.
 May 2020 New Features of note:
   Audio track height button added, separate from video height.
   New patchbay toggle to vary individual vertical track height.

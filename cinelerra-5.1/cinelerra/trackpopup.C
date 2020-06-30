@@ -216,10 +216,10 @@ int TrackPopupAddTrack::handle_event()
 		mwindow->add_audio_track_entry(1, popup->track);
 		break;
 	case TRACK_VIDEO:
-		mwindow->add_video_track_entry(popup->track);
+		mwindow->add_video_track_entry(1, popup->track);
 		break;
 	case TRACK_SUBTITLE:
-		mwindow->add_subttl_track_entry(popup->track);
+		mwindow->add_subttl_track_entry(1, popup->track);
 		break;
 	}
 	return 1;
