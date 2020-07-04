@@ -129,7 +129,7 @@ void VWindowGUI::draw_wave()
 
 	for( int i=channels; --i>=0; ) delete samples[i];
 	delete render_engine;
-	delete cache;
+	cache->remove_user();
 	delete canvas->refresh_frame;
 	canvas->refresh_frame = vframe;
 	canvas->refresh(1);
@@ -227,6 +227,7 @@ void VWindowGUI::create_objects()
 		mwindow->theme->vtransport_x,
 		mwindow->theme->vtransport_y);
 	transport->create_objects();
+	transport->set_transport(LOOP_MODE);
 
 //printf("VWindowGUI::create_objects 1\n");
 //	add_subwindow(fps_title = new BC_Title(mwindow->theme->vedit_x, y, ""));

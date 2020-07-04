@@ -82,8 +82,6 @@ public:
 
 // CICache used during effect & nested EDL
 	CICache *cache;
-// If the cache was allocated by the module
-	int private_cache;
 // Parent EDL of this module when used for effect rendering.
 // Used by APluginArray.
 	EDL *edl;

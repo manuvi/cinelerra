@@ -781,7 +781,7 @@ void TrackCanvas::draw_resources(int mode,
 
 	if(debug) PRINT_TRACE
 	if(mode != IGNORE_THREAD)
-		gui->resource_thread->reset(pane->number);
+		gui->resource_thread->reset(pane->number, indexes_only);
 
 // Search every edit
 	for(Track *current = mwindow->edl->tracks->first;
@@ -3902,7 +3902,7 @@ int TrackCanvas::render_handle_frame(EDL *edl, int64_t pos, int mode)
 			!vrender->process_buffer(&vlt, left, 0) &&
 			!vrender->process_buffer(&vrt, pos , 0) ? 0 : 1;
 		delete render_engine;
-		delete video_cache;
+		video_cache->remove_user();
 		mwindow->cwindow->gui->lock_window("TrackCanvas::render_handle_frame 0");
 		Canvas *canvas = mwindow->cwindow->gui->canvas;
 		float ox1, oy1, ox2, oy2, cx1, cy1, cx2, cy2;

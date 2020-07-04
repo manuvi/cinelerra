@@ -1793,10 +1793,25 @@ void Track::set_camera(float x, float y, float z)
 
 Track *Track::gang_master()
 {
-	if( edl->session->gang_tracks == GANG_NONE ) return this;
 	Track *track = this;
-	while( track && !track->master ) track = track->previous;
-	return !track ? tracks->first : track;
+	switch( edl->session->gang_tracks ) {
+	case GANG_NONE:
+		return track;
+	case GANG_CHANNELS: {
+		Track *current = track;
+		int data_type = track->data_type;
+		while( current && !track->master ) {
+			if( !(current = current->previous) ) break;
+			if( current->data_type == data_type ) track = current;
+			if( track->master ) break;
+		}
+		break; }
+	case GANG_MEDIA: {
+		while( track && !track->master ) track = track->previous;
+		break; }
+	}
+	if( !track ) track = tracks->first;
+	return track;
 }
 
 int Track::is_hidden()
@@ -1815,6 +1830,7 @@ int Track::is_armed()
 {
 	return gang_master()->armed;
 }
+
 int Track::is_ganged()
 {
 	return gang_master()->ganged;

@@ -60,11 +60,11 @@ PatchGUI::PatchGUI(MWindow *mwindow,
 	record = 0;
 	play = 0;
 //	automate = 0;
-	gang = 0;
 	draw = 0;
 	mute = 0;
-	zoom = 0;
+	gang = 0;
 	master = 0;
+	zoom = 0;
 	expand = 0;
 	nudge = 0;
 	mix = 0;
@@ -79,11 +79,11 @@ PatchGUI::~PatchGUI()
 	delete record;
 	delete play;
 //	delete automate;
-	delete gang;
 	delete draw;
 	delete mute;
-	delete zoom;
+	delete gang;
 	delete master;
+	delete zoom;
 	delete expand;
 	delete nudge;
 	delete mix;
@@ -117,15 +117,16 @@ int PatchGUI::reposition(int x, int y)
 			x1 += record->get_w();
 //			automate->reposition_window(x1, y1 + y);
 //			x1 += automate->get_w();
-			gang->reposition_window(gang->get_x(), y1 + y);
-			x1 += gang->get_w();
 			draw->reposition_window(draw->get_x(), y1 + y);
 			x1 += draw->get_w();
 			mute->reposition_window(mute->get_x(), y1 + y);
 			x1 += mute->get_w();
-			zoom->reposition_window(zoom->get_x(), y1 + y);
-			x1 += zoom->get_w();
+			gang->reposition_window(gang->get_x(), y1 + y);
+			x1 += gang->get_w();
 			master->reposition_window(master->get_x(), y1 + y);
+			x1 += master->get_w();
+			zoom->reposition_window(zoom->get_x(), y1 + y);
+//			x1 += zoom->get_w();
 		}
 		y1 += mwindow->theme->play_h;
 	}
@@ -177,18 +178,19 @@ int PatchGUI::update(int x, int y)
 		if( h < y2 ) {
 			delete play;    play = 0;
 			delete record;  record = 0;
-			delete gang;    gang = 0;
 			delete draw;    draw = 0;
 			delete mute;    mute = 0;
-			delete zoom;    zoom = 0;
+			delete gang;    gang = 0;
 			delete master;  master = 0;
+			delete zoom;    zoom = 0;
 		}
 		else {
 			play->update(track->play);
 			record->update(track->armed);
-			gang->update(track->ganged);
 			draw->update(track->draw);
 			mute->update(mwindow->get_int_auto(this, AUTOMATION_MUTE)->value);
+			gang->update(track->ganged);
+			master->update(track->master);
 		}
 	}
 	else if( h >= y2 ) {
@@ -197,15 +199,16 @@ int PatchGUI::update(int x, int y)
 		x1 += play->get_w();
 		patchbay->add_subwindow(record = new RecordPatch(mwindow, this, x1 + x, y1 + y));
 		x1 += record->get_w();
-		patchbay->add_subwindow(gang = new GangPatch(mwindow, this, x1 + x, y1 + y));
-		x1 += gang->get_w();
 		patchbay->add_subwindow(draw = new DrawPatch(mwindow, this, x1 + x, y1 + y));
 		x1 += draw->get_w();
 		patchbay->add_subwindow(mute = new MutePatch(mwindow, this, x1 + x, y1 + y));
 		x1 += mute->get_w();
-		patchbay->add_subwindow(zoom = new ZoomPatch(mwindow, this, x1 + x, y1 + y));
-		x1 += zoom->get_w();
+		patchbay->add_subwindow(gang = new GangPatch(mwindow, this, x1 + x, y1 + y));
+		x1 += gang->get_w();
 		patchbay->add_subwindow(master = new MasterPatch(mwindow, this, x1 + x, y1 + y));
+		x1 += master->get_w();
+		patchbay->add_subwindow(zoom = new ZoomPatch(mwindow, this, x1 + x, y1 + y));
+//		x1 += zoom->get_w();
 	}
 	if( play )
 		y1 = y2;

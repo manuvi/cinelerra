@@ -301,7 +301,6 @@ void MaskUnit::process_package(LoadPackage *package)
 	pkg = (MaskPackage*)package;
 	start_x = pkg->start_x;  end_x = pkg->end_x;
 	start_y = pkg->start_y;  end_y = pkg->end_y;
-	if( start_y >= end_y ) return;
 	MaskEdge *edge = engine->edge;
 	float r = engine->r, v = engine->v;
 	VFrame *in = engine->in;

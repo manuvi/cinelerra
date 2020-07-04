@@ -101,8 +101,10 @@ PackageRenderer::PackageRenderer()
 PackageRenderer::~PackageRenderer()
 {
 	delete command;
-	delete audio_cache;
-	delete video_cache;
+	if( audio_cache )
+		audio_cache->remove_user();
+	if( video_cache )
+		video_cache->remove_user();
 	delete vconfig;
 	delete aconfig;
 	delete timer;

@@ -951,8 +951,8 @@ int SnapshotMenuItem::handle_event()
 		command.realtime = 0;
 
 		RenderEngine render_engine(0, preferences, 0, 0);
-		CICache video_cache(preferences);
-		render_engine.set_vcache(&video_cache);
+		CICache *video_cache = new CICache(preferences);
+		render_engine.set_vcache(video_cache);
 		render_engine.arm_command(&command);
 
 		double position = edl->local_session->get_selectionstart(1);
@@ -962,6 +962,7 @@ int SnapshotMenuItem::handle_event()
 		if( !ret )
 			ret = file.write_video_buffer(1);
 		file.close_file();
+		video_cache->remove_user();
 	}
 	if( !ret ) {
 		asset->folder_no = AW_MEDIA_FOLDER;

@@ -1355,10 +1355,11 @@ void EditPanelGangTracks::update(int gang)
 int EditPanelGangTracks::handle_event()
 {
 	int gang = mwindow->edl->session->gang_tracks;
-	switch( gang ) {
-	case GANG_NONE:      gang = GANG_CHANNELS;  break;
-	case GANG_CHANNELS:  gang = GANG_MEDIA;     break;
-	case GANG_MEDIA:     gang = GANG_NONE;      break;
+	if( !shift_down() ) {
+		if( ++gang > GANG_MEDIA ) gang = GANG_NONE;
+	}
+	else {
+		if( --gang < GANG_NONE ) gang = GANG_MEDIA;
 	}
 	update(gang);
 	panel->panel_set_gang_tracks(gang);

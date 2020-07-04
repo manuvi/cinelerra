@@ -500,6 +500,10 @@ public:
 	void move_tracks_down();
 	void move_track_up(Track *track);
 	void move_tracks_up();
+	void swap_track_down(Track *track);
+	void swap_tracks_down();
+	void swap_track_up(Track *track);
+	void swap_tracks_up();
 	void mute_selection();
 	void new_folder(const char *new_folder, int is_clips);
 	void delete_folder(char *folder);

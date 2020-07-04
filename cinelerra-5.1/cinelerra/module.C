@@ -59,7 +59,6 @@ Module::Module(RenderEngine *renderengine,
 	nested_edl = 0;
 	nested_renderengine = 0;
 	nested_command = 0;
-	private_cache = 0;
 	cache = 0;
 }
 
@@ -86,7 +85,6 @@ Module::~Module()
 
 	delete nested_renderengine;
 	delete nested_command;
-	if(private_cache) delete cache;
 }
 
 void Module::create_objects()

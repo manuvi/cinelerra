@@ -1205,6 +1205,56 @@ void MWindow::move_tracks_up()
 }
 
 
+void MWindow::swap_track_down(Track *track)
+{
+	undo_before();
+	edl->tracks->swap_track_down(track);
+	save_backup();
+	undo_after(_("swap track down"), LOAD_ALL);
+
+	restart_brender();
+	gui->update(1, NORMAL_DRAW, 0, 0, 1, 0, 0);
+	sync_parameters(CHANGE_EDL);
+	save_backup();
+}
+
+void MWindow::swap_tracks_down()
+{
+	undo_before();
+	edl->tracks->swap_tracks_down();
+	save_backup();
+	undo_after(_("swap tracks down"), LOAD_ALL);
+
+	restart_brender();
+	gui->update(1, NORMAL_DRAW, 0, 0, 1, 0, 0);
+	sync_parameters(CHANGE_EDL);
+	save_backup();
+}
+
+void MWindow::swap_track_up(Track *track)
+{
+	undo_before();
+	edl->tracks->swap_track_up(track);
+	save_backup();
+	undo_after(_("swap track up"), LOAD_ALL);
+	restart_brender();
+	gui->update(1, NORMAL_DRAW, 0, 0, 1, 0, 0);
+	sync_parameters(CHANGE_EDL);
+	save_backup();
+}
+
+void MWindow::swap_tracks_up()
+{
+	undo_before();
+	edl->tracks->swap_tracks_up();
+	save_backup();
+	undo_after(_("swap tracks up"), LOAD_ALL);
+	restart_brender();
+	gui->update(1, NORMAL_DRAW, 0, 0, 1, 0, 0);
+	sync_parameters(CHANGE_EDL);
+}
+
+
 void MWindow::mute_selection()
 {
 	double start = edl->local_session->get_selectionstart();

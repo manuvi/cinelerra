@@ -101,8 +101,8 @@ int FileREF::close_file()
 	ref = 0;
 	delete render_engine;  render_engine = 0;
 	delete command;  command = 0;
-	delete acache;   acache = 0;
-	delete vcache;   vcache = 0;
+	if( acache ) { acache->remove_user();  acache = 0; }
+	if( vcache ) { vcache->remove_user();  vcache = 0; }
 	delete temp;     temp = 0;
 	for( int i=0; i<MAX_CHANNELS; ++i ) {
 		delete samples[i];  samples[i] = 0;

@@ -266,8 +266,10 @@ int PluginArray::stop_plugins()
 			values[i]->close_plugin();
 		}
 	}
-
-	delete cache;
+	if( cache ) {
+		cache->remove_user();
+		cache = 0;
+	}
 	return 0;
 }
 

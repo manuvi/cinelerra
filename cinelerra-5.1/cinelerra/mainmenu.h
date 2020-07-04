@@ -655,6 +655,22 @@ public:
 	MWindow *mwindow;
 };
 
+class SwapTracksUp : public BC_MenuItem
+{
+public:
+	SwapTracksUp(MWindow *mwindow);
+	int handle_event();
+	MWindow *mwindow;
+};
+
+class SwapTracksDown : public BC_MenuItem
+{
+public:
+	SwapTracksDown(MWindow *mwindow);
+	int handle_event();
+	MWindow *mwindow;
+};
+
 class DeleteTracks : public BC_MenuItem
 {
 public:

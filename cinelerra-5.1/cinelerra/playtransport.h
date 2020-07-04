@@ -29,8 +29,7 @@
 #include "playtransport.inc"
 
 #define PLAY_MODE 0
-#define PAUSE_MODE 1
-#define PAUSEDOWN_MODE 2
+#define LOOP_MODE 1
 
 class PlayTransport
 {
@@ -62,8 +61,7 @@ public:
 // speed - play speed for SLOW/FAST playback, zero defaults to slow=.5,fast=2.
 	void handle_transport(int command, int wait_tracking=0,
 		int use_inout=0, int toggle_audio=0, int loop_play=0, float speed=0);
-	int pause_transport();
-	int reset_transport();
+	int set_transport(int mode);
 	int get_w();
 	int is_stopped();
 // Get the EDL to play back with default to mwindow->edl
@@ -100,7 +98,8 @@ class PTransportButton : public BC_Button
 public:
 	PTransportButton(MWindow *mwindow, PlayTransport *transport, int x, int y, VFrame **data);
 	virtual ~PTransportButton();
-	virtual int set_mode(int mode);
+	void set_mode(int mode);
+	void loop_mode(int dir);
 	int play_command(const char *lock_msg, int command);
 
 	int mode;

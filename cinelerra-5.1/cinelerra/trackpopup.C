@@ -72,6 +72,8 @@ void TrackPopup::create_objects()
 	add_item(new TrackPopupShow(mwindow, this));
 	add_item(new TrackPopupUserTitle(mwindow, this));
 	add_item(new TrackPopupTitleColor(mwindow, this));
+	add_item(new TrackSwapUp(mwindow, this));
+	add_item(new TrackSwapDown(mwindow, this));
 	resize_option = 0;
 	matchsize_option = 0;
 }
@@ -135,8 +137,6 @@ int TrackMoveUp::handle_event()
 	return 1;
 }
 
-
-
 TrackMoveDown::TrackMoveDown(MWindow *mwindow, TrackPopup *popup)
  : BC_MenuItem(_("Move down"))
 {
@@ -149,6 +149,37 @@ TrackMoveDown::~TrackMoveDown()
 int TrackMoveDown::handle_event()
 {
 	mwindow->move_track_down(popup->track);
+	return 1;
+}
+
+
+TrackSwapUp::TrackSwapUp(MWindow *mwindow, TrackPopup *popup)
+ : BC_MenuItem(_("Swap up"))
+{
+	this->mwindow = mwindow;
+	this->popup = popup;
+}
+TrackSwapUp::~TrackSwapUp()
+{
+}
+int TrackSwapUp::handle_event()
+{
+	mwindow->swap_track_up(popup->track);
+	return 1;
+}
+
+TrackSwapDown::TrackSwapDown(MWindow *mwindow, TrackPopup *popup)
+ : BC_MenuItem(_("Swap down"))
+{
+	this->mwindow = mwindow;
+	this->popup = popup;
+}
+TrackSwapDown::~TrackSwapDown()
+{
+}
+int TrackSwapDown::handle_event()
+{
+	mwindow->swap_track_down(popup->track);
 	return 1;
 }
 

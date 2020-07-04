@@ -61,7 +61,7 @@ private:
 	CICache *cache;
 };
 
-class CICache : public List<CICacheItem>
+class CICache : public Garbage, public List<CICacheItem>
 {
 public:
 	CICache(Preferences *preferences);

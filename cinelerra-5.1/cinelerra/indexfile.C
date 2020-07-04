@@ -374,9 +374,10 @@ void IndexFile::close_source()
 
 	delete render_engine;
 	render_engine = 0;
-
-	delete cache;
-	cache = 0;
+	if( cache ) {
+		cache->remove_user();
+		cache = 0;
+	}
 }
 
 int64_t IndexFile::get_required_scale()

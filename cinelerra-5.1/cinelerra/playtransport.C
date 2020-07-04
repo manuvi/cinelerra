@@ -30,6 +30,7 @@
 #include "preferences.h"
 #include "shuttle.h"
 #include "theme.h"
+#include "tracks.h"
 #include "transportque.h"
 #include "vframe.h"
 
@@ -329,21 +330,14 @@ EDL* PlayTransport::get_edl()
 	return mwindow->edl;
 }
 
-int PlayTransport::pause_transport()
+int PlayTransport::set_transport(int mode)
 {
-	if(active_button) active_button->set_mode(PLAY_MODE);
-	return 0;
-}
-
-
-int PlayTransport::reset_transport()
-{
-	fast_reverse->set_mode(PLAY_MODE);
-	reverse_play->set_mode(PLAY_MODE);
-	forward_play->set_mode(PLAY_MODE);
-	frame_reverse_play->set_mode(PLAY_MODE);
-	frame_forward_play->set_mode(PLAY_MODE);
-	fast_play->set_mode(PLAY_MODE);
+	fast_reverse->set_mode(mode);
+	reverse_play->set_mode(mode);
+	forward_play->set_mode(mode);
+	frame_reverse_play->set_mode(mode);
+	frame_forward_play->set_mode(mode);
+	fast_play->set_mode(mode);
 	return 0;
 }
 
@@ -358,10 +352,29 @@ PTransportButton::~PTransportButton()
 {
 }
 
-int PTransportButton::set_mode(int mode)
+void PTransportButton::set_mode(int mode)
 {
 	this->mode = mode;
-	return 0;
+}
+
+void PTransportButton::loop_mode(int dir)
+{
+	if( mode != LOOP_MODE ) return;
+	EDL *edl = transport->get_edl();
+	if( !edl ) return;
+	PlaybackEngine *engine = transport->engine;
+	if( !engine || engine->is_playing_back ) return;
+	double position = engine->get_tracking_position();
+	switch( dir ) {
+	case PLAY_FORWARD:
+		if( position >= edl->tracks->total_playable_length() )
+			transport->goto_start();
+		break;
+	case PLAY_REVERSE:
+		if( position <= 0 )
+			transport->goto_end();
+		break;
+	}
 }
 
 int PTransportButton::play_command(const char *lock_msg, int command)
@@ -398,6 +411,7 @@ FastReverseButton::FastReverseButton(MWindow *mwindow, PlayTransport *transport,
 }
 int FastReverseButton::handle_event()
 {
+	loop_mode(PLAY_REVERSE);
 	return play_command("FastReverseButton::handle_event", FAST_REWIND);
 }
 
@@ -410,6 +424,7 @@ ReverseButton::ReverseButton(MWindow *mwindow, PlayTransport *transport, int x, 
 }
 int ReverseButton::handle_event()
 {
+	loop_mode(PLAY_REVERSE);
 	return play_command("ReverseButton::handle_event", NORMAL_REWIND);
 }
 
@@ -437,6 +452,7 @@ PlayButton::PlayButton(MWindow *mwindow, PlayTransport *transport, int x, int y)
 }
 int PlayButton::handle_event()
 {
+	loop_mode(PLAY_FORWARD);
 	return play_command("PlayButton::handle_event", NORMAL_FWD);
 }
 
@@ -466,6 +482,7 @@ FastPlayButton::FastPlayButton(MWindow *mwindow, PlayTransport *transport, int x
 }
 int FastPlayButton::handle_event()
 {
+	loop_mode(PLAY_FORWARD);
 	return play_command("FastPlayButton::handle_event", FAST_FWD);
 }
 

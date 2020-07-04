@@ -2377,7 +2377,8 @@ void BC_ScrollTextBox::update_scrollbars()
 		delete yscroll;  yscroll = 0;
 	}
 
-	if( view_rows != text->get_rows() || view_w != text->get_w() ) {
+	if( view_rows != text->get_rows() || view_w != text->get_w() ||
+	    x != text->get_x() || y != text->get_y() ) {
 		text->reposition_window(x, y, view_w, view_rows);
 	}
 	if( need_xscroll && !xscroll ) {

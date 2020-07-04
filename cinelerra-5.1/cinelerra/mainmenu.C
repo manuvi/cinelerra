@@ -209,6 +209,8 @@ void MainMenu::create_objects()
 	trackmenu->add_item(new DeleteFirstTrack(mwindow));
 	trackmenu->add_item(new DeleteLastTrack(mwindow));
 	trackmenu->add_item(new ConcatenateTracks(mwindow));
+	trackmenu->add_item(new SwapTracksUp(mwindow));
+	trackmenu->add_item(new SwapTracksDown(mwindow));
 	AppendTracks *append_tracks;
 	trackmenu->add_item(append_tracks = new AppendTracks(mwindow));
 	append_tracks->create_objects();
@@ -1286,6 +1288,34 @@ int MoveTracksDown::handle_event()
 {
 	if( mwindow->session->current_operation == NO_OPERATION )
 		mwindow->move_tracks_down();
+	return 1;
+}
+
+
+SwapTracksUp::SwapTracksUp(MWindow *mwindow)
+ : BC_MenuItem(_("Swap tracks up"), 0, UP)
+{
+	this->mwindow = mwindow;
+	set_shift();
+}
+
+int SwapTracksUp::handle_event()
+{
+	if( mwindow->session->current_operation == NO_OPERATION )
+		mwindow->swap_tracks_up();
+	return 1;
+}
+
+SwapTracksDown::SwapTracksDown(MWindow *mwindow)
+ : BC_MenuItem(_("Swap tracks down"), 0, DOWN)
+{
+	set_shift(); this->mwindow = mwindow;
+}
+
+int SwapTracksDown::handle_event()
+{
+	if( mwindow->session->current_operation == NO_OPERATION )
+		mwindow->swap_tracks_down();
 	return 1;
 }
 

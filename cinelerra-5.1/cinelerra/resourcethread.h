@@ -205,7 +205,7 @@ public:
 
 	void run();
 	void stop();
-	void reset(int pane_number);
+	void reset(int pane_number, int indexes_only);
 	void close_indexable(Indexable*);
 
 	MWindow *mwindow;

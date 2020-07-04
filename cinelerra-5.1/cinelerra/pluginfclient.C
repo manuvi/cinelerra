@@ -8,6 +8,7 @@
 #include "bcwindowbase.h"
 #include "bctitle.h"
 #include "cstrdup.h"
+#include "keys.h"
 #include "language.h"
 #include "mwindow.h"
 #include "pluginfclient.h"
@@ -186,6 +187,10 @@ PluginFClientText::
 
 int PluginFClientText::handle_event()
 {
+	if( get_keypress() == RETURN ) {
+		fwin->update();
+		activate();
+	}
 	return 0;
 }
 

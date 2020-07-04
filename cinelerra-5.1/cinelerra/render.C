@@ -882,8 +882,8 @@ printf("Render::render_single: Session finished.\n");
 		mwindow->restart_brender();
 	if( farm_server ) delete farm_server;
 	delete command;
-	delete audio_cache;
-	delete video_cache;
+	audio_cache->remove_user();
+	video_cache->remove_user();
 // Must delete packages after server
 	delete render->packages;
 

@@ -130,6 +130,30 @@ public:
 	TrackPopup *popup;
 };
 
+class TrackSwapUp : public BC_MenuItem
+{
+public:
+	TrackSwapUp(MWindow *mwindow, TrackPopup *popup);
+	~TrackSwapUp();
+
+	int handle_event();
+
+	MWindow *mwindow;
+	TrackPopup *popup;
+};
+
+class TrackSwapDown : public BC_MenuItem
+{
+public:
+	TrackSwapDown(MWindow *mwindow, TrackPopup *popup);
+	~TrackSwapDown();
+
+	int handle_event();
+
+	MWindow *mwindow;
+	TrackPopup *popup;
+};
+
 class TrackPopupFindAsset : public BC_MenuItem
 {
 public:

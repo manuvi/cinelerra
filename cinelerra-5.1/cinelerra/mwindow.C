@@ -349,8 +349,9 @@ MWindow::~MWindow()
 	delete gui;		gui = 0;
 	delete mainindexes;     mainindexes = 0;
 	delete mainprogress;    mainprogress = 0;
-	delete audio_cache;     audio_cache = 0;  // delete the cache after the assets
-	delete video_cache;     video_cache = 0;  // delete the cache after the assets
+ // delete the caches after the assets
+	if( audio_cache ) { audio_cache->remove_user();  audio_cache = 0; }
+	if( video_cache ) { video_cache->remove_user();  video_cache = 0; }
 	delete frame_cache;     frame_cache = 0;
 	delete wave_cache;      wave_cache = 0;
 	delete plugin_guis;     plugin_guis = 0;

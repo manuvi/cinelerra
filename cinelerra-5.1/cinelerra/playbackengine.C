@@ -85,8 +85,10 @@ PlaybackEngine::~PlaybackEngine()
 	Thread::join();
 	delete preferences;
 	delete_render_engine();
-	delete audio_cache;
-	delete video_cache;
+	if( audio_cache )
+		audio_cache->remove_user();
+	if( video_cache )
+		video_cache->remove_user();
 	delete tracking_lock;
 	delete tracking_done;
 	delete pause_lock;
@@ -162,10 +164,12 @@ void PlaybackEngine::wait_render_engine()
 
 void PlaybackEngine::create_cache()
 {
-	if(audio_cache) { delete audio_cache;  audio_cache = 0; }
-	if(video_cache) { delete video_cache;  video_cache = 0; }
-	if(!audio_cache) audio_cache = new CICache(preferences);
-	if(!video_cache) video_cache = new CICache(preferences);
+	if( audio_cache )
+		audio_cache->remove_user();
+	if( video_cache )
+		video_cache->remove_user();
+	audio_cache = new CICache(preferences);
+	video_cache = new CICache(preferences);
 }
 
 

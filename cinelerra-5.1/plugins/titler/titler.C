@@ -944,7 +944,8 @@ TitleMain::~TitleMain()
 		background = 0;
 	}
 	delete render_engine;
-	delete video_cache;
+	if( video_cache )
+		video_cache->remove_user(); 
 	delete overlay_frame;
 	delete bg_file;
 	delete bg_frame;
@@ -1186,7 +1187,7 @@ int TitleMain::load_font(BC_FontEntry *font)
 Indexable *TitleMain::open_background(const char *filename)
 {
 	delete render_engine;  render_engine = 0;
-	delete video_cache;    video_cache = 0;
+	if( video_cache ) { video_cache->remove_user();  video_cache = 0; }
 	delete bg_file;        bg_file = new File;
 
 	Asset *asset = new Asset(filename);

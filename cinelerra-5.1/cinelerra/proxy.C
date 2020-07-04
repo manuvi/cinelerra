@@ -657,7 +657,8 @@ ProxyClient::ProxyClient(MWindow *mwindow,
 ProxyClient::~ProxyClient()
 {
 	delete render_engine;
-	delete video_cache;
+	if( video_cache )
+		video_cache->remove_user();
 	delete src_file;
 }
 

@@ -922,6 +922,61 @@ int Tracks::move_tracks_down()
 }
 
 
+int Tracks::swap_track_up(Track *track)
+{
+	Track *next_track = track->previous;
+	if(!next_track) next_track = last;
+
+	change_modules(number_of(track), number_of(next_track), 1);
+	swap(track, next_track);
+	return 0;
+}
+
+int Tracks::swap_track_down(Track *track)
+{
+	Track *next_track = track->next;
+	if(!next_track) next_track = first;
+
+	change_modules(number_of(track), number_of(next_track), 1);
+	swap(track, next_track);
+	return 0;
+}
+
+
+int Tracks::swap_tracks_up()
+{
+	int result = 0;
+	Track *next = first;
+	while( next ) {
+		Track *track = next;  next = track->next;
+		if( !track->armed ) continue;
+		if( track->previous ) {
+			change_modules(number_of(track->previous), number_of(track), 1);
+			swap(track->previous, track);
+			result = 1;
+		}
+	}
+
+	return result;
+}
+
+int Tracks::swap_tracks_down()
+{
+	int result = 0;
+	Track *prev = last;
+	while( prev ) {
+		Track *track = prev;  prev = track->previous;
+		if( !track->armed ) continue;
+		if( track->next ) {
+			change_modules(number_of(track), number_of(track->next), 1);
+			swap(track, track->next);
+			result = 1;
+		}
+	}
+
+	return result;
+}
+
 void Tracks::paste_audio_transition(PluginServer *server)
 {
 	for(Track *current = first; current; current = NEXT)

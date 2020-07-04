@@ -670,10 +670,11 @@ void ResourceThread::stop()
 	video_thread->stop();
 }
 
-void ResourceThread::reset(int pane_number)
+void ResourceThread::reset(int pane_number, int indexes_only)
 {
 	audio_thread->reset(pane_number);
-	video_thread->reset(pane_number);
+	if( !indexes_only )
+		video_thread->reset(pane_number);
 }
 
 void ResourceThread::close_indexable(Indexable *idxbl)

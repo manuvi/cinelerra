@@ -37,7 +37,7 @@
 
 // edl came from a command which won't exist anymore
 CICache::CICache(Preferences *preferences)
- : List<CICacheItem>()
+ : Garbage("CICache"), List<CICacheItem>()
 {
 	this->preferences = preferences;
 	edl = 0;
@@ -69,11 +69,11 @@ File* CICache::check_out(Asset *asset, EDL *edl, int block)
 	CICacheItem *current = 0;
 	long tid = (long)Thread::get_self();
 	if( !tid ) tid = 1;
+	total_lock->lock("CICache::check_out");
+	add_user();
 
-	while(1)
-	{
+	while( users > 1 ) {
 		File *file = 0;
-		total_lock->lock("CICache::check_out");
 // Scan directory for item
 		current = first;
 		while(current && strcmp(current->asset->path, asset->path) != 0)
@@ -108,12 +108,21 @@ File* CICache::check_out(Asset *asset, EDL *edl, int block)
 			else
 				current = 0;
 		}
-		total_lock->unlock();
 		if( current || !file || !block ) break;
 // Try again after blocking
+		total_lock->unlock();
 		check_out_lock->lock("CICache::check_out");
+		total_lock->lock("CICache::check_out");
 	}
 
+// cache deleted during checkout, destroy this
+	if( users == 1 ) {
+		remove_user();
+		return 0;
+	}
+
+	remove_user();
+	total_lock->unlock();
 //printf("check out %p %lx %s\n", current, tid, asset->path);
 	return current ? current->file : 0;
 }
