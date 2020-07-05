@@ -270,8 +270,7 @@ int EDL::read_xml(FileXML *file, uint32_t load_flags)
 			}
 			else
 			if( file->tag.title_is("SESSION") ) {
-				if( (load_flags & LOAD_SESSION) &&
-					!parent_edl )
+				if( (load_flags & LOAD_SESSION) && !parent_edl )
 					session->load_xml(file, 0, load_flags);
 				else
 					result = file->skip_tag();
@@ -281,14 +280,13 @@ int EDL::read_xml(FileXML *file, uint32_t load_flags)
 				tracks->load(file, track_offset, load_flags);
 			}
 			else
-// Sub EDL.
-// Causes clip creation to fail because that involves an opening EDL tag.
-			if( file->tag.title_is("CLIP_EDL") && !parent_edl ) {
+			if( file->tag.title_is("CLIP_EDL") ) {
 				EDL *new_edl = new EDL(this);
 				new_edl->create_objects();
 				new_edl->read_xml(file, LOAD_ALL);
-				if( (load_flags & LOAD_ALL) == LOAD_ALL )
+				if( (load_flags & LOAD_ALL) == LOAD_ALL ) {
 					clips.add_clip(new_edl);
+				}
 				new_edl->remove_user();
 			}
 			else
@@ -301,27 +299,22 @@ int EDL::read_xml(FileXML *file, uint32_t load_flags)
 				nested_edl->remove_user();
 			}
 			else
-			if( file->tag.title_is("VWINDOW_EDL") && !parent_edl ) {
-				EDL *new_edl = new EDL(this);
-				new_edl->create_objects();
-				new_edl->read_xml(file, LOAD_ALL);
+			if( file->tag.title_is("VWINDOW_EDL") ) {
+				if( !parent_edl ) {
+					EDL *new_edl = new EDL(this);
+					new_edl->create_objects();
+					new_edl->read_xml(file, LOAD_ALL);
 
 
-				if( (load_flags & LOAD_ALL) == LOAD_ALL ) {
-//						if( vwindow_edl && !vwindow_edl_shared )
-//							vwindow_edl->remove_user();
-//						vwindow_edl_shared = 0;
-//						vwindow_edl = new_edl;
-
-					append_vwindow_edl(new_edl, 0);
-
+					if( (load_flags & LOAD_ALL) == LOAD_ALL ) {
+						append_vwindow_edl(new_edl, 0);
+					}
+					else { // Discard if not replacing EDL
+						new_edl->remove_user();
+					}
 				}
 				else
-// Discard if not replacing EDL
-				{
-					new_edl->remove_user();
-					new_edl = 0;
-				}
+					result = file->skip_tag();
 			}
 		}
 	} while(!result);
