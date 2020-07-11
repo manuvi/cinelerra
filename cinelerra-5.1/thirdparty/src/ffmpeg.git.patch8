@@ -1,6 +1,8 @@
---- a/libavformat/mpegenc.c	2019-08-05 14:52:21.000000000 -0600
-+++ /blibavformat/mpegenc.c	2019-11-14 14:07:57.407883232 -0700
-@@ -981,9 +981,9 @@
+diff --git a/libavformat/mpegenc.c b/libavformat/mpegenc.c
+index 9bd0a555d4..111a9f3a46 100644
+--- a/libavformat/mpegenc.c
++++ b/libavformat/mpegenc.c
+@@ -976,9 +976,9 @@ static int remove_decoded_packets(AVFormatContext *ctx, int64_t scr)
          PacketDesc *pkt_desc;
  
          while ((pkt_desc = stream->predecode_packet) &&

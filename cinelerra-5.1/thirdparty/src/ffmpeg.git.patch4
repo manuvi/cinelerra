@@ -1,7 +1,8 @@
-diff -urN a/libavfilter/af_aformat.c b/libavfilter/af_aformat.c
---- a/libavfilter/af_aformat.c	2019-12-02 08:48:03.060361273 -0700
-+++ b/libavfilter/af_aformat.c	2019-12-02 08:52:25.619248884 -0700
-@@ -109,6 +109,16 @@
+diff --git a/libavfilter/af_aformat.c b/libavfilter/af_aformat.c
+index 1a702778c3..232d629ba0 100644
+--- a/libavfilter/af_aformat.c
++++ b/libavfilter/af_aformat.c
+@@ -112,6 +112,16 @@ static av_cold int init(AVFilterContext *ctx)
      return 0;
  }
  
@@ -18,7 +19,7 @@ diff -urN a/libavfilter/af_aformat.c b/libavfilter/af_aformat.c
  static int query_formats(AVFilterContext *ctx)
  {
      AFormatContext *s = ctx->priv;
-@@ -146,6 +156,7 @@
+@@ -149,6 +159,7 @@ AVFilter ff_af_aformat = {
      .name          = "aformat",
      .description   = NULL_IF_CONFIG_SMALL("Convert the input audio to one of the specified formats."),
      .init          = init,

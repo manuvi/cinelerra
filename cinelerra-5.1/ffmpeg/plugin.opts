@@ -376,7 +376,18 @@ vibrance
 #sr ###Input/output error
 #xstack ###Operation not permitted
 #agraphmonitor ###Input/output error
-; the ffmpeg system library on Arch has these errors:
+; broken in 4.3
+#anlms ###Input/output error
+#axcorrelate ###Input/output error
+#freezeframes ###Input/output error
+#maskedmax ###Input/output error
+#maskedmin ###Input/output error
+#maskedthreshold ###Input/output error
+#overlay_cuda ###Input/output error
+#xfade ###Input/output error
+#arnndn ###Invalid argument
+#dnn_processing ###Invalid argument
+#; the ffmpeg system library on Arch has these errors:
 #ladspa
 #ass
 #drawtext

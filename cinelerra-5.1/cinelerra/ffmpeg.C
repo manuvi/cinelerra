@@ -3541,7 +3541,25 @@ int FFMPEG::scan(IndexState *index_state, int64_t *scan_position, int *canceled)
 		av_dict_copy(&copts, opts, 0);
 		AVStream *st = fmt_ctx->streams[i];
 		AVCodecID codec_id = st->codecpar->codec_id;
-		AVCodec *decoder = avcodec_find_decoder(codec_id);
+		AVCodec *decoder = 0;
+		switch( st->codecpar->codec_type ) {
+		case AVMEDIA_TYPE_VIDEO:
+			if( opt_video_decoder )
+				decoder = avcodec_find_decoder_by_name(opt_video_decoder);
+			else
+				video_codec_remaps.update(codec_id, decoder);
+			break;
+		case AVMEDIA_TYPE_AUDIO:
+			if( opt_audio_decoder )
+				decoder = avcodec_find_decoder_by_name(opt_audio_decoder);
+			else
+				audio_codec_remaps.update(codec_id, decoder);
+			break;
+		default:
+			continue;
+		}
+		if( !decoder && !(decoder = avcodec_find_decoder(codec_id)) )
+			continue;
 		AVCodecContext *avctx = avcodec_alloc_context3(decoder);
 		if( !avctx ) {
 			eprintf(_("cant allocate codec context\n"));
@@ -3622,8 +3640,8 @@ int FFMPEG::scan(IndexState *index_state, int64_t *scan_position, int *canceled)
 			if( vidx < 0 ) break;
 			FFVideoStream *vid = ffvideo[vidx];
 			if( !vid->avctx ) break;
-			int64_t tstmp = pkt.dts;
-			if( tstmp == AV_NOPTS_VALUE ) tstmp = pkt.pts;
+			int64_t tstmp = pkt.pts;
+			if( tstmp == AV_NOPTS_VALUE ) tstmp = pkt.dts;
 			if( tstmp != AV_NOPTS_VALUE && (pkt.flags & AV_PKT_FLAG_KEY) && pkt.pos > 0 ) {
 				if( vid->nudge != AV_NOPTS_VALUE ) tstmp -= vid->nudge;
 				double secs = to_secs(tstmp, st->time_base);

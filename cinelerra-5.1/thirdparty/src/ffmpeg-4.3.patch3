@@ -1,0 +1,70 @@
+diff -ruN a/libavformat/avformat.h b/libavformat/avformat.h
+--- a/libavformat/avformat.h	2020-06-15 12:54:24.000000000 -0600
++++ b/libavformat/avformat.h	2020-07-10 09:22:38.176711618 -0600
+@@ -480,6 +480,9 @@
+                                         The user or muxer can override this through
+                                         AVFormatContext.avoid_negative_ts
+                                         */
++#define AVFMT_SEEK_NOSTREAMS  0x80000 /**< Stream index ignored by seek,
++                                           or some streams fail to seek
++                                           */
+ 
+ #define AVFMT_SEEK_TO_PTS   0x4000000 /**< Seeking is based on PTS */
+ 
+@@ -650,7 +653,8 @@
+     /**
+      * Can use flags: AVFMT_NOFILE, AVFMT_NEEDNUMBER, AVFMT_SHOW_IDS,
+      * AVFMT_NOTIMESTAMPS, AVFMT_GENERIC_INDEX, AVFMT_TS_DISCONT, AVFMT_NOBINSEARCH,
+-     * AVFMT_NOGENSEARCH, AVFMT_NO_BYTE_SEEK, AVFMT_SEEK_TO_PTS.
++     * AVFMT_NOGENSEARCH, AVFMT_NO_BYTE_SEEK, AVFMT_SEEK_TO_PTS,
++     * AVFMT_SEEK_NOSTREAMS
+      */
+     int flags;
+ 
+diff -ruN a/libavformat/dv.c b/libavformat/dv.c
+--- a/libavformat/dv.c	2020-06-15 12:54:24.000000000 -0600
++++ b/libavformat/dv.c	2020-07-10 09:22:38.177711618 -0600
+@@ -642,6 +642,7 @@
+ AVInputFormat ff_dv_demuxer = {
+     .name           = "dv",
+     .long_name      = NULL_IF_CONFIG_SMALL("DV (Digital Video)"),
++    .flags          = AVFMT_SEEK_NOSTREAMS,
+     .priv_data_size = sizeof(RawDVContext),
+     .read_probe     = dv_probe,
+     .read_header    = dv_read_header,
+diff -ruN a/libavformat/matroskadec.c b/libavformat/matroskadec.c
+--- a/libavformat/matroskadec.c	2020-06-15 12:54:24.000000000 -0600
++++ b/libavformat/matroskadec.c	2020-07-10 09:22:38.178711618 -0600
+@@ -4251,6 +4251,7 @@
+ AVInputFormat ff_matroska_demuxer = {
+     .name           = "matroska,webm",
+     .long_name      = NULL_IF_CONFIG_SMALL("Matroska / WebM"),
++    .flags          = AVFMT_SEEK_NOSTREAMS,
+     .extensions     = "mkv,mk3d,mka,mks",
+     .priv_data_size = sizeof(MatroskaDemuxContext),
+     .read_probe     = matroska_probe,
+@@ -4264,6 +4265,7 @@
+ AVInputFormat ff_webm_dash_manifest_demuxer = {
+     .name           = "webm_dash_manifest",
+     .long_name      = NULL_IF_CONFIG_SMALL("WebM DASH Manifest"),
++    .flags          = AVFMT_SEEK_NOSTREAMS,
+     .priv_data_size = sizeof(MatroskaDemuxContext),
+     .read_header    = webm_dash_manifest_read_header,
+     .read_packet    = webm_dash_manifest_read_packet,
+diff -ruN a/libavformat/utils.c b/libavformat/utils.c
+--- a/libavformat/utils.c	2020-06-15 12:54:24.000000000 -0600
++++ b/libavformat/utils.c	2020-07-10 09:22:38.179711619 -0600
+@@ -2486,6 +2486,13 @@
+         return seek_frame_byte(s, stream_index, timestamp, flags);
+     }
+ 
++    if (stream_index != -1 && (s->iformat->flags & AVFMT_SEEK_NOSTREAMS)) {
++            timestamp = av_rescale_q(timestamp,
++                    s->streams[stream_index]->time_base,
++                    AV_TIME_BASE_Q);
++            stream_index = -1;
++    }
++
+     if (stream_index < 0) {
+         stream_index = av_find_default_stream_index(s);
+         if (stream_index < 0)

@@ -1,7 +1,8 @@
-diff -urN a/libavfilter/formats.c b/libavfilter/formats.c
---- a/libavfilter/formats.c	2019-12-02 08:48:03.073361317 -0700
-+++ b/libavfilter/formats.c	2019-12-02 08:52:32.155270978 -0700
-@@ -107,11 +107,13 @@
+diff --git a/libavfilter/formats.c b/libavfilter/formats.c
+index de4315369d..f430908343 100644
+--- a/libavfilter/formats.c
++++ b/libavfilter/formats.c
+@@ -107,11 +107,13 @@ AVFilterFormats *ff_merge_formats(AVFilterFormats *a, AVFilterFormats *b,
         possibly causing a lossy conversion elsewhere in the graph.
         To avoid that, pretend that there are no common formats to force the
         insertion of a conversion filter. */
@@ -18,7 +19,7 @@ diff -urN a/libavfilter/formats.c b/libavfilter/formats.c
                  alpha2 |= adesc->flags & bdesc->flags & AV_PIX_FMT_FLAG_ALPHA;
                  chroma2|= adesc->nb_components > 1 && bdesc->nb_components > 1;
                  if (a->formats[i] == b->formats[j]) {
-@@ -119,6 +121,8 @@
+@@ -119,6 +121,8 @@ AVFilterFormats *ff_merge_formats(AVFilterFormats *a, AVFilterFormats *b,
                      chroma1|= adesc->nb_components > 1;
                  }
              }

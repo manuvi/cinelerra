@@ -189,7 +189,7 @@ PKG_3RD([esound],[no],
   [ . ])
 
 PKG_3RD([ffmpeg],[yes],
-  [ffmpeg-4.2],
+  [ffmpeg-4.3],
   [ libavutil/libavutil.a \
     libavcodec/libavcodec.a \
     libpostproc/libpostproc.a \
@@ -270,7 +270,7 @@ PKG_3RD([libdv],[auto],
   [ . ])
 
 PKG_3RD([libjpeg],[auto],
-  [libjpeg-turbo-2.0.4],
+  [libjpeg-turbo-2.0.5],
   [ build/libjpeg.a \
     build/libturbojpeg.a ],
   [ opt/libjpeg-turbo/include ])
@@ -311,7 +311,7 @@ PKG_3RD([libuuid],[yes],
   [ . ])
 
 PKG_3RD([libvorbis],[auto],
-  [libvorbis-1.3.6],
+  [libvorbis-1.3.7],
   [ lib/.libs/libvorbis.a \
     lib/.libs/libvorbisenc.a \
     lib/.libs/libvorbisfile.a ],
@@ -369,17 +369,17 @@ PKG_3RD([x264],[auto],
   [ . ])
 
 PKG_3RD([x265],[auto],
-  [x265_3.2.1],
+  [x265_3.4],
   [ libx265.a ],
   [ . source ])
 
 PKG_3RD([libvpx],[auto],
-  [libvpx-1.8.1],
+  [libvpx-1.8.2],
   [ libvpx.a ],
   [ . ])
 
 PKG_3RD([lv2],[auto],
-  [lv2-1.16.0],
+  [lv2-1.18.0],
   [ ],
   [ usr/local/include usr/local/lib64/lv2 usr/local/lib/lv2 ])
 
@@ -389,7 +389,7 @@ PKG_3RD([sratom],[auto],
   [ usr/local/include ])
 
 PKG_3RD([serd],[auto],
-  [serd-0.30.2],
+  [serd-0.30.4],
   [ usr/local/lib/libserd-0.a ],
   [ usr/local/include ])
 
@@ -399,7 +399,7 @@ PKG_3RD([sord],[auto],
   [ usr/local/include ])
 
 PKG_3RD([lilv],[auto],
-  [lilv-0.24.6],
+  [lilv-0.24.8],
   [ usr/local/lib/liblilv-0.a ],
   [ usr/local/include ])
 
@@ -409,12 +409,12 @@ PKG_3RD([suil],[auto],
   [ usr/local/include ])
 
 PKG_3RD([libaom],[auto],
-  [libaom-v1.0.0],
+  [libaom-v3.0.0],
   [ usr/local/lib*/libaom*.a ],
   [ usr/local/include ])
 
 PKG_3RD([dav1d],[auto],
-  [dav1d-0.5.1],
+  [dav1d-0.7.1],
   [ usr/local/lib*/libdav1d*.a ],
   [ usr/local/include ])
 
@@ -673,9 +673,9 @@ test "x$HAVE_libavc1394" = "xyes" && \
 test "x$HAVE_libiec61883" = "xyes" && \
 test "x$HAVE_libraw1394" = "xyes" && \
   HAVE_FIREWIRE=yes || \
-HAVE_libavc1394=no && \
-HAVE_libiec61883=no && \
-HAVE_libraw1394=no && \
+HAVE_libavc1394=no \
+HAVE_libiec61883=no \
+HAVE_libraw1394=no \
  HAVE_FIREWIRE=no
 
 CHECK_WANT([DV], [auto], [use dv], [
@@ -700,8 +700,8 @@ CHECK_WANT([ESOUND], [no], [use esd], [
 test "x$HAVE_esound" = "xyes" && \
 test "x$HAVE_audiofile" = "xyes" && \
   HAVE_ESOUND=yes || \
-HAVE_esound=no && \
-HAVE_audiofile=no && \
+HAVE_esound=no \
+HAVE_audiofile=no \
   HAVE_ESOUND=no
 
 CHECK_WANT([PULSE], [auto], [use pulseaudio], [
@@ -749,12 +749,12 @@ test "x$HAVE_serd" = "xyes" && \
 test "x$HAVE_sratom" = "xyes" && \
 test "x$HAVE_suil" = "xyes" && \
   HAVE_LV2=yes || \
-HAVE_lv2=no && \
-HAVE_lilv=no && \
-HAVE_sord=no && \
-HAVE_serd=no && \
-HAVE_sratom=no && \
-HAVE_suil=no && \
+HAVE_lv2=no \
+HAVE_lilv=no \
+HAVE_sord=no \
+HAVE_serd=no \
+HAVE_sratom=no \
+HAVE_suil=no \
   HAVE_LV2=no
 
 CHECK_WANT([CUDA], [auto], [build cuda plugins], [
@@ -813,8 +813,8 @@ AC_SUBST([HAVE_OPENEXR])
 test "x$HAVE_openexr" = "xyes" && \
 test "x$HAVE_ilmbase" = "xyes" && \
   HAVE_OPENEXR=yes || \
-HAVE_openexr=no && \
-HAVE_ilmbase=no &&
+HAVE_openexr=no \
+HAVE_ilmbase=no \
   HAVE_OPENEXR=no
 
 # build global_config
