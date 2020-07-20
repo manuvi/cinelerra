@@ -49,11 +49,15 @@ void MainClock::update(double position)
 	lock_window("MainClock::update");
 	char string[BCTEXTLEN];
 	position += position_offset;
+	double timecode_offset =
+		mwindow->edl->session->time_format == TIME_TIMECODE ?
+			mwindow->get_timecode_offset() : 0 ;
 	Units::totext(string, position,
 		mwindow->edl->session->time_format,
 		mwindow->edl->session->sample_rate,
 		mwindow->edl->session->frame_rate,
-		mwindow->edl->session->frames_per_foot);
+		mwindow->edl->session->frames_per_foot,
+		timecode_offset);
 	BC_Title::update(string);
 	unlock_window();
 }

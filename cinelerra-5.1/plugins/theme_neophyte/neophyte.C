@@ -1042,6 +1042,9 @@ void NEOPHYTETHEME::initialize()
 	new_button("goto.png",
 			   editpanel_up, editpanel_hi, editpanel_dn,
 			   "goto");
+	new_button("clapper.png",
+			   editpanel_up, editpanel_hi, editpanel_dn,
+			   "clapperbutton");
 	new_button("top_justify.png",
 			   editpanel_up, editpanel_hi, editpanel_dn,
 			   "top_justify");

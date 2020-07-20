@@ -89,7 +89,7 @@ class ResampleRTResample : public Resample
 {
 public:
 	ResampleRTResample(ResampleRT *plugin);
-	int read_samples(Samples *buffer, int64_t start, int64_t len);
+	int read_samples(Samples *buffer, int64_t start, int64_t len, int direction);
 	ResampleRT *plugin;
 };
 

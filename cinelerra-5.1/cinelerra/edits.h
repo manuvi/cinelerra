@@ -84,6 +84,8 @@ public:
 	void paste_silence(int64_t start, int64_t end);
 // Returns the newly created edit
 	Edit *create_silence(int64_t start, int64_t end);
+	double early_timecode();
+	void align_timecodes(double offset);
 
 	void resample(double old_rate, double new_rate);
 // Shift edits on or after position by distance

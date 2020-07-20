@@ -112,6 +112,7 @@ public:
 	void translate_camera(float dx, float dy, int all=0);
 	void crop_resize(float x, float y, float z);
 	void crop_shrink(float x, float y, float z);
+	double align_timecodes();
 
 	int total_of(int type);
 	Track* get_track_by_id(int id);

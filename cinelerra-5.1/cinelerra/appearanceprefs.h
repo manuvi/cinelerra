@@ -42,6 +42,7 @@ public:
 	int update(int new_value);
 	TimeFormatHMS *hms;
 	TimeFormatHMSF *hmsf;
+	TimeFormatTimecode *timecode;
 	TimeFormatSamples *samples;
 	TimeFormatHex *hex;
 	TimeFormatFrames *frames;
@@ -71,6 +72,15 @@ class TimeFormatHMSF : public BC_Radial
 {
 public:
 	TimeFormatHMSF(PreferencesWindow *pwindow, AppearancePrefs *tfwindow, int value, int x, int y);
+	int handle_event();
+	PreferencesWindow *pwindow;
+	AppearancePrefs *tfwindow;
+};
+
+class TimeFormatTimecode : public BC_Radial
+{
+public:
+	TimeFormatTimecode(PreferencesWindow *pwindow, AppearancePrefs *tfwindow, int value, int x, int y);
 	int handle_event();
 	PreferencesWindow *pwindow;
 	AppearancePrefs *tfwindow;
@@ -307,6 +317,14 @@ class DeactivateFocusPolicy : public BC_CheckBox
 {
 public:
 	DeactivateFocusPolicy(PreferencesWindow *pwindow, int x, int y);
+	int handle_event();
+	PreferencesWindow *pwindow;
+};
+
+class AutoRotate: public BC_CheckBox
+{
+public:
+	AutoRotate(PreferencesWindow *pwindow, int x, int y);
 	int handle_event();
 	PreferencesWindow *pwindow;
 };

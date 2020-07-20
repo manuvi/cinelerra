@@ -208,8 +208,8 @@ public:
 	int test_playback_edits;
 // Format to display times in
 	int time_format;
-// Offset for timecode
-	int timecode_offset[4];
+// Offset for timecode units
+	double timecode_offset;
 // Format to display nudge in, either seconds or track units.
 	int nudge_format;
 // Show tool window in CWindow

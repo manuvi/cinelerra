@@ -104,6 +104,14 @@ void AssetEdit::edit_asset(Indexable *indexable, int x, int y)
 
 void AssetEdit::handle_done_event(int result)
 {
+	if( !result && changed_params->timecode >= 0 ) {
+		double rate = indexable->get_frame_rate();
+		changed_params->timecode =
+			atoi(window->tc_hrs->get_text()) * 3600 +
+			atoi(window->tc_mins->get_text()) * 60 +
+			atoi(window->tc_secs->get_text()) +
+			atoi(window->tc_rest->get_text()) / rate;
+	}
 }
 
 void AssetEdit::handle_close_event(int result)
@@ -187,14 +195,16 @@ BC_Window* AssetEdit::new_gui()
 
 int AssetEdit::window_height()
 {
-	int h = 128 + 64;
-	if( indexable->have_audio() ) h += 200;
+	int h = yS(128 + 64);
+	if( indexable->have_audio() ) h += yS(200);
 	if( indexable->have_video() ) {
-		h += 160;
+		h += yS(160);
 		if( indexable->is_asset ) {
 			Asset *asset = (Asset *)indexable;
 			if( File::can_scale_input(asset) )
-				h += 42;
+				h += yS(42);
+			if( asset->timecode >= 0 )
+				h += yS(32);
 		}
 	}
 	return yS(h);
@@ -516,7 +526,34 @@ void AssetEditWindow::create_objects()
 				&asset_edit->changed_params->interlace_mode,
 				(ArrayList<BC_ListBoxItem*>*)&mwindow->interlace_asset_modes,
 				x2 + edit_ilace_mode->get_w(), y));
+			y += title->get_h() + yS(15);
 		}
+	}
+	if( asset && asset->timecode >= 0 ) {
+		char text[BCSTRLEN], *tc = text;
+		Units::totext(tc, asset->timecode, TIME_HMSF,
+			asset->sample_rate, asset->frame_rate);
+		const char *hrs  = tc;  tc = strchr(tc, ':');  *tc++ = 0;
+		const char *mins = tc;  tc = strchr(tc, ':');  *tc++ = 0;
+		const char *secs = tc;  tc = strchr(tc, ':');  *tc++ = 0;
+		const char *rest = tc;
+		int padw = BC_Title::calculate_w(this, ":", MEDIUMFONT);
+		int fldw = BC_Title::calculate_w(this, "00", MEDIUMFONT) + 5;
+		int hdrw = fldw + padw;  x = x2;
+		add_subwindow(title = new BC_Title(x, y, _("hour"), SMALLFONT));  x += hdrw;
+		add_subwindow(title = new BC_Title(x, y, _("min"),  SMALLFONT));  x += hdrw;
+		add_subwindow(title = new BC_Title(x, y, _("sec"),  SMALLFONT));  x += hdrw;
+		add_subwindow(title = new BC_Title(x, y, _("frms"), SMALLFONT));
+		y += title->get_h() + xS(3);
+		add_subwindow(title = new BC_Title(x1, y, _("Time Code Start:")));
+		add_subwindow(tc_hrs = new BC_TextBox(x=x2, y, fldw, 1, hrs));
+		add_subwindow(new BC_Title(x += tc_hrs->get_w(), y, ":"));
+		add_subwindow(tc_mins = new BC_TextBox(x += padw, y, fldw, 1, mins));
+		add_subwindow(new BC_Title(x += tc_mins->get_w(), y, ":"));
+		add_subwindow(tc_secs = new BC_TextBox(x += padw, y , fldw, 1, secs));
+		add_subwindow(new BC_Title(x += tc_secs->get_w(), y, ":"));
+		add_subwindow(tc_rest = new BC_TextBox(x += 10, y, fldw, 1, rest));
+		y += title->get_h() + ypad5;
 	}
 
 	add_subwindow(new BC_OKButton(this));

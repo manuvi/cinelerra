@@ -2710,3 +2710,15 @@ void MWindow::paste_effects()
 	group->remove_user();
 }
 
+void MWindow::align_timecodes()
+{
+	undo_before();
+	double offset = edl->tracks->align_timecodes();
+	set_timecode_offset(offset);
+	save_backup();
+	undo_after(_("align timecodes"), LOAD_ALL);
+	restart_brender();
+	cwindow->refresh_frame(CHANGE_EDL);
+	update_plugin_guis();
+}
+

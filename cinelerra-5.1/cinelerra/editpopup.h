@@ -181,4 +181,13 @@ public:
 	EditPopup *popup;
 };
 
+class EditPopupTimecode : public BC_MenuItem
+{
+public:
+	EditPopupTimecode(MWindow *mwindow, EditPopup *popup);
+	int handle_event();
+	MWindow *mwindow;
+	EditPopup *popup;
+};
+
 #endif

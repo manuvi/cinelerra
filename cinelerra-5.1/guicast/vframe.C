@@ -416,7 +416,7 @@ long VFrame::get_bytes_per_line()
 
 long VFrame::get_data_size()
 {
-	return calculate_data_size(w, h, bytes_per_line, color_model) - 4;
+	return calculate_data_size(w, h, bytes_per_line, color_model) - BC_COLOR_ALIGN;
 }
 
 long VFrame::calculate_data_size(int w, int h, int bytes_per_line, int color_model)

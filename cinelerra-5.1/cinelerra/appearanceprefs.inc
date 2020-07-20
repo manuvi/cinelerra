@@ -25,6 +25,7 @@
 class AppearancePrefs;
 class TimeFormatHMS;
 class TimeFormatHMSF;
+class TimeFormatTimecode;
 class TimeFormatSamples;
 class TimeFormatFrames;
 class TimeFormatHex;
@@ -50,6 +51,7 @@ class PopupMenuBtnup;
 class GrabFocusPolicy;
 class ActivateFocusPolicy;
 class DeactivateFocusPolicy;
+class AutoRotate;
 class ForwardRenderDisplacement;
 class HighlightInverseColor;
 class YuvColorSpace;

@@ -183,7 +183,7 @@ int BC_CModels::calculate_datasize(int w, int h, int bytes_per_line, int color_m
 	}
 	if( bytes_per_line < 0 )
 		bytes_per_line = w * calculate_pixelsize(color_model);
-	return h * bytes_per_line + 4;
+	return h * bytes_per_line + BC_COLOR_ALIGN;
 }
 
 int BC_CModels::bc_to_x(int color_model)

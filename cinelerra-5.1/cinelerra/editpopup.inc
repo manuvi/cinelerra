@@ -36,5 +36,6 @@ class EditPopupOverwrite;
 class EditPopupOverwritePlugins;
 class EditCollectEffects;
 class EditPasteEffects;
+class EditPopupTimecode;
 
 #endif

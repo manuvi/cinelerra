@@ -1051,6 +1051,7 @@ FFVideoStream::FFVideoStream(FFMPEG *ffmpeg, AVStream *strm, int idx, int fidx)
 {
 	this->idx = idx;
 	width = height = 0;
+	transpose = 0;
 	frame_rate = 0;
 	aspect_ratio = 0;
 	length = 0;
@@ -1659,6 +1660,44 @@ IndexMarks *FFVideoStream::get_markers()
 	return !index_state ? 0 : index_state->video_markers[idx];
 }
 
+double FFVideoStream::get_rotation_angle()
+{
+	int size = 0;
+	int *matrix = (int*)av_stream_get_side_data(st, AV_PKT_DATA_DISPLAYMATRIX, &size);
+	int len = size/sizeof(*matrix);
+	if( !matrix || len < 5 ) return 0;
+	const double s = 1/65536.;
+	double theta = (!matrix[0] && !matrix[3]) || (!matrix[1] && !matrix[4]) ? 0 :
+		 atan2( s*matrix[1] / hypot(s*matrix[1], s*matrix[4]),
+			s*matrix[0] / hypot(s*matrix[0], s*matrix[3])) * 180/M_PI;
+	return theta;
+}
+
+void FFVideoStream::flip()
+{
+	transpose = 0;
+	if( !ffmpeg->file_base ) return;
+	double theta = get_rotation_angle(), tolerance = 1;
+	if( fabs(theta-0) < tolerance ) return;
+        if( fabs(theta-90) < tolerance ) {
+		create_filter("transpose=clock", st->codecpar);
+		transpose = 1;
+        }
+	else if( fabs(theta-180) < tolerance ) {
+		create_filter("hflip", st->codecpar);
+		create_filter("vflip", st->codecpar);
+        }
+	else if (fabs(theta-270) < tolerance ) {
+		create_filter("transpose=cclock", st->codecpar);
+		transpose = 1;
+        }
+	else {
+		char rotate[BCSTRLEN];
+		sprintf(rotate, "rotate=%f", theta*M_PI/180.);
+		create_filter(rotate, st->codecpar);
+        }
+}
+
 
 FFMPEG::FFMPEG(FileBase *file_base)
 {
@@ -1722,9 +1761,8 @@ static inline AVRational std_frame_rate(int i)
 	return (AVRational) { freq, 1001*12 };
 }
 
-AVRational FFMPEG::check_frame_rate(AVCodec *codec, double frame_rate)
+AVRational FFMPEG::check_frame_rate(const AVRational *p, double frame_rate)
 {
-	const AVRational *p = codec->supported_framerates;
 	AVRational rate, best_rate = (AVRational) { 0, 0 };
 	double max_err = 1.;  int i = 0;
 	while( ((p ? (rate=*p++) : (rate=std_frame_rate(i++))), rate.num) != 0 ) {
@@ -2307,6 +2345,9 @@ int FFMPEG::info(char *text, int len)
 		int hrs = secs/3600;  secs -= hrs*3600;
 		int mins = secs/60;  secs -= mins*60;
 		report("  %d:%02d:%05.2f\n", hrs, mins, secs);
+		double theta = vid->get_rotation_angle();
+		if( fabs(theta) > 1 ) 
+			report("    rotation angle: %0.1f\n", theta);
 	}
 	if( ffaudio.size() > 0 )
 		report("\n%d audio stream%s\n",ffaudio.size(), ffaudio.size()!=1 ? "s" : "");
@@ -2494,6 +2535,8 @@ int FFMPEG::open_decoder()
 			vid->reading = -1;
 			if( opt_video_filter )
 				ret = vid->create_filter(opt_video_filter, avpar);
+			if( file_base && file_base->file->preferences->auto_rotate )
+				vid->flip();
 			break; }
 		case AVMEDIA_TYPE_AUDIO: {
 			if( avpar->channels < 1 ) continue;
@@ -2753,7 +2796,7 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 			int mask_h = (1<<desc->log2_chroma_h)-1;
 			ctx->height = (vid->height+mask_h) & ~mask_h;
 			ctx->sample_aspect_ratio = to_sample_aspect_ratio(asset);
-			AVRational frame_rate = check_frame_rate(codec, vid->frame_rate);
+			AVRational frame_rate = check_frame_rate(codec->supported_framerates, vid->frame_rate);
 			if( !frame_rate.num || !frame_rate.den ) {
 				eprintf(_("check_frame_rate failed %s\n"), filename);
 				ret = 1;
@@ -3310,25 +3353,29 @@ int FFMPEG::ff_total_vstreams()
 
 int FFMPEG::ff_video_width(int stream)
 {
-	return ffvideo[stream]->width;
+	FFVideoStream *vst = ffvideo[stream];
+	return !vst->transpose ? vst->width : vst->height;
 }
 
 int FFMPEG::ff_video_height(int stream)
 {
-	return ffvideo[stream]->height;
+	FFVideoStream *vst = ffvideo[stream];
+	return !vst->transpose ? vst->height : vst->width;
 }
 
 int FFMPEG::ff_set_video_width(int stream, int width)
 {
-	int w = ffvideo[stream]->width;
-	ffvideo[stream]->width = width;
+	FFVideoStream *vst = ffvideo[stream];
+	int *vw = !vst->transpose ? &vst->width : &vst->height, w = *vw;
+	*vw = width;
 	return w;
 }
 
 int FFMPEG::ff_set_video_height(int stream, int height)
 {
-	int h = ffvideo[stream]->height;
-	ffvideo[stream]->height = height;
+	FFVideoStream *vst = ffvideo[stream];
+	int *vh = !vst->transpose ? &vst->height : &vst->width, h = *vh;
+	*vh = height;
 	return h;
 }
 
@@ -3387,7 +3434,7 @@ int FFMPEG::ff_video_mpeg_color_range(int stream)
 
 int FFMPEG::ff_cpus()
 {
-	return file_base->file->cpus;
+	return !file_base ? 1 : file_base->file->cpus;
 }
 
 const char *FFMPEG::ff_hw_dev()
@@ -3416,14 +3463,17 @@ int FFVideoStream::create_filter(const char *filter_spec, AVCodecParameters *avp
 	filter_graph = avfilter_graph_alloc();
 	const AVFilter *buffersrc = avfilter_get_by_name("buffer");
 	const AVFilter *buffersink = avfilter_get_by_name("buffersink");
+	int sa_num = avpar->sample_aspect_ratio.num;
+	if( !sa_num ) sa_num = 1;
+	int sa_den = avpar->sample_aspect_ratio.den;
+	if( !sa_den ) sa_num = 1;
 
 	int ret = 0;  char args[BCTEXTLEN];
 	AVPixelFormat pix_fmt = (AVPixelFormat)avpar->format;
 	snprintf(args, sizeof(args),
 		"video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d",
 		avpar->width, avpar->height, (int)pix_fmt,
-		st->time_base.num, st->time_base.den,
-		avpar->sample_aspect_ratio.num, avpar->sample_aspect_ratio.den);
+		st->time_base.num, st->time_base.den, sa_num, sa_den);
 	if( ret >= 0 )
 		ret = avfilter_graph_create_filter(&buffersrc_ctx, buffersrc, "in",
 			args, NULL, filter_graph);
@@ -3520,6 +3570,50 @@ int FFStream::create_filter(const char *filter_spec)
 	return ret;
 }
 
+
+AVCodecContext *FFMPEG::activate_decoder(AVStream *st)
+{
+	AVDictionary *copts = 0;
+	av_dict_copy(&copts, opts, 0);
+	AVCodecID codec_id = st->codecpar->codec_id;
+	AVCodec *decoder = 0;
+	switch( st->codecpar->codec_type ) {
+	case AVMEDIA_TYPE_VIDEO:
+		if( opt_video_decoder )
+			decoder = avcodec_find_decoder_by_name(opt_video_decoder);
+		else
+			video_codec_remaps.update(codec_id, decoder);
+		break;
+	case AVMEDIA_TYPE_AUDIO:
+		if( opt_audio_decoder )
+			decoder = avcodec_find_decoder_by_name(opt_audio_decoder);
+		else
+			audio_codec_remaps.update(codec_id, decoder);
+		break;
+	default:
+		return 0;
+	}
+	if( !decoder && !(decoder = avcodec_find_decoder(codec_id)) ) {
+		eprintf(_("cant find decoder codec %d\n"), (int)codec_id);
+		return 0;
+	}
+	AVCodecContext *avctx = avcodec_alloc_context3(decoder);
+	if( !avctx ) {
+		eprintf(_("cant allocate codec context\n"));
+		return 0;
+	}
+	avcodec_parameters_to_context(avctx, st->codecpar);
+	if( !av_dict_get(copts, "threads", NULL, 0) )
+		avctx->thread_count = ff_cpus();
+	int ret = avcodec_open2(avctx, decoder, &copts);
+	av_dict_free(&copts);
+	if( ret < 0 ) {
+		avcodec_free_context(&avctx);
+		avctx = 0;
+	}
+	return avctx;
+}
+
 int FFMPEG::scan(IndexState *index_state, int64_t *scan_position, int *canceled)
 {
 	AVPacket pkt;
@@ -3536,43 +3630,9 @@ int FFMPEG::scan(IndexState *index_state, int64_t *scan_position, int *canceled)
 	index_state->add_audio_markers(ffaudio.size());
 
 	for( int i=0; i<(int)fmt_ctx->nb_streams; ++i ) {
-		int ret = 0;
-		AVDictionary *copts = 0;
-		av_dict_copy(&copts, opts, 0);
 		AVStream *st = fmt_ctx->streams[i];
-		AVCodecID codec_id = st->codecpar->codec_id;
-		AVCodec *decoder = 0;
-		switch( st->codecpar->codec_type ) {
-		case AVMEDIA_TYPE_VIDEO:
-			if( opt_video_decoder )
-				decoder = avcodec_find_decoder_by_name(opt_video_decoder);
-			else
-				video_codec_remaps.update(codec_id, decoder);
-			break;
-		case AVMEDIA_TYPE_AUDIO:
-			if( opt_audio_decoder )
-				decoder = avcodec_find_decoder_by_name(opt_audio_decoder);
-			else
-				audio_codec_remaps.update(codec_id, decoder);
-			break;
-		default:
-			continue;
-		}
-		if( !decoder && !(decoder = avcodec_find_decoder(codec_id)) )
-			continue;
-		AVCodecContext *avctx = avcodec_alloc_context3(decoder);
-		if( !avctx ) {
-			eprintf(_("cant allocate codec context\n"));
-			ret = AVERROR(ENOMEM);
-		}
-		if( ret >= 0 ) {
-			avcodec_parameters_to_context(avctx, st->codecpar);
-			if( !av_dict_get(copts, "threads", NULL, 0) )
-				avctx->thread_count = ff_cpus();
-			ret = avcodec_open2(avctx, decoder, &copts);
-		}
-		av_dict_free(&copts);
-		if( ret >= 0 ) {
+		AVCodecContext *avctx = activate_decoder(st);
+		if( avctx ) {
 			AVCodecParameters *avpar = st->codecpar;
 			switch( avpar->codec_type ) {
 			case AVMEDIA_TYPE_VIDEO: {
@@ -3729,5 +3789,248 @@ void FFStream::load_markers(IndexMarks &marks, double rate)
 		if( nudge != AV_NOPTS_VALUE ) tstmp += nudge;
 		av_add_index_entry(st, pos, tstmp, 0, 0, AVINDEX_KEYFRAME);
 	}
+}
+
+
+/*
+ * 1) if the format context has a timecode
+ *   return fmt_ctx->timecode - 0
+ * 2) if the layer/channel has a timecode
+ *   return st->timecode - (start_time-nudge)
+ * 3) find the 1st program with stream, find 1st program video stream,
+ *   if video stream has a timecode, return st->timecode - (start_time-nudge)
+ * 4) find timecode in any stream, return st->timecode
+ * 5) read 100 packets, save ofs=pkt.pts*st->time_base - st->nudge:
+ *   decode frame for video stream of 1st program
+ *   if frame->timecode has a timecode, return frame->timecode - ofs
+ *   if side_data has gop timecode, return gop->timecode - ofs
+ *   if side_data has smpte timecode, return smpte->timecode - ofs
+ * 6) if the filename/url scans *date_time.ext, return date_time
+ * 7) if stat works on the filename/url, return mtime
+ * 8) return -1 failure
+*/
+double FFMPEG::get_initial_timecode(int data_type, int channel, double frame_rate)
+{
+	AVRational rate = check_frame_rate(0, frame_rate);
+	if( !rate.num ) return -1;
+// format context timecode
+	AVDictionaryEntry *tc = av_dict_get(fmt_ctx->metadata, "timecode", 0, 0);
+	if( tc ) return ff_get_timecode(tc->value, rate, 0);
+// stream timecode
+	if( open_decoder() ) return -1;
+	AVStream *st = 0;
+	int64_t nudge = 0;
+	int codec_type = -1, fidx = -1;
+	switch( data_type ) {
+	case TRACK_AUDIO: {
+		codec_type = AVMEDIA_TYPE_AUDIO;
+		int aidx = astrm_index[channel].st_idx;
+		FFAudioStream *aud = ffaudio[aidx];
+		fidx = aud->fidx;
+		nudge = aud->nudge;
+		st = aud->st;
+		break; }
+	case TRACK_VIDEO: {
+		codec_type = AVMEDIA_TYPE_VIDEO;
+		int vidx = vstrm_index[channel].st_idx;
+		FFVideoStream *vid = ffvideo[vidx];
+		fidx = vid->fidx;
+		nudge = vid->nudge;
+		st = vid->st;
+		break; }
+	}
+	if( codec_type < 0 ) return -1;
+	if( st )
+		tc = av_dict_get(st->metadata, "timecode", 0, 0);
+	if( !tc ) {
+		st = 0;
+// find first program which references this stream
+		int pidx = -1;
+		for( int i=0, m=fmt_ctx->nb_programs; pidx<0 && i<m; ++i ) {
+			AVProgram *pgrm = fmt_ctx->programs[i];
+			for( int j=0, n=pgrm->nb_stream_indexes; j<n; ++j ) {
+				int st_idx = pgrm->stream_index[j];
+				if( st_idx == fidx ) { pidx = i;  break; }
+			}
+		}
+		fidx = -1;
+		if( pidx >= 0 ) {
+			AVProgram *pgrm = fmt_ctx->programs[pidx];
+			for( int j=0, n=pgrm->nb_stream_indexes; j<n; ++j ) {
+				int st_idx = pgrm->stream_index[j];
+				AVStream *tst = fmt_ctx->streams[st_idx];
+				if( !tst ) continue;
+				if( tst->codecpar->codec_type == AVMEDIA_TYPE_VIDEO ) {
+					st = tst;  fidx = st_idx;
+					break;
+				}
+			}
+		}
+		else {
+			for( int i=0, n=fmt_ctx->nb_streams; i<n; ++i ) {
+				AVStream *tst = fmt_ctx->streams[i];
+				if( !tst ) continue;
+				if( tst->codecpar->codec_type == AVMEDIA_TYPE_VIDEO ) {
+					st = tst;  fidx = i;
+					break;
+				}
+			}
+		}
+		if( st )
+			tc = av_dict_get(st->metadata, "timecode", 0, 0);
+	}
+
+	if( !tc ) {
+		// any timecode, includes -data- streams
+		for( int i=0, n=fmt_ctx->nb_streams; i<n; ++i ) {
+			AVStream *tst = fmt_ctx->streams[i];
+			if( !tst ) continue;
+			if( (tc = av_dict_get(tst->metadata, "timecode", 0, 0)) ) {
+				st = tst;  fidx = i;
+				break;
+			}
+		}
+	}
+
+	if( st && st->codecpar->codec_type == AVMEDIA_TYPE_VIDEO ) {
+		if( st->r_frame_rate.num && st->r_frame_rate.den )
+			rate = st->r_frame_rate;
+		nudge = st->start_time;
+		for( int i=0; i<ffvideo.size(); ++i ) {
+			if( ffvideo[i]->st == st ) {
+				nudge = ffvideo[i]->nudge;
+				break;
+			}
+		}
+	}
+
+	if( tc ) { // return timecode
+		double secs = st->start_time == AV_NOPTS_VALUE ? 0 :
+			to_secs(st->start_time - nudge, st->time_base);
+		return ff_get_timecode(tc->value, rate, secs);
+	}
+	
+	if( !st || fidx < 0 ) return -1;
+
+	decode_activate();
+	AVCodecContext *av_ctx = activate_decoder(st);
+	if( !av_ctx ) {
+		fprintf(stderr,"activate_decoder failed\n");
+		return -1;
+	}
+	avCodecContext avctx(av_ctx); // auto deletes
+	if( avctx->codec_type == AVMEDIA_TYPE_VIDEO &&
+	    avctx->framerate.num && avctx->framerate.den )
+		rate = avctx->framerate;
+
+	avPacket pkt;	// auto deletes
+	avFrame frame;  // auto deletes
+	if( !frame ) {
+		fprintf(stderr,"av_frame_alloc failed\n");
+		return -1;
+	}
+	int errs = 0;
+	int64_t max_packets = 100;
+	char tcbuf[AV_TIMECODE_STR_SIZE];
+
+	for( int64_t count=0; count<max_packets; ++count ) {
+		av_packet_unref(pkt);
+		pkt->data = 0; pkt->size = 0;
+
+		int ret = av_read_frame(fmt_ctx, pkt);
+		if( ret < 0 ) {
+			if( ret == AVERROR_EOF ) break;
+			if( ++errs > 100 ) {
+				fprintf(stderr,"over 100 read_frame errs\n");
+				break;
+			}
+			continue;
+		}
+		if( !pkt->data ) continue;
+		int i = pkt->stream_index;
+		if( i != fidx ) continue;
+		int64_t tstmp = pkt->pts;
+		if( tstmp == AV_NOPTS_VALUE ) tstmp = pkt->dts;
+		double secs = to_secs(tstmp - nudge, st->time_base);
+		ret = avcodec_send_packet(avctx, pkt);
+		if( ret < 0 ) return -1;
+
+		while( (ret = avcodec_receive_frame(avctx, frame)) >= 0 ) {
+			if( (tc = av_dict_get(frame->metadata, "timecode", 0, 0)) )
+				return ff_get_timecode(tc->value, rate, secs);
+			int k = frame->nb_side_data;
+			AVFrameSideData *side_data = 0;
+			while( --k >= 0 ) {
+				side_data = frame->side_data[k];
+				switch( side_data->type ) {
+				case AV_FRAME_DATA_GOP_TIMECODE: {
+					int64_t data = *(int64_t *)side_data->data;
+					int sz = sizeof(data);
+					if( side_data->size >= sz ) {
+						av_timecode_make_mpeg_tc_string(tcbuf, data);
+						return ff_get_timecode(tcbuf, rate, secs);
+					}
+					break; }
+				case AV_FRAME_DATA_S12M_TIMECODE: {
+					uint32_t *data = (uint32_t *)side_data->data;
+					int n = data[0], sz = (n+1)*sizeof(*data);
+					if( side_data->size >= sz ) {
+						av_timecode_make_smpte_tc_string(tcbuf, data[n], 0);
+						return ff_get_timecode(tcbuf, rate, secs);
+					}
+					break; }
+				default:
+					break;
+				}
+			}
+		}
+	}
+	char *path = fmt_ctx->url;
+	char *bp = strrchr(path, '/');
+	if( !bp ) bp = path; else ++bp;
+	char *cp = strrchr(bp, '.');
+	if( cp && (cp-=(8+1+6)) >= bp ) {
+		char sep[BCSTRLEN];
+		int year,mon,day, hour,min,sec, frm=0;
+		if( sscanf(cp,"%4d%2d%2d%[_-]%2d%2d%2d",
+				&year,&mon,&day, sep, &hour,&min,&sec) == 7 ) {
+			int ch = sep[0];
+			// year>=1970,mon=1..12,day=1..31, hour=0..23,min=0..59,sec=0..60
+			if( (ch=='_' || ch=='-' ) &&
+			    year >= 1970 && mon>=1 && mon<=12 && day>=1 && day<=31 &&
+			    hour>=0 && hour<24 && min>=0 && min<60 && sec>=0 && sec<=60 ) {
+				sprintf(tcbuf,"%d:%02d:%02d:%02d", hour,min,sec, frm);
+				return ff_get_timecode(tcbuf, rate, 0);
+			}
+		}
+	}
+	struct stat tst;
+	if( stat(path, &tst) >= 0 ) {
+		time_t t = (time_t)tst.st_mtim.tv_sec;
+		struct tm tm;
+		localtime_r(&t, &tm);
+		int64_t us = tst.st_mtim.tv_nsec / 1000;
+		int frm = us/1000000. * frame_rate;
+		sprintf(tcbuf,"%d:%02d:%02d:%02d", tm.tm_hour, tm.tm_min, tm.tm_sec, frm);
+		return ff_get_timecode(tcbuf, rate, 0);
+	}
+	return -1;
+}
+
+double FFMPEG::ff_get_timecode(char *str, AVRational rate, double pos)
+{
+	AVTimecode tc;
+	if( av_timecode_init_from_string(&tc, rate, str, fmt_ctx) )
+		return -1;
+	double secs = (double)tc.start / tc.fps - pos;
+	if( secs < 0 ) secs = 0;
+	return secs;
+}
+
+double FFMPEG::get_timecode(const char *path, int data_type, int channel, double rate)
+{
+	FFMPEG ffmpeg(0);
+	if( ffmpeg.init_decoder(path) ) return -1;
+	return ffmpeg.get_initial_timecode(data_type, channel, rate);
 }
 

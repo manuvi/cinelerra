@@ -98,6 +98,7 @@ Preferences::Preferences()
 	popupmenu_btnup = 1;
 	grab_input_focus = 1;
 	textbox_focus_policy = 0;
+	auto_rotate = 1;
 	forward_render_displacement = 0;
 	dvd_yuv420p_interlace = 0;
 	highlight_inverse = 0xffffff;
@@ -223,6 +224,7 @@ void Preferences::copy_from(Preferences *that)
 	popupmenu_btnup = that->popupmenu_btnup;
 	grab_input_focus = that->grab_input_focus;
 	textbox_focus_policy = that->textbox_focus_policy;
+	auto_rotate = that->auto_rotate;
 	forward_render_displacement = that->forward_render_displacement;
 	dvd_yuv420p_interlace = that->dvd_yuv420p_interlace;
 	highlight_inverse = that->highlight_inverse;
@@ -372,6 +374,7 @@ int Preferences::load_defaults(BC_Hash *defaults)
 	popupmenu_btnup = defaults->get("POPUPMENU_BTNUP", popupmenu_btnup);
 	grab_input_focus = defaults->get("GRAB_FOCUS", grab_input_focus);
 	textbox_focus_policy = defaults->get("TEXTBOX_FOCUS_POLICY", textbox_focus_policy);
+	auto_rotate = defaults->get("AUTO_ROTATE", auto_rotate);
 	forward_render_displacement = defaults->get("FORWARD_RENDER_DISPLACEMENT", forward_render_displacement);
 	dvd_yuv420p_interlace = defaults->get("DVD_YUV420P_INTERLACE", dvd_yuv420p_interlace);
 	highlight_inverse = defaults->get("HIGHLIGHT_INVERSE", highlight_inverse);
@@ -519,6 +522,7 @@ int Preferences::save_defaults(BC_Hash *defaults)
 	defaults->update("POPUPMENU_BTNUP", popupmenu_btnup);
 	defaults->update("GRAB_FOCUS", grab_input_focus);
 	defaults->update("TEXTBOX_FOCUS_POLICY", textbox_focus_policy);
+	defaults->update("AUTO_ROTATE", auto_rotate);
 	defaults->update("FORWARD_RENDER_DISPLACEMENT", forward_render_displacement);
 	defaults->update("DVD_YUV420P_INTERLACE", dvd_yuv420p_interlace);
 	defaults->update("HIGHLIGHT_INVERSE", highlight_inverse);

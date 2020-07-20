@@ -166,7 +166,8 @@ void Units::finit()
 
 // give text representation as time
 char* Units::totext(char *text, double seconds, int time_format,
-			int sample_rate, float frame_rate, float frames_per_foot)
+			int sample_rate, float frame_rate, float frames_per_foot,
+			double timecode_offset)
 {
 	int64_t hour, feet, frame;
 	int minute, second, thousandths;
@@ -208,6 +209,8 @@ char* Units::totext(char *text, double seconds, int time_format,
 		sprintf(text, "%02d:%02d:%02d", (int)hour, minute, second);
 		break; }
 
+	case TIME_TIMECODE:
+		seconds += timecode_offset; // fall thru
 	case TIME_HMSF: {
 		seconds = fabs(seconds) + 1.0e-6;
 		hour = seconds/3600;
@@ -263,10 +266,11 @@ char* Units::totext(char *text, double seconds, int time_format,
 
 // give text representation as time
 char* Units::totext(char *text, int64_t samples, int samplerate,
-		int time_format, float frame_rate, float frames_per_foot)
+		int time_format, float frame_rate, float frames_per_foot,
+		double timecode_offset)
 {
 	return totext(text, (double)samples/samplerate, time_format,
-			samplerate, frame_rate, frames_per_foot);
+		samplerate, frame_rate, frames_per_foot, timecode_offset);
 }
 
 int64_t Units::get_int64(const char *&bp)
@@ -299,7 +303,8 @@ void Units::skip_seperators(const char *&bp)
 }
 
 int64_t Units::fromtext(const char *text, int samplerate, int time_format,
-			float frame_rate, float frames_per_foot)
+			float frame_rate, float frames_per_foot,
+			double timecode_offset)
 {
 	int64_t hours, total_samples;
 	int minutes, frames, feet;
@@ -320,12 +325,15 @@ int64_t Units::fromtext(const char *text, int samplerate, int time_format,
 		total_seconds = seconds + minutes*60 + hours*3600;
 		break; }
 
+	case TIME_TIMECODE:
 	case TIME_HMSF: {
 		hours = get_int64(text);    skip_seperators(text);
 		minutes = get_int64(text);  skip_seperators(text);
 		seconds = get_int64(text);  skip_seperators(text);
 		frames = get_int64(text);
 		total_seconds = frames/frame_rate + seconds + minutes*60 + hours*3600;
+		if( time_format == TIME_TIMECODE )
+			total_seconds -= timecode_offset;
 		break; }
 
 	case TIME_SAMPLES: {
@@ -365,10 +373,11 @@ int64_t Units::fromtext(const char *text, int samplerate, int time_format,
 }
 
 double Units::text_to_seconds(const char *text, int samplerate, int time_format,
-				float frame_rate, float frames_per_foot)
+				float frame_rate, float frames_per_foot,
+				double timecode_offset)
 {
 	return (double)fromtext(text, samplerate, time_format,
-				frame_rate, frames_per_foot) / samplerate;
+		frame_rate, frames_per_foot, timecode_offset) / samplerate;
 }
 
 
@@ -381,6 +390,7 @@ int Units::timeformat_totype(char *tcf)
 	if (!strcmp(tcf,TIME_HMS2__STR)) return(TIME_HMS2);
 	if (!strcmp(tcf,TIME_HMS3__STR)) return(TIME_HMS3);
 	if (!strcmp(tcf,TIME_HMSF__STR)) return(TIME_HMSF);
+	if (!strcmp(tcf,TIME_TIMECODE__STR)) return(TIME_TIMECODE);
 	if (!strcmp(tcf,TIME_SAMPLES__STR)) return(TIME_SAMPLES);
 	if (!strcmp(tcf,TIME_SAMPLES_HEX__STR)) return(TIME_SAMPLES_HEX);
 	if (!strcmp(tcf,TIME_FRAMES__STR)) return(TIME_FRAMES);
@@ -498,6 +508,7 @@ const char* Units::print_time_format(int time_format, char *string)
 	case TIME_SECONDS:     fmt = TIME_SECONDS_TEXT;               break;
 	case TIME_MS1:
 	case TIME_MS2:         fmt = TIME_MS2_TEXT;                   break;
+	case TIME_TIMECODE:    fmt = TIME_TIMECODE_TEXT;              break;
 	}
 	return strcpy(string,fmt);
 }
@@ -513,6 +524,7 @@ int Units::text_to_format(const char *string)
 	if(!strcmp(string, TIME_HMS3_TEXT)) return TIME_HMS3;
 	if(!strcmp(string, TIME_SECONDS_TEXT)) return TIME_SECONDS;
 	if(!strcmp(string, TIME_MS2_TEXT)) return TIME_MS2;
+	if(!strcmp(string, TIME_TIMECODE_TEXT)) return TIME_TIMECODE;
 	return TIME_HMS;
 }
 
@@ -617,6 +629,7 @@ const char* Units::format_to_separators(int time_format)
 		case TIME_HMS:         return "0:00:00.000";
 		case TIME_HMS2:        return "0:00:00";
 		case TIME_HMS3:        return "00:00:00";
+		case TIME_TIMECODE:
 		case TIME_HMSF:        return "0:00:00:00";
 		case TIME_SAMPLES:     return 0;
 		case TIME_SAMPLES_HEX: return 0;

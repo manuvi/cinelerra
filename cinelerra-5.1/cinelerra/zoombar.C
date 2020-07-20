@@ -612,7 +612,8 @@ int FromTextBox::update_position(double new_position)
 		mwindow->edl->session->time_format,
 		mwindow->edl->session->sample_rate,
 		mwindow->edl->session->frame_rate,
-		mwindow->edl->session->frames_per_foot);
+		mwindow->edl->session->frames_per_foot,
+		mwindow->get_timecode_offset());
 //printf("FromTextBox::update_position %f %s\n", new_position, string);
 	update(string);
 	return 0;
@@ -681,7 +682,8 @@ int ToTextBox::update_position(double new_position)
 		mwindow->edl->session->time_format,
 		mwindow->edl->session->sample_rate,
 		mwindow->edl->session->frame_rate,
-		mwindow->edl->session->frames_per_foot);
+		mwindow->edl->session->frames_per_foot,
+		mwindow->get_timecode_offset());
 	update(string);
 	return 0;
 }

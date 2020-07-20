@@ -838,6 +838,7 @@ void PINKLADY::initialize()
 	splice_data = new_button("splice.png", editpanel_up, editpanel_hi, editpanel_dn, "slicebutton");
 	new_button("toclip.png", editpanel_up, editpanel_hi, editpanel_dn, "toclip");
 	new_button("goto.png", editpanel_up, editpanel_hi, editpanel_dn, "goto");
+	new_button("clapper.png", editpanel_up, editpanel_hi, editpanel_dn, "clapperbutton");
 	new_button("top_justify.png", editpanel_up, editpanel_hi, editpanel_dn, "top_justify");
 	new_button("undo.png", editpanel_up, editpanel_hi, editpanel_dn, "undo");
 	new_button("wrench.png", editpanel_up, editpanel_hi, editpanel_dn, "wrench");

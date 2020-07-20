@@ -182,8 +182,7 @@ ResampleRTResample::ResampleRTResample(ResampleRT *plugin)
 // To get the keyframes to work, resampling is always done in the forward
 // direction with the plugin converting to reverse.
 int ResampleRTResample::read_samples(Samples *buffer,
-	int64_t start,
-	int64_t len)
+	int64_t start, int64_t len, int direction)
 {
 	int result = plugin->read_samples(buffer,
 		0,

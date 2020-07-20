@@ -244,7 +244,8 @@ double ZoomPanel::text_to_zoom(char *text, int use_table)
 				mwindow->edl->session->sample_rate,
 				mwindow->edl->session->time_format,
 				mwindow->edl->session->frame_rate,
-				mwindow->edl->session->frames_per_foot);
+				mwindow->edl->session->frames_per_foot,
+				mwindow->get_timecode_offset());
 			total_samples /= mwindow->theme->mcanvas_w -
 				mwindow->theme->patchbay_w -
 				BC_ScrollBar::get_span(SCROLL_VERT);

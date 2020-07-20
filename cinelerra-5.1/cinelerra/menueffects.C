@@ -360,7 +360,9 @@ void MenuEffectThread::run()
 		default_asset->height = mwindow->edl->session->output_h;
 	}
 
-	int strategy = Render::get_strategy(mwindow->preferences->use_renderfarm, use_labels);
+	int range = File::is_image_render(default_asset->format) ?
+		RANGE_1FRAME : RANGE_SELECTION;
+	int strategy = Render::get_strategy(mwindow->preferences->use_renderfarm, use_labels, range);
 // Process the total length in fragments
 	ArrayList<MenuEffectPacket*> packets;
 	if(!result)

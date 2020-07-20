@@ -181,7 +181,9 @@ char *BatchRenderJob::create_script(EDL *edl, ArrayList<Indexable *> *idxbls)
 
 int BatchRenderJob::get_strategy()
 {
-	return Render::get_strategy(farmed, labeled);
+	int range = File::is_image_render(asset->format) ?
+		RANGE_1FRAME : RANGE_SELECTION;
+	return Render::get_strategy(farmed, labeled, range);
 }
 
 

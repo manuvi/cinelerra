@@ -57,6 +57,9 @@ class LockLabelsButton;
 class EditPanelScopeGUI;
 class EditPanelScopeDialog;
 class EditPanelScope;
-class EditPanelMashMixers;
+class EditPanelTimecode;
+class EditPanelTcDialog;
+class EditPanelTcWindow;
+class EditPanelTcInt;
 
 #endif

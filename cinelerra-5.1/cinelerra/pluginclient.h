@@ -107,34 +107,26 @@ PluginClientWindow* plugin_class::new_window() \
 #define LOAD_CONFIGURATION_MACRO(plugin_class, config_class) \
 int plugin_class::load_configuration() \
 { \
-	KeyFrame *prev_keyframe, *next_keyframe; \
-	prev_keyframe = get_prev_keyframe(get_source_position()); \
-	next_keyframe = get_next_keyframe(get_source_position()); \
- \
- 	int64_t next_position = edl_to_local(next_keyframe->position); \
+	KeyFrame * prev_keyframe = get_prev_keyframe(get_source_position()); \
  	int64_t prev_position = edl_to_local(prev_keyframe->position); \
- \
 	config_class old_config, prev_config, next_config; \
 	old_config.copy_from(config); \
 	read_data(prev_keyframe); \
 	prev_config.copy_from(config); \
-	read_data(next_keyframe); \
-	next_config.copy_from(config); \
+	KeyFrame * next_keyframe = get_next_keyframe(get_source_position()); \
+	if( next_keyframe ) { \
+ 		int64_t next_position = edl_to_local(next_keyframe->position); \
+		read_data(next_keyframe); \
+		next_config.copy_from(config); \
  \
-	config.interpolate(prev_config,  \
-		next_config,  \
-		(next_position == prev_position) ? \
-			get_source_position() : \
-			prev_position, \
-		(next_position == prev_position) ? \
-			get_source_position() + 1 : \
-			next_position, \
-		get_source_position()); \
- \
-	if(!config.equivalent(old_config)) \
-		return 1; \
-	else \
-		return 0; \
+		config.interpolate(prev_config, next_config,  \
+			(next_position == prev_position) ? \
+				get_source_position() : prev_position, \
+			(next_position == prev_position) ? \
+				get_source_position() + 1 : next_position, \
+			get_source_position()); \
+	} \
+	return !config.equivalent(old_config) ? 1 : 0; \
 }
 
 

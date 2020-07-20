@@ -79,6 +79,7 @@ void EditPopup::create_objects()
 	add_item(new EditPopupOverwritePlugins(mwindow, this));
 	add_item(new EditCollectEffects(mwindow, this));
 	add_item(new EditPasteEffects(mwindow, this));
+	add_item(new EditPopupTimecode(mwindow, this));
 }
 
 int EditPopup::activate_menu(Track *track, Edit *edit,
@@ -339,4 +340,32 @@ int EditPasteEffects::handle_event()
 	return 1;
 }
 
+EditPopupTimecode::EditPopupTimecode(MWindow *mwindow, EditPopup *popup)
+ : BC_MenuItem(_("Timecode"),_("Ctrl-!"),'!')
+{
+	this->mwindow = mwindow;
+	this->popup = popup;
+	set_ctrl(1);
+}
+
+int EditPopupTimecode::handle_event()
+{
+	if( mwindow->session->current_operation != NO_OPERATION ) return 1;
+	Edit *edit = popup->edit;
+	if( !edit || !edit->asset ) return 1;
+	Asset *asset = edit->asset;
+	double timecode = asset->timecode != -2 ? asset->timecode :
+		FFMPEG::get_timecode(asset->path,
+			edit->track->data_type, edit->channel,
+			mwindow->edl->session->frame_rate);
+	asset->timecode = timecode;
+	if( timecode >= 0 ) {
+		int64_t pos = edit->startproject + edit->startsource;
+		double position = edit->track->from_units(pos);
+		mwindow->set_timecode_offset(timecode - position);
+	}
+	else
+		mwindow->set_timecode_offset(0);
+	return 1;
+}
 

@@ -134,6 +134,7 @@ EDLSession::EDLSession(EDL *edl)
 	si_duration = 3;
 	test_playback_edits = 1;
 	time_format = TIME_HMSF;
+	timecode_offset = 0;
 	nudge_format = 1;
 	tool_window = 0;
 	for(int i = 0; i < MAXCHANNELS; i++) {
@@ -328,6 +329,7 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	gang_tracks = defaults->get("GANG_TRACKS", GANG_NONE);
 //	test_playback_edits = defaults->get("TEST_PLAYBACK_EDITS", 1);
 	time_format = defaults->get("TIME_FORMAT", TIME_HMSF);
+	timecode_offset = defaults->get("TIMECODE_OFFSET", timecode_offset);
 	nudge_format = defaults->get("NUDGE_FORMAT", 1);
 	tool_window = defaults->get("TOOL_WINDOW", 0);
 	vconfig_in->load_defaults(defaults);
@@ -467,6 +469,7 @@ int EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->update("GANG_TRACKS", gang_tracks);
 //	defaults->update("TEST_PLAYBACK_EDITS", test_playback_edits);
 	defaults->update("TIME_FORMAT", time_format);
+	defaults->update("TIMECODE_OFFSET", timecode_offset);
 	defaults->update("NUDGE_FORMAT", nudge_format);
 	defaults->update("TOOL_WINDOW", tool_window);
 	vconfig_in->save_defaults(defaults);
@@ -652,6 +655,7 @@ int EDLSession::load_xml(FileXML *file,
 		gang_tracks = file->tag.get_property("GANG_TRACKS", GANG_NONE);
 //		test_playback_edits = file->tag.get_property("TEST_PLAYBACK_EDITS", test_playback_edits);
 		time_format = file->tag.get_property("TIME_FORMAT", time_format);
+		timecode_offset = file->tag.get_property("TIMECODE_OFFSET", timecode_offset);
 		nudge_format = file->tag.get_property("NUDGE_FORMAT", nudge_format);
 		tool_window = file->tag.get_property("TOOL_WINDOW", tool_window);
 		vwindow_meter = file->tag.get_property("VWINDOW_METER", vwindow_meter);
@@ -722,6 +726,7 @@ int EDLSession::save_xml(FileXML *file)
 	file->tag.set_property("GANG_TRACKS", gang_tracks);
 	file->tag.set_property("TEST_PLAYBACK_EDITS", test_playback_edits);
 	file->tag.set_property("TIME_FORMAT", time_format);
+	file->tag.set_property("TIMECODE_OFFSET", timecode_offset);
 	file->tag.set_property("NUDGE_FORMAT", nudge_format);
 	file->tag.set_property("TOOL_WINDOW", tool_window);
 	file->tag.set_property("VWINDOW_METER", vwindow_meter);
@@ -899,6 +904,7 @@ int EDLSession::copy(EDLSession *session)
 	gang_tracks = session->gang_tracks;
 	test_playback_edits = session->test_playback_edits;
 	time_format = session->time_format;
+	timecode_offset = session->timecode_offset;
 	nudge_format = session->nudge_format;
 	tool_window = session->tool_window;
 	for(int i = 0; i < MAXCHANNELS; i++) {

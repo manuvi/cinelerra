@@ -127,6 +127,8 @@ public:
 	int popupmenu_btnup;
 // textbox focus policy: click, leave
 	int textbox_focus_policy;
+// apply display_matrix rotation, ffmpeg only
+	int auto_rotate;
 // forward playback starts next frame, not this frame
 	int forward_render_displacement;
 // use dvd yuv420p interlace format

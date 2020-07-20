@@ -332,6 +332,9 @@ public:
 	void toggle_projector_xyz();
 	double get_position();
 	void set_position(double position);
+	double get_timecode_offset();
+	void set_timecode_offset(double offset);
+	void align_timecodes();
 
 // seek to labels
 // shift_down must be passed by the caller because different windows call

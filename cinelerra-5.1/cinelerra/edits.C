@@ -31,6 +31,7 @@
 #include "edits.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "ffmpeg.h"
 #include "file.h"
 #include "filexml.h"
 #include "filesystem.h"
@@ -836,5 +837,60 @@ void Edits::shift_keyframes_recursive(int64_t position, int64_t length)
 void Edits::shift_effects_recursive(int64_t position, int64_t length, int edit_autos)
 {
 	track->shift_effects(position, length, edit_autos, 0);
+}
+
+double Edits::early_timecode()
+{
+	double result = -1;
+	for( Edit *edit=first; edit; edit=edit->next ) {
+		Asset *asset = edit->asset;
+		if( !asset ) continue;
+		if( asset->timecode < -1 )
+			asset->timecode = FFMPEG::get_timecode(asset->path,
+				track->data_type, edit->channel,
+				edl->session->frame_rate);
+		if( asset->timecode < 0 ) continue;
+		if( result < 0 ||  result > asset->timecode )
+			result = asset->timecode;
+	}
+	return result;
+}
+
+void Edits::align_timecodes(double offset)
+{
+	for( Edit *edit=first, *next=0; edit; edit=next ) {
+		next = edit->next;
+		if( edit->silence() ) delete edit;
+	}
+	for( Edit *edit=first, *next=0; edit; edit=next ) {
+		next = edit->next;
+		Asset *asset = edit->asset;
+		if( !asset && asset->timecode < 0 ) continue;
+		double position = asset->timecode - offset;
+		edit->startproject = track->to_units(position, 1) + edit->startsource;
+	}
+	int result = 1;
+	while( result ) {
+		result = 0;
+		for( Edit *edit=first, *next=0; edit; edit=next ) {
+			next = edit->next;
+			if( !next || next->startproject >= edit->startproject ) continue;
+			swap(next, edit);
+			next = edit;
+			result = 1;
+		}
+	}
+	int64_t startproject = 0;
+	for( Edit *edit=first; edit; edit=edit->next ) {
+		int64_t length = edit->startproject - startproject;
+		if( length > 0 ) {
+			Edit *new_edit = create_edit();
+			insert_before(edit, new_edit);
+			new_edit->startproject = startproject;
+			new_edit->length = length;
+			startproject = edit->startproject;
+		}
+		startproject += edit->length;
+	}
 }
 

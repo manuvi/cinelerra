@@ -38,6 +38,7 @@ AppearancePrefs::AppearancePrefs(MWindow *mwindow, PreferencesWindow *pwindow)
 {
 	hms = 0;
 	hmsf = 0;
+	timecode = 0;
 	samples = 0;
 	frames = 0;
 	hex = 0;
@@ -52,6 +53,7 @@ AppearancePrefs::~AppearancePrefs()
 {
 	delete hms;
 	delete hmsf;
+	delete timecode;
 	delete samples;
 	delete frames;
 	delete hex;
@@ -129,6 +131,10 @@ void AppearancePrefs::create_objects()
 	y += ys20;
 	add_subwindow(hmsf = new TimeFormatHMSF(pwindow, this,
 		pwindow->thread->edl->session->time_format == TIME_HMSF,
+		x, y));
+	y += ys20;
+	add_subwindow(timecode = new TimeFormatTimecode(pwindow, this,
+		pwindow->thread->edl->session->time_format == TIME_TIMECODE,
 		x, y));
 	y += ys20;
 	add_subwindow(samples = new TimeFormatSamples(pwindow, this,
@@ -258,6 +264,9 @@ void AppearancePrefs::create_objects()
 	DeactivateFocusPolicy *focus_deactivate = new DeactivateFocusPolicy(pwindow, x, y);
 	add_subwindow(focus_deactivate);
 	y += focus_deactivate->get_h() + ys5;
+	AutoRotate *auto_rotate = new AutoRotate(pwindow, x, y);
+	add_subwindow(auto_rotate);
+	y += auto_rotate->get_h() + ys5;
 }
 
 int AppearancePrefs::update(int new_value)
@@ -266,6 +275,7 @@ int AppearancePrefs::update(int new_value)
 	pwindow->thread->edl->session->time_format = new_value;
 	hms->update(new_value == TIME_HMS);
 	hmsf->update(new_value == TIME_HMSF);
+	timecode->update(new_value == TIME_TIMECODE);
 	samples->update(new_value == TIME_SAMPLES);
 	hex->update(new_value == TIME_SAMPLES_HEX);
 	frames->update(new_value == TIME_FRAMES);
@@ -292,6 +302,16 @@ TimeFormatHMSF::TimeFormatHMSF(PreferencesWindow *pwindow, AppearancePrefs *tfwi
 int TimeFormatHMSF::handle_event()
 {
 	tfwindow->update(TIME_HMSF);
+	return 1;
+}
+
+TimeFormatTimecode::TimeFormatTimecode(PreferencesWindow *pwindow, AppearancePrefs *tfwindow, int value, int x, int y)
+ : BC_Radial(x, y, value, TIME_TIMECODE_TEXT)
+{ this->pwindow = pwindow; this->tfwindow = tfwindow; }
+
+int TimeFormatTimecode::handle_event()
+{
+	tfwindow->update(TIME_TIMECODE);
 	return 1;
 }
 
@@ -699,6 +719,19 @@ int DeactivateFocusPolicy::handle_event()
 		pwindow->thread->preferences->textbox_focus_policy |= CLICK_DEACTIVATE;
 	else
 		pwindow->thread->preferences->textbox_focus_policy &= ~CLICK_DEACTIVATE;
+	return 1;
+}
+
+AutoRotate::AutoRotate(PreferencesWindow *pwindow, int x, int y)
+ : BC_CheckBox(x, y, pwindow->thread->preferences->auto_rotate != 0,
+	_("Auto rotate ffmpeg media"))
+{
+	this->pwindow = pwindow;
+}
+
+int AutoRotate::handle_event()
+{
+	pwindow->thread->preferences->auto_rotate = get_value();
 	return 1;
 }
 

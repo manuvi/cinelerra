@@ -308,6 +308,7 @@ void MTimeBar::draw_time()
 		}
 
 		case TIME_FRAMES:
+		case TIME_TIMECODE:
 		case TIME_HMSF:
 // One frame per text mark
 			if(frame_seconds >= min_time)
@@ -363,11 +364,14 @@ void MTimeBar::draw_time()
 
 // Set tick interval
 	tick_interval = text_interval;
+	double timecode_offset = 0;
 
 	switch(mwindow->edl->session->time_format)
 	{
-		case TIME_HMSF:
+		case TIME_TIMECODE:
+			timecode_offset = mwindow->get_timecode_offset(); // fall thru
 		case TIME_FEET_FRAMES:
+		case TIME_HMSF:
 		case TIME_FRAMES:
 			if(frame_seconds / time_per_pixel > TICK_SPACING)
 				tick_interval = frame_seconds;
@@ -395,7 +399,8 @@ void MTimeBar::draw_time()
 			mwindow->edl->session->time_format,
 			sample_rate,
 			mwindow->edl->session->frame_rate,
-			mwindow->edl->session->frames_per_foot);
+			mwindow->edl->session->frames_per_foot,
+			timecode_offset);
 	 	set_color(get_resources()->default_text_color);
 		set_font(MEDIUMFONT);
 
@@ -697,14 +702,16 @@ void TimeBarPopup::create_objects()
 	add_item(items[1] = new TimeBarPopupItem(mwindow,
 		this, TIME_HMSF_TEXT, TIME_HMSF));
 	add_item(items[2] = new TimeBarPopupItem(mwindow,
-		this, TIME_FRAMES_TEXT, TIME_FRAMES));
+		this, TIME_TIMECODE_TEXT, TIME_TIMECODE));
 	add_item(items[3] = new TimeBarPopupItem(mwindow,
-		this, TIME_SAMPLES_TEXT, TIME_SAMPLES));
+		this, TIME_FRAMES_TEXT, TIME_FRAMES));
 	add_item(items[4] = new TimeBarPopupItem(mwindow,
-		this, TIME_SAMPLES_HEX_TEXT, TIME_SAMPLES_HEX));
+		this, TIME_SAMPLES_TEXT, TIME_SAMPLES));
 	add_item(items[5] = new TimeBarPopupItem(mwindow,
-		this, TIME_SECONDS_TEXT, TIME_SECONDS));
+		this, TIME_SAMPLES_HEX_TEXT, TIME_SAMPLES_HEX));
 	add_item(items[6] = new TimeBarPopupItem(mwindow,
+		this, TIME_SECONDS_TEXT, TIME_SECONDS));
+	add_item(items[7] = new TimeBarPopupItem(mwindow,
 		this, TIME_FEET_FRAMES_TEXT, TIME_FEET_FRAMES));
 }
 

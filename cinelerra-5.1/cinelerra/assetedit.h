@@ -80,6 +80,8 @@ public:
 	AssetEdit *asset_edit;
 	BC_Title *win_width;
 	BC_Title *win_height;
+	BC_TextBox *tc_hrs, *tc_mins;
+	BC_TextBox *tc_secs, *tc_rest;
 	DetailAssetDialog *detail_dialog;
 	void show_info_detail();
 

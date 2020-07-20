@@ -3731,6 +3731,7 @@ void MWindow::update_project(int load_mode)
 
 	if( load_mode == LOADMODE_REPLACE ||
 	    load_mode == LOADMODE_REPLACE_CONCATENATE ) {
+		edl->session->timecode_offset = 0;
 		delete gui->keyvalue_popup;
 		gui->keyvalue_popup = 0;
 		gui->load_panes();
@@ -3952,6 +3953,7 @@ int MWindow::save(int save_as)
 	for( int i=stack.size(); --i>=0;  ) {
 		StackItem &item = stack[i];
 		Indexable *idxbl = item.idxbl;
+		if( !idxbl ) continue;
 		if( idxbl->is_asset ) {
 			Asset *asset = (Asset *)idxbl;
 			if( asset->format == FILE_REF ) {
@@ -3959,8 +3961,8 @@ int MWindow::save(int save_as)
 					return 1;
 			}
 		}
-		else if( item.new_edl != item.idxbl )
-			item.new_edl->overwrite_clip((EDL*)item.idxbl);
+		else if( item.new_edl != idxbl )
+			item.new_edl->overwrite_clip((EDL*)idxbl);
 	}
 	EDL *new_edl = stack.size() ? stack[0].edl : edl;
 	save(new_edl, path, 1);
@@ -4779,31 +4781,30 @@ int MWindow::interrupt_indexes()
 
 void MWindow::next_time_format()
 {
-	switch(edl->session->time_format)
-	{
-		case TIME_HMS: edl->session->time_format = TIME_HMSF; break;
-		case TIME_HMSF: edl->session->time_format = TIME_SAMPLES; break;
-		case TIME_SAMPLES: edl->session->time_format = TIME_SAMPLES_HEX; break;
-		case TIME_SAMPLES_HEX: edl->session->time_format = TIME_FRAMES; break;
-		case TIME_FRAMES: edl->session->time_format = TIME_FEET_FRAMES; break;
-		case TIME_FEET_FRAMES: edl->session->time_format = TIME_SECONDS; break;
-		case TIME_SECONDS: edl->session->time_format = TIME_HMS; break;
+	switch( edl->session->time_format ) {
+	case TIME_HMS:          edl->session->time_format = TIME_HMSF;         break;
+	case TIME_HMSF:         edl->session->time_format = TIME_TIMECODE;     break;
+	case TIME_TIMECODE:     edl->session->time_format = TIME_FRAMES;       break;
+	case TIME_FRAMES:       edl->session->time_format = TIME_SAMPLES;      break;
+	case TIME_SAMPLES:      edl->session->time_format = TIME_SAMPLES_HEX;  break;
+	case TIME_SAMPLES_HEX:  edl->session->time_format = TIME_SECONDS;      break;
+	case TIME_SECONDS:      edl->session->time_format = TIME_FEET_FRAMES;  break;
+	case TIME_FEET_FRAMES:  edl->session->time_format = TIME_HMS;          break;
 	}
-
 	time_format_common();
 }
 
 void MWindow::prev_time_format()
 {
-	switch(edl->session->time_format)
-	{
-		case TIME_HMS: edl->session->time_format = TIME_SECONDS; break;
-		case TIME_SECONDS: edl->session->time_format = TIME_FEET_FRAMES; break;
-		case TIME_FEET_FRAMES: edl->session->time_format = TIME_FRAMES; break;
-		case TIME_FRAMES: edl->session->time_format = TIME_SAMPLES_HEX; break;
-		case TIME_SAMPLES_HEX: edl->session->time_format = TIME_SAMPLES; break;
-		case TIME_SAMPLES: edl->session->time_format = TIME_HMSF; break;
-		case TIME_HMSF: edl->session->time_format = TIME_HMS; break;
+	switch( edl->session->time_format ) {
+	case TIME_HMS:          edl->session->time_format = TIME_FEET_FRAMES;  break;
+	case TIME_HMSF:         edl->session->time_format = TIME_HMS;          break;
+	case TIME_TIMECODE:     edl->session->time_format = TIME_HMSF;         break;
+	case TIME_FRAMES:       edl->session->time_format = TIME_TIMECODE;     break;
+	case TIME_SAMPLES:      edl->session->time_format = TIME_FRAMES;       break;
+	case TIME_SAMPLES_HEX:  edl->session->time_format = TIME_SAMPLES;      break;
+	case TIME_SECONDS:      edl->session->time_format = TIME_SAMPLES_HEX;  break;
+	case TIME_FEET_FRAMES:  edl->session->time_format = TIME_SECONDS;      break;
 	}
 
 	time_format_common();

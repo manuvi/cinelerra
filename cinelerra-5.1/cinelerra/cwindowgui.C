@@ -761,7 +761,8 @@ CWindowEditing::CWindowEditing(MWindow *mwindow, CWindow *cwindow)
 		0, // use_goto
 		1, // use_clk2play
 		1, // use_scope
-		0) // use_gang_tracks
+		0, // use_gang_tracks
+		0) // use_timecode
 {
 	this->mwindow = mwindow;
 	this->cwindow = cwindow;

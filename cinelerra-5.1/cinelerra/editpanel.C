@@ -76,7 +76,8 @@ EditPanel::EditPanel(MWindow *mwindow,
 	int use_goto,
 	int use_clk2play,
 	int use_scope,
-	int use_gang_tracks)
+	int use_gang_tracks,
+	int use_timecode)
 {
 	this->window_id = window_id;
 	this->editing_mode = editing_mode;
@@ -100,6 +101,7 @@ EditPanel::EditPanel(MWindow *mwindow,
 	this->use_clk2play = use_clk2play;
 	this->use_scope = use_scope;
 	this->use_gang_tracks = use_gang_tracks;
+	this->use_timecode = use_timecode;
 
 	this->x = x;
 	this->y = y;
@@ -322,6 +324,12 @@ void EditPanel::create_buttons()
 		scope_dialog = new EditPanelScopeDialog(mwindow, this);
 	}
 
+	if( use_timecode ) {
+		timecode = new EditPanelTimecode(mwindow, this, x1, y1);
+		subwindow->add_subwindow(timecode);
+		x1 += timecode->get_w();
+	}
+
 	if( use_gang_tracks ) {
 		gang_tracks = new EditPanelGangTracks(mwindow, this, x1, y1-yS(1));
 		subwindow->add_subwindow(gang_tracks);
@@ -447,6 +455,10 @@ void EditPanel::reposition_buttons(int x, int y)
 	if( use_scope ) {
 		scope->reposition_window(x1, y1-yS(1));
 		x1 += scope->get_w();
+	}
+	if( use_timecode ) {
+		timecode->reposition_window(x1, y1);
+		x1 += timecode->get_w();
 	}
 
 	if( use_meters ) {
@@ -1363,6 +1375,198 @@ int EditPanelGangTracks::handle_event()
 	}
 	update(gang);
 	panel->panel_set_gang_tracks(gang);
+	return 1;
+}
+
+
+EditPanelTimecode::EditPanelTimecode(MWindow *mwindow,
+	EditPanel *panel, int x, int y)
+ : BC_Button(x, y, mwindow->theme->get_image_set("clapperbutton"))
+{
+	this->mwindow = mwindow;
+	this->panel = panel;
+	tc_dialog = 0;
+	set_tooltip(_("Set Timecode"));
+}
+
+EditPanelTimecode::~EditPanelTimecode()
+{
+	delete tc_dialog;
+}
+
+int EditPanelTimecode::handle_event()
+{
+	if( !tc_dialog )
+		tc_dialog = new EditPanelTcDialog(mwindow, panel);
+	int px, py;
+	get_pop_cursor(px, py, 0);
+	tc_dialog->start_dialog(px, py);
+	return 1;
+}
+
+EditPanelTcDialog::EditPanelTcDialog(MWindow *mwindow, EditPanel *panel)
+ : BC_DialogThread()
+{
+	this->mwindow = mwindow;
+	this->panel = panel;
+	tc_gui = 0;
+	px = py = 0;
+}
+
+EditPanelTcDialog::~EditPanelTcDialog()
+{
+	close_window();
+}
+
+#define TCW_W xS(200)
+#define TCW_H yS(120)
+
+void EditPanelTcDialog::start_dialog(int px, int py)
+{
+	this->px = px - TCW_W/2;
+	this->py = py - TCW_H/2;
+	start();
+}
+
+BC_Window *EditPanelTcDialog::new_gui()
+{
+	tc_gui = new EditPanelTcWindow(this, px, py);
+	tc_gui->create_objects();
+	double timecode = mwindow->get_timecode_offset();
+	tc_gui->update(timecode);
+	tc_gui->show_window();
+	return tc_gui;
+}
+
+void EditPanelTcDialog::handle_done_event(int result)
+{
+	if( result ) return;
+	double ofs = tc_gui->get_timecode();
+	mwindow->set_timecode_offset(ofs);
+}
+
+EditPanelTcWindow::EditPanelTcWindow(EditPanelTcDialog *tc_dialog, int x, int y)
+ : BC_Window(_(PROGRAM_NAME ": Timecode"), x, y,
+	TCW_W, TCW_H, TCW_W, TCW_H, 0, 0, 1)
+{
+	this->tc_dialog = tc_dialog;
+}
+
+EditPanelTcWindow::~EditPanelTcWindow()
+{
+}
+
+double EditPanelTcWindow::get_timecode()
+{
+	int hrs = atoi(hours->get_text());
+	int mins = atoi(minutes->get_text());
+	int secs = atoi(seconds->get_text());
+	int frms = atoi(frames->get_text());
+	double frame_rate = tc_dialog->mwindow->edl->session->frame_rate;
+	double timecode = hrs*3600 + mins*60 + secs + frms/frame_rate;
+	return timecode;
+}
+
+void EditPanelTcWindow::update(double timecode)
+{
+	if( timecode < 0 ) timecode = 0;
+	int64_t pos = timecode;
+	int hrs = pos/3600;
+	int mins = pos/60 - hrs*60;
+	int secs = pos - hrs*3600 - mins*60;
+	double frame_rate = tc_dialog->mwindow->edl->session->frame_rate;
+	int frms = (timecode-pos) * frame_rate;
+	hours->update(hrs);
+	minutes->update(mins);
+	seconds->update(secs);
+	frames->update(frms);
+}
+
+void EditPanelTcWindow::create_objects()
+{
+	lock_window("EditPanelTcWindow::create_objects");
+	int x = xS(20), y = yS(5);
+	BC_Title *title = new BC_Title(x - 2, y, _("hour  min   sec   frms"), SMALLFONT);
+	add_subwindow(title);  y += title->get_h() + xS(3);
+	hours = new EditPanelTcInt(this, x, y, xS(26), 99, "%02i");
+	add_subwindow(hours);    x += hours->get_w() + xS(4);
+	minutes = new EditPanelTcInt(this, x, y, xS(26), 59, "%02i");
+	add_subwindow(minutes);  x += minutes->get_w() + xS(4);
+	seconds = new EditPanelTcInt(this, x, y, xS(26), 60, "%02i");
+	add_subwindow(seconds);  x += seconds->get_w() + xS(4);
+	frames = new EditPanelTcInt(this, x, y, xS(34), 999, "%03i");
+	add_subwindow(frames);   x += frames->get_w() + xS(16);
+	add_subwindow(new EditPanelTcReset(this, x, y));
+	double timecode = tc_dialog->mwindow->get_timecode_offset();
+	update(timecode);
+	add_subwindow(new BC_OKButton(this));
+	add_subwindow(new BC_CancelButton(this));
+	unlock_window();
+}
+
+EditPanelTcReset::EditPanelTcReset(EditPanelTcWindow *window, int x, int y)
+ : BC_Button(x, y, window->tc_dialog->mwindow->theme->get_image_set("reset_button"))
+{
+	this->window = window;
+}
+
+int EditPanelTcReset::handle_event()
+{
+	window->update(0);
+	return 1;
+}
+
+
+EditPanelTcInt::EditPanelTcInt(EditPanelTcWindow *window, int x, int y, int w,
+	int max, const char *format)
+ : BC_TextBox(x, y, w, 1, "")
+{
+	this->window = window;
+	this->max = max;
+	this->format = format;
+	digits = 1;
+	for( int m=max; (m/=10)>0; ++digits );
+}
+
+EditPanelTcInt::~EditPanelTcInt()
+{
+}
+
+int EditPanelTcInt::handle_event()
+{
+	int v = atoi(get_text());
+	if( v > max ) {
+		v = v % (max+1);
+		char string[BCSTRLEN];
+		sprintf(string, format, v);
+		BC_TextBox::update(string);
+	}
+	return 1;
+}
+
+void EditPanelTcInt::update(int v)
+{
+	char text[BCTEXTLEN];
+	if( v > max ) v = max;
+	sprintf(text, format, v);
+	BC_TextBox::update(text);
+}
+
+int EditPanelTcInt::keypress_event()
+{
+	if( (int)strlen(get_text()) >= digits )
+		BC_TextBox::update("");
+	int key = get_keypress();
+	switch( key ) {
+	case TAB:   case LEFTTAB:
+	case LEFT:  case RIGHT:
+	case HOME:  case END:
+	case BACKSPACE:
+	case DELETE:
+	case '0': case '1': case '2': case '3': case '4':
+	case '5': case '6': case '7': case '8': case '9':
+		return BC_TextBox::keypress_event();
+	}
 	return 1;
 }
 

@@ -70,6 +70,7 @@ class MixerItems;
 class MixerViewer;
 class TileMixers;
 class AlignMixers;
+class AlignTimecodes;
 class AddAudioTrack;
 class DeleteAudioTrack;
 class DefaultATransition;

@@ -99,19 +99,15 @@ void AssetPopup::create_objects()
 
 void AssetPopup::paste_assets()
 {
-// Collect items into the drag vectors for temporary storage
-	gui->lock_window("AssetPopup::paste_assets");
-	mwindow->gui->lock_window("AssetPopup::paste_assets");
-	mwindow->cwindow->gui->lock_window("AssetPopup::paste_assets");
-
 	int proxy = mwindow->edl->session->awindow_folder == AW_PROXY_FOLDER ? 1 : 0;
 	gui->collect_assets(proxy);
+// Collect items into the drag vectors for temporary storage
+	gui->unlock_window();
+	mwindow->gui->lock_window("AssetPopup::paste_assets");
 	mwindow->paste_assets(mwindow->edl->local_session->get_selectionstart(1),
 		mwindow->edl->tracks->first, 0);   // do not overwrite
-
-	gui->unlock_window();
 	mwindow->gui->unlock_window();
-	mwindow->cwindow->gui->unlock_window();
+	gui->lock_window("AssetPopup::paste_assets");
 }
 
 void AssetPopup::match_size()
@@ -302,8 +298,10 @@ AssetPopupBuildIndex::~AssetPopupBuildIndex()
 
 int AssetPopupBuildIndex::handle_event()
 {
+	popup->unlock_window();
 //printf("AssetPopupBuildIndex::handle_event 1\n");
 	mwindow->rebuild_indices();
+	popup->lock_window("AssetPopupBuildIndex::handle_event");
 	return 1;
 }
 
@@ -394,9 +392,11 @@ AssetPopupOpenMixer::~AssetPopupOpenMixer()
 
 int AssetPopupOpenMixer::handle_event()
 {
+	popup->unlock_window();
 	mwindow->gui->lock_window("AssetPopupOpenMixer::handle_event");
 	mwindow->create_mixers();
 	mwindow->gui->unlock_window();
+	popup->lock_window("AssetPopupOpenMixer::handle_event");
 	return 1;
 }
 
@@ -413,9 +413,11 @@ AssetPopupInsertMixer::~AssetPopupInsertMixer()
 
 int AssetPopupInsertMixer::handle_event()
 {
+	popup->unlock_window();
 	mwindow->gui->lock_window("AssetPopupInsertMixer::handle_event");
 	mwindow->create_mixers(-1);
 	mwindow->gui->unlock_window();
+	popup->lock_window("AssetPopupInsertMixer::handle_event");
 	return 1;
 }
 

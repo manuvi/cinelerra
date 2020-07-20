@@ -37,6 +37,8 @@ extern "C" {
 #include "libavutil/pixdesc.h"
 #include "libswresample/swresample.h"
 #include "libswscale/swscale.h"
+#include "libavutil/parseutils.h"
+#include "libavutil/timecode.h"
 }
 
 class FFPacket  {
@@ -254,10 +256,12 @@ public:
 	int video_seek(int64_t pos);
 	int encode(VFrame *vframe);
 	int drain();
+	double get_rotation_angle();
+	void flip();
 
 	int idx;
 	double frame_rate;
-	int width, height;
+	int width, height, transpose;
 	int64_t length;
 	float aspect_ratio;
 
@@ -282,6 +286,38 @@ public:
 	int update(AVCodecID &codec_id, AVCodec *&decoder);
 };
 
+// for get_initial_timecode auto deletes
+class avFrame {
+	AVFrame *frm;
+public:
+	avFrame() { frm = av_frame_alloc(); }
+	~avFrame() { av_frame_free(&frm); }
+	operator AVFrame *() { return frm; }
+	AVFrame *operator ->() { return frm; }
+};
+
+class avPacket {
+	AVPacket pkt;
+public:
+	avPacket() {
+		av_init_packet(&pkt);
+		pkt.data = 0; pkt.size = 0;
+	}
+	~avPacket() { av_packet_unref(&pkt); }
+	operator AVPacket *() { return &pkt; }
+	AVPacket *operator ->() { return &pkt; }
+};
+
+class avCodecContext {
+	AVCodecContext *avctx;
+public:
+	avCodecContext(AVCodecContext *ctx) { avctx = ctx; }
+	~avCodecContext() { avcodec_free_context(&avctx); }
+	operator AVCodecContext *() { return avctx; }
+	AVCodecContext *operator ->() { return avctx; }
+};
+
+
 class FFMPEG : public Thread {
 public:
 	static Mutex fflock;
@@ -289,7 +325,7 @@ public:
 	static void ff_unlock() { fflock.unlock(); }
 
 	int check_sample_rate(AVCodec *codec, int sample_rate);
-	AVRational check_frame_rate(AVCodec *codec, double frame_rate);
+	AVRational check_frame_rate(const AVRational *p, double frame_rate);
 	AVRational to_sample_aspect_ratio(Asset *asset);
 	AVRational to_time_base(int sample_rate);
 	static int get_fmt_score(AVSampleFormat dst_fmt, AVSampleFormat src_fmt);
@@ -334,6 +370,7 @@ public:
 
 	int total_audio_channels();
 	int total_video_channels();
+	double get_initial_timecode(int data_type, int channel, double frame_rate);
 
 	int audio_seek(int ch, int64_t pos);
 	int video_seek(int layer, int64_t pos);
@@ -390,6 +427,7 @@ public:
 
 	FFMPEG(FileBase *file_base=0);
 	~FFMPEG();
+	AVCodecContext *activate_decoder(AVStream *st);
 	int scan(IndexState *index_state, int64_t *scan_position, int *canceled);
 
 	int ff_audio_stream(int channel) { return astrm_index[channel].st_idx; }
@@ -420,6 +458,8 @@ public:
 	int64_t ff_video_frames(int stream);
 	int ff_video_pid(int stream);
 	int ff_video_mpeg_color_range(int stream);
+	double ff_get_timecode(char *str, AVRational rate, double pos);
+	static double get_timecode(const char *path, int data_type, int channel, double rate);
 
 	int ff_cpus();
 	const char *ff_hw_dev();

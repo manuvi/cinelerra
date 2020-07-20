@@ -172,6 +172,7 @@ public:
 	SplitX *split_x;
 	SplitY *split_y;
 	MixerItems *mixer_items;
+	AlignTimecodes *align_timecodes;
 	LoadLayout *load_layout;
 	LoadLayout *save_layout;
 };
@@ -536,6 +537,14 @@ class AlignMixers : public MixerItem
 public:
 	AlignMixers(MixerItems *mixer_items);
 	int handle_event();
+};
+
+class AlignTimecodes : public BC_MenuItem
+{
+public:
+	AlignTimecodes(MWindow *mwindow);
+	int handle_event();
+	MWindow *mwindow;
 };
 
 // ======================================== audio

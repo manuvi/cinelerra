@@ -282,6 +282,7 @@ void MainMenu::create_objects()
 	windowmenu->add_item(split_x = new SplitX(mwindow));
 	windowmenu->add_item(split_y = new SplitY(mwindow));
 	windowmenu->add_item(mixer_items = new MixerItems(mwindow));
+	windowmenu->add_item(align_timecodes = new AlignTimecodes(mwindow));
 	mixer_items->create_objects();
 	windowmenu->add_item(new TileWindows(mwindow,_("Tile left"),0));
 	windowmenu->add_item(new TileWindows(mwindow,_("Tile right"),1));
@@ -1765,6 +1766,19 @@ int AlignMixers::handle_event()
 	int wx, wy;
 	mwindow->gui->get_abs_cursor(wx, wy);
 	mwindow->mixers_align->start_dialog(wx, wy);
+	return 1;
+}
+
+
+AlignTimecodes::AlignTimecodes(MWindow *mwindow)
+ : BC_MenuItem(_("Align Timecodes"))
+{
+	this->mwindow = mwindow;
+}
+
+int AlignTimecodes::handle_event()
+{
+	mwindow->align_timecodes();
 	return 1;
 }
 

@@ -34,7 +34,7 @@
 #define TOTALFREQS 1024
 // slots per octave
 #define OCTAVE 105
-#define TOTAL_TIMEFORMATS 7
+#define TOTAL_TIMEFORMATS 8
 
 // h:mm:ss.sss
 #define TIME_HMS 0
@@ -55,6 +55,7 @@
 #define TIME_HMS2__STR         "h:mm:ss"
 #define TIME_HMS3__STR         "hh:mm:ss"
 #define TIME_HMSF__STR         "h:mm:ss:ff"
+#define TIME_TIMECODE__STR     "timecode"
 #define TIME_SAMPLES__STR      "audio samples"
 #define TIME_SAMPLES_HEX__STR  "audio samples (hex)"
 #define TIME_FRAMES__STR       "video frames"
@@ -76,6 +77,9 @@
 // +m:ss
 #define TIME_MS2 10
 #define TIME_MS2_TEXT _("Minutes:Seconds")
+
+#define TIME_TIMECODE 11
+#define TIME_TIMECODE_TEXT _("Timecode")
 
 class Units;
 
@@ -178,16 +182,20 @@ public:
 	static int64_t tosamples(double frames, int sample_rate, float framerate);
 // give text representation as time
 	static char* totext(char *text, int64_t samples, int time_format,
-		int samplerate, float frame_rate = 0, float frames_per_foot = 0);
+		int samplerate, float frame_rate = 0, float frames_per_foot = 0,
+			double timecode_offset = 0);
 // give text representation as time
 	static char* totext(char *text, double seconds, int time_format,
-		int sample_rate = 0, float frame_rate = 0, float frames_per_foot = 0);
+		int sample_rate = 0, float frame_rate = 0, float frames_per_foot = 0,
+			double timecode_offset = 0);
 // convert time to samples
 	static int64_t fromtext(const char *text, int samplerate,
-		int time_format, float frame_rate, float frames_per_foot);
+		int time_format, float frame_rate, float frames_per_foot,
+		double timecode_offset);
 // Convert text to seconds
 	static double text_to_seconds(const char *text, int samplerate,
-		int time_format, float frame_rate = 0, float frames_per_foot = 0);
+		int time_format, float frame_rate = 0, float frames_per_foot = 0,
+			double timecode_offset = 0);
 	static char* size_totext(int64_t bytes, char *text);
 
 	static float xy_to_polar(int x, int y);

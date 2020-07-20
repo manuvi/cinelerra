@@ -787,3 +787,21 @@ void Tracks::move_tracks(Track *src, Track *dst, int n)
 	}
 }
 
+double Tracks::align_timecodes()
+{
+	double offset = -1;
+	for( Track *track=edl->tracks->first; track; track=track->next ) {
+		if( !track->is_armed() ) continue;
+		double early_offset = track->edits->early_timecode();
+		if( offset < 0 || offset > early_offset )
+			offset = early_offset;
+	}
+	if( offset >= 0 ) {
+		for( Track *track=edl->tracks->first; track; track=track->next ) {
+			if( !track->is_armed() ) continue;
+			track->edits->align_timecodes(offset);
+		}
+	}
+	return offset;
+}
+

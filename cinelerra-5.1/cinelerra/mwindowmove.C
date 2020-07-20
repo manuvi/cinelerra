@@ -756,21 +756,37 @@ int MWindow::find_selection(double position, int scroll_display)
 
 double MWindow::get_position()
 {
-        return edl->local_session->get_selectionstart(1);
+	return edl->local_session->get_selectionstart(1);
 }
 
 void MWindow::set_position(double position)
 {
-        if( position != get_position() ) {
-                if( position < 0 ) position = 0;
-                edl->local_session->set_selectionstart(position);
-                edl->local_session->set_selectionend(position);
-                gui->lock_window();
-                find_cursor();
-                gui->update(1, NORMAL_DRAW, 1, 1, 1, 1, 0);
-                gui->unlock_window();
-                cwindow->update(1, 0, 0, 0, 0);
-        }
+	if( position != get_position() ) {
+		if( position < 0 ) position = 0;
+		edl->local_session->set_selectionstart(position);
+		edl->local_session->set_selectionend(position);
+		gui->lock_window();
+		find_cursor();
+		gui->update(1, NORMAL_DRAW, 1, 1, 1, 1, 0);
+		gui->unlock_window();
+		cwindow->update(1, 0, 0, 0, 0);
+	}
+}
+
+
+double MWindow::get_timecode_offset()
+{
+	return edl->session->timecode_offset;
+}
+
+void MWindow::set_timecode_offset(double offset)
+{
+	edl->session->time_format = TIME_TIMECODE;
+	edl->session->timecode_offset = offset;
+	gui->lock_window();
+	gui->update(1, NORMAL_DRAW, 1, 1, 1, 1, 0);
+	gui->unlock_window();
+	cwindow->update(1, 0, 0, 0, 0);
 }
 
 

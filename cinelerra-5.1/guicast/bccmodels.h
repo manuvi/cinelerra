@@ -81,7 +81,7 @@ enum BC_CModel {
 #define FOURCC_YUV2 0x32595559  /* YUV2   YUV422 */
 #define FOURCC_UYVY 0x59565955  /* UYVY   UVY422 */
 #define FOURCC_I420 0x30323449  /* I420   Intel Indeo 4 */
-
+#define BC_COLOR_ALIGN 64	/* overwrite padding, ssse3 */
 
 #endif // !BC_TRANSPARENCY
 

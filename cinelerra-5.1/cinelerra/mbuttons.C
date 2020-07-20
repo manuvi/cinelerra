@@ -144,7 +144,8 @@ MainEditing::MainEditing(MWindow *mwindow, MButtons *mbuttons, int x, int y)
 		1, // use_goto
 		0, // use_clk2play
 		0, // use_scope
-		1) // use_gang_tracks
+		1, // use_gang_tracks
+		1) // use_timecode
 {
 	this->mwindow = mwindow;
 	this->mbuttons = mbuttons;

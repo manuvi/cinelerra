@@ -36,12 +36,6 @@
 #include "pluginserver.inc"
 
 
-// Time code formats
-#define TC_DROPFRAME 0
-#define TC_NONDROPFRAME 1
-#define TC_PAL 2
-#define TC_FILM 3
-
 class Asset : public Indexable, public ListItem<Asset>
 {
 public:
@@ -155,8 +149,8 @@ public:
 // Length in frames
 // -1 means a still photo
 	int64_t video_length;
-
-
+// timecode, unknown=-2, no timecode=-1, timecode>=0 
+	double timecode;
 
 // mp3 compression
 	int mp3_bitrate;

@@ -446,15 +446,16 @@ int Render::check_asset(EDL *edl, Asset &asset)
 	return 0;
 }
 
-int Render::get_strategy(int use_renderfarm, int use_labels)
+int Render::get_strategy(int use_renderfarm, int use_labels, int range_type)
 {
-	return use_renderfarm ?
-		(use_labels ? FILE_PER_LABEL_FARM : SINGLE_PASS_FARM) :
-		(use_labels ? FILE_PER_LABEL      : SINGLE_PASS     ) ;
+	return range_type == RANGE_1FRAME ? SINGLE_PASS :
+		 use_renderfarm ?
+			(use_labels ? FILE_PER_LABEL_FARM : SINGLE_PASS_FARM) :
+			(use_labels ? FILE_PER_LABEL      : SINGLE_PASS     ) ;
 }
 int Render::get_strategy()
 {
-	return get_strategy(preferences->use_renderfarm, use_labels);
+	return get_strategy(preferences->use_renderfarm, use_labels, range_type);
 }
 
 void Render::start_progress()

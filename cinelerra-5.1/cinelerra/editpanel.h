@@ -404,6 +404,71 @@ public:
 	MWindow *mwindow;
 };
 
+class EditPanelTimecode : public BC_Button
+{
+public:
+	EditPanelTimecode(MWindow *mwindow, EditPanel *panel, int x, int y);
+	~EditPanelTimecode();
+	int handle_event();
+	MWindow *mwindow;
+	EditPanel *panel;
+	EditPanelTcDialog *tc_dialog;
+};
+
+class EditPanelTcDialog : public BC_DialogThread
+{
+public:
+	EditPanelTcDialog(MWindow *mwindow, EditPanel *panel);
+	~EditPanelTcDialog();
+	BC_Window *new_gui();
+	void start_dialog(int px, int py);
+	void handle_done_event(int result);
+
+	MWindow *mwindow;
+	EditPanel *panel;
+	EditPanelTcWindow *tc_gui;
+	int px, py;
+};
+
+class EditPanelTcWindow : public BC_Window
+{
+public:
+	EditPanelTcWindow(EditPanelTcDialog *tc_dialog, int x, int y);
+	~EditPanelTcWindow();
+	void create_objects();
+	double get_timecode();
+	void update(double timecode);
+
+	EditPanelTcDialog *tc_dialog;
+	EditPanelTcInt *hours;
+	EditPanelTcInt *minutes;
+	EditPanelTcInt *seconds;
+	EditPanelTcInt *frames;
+};
+
+class EditPanelTcInt : public BC_TextBox
+{
+public:
+	EditPanelTcInt(EditPanelTcWindow *window, int x, int y, int w,
+		int max, const char *format);
+	~EditPanelTcInt();
+	int handle_event();
+	int keypress_event();
+	void update(int v);
+
+	EditPanelTcWindow *window;
+	int max, digits;
+	const char *format;
+};
+
+class EditPanelTcReset : public BC_Button
+{
+public:
+	EditPanelTcReset(EditPanelTcWindow *window, int x, int y);
+	int handle_event();
+
+	EditPanelTcWindow *window;
+};
 
 class EditPanel
 {
@@ -428,7 +493,8 @@ public:
 		int use_goto,
 		int use_clk2play,
 		int use_scope,
-		int use_gang_tracks);
+		int use_gang_tracks,
+		int use_timecode);
 	~EditPanel();
 
 	void set_meters(MeterPanel *meter_panel);
@@ -493,6 +559,7 @@ public:
 	int use_clk2play;
 	int use_scope;
 	int use_gang_tracks;
+	int use_timecode;
 
 	EditFit *fit;
 	EditFitAutos *fit_autos;
@@ -508,6 +575,7 @@ public:
 	EditManualGoto *mangoto;
 	EditClick2Play *click2play;
 	EditPanelScope *scope;
+	EditPanelTimecode *timecode;
 	EditPanelScopeDialog *scope_dialog;
 	EditCopy *copy;
 	EditPaste *paste;

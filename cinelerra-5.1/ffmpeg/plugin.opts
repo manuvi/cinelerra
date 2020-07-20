@@ -387,6 +387,8 @@ vibrance
 #xfade ###Input/output error
 #arnndn ###Invalid argument
 #dnn_processing ###Invalid argument
+#tonemap_vaapi ###Operation not permitted
+#afirsrc ###Operation not permitted
 #; the ffmpeg system library on Arch has these errors:
 #ladspa
 #ass

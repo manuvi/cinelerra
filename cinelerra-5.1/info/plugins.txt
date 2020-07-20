@@ -243,11 +243,14 @@ Zoom Blur:	Blur the video and use a zoom effect.
 #
 #  Description of FFmpeg Video Plugins
 #
+F_addroi:	Mark a region of interest in a video frame.
 F_amplify:	Amplify changes between successive video frames.
 F_atadenoise:	Apply an Adaptive Temporal Averaging Denoiser.
 F_avgblur:	Apply average blur filter.
 F_bbox:		Compute bounding box for each frame.
 F_bench:	Benchmarks part of a filtergraph.
+F_bilateral:	Apply bilateral filter, spatial smoothing while
+		preserving edges.
 F_bitplanenoise: Measure bit plane noise.
 F_blackdetect:	Detect video intervals that are (almost) black.
 F_blackframe:	Detect frames that are (almost) black.
@@ -255,6 +258,7 @@ F_boxblur:	Blurs the input video. Through the settings you are
 		able to change the power and the radius of the
 		boxblur applied to luma, chroma and alpha.
 F_bwdif:	Deinterlaces the input image.
+F_cas:		Apply Contrast Adaptive Sharpen filter to video. 
 F_chromahold:	Turns a certain color range into gray.
 F_chromakey:	Turns a certain color into transparency. Operates on
 		YUV colors.
@@ -273,6 +277,7 @@ F_crop:		Crops the input video.
 F_cropdetect:	Auto-detect crop size.
 F_curves:	Adjust components curves.
 F_datascope:	Video data analysis.
+F_dblur:	Apply Directional blur filter.
 F_dctdnoiz:	Denoise frames using 2D DCT.
 F_deband:	Debands video.
 F_deblock:	Deblock video.
@@ -323,6 +328,7 @@ F_framestep:	Select one frame every N frames.
 F_fspp:		Applies Fast Simple Post-processing filter.
 F_gblur:	Apply Gaussian Blur filter.
 F_gradfun:	Debands video quickly using gradients.
+F_gradients:	Draws a transparent gradient.
 F_graphmonitor:	Show various filtergraph stats.
 F_greyedge:	Estimates scene illumination by grey edge
 		assumption.
@@ -354,6 +360,7 @@ F_lutyuv:	Compute and apply a lookup table to YUV input.
 F_mandelbrot:	Render a Mandelbrot fractal.
 F_maskfun:	Create Mask.
 F_mcdeint:	Applies motion compensating deinterlacing.
+F_median:	Pick median pixel from rectangle defined by radius.
 F_mestimate:	Generate motion vectors.
 F_metadata:	Manipulate video frame metadata.
 F_mpdecimate:	Remove near-duplicate frames.
@@ -377,6 +384,8 @@ F_pal75bars:	Generate PAL 75% color bars. This only works with
 F_perms:	Set permissions for the output video frame.
 F_perspective:	Corrects the perspective of video.
 F_phase:	Phase shift fields.
+F_photosensitivity:	 Filter out photosensitive epilepsy seizure-inducing
+		flashes.
 F_pixscope:	Pixel data analysis for checking color and levels.
 		It will display sample values of color channels.
 F_pp:		Filters video using libpostproc.
@@ -402,6 +411,9 @@ F_sab:		Applies shape adaptive blur.
 F_scale:	Scale the input video size and/or convert the image
 		format.
 F_scale_cuda:	GPU accelerated video resizer.
+F_scdet:	Detect video scene change.
+F_scroll:	Scroll input video horizontally and/or vertically
+		by constant speed.
 F_separatefields: Split input video frames into fields.
 F_setparams:	Force field, or color property for the output video
 		frame.
@@ -410,6 +422,8 @@ F_showinfo:	Show textual information for each video frame.
 F_showpalette:	Display frame palette.
 F_shuffleframes: Shuffles video frames.
 F_shuffleplanes: Shuffles video planes.
+F_sierpinski:	Generate a Sierpinski carpet/triangle fractal, and
+		randomly pan around.
 F_signalstats:	Separates statistics from video analysis.
 F_smartblur:	Blurs the input video without impacting the outlines.
 		Through the settings you can select the radius, the
@@ -427,15 +441,20 @@ F_tpad:		Temporarily pad video frames.
 F_tblend:	Blend successive frames.
 F_testsrc:	Generate test pattern.
 F_testsrc2:	Generate another test pattern.
+F_thistogram:	Compute and draw a color distribution histogram for
+		the input video across time.
 F_tile:		Tile several successive frames together.
 F_tinterlace:	Performs temporal field interlacing.
 F_tlut2:	Compute and apply a lookup table from two
 		successive frames.
+F_tmedian:	Pick median pixels from successive frames.
 F_tmix:		Mix successive video frames.
 F_transpose:	Transposes input video.
 F_transpose_vaapi: VAAPI VPP for transpose.
 F_unsharp:	Sharpen or blur the input video.
+F_untile:	Untile a frame into a sequence of frames.
 F_uspp:		Applies Ultra Simple/Slow Post-processing filter.
+F_v360:		Convert 360 videos between various formats.
 F_vaguedenoiser: Applies a Wavelet based Denoiser.
 F_vectorscope:	Video vectorscope.
 F_vflip:	Flips the input video vertically.
@@ -451,6 +470,7 @@ F_weave:	Weaves input video fields into frames.
 F_xbr:		Scales the input using xBR algorithm.
 F_yadif:	Deinterlaces the input image.
 F_yadif_cuda:	Deinterlace CUDA frames.
+F_yaepblur:	Yet another edge preserving blur filter.
 F_yuvtestsrc:	Generate YUV test pattern.
 F_zoompan:	Applies Zoom & Pan effect.
 #
@@ -488,6 +508,7 @@ F_asoftclip:	Apply audio soft clipping - a type of distortion effect
 		where signal amplitude is saturated along a smooth
 		curve.
 F_astats:	Shows time domain statistics about audio frames.
+F_asubboost:	Boost subwoofer frequencies.
 F_atempo:	Adjusts audio tempo.
 F_atrim:	Pick one continuous section from the input and drop
 		the rest.

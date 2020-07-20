@@ -167,6 +167,7 @@ void Asset::reset_video()
 	proxy_scale = 0; // not a proxy
 	proxy_edl = 0; // not proxy from edl
 	video_length = 0;
+	timecode = -2; // unknown
 	single_frame = 0;
 	vmpeg_cmodel = BC_YUV420P;
 	frame_rate = 0;
@@ -217,6 +218,7 @@ void Asset::copy_format(Asset *asset, int do_index)
 	use_header = asset->use_header;
 	aspect_ratio = asset->aspect_ratio;
 	interlace_mode = asset->interlace_mode;
+	timecode = asset->timecode;
 
 	video_data = asset->video_data;
 	layers = asset->layers;
@@ -378,7 +380,8 @@ int Asset::equivalent(Asset &asset, int test_audio, int test_video, EDL *edl)
 		result = (layers == asset.layers &&
 			program == asset.program &&
 			frame_rate == asset.frame_rate &&
-			asset.interlace_mode    == interlace_mode &&
+			asset.interlace_mode == interlace_mode &&
+			asset.timecode == timecode &&
 			width == asset.width &&
 			height == asset.height &&
 			!strcmp(vcodec, asset.vcodec) &&
@@ -482,6 +485,7 @@ int Asset::read_video(FileXML *file)
 	file->tag.get_property("VCODEC", vcodec);
 
 	video_length = file->tag.get_property("VIDEO_LENGTH", (int64_t)0);
+	timecode = file->tag.get_property("TIMECODE", -2);
 	mov_sphere = file->tag.get_property("MOV_SPHERE", 0);
 	jpeg_sphere = file->tag.get_property("JPEG_SPHERE", 0);
 	single_frame = file->tag.get_property("SINGLE_FRAME", (int64_t)0);
@@ -649,6 +653,7 @@ int Asset::write_video(FileXML *file)
 		file->tag.set_property("VCODEC", vcodec);
 
 	file->tag.set_property("VIDEO_LENGTH", video_length);
+	file->tag.set_property("TIMECODE", timecode);
 	file->tag.set_property("MOV_SPHERE", mov_sphere);
 	file->tag.set_property("JPEG_SPHERE", jpeg_sphere);
 	file->tag.set_property("SINGLE_FRAME", single_frame);
@@ -995,11 +1000,10 @@ int Asset::dump(FILE *fp)
 		" height %d vcodec %s aspect_ratio %f ilace_mode %s\n",
 		video_data, layers, program, frame_rate, width, height,
 		vcodec, aspect_ratio,string);
-	fprintf(fp,"   actual_width %d actual_height %d proxy_scale %d proxy_edl %d"
-		" video_length %jd repeat %d\n",
-		actual_width, actual_height, proxy_scale, proxy_edl, video_length,
-		single_frame);
-	fprintf(fp,"   video_length %jd repeat %d\n", video_length, single_frame);
+	fprintf(fp,"   actual_width %d actual_height %d proxy_scale %d proxy_edl %d\n",
+		actual_width, actual_height, proxy_scale, proxy_edl);
+	fprintf(fp,"   video_length %jd repeat %d timecode %f\n",
+		video_length, single_frame, timecode);
 	fprintf(fp,"   mov_sphere=%d jpeg_sphere=%d\n", mov_sphere, jpeg_sphere);
 	return 0;
 }
