@@ -48,7 +48,7 @@ Samples::Samples(Samples *src)
 {
 	reset();
 	int src_sz = src->get_allocated();
-	if( use_shm ) {
+	if( src->use_shm ) {
 		share(src->get_shmid());
 		set_allocated(src_sz);
 	}
