@@ -64,11 +64,11 @@ static inline float interp_cubic(float dx, float p0, float p1, float p2, float p
 
 
 #define bi_linear_SETUP(typ, components, tx, ty) \
-	float dx = (tx)-0.5, dy = (ty)-0.5; \
-	int itx = dx, ity = dy, in_comps = (components); \
-	if( (dx -= itx) < 0 ) dx += 1; \
-	if( (dy -= ity) < 0 ) dy += 1; \
-	int c0 = itx+0, c1 = itx+1, r0 = ity+0, r1 = ity+1; \
+	const int in_comps = components; \
+	float fx = (tx), fy = (ty); \
+	int c0 = floorf(fx), r0 = floorf(fy); \
+	float dx = fx-c0, dy = fy-r0; \
+	int c1 = c0+1, r1 = r0+1; \
 	typ *r0p = r0>=in_min_y && r0<in_max_y ? ((typ**)interp_rows)[r0] : 0; \
 	typ *r1p = r1>=in_min_y && r1<in_max_y ? ((typ**)interp_rows)[r1] : 0
 
@@ -83,12 +83,12 @@ static inline float interp_cubic(float dx, float p0, float p1, float p2, float p
 
 
 #define bi_cubic_SETUP(typ, components, tx, ty) \
-	float dx = (tx)-0.5, dy = (ty)-0.5; \
-	int itx = dx, ity = dy, in_comps = (components); \
-	if( (dx -= itx) < 0 ) dx += 1; \
-	if( (dy -= ity) < 0 ) dy += 1; \
-	int cp = itx-1, c0 = itx+0, c1 = itx+1, c2 = itx+2; \
-	int rp = ity-1, r0 = ity+0, r1 = ity+1, r2 = ity+2; \
+	const int in_comps = components; \
+	float fx = (tx), fy = (ty); \
+	int c0 = floorf(fx), r0 = floorf(fy); \
+	float dx = fx-c0, dy = fy-r0; \
+	int cp = c0-1, c1 = c0+1, c2 = c0+2; \
+	int rp = r0-1, r1 = r0+1, r2 = r0+2; \
 	typ *rpp = rp>=in_min_y && rp<in_max_y ? ((typ**)interp_rows)[rp] : 0; \
 	typ *r0p = r0>=in_min_y && r0<in_max_y ? ((typ**)interp_rows)[r0] : 0; \
 	typ *r1p = r1>=in_min_y && r1<in_max_y ? ((typ**)interp_rows)[r1] : 0; \

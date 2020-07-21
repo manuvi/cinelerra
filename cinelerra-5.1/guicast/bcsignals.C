@@ -569,6 +569,7 @@ static void handle_dump(int n, siginfo_t * info, void *sc)
 		fprintf(fp,"err opening: %s, %m\n", proc_mem);
 	reg_dump(fp, c);
 #endif
+	BC_Signals::dump_stack(fp);
 	fprintf(fp,"\n\n");
 	if( fp != stdout ) fclose(fp);
 #ifndef NO_GDB

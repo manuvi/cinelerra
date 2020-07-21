@@ -242,8 +242,8 @@ void AffineUnit::process_package(LoadPackage *package)
 	AffinePackage *pkg = (AffinePackage*)package;
 	int min_in_x = server->in_x;
 	int min_in_y = server->in_y;
-	int max_in_x = server->in_x + server->in_w - 1;
-	int max_in_y = server->in_y + server->in_h - 1;
+	int max_in_x = server->in_x + server->in_w;
+	int max_in_y = server->in_y + server->in_h;
 
 
 // printf("AffineUnit::process_package %d %d %d %d %d\n",
@@ -690,7 +690,7 @@ AffineEngine::AffineEngine(int total_clients, int total_packages)
 
 void AffineEngine::init_packages()
 {
-	int y1 = 0, npkgs = get_total_packages();
+	int y1 = out_y, npkgs = get_total_packages();
 	for( int i=0; i<npkgs; ) {
 		AffinePackage *package = (AffinePackage*)get_package(i);
 		int y2 = out_y + (out_h * ++i / npkgs);
