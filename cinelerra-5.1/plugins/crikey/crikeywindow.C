@@ -146,7 +146,7 @@ void CriKeyWindow::create_objects()
 	draw_mode->create_objects();
 	y += draw_mode->get_h() + ys10 + margin;
 
-	CriKeyPoint *pt = plugin->config.points[plugin->config.selected];
+	CriKeyPoint *pt = plugin->config.points[plugin->selected];
 	add_subwindow(title_x = new BC_Title(x, y, _("X:")));
 	x1 = x + title_x->get_w() + margin;
 	point_x = new CriKeyPointX(this, x1, y, pt->x);
@@ -171,7 +171,7 @@ void CriKeyWindow::create_objects()
 	y += threshold->get_h() + margin;
 
 	add_subwindow(drag = new CriKeyDrag(this, x, y));
-	if( plugin->config.drag ) {
+	if( plugin->drag ) {
 		if( !grab(plugin->server->mwindow->cwindow->gui) )
 			eprintf("drag enabled, but compositor already grabbed\n");
 	}
@@ -180,7 +180,7 @@ void CriKeyWindow::create_objects()
 	y += drag->get_h() + margin;
 
 	add_subwindow(point_list = new CriKeyPointList(this, plugin, x, y));
-	point_list->update(plugin->config.selected);
+	point_list->update(plugin->selected);
 
 	y += point_list->get_h() + ys10;
 	add_subwindow(notes = new BC_Title(x, y,
@@ -470,7 +470,7 @@ void CriKeyPointList::update(int k)
 	if( k >= 0 && k < sz ) {
 		gui->point_x->update(gui->point_list->cols[PT_X].get(k)->get_text());
 		gui->point_y->update(gui->point_list->cols[PT_Y].get(k)->get_text());
-		plugin->config.selected = k;
+		plugin->selected = k;
 	}
 
 	update_list(k);
@@ -478,9 +478,9 @@ void CriKeyPointList::update(int k)
 
 void CriKeyWindow::update_gui()
 {
-	draw_mode->update(plugin->config.draw_mode);
 	threshold->update(plugin->config.threshold);
-	drag->update(plugin->config.drag);
+	draw_mode->update(plugin->config.draw_mode);
+	drag->update(plugin->drag);
 	point_list->update(-1);
 }
 
@@ -568,7 +568,7 @@ int CriKeyPointDn::handle_event()
 }
 
 CriKeyDrag::CriKeyDrag(CriKeyWindow *gui, int x, int y)
- : BC_CheckBox(x, y, gui->plugin->config.drag, _("Drag"))
+ : BC_CheckBox(x, y, gui->plugin->drag, _("Drag"))
 {
 	this->gui = gui;
 }
@@ -584,7 +584,7 @@ int CriKeyDrag::handle_event()
 	}
 	else
 		gui->ungrab(cwindow_gui);
-	gui->plugin->config.drag = value;
+	gui->plugin->drag = value;
 	gui->send_configure_change();
 	return 1;
 }
@@ -594,8 +594,7 @@ int CriKeyWindow::handle_ungrab()
 	int ret = ungrab(cwindow_gui);
 	if( ret ) {
 		drag->update(0);
-		plugin->config.drag = 0;
-		send_configure_change();
+		plugin->drag = 0;
 	}
 	return ret;
 }

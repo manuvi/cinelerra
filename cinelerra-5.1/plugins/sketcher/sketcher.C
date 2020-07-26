@@ -165,18 +165,22 @@ void SketcherCurve::read_data(FileXML &input)
 	bclamp(pen, 0, PEN_SZ-1);
 }
 
-int Sketcher::new_curve(int pen, int width, int color)
+int SketcherConfig::new_curve(int pen, int width, int color)
 {
-	SketcherCurves &curves = config.curves;
 	int k = curves.size(), id = 1;
 	for( int i=k; --i>=0; ) {
-		int n = config.curves[i]->id;
+		int n = curves[i]->id;
 		if( n >= id ) id = n + 1;
 	}
 	SketcherCurve *cv = new SketcherCurve(id, pen, width, color);
 	curves.append(cv);
-	config.cv_selected = k;
 	return k;
+}
+
+int Sketcher::new_curve(int pen, int width, int color)
+{
+	cv_selected = config.new_curve(pen, width, color);
+	return cv_selected;
 }
 
 int Sketcher::new_curve()
@@ -200,7 +204,7 @@ int Sketcher::new_point(SketcherCurve *cv, int arc, coord x, coord y, int idx)
 
 int Sketcher::new_point(int idx, int arc)
 {
-	int ci = config.cv_selected;
+	int ci = cv_selected;
 	if( ci < 0 || ci >= config.curves.size() )
 		return -1;
 	SketcherCurve *cv = config.curves[ci];
@@ -243,10 +247,7 @@ REGISTER_PLUGIN(Sketcher)
 
 SketcherConfig::SketcherConfig()
 {
-	drag = 1;
 	aliasing = 0;
-	cv_selected = 0;
-	pt_selected = 0;
 }
 SketcherConfig::~SketcherConfig()
 {
@@ -254,10 +255,7 @@ SketcherConfig::~SketcherConfig()
 
 int SketcherConfig::equivalent(SketcherConfig &that)
 {
-	if( this->drag != that.drag ) return 0;
 	if( this->aliasing != that.aliasing ) return 0;
-	if( this->cv_selected != that.cv_selected ) return 0;
-	if( this->pt_selected != that.pt_selected ) return 0;
 	if( this->curves.size() != that.curves.size() ) return 0;
 	for( int i=0, n=curves.size(); i<n; ++i ) {
 		if( !curves[i]->equivalent(*that.curves[i]) ) return 0;
@@ -267,10 +265,7 @@ int SketcherConfig::equivalent(SketcherConfig &that)
 
 void SketcherConfig::copy_from(SketcherConfig &that)
 {
-	this->drag = that.drag;
 	this->aliasing = that.aliasing;
-	this->cv_selected = that.cv_selected;
-	this->pt_selected = that.pt_selected;
 	int m = curves.size(), n = that.curves.size();
 	while( m > n ) curves.remove_object_number(--m);
 	while( m < n ) { curves.append(new SketcherCurve());  ++m; }
@@ -280,9 +275,6 @@ void SketcherConfig::copy_from(SketcherConfig &that)
 void SketcherConfig::interpolate(SketcherConfig &prev, SketcherConfig &next,
 		long prev_frame, long next_frame, long current_frame)
 {
-	this->cv_selected = prev.cv_selected;
-	this->pt_selected = prev.pt_selected;
-	this->drag = prev.drag;
 	this->aliasing = prev.aliasing;
 
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
@@ -342,6 +334,10 @@ Sketcher::Sketcher(PluginServer *server)
 	img = 0;
 	out = 0;
 	overlay_frame = 0;
+
+	drag = 1;
+	cv_selected = 0;
+	pt_selected = 0;
 }
 
 Sketcher::~Sketcher()
@@ -358,6 +354,24 @@ int Sketcher::is_synthesis() { return 1; }
 NEW_WINDOW_MACRO(Sketcher, SketcherWindow);
 LOAD_CONFIGURATION_MACRO(Sketcher, SketcherConfig)
 
+void Sketcher::render_gui(void *data)
+{
+	Sketcher *sketcher = (Sketcher *)data;
+	sketcher->drag = drag;
+	sketcher->cv_selected = cv_selected;
+	sketcher->pt_selected = pt_selected;
+}
+
+int Sketcher::is_dragging()
+{
+	drag = 0;
+	cv_selected = -1;
+	pt_selected = -1;
+	send_render_gui(this);
+	return drag;
+}
+
+
 void SketcherConfig::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
@@ -365,10 +379,7 @@ void SketcherConfig::save_data(KeyFrame *keyframe)
 	output.set_shared_output(keyframe->xbuf);
 
 	output.tag.set_title("SKETCHER");
-	output.tag.set_property("DRAG", drag);
 	output.tag.set_property("ALIASING", aliasing);
-	output.tag.set_property("CV_SELECTED", cv_selected);
-	output.tag.set_property("PT_SELECTED", pt_selected);
 	output.append_tag();
 	output.append_newline();
 	for( int i=0,n=curves.size(); i<n; ++i ) {
@@ -395,10 +406,7 @@ void SketcherConfig::read_data(KeyFrame *keyframe)
 
 	while( !(result=input.read_tag()) ) {
 		if( input.tag.title_is("SKETCHER") ) {
-			drag = input.tag.get_property("DRAG", drag);
 			aliasing = input.tag.get_property("ALIASING", aliasing);
-			cv_selected = input.tag.get_property("CV_SELECTED", 0);
-			pt_selected = input.tag.get_property("PT_SELECTED", 0);
 		}
 		else if( !strncmp(input.tag.get_title(),"CURVE_",6) ) {
 			cv = new SketcherCurve();
@@ -427,7 +435,6 @@ void Sketcher::read_data(KeyFrame *keyframe)
 	if( !config.curves.size() )
 		new_curve();
 }
-
 
 void SketcherPoint::update_parameter(SketcherPoint *prev, SketcherPoint *src)
 {
@@ -475,14 +482,8 @@ void Sketcher::update_parameter(SketcherConfig &prev_config, SketcherConfig &src
 {
 	SketcherConfig dst_config;
 	dst_config.read_data(keyframe);
-	if( prev_config.drag != src_config.drag )
-		dst_config.drag = src_config.drag;
 	if( prev_config.aliasing != src_config.aliasing )
 		dst_config.aliasing = src_config.aliasing;
-	if( prev_config.cv_selected != src_config.cv_selected )
-		dst_config.cv_selected = src_config.cv_selected;
-	if( prev_config.pt_selected != src_config.pt_selected )
-		dst_config.pt_selected = src_config.pt_selected;
 	int src_curves = src_config.curves.size();
 	int dst_curves = dst_config.curves.size();
 	int prev_curves = prev_config.curves.size();
@@ -847,11 +848,11 @@ int Sketcher::process_realtime(VFrame *input, VFrame *output)
 				1.f, TRANSFER_SRC_OVER, NEAREST_NEIGHBOR);
 	}
 
-	if( config.drag ) {
+	if( is_dragging() ) {
 		for( int ci=0, n=config.curves.size(); ci<n; ++ci ) {
 			SketcherCurve *cv = config.curves[ci];
 			for( int pi=0,m=cv->points.size(); pi<m; ++pi ) {
-				int color = pi==config.pt_selected && ci==config.cv_selected ?
+				int color = pi==pt_selected && ci==cv_selected ?
 					RED : cv->color ; 
 				draw_point(out, cv->points[pi], color);
 			}
@@ -887,8 +888,7 @@ void SketcherCurves::dump()
 }
 void SketcherConfig::dump()
 {
-	printf("Config drag=%d, cv_selected=%d, pt_selected=%d %d curves\n",
-			drag, cv_selected, pt_selected, curves.size());
+	printf("Config %d curves\n", curves.size());
 	curves.dump();
 }
 

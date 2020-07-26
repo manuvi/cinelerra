@@ -384,7 +384,7 @@ run()
 				update_view(1);
 			if( !solo ) {
 				VIcon *next = low_vicon();
-				while( next && next->age < draw_flash ) {
+				while( !interrupted && next && next->age < draw_flash ) {
 					if( show_vicon(next) ) break;
 					add_vicon(next);
 					next = low_vicon();

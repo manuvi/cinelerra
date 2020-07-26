@@ -150,6 +150,8 @@ init_xfont(zbitfont_t *font,char *font_name)
 static zbitfont_t *
 get_xfont(int style, int pen_size, int italics, int size)
 {
+  const char *family, *slant;
+#if 0
   int serif = 0, prop = 0, casual = 0; // fst_default
   switch( style ) {
   case 1: serif = 1;  prop = 0;  casual = 0;  break; // fst_mono_serif
@@ -159,8 +161,6 @@ get_xfont(int style, int pen_size, int italics, int size)
   case 5: serif = 1;  prop = 1;  casual = 1;  break; // fst_casual
   }
 
-  const char *family, *slant;
-#if 1
   if( casual ) {
     family = "adobe-utopia";
     slant = italics ? "i" : "r";
@@ -176,20 +176,8 @@ get_xfont(int style, int pen_size, int italics, int size)
      (slant = italics ? "i" : "r", "bitstream-bitstream charter");
   }
 #else
-  if( casual ) {
-    family = "bitstream-bitstream vera serif";
-    slant = "r";
-  }
-  if( serif == 0 ) {
-   family = prop == 0 ?
-     (slant = italics ? "o" : "r", "bitstream-bitstream vera sans mono") :
-     (slant = italics ? "o" : "r", "bitstream-bitstream vera sans");
-  }
-  else {
-   family = prop == 0 ?
-     (slant = italics ? "i" : "r", "bitstream-courier 10 pitch"):
-     (slant = italics ? "i" : "r", "bitstream-bitstream charter");
-  }
+  family = "bitstream-bitstream charter";
+  slant = "r";
 #endif
   const char *wght = pen_size > 1 ? "bold" : "medium";
 

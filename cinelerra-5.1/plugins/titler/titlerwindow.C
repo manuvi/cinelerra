@@ -261,11 +261,13 @@ void TitleWindow::create_objects()
 	add_tool(bold = new TitleBold(client, this, x, y + yS(50)));
 	if( bold->get_w() > w1 ) w1 = bold->get_w();
 
+	if( client->drag && drag->drag_activate() ) {
+		eprintf("drag enabled, but compositor already grabbed\n");
+		client->drag = 0;
+	}
 	add_tool(drag = new TitleDrag(client, this, x, y + yS(80)));
 	drag->create_objects();
 	if( drag->get_w() > w1 ) w1 = drag->get_w();
-	if( client->config.drag && drag->drag_activate() )
-		eprintf("drag enabled, but compositor already grabbed\n");
 
 	add_tool(alias = new TitleAlias(client, this, x, y+yS(110)));
 	if( alias->get_w() > w1 ) w1 = drag->get_w();
@@ -1232,7 +1234,7 @@ int TitleBottom::handle_event()
 }
 
 TitleDrag::TitleDrag(TitleMain *client, TitleWindow *window, int x, int y)
- : DragCheckBox(client->server->mwindow, x, y, _("Drag"), &client->config.drag,
+ : DragCheckBox(client->server->mwindow, x, y, _("Drag"), &client->drag,
 		client->config.title_x, client->config.title_y,
 		client->config.title_w, client->config.title_h)
 {
@@ -1254,7 +1256,7 @@ int64_t TitleDrag::get_drag_position()
 
 void TitleDrag::update_gui()
 {
-	client->config.drag = get_value();
+	client->drag = get_value();
 	client->config.title_x = drag_x;
 	client->config.title_y = drag_y;
 	client->config.title_w = drag_w+0.5;
@@ -1269,6 +1271,7 @@ void TitleDrag::update_gui()
 int TitleDrag::handle_event()
 {
 	int ret = DragCheckBox::handle_event();
+	client->drag = get_value();
 	window->send_configure_change();
 	return ret;
 }

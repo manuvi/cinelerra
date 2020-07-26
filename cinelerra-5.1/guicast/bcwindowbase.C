@@ -224,6 +224,7 @@ BC_WindowBase::~BC_WindowBase()
 	}
 
 	resize_history.remove_all_objects();
+	delete grab_lock;
 
 #ifndef SINGLE_THREAD
 	common_events.remove_all_objects();
@@ -346,6 +347,7 @@ int BC_WindowBase::initialize()
 	event_condition = new Condition(0, "BC_WindowBase::event_condition");
 	init_lock = new Condition(0, "BC_WindowBase::init_lock");
 #endif
+	grab_lock = new Mutex("BC_WindowBase::grab_lock");
 
 	cursor_timer = new Timer;
 	event_thread = 0;
@@ -959,10 +961,14 @@ if( debug && event->type != ClientMessage ) {
 }
 
 	if( active_grab ) {
+		grab_lock->lock("BC_WindowBase::dispatch_event 3");
 		unlock_window();
-		active_grab->lock_window("BC_WindowBase::dispatch_event 3");
-		result = active_grab->grab_event(event);
-		active_grab->unlock_window();
+		if( active_grab ) {
+			active_grab->lock_window("BC_WindowBase::dispatch_event 3");
+			result = active_grab->grab_event(event);
+			active_grab->unlock_window();
+		}
+		grab_lock->unlock();
 		if( result ) return result;
 		lock_window("BC_WindowBase::dispatch_event 4");
 	}
@@ -3415,28 +3421,36 @@ void BC_WindowBase::close(int return_value)
 
 int BC_WindowBase::grab(BC_WindowBase *window)
 {
-	int ret = 1;
-	if( window->active_grab ) {
+	int ret = 0;
+	BC_WindowBase *grab_window = window->active_grab;
+	if( grab_window ) {
 		int locked = get_window_lock();
 		if( locked ) unlock_window();
-		BC_WindowBase *active_grab = window->active_grab;
-		active_grab->lock_window("BC_WindowBase::grab(BC_WindowBase");
-		ret = active_grab->handle_ungrab();
-		active_grab->unlock_window();
+		grab_window->lock_window("BC_WindowBase::grab(BC_WindowBase");
+		grab_window->handle_ungrab();
+		grab_window->unlock_window();
 		if( locked ) lock_window("BC_WindowBase::grab(BC_WindowBase");
 	}
-	if( ret ) {
+	window->grab_lock->lock("BC_WindowBase::grab");
+	if( !window->active_grab ) {
 		window->active_grab = this;
 		this->grab_active = window;
+		ret = 1;
 	}
+	window->grab_lock->unlock();
 	return ret;
 }
 int BC_WindowBase::ungrab(BC_WindowBase *window)
 {
-	if( this != window->active_grab ) return 0;
-	window->active_grab = 0;
-	this->grab_active = 0;
-	return 1;
+	int ret = 0;
+	window->grab_lock->lock("BC_WindowBase::ungrab");
+	if( this == window->active_grab ) {
+		window->active_grab = 0;
+		this->grab_active = 0;
+		ret = 1;
+	}
+	window->grab_lock->unlock();
+	return ret;
 }
 int BC_WindowBase::grab_event_count()
 {

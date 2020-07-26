@@ -129,7 +129,7 @@ int SWindowSaveFile::handle_event()
 		sw_gui->save_spumux_data();
 	}
 	else {
-		eprintf(_("script microdvd file path required"));
+		eprintf(_("script file path required"));
 	}
 	return 1;
 }
@@ -150,6 +150,9 @@ void SWindowGUI::create_objects()
 	add_subwindow(load_file = new SWindowLoadFile(this, x1, y1));
 	x1 += load_file->get_w() + 2*xpad;
 	add_subwindow(save_file = new SWindowSaveFile(this, x1, y1));
+	x1 += save_file->get_w() + 2*xpad;
+	add_subwindow(save_format = new SWindowSaveFormat(this, x1, y1));
+	save_format->create_objects();
 	y += max(load_path->get_h(), load_file->get_h()) + ypad;
 	x1 = x + ypad, y1 = y;
 	BC_Title *title1, *title2;
@@ -276,6 +279,7 @@ SWindowGUI::SWindowGUI(SWindow *swindow, int x, int y, int w, int h)
 	blank_line = 0;
 	text_font = MEDIUMFONT;
 	text_rowsz = get_text_ascent(text_font)+1 + get_text_descent(text_font)+1;
+	sub_format = SUB_FORMAT_SRT;
 }
 
 SWindowGUI::~SWindowGUI()
@@ -339,6 +343,7 @@ void SWindowGUI::load_defaults()
 	defaults->get("SUBTTL_SCRIPT_PATH", script_path);
 	script_entry_no = defaults->get("SUBTTL_SCRIPT_ENTRY_NO", script_entry_no);
 	script_text_no = defaults->get("SUBTTL_SCRIPT_TEXT_NO", script_text_no);
+	sub_format = defaults->get("SUBTTL_SCRIPT_FORMAT", sub_format);
 }
 
 void SWindowGUI::save_defaults()
@@ -347,6 +352,7 @@ void SWindowGUI::save_defaults()
 	defaults->update("SUBTTL_SCRIPT_PATH", script_path);
 	defaults->update("SUBTTL_SCRIPT_ENTRY_NO", script_entry_no);
 	defaults->update("SUBTTL_SCRIPT_TEXT_NO", script_text_no);
+	defaults->update("SUBTTL_SCRIPT_FORMAT", sub_format);
 }
 
 void SWindowGUI::set_script_pos(int64_t entry_no, int text_no)
@@ -847,29 +853,98 @@ void SWindowGUI::save_spumux_data()
 			       (wch >= '0' && wch <= '9') ) ) wch = '_';
 			butf8(wch, cp);
 		}
+		const char *sfx = "";
+		switch( sub_format ) {
+		case SUB_FORMAT_SRT:   sfx = ".srt";   break;
+		case SUB_FORMAT_RIP:   sfx = ".sub";   break;
+		case SUB_FORMAT_UDVD:  sfx = ".udvd";  break;
+		}
 		*cp = 0;
-		snprintf(ext,len,"-%s.udvd",track_title);
+		snprintf(ext,len,"-%s%s",track_title, sfx);
 		FILE *fp = fopen(filename, "w");
 		if( !fp ) {
 			eprintf(_("Unable to open %s:\n%m"), filename);
 			continue;
 		}
-		int64_t start = 0;
+		switch( sub_format ) {
+		case SUB_FORMAT_RIP:
+			fprintf(fp,"[SUBTITLE]\n"
+				"[COLF]&HFFFFFF,[SIZE]12,[FONT]Times New Roman\n");
+			break;
+		}
+		int64_t start = 0;  int count = 0;
 		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
 			SEdit *sedit = (SEdit *)edit;
-			if( sedit->length > 0 ) {
-				int64_t end = start + sedit->length;
-				char *text = sedit->get_text();
-				if( *text ) {
+			if( !sedit->length ) continue;
+			int64_t end = start + sedit->length;
+			double st = sedit->track->from_units(start);
+			int shr = st/3600; st -= shr*3600;
+			int smn = st/60;   st -= smn*60;
+			int ssc = st;      st -= ssc;
+			int sms = st*1000;
+			double et = sedit->track->from_units(end);
+			int ehr = et/3600; et -= ehr*3600;
+			int emn = et/60;   et -= emn*60;
+			int esc = et;      et -= esc;
+			int ems = et*1000;
+			char *text = sedit->get_text();
+			if( *text ) {
+				++count;
+				switch( sub_format ) {
+				case SUB_FORMAT_SRT:
+					fprintf(fp, "%d\n%02d:%02d:%02d,%03d --> %02d:%02d:%02d,%03d\n%s\n\n",
+						 count, shr, smn, ssc, sms, ehr, emn, esc, ems, text);
+					break;
+				case SUB_FORMAT_RIP:
+					fprintf(fp, "%02d:%02d:%02d.%02d,%02d:%02d:%02d.%02d\n%s\n\n",
+						 shr, smn, ssc, sms/10, ehr, emn, esc, ems/10, text);
+					break;
+				case SUB_FORMAT_UDVD:
 					fprintf(fp, "{%jd}{%jd}%s\n", start, end-1, text);
+					break;
 				}
-				start = end;
 			}
+			start = end;
 		}
 		fclose(fp);
 	}
 }
 
+SWindowItemFormat::SWindowItemFormat(SWindowSaveFormat *save_format,
+		const char *text, int id)
+ : BC_MenuItem(text)
+{
+	this->save_format = save_format;
+	this->id = id;
+}
+
+int SWindowItemFormat::handle_event()
+{
+	save_format->sw_gui->sub_format = id;
+	save_format->update_toggles();
+	return 1;
+}
+
+SWindowSaveFormat::SWindowSaveFormat(SWindowGUI *sw_gui, int x, int y)
+ : BC_PopupMenu(x, y, _("Format"))
+{
+	this->sw_gui = sw_gui;
+}
+
+void SWindowSaveFormat::create_objects()
+{
+	add_item(srt = new SWindowItemFormat(this, _("SRT"), SUB_FORMAT_SRT));
+	add_item(rip = new SWindowItemFormat(this, _("SUB"), SUB_FORMAT_RIP));
+	add_item(udvd = new SWindowItemFormat(this, _("UDVD"), SUB_FORMAT_UDVD));
+	update_toggles();
+}
+
+void SWindowSaveFormat::update_toggles()
+{
+	srt->set_checked(sw_gui->sub_format == SUB_FORMAT_SRT);
+	rip->set_checked(sw_gui->sub_format == SUB_FORMAT_RIP);
+	udvd->set_checked(sw_gui->sub_format == SUB_FORMAT_UDVD);
+}
 
 
 SWindow::SWindow(MWindow *mwindow)

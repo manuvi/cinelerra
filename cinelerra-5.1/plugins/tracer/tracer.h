@@ -52,9 +52,9 @@ public:
 	TracerConfig();
 	~TracerConfig();
 
+	int equivalent(TracerConfig &that);
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	int equivalent(TracerConfig &that);
 	void copy_from(TracerConfig &that);
 	void interpolate(TracerConfig &prev, TracerConfig &next,
 		long prev_frame, long next_frame, long current_frame);
@@ -65,10 +65,9 @@ public:
 	int add_point();
 	void del_point(int i);
 
-	int drag, draw, fill;
+	int draw, fill;
 	int invert, feather;
 	float radius; 
-	int selected;
 };
 
 class TracePoint
@@ -103,6 +102,8 @@ public:
 	PLUGIN_CLASS_MEMBERS2(TracerConfig)
 	int is_realtime();
 	void update_gui();
+	void render_gui(void *data);
+	int is_dragging();
 	int new_point();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
@@ -132,6 +133,7 @@ public:
 	int color_model, bpp;
 	int is_float, is_yuv, has_alpha;
 	int comps, comp;
+	int drag, selected;
 };
 
 #endif

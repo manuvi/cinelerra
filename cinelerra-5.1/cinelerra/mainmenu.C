@@ -209,6 +209,7 @@ void MainMenu::create_objects()
 	trackmenu->add_item(new DeleteFirstTrack(mwindow));
 	trackmenu->add_item(new DeleteLastTrack(mwindow));
 	trackmenu->add_item(new ConcatenateTracks(mwindow));
+	trackmenu->add_item(new AlignTimecodes(mwindow));
 	trackmenu->add_item(new SwapTracksUp(mwindow));
 	trackmenu->add_item(new SwapTracksDown(mwindow));
 	AppendTracks *append_tracks;
@@ -282,7 +283,6 @@ void MainMenu::create_objects()
 	windowmenu->add_item(split_x = new SplitX(mwindow));
 	windowmenu->add_item(split_y = new SplitY(mwindow));
 	windowmenu->add_item(mixer_items = new MixerItems(mwindow));
-	windowmenu->add_item(align_timecodes = new AlignTimecodes(mwindow));
 	mixer_items->create_objects();
 	windowmenu->add_item(new TileWindows(mwindow,_("Tile left"),0));
 	windowmenu->add_item(new TileWindows(mwindow,_("Tile right"),1));
@@ -1674,6 +1674,7 @@ void MixerItems::create_objects()
 	mixer_submenu->add_submenuitem(new MixerViewer(this));
 	mixer_submenu->add_submenuitem(new TileMixers(this));
 	mixer_submenu->add_submenuitem(new AlignMixers(this));
+	mixer_submenu->add_submenuitem(new MixMasters(this));
 }
 
 int MixerItems::activate_submenu()
@@ -1766,6 +1767,18 @@ int AlignMixers::handle_event()
 	int wx, wy;
 	mwindow->gui->get_abs_cursor(wx, wy);
 	mwindow->mixers_align->start_dialog(wx, wy);
+	return 1;
+}
+
+MixMasters::MixMasters(MixerItems *mixer_items)
+ : MixerItem(mixer_items, _("Mix masters"), "", 0)
+{
+}
+
+int MixMasters::handle_event()
+{
+	MWindow *mwindow = mixer_items->mwindow;
+	mwindow->mix_masters();
 	return 1;
 }
 

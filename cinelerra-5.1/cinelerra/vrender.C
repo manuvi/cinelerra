@@ -288,7 +288,7 @@ int VRender::get_colormodel(VEdit *playable_edit, int use_vconsole, int use_bren
 
 void VRender::run()
 {
-	int reconfigure;
+	int reconfigure = 1;
 	const int debug = 0;
 
 // Want to know how many samples rendering each frame takes.
@@ -322,13 +322,13 @@ void VRender::run()
 // Want the condition before, since only 1 frame is rendered
 // and the number of frames skipped after this frame varies.
 		current_input_length = 1;
-
-		reconfigure = vconsole->test_reconfigure(current_position,
-			current_input_length);
-
-
+		if( !reconfigure ) reconfigure =
+			vconsole->test_reconfigure(current_position, current_input_length);
 		if(debug) printf("VRender::run %d\n", __LINE__);
-		if(reconfigure) restart_playback();
+		if( reconfigure ) {
+			restart_playback();
+			reconfigure = 0;
+		}
 
 		if(debug) printf("VRender::run %d\n", __LINE__);
 		process_buffer(current_position, use_opengl);

@@ -67,8 +67,6 @@ CriKeyConfig::CriKeyConfig()
 {
 	threshold = 0.5f;
 	draw_mode = DRAW_ALPHA;
-	drag = 0;
-	selected = 0;
 }
 CriKeyConfig::~CriKeyConfig()
 {
@@ -78,7 +76,6 @@ int CriKeyConfig::equivalent(CriKeyConfig &that)
 {
 	if( !EQUIV(this->threshold, that.threshold) ) return 0;
 	if( this->draw_mode != that.draw_mode ) return 0;
-	if( this->drag != that.drag ) return 0;
 	if( this->points.size() != that.points.size() ) return 0;
 	for( int i=0, n=points.size(); i<n; ++i ) {
 		CriKeyPoint *ap = this->points[i], *bp = that.points[i];
@@ -95,8 +92,6 @@ void CriKeyConfig::copy_from(CriKeyConfig &that)
 {
 	this->threshold = that.threshold;
 	this->draw_mode = that.draw_mode;
-	this->drag = that.drag;
-	this->selected = that.selected;
 
 	points.remove_all_objects();
 	for( int i=0,n=that.points.size(); i<n; ++i ) {
@@ -110,8 +105,6 @@ void CriKeyConfig::interpolate(CriKeyConfig &prev, CriKeyConfig &next,
 {
 	this->threshold = prev.threshold;
 	this->draw_mode = prev.draw_mode;
-	this->drag = prev.drag;
-	this->selected = prev.selected;
 
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
@@ -234,6 +227,9 @@ CriKey::CriKey(PluginServer *server)
 	engine = 0;
 	msk = 0;
 	edg = 0;
+
+	drag = 0;
+	selected = 0;
 }
 
 CriKey::~CriKey()
@@ -265,6 +261,21 @@ int CriKey::is_realtime() { return 1; }
 NEW_WINDOW_MACRO(CriKey, CriKeyWindow);
 LOAD_CONFIGURATION_MACRO(CriKey, CriKeyConfig)
 
+void CriKey::render_gui(void *data)
+{
+	CriKey *crikey = (CriKey *)data;
+	crikey->drag = drag;
+	crikey->selected = selected;
+}
+
+int CriKey::is_dragging()
+{
+	drag = 0;
+	selected = 0;
+	send_render_gui(this);
+	return drag;
+}
+
 int CriKey::new_point()
 {
 	EDLSession *session = get_edl()->session;
@@ -283,8 +294,6 @@ void CriKeyConfig::save_data(KeyFrame *keyframe)
 	output.tag.set_title("CRIKEY");
 	output.tag.set_property("THRESHOLD", threshold);
 	output.tag.set_property("DRAW_MODE", draw_mode);
-	output.tag.set_property("DRAG", drag);
-	output.tag.set_property("SELECTED", selected);
 	output.append_tag();
 	output.append_newline();
 	output.tag.set_title("/CRIKEY");
@@ -306,7 +315,6 @@ void CriKeyConfig::save_data(KeyFrame *keyframe)
 	}
 	output.terminate_string();
 }
-
 void CriKey::save_data(KeyFrame *keyframe)
 {
 	config.save_data(keyframe);
@@ -323,8 +331,6 @@ void CriKeyConfig::read_data(KeyFrame *keyframe)
 		if( input.tag.title_is("CRIKEY") ) {
 			threshold = input.tag.get_property("THRESHOLD", threshold);
 			draw_mode = input.tag.get_property("DRAW_MODE", draw_mode);
-			drag = input.tag.get_property("DRAG", drag);
-			selected = input.tag.get_property("SELECTED", 0);
 			limits();
 		}
 		else if( !strncmp(input.tag.get_title(),"POINT_",6) ) {
@@ -337,11 +343,11 @@ void CriKeyConfig::read_data(KeyFrame *keyframe)
 		}
 	}
 }
-
 void CriKey::read_data(KeyFrame *keyframe)
 {
 	config.read_data(keyframe);
-	if( !config.points.size() ) new_point();
+	if( !config.points.size() )
+		new_point();
 }
 
 void CriKey::span_keyframes(KeyFrame *src, int64_t start, int64_t end)
@@ -378,8 +384,6 @@ void CriKey::update_parameter(CriKeyConfig &prev_config, CriKeyConfig &src_confi
 		dst_config.threshold = src_config.threshold;
 	if( prev_config.draw_mode != src_config.draw_mode )
 		dst_config.draw_mode = src_config.draw_mode;
-	if( prev_config.drag != src_config.drag )
-		dst_config.drag = src_config.drag;
 	int src_points = src_config.points.size();
 	int dst_points = dst_config.points.size();
 	int prev_points = prev_config.points.size();
@@ -689,10 +693,10 @@ int CriKey::process_buffer(VFrame *frame, int64_t start_position, double frame_r
 	case DRAW_MASK:  draw_mask(msk);   break;
 	}
 
-	if( config.drag ) {
+	if( is_dragging() ) {
 		for( int i=0, n=config.points.size(); i<n; ++i ) {
 			CriKeyPoint *pt = config.points[i];
-			src->set_pixel_color(config.selected == i ? GREEN : WHITE);
+			src->set_pixel_color(selected == i ? GREEN : WHITE);
 			draw_point(src, pt);
 		}
 	}

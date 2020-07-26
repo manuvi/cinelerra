@@ -172,7 +172,6 @@ public:
 	SplitX *split_x;
 	SplitY *split_y;
 	MixerItems *mixer_items;
-	AlignTimecodes *align_timecodes;
 	LoadLayout *load_layout;
 	LoadLayout *save_layout;
 };
@@ -536,6 +535,13 @@ class AlignMixers : public MixerItem
 {
 public:
 	AlignMixers(MixerItems *mixer_items);
+	int handle_event();
+};
+
+class MixMasters : public MixerItem
+{
+public:
+	MixMasters(MixerItems *mixer_items);
 	int handle_event();
 };
 

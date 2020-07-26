@@ -43,7 +43,7 @@ bin_install:	install-recursive
 	  if [ $$d = picon/cinfinity ]; then continue; fi; \
 	  cp -a $$d bin/plugins/picon/.; \
 	done
-	cp -a db/utils/new_db "bin/cin_db" || true
+	test ! -f db/utils/new_db || cp -a db/utils/new_db "bin/cin_db"
 
 bin_uninstall:
 	rm -rf bin

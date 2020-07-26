@@ -2284,6 +2284,8 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 // Start examining next batch of index files
 	if(got_indexes) mainindexes->start_build();
 
+// reload renderengine edl or the plugin guis will flip out
+	sync_parameters(CHANGE_ALL);
 // Open plugin GUIs
 	show_plugins();
 

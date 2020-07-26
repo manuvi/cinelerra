@@ -76,7 +76,6 @@ public:
 
 class PluginGUIs : public ArrayList<PluginServer*>
 {
-	int next_id;
 	MWindow *mwindow;
 public:
 	PluginGUIs(MWindow *mwindow);

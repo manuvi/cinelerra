@@ -182,8 +182,6 @@ public:
 
 // Time Code Format
 	int timecode_format;
-// drag enable
-	int drag;
 // loop background playback
 	int loop_playback;
 };
@@ -581,6 +579,8 @@ public:
 
 // required for all realtime plugins
 	PLUGIN_CLASS_MEMBERS(TitleConfig)
+	void render_gui(void *data);
+	int is_dragging();
 	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
 	int is_realtime();
 	int is_synthesis();
@@ -674,6 +674,7 @@ public:
 	int64_t last_position;
 	int need_reconfigure;
 	int cpus;
+	int drag;
 };
 
 

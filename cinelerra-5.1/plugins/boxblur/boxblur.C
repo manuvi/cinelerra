@@ -227,6 +227,8 @@ public:
 	~BoxBlurEffect();
 
 	PLUGIN_CLASS_MEMBERS(BoxBlurConfig)
+	void render_gui(void *data);
+	int is_dragging();
 	int process_realtime(VFrame *input, VFrame *output);
 	void update_gui();
 	int is_realtime();
@@ -236,6 +238,7 @@ public:
 
 	VFrame *input, *output;
 	BoxBlur *box_blur;
+	int drag;
 };
 
 
@@ -244,7 +247,6 @@ void BoxBlurConfig::reset()
 	horz_radius = 0;
 	vert_radius = 0;
 	power = 1;
-	drag = 0;
 	box_x = box_y = 0.0;
 	box_w = box_h = 0;
 }
@@ -254,7 +256,6 @@ void BoxBlurConfig::preset()
 	horz_radius = 2;
 	vert_radius = 2;
 	power = 2;
-	drag = 0;
 	box_x = box_y = 0.0;
 	box_w = box_h = 0;
 }
@@ -270,7 +271,6 @@ void BoxBlurConfig::copy_from(BoxBlurConfig &that)
 	horz_radius = that.horz_radius;
 	vert_radius = that.vert_radius;
 	power = that.power;
-	drag = that.drag;
 	box_x = that.box_x;  box_y = that.box_y;
 	box_w = that.box_w;  box_h = that.box_h;
 }
@@ -279,7 +279,7 @@ int BoxBlurConfig::equivalent(BoxBlurConfig &that)
 {
 	return horz_radius == that.horz_radius &&
 		vert_radius == that.vert_radius &&
-		power == that.power && // drag == that.drag &&
+		power == that.power &&
 		EQUIV(box_x, that.box_x) && EQUIV(box_y, that.box_y) &&
 		box_w == that.box_w && box_h == that.box_h;
 }
@@ -292,7 +292,6 @@ void BoxBlurConfig::interpolate(BoxBlurConfig &prev, BoxBlurConfig &next,
 	this->horz_radius = u*prev.horz_radius + v*next.horz_radius;
 	this->vert_radius = u*prev.vert_radius + v*next.vert_radius;
 	this->power = u*prev.power + v*next.power + 1e-6; // avoid truncation jitter
-	this->drag = prev.drag;
 	this->box_x = u*prev.box_x + v*next.box_x;
 	this->box_y = u*prev.box_y + v*next.box_y;
 	this->box_w = u*prev.box_w + v*next.box_w + 1e-6;
@@ -454,10 +453,12 @@ void BoxBlurWindow::create_objects()
 	add_subwindow(tbar = new BC_TitleBar(x, y, ww, bar_o, bar_m, _("Position & Size")));
 	y += ys20;
 	int x1 = ww - BoxBlurDrag::calculate_w(this) - margin;
+	if( plugin->drag && drag->drag_activate() ) {
+		eprintf("drag enabled, but compositor already grabbed\n");
+		plugin->drag = 0;
+	}
 	add_subwindow(drag = new BoxBlurDrag(this, plugin, x1, y));
 	drag->create_objects();
-	if( plugin->config.drag && drag->drag_activate() )
-		eprintf("drag enabled, but compositor already grabbed\n");
 
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(t1, y, _("X:")));
@@ -521,11 +522,25 @@ REGISTER_PLUGIN(BoxBlurEffect)
 NEW_WINDOW_MACRO(BoxBlurEffect, BoxBlurWindow)
 LOAD_CONFIGURATION_MACRO(BoxBlurEffect, BoxBlurConfig)
 
+void BoxBlurEffect::render_gui(void *data)
+{
+	BoxBlurEffect *box_blur = (BoxBlurEffect *)data;
+	box_blur->drag = drag;
+}
+
+int BoxBlurEffect::is_dragging()
+{
+	drag = 0;
+	send_render_gui(this);
+	return drag;
+}
+
 
 BoxBlurEffect::BoxBlurEffect(PluginServer *server)
  : PluginVClient(server)
 {
 	box_blur = 0;
+	drag = 0;
 }
 
 BoxBlurEffect::~BoxBlurEffect()
@@ -545,7 +560,6 @@ void BoxBlurEffect::save_data(KeyFrame *keyframe)
 	output.tag.set_property("HORZ_RADIUS", config.horz_radius);
 	output.tag.set_property("VERT_RADIUS", config.vert_radius);
 	output.tag.set_property("POWER", config.power);
-	output.tag.set_property("DRAG", config.drag);
 	output.tag.set_property("BOX_X", config.box_x);
 	output.tag.set_property("BOX_Y", config.box_y);
 	output.tag.set_property("BOX_W", config.box_w);
@@ -568,7 +582,6 @@ void BoxBlurEffect::read_data(KeyFrame *keyframe)
 			config.horz_radius = input.tag.get_property("HORZ_RADIUS", config.horz_radius);
 			config.vert_radius = input.tag.get_property("VERT_RADIUS", config.vert_radius);
 			config.power = input.tag.get_property("POWER", config.power);
-			config.drag = input.tag.get_property("DRAG", config.drag);
 			config.box_x = input.tag.get_property("BOX_X", config.box_x);
 			config.box_y = input.tag.get_property("BOX_Y", config.box_y);
 			config.box_w = input.tag.get_property("BOX_W", config.box_w);
@@ -610,7 +623,7 @@ int BoxBlurEffect::process_realtime(VFrame *input, VFrame *output)
 			-1, x,y, ow, oh);
 	}
 
-	if( config.drag )
+	if( is_dragging() )
 		draw_boundry();
 
 	return 1;
@@ -682,7 +695,7 @@ int BoxBlurH::handle_event()
 }
 
 BoxBlurDrag::BoxBlurDrag(BoxBlurWindow *gui, BoxBlurEffect *plugin, int x, int y)
- : DragCheckBox(plugin->server->mwindow, x, y, _("Drag"), &plugin->config.drag,
+ : DragCheckBox(plugin->server->mwindow, x, y, _("Drag"), &plugin->drag,
 		plugin->config.box_x, plugin->config.box_y,
 		plugin->config.box_w, plugin->config.box_h)
 {
@@ -711,7 +724,7 @@ int64_t BoxBlurDrag::get_drag_position()
 
 void BoxBlurDrag::update_gui()
 {
-	plugin->config.drag = get_value();
+	plugin->drag = get_value();
 	plugin->config.box_x = drag_x;
 	plugin->config.box_y = drag_y;
 	plugin->config.box_w = drag_w+0.5;
@@ -726,6 +739,7 @@ void BoxBlurDrag::update_gui()
 int BoxBlurDrag::handle_event()
 {
 	int ret = DragCheckBox::handle_event();
+	plugin->drag = get_value();
 	plugin->send_configure_change();
 	return ret;
 }

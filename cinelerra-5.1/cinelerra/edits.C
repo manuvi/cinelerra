@@ -881,7 +881,11 @@ void Edits::align_timecodes(double offset)
 		}
 	}
 	int64_t startproject = 0;
-	for( Edit *edit=first; edit; edit=edit->next ) {
+	for( Edit *edit=first, *next=0; edit; edit=next ) {
+		if( (next = edit->next) != 0 ) {
+			int64_t length = next->startproject - startproject;
+			if( length > edit->length ) edit->length = length;
+		}
 		int64_t length = edit->startproject - startproject;
 		if( length > 0 ) {
 			Edit *new_edit = create_edit();

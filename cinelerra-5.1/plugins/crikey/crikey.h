@@ -74,7 +74,6 @@ public:
 
 	float threshold;
 	int draw_mode;
-	int drag, selected;
 };
 
 class CriKeyPackage : public LoadPackage
@@ -121,8 +120,10 @@ public:
 // required for all realtime plugins
 	PLUGIN_CLASS_MEMBERS2(CriKeyConfig)
 	int is_realtime();
-	void update_gui();
+	void render_gui(void *data);
+	int is_dragging();
 	int new_point();
+	void update_gui();
 	int set_target(float *color, int x, int y);
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
@@ -139,6 +140,7 @@ public:
 	VFrame *src, *edg, *msk;
 	int w, h, color_model, bpp, comp;
 	int is_yuv, is_float;
+	int drag, selected;
 };
 
 #endif

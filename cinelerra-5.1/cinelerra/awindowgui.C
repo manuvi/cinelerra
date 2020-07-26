@@ -612,22 +612,10 @@ AssetVIconThread::AssetVIconThread(AWindowGUI *gui, Preferences *preferences)
 	case VICON_COLOR_MODE_HIGH:  vicon_cmodel = BC_RGB888;  break;
 	}
 	this->vicon_cmodel = vicon_cmodel;
-	this->draw_lock = new Mutex("AssetVIconThread::draw_lock");
 }
 
 AssetVIconThread::~AssetVIconThread()
 {
-	delete draw_lock;
-}
-
-void AssetVIconThread::drawing_started()
-{
-	draw_lock->lock("AssetVIconThread::drawing_started");
-}
-
-void AssetVIconThread::drawing_stopped()
-{
-	draw_lock->unlock();
 }
 
 void AssetVIconThread::set_view_popup(AssetVIcon *v, int draw_mode)
@@ -691,10 +679,8 @@ ViewPopup *AssetVIconThread::new_view_window(ViewPopup *vpopup)
 void AssetVIconThread::stop_vicon_drawing(int wait)
 {
 	stop_drawing();
-	if( wait ) {
-		drawing_started(); // waits for draw lock
-		drawing_stopped();
-	}
+	gui->lock_window("AssetVIconThread::stop_vicon_drawing");
+	gui->unlock_window();
 }
 
 

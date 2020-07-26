@@ -292,6 +292,8 @@ public:
 	void start_mixer();
 	int select_zwindow(ZWindow *zwindow);
 	void tile_mixers();
+	int masters_to_mixers();
+	void mix_masters();
 	void set_gang_tracks(int v);
 	int load_filenames(ArrayList<char*> *filenames,
 		int load_mode = LOADMODE_REPLACE,

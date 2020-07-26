@@ -917,10 +917,8 @@ private:
 #else
 	Condition *completion_lock;
 #endif
-
-
+	Mutex *grab_lock;
 	int dump_windows();
-
 
 	BC_WindowEvents *event_thread;
 	int is_deleting;

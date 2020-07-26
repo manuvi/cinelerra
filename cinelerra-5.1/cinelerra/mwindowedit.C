@@ -2722,3 +2722,91 @@ void MWindow::align_timecodes()
 	update_plugin_guis();
 }
 
+
+int MWindow::masters_to_mixers()
+{
+	Track *master_track = edl->tracks->first;
+	while( master_track && !master_track->master )
+		master_track = master_track->next;
+	while( master_track ) { // test for track/mixer conflicts
+		int failed = 0;
+		Track *mixer_last = master_track;
+		Track *track = master_track->next;
+		for( ; track && !track->master; track=track->next )
+			mixer_last = track;
+		Track *next_track = track;
+		Mixer *master_mixer = 0;
+		for( int i=0, n=edl->mixers.size(); i<n; ++i ) {
+			if( master_track->index_in(edl->mixers[i]) >= 0 ) {
+				master_mixer = edl->mixers[i];
+				break;
+			}
+		}
+		if( master_mixer ) { // existing mixer track group
+			for( track=master_track; !failed && track; track=track->next ) {
+				if( track->index_in(master_mixer) < 0 ) {
+					eprintf("Mixer: %s missing track: %s",
+						master_mixer->title, track->title);
+					failed = 1;
+				}
+				if( track == mixer_last ) break;
+			}
+			for( int i=0, n=master_mixer->mixer_ids.size(); !failed && i<n; ++i ) {
+				int mixer_id = master_mixer->mixer_ids[i], found = 0;
+				for( track=master_track; track; track=track->next ) {
+					if( track->mixer_id == mixer_id ) {
+						found = 1;
+						break;
+					}
+					if( track == mixer_last ) break;
+				}
+				if( !found ) {
+					eprintf("Mixer: %s track missing: %s",
+						master_mixer->title, track->title);
+					failed = 1;
+				}
+			}
+		}
+		else { // create mixer
+			for( track=master_track->next; !failed && track; track=track->next ) {
+				for( int i=0, n=edl->mixers.size(); !failed && i<n; ++i ) {
+					Mixer *mixer = edl->mixers[i];
+					if( track->index_in(mixer) >= 0 ) {
+						eprintf("Track: %s already exists in mixer: %s",
+							track->title, mixer->title);
+						failed = 1;
+						break;
+					}
+				}
+				if( track == mixer_last ) break;
+			}
+			if( !failed ) { // new mixer
+				ZWindow *zwindow = get_mixer(master_mixer);
+				zwindow->set_title(master_track->title);
+				sprintf(master_track->title, _("Mixer %d"), zwindow->idx);
+				for( track=master_track; track; track=track->next ) {
+					track->play = track->armed = 0;
+					master_mixer->mixer_ids.append(track->get_mixer_id());
+					if( track == mixer_last ) break;
+				}
+				zwindow->start();
+			}
+		}
+		master_track = next_track;
+        }
+	return 0;
+}
+
+void MWindow::mix_masters()
+{
+	undo_before();
+	masters_to_mixers();
+	undo_after(_("mix masters"), LOAD_ALL);
+
+	restart_brender();
+	gui->update(1, NORMAL_DRAW, 0, 0, 1, 0, 0);
+	gui->activate_timeline();
+	cwindow->refresh_frame(CHANGE_EDL);
+	save_backup();
+}
+

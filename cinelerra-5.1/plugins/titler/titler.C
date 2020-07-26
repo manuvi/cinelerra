@@ -114,7 +114,6 @@ TitleConfig::TitleConfig()
 	background = 0;
 	strcpy(background_path, "");
 	timecode_format = DEFAULT_TIMECODEFORMAT;
-	drag = 0;
 	loop_playback = 0;
 }
 
@@ -154,7 +153,6 @@ int TitleConfig::equivalent(TitleConfig &that)
 		background == that.background &&
 		!strcmp(background_path, that.background_path) &&
 		timecode_format == that.timecode_format &&
-//		drag == that.drag &&
 		loop_playback == that.loop_playback;
 }
 
@@ -189,7 +187,6 @@ void TitleConfig::copy_from(TitleConfig &that)
 	background = that.background;
 	strcpy(background_path, that.background_path);
 	timecode_format = that.timecode_format;
-	drag = that.drag;
 	loop_playback = that.loop_playback;
 }
 
@@ -236,7 +233,6 @@ void TitleConfig::interpolate(TitleConfig &prev, TitleConfig &next,
 	background = prev.background;
 	strcpy(background_path, prev.background_path);
 	timecode_format = prev.timecode_format;
-	drag = prev.drag;
 	loop_playback = prev.loop_playback;
 }
 
@@ -935,6 +931,7 @@ TitleMain::TitleMain(PluginServer *server)
 	if( cpus > 8 ) cpus = 8;
 	last_position = -1;
 	need_reconfigure = 1;
+	drag = 0;
 }
 
 TitleMain::~TitleMain()
@@ -968,6 +965,18 @@ int TitleMain::is_synthesis() { return 1; }
 
 NEW_WINDOW_MACRO(TitleMain, TitleWindow);
 
+void TitleMain::render_gui(void *data)
+{
+	TitleMain *tilter = (TitleMain *)data;
+	tilter->drag = drag;
+}
+
+int TitleMain::is_dragging()
+{
+	drag = 0;
+	send_render_gui(this);
+	return drag;
+}
 
 void TitleMain::build_previews(TitleWindow *gui)
 {
@@ -2452,7 +2461,7 @@ int TitleMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	if( !result )
 		draw_overlay();
 
-	if( config.drag )
+	if( is_dragging() )
 		draw_boundry();
 
 	return 0;
@@ -2545,7 +2554,6 @@ void TitleMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("TIMECODEFORMAT", config.timecode_format);
 	output.tag.set_property("WINDOW_W", config.window_w);
 	output.tag.set_property("WINDOW_H", config.window_h);
-	output.tag.set_property("DRAG", config.drag);
 	output.tag.set_property("BACKGROUND", config.background);
 	output.tag.set_property("BACKGROUND_PATH", config.background_path);
 	output.tag.set_property("LOOP_PLAYBACK", config.loop_playback);
@@ -2609,7 +2617,6 @@ void TitleMain::read_data(KeyFrame *keyframe)
 			config.timecode_format = input.tag.get_property("TIMECODEFORMAT", config.timecode_format);
 			config.window_w = input.tag.get_property("WINDOW_W", config.window_w);
 			config.window_h = input.tag.get_property("WINDOW_H", config.window_h);
-			config.drag = input.tag.get_property("DRAG", config.drag);
 			config.background = input.tag.get_property("BACKGROUND", config.background);
 			input.tag.get_property("BACKGROUND_PATH", config.background_path);
 			config.loop_playback = input.tag.get_property("LOOP_PLAYBACK", config.loop_playback);

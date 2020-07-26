@@ -209,13 +209,10 @@ public:
 	void set_view_popup(AssetVIcon *v);
 	ViewPopup *new_view_window(ViewPopup *popup);
 	void stop_vicon_drawing(int wait=0);
-	void drawing_started();
-	void drawing_stopped();
 
 	AWindowGUI *gui;
 	int draw_mode;
 	int vicon_cmodel;
-	Mutex *draw_lock;
 };
 
 

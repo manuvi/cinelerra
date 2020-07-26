@@ -58,11 +58,19 @@ TracerPoint::~TracerPoint()
 {
 }
 
+int Tracer::new_point()
+{
+	EDLSession *session = get_edl()->session;
+	float x = !session ? 0.f : session->output_w / 2.f;
+	float y = !session ? 0.f : session->output_h / 2.f;
+	return config.add_point(x, y);
+}
+
 TracerConfig::TracerConfig()
 {
-	drag = draw = 1;  fill = 0;
+	draw = 1;  fill = 0;
 	feather = 0;  radius = 1;
-	invert = 0;  selected = -1;
+	invert = 0;
 }
 TracerConfig::~TracerConfig()
 {
@@ -70,7 +78,6 @@ TracerConfig::~TracerConfig()
 
 int TracerConfig::equivalent(TracerConfig &that)
 {
-	if( this->drag != that.drag ) return 0;
 	if( this->draw != that.draw ) return 0;
 	if( this->fill != that.fill ) return 0;
 	if( this->feather != that.feather ) return 0;
@@ -87,10 +94,8 @@ int TracerConfig::equivalent(TracerConfig &that)
 
 void TracerConfig::copy_from(TracerConfig &that)
 {
-	this->drag = that.drag;
 	this->draw = that.draw;
 	this->fill = that.fill;
-	this->selected = that.selected;
 	this->feather = that.feather;
 	this->invert = that.invert;
 	this->radius = that.radius;
@@ -139,6 +144,7 @@ Tracer::Tracer(PluginServer *server)
 	bx = 0;  by = 0;
 	cx = 0;  cy = 0;
 	ex = 0;  ey = 0;
+	drag = 0; selected = 0;
 }
 
 Tracer::~Tracer()
@@ -162,12 +168,17 @@ int Tracer::load_configuration1()
 }
 LOAD_CONFIGURATION_MACRO(Tracer, TracerConfig);
 
-int Tracer::new_point()
+void Tracer::render_gui(void *data)
 {
-	EDLSession *session = get_edl()->session;
-	float x = !session ? 0.f : session->output_w / 2.f;
-	float y = !session ? 0.f : session->output_h / 2.f;
-	return config.add_point(x, y);
+	Tracer *tracer = (Tracer *)data;
+	tracer->drag = drag;
+}
+
+int Tracer::is_dragging()
+{
+	drag = 0;
+	send_render_gui(this);
+	return drag;
 }
 
 void TracerConfig::save_data(KeyFrame *keyframe)
@@ -178,13 +189,11 @@ void TracerConfig::save_data(KeyFrame *keyframe)
 	output.set_shared_output(keyframe->xbuf);
 
 	output.tag.set_title("TRACER");
-	output.tag.set_property("DRAG", drag);
 	output.tag.set_property("DRAW", draw);
 	output.tag.set_property("FILL", fill);
 	output.tag.set_property("FEATHER", feather);
 	output.tag.set_property("RADIUS", radius);
 	output.tag.set_property("INVERT", invert);
-	output.tag.set_property("SELECTED", selected);
 	output.append_tag();
 	output.append_newline();
 	output.tag.set_title("/TRACER");
@@ -204,7 +213,6 @@ void TracerConfig::save_data(KeyFrame *keyframe)
 	}
 	output.terminate_string();
 }
-
 void Tracer::save_data(KeyFrame *keyframe)
 {
 	config.save_data(keyframe);
@@ -219,13 +227,11 @@ void TracerConfig::read_data(KeyFrame *keyframe)
 
 	while( !(result=input.read_tag()) ) {
 		if( input.tag.title_is("TRACER") ) {
-			drag = input.tag.get_property("DRAG", drag);
 			draw = input.tag.get_property("DRAW", draw);
 			fill = input.tag.get_property("FILL", fill);
 			feather = input.tag.get_property("FEATHER", feather);
 			radius = input.tag.get_property("RADIUS", radius);
 			invert = input.tag.get_property("INVERT", invert);
-			selected = input.tag.get_property("SELECTED", 0);
 			limits();
 		}
 		else if( !strncmp(input.tag.get_title(),"POINT_",6) ) {
@@ -235,7 +241,6 @@ void TracerConfig::read_data(KeyFrame *keyframe)
 		}
 	}
 }
-
 void Tracer::read_data(KeyFrame *keyframe)
 {
 	config.read_data(keyframe);
@@ -265,12 +270,10 @@ void TracerPoint::update_parameter(TracerPoint *prev, TracerPoint *src)
 }
 
 void Tracer::update_parameter(TracerConfig &prev_config, TracerConfig &src_config,
-                KeyFrame *keyframe)
+		KeyFrame *keyframe)
 {
-        TracerConfig dst_config;
-        dst_config.read_data(keyframe);
-	if( prev_config.drag != src_config.drag )
-		dst_config.drag = src_config.drag;
+	TracerConfig dst_config;
+	dst_config.read_data(keyframe);
 	if( prev_config.draw != src_config.draw )
 		dst_config.draw = src_config.draw;
 	if( prev_config.fill != src_config.fill )
@@ -291,7 +294,7 @@ void Tracer::update_parameter(TracerConfig &prev_config, TracerConfig &src_confi
 		TracerPoint *dst_point = dst_config.points[i];
 		dst_point->update_parameter(prev_point, src_point);
 	}
-        dst_config.save_data(keyframe);
+	dst_config.save_data(keyframe);
 }
 
 void Tracer::update_gui()
@@ -320,7 +323,7 @@ void Tracer::draw_points()
 {
 	for( int i=0, n=config.points.size(); i<n; ++i ) {
 		TracerPoint *pt = config.points[i];
-		frm->set_pixel_color(config.selected == i ? GREEN : WHITE);
+		frm->set_pixel_color(selected == i ? GREEN : WHITE);
 		draw_point(pt);
 	}
 }
@@ -748,7 +751,7 @@ int Tracer::process_buffer(VFrame *frame, int64_t start_position, double frame_r
 		draw_mask();
 	if( config.draw && edg )
 		draw_edge();
-	if( config.drag )
+	if( is_dragging() )
 		draw_points();
 	return 0;
 }

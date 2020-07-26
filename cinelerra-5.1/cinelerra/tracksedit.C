@@ -697,6 +697,7 @@ void Tracks::move_effect(Plugin *plugin, Track *track, int64_t position)
 				start, length, plugin->plugin_type);
 	result->copy_from(plugin);
 	result->shift(position - plugin->startproject);
+	result->gui_id = plugin->gui_id;
 
 // Clear new plugin from old set
 	plugin->plugin_set->clear(plugin->startproject,

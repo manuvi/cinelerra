@@ -165,12 +165,11 @@ public:
 	void interpolate(SketcherConfig &prev, SketcherConfig &next,
 		long prev_frame, long next_frame, long current_frame);
 	double nearest_point(int &ci, int &pi, coord x, coord y);
+	int new_curve(int pen, int width, int color);
 	void limits();
 	void dump();
 
-	int drag;
 	int aliasing;
-	int cv_selected, pt_selected;
 };
 
 class Sketcher : public PluginVClient
@@ -182,6 +181,8 @@ public:
 	int is_realtime();
 	int is_synthesis();
 	void update_gui();
+	void render_gui(void *data);
+	int is_dragging();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void span_keyframes(KeyFrame *src, int64_t start, int64_t end);
@@ -200,6 +201,8 @@ public:
 	OverlayFrame *overlay_frame;
 	int w, h, color_model, bpp, comp;
 	int is_yuv, is_float;
+	int drag;
+	int cv_selected, pt_selected;
 };
 
 #endif

@@ -9,6 +9,10 @@
 #include "mwindow.inc"
 #include "swindow.inc"
 
+#define SUB_FORMAT_SRT  1
+#define SUB_FORMAT_RIP  2
+#define SUB_FORMAT_UDVD 3
+
 class SWindow : public Thread
 {
 public:
@@ -84,6 +88,29 @@ public:
 
 	SWindowSaveFile(SWindowGUI *gui, int x, int y);
 	~SWindowSaveFile();
+};
+
+class SWindowItemFormat : public BC_MenuItem
+{
+public:
+	SWindowItemFormat(SWindowSaveFormat *save_format, const char *text, int id);
+	int handle_event();
+
+	SWindowSaveFormat *save_format;
+	int id;
+};
+
+class SWindowSaveFormat : public BC_PopupMenu
+{
+public:
+	SWindowSaveFormat(SWindowGUI *sw_gui, int x, int y);
+	void create_objects();
+	void update_toggles();
+
+	SWindowGUI *sw_gui;
+	SWindowItemFormat *srt;
+	SWindowItemFormat *rip;
+	SWindowItemFormat *udvd;
 };
 
 
@@ -189,6 +216,7 @@ public:
 	SWindowLoadPath *load_path;
 	SWindowLoadFile *load_file;
 	SWindowSaveFile *save_file;
+	SWindowSaveFormat *save_format;
 	BC_Title *script_filesz;
 	BC_Title *script_lines;
 	BC_Title *script_entries;
@@ -205,6 +233,7 @@ public:
 	ScriptScroll *script_scroll;
 	int xpad, ypad;
 	char *blank_line;
+	int sub_format;
 
 	char script_path[BCTEXTLEN];
 	ArrayList<ScriptLines *> script;

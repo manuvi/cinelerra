@@ -206,7 +206,7 @@ diff -ruN dav1d-0.7.1.orig/Makefile dav1d-0.7.1/Makefile
 +	echo >> $@ "#define CONFIG_LOG 1"
 +	echo >> $@ "#define ENDIANNESS_BIG 0"
 +	echo >> $@ "#define HAVE_ASM 1"
-+	echo >> $@ "#define HAVE_AVX512ICL 1"
++	echo >> $@ "#define HAVE_AVX512ICL 0"
 +	echo >> $@ "#define HAVE_CLOCK_GETTIME 1"
 +	echo >> $@ "#define HAVE_DLSYM 1"
 +	echo >> $@ "#define HAVE_POSIX_MEMALIGN 1"
@@ -218,7 +218,7 @@ diff -ruN dav1d-0.7.1.orig/Makefile dav1d-0.7.1/Makefile
 +	echo >> $@ "%define ARCH_X86_64 $(ARCH_X86_64)"
 +	echo >> $@ "%define PIC 1"
 +	echo >> $@ "%define STACK_ALIGNMENT 32"
-+	echo >> $@ "%define HAVE_AVX512ICL 1"
++	echo >> $@ "%define HAVE_AVX512ICL 0"
 +
 +$(BUILD)/include/vcs_version.h:
 +	mkdir -p $(BUILD)/include

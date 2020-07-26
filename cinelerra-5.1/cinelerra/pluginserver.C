@@ -661,7 +661,6 @@ void PluginServer::render_gui(void *data, int size)
 PluginGUIs::PluginGUIs(MWindow *mwindow)
 {
 	this->mwindow = mwindow;
-	this->next_id = 0;
 }
 PluginGUIs::~PluginGUIs()
 {
@@ -669,7 +668,7 @@ PluginGUIs::~PluginGUIs()
 
 void PluginGUIs::append(PluginServer *server)
 {
-	server->gui_id = next_id++;
+	server->gui_id = EDL::next_id();
 	ArrayList<PluginServer*>::append(server);
 }
 

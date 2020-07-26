@@ -110,10 +110,12 @@ void TracerWindow::create_objects()
 {
 	int x = xS(10), y = yS(10);
 	int margin = plugin->get_theme()->widget_border;
-	int hot_point = plugin->config.selected;
+	int hot_point = plugin->selected;
 	add_subwindow(title_x = new BC_Title(x, y, _("X:")));
 	int x1 = x + title_x->get_w() + margin;
-	TracerPoint *pt = hot_point >= 0 ? plugin->config.points[hot_point] : 0;
+	TracerPoints &points = plugin->config.points;
+	TracerPoint *pt = hot_point >= 0 && hot_point<points.size() ?
+		points[hot_point] : 0;
 	point_x = new TracerPointX(this, x1, y, !pt ? 0 : pt->x);
 	point_x->create_objects();
 	x1 += point_x->get_w() + margin + xS(20);
@@ -132,7 +134,7 @@ void TracerWindow::create_objects()
 	y += point_y->get_h() + margin + yS(10);
 
 	add_subwindow(drag = new TracerDrag(this, x, y));
-	if( plugin->config.drag ) {
+	if( plugin->drag ) {
 		if( !grab(plugin->server->mwindow->cwindow->gui) )
 			eprintf("drag enabled, but compositor already grabbed\n");
 	}
@@ -156,7 +158,7 @@ void TracerWindow::create_objects()
 	y += radius->get_h() + margin + yS(5);
 
 	add_subwindow(point_list = new TracerPointList(this, plugin, x, y));
-	point_list->update(plugin->config.selected);
+	point_list->update(plugin->selected);
 	y += point_list->get_h() + yS(10);
 
 	add_subwindow(new BC_Title(x, y, _(
@@ -438,7 +440,7 @@ void TracerPointList::update_list(int k)
 {
 	int sz = plugin->config.points.size();
 	if( k < 0 || k >= sz ) k = -1;
-	plugin->config.selected = k;
+	plugin->selected = k;
 	update_selection(&cols[0], k);
 	int xpos = get_xposition(), ypos = get_yposition();
 	BC_ListBox::update(&cols[0], &titles[0],&widths[0],PT_SZ, xpos,ypos,k);
@@ -465,7 +467,7 @@ void TracerPointList::update(int k)
 void TracerWindow::update_gui()
 {
 	TracerConfig &config = plugin->config;
-	drag->update(config.drag);
+	drag->update(plugin->drag);
 	draw->update(config.draw);
 	fill->update(config.fill);
 	feather->update(config.feather);
@@ -525,7 +527,7 @@ int TracerPointDn::handle_event()
 }
 
 TracerDrag::TracerDrag(TracerWindow *gui, int x, int y)
- : BC_CheckBox(x, y, gui->plugin->config.drag, _("Drag"))
+ : BC_CheckBox(x, y, gui->plugin->drag, _("Drag"))
 {
 	this->gui = gui;
 }
@@ -541,7 +543,7 @@ int TracerDrag::handle_event()
 	}
 	else
 		gui->ungrab(cwindow_gui);
-	gui->plugin->config.drag = value;
+	gui->plugin->drag = value;
 	gui->send_configure_change();
 	return 1;
 }
@@ -551,8 +553,7 @@ int TracerWindow::handle_ungrab()
 	int ret = ungrab(cwindow_gui);
 	if( ret ) {
 		drag->update(0);
-		plugin->config.drag = 0;
-		send_configure_change();
+		plugin->drag = 0;
 	}
 	return ret;
 }
@@ -656,11 +657,11 @@ TracerReset::~TracerReset()
 int TracerReset::handle_event()
 {
 	TracerConfig &config = plugin->config;
-	if( !config.drag ) {
+	if( !plugin->drag ) {
 		MWindow *mwindow = plugin->server->mwindow;
 		CWindowGUI *cwindow_gui = mwindow->cwindow->gui;
 		if( gui->grab(cwindow_gui) )
-			config.drag = 1;
+			plugin->drag = 1;
 		else
 			gui->drag->flicker(10,50);
 	}
@@ -669,7 +670,7 @@ int TracerReset::handle_event()
 	config.invert = 0;
 	config.feather = 0;
 	config.radius = 1;
-	config.selected = -1;
+	plugin->selected = -1;
 	TracerPoints &points = plugin->config.points;
 	points.remove_all_objects();
 	gui->point_list->update(-1);
