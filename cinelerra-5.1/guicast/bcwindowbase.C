@@ -963,6 +963,7 @@ if( debug && event->type != ClientMessage ) {
 	if( active_grab ) {
 		grab_lock->lock("BC_WindowBase::dispatch_event 3");
 		unlock_window();
+		result = 0;
 		if( active_grab ) {
 			active_grab->lock_window("BC_WindowBase::dispatch_event 3");
 			result = active_grab->grab_event(event);

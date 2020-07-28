@@ -130,7 +130,7 @@ int ZWindowGUI::button_press_event()
 			start = mwindow->edl->tracks->total_recordable_length();
 			if( start < 0 ) start = end;
 		}
-		if( (end-start) > 1e-4 ) {
+		if( (end-start) > 1e-4 && zwindow->edl ) {
 			LocalSession *zlocal_session = zwindow->edl->local_session;
 			zlocal_session->set_selectionstart(end);
 			zlocal_session->set_selectionend(end);
