@@ -7,7 +7,7 @@ NVCC := $(CUDA_PATH)/bin/nvcc -ccbin $(HOST_COMPILER)
 NVCCFLAGS := -m${TARGET_SIZE} -Xcompiler -fPIC -Xcompiler -fno-omit-frame-pointer -g
 LDFLAGS = -lcuda -L $(CUDA_PATH)/targets/x86_64-linux/lib -lcudart
 
-SMS ?= 30 35 37 50 52 60 61 70 75
+SMS ?= 35 37 50 52 60 61 70 75
 $(foreach sm,$(SMS),$(eval GENCODE_FLAGS += -gencode arch=compute_$(sm),code=sm_$(sm)))
 HIGHEST_SM := $(lastword $(sort $(SMS)))
 GENCODE_FLAGS += -gencode arch=compute_$(HIGHEST_SM),code=compute_$(HIGHEST_SM)
