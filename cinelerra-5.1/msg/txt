@@ -7,6 +7,12 @@ Cinfinity icons selected in Preferences Sam (CC BY 3.0,
 Cakewalk and Neophyte themes by Olaf Wolff (CC BY 4.0,
   https://creativecommons.org/licenses/by/4.0/)
 .
+July 2020 New Features of note:
+  Align Timecodes for various timecodes/stamps is available.
+  FFmpeg plugins will have changes take effect when use Enter.
+  Subtitles can be generated in either SRT, SUB, or uDVD form.
+  Mix masters make it easy to use multicam mode on timeline.
+  Auto Rotate in the metadata will now automatically rotate.
 June 2020 New Features of note:
   Ganging modes added for DAW-like editing of channels.
   Rotate plugin has been modernized and improved.

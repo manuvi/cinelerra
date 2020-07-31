@@ -92,7 +92,6 @@ Preferences::Preferences()
 	memset(&use_hw_dev, 0, sizeof(use_hw_dev));
 	warn_indexes = 1;
 	warn_version = 1;
-	warn_stack = 1;
 	warn_fileref = 1;
 	bd_warn_root = 1;
 	popupmenu_btnup = 1;
@@ -218,7 +217,6 @@ void Preferences::copy_from(Preferences *that)
 	strcpy(use_hw_dev, &that->use_hw_dev[0]);
 	warn_indexes = that->warn_indexes;
 	warn_version = that->warn_version;
-	warn_stack = that->warn_stack;
 	warn_fileref = that->warn_fileref;
 	bd_warn_root = that->bd_warn_root;
 	popupmenu_btnup = that->popupmenu_btnup;
@@ -368,7 +366,6 @@ int Preferences::load_defaults(BC_Hash *defaults)
 	defaults->get("USE_HW_DEV", use_hw_dev);
 	warn_indexes = defaults->get("WARN_INDEXES", warn_indexes);
 	warn_version = defaults->get("WARN_VERSION", warn_version);
-	warn_stack = defaults->get("WARN_STACK", warn_stack);
 	warn_fileref = defaults->get("WARN_FILEREF", warn_fileref);
 	bd_warn_root = defaults->get("BD_WARN_ROOT", bd_warn_root);
 	popupmenu_btnup = defaults->get("POPUPMENU_BTNUP", popupmenu_btnup);
@@ -516,7 +513,6 @@ int Preferences::save_defaults(BC_Hash *defaults)
 	defaults->update("USE_HW_DEV", use_hw_dev);
 	defaults->update("WARN_INDEXES", warn_indexes);
 	defaults->update("WARN_VERSION", warn_version);
-	defaults->update("WARN_STACK", warn_stack);
 	defaults->update("WARN_FILEREF", warn_fileref);
 	defaults->update("BD_WARN_ROOT", bd_warn_root);
 	defaults->update("POPUPMENU_BTNUP", popupmenu_btnup);

@@ -805,3 +805,13 @@ double Tracks::align_timecodes()
 	return offset;
 }
 
+void Tracks::update_idxbl_length(int id, double dt)
+{
+	for( Track *track=first; track; track=track->next ) {
+		if( !track->is_armed() ) continue;
+		int64_t du = track->to_units(dt,0);
+		track->edits->update_idxbl_length(id, du);
+		track->optimize();
+	}
+}
+

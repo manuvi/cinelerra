@@ -25,6 +25,7 @@
 #include "clipedls.h"
 #include "edl.h"
 #include "filexml.h"
+#include "indexfile.h"
 #include "mainindexes.h"
 #include "mainmenu.h"
 #include "mainsession.h"
@@ -261,17 +262,25 @@ int MainUndo::load_from_undo(FileXML *file, uint32_t load_flags)
 		mwindow->close_mixers();
 		mwindow->gui->lock_window("MainUndo::load_from_undo");
 	}
-	if( (load_flags & LOAD_ALL) == LOAD_ALL ) {
-		mwindow->edl->remove_user();
+	EDL *prev_edl = mwindow->edl;
+	if( (load_flags & LOAD_ALL) == LOAD_ALL )
 		mwindow->init_edl();
-	}
 	mwindow->edl->load_xml(file, load_flags);
 	for( Asset *asset=mwindow->edl->assets->first; asset; asset=asset->next ) {
 		mwindow->mainindexes->add_indexable(asset);
 	}
-	for( int i=0; i<mwindow->edl->nested_edls.size(); ++i ) {
-		EDL *nested_edl = mwindow->edl->nested_edls[i];
-		mwindow->mainindexes->add_indexable(nested_edl);
+	if( prev_edl != mwindow->edl ) {
+		for( int i=0; i<mwindow->edl->nested_edls.size(); ++i ) {
+			EDL *nested_edl = mwindow->edl->nested_edls[i];
+			if( !nested_edl->path[0] ) continue;
+			int k = prev_edl->nested_edls.size();
+			while( --k >= 0 && // if nested edl was updated, force index rebuild
+				strcmp(nested_edl->path, prev_edl->nested_edls[k]->path) );
+			if( k >= 0 && prev_edl->nested_edls[k]->equivalent_output(nested_edl) >= 0 )
+				IndexFile::delete_index_files(mwindow->preferences, nested_edl);
+			mwindow->mainindexes->add_indexable(nested_edl);
+		}
+		prev_edl->remove_user();
 	}
 	mwindow->mainindexes->start_build();
 	mwindow->update_plugin_guis(1);

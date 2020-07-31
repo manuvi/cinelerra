@@ -3807,7 +3807,7 @@ void MWindow::update_project(int load_mode)
 	if(debug) PRINT_TRACE
 }
 
-void MWindow::stack_push(EDL *new_edl, Indexable *idxbl, Edit *edit)
+void MWindow::stack_push(EDL *new_edl, Indexable *idxbl)
 {
 	int got_indexes = 0;
 	for( int i=0; i<new_edl->nested_edls.size(); ++i ) {
@@ -3833,7 +3833,6 @@ void MWindow::stack_push(EDL *new_edl, Indexable *idxbl, Edit *edit)
 		undo_before();
 		StackItem &item = stack.append();
 		item.edl = edl;
-		item.edit = edit;
 		item.new_edl = new_edl;
 		item.duration = new_edl->tracks->total_length();
 		item.undo = undo;
@@ -3868,29 +3867,44 @@ void MWindow::stack_pop()
 // session edl replaced, overwrite and save clip data
 	if( item.new_edl != edl )
 		item.new_edl->overwrite_clip(edl);
-	Edit *edit = item.edit;
-// resize the referring edit if the edl duration changed
-	if( edit ) {
-		double duration = item.new_edl->tracks->total_length();
-		double dt = duration - item.duration;
-		if( fabs(dt) > 1e-4 ) {
-			int64_t du = edit->track->to_units(dt,0);
-			if( (edit->length+=du) < 0 )
-				edit->length = 0;
+	Indexable *idxbl = item.idxbl;
+	if( idxbl && idxbl->is_asset && item.mtime ) {
+		Asset *asset = (Asset *)idxbl;
+		if( asset->format == FILE_REF ) {
+			char *path = asset->path;
+			struct stat st;
+			if( stat(path, &st) || item.mtime == st.st_mtime ) {
+				int cw = xS(250), ch = yS(150), px, py;
+				gui->get_pop_cursor(px, py);
+				px -= cw/2;  py -= ch/2;
+				ConfirmRefWindow confirm(this, path, px, py, cw, ch);
+				confirm.create_objects();
+				int result = confirm.run_window();
+				if( !result ) {
+					FileXML file;
+					item.new_edl->save_xml(&file, path);
+					file.terminate_string();
+					if(file.write_to_file(path))
+						eprintf(_("Cant write FileREF: %s"), path);
+				}
+			}
 		}
 	}
 	edl->remove_user();
 	edl = item.edl;
 	delete undo;
 	undo = item.undo;
-	Indexable *idxbl = item.idxbl;
-	int64_t mtime = item.mtime;
 	stack.remove();
 	if( idxbl ) {
+// resize the indexable edits if the new_edl duration changed
+		double duration = item.new_edl->tracks->total_length();
+		double dt = duration - item.duration;
+		if( fabs(dt) > 1e-4 )
+			edl->tracks->update_idxbl_length(idxbl->id, dt);
 		gui->unlock_window();
 		gui->resource_thread->close_indexable(idxbl);
 		remove_from_caches(idxbl);
-		remove_indexfile(idxbl);
+		IndexFile::delete_index_files(preferences, idxbl);
 		mainindexes->add_indexable(idxbl);
 		mainindexes->start_build();
 		awindow->gui->async_update_assets();
@@ -3901,17 +3915,6 @@ void MWindow::stack_pop()
 	undo_after(_("open edl"), LOAD_ALL);
 	show_plugins();
 	gui->stack_button->update();
-	if( mtime && idxbl && idxbl->is_asset ) {
-		struct stat st;
-		Asset *asset = (Asset *)idxbl;
-		if( asset->format == FILE_REF && !stat(asset->path, &st) &&
-		    item.mtime == st.st_mtime ) {
-			char text[BCTEXTLEN];
-			snprintf(text, sizeof(text),
-				 _("Warning: Asset not updated: %s"), asset->path);
-			show_warning(&preferences->warn_stack, text);
-		}
-	}
 }
 
 int MWindow::save(EDL *edl, char *filename, int stat)
@@ -4109,11 +4112,8 @@ void MWindow::update_vwindow()
 void MWindow::remove_indexfile(Indexable *indexable)
 {
 	if( !indexable->is_asset ) return;
-	Asset *asset = (Asset *)indexable;
 // Erase file
-	IndexFile::delete_index(preferences, asset, ".toc");
-	IndexFile::delete_index(preferences, asset, ".idx");
-	IndexFile::delete_index(preferences, asset, ".mkr");
+	IndexFile::delete_index_files(preferences, indexable);
 }
 
 void MWindow::rebuild_indices()
@@ -5175,5 +5175,35 @@ void DrawTrackMovement::run()
 	mwindow->edl->tracks->update_y_pixels(mwindow->theme);
 	mwindow->gui->draw_trackmovement();
 	mwindow->gui->unlock_window();
+}
+
+
+ConfirmRefWindow::ConfirmRefWindow(MWindow *mwindow, char *path,
+		int px, int py, int cw, int ch)
+ : BC_Window(_(PROGRAM_NAME ": Confirm update"), px, py, cw, ch, cw, ch)
+{
+	this->mwindow = mwindow;
+	this->path = path;
+}
+
+ConfirmRefWindow::~ConfirmRefWindow()
+{
+}
+
+void ConfirmRefWindow::create_objects()
+{
+	lock_window("ConfirmRefWindow::create_objects()");
+	int x = xS(10), y = yS(10), pad = yS(5);
+	BC_Title *title;
+	add_subwindow(title = new BC_Title(x, y, _("FileREF not updated:")));
+	y += title->get_h() + pad;
+	BC_TextBox *text_box;
+	add_subwindow(text_box = new BC_TextBox(x,y, get_w()-2*x, 1, path));
+	y += text_box->get_h() + 2*pad;
+	add_subwindow(title = new BC_Title(x, y, _("Save file ref changes?")));
+	add_subwindow(new BC_OKButton(this));
+	add_subwindow(new BC_CancelButton(this));
+	show_window();
+	unlock_window();
 }
 

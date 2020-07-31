@@ -75,7 +75,26 @@ int FileREF::open_file(int rd, int wr)
 		if( ref ) ref->remove_user();
 		ref = new EDL;
 		ref->create_objects();
-		ref->load_xml(&file_xml, LOAD_ALL);
+		if( ref->load_xml(&file_xml, LOAD_ALL) ) {
+			ref->remove_user();
+			ref = 0;
+			eprintf(_("Error loading Reference file:\n%s"), asset->path);
+			return 1;
+		}
+		if( !asset->layers ) asset->layers = ref->get_video_layers();
+		asset->video_data = asset->layers > 0 ? 1 : 0;
+		asset->video_length = asset->video_data ? ref->get_video_frames() : 0;
+		asset->actual_width = asset->video_data ? ref->get_w() : 0;
+		asset->actual_height = asset->video_data ? ref->get_h() : 0;
+		if( !asset->width ) asset->width = asset->actual_width;
+		if( !asset->height ) asset->height = asset->actual_height;
+		if( !asset->frame_rate ) asset->frame_rate = ref->get_frame_rate();
+		strcpy(asset->vcodec, "REF");
+		asset->channels = ref->get_audio_channels();
+		asset->audio_data = asset->channels > 0 ? 1 : 0;
+		asset->sample_rate = ref->get_sample_rate();
+		asset->audio_length = asset->audio_data ? ref->get_audio_samples() : 0;
+		strcpy(asset->acodec, "REF");
 		command = new TransportCommand();
 		command->reset();
 		command->get_edl()->copy_all(ref);

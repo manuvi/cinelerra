@@ -228,7 +228,7 @@ void IndexFile::delete_index(Preferences *preferences,
 	char index_filename[BCTEXTLEN];
 	char source_filename[BCTEXTLEN];
 	const char *path = indexable->path;
-
+	if( !*path ) return;
 	get_index_filename(source_filename,
 		preferences->index_directory,
 		index_filename, path, suffix);

@@ -156,6 +156,18 @@ public:
 	MWindow *mwindow;
 };
 
+class ConfirmRefWindow : public BC_Window
+{
+public:
+	ConfirmRefWindow(MWindow *mwindow, char *path,
+			int px, int py, int cw, int ch);
+	~ConfirmRefWindow();
+	void create_objects();
+
+	MWindow *mwindow;
+	const char *path;
+};
+
 
 class MWindow : public Thread
 {
@@ -188,7 +200,7 @@ public:
 // Total horizontal pixels in timeline
 	int get_tracks_width();
 // session stack
-	void stack_push(EDL *edl, Indexable *idxbl, Edit *edit=0);
+	void stack_push(EDL *edl, Indexable *idxbl);
 	void stack_pop();
 	int save(EDL *edl, char *filename, int stat);
 	int save(int save_as);

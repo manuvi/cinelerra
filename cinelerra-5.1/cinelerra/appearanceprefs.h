@@ -265,14 +265,6 @@ public:
 	PreferencesWindow *pwindow;
 };
 
-class UseWarnStack : public BC_CheckBox
-{
-public:
-	UseWarnStack(PreferencesWindow *pwindow, int x, int y);
-	int handle_event();
-	PreferencesWindow *pwindow;
-};
-
 class BD_WarnRoot : public BC_CheckBox
 {
 public:

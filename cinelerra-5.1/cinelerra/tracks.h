@@ -249,6 +249,7 @@ public:
 	void set_transition_length(double start, double end, double length);
 	void set_transition_length(Transition *transition, double length);
 	void paste_transitions(double start, double end, int track_type, char* title);
+	void update_idxbl_length(int id, double dt);
 
 // ================================== accounting
 

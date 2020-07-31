@@ -213,9 +213,6 @@ void AppearancePrefs::create_objects()
 	UseWarnVersion *ver_warn = new UseWarnVersion(pwindow, x, y);
 	add_subwindow(ver_warn);
 	y += ver_warn->get_h() + ys5;
-	UseWarnStack *stack_warn = new UseWarnStack(pwindow, x, y);
-	add_subwindow(stack_warn);
-	y += stack_warn->get_h() + ys5;
 	BD_WarnRoot *bdwr_warn = new BD_WarnRoot(pwindow, x, y);
 	add_subwindow(bdwr_warn);
 	y += bdwr_warn->get_h() + ys5;
@@ -621,19 +618,6 @@ UseWarnVersion::UseWarnVersion(PreferencesWindow *pwindow, int x, int y)
 int UseWarnVersion::handle_event()
 {
 	pwindow->thread->preferences->warn_version = get_value();
-	return 1;
-}
-
-UseWarnStack::UseWarnStack(PreferencesWindow *pwindow, int x, int y)
- : BC_CheckBox(x, y, pwindow->thread->preferences->warn_stack,
-	_("Stack warns if reference not modified"))
-{
-	this->pwindow = pwindow;
-}
-
-int UseWarnStack::handle_event()
-{
-	pwindow->thread->preferences->warn_stack = get_value();
 	return 1;
 }
 

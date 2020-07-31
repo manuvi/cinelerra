@@ -121,6 +121,7 @@ public:
 	int modify_handles(double oldposition, double newposition,
 		int currentend, int edit_mode, int edit_edits, int edit_labels,
 		int edit_plugins, int edit_autos, Edits *trim_edits, int group_id);
+	void update_idxbl_length(int id, int64_t du);
 
 	virtual int optimize();
 

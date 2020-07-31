@@ -898,3 +898,20 @@ void Edits::align_timecodes(double offset)
 	}
 }
 
+void Edits::update_idxbl_length(int id, int64_t du)
+{
+	for( Edit *edit=first; edit; edit=edit->next ) {
+		Indexable *idxbl = edit->asset ? (Indexable *)edit->asset :
+			edit->nested_edl ? (Indexable *)edit->nested_edl : 0;
+		if( !idxbl || idxbl->id != id ) continue;
+		edit->length += du;
+		if(  edit->length > 0 && edit->next ) {
+			int64_t next_start = edit->next->startproject;
+			int64_t edit_end = edit->startproject + edit->length;
+			if( edit_end > next_start )
+				edit->length = next_start - edit->startproject;
+		}
+		if( edit->length < 0 ) edit->length = 0;
+	}
+}
+
