@@ -263,6 +263,8 @@ FFStream::FFStream(FFMPEG *ffmpeg, AVStream *st, int fidx)
 	fmt_ctx = 0;
 	avctx = 0;
 	filter_graph = 0;
+	filt_ctx = 0;
+	filt_id = 0;
 	buffersrc_ctx = 0;
 	buffersink_ctx = 0;
 	frm_count = 0;
@@ -1059,10 +1061,12 @@ FFVideoStream::FFVideoStream(FFMPEG *ffmpeg, AVStream *strm, int idx, int fidx)
 	top_field_first = 0;
 	color_space = -1;
 	color_range = -1;
+	fconvert_ctx = 0;
 }
 
 FFVideoStream::~FFVideoStream()
 {
+	if( fconvert_ctx ) sws_freeContext(fconvert_ctx);
 }
 
 AVHWDeviceType FFVideoStream::decode_hw_activate()
@@ -1259,6 +1263,78 @@ int FFVideoStream::init_frame(AVFrame *picture)
 	picture->height = avctx->height;
 	int ret = av_frame_get_buffer(picture, 32);
 	return ret;
+}
+
+int FFVideoStream::convert_hw_frame(AVFrame *ifrm, AVFrame *ofrm)
+{
+	AVPixelFormat ifmt = (AVPixelFormat)ifrm->format;
+	AVPixelFormat ofmt = (AVPixelFormat)st->codecpar->format;
+	ofrm->width  = ifrm->width;
+	ofrm->height = ifrm->height;
+	ofrm->format = ofmt;
+        int ret = av_frame_get_buffer(ofrm, 32);
+	if( ret < 0 ) {
+		ff_err(ret, "FFVideoStream::convert_hw_frame:"
+				" av_frame_get_buffer failed\n");
+		return -1;
+	}
+	fconvert_ctx = sws_getCachedContext(fconvert_ctx,
+		ifrm->width, ifrm->height, ifmt,
+		ofrm->width, ofrm->height, ofmt,
+		SWS_POINT, NULL, NULL, NULL);
+	if( !fconvert_ctx ) {
+		ff_err(AVERROR(EINVAL), "FFVideoStream::convert_hw_frame:"
+				" sws_getCachedContext() failed\n");
+		return -1;
+	}
+	int codec_range = st->codecpar->color_range;
+	int codec_space = st->codecpar->color_space;
+	const int *codec_table = sws_getCoefficients(codec_space);
+	int *inv_table, *table, src_range, dst_range;
+	int brightness, contrast, saturation;
+	if( !sws_getColorspaceDetails(fconvert_ctx,
+			&inv_table, &src_range, &table, &dst_range,
+			&brightness, &contrast, &saturation) ) {
+		if( src_range != codec_range || dst_range != codec_range ||
+		    inv_table != codec_table || table != codec_table )
+			sws_setColorspaceDetails(fconvert_ctx,
+					codec_table, codec_range, codec_table, codec_range,
+					brightness, contrast, saturation);
+	}
+	ret = sws_scale(fconvert_ctx,
+		ifrm->data, ifrm->linesize, 0, ifrm->height,
+		ofrm->data, ofrm->linesize);
+	if( ret < 0 ) {
+		ff_err(ret, "FFVideoStream::convert_hw_frame:"
+				" sws_scale() failed\nfile: %s\n",
+				ffmpeg->fmt_ctx->url);
+		return -1;
+	}
+	return 0;
+}
+
+int FFVideoStream::load_filter(AVFrame *frame)
+{
+	AVPixelFormat pix_fmt = (AVPixelFormat)frame->format;
+	if( pix_fmt == hw_pixfmt ) {
+		AVFrame *hw_frame = this->frame;
+		av_frame_unref(hw_frame);
+		int ret = av_hwframe_transfer_data(hw_frame, frame, 0);
+		if( ret < 0 ) {
+			eprintf(_("Error retrieving data from GPU to CPU\nfile: %s\n"),
+				ffmpeg->fmt_ctx->url);
+			return -1;
+		}
+		av_frame_unref(frame);
+		ret = convert_hw_frame(hw_frame, frame);
+		if( ret < 0 ) {
+			eprintf(_("Error converting data from GPU to CPU\nfile: %s\n"),
+				ffmpeg->fmt_ctx->url);
+			return -1;
+		}
+		av_frame_unref(hw_frame);
+	}
+	return FFStream::load_filter(frame);
 }
 
 int FFVideoStream::encode(VFrame *vframe)
@@ -1658,44 +1734,6 @@ IndexMarks *FFVideoStream::get_markers()
 	IndexState *index_state = ffmpeg->file_base->asset->index_state;
 	if( !index_state || idx >= index_state->video_markers.size() ) return 0;
 	return !index_state ? 0 : index_state->video_markers[idx];
-}
-
-double FFVideoStream::get_rotation_angle()
-{
-	int size = 0;
-	int *matrix = (int*)av_stream_get_side_data(st, AV_PKT_DATA_DISPLAYMATRIX, &size);
-	int len = size/sizeof(*matrix);
-	if( !matrix || len < 5 ) return 0;
-	const double s = 1/65536.;
-	double theta = (!matrix[0] && !matrix[3]) || (!matrix[1] && !matrix[4]) ? 0 :
-		 atan2( s*matrix[1] / hypot(s*matrix[1], s*matrix[4]),
-			s*matrix[0] / hypot(s*matrix[0], s*matrix[3])) * 180/M_PI;
-	return theta;
-}
-
-void FFVideoStream::flip()
-{
-	transpose = 0;
-	if( !ffmpeg->file_base ) return;
-	double theta = get_rotation_angle(), tolerance = 1;
-	if( fabs(theta-0) < tolerance ) return;
-        if( fabs(theta-90) < tolerance ) {
-		create_filter("transpose=clock", st->codecpar);
-		transpose = 1;
-        }
-	else if( fabs(theta-180) < tolerance ) {
-		create_filter("hflip", st->codecpar);
-		create_filter("vflip", st->codecpar);
-        }
-	else if (fabs(theta-270) < tolerance ) {
-		create_filter("transpose=cclock", st->codecpar);
-		transpose = 1;
-        }
-	else {
-		char rotate[BCSTRLEN];
-		sprintf(rotate, "rotate=%f", theta*M_PI/180.);
-		create_filter(rotate, st->codecpar);
-        }
 }
 
 
@@ -2533,10 +2571,7 @@ int FFMPEG::open_decoder()
 			vid->aspect_ratio = (double)st->sample_aspect_ratio.num / st->sample_aspect_ratio.den;
 			vid->nudge = st->start_time;
 			vid->reading = -1;
-			if( opt_video_filter )
-				ret = vid->create_filter(opt_video_filter, avpar);
-			if( file_base && file_base->file->preferences->auto_rotate )
-				vid->flip();
+			ret = vid->create_filter(opt_video_filter);
 			break; }
 		case AVMEDIA_TYPE_AUDIO: {
 			if( avpar->channels < 1 ) continue;
@@ -2555,8 +2590,7 @@ int FFMPEG::open_decoder()
 			aud->init_swr(aud->channels, avpar->format, aud->sample_rate);
 			aud->nudge = st->start_time;
 			aud->reading = -1;
-			if( opt_audio_filter )
-				ret = aud->create_filter(opt_audio_filter, avpar);
+			ret = aud->create_filter(opt_audio_filter);
 			break; }
 		default: break;
 		}
@@ -3447,22 +3481,72 @@ Preferences *FFMPEG::ff_prefs()
 	return !file_base ? 0 : file_base->file->preferences;
 }
 
-int FFVideoStream::create_filter(const char *filter_spec, AVCodecParameters *avpar)
+double FFVideoStream::get_rotation_angle()
 {
+	int size = 0;
+	int *matrix = (int*)av_stream_get_side_data(st, AV_PKT_DATA_DISPLAYMATRIX, &size);
+	int len = size/sizeof(*matrix);
+	if( !matrix || len < 5 ) return 0;
+	const double s = 1/65536.;
+	double theta = (!matrix[0] && !matrix[3]) || (!matrix[1] && !matrix[4]) ? 0 :
+		 atan2( s*matrix[1] / hypot(s*matrix[1], s*matrix[4]),
+			s*matrix[0] / hypot(s*matrix[0], s*matrix[3])) * 180/M_PI;
+	return theta;
+}
+
+int FFVideoStream::flip(double theta)
+{
+	int ret = 0;
+	transpose = 0;
+	Preferences *preferences = ffmpeg->ff_prefs();
+	if( !preferences || !preferences->auto_rotate ) return ret;
+	double tolerance = 1;
+	if( fabs(theta-0) < tolerance ) return  ret;
+	if( (theta=fmod(theta, 360)) < 0 ) theta += 360;
+        if( fabs(theta-90) < tolerance ) {
+		if( (ret = insert_filter("transpose", "clock")) < 0 )
+			return ret;
+		transpose = 1;
+        }
+	else if( fabs(theta-180) < tolerance ) {
+		if( (ret=insert_filter("hflip", 0)) < 0 )
+			return ret;
+		if( (ret=insert_filter("vflip", 0)) < 0 )
+			return ret;
+        }
+	else if (fabs(theta-270) < tolerance ) {
+		if( (ret=insert_filter("transpose", "cclock")) < 0 )
+			return ret;
+		transpose = 1;
+        }
+	else {
+		char angle[BCSTRLEN];
+		sprintf(angle, "%f", theta*M_PI/180.);
+		if( (ret=insert_filter("rotate", angle)) < 0 )
+			return ret;
+        }
+	return 1;
+}
+
+int FFVideoStream::create_filter(const char *filter_spec)
+{
+	double theta = get_rotation_angle();
+	if( !theta && !filter_spec )
+		return 0;
 	avfilter_register_all();
-	const char *sp = filter_spec;
-	char filter_name[BCSTRLEN], *np = filter_name;
-	int i = sizeof(filter_name);
-	while( --i>=0 && *sp!=0 && !strchr(" \t:=,",*sp) ) *np++ = *sp++;
-	*np = 0;
-	const AVFilter *filter = !filter_name[0] ? 0 : avfilter_get_by_name(filter_name);
-	if( !filter || avfilter_pad_get_type(filter->inputs,0) != AVMEDIA_TYPE_VIDEO ) {
-		ff_err(AVERROR(EINVAL), "FFVideoStream::create_filter: %s\n", filter_spec);
-		return -1;
+	if( filter_spec ) {
+		const char *sp = filter_spec;
+		char filter_name[BCSTRLEN], *np = filter_name;
+		int i = sizeof(filter_name);
+		while( --i>=0 && *sp!=0 && !strchr(" \t:=,",*sp) ) *np++ = *sp++;
+		*np = 0;
+		const AVFilter *filter = !filter_name[0] ? 0 : avfilter_get_by_name(filter_name);
+		if( !filter || avfilter_pad_get_type(filter->inputs,0) != AVMEDIA_TYPE_VIDEO ) {
+			ff_err(AVERROR(EINVAL), "FFVideoStream::create_filter: %s\n", filter_spec);
+			return -1;
+		}
 	}
-	filter_graph = avfilter_graph_alloc();
-	const AVFilter *buffersrc = avfilter_get_by_name("buffer");
-	const AVFilter *buffersink = avfilter_get_by_name("buffersink");
+	AVCodecParameters *avpar = st->codecpar;
 	int sa_num = avpar->sample_aspect_ratio.num;
 	if( !sa_num ) sa_num = 1;
 	int sa_den = avpar->sample_aspect_ratio.den;
@@ -3474,51 +3558,66 @@ int FFVideoStream::create_filter(const char *filter_spec, AVCodecParameters *avp
 		"video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d",
 		avpar->width, avpar->height, (int)pix_fmt,
 		st->time_base.num, st->time_base.den, sa_num, sa_den);
+	if( ret >= 0 ) {
+		filt_ctx = 0;
+		ret = insert_filter("buffer", args, "in");
+		buffersrc_ctx = filt_ctx;
+	}
 	if( ret >= 0 )
-		ret = avfilter_graph_create_filter(&buffersrc_ctx, buffersrc, "in",
-			args, NULL, filter_graph);
-	if( ret >= 0 )
-		ret = avfilter_graph_create_filter(&buffersink_ctx, buffersink, "out",
-			NULL, NULL, filter_graph);
-	if( ret >= 0 )
+		ret = flip(theta);
+	AVFilterContext *fsrc = filt_ctx;
+	if( ret >= 0 ) {
+		filt_ctx = 0;
+		ret = insert_filter("buffersink", 0, "out");
+		buffersink_ctx = filt_ctx;
+	}
+	if( ret >= 0 ) {
 		ret = av_opt_set_bin(buffersink_ctx, "pix_fmts",
 			(uint8_t*)&pix_fmt, sizeof(pix_fmt),
 			AV_OPT_SEARCH_CHILDREN);
-	if( ret < 0 )
-		ff_err(ret, "FFVideoStream::create_filter");
+	}
+	if( ret >= 0 )
+		ret = config_filters(filter_spec, fsrc);
 	else
-		ret = FFStream::create_filter(filter_spec);
+		ff_err(ret, "FFVideoStream::create_filter");
 	return ret >= 0 ? 0 : -1;
 }
 
-int FFAudioStream::create_filter(const char *filter_spec, AVCodecParameters *avpar)
+int FFAudioStream::create_filter(const char *filter_spec)
 {
+	if( !filter_spec )
+		return 0;
 	avfilter_register_all();
-	const char *sp = filter_spec;
-	char filter_name[BCSTRLEN], *np = filter_name;
-	int i = sizeof(filter_name);
-	while( --i>=0 && *sp!=0 && !strchr(" \t:=,",*sp) ) *np++ = *sp++;
-	*np = 0;
-	const AVFilter *filter = !filter_name[0] ? 0 : avfilter_get_by_name(filter_name);
-	if( !filter || avfilter_pad_get_type(filter->inputs,0) != AVMEDIA_TYPE_AUDIO ) {
-		ff_err(AVERROR(EINVAL), "FFAudioStream::create_filter: %s\n", filter_spec);
-		return -1;
+	if( filter_spec ) {
+		const char *sp = filter_spec;
+		char filter_name[BCSTRLEN], *np = filter_name;
+		int i = sizeof(filter_name);
+		while( --i>=0 && *sp!=0 && !strchr(" \t:=,",*sp) ) *np++ = *sp++;
+		*np = 0;
+		const AVFilter *filter = !filter_name[0] ? 0 : avfilter_get_by_name(filter_name);
+		if( !filter || avfilter_pad_get_type(filter->inputs,0) != AVMEDIA_TYPE_AUDIO ) {
+			ff_err(AVERROR(EINVAL), "FFAudioStream::create_filter: %s\n", filter_spec);
+			return -1;
+		}
 	}
-	filter_graph = avfilter_graph_alloc();
-	const AVFilter *buffersrc = avfilter_get_by_name("abuffer");
-	const AVFilter *buffersink = avfilter_get_by_name("abuffersink");
 	int ret = 0;  char args[BCTEXTLEN];
+	AVCodecParameters *avpar = st->codecpar;
 	AVSampleFormat sample_fmt = (AVSampleFormat)avpar->format;
 	snprintf(args, sizeof(args),
 		"time_base=%d/%d:sample_rate=%d:sample_fmt=%s:channel_layout=0x%jx",
 		st->time_base.num, st->time_base.den, avpar->sample_rate,
 		av_get_sample_fmt_name(sample_fmt), avpar->channel_layout);
-	if( ret >= 0 )
-		ret = avfilter_graph_create_filter(&buffersrc_ctx, buffersrc, "in",
-			args, NULL, filter_graph);
-	if( ret >= 0 )
-		ret = avfilter_graph_create_filter(&buffersink_ctx, buffersink, "out",
-			NULL, NULL, filter_graph);
+	if( ret >= 0 ) {
+		filt_ctx = 0;
+		ret = insert_filter("abuffer", args, "in");
+		buffersrc_ctx = filt_ctx;
+	}
+	AVFilterContext *fsrc = filt_ctx;
+	if( ret >= 0 ) {
+		filt_ctx = 0;
+		ret = insert_filter("abuffersink", 0, "out");
+		buffersink_ctx = filt_ctx;
+	}
 	if( ret >= 0 )
 		ret = av_opt_set_bin(buffersink_ctx, "sample_fmts",
 			(uint8_t*)&sample_fmt, sizeof(sample_fmt),
@@ -3531,42 +3630,75 @@ int FFAudioStream::create_filter(const char *filter_spec, AVCodecParameters *avp
 		ret = av_opt_set_bin(buffersink_ctx, "sample_rates",
 			(uint8_t*)&sample_rate, sizeof(sample_rate),
 			AV_OPT_SEARCH_CHILDREN);
-	if( ret < 0 )
-		ff_err(ret, "FFAudioStream::create_filter");
+	if( ret >= 0 )
+		ret = config_filters(filter_spec, fsrc);
 	else
-		ret = FFStream::create_filter(filter_spec);
+		ff_err(ret, "FFAudioStream::create_filter");
 	return ret >= 0 ? 0 : -1;
 }
 
-int FFStream::create_filter(const char *filter_spec)
+int FFStream::insert_filter(const char *name, const char *arg, const char *inst_name)
 {
-	/* Endpoints for the filter graph. */
-	AVFilterInOut *outputs = avfilter_inout_alloc();
-	outputs->name = av_strdup("in");
-	outputs->filter_ctx = buffersrc_ctx;
-	outputs->pad_idx = 0;
-	outputs->next = 0;
-
-	AVFilterInOut *inputs  = avfilter_inout_alloc();
-	inputs->name = av_strdup("out");
-	inputs->filter_ctx = buffersink_ctx;
-	inputs->pad_idx	= 0;
-	inputs->next = 0;
-
-	int ret = !outputs->name || !inputs->name ? -1 : 0;
+	const AVFilter *filter = avfilter_get_by_name(name);
+	if( !filter ) return -1;
+	char filt_inst[BCSTRLEN];
+	if( !inst_name ) {
+		snprintf(filt_inst, sizeof(filt_inst), "%s_%d", name, ++filt_id);
+		inst_name = filt_inst;
+	}
+	if( !filter_graph )
+		filter_graph = avfilter_graph_alloc();
+	AVFilterContext *fctx = 0;
+	int ret = avfilter_graph_create_filter(&fctx,
+		filter, inst_name, arg, NULL, filter_graph);
+	if( ret >= 0 && filt_ctx )
+		ret = avfilter_link(filt_ctx, 0, fctx, 0);
 	if( ret >= 0 )
-		ret = avfilter_graph_parse_ptr(filter_graph, filter_spec,
-			&inputs, &outputs, NULL);
+		filt_ctx = fctx;
+	else
+		avfilter_free(fctx);
+	return ret;
+}
+
+int FFStream::config_filters(const char *filter_spec, AVFilterContext *fsrc)
+{
+	int ret = 0;
+	AVFilterContext *fsink = buffersink_ctx;
+	if( filter_spec ) {
+		/* Endpoints for the filter graph. */
+		AVFilterInOut *outputs = avfilter_inout_alloc();
+		AVFilterInOut *inputs = avfilter_inout_alloc();
+		if( !inputs || !outputs ) ret = -1;
+		if( ret >= 0 ) {
+			outputs->filter_ctx = fsrc;
+			outputs->pad_idx = 0;
+			outputs->next = 0;
+			if( !(outputs->name = av_strdup(fsrc->name)) ) ret = -1;
+		}
+		if( ret >= 0 ) {
+			inputs->filter_ctx = fsink;
+			inputs->pad_idx	= 0;
+			inputs->next = 0;
+			if( !(inputs->name = av_strdup(fsink->name)) ) ret = -1;
+		}
+		if( ret >= 0 ) {
+			int len = strlen(fsrc->name)+2 + strlen(filter_spec) + 1;
+			char spec[len];  sprintf(spec, "[%s]%s", fsrc->name, filter_spec);
+			ret = avfilter_graph_parse_ptr(filter_graph, spec,
+				&inputs, &outputs, NULL);
+		}
+		avfilter_inout_free(&inputs);
+		avfilter_inout_free(&outputs);
+	}
+	else
+		ret = avfilter_link(fsrc, 0, fsink, 0);
 	if( ret >= 0 )
 		ret = avfilter_graph_config(filter_graph, NULL);
-
 	if( ret < 0 ) {
 		ff_err(ret, "FFStream::create_filter");
 		avfilter_graph_free(&filter_graph);
 		filter_graph = 0;
 	}
-	avfilter_inout_free(&inputs);
-	avfilter_inout_free(&outputs);
 	return ret;
 }
 

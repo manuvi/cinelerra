@@ -99,11 +99,12 @@ public:
 	virtual int decode_frame(AVFrame *frame) = 0;
 	virtual int encode_frame(AVFrame *frame) = 0;
 	virtual int init_frame(AVFrame *frame) = 0;
-	virtual int create_filter(const char *filter_spec, AVCodecParameters *avpar) = 0;
+	virtual int create_filter(const char *filter_spec) = 0;
 	virtual void load_markers() = 0;
 	virtual IndexMarks *get_markers() = 0;
-	int create_filter(const char *filter_spec);
-	int load_filter(AVFrame *frame);
+	int insert_filter(const char *name, const char *arg, const char *inst_name=0);
+	int config_filters(const char *filter_spec, AVFilterContext *fsrc);
+	virtual int load_filter(AVFrame *frame);
 	int read_filter(AVFrame *frame);
 	int read_frame(AVFrame *frame);
 	int open_stats_file();
@@ -117,8 +118,10 @@ public:
 	AVFormatContext *fmt_ctx;
 	AVCodecContext *avctx;
 
-	AVFilterContext *buffersink_ctx;
+	AVFilterContext *filt_ctx;
+	int filt_id;
 	AVFilterContext *buffersrc_ctx;
+	AVFilterContext *buffersink_ctx;
 	AVFilterGraph *filter_graph;
 	AVFrame *frame, *fframe;
 	AVFrame *probe_frame;
@@ -177,7 +180,7 @@ public:
 	int load_history(uint8_t **data, int len);
 	int decode_frame(AVFrame *frame);
 	int encode_frame(AVFrame *frame);
-	int create_filter(const char *filter_spec, AVCodecParameters *avpar);
+	int create_filter(const char *filter_spec);
 	void load_markers();
 	IndexMarks *get_markers();
 
@@ -247,7 +250,7 @@ public:
 	AVHWDeviceType encode_hw_activate(const char *hw_dev);
 	int encode_hw_write(FFrame *picture);
 	int encode_frame(AVFrame *frame);
-	int create_filter(const char *filter_spec, AVCodecParameters *avpar);
+	int create_filter(const char *filter_spec);
 	void load_markers();
 	IndexMarks *get_markers();
 
@@ -256,8 +259,10 @@ public:
 	int video_seek(int64_t pos);
 	int encode(VFrame *vframe);
 	int drain();
+	int convert_hw_frame(AVFrame *ifrm, AVFrame *ofrm);
+	int load_filter(AVFrame *frame);
 	double get_rotation_angle();
-	void flip();
+	int flip(double theta);
 
 	int idx;
 	double frame_rate;
@@ -268,6 +273,7 @@ public:
 	int interlaced;
 	int top_field_first;
 	int color_space, color_range;
+	struct SwsContext *fconvert_ctx;
 };
 
 class FFCodecRemap

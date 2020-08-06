@@ -333,8 +333,6 @@ int ffcmpr::open_decoder(const char *filename, int vid_no)
 {
   struct stat fst;
   if( stat(filename, &fst) ) return 1;
-
-  av_log_set_level(AV_LOG_VERBOSE);
   fmt_ctx = 0;
   AVDictionary *fopts = 0;
   av_register_all();
@@ -416,7 +414,21 @@ AVFrame *ffcmpr::read_frame()
   return 0;
 }
 
-static int diff_frame(AVFrame *afrm, AVFrame *bfrm, gg_ximage *ximg, int w, int h)
+static inline int get_depth(AVPixelFormat pix_fmt)
+{
+  int depth = 0;
+  const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(pix_fmt);
+  if( desc ) {
+    for( int i=desc->nb_components; --i>=0; ) {
+      int bits = desc->comp[i].depth;
+      if( depth < bits ) depth = bits;
+    }
+  }
+  return depth;
+}
+
+static int diff_frame(AVFrame *afrm, AVFrame *bfrm,
+    gg_ximage *ximg, int w, int h, int s, int a1)
 {
   int n = 0, m = 0;
   uint8_t *arow = afrm->data[0];
@@ -429,11 +441,15 @@ static int diff_frame(AVFrame *afrm, AVFrame *bfrm, gg_ximage *ximg, int w, int 
   uint32_t *lsb = ximg->lsb;
 
   for( int y=h; --y>=0; arow+=asz, brow+=bsz, frow+=fsz ) {
-    uint8_t *ap = arow, *bp = brow, *fp = frow;
+    uint16_t *ap = (uint16_t*)arow + a1;
+    uint16_t *bp = (uint16_t*)brow + a1;
+    uint8_t *fp = frow;
     for( int x=rsz; --x>=0; ) {
       uint32_t rgb = 0;  uint8_t *rp = fp;
       for( int i=0; i<3; ++i ) {
         int d = *ap++ - *bp++;
+        if( s > 0 ) d >>= s;
+        else if( s < 0 ) d <<= -s;
         int v = d + 128;
         if( v > 255 ) v = 255;
         else if( v < 0 ) v = 0;
@@ -446,7 +462,7 @@ static int diff_frame(AVFrame *afrm, AVFrame *bfrm, gg_ximage *ximg, int w, int 
         for( int i=3; --i>=0; ) *rp++ = rgb>>(8*i);
       else
         for( int i=0; i<3; ++i ) *rp++ = rgb>>(8*i);
-      fp += bpp;
+      ++ap;  ++bp;  fp += bpp;
     }
   }
   int sz = h*rsz;
@@ -457,7 +473,6 @@ static int diff_frame(AVFrame *afrm, AVFrame *bfrm, gg_ximage *ximg, int w, int 
 
 int main(int ac, char **av)
 {
-  int ret;
   setbuf(stdout,NULL);
   XInitThreads();
   Display *display = XOpenDisplay(getenv("DISPLAY"));
@@ -465,10 +480,36 @@ int main(int ac, char **av)
     fprintf(stderr,"Unable to open display\n");
     exit(1);
   }
+  if( ac < 3 ) {
+    printf("usage: %s a.fmt b.fmt <frm0> <s>\n"
+        "  a = src media, b = src media, frm0 = a/b skew\n"
+        "  s = shift <0:lt, =0:none(dft), >0:rt\n"
+        "  env var GG_LOG_LEVEL=q/f/e/v/d/<nbr>\n", av[0]);
+    exit(1);
+  }
+  const char *cp = getenv("GG_LOG_LEVEL");
+  if( cp ) {
+    int lvl = -1;
+    switch( *cp ) {
+    case 'q':  lvl = AV_LOG_QUIET;    break;
+    case 'f':  lvl = AV_LOG_FATAL;    break;
+    case 'e':  lvl = AV_LOG_ERROR;    break;
+    case 'v':  lvl = AV_LOG_VERBOSE;  break;
+    case 'd':  lvl = AV_LOG_DEBUG;    break;
+    case '0'...'9': lvl = atoi(cp);   break;
+    }
+    if( lvl >= 0 )
+      av_log_set_level(lvl);
+  }
 
   ffcmpr a, b;
   if( a.open_decoder(av[1],0) ) return 1;
   if( b.open_decoder(av[2],0) ) return 1;
+
+  int64_t err = 0;
+  int frm_no = 0;
+  int frm0 = ac>3 ? atoi(av[3]) : 0;
+  int s = ac>4 ? atoi(av[4]) : 0;
 
   printf("file a:%s\n", av[1]);
   printf("  id 0x%06x:", a.ctx->codec_id);
@@ -476,7 +517,8 @@ int main(int ac, char **av)
   printf("  video %s\n", adesc ? adesc->name : " (unkn)");
   printf(" %dx%d %5.2f", a.width, a.height, a.frame_rate);
   const char *apix = av_get_pix_fmt_name(a.pix_fmt);
-  printf(" pix %s\n", apix ? apix : "(unkn)");
+  int ad = get_depth(a.pix_fmt);
+  printf(" pix %s, depth=%d\n", apix ? apix : "(unkn)", ad);
 
   printf("file b:%s\n", av[2]);
   printf("  id 0x%06x:", b.ctx->codec_id);
@@ -484,7 +526,14 @@ int main(int ac, char **av)
   printf("  video %s\n", bdesc ? bdesc->name : " (unkn)");
   printf(" %dx%d %5.2f", b.width, b.height, b.frame_rate);
   const char *bpix = av_get_pix_fmt_name(b.pix_fmt);
-  printf(" pix %s\n", bpix ? bpix : "(unkn)");
+  int bd = get_depth(b.pix_fmt);
+  printf(" pix %s, depth=%d\n", bpix ? bpix : "(unkn)", bd);
+  int d = ad>bd ? ad : bd;
+  s = 16-d + s;
+  int lsb = s, msb = lsb + 7;
+  if( lsb < 0 ) lsb = 0;
+  if( msb > 15 ) msb = 15;
+  printf("shift: %d, msb..lsb: %d..%d of uint16\n", s, msb, lsb);
 
 //  if( a.ctx->codec_id != b.ctx->codec_id ) { printf("codec mismatch\n"); return 1;}
   if( a.width != b.width ) { printf("width mismatch\n"); return 1;}
@@ -493,35 +542,41 @@ int main(int ac, char **av)
 //  if( a.pix_fmt != b.pix_fmt ) { printf("format mismatch\n"); return 1;}
 
   signal(SIGINT,sigint);
+  const AVPixFmtDescriptor *afmt = av_pix_fmt_desc_get(a.pix_fmt);
+  AVPixelFormat a_pix_fmt = afmt->flags & AV_PIX_FMT_FLAG_RGB ?
+      AV_PIX_FMT_RGBA64LE : AV_PIX_FMT_AYUV64LE ;
+  const AVPixFmtDescriptor *bfmt = av_pix_fmt_desc_get(b.pix_fmt);
+  AVPixelFormat b_pix_fmt = bfmt->flags & AV_PIX_FMT_FLAG_RGB ?
+      AV_PIX_FMT_RGBA64LE : AV_PIX_FMT_AYUV64LE ;
+  if( a_pix_fmt != b_pix_fmt ) {
+    printf(" a/b yuv/rgb mismatched, using a = %s\n", apix);
+    b_pix_fmt = a_pix_fmt;
+  }
+  int a1 = a_pix_fmt == AV_PIX_FMT_AYUV64LE ? 1 : 0; // alpha 1st chan
 
   struct SwsContext *a_cvt = sws_getCachedContext(0, a.width, a.height, a.pix_fmt,
-                a.width, a.height, AV_PIX_FMT_RGB24, SWS_POINT, 0, 0, 0);
+                a.width, a.height, a_pix_fmt, SWS_POINT, 0, 0, 0);
   struct SwsContext *b_cvt = sws_getCachedContext(0, b.width, b.height, b.pix_fmt,
-                b.width, b.height, AV_PIX_FMT_RGB24, SWS_POINT, 0, 0, 0);
+                b.width, b.height, b_pix_fmt, SWS_POINT, 0, 0, 0);
   if( !a_cvt || !b_cvt ) {
     printf("sws_getCachedContext() failed\n");
-    return 1;
+    exit(1);
   }
 
   AVFrame *afrm = av_frame_alloc();
   av_image_alloc(afrm->data, afrm->linesize,
-     a.width, a.height, AV_PIX_FMT_RGB24, 1);
+     a.width, a.height, a_pix_fmt, 1);
 
   AVFrame *bfrm = av_frame_alloc();
   av_image_alloc(bfrm->data, bfrm->linesize,
-     b.width, b.height, AV_PIX_FMT_RGB24, 1);
+     b.width, b.height, b_pix_fmt, 1);
 { gg_window gw(display, 10,10, a.width,a.height);
   gw.show();
   gg_thread thr(gw, 1);
   thr.start();
 
-  int64_t err = 0;
-  int frm_no = 0;
-
-  if( ac>3 && (ret=atoi(av[3])) ) {
-    while( ret > 0 ) { a.read_frame(); --ret; }
-    while( ret < 0 ) { b.read_frame(); ++ret; }
-  }
+  while( frm0 > 0 ) { a.read_frame(); --frm0; }
+  while( frm0 < 0 ) { b.read_frame(); ++frm0; }
 
   while( !done ) {
     AVFrame *ap = a.read_frame();
@@ -534,7 +589,7 @@ int main(int ac, char **av)
        bfrm->data, bfrm->linesize);
     thr.draw_lock();
     gg_ximage *fimg = thr.next_img();
-    ret = diff_frame(afrm, bfrm, fimg, ap->width, ap->height);
+    int ret = diff_frame(afrm, bfrm, fimg, ap->width, ap->height, s, a1);
     thr.post(fimg);
     err += ret;  ++frm_no;
     printf("  %d\n",frm_no);
