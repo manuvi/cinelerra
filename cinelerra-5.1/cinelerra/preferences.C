@@ -74,6 +74,7 @@ Preferences::Preferences()
 	vicon_size = 50;
 	vicon_color_mode = VICON_COLOR_MODE_LOW;
 	theme[0] = 0;
+	strcpy(locale, DEFAULT_LOCALE);
 	plugin_icons[0] = 0;
 	strcpy(snapshot_path, DEFAULT_SNAPSHOT_PATH);
 	use_renderfarm = 0;
@@ -96,7 +97,7 @@ Preferences::Preferences()
 	bd_warn_root = 1;
 	popupmenu_btnup = 1;
 	grab_input_focus = 1;
-	textbox_focus_policy = 0;
+	textbox_focus_policy = CLICK_ACTIVATE | CLICK_DEACTIVATE;
 	auto_rotate = 1;
 	forward_render_displacement = 0;
 	dvd_yuv420p_interlace = 0;
@@ -104,7 +105,7 @@ Preferences::Preferences()
 	yuv_color_space = BC_COLORS_BT601;
 	yuv_color_range = BC_COLORS_JPEG;
 	autocolor_assets = 0;
-	ctrl_toggle = 0;
+	ctrl_toggle = 1;
 	rectify_audio = 0;
 
 // Default brender asset
@@ -189,6 +190,7 @@ void Preferences::copy_from(Preferences *that)
 	vicon_size = that->vicon_size;
 	vicon_color_mode = that->vicon_color_mode;
 	strcpy(theme, that->theme);
+	strcpy(locale, that->locale);
 	strcpy(plugin_icons, that->plugin_icons);
 	strcpy(snapshot_path, that->snapshot_path);
 
@@ -344,8 +346,10 @@ int Preferences::load_defaults(BC_Hash *defaults)
 	vicon_size = defaults->get("VICON_SIZE",vicon_size);
 	vicon_color_mode = defaults->get("VICON_COLOR_MODE",vicon_color_mode);
 	strcpy(theme, _(DEFAULT_THEME));
+	strcpy(locale, DEFAULT_LOCALE);
 	strcpy(plugin_icons, DEFAULT_PICON);
 	defaults->get("THEME", theme);
+	defaults->get("LOCALE", locale);
 	defaults->get("PLUGIN_ICONS", plugin_icons);
 	strcpy(snapshot_path, DEFAULT_SNAPSHOT_PATH);
 	defaults->get("SNAPSHOT_PATH", snapshot_path);
@@ -497,6 +501,7 @@ int Preferences::save_defaults(BC_Hash *defaults)
 	defaults->update("VICON_SIZE",vicon_size);
 	defaults->update("VICON_COLOR_MODE",vicon_color_mode);
 	defaults->update("THEME", theme);
+	defaults->update("LOCALE", locale);
 	defaults->update("PLUGIN_ICONS", plugin_icons);
 	defaults->update("SNAPSHOT_PATH", snapshot_path);
 

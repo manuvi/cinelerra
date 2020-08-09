@@ -80,7 +80,7 @@ LoadFileThread::LoadFileThread(MWindow *mwindow, Load *load)
 	this->mwindow = mwindow;
 	this->load = load;
 	this->window = 0;
-	load_mode = LOADMODE_REPLACE;
+	load_mode = LOADMODE_RESOURCESONLY;
 	edl_mode = LOADMODE_EDL_CLIP;
 }
 

@@ -91,6 +91,8 @@ public:
 
 // Speed curve in use
 	int has_speed();
+// length when speed is applied
+	int64_t speed_length(int64_t start, int64_t end);
 // Get length of track in seconds
 	double get_length();
 // Get dimensions of source for convenience functions

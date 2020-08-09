@@ -1981,7 +1981,10 @@ void TrackCanvas::draw_drag_handle()
 					idxbl->get_audio_samples() :
 				edit->track->data_type == TRACK_VIDEO ?
 					idxbl->get_video_frames() : -1;
-			if( edit->startsource + edit->length >= source_len )
+			int64_t speed_start = edit->startproject;
+			int64_t speed_end = speed_start + edit->length;
+			int64_t speed_length = track->speed_length(speed_start, speed_end);
+			if( edit->startsource + speed_length >= source_len )
 				can_drag = 0;
 		}
 		else if( !edit->startsource )

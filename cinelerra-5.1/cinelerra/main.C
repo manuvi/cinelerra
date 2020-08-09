@@ -22,6 +22,7 @@
 #include "arraylist.h"
 #include "batchrender.h"
 #include "bcsignals.h"
+#include "cstrdup.h"
 #include "edl.h"
 #include "file.h"
 #include "filexml.h"
@@ -167,7 +168,8 @@ int main(int argc, char *argv[])
 	batch_path[0] = 0;
 	deamon_path[0] = 0;
 	Units::init();
-
+	const char *lang = getenv("LANGUAGE");
+	if( lang ) lang = cstrdup(lang);
 	File::init_cin_path();
 	const char *locale_path = File::get_locale_path();
 	const char *cin = File::get_cin();
@@ -397,7 +399,6 @@ int main(int argc, char *argv[])
 				}
 				if( restart <= 0 )
 					done = 1;
-
 				mwindow.save_defaults();
 				mwindow.save_undo_data();
 //PRINT_TRACE
@@ -406,6 +407,10 @@ int main(int argc, char *argv[])
 			}
 
 			if( restart < 0 ) {
+				if( lang ) // reset to cmdline state
+					setenv("LANGUAGE", lang, 1);
+				else
+					unsetenv("LANGUAGE");
 				char exe_path[BCTEXTLEN];
 				int len = readlink("/proc/self/exe", exe_path, sizeof(exe_path)-1);
 				if( len < 0 ) break;
@@ -423,6 +428,7 @@ DISABLE_BUFFER
 	}
 
 	filenames.remove_all_objects();
+	delete [] lang;
 	Units::finit();
 	BC_WindowBase::finit_resources();
 

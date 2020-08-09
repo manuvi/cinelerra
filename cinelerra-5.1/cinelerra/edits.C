@@ -255,7 +255,9 @@ Edit* Edits::split_edit(int64_t position)
 		new_edit->hard_left = edit->hard_right = 0;
 	}
 	new_edit->startproject = position;
-	new_edit->startsource += edit->length;
+	int64_t edit_start = edit->startproject;
+	int64_t edit_end = edit_start + edit->length;
+	new_edit->startsource += track->speed_length(edit_start, edit_end);
 
 // Decide what to do with the transition
 	if(edit->length && edit->transition) {
@@ -629,7 +631,7 @@ void Edits::clear(int64_t start, int64_t end)
 //printf("Edits::clear 3.5 %d %d %d %d\n", edit1->startproject, edit1->length, edit2->startproject, edit2->length);
 		edit1->length = start - edit1->startproject;
 		edit2->length -= end - edit2->startproject;
-		edit2->startsource += end - edit2->startproject;
+		edit2->startsource += track->speed_length(edit2->startproject, end);
 		edit2->startproject += end - edit2->startproject;
 
 // delete
@@ -649,7 +651,7 @@ void Edits::clear(int64_t start, int64_t end)
 		current_edit = split_edit(start);
 		if( current_edit ) {
 			current_edit->length -= end - start;
-			current_edit->startsource += end - start;
+			current_edit->startsource += track->speed_length(start, end);
 // shift
 			while( (current_edit=current_edit->next) != 0 ) {
 				current_edit->startproject -= end - start;

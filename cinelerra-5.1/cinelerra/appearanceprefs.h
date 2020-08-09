@@ -181,6 +181,27 @@ public:
 	ViewPluginIcons *popup;
 };
 
+class LayoutLocale : public BC_PopupMenu
+{
+	static const char *locale_list[];
+public:
+	LayoutLocale(int x, int y, PreferencesWindow *pwindow);
+	~LayoutLocale();
+
+	void create_objects();
+	int handle_event();
+
+	PreferencesWindow *pwindow;
+};
+
+class LayoutLocaleItem : public BC_MenuItem
+{
+public:
+	LayoutLocaleItem(LayoutLocale *popup, const char *text);
+	int handle_event();
+	LayoutLocale *popup;
+};
+
 class ViewLayoutScale : public BC_TumbleTextBox
 {
 public:

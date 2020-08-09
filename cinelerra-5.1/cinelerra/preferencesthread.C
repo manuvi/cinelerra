@@ -237,6 +237,7 @@ int PreferencesThread::apply_settings()
 	if( window ) window->lock_window("PreferencesThread::apply_settings 5");
 
 	if( strcmp(preferences->theme, mwindow->preferences->theme) ||
+	    strcmp(preferences->locale, mwindow->preferences->locale) ||
 	    strcmp(preferences->plugin_icons, mwindow->preferences->plugin_icons) ||
 	    preferences->awindow_picon_h != mwindow->preferences->awindow_picon_h ||
 	    preferences->layout_scale != mwindow->preferences->layout_scale ||

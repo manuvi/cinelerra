@@ -271,6 +271,13 @@ int Track::has_speed()
 	return 0;
 }
 
+int64_t Track::speed_length(int64_t start, int64_t end)
+{
+	if( !has_speed() ) return end - start;
+	FloatAutos *speeds = (FloatAutos *) automation->autos[AUTOMATION_SPEED];
+	return speeds->automation_integral(start, end-start, PLAY_FORWARD);
+}
+
 int Track::show_assets()
 {
 	return expand_view || edl->session->show_assets ? 1 : 0;
@@ -1055,6 +1062,8 @@ int Track::clear(int64_t start, int64_t end,
 	int edit_edits, int edit_labels, int edit_plugins,
 	int edit_autos, Edits *trim_edits)
 {
+	if( edit_edits )
+		edits->clear(start, end);
 //printf("Track::clear 1 %d %d %d\n", edit_edits, edit_labels, edit_plugins);
 	if( edit_autos )
 		automation->clear(start, end, 0, 1);
@@ -1065,8 +1074,6 @@ int Track::clear(int64_t start, int64_t end,
 				plugin_set.values[i]->clear(start, end, edit_keyframes);
 		}
 	}
-	if( edit_edits )
-		edits->clear(start, end);
 	return 0;
 }
 

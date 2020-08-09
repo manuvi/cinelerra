@@ -60,5 +60,6 @@ class YuvColorRange;
 class YuvColorRangeItem;
 class PerpetualSession;
 class Composer_BG_Color;
+class LayoutLocale;
 
 #endif

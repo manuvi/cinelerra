@@ -94,7 +94,12 @@ void AppearancePrefs::create_objects()
 	add_subwindow(new BC_Title(x, y, _("Plugin Icons:")));
 	add_subwindow(plugin_icons = new ViewPluginIcons(x1, y, pwindow));
 	plugin_icons->create_objects();
-	y += plugin_icons->get_h() + ys15;
+	y += plugin_icons->get_h() + ys10;
+	add_subwindow(new BC_Title(x, y, _("Locale:")));
+	LayoutLocale *layout_locale;
+	add_subwindow(layout_locale = new LayoutLocale(x1, y, pwindow));
+	layout_locale->create_objects();
+	y += layout_locale->get_h() + ys15;
 	x1 = get_w()/2;
 
 	int x2 = x1 + xS(160), y2 = y;
@@ -458,6 +463,42 @@ int ViewPluginIconItem::handle_event()
 {
 	popup->set_text(get_text());
 	strcpy(popup->pwindow->thread->preferences->plugin_icons, get_text());
+	popup->handle_event();
+	return 1;
+}
+
+LayoutLocale::LayoutLocale(int x, int y, PreferencesWindow *pwindow)
+ : BC_PopupMenu(x, y, xS(200), pwindow->thread->preferences->locale, 1)
+{
+	this->pwindow = pwindow;
+}
+LayoutLocale::~LayoutLocale()
+{
+}
+
+const char *LayoutLocale::locale_list[] = { LOCALE_LIST, 0 };
+
+void LayoutLocale::create_objects()
+{
+	for( const char *tp, **lp=locale_list; (tp=*lp)!=0; ++lp )
+		add_item(new LayoutLocaleItem(this, tp));
+}
+
+int LayoutLocale::handle_event()
+{
+	return 1;
+}
+
+LayoutLocaleItem::LayoutLocaleItem(LayoutLocale *popup, const char *text)
+ : BC_MenuItem(text)
+{
+	this->popup = popup;
+}
+
+int LayoutLocaleItem::handle_event()
+{
+	popup->set_text(get_text());
+	strcpy(popup->pwindow->thread->preferences->locale, get_text());
 	popup->handle_event();
 	return 1;
 }

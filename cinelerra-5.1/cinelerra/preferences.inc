@@ -30,6 +30,8 @@
 #define LAYOUT_FILE "layout%d_rc"
 #define LAYOUT_NAME_LEN 8
 #define LAYOUTS_MAX 4
+#define DEFAULT_LOCALE "sys"
+#define LOCALE_LIST DEFAULT_LOCALE, "en", "fr", "de", "ru", "es", "it", "nb"
 #define DEFAULT_LV2_PATH CINDAT_DIR "/lv2"
 #define DEFAULT_NESTED_PROXY_PATH NESTED_DIR
 #define DEFAULT_SNAPSHOT_PATH SNAP_DIR

@@ -97,9 +97,10 @@ public:
 	int vicon_size, vicon_color_mode;
 	float layout_scale;
 // Title of theme
-	char theme[BCTEXTLEN];
+	char theme[BCSTRLEN];
+	char locale[BCSTRLEN];
 // plugin icon set
-	char plugin_icons[BCTEXTLEN];
+	char plugin_icons[BCSTRLEN];
 // snapshot directory path
 	char snapshot_path[BCTEXTLEN];
 	double render_preroll;

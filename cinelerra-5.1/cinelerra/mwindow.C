@@ -506,6 +506,13 @@ void MWindow::init_defaults(BC_Hash* &defaults, char *config_path)
 
 void MWindow::check_language()
 {
+	char pref_locale[BCSTRLEN];
+	strcpy(pref_locale, DEFAULT_LOCALE);
+	defaults->get("LOCALE",pref_locale);
+// set LANGUAGE if pref locale != sys
+	if( strcmp(pref_locale, DEFAULT_LOCALE) )
+		setenv("LANGUAGE", pref_locale, 1);
+
 	char curr_lang[BCTEXTLEN]; curr_lang[0] = 0;
 	const char *env_lang = getenv("LANGUAGE");
 	if( !env_lang ) env_lang = getenv("LC_ALL");
@@ -2673,12 +2680,12 @@ void MWindow::create_objects(int want_gui,
 	init_3d();
 
 	if(debug) PRINT_TRACE
-	show_splash();
 
 	if(debug) PRINT_TRACE
 	default_standard = default_std();
 	init_defaults(defaults, config_path);
 	check_language();
+	show_splash();
 	init_preferences();
 	if(splash_window)
 		splash_window->update_status(_("Initializing Plugins"));

@@ -1,6 +1,6 @@
 mov prores
 # ProRes, encoder prores_aw. Container Apple QuickTime movie (.mov).
-profile=2
+profile=3
 # The possible video profile values for the ProRes codec are:
 # 5 = 4444xq
 # 4 = 4444
