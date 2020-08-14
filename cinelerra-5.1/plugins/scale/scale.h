@@ -25,11 +25,37 @@
 // the simplest plugin possible
 
 class ScaleMain;
-class ScaleWidth;
-class ScaleHeight;
 class ScaleConstrain;
 class ScaleThread;
 class ScaleWin;
+
+class ScaleUseScale;
+class ScaleUseSize;
+
+class ScaleXFactorText;
+class ScaleXFactorSlider;
+class ScaleYFactorText;
+class ScaleYFactorSlider;
+class ScaleWidthText;
+class ScaleWidthSlider;
+class ScaleHeightText;
+class ScaleHeightSlider;
+
+class ScaleClr;
+class ScaleReset;
+
+#define RESET_DEFAULT_SETTINGS 10
+#define RESET_ALL    0
+#define RESET_X_FACTOR 1
+#define RESET_Y_FACTOR 2
+#define RESET_WIDTH  3
+#define RESET_HEIGHT 4
+
+#define MIN_FACTOR  0.00
+#define MAX_FACTOR 10.00
+#define MAX_WIDTH 16384
+#define MAX_HEIGHT 9216
+
 
 #include "bchash.h"
 #include "guicast.h"
@@ -47,7 +73,7 @@ class ScaleConfig
 {
 public:
 	ScaleConfig();
-
+	void reset(int clear);
 	void copy_from(ScaleConfig &src);
 	int equivalent(ScaleConfig &src);
 	void interpolate(ScaleConfig &prev,
@@ -63,53 +89,8 @@ public:
 };
 
 
-class ScaleXFactor : public BC_TumbleTextBox
-{
-public:
-	ScaleXFactor(ScaleWin *win, ScaleMain *client, int x, int y);
-	~ScaleXFactor();
-	int handle_event();
 
-	ScaleMain *client;
-	ScaleWin *win;
-	int enabled;
-};
 
-class ScaleWidth : public BC_TumbleTextBox
-{
-public:
-	ScaleWidth(ScaleWin *win, ScaleMain *client, int x, int y);
-	~ScaleWidth();
-	int handle_event();
-
-	ScaleMain *client;
-	ScaleWin *win;
-	int enabled;
-};
-
-class ScaleYFactor : public BC_TumbleTextBox
-{
-public:
-	ScaleYFactor(ScaleWin *win, ScaleMain *client, int x, int y);
-	~ScaleYFactor();
-	int handle_event();
-
-	ScaleMain *client;
-	ScaleWin *win;
-	int enabled;
-};
-
-class ScaleHeight : public BC_TumbleTextBox
-{
-public:
-	ScaleHeight(ScaleWin *win, ScaleMain *client, int x, int y);
-	~ScaleHeight();
-	int handle_event();
-
-	ScaleMain *client;
-	ScaleWin *win;
-	int enabled;
-};
 
 class ScaleUseScale : public BC_Radial
 {
@@ -136,10 +117,11 @@ public:
 class ScaleConstrain : public BC_CheckBox
 {
 public:
-	ScaleConstrain(ScaleMain *client, int x, int y);
+	ScaleConstrain(ScaleWin *win, ScaleMain *client, int x, int y);
 	~ScaleConstrain();
 	int handle_event();
 
+	ScaleWin *win;
 	ScaleMain *client;
 };
 
@@ -150,16 +132,34 @@ public:
 	~ScaleWin();
 
 	void create_objects();
+	void update(int clear);
+
+	void update_scale_size_enable();
 
 	ScaleMain *client;
-	ScaleXFactor *x_factor;
-	ScaleYFactor *y_factor;
-	ScaleWidth *width;
-	ScaleHeight *height;
+
 	FrameSizePulldown *pulldown;
 	ScaleUseScale *use_scale;
 	ScaleUseSize *use_size;
 	ScaleConstrain *constrain;
+
+	ScaleXFactorText *x_factor_text;
+	ScaleXFactorSlider *x_factor_slider;
+	ScaleClr *x_factor_clr;
+
+	ScaleYFactorText *y_factor_text;
+	ScaleYFactorSlider *y_factor_slider;
+	ScaleClr *y_factor_clr;
+
+	ScaleWidthText *width_text;
+	ScaleWidthSlider *width_slider;
+	ScaleClr *width_clr;
+
+	ScaleHeightText *height_text;
+	ScaleHeightSlider *height_slider;
+	ScaleClr *height_clr;
+
+	ScaleReset *reset;
 };
 
 
@@ -196,5 +196,123 @@ public:
 	OverlayFrame *overlayer;   // To scale images
 };
 
+class ScaleXFactorText : public BC_TumbleTextBox
+{
+public:
+	ScaleXFactorText(ScaleWin *win, ScaleMain *client,
+		int x,
+		int y);
+	~ScaleXFactorText();
+	int handle_event();
+	ScaleWin *win;
+	ScaleMain *client;
+	int enabled;
+};
+
+class ScaleXFactorSlider : public BC_FSlider
+{
+public:
+	ScaleXFactorSlider(ScaleWin *win, ScaleMain *client,
+		int x, int y, int w);
+	~ScaleXFactorSlider();
+	int handle_event();
+	ScaleWin *win;
+	ScaleMain *client;
+};
+
+class ScaleYFactorText : public BC_TumbleTextBox
+{
+public:
+	ScaleYFactorText(ScaleWin *win, ScaleMain *client,
+		int x,
+		int y);
+	~ScaleYFactorText();
+	int handle_event();
+	ScaleWin *win;
+	ScaleMain *client;
+	int enabled;
+};
+
+class ScaleYFactorSlider : public BC_FSlider
+{
+public:
+	ScaleYFactorSlider(ScaleWin *win, ScaleMain *client,
+		int x, int y, int w);
+	~ScaleYFactorSlider();
+	int handle_event();
+	ScaleWin *win;
+	ScaleMain *client;
+};
+
+class ScaleWidthText : public BC_TumbleTextBox
+{
+public:
+	ScaleWidthText(ScaleWin *win, ScaleMain *client,
+		int x,
+		int y);
+	~ScaleWidthText();
+	int handle_event();
+	ScaleWin *win;
+	ScaleMain *client;
+	int enabled;
+};
+
+class ScaleWidthSlider : public BC_ISlider
+{
+public:
+	ScaleWidthSlider(ScaleWin *win, ScaleMain *client,
+		int x, int y, int w);
+	~ScaleWidthSlider();
+	int handle_event();
+	ScaleWin *win;
+	ScaleMain *client;
+};
+
+class ScaleHeightText : public BC_TumbleTextBox
+{
+public:
+	ScaleHeightText(ScaleWin *win, ScaleMain *client,
+		int x,
+		int y);
+	~ScaleHeightText();
+	int handle_event();
+	ScaleWin *win;
+	ScaleMain *client;
+	int enabled;
+};
+
+class ScaleHeightSlider : public BC_ISlider
+{
+public:
+	ScaleHeightSlider(ScaleWin *win, ScaleMain *client,
+		int x, int y, int w);
+	~ScaleHeightSlider();
+	int handle_event();
+	ScaleWin *win;
+	ScaleMain *client;
+};
+
+
+class ScaleClr : public BC_Button
+{
+public:
+	ScaleClr(ScaleWin *win, ScaleMain *client,
+		int x, int y, int clear);
+	~ScaleClr();
+	int handle_event();
+	ScaleWin *win;
+	ScaleMain *client;
+	int clear;
+};
+
+class ScaleReset : public BC_GenericButton
+{
+public:
+	ScaleReset(ScaleWin *win, ScaleMain *client, int x, int y);
+	~ScaleReset();
+	int handle_event();
+	ScaleWin *win;
+	ScaleMain *client;
+};
 
 #endif

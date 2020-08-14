@@ -36,11 +36,35 @@ REGISTER_PLUGIN(ScaleMain)
 
 ScaleConfig::ScaleConfig()
 {
-	type = FIXED_SCALE;
-	x_factor = y_factor = 1;
-	width = height = 0;
-	constrain = 0;
+	reset(RESET_DEFAULT_SETTINGS);
 }
+
+void ScaleConfig::reset(int clear)
+{
+	switch(clear) {
+		case RESET_X_FACTOR :
+			x_factor = 1;
+			break;
+		case RESET_Y_FACTOR :
+			y_factor = 1;
+			break;
+		case RESET_WIDTH :
+			width = 1280;
+			break;
+		case RESET_HEIGHT :
+			height = 720;
+			break;
+		case RESET_ALL :
+		case RESET_DEFAULT_SETTINGS :
+		default:
+			type = FIXED_SCALE;
+			x_factor = y_factor = 1;
+			width = 1280; height = 720;
+			constrain = 0;
+			break;
+	}
+}
+
 
 void ScaleConfig::copy_from(ScaleConfig &src)
 {
@@ -102,12 +126,12 @@ void ScaleMain::set_type(int type)
 		ScaleWin *swin = (ScaleWin *)thread->window;
 		int fixed_scale = type == FIXED_SCALE ? 1 : 0;
 		swin->use_scale->update(fixed_scale);
-		swin->x_factor->enabled = fixed_scale;
-		swin->y_factor->enabled = fixed_scale;
+		swin->x_factor_text->enabled = fixed_scale;
+		swin->y_factor_text->enabled = fixed_scale;
 		int fixed_size = 1 - fixed_scale;
 		swin->use_size->update(fixed_size);
-		swin->width->enabled = fixed_size;
-		swin->height->enabled = fixed_size;
+		swin->width_text->enabled = fixed_size;
+		swin->height_text->enabled = fixed_size;
 		send_configure_change();
 	}
 }
@@ -293,11 +317,11 @@ void ScaleMain::update_gui()
 		thread->window->lock_window();
 		set_type(config.type);
 		ScaleWin *swin = (ScaleWin *)thread->window;
-		swin->x_factor->update(config.x_factor);
-		swin->y_factor->update(config.y_factor);
-		swin->width->update((int64_t)config.width);
-		swin->height->update((int64_t)config.height);
-		swin->constrain->update(config.constrain);
+		swin->update(RESET_ALL);
+
+		// Needed to update Enable-Disable GUI when "Preset Edit" is used.
+		swin->update_scale_size_enable();
+
 		thread->window->unlock_window();
 	}
 }

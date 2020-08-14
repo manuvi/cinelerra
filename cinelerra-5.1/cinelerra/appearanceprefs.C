@@ -95,7 +95,7 @@ void AppearancePrefs::create_objects()
 	add_subwindow(plugin_icons = new ViewPluginIcons(x1, y, pwindow));
 	plugin_icons->create_objects();
 	y += plugin_icons->get_h() + ys10;
-	add_subwindow(new BC_Title(x, y, _("Locale:")));
+	add_subwindow(new BC_Title(x, y, _("Language:")));
 	LayoutLocale *layout_locale;
 	add_subwindow(layout_locale = new LayoutLocale(x1, y, pwindow));
 	layout_locale->create_objects();
