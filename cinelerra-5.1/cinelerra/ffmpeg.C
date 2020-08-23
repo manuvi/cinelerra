@@ -3961,6 +3961,9 @@ double FFMPEG::get_initial_timecode(int data_type, int channel, double frame_rat
 		fidx = aud->fidx;
 		nudge = aud->nudge;
 		st = aud->st;
+		AVDictionaryEntry *tref = av_dict_get(fmt_ctx->metadata, "time_reference", 0, 0);
+		if( tref && aud && aud->sample_rate )
+			return strtod(tref->value, 0) / aud->sample_rate;
 		break; }
 	case TRACK_VIDEO: {
 		codec_type = AVMEDIA_TYPE_VIDEO;

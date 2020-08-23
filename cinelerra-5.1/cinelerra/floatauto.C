@@ -34,6 +34,7 @@ FloatAuto::FloatAuto(EDL *edl, FloatAutos *autos)
  : Auto(edl, (Autos*)autos)
 {
 	value = 0;
+	value1 = 0;
 	control_in_value = 0;
 	control_out_value = 0;
 	control_in_position = 0;
@@ -68,6 +69,7 @@ int FloatAuto::operator==(FloatAuto &that)
 int FloatAuto::identical(FloatAuto *src)
 {
 	return EQUIV(value, src->value) &&
+		(curve_mode != BUMP || EQUIV(value1, src->value1)) &&
 		EQUIV(control_in_value, src->control_in_value) &&
 		EQUIV(control_out_value, src->control_out_value);
 		// ctrl positions ignored, as they may depend on neighbours
@@ -78,27 +80,13 @@ int FloatAuto::identical(FloatAuto *src)
 int FloatAuto::equals(FloatAuto *that)
 {
 	return this->value == that->value &&
+		(this->curve_mode != BUMP || this->value1 == that->value1) &&
 		this->control_in_value == that->control_in_value &&
 		this->control_out_value == that->control_out_value &&
 		this->control_in_position == that->control_in_position &&
 		this->control_out_position == that->control_out_position &&
 		this->curve_mode == that->curve_mode;
 }
-
-
-/* Note: the following is essentially display-code and has been moved to:
- *  TrackCanvas::value_to_percentage(float auto_value, int autogrouptype)
- *
-float FloatAuto::value_to_percentage()
-{
-}
-float FloatAuto::value_to_percentage()
-{
-}
-float FloatAuto::value_to_percentage()
-{
-}
-*/
 
 
 void FloatAuto::copy_from(Auto *that)
@@ -110,6 +98,7 @@ void FloatAuto::copy_from(FloatAuto *that)
 {
 	Auto::copy_from(that);
 	this->value = that->value;
+	this->value1 = that->value1;
 	this->control_in_value = that->control_in_value;
 	this->control_out_value = that->control_out_value;
 	this->control_in_position = that->control_in_position;
@@ -169,33 +158,37 @@ int FloatAuto::interpolate_from(Auto *a1, Auto *a2, int64_t pos, Auto *templ)
 }
 
 
-void FloatAuto::change_curve_mode(t_mode new_mode)
+void FloatAuto::change_curve_mode(t_mode new_mode, int adjust)
 {
 	if(new_mode == TFREE && !(control_in_position && control_out_position))
 		new_mode = FREE; // only if curves on both sides...
+	else if(new_mode == BUMP )
+		value1 = value;  // continuous
 
 	curve_mode = new_mode;
-	adjust_curves();
+	if( adjust )
+		adjust_curves();
 }
 
 void FloatAuto::toggle_curve_mode()
 {
 	switch (curve_mode) {
-	case SMOOTH:	change_curve_mode(TFREE);  break;
-	case LINEAR:	change_curve_mode(FREE);   break;
-	case TFREE :	change_curve_mode(LINEAR); break;
-	case FREE  :	change_curve_mode(SMOOTH); break;
+	case SMOOTH:	change_curve_mode(LINEAR);  break;
+	case LINEAR:	change_curve_mode(TFREE);   break;
+	case TFREE :	change_curve_mode(FREE);    break;
+	case FREE  :	change_curve_mode(BUMP);    break;
+	case BUMP  :	change_curve_mode(SMOOTH);  break;
 	}
 }
 
-
-void FloatAuto::set_value(float value)
+// edge=0:left edge, 1:right edge, -1:both edges
+void FloatAuto::set_value(float value, int edge)
 {
 	float float_min = ((FloatAutos*)autos)->float_min;
-	if( value < float_min ) value = float_min;
 	float float_max = ((FloatAutos*)autos)->float_max;
-	if( value > float_max ) value = float_max;
-	this->value = value;
+	bclamp(value, float_min, float_max);
+	if( curve_mode != BUMP || edge <= 0 ) this->value = value;
+	if( curve_mode == BUMP && edge != 0 ) this->value1 = value;
 	this->adjust_curves();
 	if(previous) ((FloatAuto*)previous)->adjust_curves();
 	if(next)     ((FloatAuto*)next)->adjust_curves();
@@ -205,7 +198,8 @@ void FloatAuto::set_control_in_value(float newvalue)
 {
 	switch(curve_mode) {
 	case TFREE:	control_out_value = control_out_position*newvalue / control_in_position;
-	case FREE:	control_in_value = newvalue;
+	case FREE:
+	case BUMP:	control_in_value = newvalue;
 	default:	return; // otherwise calculated automatically...
 	}
 }
@@ -214,7 +208,8 @@ void FloatAuto::set_control_out_value(float newvalue)
 {
 	switch(curve_mode) {
 	case TFREE:	control_in_value = control_in_position*newvalue / control_out_position;
-	case FREE:	control_out_value=newvalue;
+	case FREE:
+	case BUMP:	control_out_value = newvalue;
 	default:	return;
 	}
 }
@@ -298,7 +293,9 @@ inline void FloatAuto::calculate_slope(FloatAuto *left, FloatAuto *right, float 
 	if(!left || !right) return;
 
 	dx = right->position - left->position;
-	float dv = right->value - left->value;
+	float lval = left->get_value(0);
+	float rval = right->get_value(1);
+	float dv = rval - lval;
 	dvdx = (dx == 0) ? 0 : dv/dx;
 }
 
@@ -361,9 +358,8 @@ void FloatAuto::adjust_to_new_coordinates(int64_t position, float value)
 // define new position and value in one step, do necessary re-adjustments
 {
 	float float_min = ((FloatAutos*)autos)->float_min;
-	if( value < float_min ) value = float_min;
 	float float_max = ((FloatAutos*)autos)->float_max;
-	if( value > float_max ) value = float_max;
+	bclamp(value, float_min, float_max);
 	this->value = value;
 	this->position = position;
 	adjust_ctrl_positions();
@@ -411,6 +407,7 @@ void FloatAuto::copy(int64_t start, int64_t end, FileXML *file, int default_auto
 	else
 		file->tag.set_property("POSITION", position - start);
 	file->tag.set_property("VALUE", value);
+	file->tag.set_property("VALUE1", value1);
 	file->tag.set_property("CONTROL_IN_VALUE", control_in_value / 2.0); // compatibility, see below
 	file->tag.set_property("CONTROL_OUT_VALUE", control_out_value / 2.0);
 	file->tag.set_property("TANGENT_MODE", (int)curve_mode);
@@ -422,11 +419,12 @@ void FloatAuto::copy(int64_t start, int64_t end, FileXML *file, int default_auto
 
 void FloatAuto::load(FileXML *file)
 {
-	value = file->tag.get_property("VALUE", value);
 	float float_min = ((FloatAutos*)autos)->float_min;
-	if( value < float_min ) value = float_min;
 	float float_max = ((FloatAutos*)autos)->float_max;
-	if( value > float_max ) value = float_max;
+	value = file->tag.get_property("VALUE", value);
+	bclamp(value, float_min, float_max);
+	value1 = file->tag.get_property("VALUE1", value1);
+	bclamp(value, float_min, float_max);
 	control_in_value = file->tag.get_property("CONTROL_IN_VALUE", control_in_value);
 	control_out_value = file->tag.get_property("CONTROL_OUT_VALUE", control_out_value);
 	curve_mode = (t_mode)file->tag.get_property("TANGENT_MODE", (int)FREE);
@@ -448,8 +446,40 @@ const char *FloatAuto::curve_name(int curve_mode)
 	case FloatAuto::SMOOTH: return _("Smooth");
 	case FloatAuto::LINEAR: return _("Linear");
 	case FloatAuto::TFREE:  return _("Tangent");
-       	case FloatAuto::FREE:   return _("Disjoint");
-        }
-        return _("Error");
+	case FloatAuto::FREE:   return _("Disjoint");
+	case FloatAuto::BUMP:   return _("Bump");
+	}
+	return _("Error");
+}
+
+void FloatAuto::bump_update(int64_t pos, float dv, int edge, int span)
+{
+	float *mins = autos->edl->local_session->automation_mins;
+	float *maxs = autos->edl->local_session->automation_maxs;
+	int group = autos->autogrouptype;
+	float min = mins[group], max = maxs[group];
+	int last_edge = edge;
+	FloatAuto *fauto = this;
+	fauto->position = pos;
+	if( fauto->is_bump() && span ) {
+		do {
+			float v = fauto->get_value(edge) + dv;
+			bclamp(v, min, max);
+			fauto->set_value(v, edge);
+			fauto = (FloatAuto*)(!edge ? fauto->next : fauto->previous);
+		} while( fauto && !fauto->is_bump() );
+		last_edge = !edge ? 1 : 0;
+	}
+	if( fauto ) {
+		float v = fauto->get_value(last_edge) + dv;
+		bclamp(v, min, max);
+		fauto->set_value(v, last_edge);
+	}
+}
+
+void FloatAuto::bump_value(float v, int edge, int span)
+{
+	float dv = v - get_value(edge);
+	bump_update(position, dv, edge, span);
 }
 

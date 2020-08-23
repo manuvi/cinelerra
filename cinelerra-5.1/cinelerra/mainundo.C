@@ -187,7 +187,9 @@ int MainUndo::redo_load_flags()
 
 int MainUndo::undo()
 {
+	mwindow->gui->close_keyvalue_popup();
 	mwindow->undo_commercial();
+
 	UndoStackItem *current = undo_stack->current;
 	if( current ) {
 		undo_stack->current = next_undo();
@@ -225,6 +227,7 @@ int MainUndo::undo()
 
 int MainUndo::redo()
 {
+	mwindow->gui->close_keyvalue_popup();
 	UndoStackItem *current = next_redo();
 	if( current ) {
 		undo_stack->current = current;
@@ -254,9 +257,6 @@ int MainUndo::redo()
 // Here the master EDL loads
 int MainUndo::load_from_undo(FileXML *file, uint32_t load_flags)
 {
-	delete mwindow->gui->keyvalue_popup;
-	mwindow->gui->keyvalue_popup = 0;
-
 	if( load_flags & LOAD_SESSION ) {
 		mwindow->gui->unlock_window();
 		mwindow->close_mixers();

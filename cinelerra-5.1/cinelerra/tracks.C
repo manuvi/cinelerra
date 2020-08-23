@@ -815,3 +815,11 @@ void Tracks::update_idxbl_length(int id, double dt)
 	}
 }
 
+void Tracks::create_keyframes(double position, int mask, int mode)
+{
+	for( Track *track=first; track; track=track->next ) {
+		if( !track->is_armed() ) continue;
+		track->create_keyframes(position, mask, mode);
+	}
+}
+

@@ -515,38 +515,20 @@ int PatchBay::update()
 	return 0;
 }
 
-void PatchBay::synchronize_faders(float change, int data_type, Track *skip)
+void PatchBay::synchronize_faders(float dv, int data_type, Track *skip, int edge, int span)
 {
-	for(Track *current = mwindow->edl->tracks->first;
-		current;
-		current = NEXT)
-	{
-		if(current->data_type == data_type &&
-			current->armed_gang(skip) &&
-			current->is_armed() &&
-			current != skip)
-		{
-			FloatAutos *fade_autos = (FloatAutos*)current->automation->autos[AUTOMATION_FADE];
-			double position = mwindow->edl->local_session->get_selectionstart(1);
-
-
-			FloatAuto *keyframe = (FloatAuto*)fade_autos->get_auto_for_editing(position);
-
-			float new_value = keyframe->get_value() + change;
-			if(data_type == TRACK_AUDIO)
-				CLAMP(new_value,
-				      mwindow->edl->local_session->automation_mins[AUTOGROUPTYPE_AUDIO_FADE],
-				      mwindow->edl->local_session->automation_maxs[AUTOGROUPTYPE_AUDIO_FADE]);
-			else
-				CLAMP(new_value,
-				      mwindow->edl->local_session->automation_mins[AUTOGROUPTYPE_VIDEO_FADE],
-				      mwindow->edl->local_session->automation_maxs[AUTOGROUPTYPE_VIDEO_FADE]);
-
-			keyframe->set_value(new_value);
-
-			PatchGUI *patch = get_patch_of(current);
-			if(patch) patch->update(patch->x, patch->y);
-		}
+	for( Track *current=mwindow->edl->tracks->first; current; current=NEXT ) {
+		if( current == skip ) continue;
+		if( skip && !current->armed_gang(skip) ) continue;
+		if( current->data_type != data_type ) continue;
+		if( !current->is_armed() ) continue;
+		FloatAutos *fade_autos = (FloatAutos*)current->automation->autos[AUTOMATION_FADE];
+		double position = mwindow->edl->local_session->get_selectionstart(1);
+		FloatAuto *float_auto = (FloatAuto*)fade_autos->get_auto_for_editing(position);
+		int64_t pos = float_auto->position;
+		float_auto->bump_update(pos, dv, edge, span);
+		PatchGUI *patch = get_patch_of(current);
+		if( patch ) patch->update(patch->x, patch->y);
 	}
 }
 

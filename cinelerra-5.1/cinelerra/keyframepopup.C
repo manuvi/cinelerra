@@ -67,6 +67,7 @@ KeyframePopup::KeyframePopup(MWindow *mwindow, MWindowGUI *gui)
 	key_mbar = 0;
 	key_mode_displayed = false;
 	key_edit_displayed = false;
+	popx = popy = 0;
 }
 
 KeyframePopup::~KeyframePopup()
@@ -77,6 +78,7 @@ KeyframePopup::~KeyframePopup()
 		delete key_linear;
 		delete key_free_t;
 		delete key_free;
+		delete key_bump;
 	}
 	if( !key_edit_displayed ) {
 		delete key_edit;
@@ -96,10 +98,12 @@ void KeyframePopup::create_objects()
 	key_linear = new KeyframePopupCurveMode(mwindow, this, FloatAuto::LINEAR);
 	key_free_t = new KeyframePopupCurveMode(mwindow, this, FloatAuto::TFREE );
 	key_free   = new KeyframePopupCurveMode(mwindow, this, FloatAuto::FREE  );
+	key_bump   = new KeyframePopupCurveMode(mwindow, this, FloatAuto::BUMP  );
 }
 
 int KeyframePopup::update(Plugin *plugin, KeyFrame *keyframe)
 {
+	gui->get_relative_cursor(popx, popy);
 	key_show->set_text(_("Show Plugin Settings"));
 	this->keyframe_plugin = plugin;
 	this->keyframe_auto = keyframe;
@@ -111,6 +115,7 @@ int KeyframePopup::update(Plugin *plugin, KeyFrame *keyframe)
 
 int KeyframePopup::update(Automation *automation, Autos *autos, Auto *auto_keyframe)
 {
+	gui->get_relative_cursor(popx, popy);
 	key_show->set_text(_(GWindowGUI::auto_text[autos->autoidx]));
 	this->keyframe_plugin = 0;
 	this->keyframe_automation = automation;
@@ -155,10 +160,12 @@ void KeyframePopup::handle_curve_mode(Autos *autos, Auto *auto_keyframe)
 		add_item(key_linear);
 		add_item(key_free_t);
 		add_item(key_free);
+		add_item(key_bump);
 		key_mode_displayed = true;
 	}
 	else if(key_mode_displayed && (!autos || autos->get_type() != AUTOMATION_TYPE_FLOAT))
 	{ // remove additional menu entries
+		remove_item(key_bump);
 		remove_item(key_free);
 		remove_item(key_free_t);
 		remove_item(key_linear);
@@ -172,6 +179,7 @@ void KeyframePopup::handle_curve_mode(Autos *autos, Auto *auto_keyframe)
 		key_linear->toggle_mode((FloatAuto*)auto_keyframe);
 		key_free_t->toggle_mode((FloatAuto*)auto_keyframe);
 		key_free  ->toggle_mode((FloatAuto*)auto_keyframe);
+		key_bump  ->toggle_mode((FloatAuto*)auto_keyframe);
 	}
 	activate();
 }
@@ -238,9 +246,15 @@ int KeyframePopupShow::handle_event()
 {
 	MWindowGUI *mgui = mwindow->gui;
 	CWindowGUI *cgui = mwindow->cwindow->gui;
-	int cx = mgui->get_relative_cursor_x()+15, cy = mgui->get_relative_cursor_y()-15;
-	delete mgui->keyvalue_popup;
-	mgui->keyvalue_popup = 0;
+	int cx = popup->popx, cy = popup->popy;
+	int xmargin = mgui->get_w() - xS(200);
+	int ymargin = mgui->get_h() - yS(50);
+	if( cx > xmargin ) cx = xmargin;
+	if( cy > ymargin ) cy = ymargin;
+	xmargin = xS(15);  ymargin = yS(15);
+	if( cx < xmargin ) cx = xmargin;
+	if( cy < ymargin ) cy = ymargin;
+	mgui->close_keyvalue_popup();
 
 	if( popup->keyframe_plugin ) {
 		mwindow->update_plugin_guis();
@@ -278,7 +292,7 @@ int KeyframePopupShow::handle_event()
 				mgui->add_subwindow(mode);
 				mode->create_objects();
 				mode->activate_menu();
-				mgui->keyvalue_popup = mode;
+				mgui->open_keyvalue_popup(mode);
 			break; }
 
 			case AUTOMATION_PAN: {
@@ -286,38 +300,44 @@ int KeyframePopupShow::handle_event()
 				mgui->add_subwindow(pan);
 				pan->create_objects();
 				pan->activate(cx, cy);
-				mgui->keyvalue_popup = pan;
+				mgui->open_keyvalue_popup(pan);
 			break; }
 
 			case AUTOMATION_FADE: {
+				FloatAuto *fade_auto = mwindow->get_float_auto(patchgui, AUTOMATION_FADE);
+				int bump = fade_auto->is_bump();
 				switch( patchgui->data_type ) {
 				case TRACK_AUDIO: {
-					AKeyFadePatch *fade = new AKeyFadePatch(mwindow, (APatchGUI *)patchgui, cx, cy);
+					AKeyFadePatch *fade = new AKeyFadePatch(mwindow,
+							(APatchGUI *)patchgui, bump, cx, cy);
 					mgui->add_subwindow(fade);
 					fade->create_objects();
-					mgui->keyvalue_popup = fade;
+					mgui->open_keyvalue_popup(fade);
 					break; }
 				case TRACK_VIDEO: {
-					VKeyFadePatch *fade = new VKeyFadePatch(mwindow, (VPatchGUI *)patchgui, cx, cy);
+					VKeyFadePatch *fade = new VKeyFadePatch(mwindow,
+							(VPatchGUI *)patchgui, bump, cx, cy);
 					mgui->add_subwindow(fade);
 					fade->create_objects();
-					mgui->keyvalue_popup = fade;
+					mgui->open_keyvalue_popup(fade);
 					break; }
 				}
 				break; }
 
 			case AUTOMATION_SPEED: {
-				KeySpeedPatch *speed = new KeySpeedPatch(mwindow, patchgui, cx, cy);
+				FloatAuto *speed_auto = mwindow->get_float_auto(patchgui, AUTOMATION_SPEED);
+				int bump = speed_auto->is_bump();
+				KeySpeedPatch *speed = new KeySpeedPatch(mwindow, patchgui, bump, cx, cy);
 				mgui->add_subwindow(speed);
 				speed->create_objects();
-				mgui->keyvalue_popup = speed;
+				mgui->open_keyvalue_popup(speed);
 				break; }
 
 			case AUTOMATION_MUTE: {
 				KeyMutePatch *mute = new KeyMutePatch(mwindow, (APatchGUI *)patchgui, cx, cy);
 				mgui->add_subwindow(mute);
 				mute->create_objects();
-				mgui->keyvalue_popup = mute;
+				mgui->open_keyvalue_popup(mute);
 				break; }
 			}
 			break; }
@@ -452,13 +472,14 @@ KeyframePopupCurveMode::KeyframePopupCurveMode(
 KeyframePopupCurveMode::~KeyframePopupCurveMode() { }
 
 
-const char* KeyframePopupCurveMode::get_labeltext(int mode)
+const char *KeyframePopupCurveMode::get_labeltext(int mode)
 {
 	switch(mode) {
 	case FloatAuto::SMOOTH: return _("smooth curve");
 	case FloatAuto::LINEAR: return _("linear segments");
 	case FloatAuto::TFREE:  return _("tangent edit");
 	case FloatAuto::FREE:   return _("disjoint edit");
+	case FloatAuto::BUMP:   return _("bump edit");
 	}
 	return _("misconfigured");
 }
@@ -574,9 +595,7 @@ KeyMuteValue::KeyMuteValue(KeyMutePatch *key_mute_patch)
 int KeyMuteValue::button_release_event()
 {
 	BC_CheckBox::button_release_event();
-	MWindowGUI *mgui = key_mute_patch->mwindow->gui;
-	delete mgui->keyvalue_popup;
-	mgui->keyvalue_popup = 0;
+	key_mute_patch->mwindow->gui->close_keyvalue_popup();
 	return 1;
 }
 
@@ -603,27 +622,58 @@ int KeyMuteValue::handle_event()
 	return 1;
 }
 
-KeySpeedPatch::KeySpeedPatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
- : BC_SubWindow(x,y, 200,20, GWindowGUI::auto_colors[AUTOMATION_SPEED])
+KeySpeedPatch::KeySpeedPatch(MWindow *mwindow, PatchGUI *gui,
+		int bump, int x, int y)
+ : BC_SubWindow(x,y, xS(200)+4, yS(bump ? 50 : 24)+4,
+		GWindowGUI::auto_colors[AUTOMATION_SPEED])
 {
 	this->mwindow = mwindow;
-	this->patch = patch;
+	this->gui = gui;
+}
+KeySpeedPatch::~KeySpeedPatch()
+{
 }
 
 void KeySpeedPatch::create_objects()
 {
-	int x = 0, y = 0;
-	float v = mwindow->get_float_auto(patch, AUTOMATION_SPEED)->get_value();
-	add_subwindow(key_speed_text = new KeySpeedText(this, x, y, 64, v));
+	int x = 2, x1 = x, y = 2, dy = 0;
+	FloatAuto *speed_auto = mwindow->get_float_auto(gui, AUTOMATION_SPEED);
+	float v = speed_auto->get_value(gui->edge);
+	add_subwindow(key_speed_text = new KeySpeedText(this, x, y, xS(64), v));
 	x += key_speed_text->get_w();
+	dy = bmax(dy, key_speed_text->get_h());
 	VFrame **lok_images = mwindow->theme->get_image_set("lok");
-	int w1 = get_w() - x - lok_images[0]->get_w();
+	int w1 = get_w()-2 - x - lok_images[0]->get_w();
 	add_subwindow(key_speed_slider = new KeySpeedSlider(this, x, y, w1, v));
 	x += key_speed_slider->get_w();
+	dy = bmax(dy, key_speed_slider->get_h());
 	add_subwindow(key_speed_ok = new KeySpeedOK(this, x, y, lok_images));
+	dy = bmax(dy, key_speed_ok->get_h());
+	if( speed_auto->is_bump() ) {
+		y += dy;
+		set_color(get_resources()->get_bg_color());
+		draw_box(0,y, get_w(),get_h());
+		add_subwindow(auto_edge = new KeySpeedAutoEdge(mwindow, this, x1, y));
+		x1 += auto_edge->get_w() + xS(15);
+		add_subwindow(auto_span = new KeySpeedAutoSpan(mwindow, this, x1, y));
+	}
+	draw_3d_border(0,0, get_w(), get_h(), 0);
 	activate();
 	show_window();
 	mwindow->speed_before();
+}
+
+void KeySpeedPatch::set_edge(int edge)
+{
+	gui->edge = edge;
+	FloatAuto *speed_auto = mwindow->get_float_auto(gui, AUTOMATION_SPEED);
+	float v = speed_auto->get_value(edge);
+	update(v);
+}
+
+void KeySpeedPatch::set_span(int span)
+{
+	gui->span = span;
 }
 
 void KeySpeedPatch::update(float v)
@@ -635,24 +685,26 @@ void KeySpeedPatch::update(float v)
 
 void KeySpeedPatch::update_speed(float v)
 {
-	patch->change_source = 1;
-	double position = mwindow->edl->local_session->get_selectionstart(1);
-	Track *track = patch->track;
+	Track *track = gui->track;
+	if( !track->is_armed() ) return;
 	Autos *speed_autos = track->automation->autos[AUTOMATION_SPEED];
-	int need_undo = !speed_autos->auto_exists_for_editing(position);
-
-	mwindow->undo->update_undo_before(_("speed"), need_undo ? 0 : this);
+	double position = mwindow->edl->local_session->get_selectionstart(1);
 	FloatAuto *current = (FloatAuto*)speed_autos->get_auto_for_editing(position);
-	float change = v - current->get_value();
-	current->set_value(v);
-	if( track->is_ganged() && track->is_armed() ) {
-		TrackCanvas *track_canvas = patch->patchbay->pane->canvas;
+	float change = v - current->get_value(gui->edge);
+	if( !change ) return;
+	gui->change_source = 1;
+	int need_undo = !speed_autos->auto_exists_for_editing(position);
+	mwindow->undo->update_undo_before(_("speed"), need_undo ? 0 : this);
+	current->bump_value(v, gui->edge, gui->span);
+	if( track->is_ganged() ) {
+		TrackCanvas *track_canvas = gui->patchbay->pane->canvas;
 		track_canvas->fill_ganged_autos(-1, change, track, current);
 		track_canvas->update_ganged_autos(0, track, current);
 		track_canvas->clear_ganged_autos();
 	}
-	mwindow->undo->update_undo_after(_("speed"), LOAD_AUTOMATION+LOAD_EDITS);
-	patch->change_source = 0;
+	mwindow->undo->update_undo_after(_("speed"),
+			LOAD_AUTOMATION + LOAD_EDITS + LOAD_TIMEBAR);
+	gui->change_source = 0;
 
 	mwindow->sync_parameters(CHANGE_PARAMS);
 	if(mwindow->edl->session->auto_conf->autos[AUTOMATION_SPEED]) {
@@ -671,9 +723,7 @@ int KeySpeedOK::handle_event()
 	MWindow *mwindow = key_speed_patch->mwindow;
 	mwindow->speed_after(1);
 	mwindow->resync_guis();
-	MWindowGUI *mgui = mwindow->gui;
-	delete mgui->keyvalue_popup;
-	mgui->keyvalue_popup = 0;
+	mwindow->gui->close_keyvalue_popup();
 	return 1;
 }
 
@@ -714,6 +764,39 @@ int KeySpeedSlider::handle_event()
 		set_tooltip(get_caption());
 	}
 	key_speed_patch->update(get_value());
+	return 1;
+}
+
+KeySpeedAutoEdge::KeySpeedAutoEdge(MWindow *mwindow,
+		KeySpeedPatch *patch, int x, int y)
+ : BC_Toggle(x, y, mwindow->theme->get_image_set("bump_edge"),
+                patch->gui->span,_("Edge"))
+{
+	this->mwindow = mwindow;
+	this->patch = patch;
+	set_tooltip(_("Bump uses left edge"));
+}
+
+int KeySpeedAutoEdge::handle_event()
+{
+	patch->set_edge(get_value());
+	return 1;
+}
+
+KeySpeedAutoSpan::KeySpeedAutoSpan(MWindow *mwindow,
+		KeySpeedPatch *patch, int x, int y)
+ : BC_Toggle(x, y, mwindow->theme->get_image_set("bump_span"),
+                patch->gui->span,_("Span"))
+{
+	this->mwindow = mwindow;
+	this->patch = patch;
+	set_tooltip(_("Bump spans to next"));
+}
+
+int KeySpeedAutoSpan::handle_event()
+
+{
+	patch->set_span(get_value());
 	return 1;
 }
 

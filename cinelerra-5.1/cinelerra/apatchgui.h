@@ -59,15 +59,21 @@ public:
 class AKeyFadePatch : public BC_SubWindow
 {
 public:
-	AKeyFadePatch(MWindow *mwindow, APatchGUI *patch, int x, int y);
+	AKeyFadePatch(MWindow *mwindow, APatchGUI *patch,
+			int bump, int x, int y);
+	~AKeyFadePatch();
 	void create_objects();
+	void set_edge(int edge);
+	void set_span(int span);
 	void update(float v);
 
 	MWindow *mwindow;
-	APatchGUI *patch;
+	APatchGUI *gui;
 	AKeyFadeOK *akey_fade_ok;
 	AKeyFadeText *akey_fade_text;
 	AKeyFadeSlider *akey_fade_slider;
+	AKeyPatchAutoEdge *auto_edge;
+	AKeyPatchAutoSpan *auto_span;
 };
 
 class AKeyFadeOK : public BC_Button
@@ -129,6 +135,24 @@ class AMixPatch : public MixPatch
 public:
 	AMixPatch(MWindow *mwindow, APatchGUI *patch, int x, int y);
 	~AMixPatch();
+};
+
+class AKeyPatchAutoEdge : public BC_Toggle
+{
+public:
+	AKeyPatchAutoEdge(MWindow *mwindow, AKeyFadePatch *patch, int x, int y);
+	int handle_event();
+	MWindow *mwindow;
+	AKeyFadePatch *patch;
+};
+
+class AKeyPatchAutoSpan : public BC_Toggle
+{
+public:
+	AKeyPatchAutoSpan(MWindow *mwindow, AKeyFadePatch *patch, int x, int y);
+	int handle_event();
+	MWindow *mwindow;
+	AKeyFadePatch *patch;
 };
 
 #endif

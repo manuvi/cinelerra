@@ -37,5 +37,7 @@ class KeySpeedPatch;
 class KeySpeedOK;
 class KeySpeedText;
 class KeySpeedSlider;
+class KeySpeedAutoEdge;
+class KeySpeedAutoSpan;
 
 #endif

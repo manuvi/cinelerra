@@ -101,16 +101,16 @@ public:
 	void draw_inout_points();
 	void draw_auto(Auto *current, int x, int y,
 		int center_pixel, int data_h);
-	void draw_floatauto(FloatAuto *current, int x, int y,
-		int in_x, int in_y, int out_x, int out_y,
-		int center_pixel, int data_h, int color);
+	void draw_floatauto(FloatAuto *current,
+		int x_offset, int center_pixel, int data_h, int color,
+		double unit_start, double zoom_units, double yscale,
+		int autogrouptype);
 	int test_auto(Auto *current, int x, int y,
 		int center_pixel, int data_h,
 		int cursor_x, int cursor_y, int buttonpress);
-	int test_floatauto(FloatAuto *current, int x, int y,
-		int in_x, int in_y, int out_x, int out_y,
-		int center_pixel, int data_h,
-		int cursor_x, int cursor_y, int buttonpress,
+	int test_floatauto(FloatAuto *current, int buttonpress,
+		int center_pixel, int data_h, int cursor_x, int cursor_y,
+		double unit_start, double zoom_units, double yscale,
 		int autogrouptype);
 	void draw_floatline(int center_pixel,
 		FloatAuto *previous,
@@ -212,24 +212,13 @@ public:
 // if reference is nonzero and a FloatAuto,
 //     the result is made relative to the value in reference.
 	float percentage_to_value(float percentage,
-		int is_toggle,
-		Auto *reference,
-		int autogrouptype);
-
+		int is_toggle, Auto *reference, int autogrouptype);
 // Get x and y of a FloatAuto relative to center_pixel
-	void calculate_auto_position(double *x,
-		double *y,
-		double *in_x,
-		double *in_y,
-		double *out_x,
-		double *out_y,
-		Auto *current,
-		double unit_start,
-		double zoom_units,
-		double yscale,
-		int autogrouptype);
-
-	void fill_ganged_autos(int all, float change, Track *skip, FloatAuto *fauto);
+	void calculate_auto_position(int edge, double *x, double *y,
+		double *in_x, double *in_y, double *out_x, double *out_y,
+		Auto *current, double unit_start, double zoom_units,
+		double yscale, int autogrouptype);
+	void fill_ganged_autos(int gang, float change, Track *skip, FloatAuto *fauto);
 	void update_ganged_autos(float change, Track *skip, FloatAuto *fauto);
 	void clear_ganged_autos();
 

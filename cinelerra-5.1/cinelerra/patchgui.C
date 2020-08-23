@@ -71,6 +71,8 @@ PatchGUI::PatchGUI(MWindow *mwindow,
 	change_source = 0;
 	track_id = track ? track->get_id() : -1;
 	mixer = 0;
+	edge = 0;
+	span = 1;
 }
 
 PatchGUI::~PatchGUI()

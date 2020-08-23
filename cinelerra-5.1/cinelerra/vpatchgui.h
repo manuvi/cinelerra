@@ -61,15 +61,21 @@ public:
 class VKeyFadePatch : public BC_SubWindow
 {
 public:
-	VKeyFadePatch(MWindow *mwindow, VPatchGUI *patch, int x, int y);
+	VKeyFadePatch(MWindow *mwindow, VPatchGUI *gui,
+			int bump, int x, int y);
+	~VKeyFadePatch();
 	void create_objects();
+	void set_edge(int edge);
+	void set_span(int span);
 	void update(int64_t v);
 
 	MWindow *mwindow;
-	VPatchGUI *patch;
+	VPatchGUI *gui;
 	VKeyFadeOK *vkey_fade_ok;
 	VKeyFadeText *vkey_fade_text;
 	VKeyFadeSlider *vkey_fade_slider;
+	VKeyPatchAutoEdge *auto_edge;
+	VKeyPatchAutoSpan *auto_span;
 };
 
 class VKeyFadeOK : public BC_Button
@@ -157,6 +163,24 @@ class VMixPatch : public MixPatch
 public:
 	VMixPatch(MWindow *mwindow, VPatchGUI *patch, int x, int y);
 	~VMixPatch();
+};
+
+class VKeyPatchAutoEdge : public BC_Toggle
+{
+public:
+	VKeyPatchAutoEdge(MWindow *mwindow, VKeyFadePatch *patch, int x, int y);
+	int handle_event();
+	MWindow *mwindow;
+	VKeyFadePatch *patch;
+};
+
+class VKeyPatchAutoSpan : public BC_Toggle
+{
+public:
+	VKeyPatchAutoSpan(MWindow *mwindow, VKeyFadePatch *patch, int x, int y);
+	int handle_event();
+	MWindow *mwindow;
+	VKeyFadePatch *patch;
 };
 
 #endif

@@ -265,7 +265,7 @@ int Autos::auto_exists_for_editing(double position)
 
 Auto* Autos::get_auto_at_position(double position)
 {
-	int64_t unit_position = track->to_units(position, 0);
+	int64_t unit_position = track->to_units(position, 1);
 
 	for(Auto *current = first;
 		current;
@@ -290,7 +290,7 @@ Auto* Autos::get_auto_for_editing(double position, int create)
 	get_prev_auto(track->to_units(position, 0), PLAY_FORWARD, result);
 	if( create > 0 ) create = edl->session->auto_keyframes;
 	if( create && (!result || result->is_default ||
-              !EQUIV(track->from_units(result->position), position)) ) {
+	    !EQUIV(track->from_units(result->position), position)) ) {
 //printf("Autos::get_auto_for_editing %p %p %p\n", default_auto, first, result);
 		position = edl->align_to_frame(position, 0);
 		result = insert_auto(track->to_units(position, 0));
@@ -383,10 +383,11 @@ Auto* Autos::insert_auto(int64_t position, Auto *templ)
 // Set curve mode
 		if( !templ && result->is_floatauto() ) {
 			FloatAuto *floatauto = (FloatAuto *)result;
-			floatauto->curve_mode =
+			FloatAuto::t_mode new_mode =
 				edl->local_session->playback_start >= 0 &&
 				edl->local_session->playback_end < 0 ? FloatAuto::SMOOTH :
 					(FloatAuto::t_mode) edl->local_session->floatauto_type;
+			floatauto->change_curve_mode(new_mode, 0);
 		}
 	}
 	else

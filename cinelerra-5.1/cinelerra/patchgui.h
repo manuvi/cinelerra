@@ -25,24 +25,10 @@
 #include "guicast.h"
 #include "mwindow.inc"
 #include "patchbay.inc"
+#include "patchgui.inc"
 #include "intauto.inc"
 #include "track.inc"
 
-
-
-
-class TitlePatch;
-class PlayPatch;
-class RecordPatch;
-class AutoPatch;
-class GangPatch;
-class DrawPatch;
-class MutePatch;
-class ZoomPatch;
-class MasterPatch;
-class ExpandPatch;
-class NudgePatch;
-class MixPatch;
 
 class PatchGUI
 {
@@ -61,8 +47,7 @@ public:
 		BC_Toggle *toggle,
 		int *output);
 	virtual int update(int x, int y);
-	virtual void synchronize_fade(float change) {};
-	void synchronize_faders(float change, int audio, int video);
+	void synchronize_faders(float change, int audio, int video, int edge, int span);
 	char* calculate_nudge_text(int *changed);
 	int64_t calculate_nudge(const char *string);
 
@@ -90,6 +75,7 @@ public:
 	NudgePatch *nudge;
 	MixPatch *mix;
 	char string_return[BCTEXTLEN];
+	int edge, span;
 };
 
 
@@ -218,6 +204,5 @@ public:
 	MWindow *mwindow;
 	PatchGUI *patch;
 };
-
 
 #endif

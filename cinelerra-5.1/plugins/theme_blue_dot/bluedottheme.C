@@ -877,6 +877,23 @@ void BlueDotTheme::initialize()
 	new_button("undo.png", editpanel_up, editpanel_hi, editpanel_dn, "undo");
 	new_button("wrench.png", "editpanelW_up.png", "editpanelW_hi.png", "editpanelW_dn.png", "wrench");
 
+	VFrame **edge_on  = new_toggle("edge_on.png",
+		editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "edge_on");
+	VFrame **edge_off = new_toggle("edge_off.png",
+		editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "edge_off");
+	new_image_set_images("bump_edge", 5,
+		new VFrame(*edge_off[0]), new VFrame(*edge_off[1]),
+		new VFrame(*edge_on[0]),  new VFrame(*edge_off[3]),
+		new VFrame(*edge_on[4]));
+	VFrame **span_on  = new_toggle("span_on.png",
+		editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "span_on");
+	VFrame **span_off = new_toggle("span_off.png",
+		editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "span_off");
+	new_image_set_images("bump_span", 5,
+		 new VFrame(*span_off[0]),  new VFrame(*span_off[1]),
+		 new VFrame(*span_on[0]), new VFrame(*span_off[3]),
+		 new VFrame(*span_on[4]));
+
 //Make transparent borders
 #define TRANSPORT_LEFT_IMAGES  "transport_left_up.png", "transport_left_hi.png", "transport_left_dn.png"
 #define TRANSPORT_CENTER_IMAGES  "transport_center_up.png", "transport_center_hi.png", "transport_center_dn.png"
@@ -970,23 +987,12 @@ void BlueDotTheme::initialize()
 	new_toggle("titlesafe.png", cpanel_up, cpanel_hi, cpanel_checked, cpanel_dn, cpanel_checkedhi, "titlesafe");
 	new_toggle("toolwindow.png", cpanel_up, cpanel_hi, cpanel_checked, cpanel_dn, cpanel_checkedhi, "tool");
 
-
-// Maybe we can live without the commented part
-// MIHA: Commented out in favor of default version M4>>
-//	new_toggle("camera.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi,"camera");
-//	new_toggle("crop.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi,"crop");
-//	new_toggle("eyedrop.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi,"eyedrop");
-//	new_toggle("magnify.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi,"magnify");
-//	new_toggle("mask.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi,"mask");
-//	new_toggle("projector.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi,"projector");
-//	new_toggle("protect.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi,"protect");
-//	new_toggle("titlesafe.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi,"titlesafe");
-//	new_toggle("toolwindow.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi,"tool");
-// MIHA: Commented out in favor of default version M4<<
-
 	// toggle for tangent mode (compositor/tool window)
 	new_toggle("tan_smooth.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "tan_smooth");
 	new_toggle("tan_linear.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "tan_linear");
+	new_toggle("tan_tangent.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "tan_tangent");
+	new_toggle("tan_free.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "tan_free");
+	new_toggle("tan_bump.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "tan_bump");
 
 	new_toggle("mask_scale_x.png",   "mask_scale_up.png",    "mask_scale_uphi.png",
 		"mask_scale_chkd.png",  "mask_scale_xdown.png",  "mask_scale_chkdhi.png",

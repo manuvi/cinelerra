@@ -27,6 +27,7 @@
 #include "guicast.h"
 #include "filexml.inc"
 #include "floatauto.inc"
+#include "transportque.inc"
 
 class FloatAutos : public Autos
 {
@@ -38,29 +39,25 @@ public:
 	~FloatAutos();
 
 
-	void draw_joining_line(BC_SubWindow *canvas, int vertical, int center_pixel, int x1, int y1, int x2, int y2);
+	void draw_joining_line(BC_SubWindow *canvas, int vertical, int center_pixel,
+			int x1, int y1, int x2, int y2);
 	int get_testy(float slope, int cursor_x, int ax, int ay);
 // Return 1 if the automation is constant.
 // constant - set to the value if it is constant
-	int automation_is_constant(int64_t start,
-		int64_t length,
-		int direction,
-		double &constant);
+	int automation_is_constant(int64_t start, int64_t length, int direction,
+			double &constant);
 	double get_automation_constant(int64_t start, int64_t end);
 // Get value at a specific point.  This needs previous and next stores
 // because it is used for every pixel in the timeline drawing function.
-	float get_value(int64_t position,
-		int direction,
-		FloatAuto* &previous,
-		FloatAuto* &next);
+	float get_value(int64_t position, int direction,
+			FloatAuto* &previous, FloatAuto* &next);
 // Helper: just calc the bezier function without doing any lookup of nodes
- 	static float calculate_bezier(FloatAuto *previous, FloatAuto *next, int64_t position);
- 	static float calculate_bezier_derivation(FloatAuto *previous, FloatAuto *next, int64_t position);
-	void get_extents(float *min,
-		float *max,
-		int *coords_undefined,
-		int64_t unit_start,
-		int64_t unit_end);
+ 	static float calculate_bezier(FloatAuto *previous, FloatAuto *next,
+			int64_t position, int direction=PLAY_FORWARD);
+ 	static float calculate_bezier_derivation(FloatAuto *previous, FloatAuto *next,
+			int64_t position);
+	void get_extents(float *min, float *max, int *coords_undefined,
+			int64_t unit_start, int64_t unit_end);
 
 	void set_automation_mode(int64_t start, int64_t end, int mode);
 	void set_proxy(int orig_scale, int new_scale);

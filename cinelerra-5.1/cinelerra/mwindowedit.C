@@ -289,7 +289,8 @@ void MWindow::clear_entry()
 
 	edl->optimize();
 	save_backup();
-	undo_after(_("clear"), LOAD_EDITS | LOAD_TIMEBAR);
+	undo_after(_("clear"),
+			LOAD_AUTOMATION + LOAD_EDITS + LOAD_TIMEBAR);
 
 	restart_brender();
 	update_plugin_guis();
@@ -1326,7 +1327,8 @@ void MWindow::overwrite(EDL *source, int all)
 	edl->local_session->set_selectionend(dst_start + overwrite_len);
 
 	save_backup();
-	undo_after(_("overwrite"), LOAD_EDITS);
+	undo_after(_("overwrite"),
+			LOAD_AUTOMATION + LOAD_EDITS + LOAD_TIMEBAR);
 
 	restart_brender();
 	update_plugin_guis();
@@ -1379,7 +1381,8 @@ void MWindow::paste(double start, Track *first_track, int clear_selection, int o
 
 		save_backup();
 
-		undo_after(_("paste"), LOAD_EDITS | LOAD_TIMEBAR);
+		undo_after(_("paste"),
+				LOAD_AUTOMATION + LOAD_EDITS + LOAD_TIMEBAR);
 		restart_brender();
 		update_plugin_guis();
 		gui->update(1, FORCE_REDRAW, 1, 1, 0, 1, 0);
@@ -1416,7 +1419,8 @@ int MWindow::paste_assets(double position, Track *dest_track, int overwrite)
 
 	save_backup();
 
-	undo_after(_("paste assets"), LOAD_EDITS);
+	undo_after(_("paste assets"),
+			LOAD_AUTOMATION + LOAD_EDITS + LOAD_TIMEBAR);
 	restart_brender();
 	gui->update(1, FORCE_REDRAW, 1, 0, 0, 1, 0);
 	sync_parameters(CHANGE_EDL);
@@ -1837,7 +1841,8 @@ void MWindow::paste_silence()
 		edl->session->autos_follow_edits);
 	edl->optimize();
 	save_backup();
-	undo_after(_("silence"), LOAD_EDITS | LOAD_TIMEBAR);
+	undo_after(_("silence"),
+			LOAD_AUTOMATION + LOAD_EDITS + LOAD_TIMEBAR);
 
 	update_plugin_guis();
 	restart_brender();
@@ -2208,7 +2213,8 @@ void MWindow::splice(EDL *source, int all)
 	edl->local_session->set_selectionend(start + source_end - source_start);
 
 	save_backup();
-	undo_after(_("splice"), LOAD_EDITS | LOAD_TIMEBAR);
+	undo_after(_("splice"),
+			LOAD_AUTOMATION + LOAD_EDITS + LOAD_TIMEBAR);
 	update_plugin_guis();
 	restart_brender();
 	gui->update(1, NORMAL_DRAW, 1, 1, 0, 1, 0);
@@ -2339,7 +2345,8 @@ void MWindow::trim_selection()
 		edl->session->autos_follow_edits);
 
 	save_backup();
-	undo_after(_("trim selection"), LOAD_EDITS | LOAD_TIMEBAR);
+	undo_after(_("trim selection"),
+			LOAD_AUTOMATION + LOAD_EDITS + LOAD_TIMEBAR);
 	update_plugin_guis();
 	gui->update(1, FORCE_REDRAW, 1, 1, 1, 1, 0);
 	cwindow->update(1, 0, 0, 0, 1);
@@ -2569,7 +2576,10 @@ void MWindow::cut_commercials()
 
 int MWindow::normalize_speed(EDL *old_edl, EDL *new_edl)
 {
-	int result = 0;
+	int result = 0, first_track = 1;
+	int plugins_follow_edits = edl->session->plugins_follow_edits;
+	int autos_follow_edits = edl->session->autos_follow_edits;
+	int labels_follow_edits = edl->session->labels_follow_edits;
 	Track *old_track = old_edl->tracks->first;
 	Track *new_track = new_edl->tracks->first;
 	for( ; old_track && new_track; old_track=old_track->next, new_track=new_track->next ) {
@@ -2585,17 +2595,101 @@ int MWindow::normalize_speed(EDL *old_edl, EDL *new_edl)
 		}
 		Edit *old_edit = old_track->edits->first;
 		Edit *new_edit = new_track->edits->first;
-		for( ; old_edit && new_edit; old_edit=old_edit->next, new_edit=new_edit->next ) {
-			int64_t edit_start = old_edit->startproject, edit_end = edit_start + old_edit->length;
+		while( old_edit && new_edit ) {
+			int64_t edit_start = old_edit->startproject;
+			int64_t edit_end = edit_start + old_edit->length;
 			if( old_speed || new_speed ) {
 				double orig_start = old_speeds->automation_integral(0, edit_start, PLAY_FORWARD);
 				double orig_end   = old_speeds->automation_integral(0, edit_end, PLAY_FORWARD);
-				edit_start = new_speeds->speed_position(orig_start);
-				edit_end = new_speeds->speed_position(orig_end);
+				edit_start = new_track->frame_align(new_speeds->speed_position(orig_start), 1);
+				edit_end = new_track->frame_align(new_speeds->speed_position(orig_end), 1);
 				result = 1;
 			}
 			new_edit->startproject = edit_start;
 			new_edit->length = edit_end - edit_start;
+			old_edit = old_edit->next;
+			new_edit = new_edit->next;
+		}
+		if( first_track && old_track->is_armed() ) {
+			if( labels_follow_edits ) {
+				Labels *old_labels = old_edl->labels;
+				Labels *new_labels = new_edl->labels;
+				Label *old_label = old_labels ? old_labels->first : 0;
+				Label *new_label = new_labels ? new_labels->first : 0;
+				while( old_label && new_label ) {
+					int64_t label_pos = old_track->to_units(old_label->position, 1);
+					if( old_speed || new_speed ) {
+						double orig_pos = old_speeds->automation_integral(0, label_pos, PLAY_FORWARD);
+						label_pos = new_track->frame_align(new_speeds->speed_position(orig_pos), 1);
+						result = 1;
+					}
+					new_label->position = new_track->from_units(label_pos);
+					old_label = old_label->next;
+					new_label = new_label->next;
+				}
+			}
+			first_track = 0;
+		}
+		if( autos_follow_edits ) {
+			for( int i=0; i<AUTOMATION_TOTAL; ++i ) {
+				Autos *old_autos = old_track->automation->autos[i];
+				Autos *new_autos = new_track->automation->autos[i];
+				Auto *old_auto = old_autos ? old_autos->first : 0;
+				Auto *new_auto = new_autos ? new_autos->first : 0;
+				while( old_auto && new_auto ) {
+					int64_t auto_pos = old_auto->position;
+					if( old_speed || new_speed ) {
+						double orig_pos = old_speeds->automation_integral(0, auto_pos, PLAY_FORWARD);
+						auto_pos = new_track->frame_align(new_speeds->speed_position(orig_pos), 1);
+						result = 1;
+					}
+					new_auto->position = auto_pos;
+					old_auto = old_auto->next;
+					new_auto = new_auto->next;
+				}
+			}
+		}
+		if( !plugins_follow_edits ) continue;
+		int old_size = old_track->plugin_set.size();
+		int new_size = new_track->plugin_set.size();
+		int n = bmin(old_size, new_size);
+		for( int i=0; i<n; ++i ) {
+			PluginSet *old_plugin_set = old_track->plugin_set[i];
+			Plugin *old_plugin = (Plugin *)(old_plugin_set ? old_plugin_set->first : 0);
+			PluginSet *new_plugin_set = new_track->plugin_set[i];
+			Plugin *new_plugin = (Plugin *)(new_plugin_set ? new_plugin_set->first : 0);
+			while( old_plugin && new_plugin ) {
+				int64_t plugin_start = old_plugin->startproject;
+				int64_t plugin_end = plugin_start + old_plugin->length;
+				if( old_speed || new_speed ) {
+					double orig_start = old_speeds->automation_integral(0, plugin_start, PLAY_FORWARD);
+					double orig_end   = old_speeds->automation_integral(0, plugin_end, PLAY_FORWARD);
+					plugin_start = new_track->frame_align(new_speeds->speed_position(orig_start), 1);
+					plugin_end = new_track->frame_align(new_speeds->speed_position(orig_end), 1);
+					result = 1;
+				}
+				new_plugin->startproject = plugin_start;
+				new_plugin->length = plugin_end - plugin_start;
+				if( autos_follow_edits ) {
+					KeyFrames *old_keyframes = old_plugin->keyframes;
+					Auto *old_auto = old_keyframes ? old_keyframes->first : 0;
+					KeyFrames *new_keyframes = new_plugin->keyframes;
+					Auto *new_auto = new_keyframes ? new_keyframes->first : 0;
+					while( old_auto && new_auto ) {
+						int64_t auto_pos = old_auto->position;
+						if( old_speed || new_speed ) {
+							double orig_pos = old_speeds->automation_integral(0, auto_pos, PLAY_FORWARD);
+							auto_pos = new_track->frame_align(new_speeds->speed_position(orig_pos), 1);
+							result = 1;
+						}
+						new_auto->position = auto_pos;
+						old_auto = old_auto->next;
+						new_auto = new_auto->next;
+					}
+				}
+				old_plugin = (Plugin *)old_plugin->next;
+				new_plugin = (Plugin *)new_plugin->next;
+			}
 		}
 	}
 	return result;
@@ -2802,6 +2896,23 @@ void MWindow::mix_masters()
 	undo_before();
 	masters_to_mixers();
 	undo_after(_("mix masters"), LOAD_ALL);
+
+	restart_brender();
+	gui->update(1, NORMAL_DRAW, 0, 0, 1, 0, 0);
+	gui->activate_timeline();
+	cwindow->refresh_frame(CHANGE_EDL);
+	save_backup();
+}
+
+void MWindow::create_keyframes(int mask, int mode)
+{
+	undo_before();
+	double start = edl->local_session->get_selectionstart();
+	edl->tracks->create_keyframes(start, mask, mode);
+	double end = edl->local_session->get_selectionend();
+	if( end != start )
+		edl->tracks->create_keyframes(end, mask, mode);
+	undo_after(_("create kyfrms"), LOAD_AUTOMATION);
 
 	restart_brender();
 	gui->update(1, NORMAL_DRAW, 0, 0, 1, 0, 0);

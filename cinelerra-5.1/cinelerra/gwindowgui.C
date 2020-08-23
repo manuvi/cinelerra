@@ -294,7 +294,7 @@ void GWindowGUI::create_objects()
 				hard_edges = toggle;
 				break;
 			}
-			 if( accel ) {
+			if( accel ) {
 				int x1 = get_w() - BC_Title::calculate_w(this, accel) - xs10;
 				add_subwindow(new BC_Title(x1, y, accel));
 			}

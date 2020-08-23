@@ -59,7 +59,7 @@ public:
 	void update_meters(ArrayList<double> *module_levels);
 	void stop_meters();
 	void synchronize_nudge(int64_t value, Track *skip);
-	void synchronize_faders(float value, int data_type, Track *skip);
+	void synchronize_faders(float value, int data_type, Track *skip, int edge, int span);
 	void set_meter_format(int mode, int min, int max);
 	void reset_meters();
 

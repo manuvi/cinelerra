@@ -93,6 +93,7 @@ public:
 
 // Update EDL and preview only
 	void update_preview(int changed_edl=0);
+	void update_auto(Track *track, int idx, CWindowCoord *vp);
 	void draw_preview(int changed_edl);
 	int current_operation;
 	virtual int close_event();
@@ -103,6 +104,7 @@ public:
 	MWindow *mwindow;
 	CWindowTool *thread;
 	CWindowCoord *event_caller;
+	int edge, span;
 };
 
 class CWindowCoord : public BC_TumbleTextBox
@@ -142,6 +144,26 @@ public:
 	int handle_down_event();
 
 	CWindowCoord *coord;
+};
+
+class CWindowCurveAutoEdge : public BC_Toggle
+{
+public:
+	CWindowCurveAutoEdge(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
+	int handle_event();
+
+	MWindow *mwindow;
+	CWindowToolGUI *gui;
+};
+
+class CWindowCurveAutoSpan : public BC_Toggle
+{
+public:
+	CWindowCurveAutoSpan(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
+
+	int handle_event();
+	MWindow *mwindow;
+	CWindowToolGUI *gui;
 };
 
 
@@ -795,7 +817,9 @@ public:
 	CWindowCoord *x, *y, *z;
 	CWindowCameraAddKeyframe *add_keyframe;
 	CWindowCameraReset *reset;
-	CWindowCurveToggle *t_smooth, *t_linear;
+	CWindowCurveToggle *t_smooth, *t_linear, *t_tangent, *t_free, *t_bump;
+	CWindowCurveAutoSpan *auto_span;
+	CWindowCurveAutoEdge *auto_edge;
 };
 
 class CWindowCameraLeft : public BC_Button
@@ -891,7 +915,9 @@ public:
 	CWindowCoord *x, *y, *z;
 	CWindowProjectorAddKeyframe *add_keyframe;
 	CWindowProjectorReset *reset;
-	CWindowCurveToggle *t_smooth, *t_linear;
+	CWindowCurveToggle *t_smooth, *t_linear, *t_tangent, *t_free, *t_bump;
+	CWindowCurveAutoSpan *auto_span;
+	CWindowCurveAutoEdge *auto_edge;
 };
 
 class CWindowProjectorLeft : public BC_Button

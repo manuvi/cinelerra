@@ -3054,9 +3054,13 @@ int CWindowCanvas::test_bezier(int button_press,
 				redraw = 1;
 			}
 
-			float x_val = gui->affected_x->get_value();
-			float y_val = gui->affected_y->get_value();
-			float z_val = gui->affected_z->get_value();
+			CWindowToolGUI *tool_gui = !gui->tool_panel ? 0 : gui->tool_panel->tool_gui;
+			int edge = tool_gui ? tool_gui->edge : 0;
+			int span = tool_gui ? tool_gui->span : 0;
+
+			float x_val = gui->affected_x->get_value(edge);
+			float y_val = gui->affected_y->get_value(edge);
+			float z_val = gui->affected_z->get_value(edge);
 
 			if( gui->translating_zoom ) {
 				float z = gui->center_z + (cursor_y - gui->y_origin) / yS(128);
@@ -3066,7 +3070,7 @@ int CWindowCanvas::test_bezier(int button_press,
 					redraw = 1;
 					redraw_canvas = 1;
 				}
-				gui->affected_z->set_value(z);
+				gui->affected_z->bump_value(z, edge, span);
 			}
 			else {
 				float dx = cursor_x - gui->x_origin;
@@ -3077,8 +3081,8 @@ int CWindowCanvas::test_bezier(int button_press,
 				}
 				float x = gui->center_x + dx;
 				float y = gui->center_y + dy;
-				gui->affected_x->set_value(x);
-				gui->affected_y->set_value(y);
+				gui->affected_x->bump_value(x, edge, span);
+				gui->affected_y->bump_value(y, edge, span);
 				if( !EQUIV(x_val, x) || !EQUIV(y_val, y) ) {
 					rerender = 1;
 					redraw = 1;

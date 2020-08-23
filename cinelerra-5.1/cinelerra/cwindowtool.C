@@ -273,6 +273,7 @@ CWindowToolGUI::CWindowToolGUI(MWindow *mwindow,
 	this->mwindow = mwindow;
 	this->thread = thread;
 	current_operation = 0;
+	span = 1;  edge = 0;
 }
 
 CWindowToolGUI::~CWindowToolGUI()
@@ -327,6 +328,23 @@ int CWindowToolGUI::translation_event()
 	return 0;
 }
 
+void CWindowToolGUI::update_auto(Track *track, int idx, CWindowCoord *vp)
+{
+	FloatAuto *float_auto = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(
+			track->automation->autos[idx], 1);
+	if( !float_auto ) return;
+	float v = float_auto->get_value(edge);
+	float t = atof(vp->get_text());
+	if( v == t ) return;
+	float_auto->bump_value(t, edge, span);
+	if( idx == AUTOMATION_PROJECTOR_Z || idx == AUTOMATION_CAMERA_Z ) {
+		mwindow->gui->lock_window("CWindowToolGUI::update_auto");
+		mwindow->gui->draw_overlays(1);
+		mwindow->gui->unlock_window();
+	}
+	update();
+	update_preview();
+}
 
 void CWindowToolGUI::update_preview(int changed_edl)
 {
@@ -821,30 +839,27 @@ struct _CVD {
 	const char* tooltip;
 };
 
-const _CVD Camera_Crv_Smooth =
-	{	FloatAuto::SMOOTH,
-		true,
-		"tan_smooth",
-		N_("\"smooth\" Curve on current Camera Keyframes")
-	};
-const _CVD Camera_Crv_Linear =
-	{	FloatAuto::LINEAR,
-		true,
-		"tan_linear",
-		N_("\"linear\" Curve on current Camera Keyframes")
-	};
-const _CVD Projector_Crv_Smooth =
-	{	FloatAuto::SMOOTH,
-		false,
-		"tan_smooth",
-		N_("\"smooth\" Curve on current Projector Keyframes")
-	};
-const _CVD Projector_Crv_Linear =
-	{	FloatAuto::LINEAR,
-		false,
-		"tan_linear",
-		N_("\"linear\" Curve on current Projector Keyframes")
-	};
+const _CVD Camera_Crv_Smooth = { FloatAuto::SMOOTH, true, "tan_smooth",
+		N_("\"smooth\" Curve on current Camera Keyframes") };
+const _CVD Camera_Crv_Linear = { FloatAuto::LINEAR, true, "tan_linear",
+		N_("\"linear\" Curve on current Camera Keyframes") };
+const _CVD Camera_Crv_Tangent = { FloatAuto::TFREE, true, "tan_tangent",
+		N_("\"tangent\" Curve on current Camera Keyframes") };
+const _CVD Camera_Crv_Free  = { FloatAuto::FREE, true, "tan_free",
+		N_("\"free\" Curve on current Camera Keyframes") };
+const _CVD Camera_Crv_Bump = { FloatAuto::BUMP, true, "tan_bump",
+		N_("\"bump\" Curve on current Camera Keyframes") };
+
+const _CVD Projector_Crv_Smooth = { FloatAuto::SMOOTH, false, "tan_smooth",
+		N_("\"smooth\" Curve on current Projector Keyframes") };
+const _CVD Projector_Crv_Linear = { FloatAuto::LINEAR, false, "tan_linear",
+		N_("\"linear\" Curve on current Projector Keyframes") };
+const _CVD Projector_Crv_Tangent = { FloatAuto::TFREE, false, "tan_tangent",
+		N_("\"tangent\" Curve on current Projector Keyframes") };
+const _CVD Projector_Crv_Free  = { FloatAuto::FREE, false, "tan_free",
+		N_("\"free\" Curve on current Projector Keyframes") };
+const _CVD Projector_Crv_Bump = { FloatAuto::BUMP, false, "tan_bump",
+		N_("\"bump\" Curve on current Projector Keyframes") };
 
 // Implementation Class für Keyframe Curve Mode buttons
 //
@@ -857,17 +872,19 @@ const _CVD Projector_Crv_Linear =
 class CWindowCurveToggle : public BC_Toggle
 {
 public:
-	CWindowCurveToggle(_CVD mode, MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
+	CWindowCurveToggle(const _CVD &mode,
+			MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
 	void check_toggle_state(FloatAuto *x, FloatAuto *y, FloatAuto *z);
 	int handle_event();
 private:
-	_CVD cfg;
+	const _CVD &cfg;
 	MWindow *mwindow;
 	CWindowToolGUI *gui;
 };
 
 
-CWindowCurveToggle::CWindowCurveToggle(_CVD mode, MWindow *mwindow, CWindowToolGUI *gui, int x, int y)
+CWindowCurveToggle::CWindowCurveToggle(const _CVD &mode,
+			MWindow *mwindow, CWindowToolGUI *gui, int x, int y)
  : BC_Toggle(x, y, mwindow->theme->get_image_set(mode.icon_id), false),
    cfg(mode)
 {
@@ -941,6 +958,7 @@ void CWindowCameraGUI::create_objects()
 	FloatAuto *x_auto = 0, *y_auto = 0, *z_auto = 0;
 	BC_Title *title;
 	BC_Button *button;
+	span = 1;  edge = 0;
 
 	lock_window("CWindowCameraGUI::create_objects");
 	if( track ) {
@@ -978,9 +996,15 @@ void CWindowCameraGUI::create_objects()
 	add_subwindow(button = new CWindowCameraRight(mwindow, this, x1, y));
 // additional Buttons to control the curve mode of the "current" keyframe
 	x1 += button->get_w() + xs15;
-	add_subwindow(this->t_smooth = new CWindowCurveToggle(Camera_Crv_Smooth, mwindow, this, x1, y));
-	x1 += button->get_w() + xs10;
-	add_subwindow(this->t_linear = new CWindowCurveToggle(Camera_Crv_Linear, mwindow, this, x1, y));
+	add_subwindow(t_smooth = new CWindowCurveToggle(Camera_Crv_Smooth, mwindow, this, x1, y));
+	x1 += t_smooth->get_w() + xs10;
+	add_subwindow(t_linear = new CWindowCurveToggle(Camera_Crv_Linear, mwindow, this, x1, y));
+	x1 += t_linear->get_w() + xs10;
+	add_subwindow(t_tangent = new CWindowCurveToggle(Camera_Crv_Tangent, mwindow, this, x1, y));
+	x1 += t_tangent->get_w() + xs10;
+	add_subwindow(t_free = new CWindowCurveToggle(Camera_Crv_Free, mwindow, this, x1, y));
+	x1 += t_free->get_w() + xs10;
+	add_subwindow(t_bump = new CWindowCurveToggle(Camera_Crv_Bump, mwindow, this, x1, y));
 
 	y += button->get_h();
 	x1 = xs10;
@@ -990,9 +1014,13 @@ void CWindowCameraGUI::create_objects()
 	x1 += button->get_w();
 	add_subwindow(button = new CWindowCameraBottom(mwindow, this, x1, y));
 	x1 += button->get_w() + xs15;
-	add_subwindow(this->add_keyframe = new CWindowCameraAddKeyframe(mwindow, this, x1, y));
-	x1 += button->get_w() + xs10;
-	add_subwindow(this->reset = new CWindowCameraReset(mwindow, this, x1, y));
+	add_subwindow(add_keyframe = new CWindowCameraAddKeyframe(mwindow, this, x1, y));
+	x1 += add_keyframe->get_w() + xs15;
+	add_subwindow(auto_edge = new CWindowCurveAutoEdge(mwindow, this, x1, y));
+	x1 += auto_edge->get_w() + xs10;
+	add_subwindow(auto_span = new CWindowCurveAutoSpan(mwindow, this, x1, y));
+	x1 += auto_span->get_w() + xs15;
+	add_subwindow(reset = new CWindowCameraReset(mwindow, this, x1, y));
 
 // fill in current auto keyframe values, set toggle states.
 	this->update();
@@ -1001,62 +1029,16 @@ void CWindowCameraGUI::create_objects()
 
 void CWindowCameraGUI::handle_event()
 {
-	FloatAuto *x_auto = 0;
-	FloatAuto *y_auto = 0;
-	FloatAuto *z_auto = 0;
 	Track *track = mwindow->cwindow->calculate_affected_track();
-	if(track)
-	{
-		mwindow->undo->update_undo_before(_("camera"), this);
-		if(event_caller == x)
-		{
-			x_auto = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(
-				track->automation->autos[AUTOMATION_CAMERA_X], 1);
-			if(x_auto)
-			{
-				x_auto->set_value(atof(x->get_text()));
-				update();
-				update_preview();
-			}
-		}
-		else
-		if(event_caller == y)
-		{
-			y_auto = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(
-				track->automation->autos[AUTOMATION_CAMERA_Y], 1);
-			if(y_auto)
-			{
-				y_auto->set_value(atof(y->get_text()));
-				update();
-				update_preview();
-			}
-		}
-		else
-		if(event_caller == z)
-		{
-			z_auto = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(
-				track->automation->autos[AUTOMATION_CAMERA_Z], 1);
-			if(z_auto)
-			{
-				float zoom = atof(z->get_text());
-				if(zoom > 100.) zoom = 100.;
-				else
-				if(zoom < 0.01) zoom = 0.01;
-	// Doesn't allow user to enter from scratch
-	// 		if(zoom != atof(z->get_text()))
-	// 			z->update(zoom);
-
-				z_auto->set_value(zoom);
-				mwindow->gui->lock_window("CWindowCameraGUI::handle_event");
-				mwindow->gui->draw_overlays(1);
-				mwindow->gui->unlock_window();
-				update();
-				update_preview();
-			}
-		}
-
-		mwindow->undo->update_undo_after(_("camera"), LOAD_ALL);
-	}
+	if( !track ) return;
+	mwindow->undo->update_undo_before(_("camera"), this);
+	if( event_caller == x )
+		update_auto(track, AUTOMATION_CAMERA_X, x);
+	else if( event_caller == y )
+		update_auto(track, AUTOMATION_CAMERA_Y, y);
+	else if( event_caller == z )
+		update_auto(track, AUTOMATION_CAMERA_Z, z);
+	mwindow->undo->update_undo_after(_("camera"), LOAD_ALL);
 }
 
 void CWindowCameraGUI::update()
@@ -1065,21 +1047,32 @@ void CWindowCameraGUI::update()
 	FloatAuto *y_auto = 0;
 	FloatAuto *z_auto = 0;
 	Track *track = mwindow->cwindow->calculate_affected_track();
+	int bg_color = get_resources()->text_background;
+	int hi_color = bg_color ^ 0x444444;
 	if( track ) {
 		mwindow->cwindow->calculate_affected_autos(track,
 			&x_auto, &y_auto, &z_auto, 1, 0, 0, 0);
 	}
 
 	if( x_auto ) {
-		float xvalue = x_auto->get_value();
+		int color = (edge || span) && x_auto->curve_mode == FloatAuto::BUMP ?
+			hi_color : bg_color;
+		x->get_textbox()->set_back_color(color);
+		float xvalue = x_auto->get_value(edge);
 		x->update_gui(xvalue);
 	}
 	if( y_auto ) {
-		float yvalue = y_auto->get_value();
+		int color = (edge || span) && y_auto->curve_mode == FloatAuto::BUMP ?
+			hi_color : bg_color;
+		y->get_textbox()->set_back_color(color);
+		float yvalue = y_auto->get_value(edge);
 		y->update_gui(yvalue);
 	}
 	if( z_auto ) {
-		float zvalue = z_auto->get_value();
+		int color = (edge || span) && z_auto->curve_mode == FloatAuto::BUMP ?
+			hi_color : bg_color;
+		z->get_textbox()->set_back_color(color);
+		float zvalue = z_auto->get_value(edge);
 		z->update_gui(zvalue);
 		thread->gui->lock_window("CWindowCameraGUI::update");
 		thread->gui->composite_panel->cpanel_zoom->update(zvalue);
@@ -1089,6 +1082,9 @@ void CWindowCameraGUI::update()
 	if( x_auto && y_auto && z_auto ) {
 		t_smooth->check_toggle_state(x_auto, y_auto, z_auto);
 		t_linear->check_toggle_state(x_auto, y_auto, z_auto);
+		t_tangent->check_toggle_state(x_auto, y_auto, z_auto);
+		t_free->check_toggle_state(x_auto, y_auto, z_auto);
+		t_bump->check_toggle_state(x_auto, y_auto, z_auto);
 	}
 }
 
@@ -1335,6 +1331,38 @@ int CWindowCameraReset::handle_event()
 	return gui->press(&CWindowCanvas::reset_camera);
 }
 
+CWindowCurveAutoEdge::CWindowCurveAutoEdge(MWindow *mwindow,
+		CWindowToolGUI *gui, int x, int y)
+ : BC_Toggle(x, y, mwindow->theme->get_image_set("bump_edge"), gui->edge)
+{
+	this->mwindow = mwindow;
+	this->gui = gui;
+	set_tooltip(_("Bump edit edge left/right"));
+}
+
+int CWindowCurveAutoEdge::handle_event()
+{
+	gui->edge = get_value();
+	gui->update();
+	return 1;
+}
+
+CWindowCurveAutoSpan::CWindowCurveAutoSpan(MWindow *mwindow,
+		CWindowToolGUI *gui, int x, int y)
+ : BC_Toggle(x, y, mwindow->theme->get_image_set("bump_span"), gui->span)
+{
+	this->mwindow = mwindow;
+	this->gui = gui;
+	set_tooltip(_("Bump spans to next/prev"));
+}
+
+int CWindowCurveAutoSpan::handle_event()
+{
+	gui->span = get_value();
+	gui->update();
+	return 1;
+}
+
 
 CWindowProjectorGUI::CWindowProjectorGUI(MWindow *mwindow, CWindowTool *thread)
  : CWindowToolGUI(mwindow, thread, _(PROGRAM_NAME ": Projector"), xS(340), yS(170))
@@ -1354,6 +1382,7 @@ void CWindowProjectorGUI::create_objects()
 	FloatAuto *z_auto = 0;
 	BC_Title *title;
 	BC_Button *button;
+	span = 1;  edge = 0;
 
 	lock_window("CWindowProjectorGUI::create_objects");
 	if( track ) {
@@ -1390,9 +1419,15 @@ void CWindowProjectorGUI::create_objects()
 	add_subwindow(button = new CWindowProjectorRight(mwindow, this, x1, y));
 // additional Buttons to control the curve mode of the "current" keyframe
 	x1 += button->get_w() + xs15;
-	add_subwindow(this->t_smooth = new CWindowCurveToggle(Projector_Crv_Smooth, mwindow, this, x1, y));
-	x1 += button->get_w() + xs10;
-	add_subwindow(this->t_linear = new CWindowCurveToggle(Projector_Crv_Linear, mwindow, this, x1, y));
+	add_subwindow(t_smooth = new CWindowCurveToggle(Projector_Crv_Smooth, mwindow, this, x1, y));
+	x1 += t_smooth->get_w() + xs10;
+	add_subwindow(t_linear = new CWindowCurveToggle(Projector_Crv_Linear, mwindow, this, x1, y));
+	x1 += t_linear->get_w() + xs15;
+	add_subwindow(t_tangent = new CWindowCurveToggle(Projector_Crv_Tangent, mwindow, this, x1, y));
+	x1 += t_tangent->get_w() + xs10;
+	add_subwindow(t_free = new CWindowCurveToggle(Projector_Crv_Free, mwindow, this, x1, y));
+	x1 += t_free->get_w() + xs10;
+	add_subwindow(t_bump = new CWindowCurveToggle(Projector_Crv_Bump, mwindow, this, x1, y));
 
 	y += button->get_h();
 	x1 = xs10;
@@ -1402,9 +1437,13 @@ void CWindowProjectorGUI::create_objects()
 	x1 += button->get_w();
 	add_subwindow(button = new CWindowProjectorBottom(mwindow, this, x1, y));
 	x1 += button->get_w() + xs15;
-	add_subwindow(this->add_keyframe = new CWindowProjectorAddKeyframe(mwindow, this, x1, y));
-	x1 += button->get_w() + xs10;
-	add_subwindow(this->reset = new CWindowProjectorReset(mwindow, this, x1, y));
+	add_subwindow(add_keyframe = new CWindowProjectorAddKeyframe(mwindow, this, x1, y));
+	x1 += add_keyframe->get_w() + xs15;
+	add_subwindow(auto_span = new CWindowCurveAutoSpan(mwindow, this, x1, y));
+	x1 += auto_span->get_w() + xs10;
+	add_subwindow(auto_edge = new CWindowCurveAutoEdge(mwindow, this, x1, y));
+	x1 += auto_edge->get_w() + xs15;
+	add_subwindow(reset = new CWindowProjectorReset(mwindow, this, x1, y));
 
 // fill in current auto keyframe values, set toggle states.
 	this->update();
@@ -1413,61 +1452,16 @@ void CWindowProjectorGUI::create_objects()
 
 void CWindowProjectorGUI::handle_event()
 {
-	FloatAuto *x_auto = 0;
-	FloatAuto *y_auto = 0;
-	FloatAuto *z_auto = 0;
 	Track *track = mwindow->cwindow->calculate_affected_track();
-
-	if(track)
-	{
-		mwindow->undo->update_undo_before(_("projector"), this);
-		if(event_caller == x)
-		{
-			x_auto = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(
-				track->automation->autos[AUTOMATION_PROJECTOR_X], 1);
-			if(x_auto)
-			{
-				x_auto->set_value(atof(x->get_text()));
-				update();
-				update_preview();
-			}
-		}
-		else
-		if(event_caller == y)
-		{
-			y_auto = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(
-				track->automation->autos[AUTOMATION_PROJECTOR_Y], 1);
-			if(y_auto)
-			{
-				y_auto->set_value(atof(y->get_text()));
-				update();
-				update_preview();
-			}
-		}
-		else
-		if(event_caller == z)
-		{
-			z_auto = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(
-				track->automation->autos[AUTOMATION_PROJECTOR_Z], 1);
-			if(z_auto)
-			{
-				float zoom = atof(z->get_text());
-				if(zoom > 100.) zoom = 100.;
-				else if(zoom < 0.01) zoom = 0.01;
-// 			if (zoom != atof(z->get_text()))
-// 				z->update(zoom);
-				z_auto->set_value(zoom);
-
-				mwindow->gui->lock_window("CWindowProjectorGUI::handle_event");
-				mwindow->gui->draw_overlays(1);
-				mwindow->gui->unlock_window();
-
-				update();
-				update_preview();
-			}
-		}
-		mwindow->undo->update_undo_after(_("projector"), LOAD_ALL);
-	}
+	if( !track ) return;
+	mwindow->undo->update_undo_before(_("projector"), this);
+	if( event_caller == x )
+		update_auto(track, AUTOMATION_PROJECTOR_X, x);
+	else if( event_caller == y )
+		update_auto(track, AUTOMATION_PROJECTOR_Y, y);
+	else if( event_caller == z )
+		update_auto(track, AUTOMATION_PROJECTOR_Z, z);
+	mwindow->undo->update_undo_after(_("projector"), LOAD_ALL);
 }
 
 void CWindowProjectorGUI::update()
@@ -1476,21 +1470,32 @@ void CWindowProjectorGUI::update()
 	FloatAuto *y_auto = 0;
 	FloatAuto *z_auto = 0;
 	Track *track = mwindow->cwindow->calculate_affected_track();
+	int bg_color = get_resources()->text_background;
+	int hi_color = bg_color ^ 0x444444;
 	if( track ) {
 		mwindow->cwindow->calculate_affected_autos(track,
 			&x_auto, &y_auto, &z_auto, 0, 0, 0, 0);
 	}
 
 	if( x_auto ) {
-		float xvalue = x_auto->get_value();
+		int color = (edge || span) && x_auto->curve_mode == FloatAuto::BUMP ?
+			hi_color : bg_color;
+		x->get_textbox()->set_back_color(color);
+		float xvalue = x_auto->get_value(edge);
 		x->update_gui(xvalue);
 	}
 	if( y_auto ) {
-		float yvalue = y_auto->get_value();
+		int color = (edge || span) && y_auto->curve_mode == FloatAuto::BUMP ?
+			hi_color : bg_color;
+		y->get_textbox()->set_back_color(color);
+		float yvalue = y_auto->get_value(edge);
 		y->update_gui(yvalue);
 	}
 	if( z_auto ) {
-		float zvalue = z_auto->get_value();
+		int color = (edge || span) && z_auto->curve_mode == FloatAuto::BUMP ?
+			hi_color : bg_color;
+		z->get_textbox()->set_back_color(color);
+		float zvalue = z_auto->get_value(edge);
 		z->update_gui(zvalue);
 		thread->gui->lock_window("CWindowProjectorGUI::update");
 		thread->gui->composite_panel->cpanel_zoom->update(zvalue);
@@ -1500,6 +1505,9 @@ void CWindowProjectorGUI::update()
 	if( x_auto && y_auto && z_auto ) {
 		t_smooth->check_toggle_state(x_auto, y_auto, z_auto);
 		t_linear->check_toggle_state(x_auto, y_auto, z_auto);
+		t_tangent->check_toggle_state(x_auto, y_auto, z_auto);
+		t_free->check_toggle_state(x_auto, y_auto, z_auto);
+		t_bump->check_toggle_state(x_auto, y_auto, z_auto);
 	}
 }
 

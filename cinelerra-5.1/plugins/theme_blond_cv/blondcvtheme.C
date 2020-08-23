@@ -860,6 +860,23 @@ void BlondCVTheme::initialize()
 	//new_button("wrench.png", editpanel_up, editpanel_hi, editpanel_dn, "wrench");
 	//wrench_data = new_button("wrench.png", editpanel_up, editpanel_hi, editpanel_dn);
 
+	VFrame **edge_on  = new_toggle("edge_on.png",
+		editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "edge_on");
+	VFrame **edge_off = new_toggle("edge_off.png",
+		editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "edge_off");
+	new_image_set_images("bump_edge", 5,
+		new VFrame(*edge_off[0]), new VFrame(*edge_off[1]),
+		new VFrame(*edge_on[0]),  new VFrame(*edge_off[3]),
+		new VFrame(*edge_on[4]));
+	VFrame **span_on  = new_toggle("span_on.png",
+		editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "span_on");
+	VFrame **span_off = new_toggle("span_off.png",
+		editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "span_off");
+	new_image_set_images("bump_span", 5,
+		 new VFrame(*span_off[0]),  new VFrame(*span_off[1]),
+		 new VFrame(*span_on[0]), new VFrame(*span_off[3]),
+		 new VFrame(*span_on[4]));
+
 // CWindow icons
 	new_image("cwindow_inactive", "cwindow_inactive.png");
 	new_image("cwindow_active", "cwindow_active.png");
@@ -975,6 +992,9 @@ void BlondCVTheme::initialize()
 	// toggle for tangent mode (compositor/tool window)
 	new_toggle("tan_smooth.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "tan_smooth");
 	new_toggle("tan_linear.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "tan_linear");
+	new_toggle("tan_tangent.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "tan_tangent");
+	new_toggle("tan_free.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "tan_free");
+	new_toggle("tan_bump.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "tan_bump");
 
 	new_toggle("mask_scale_x.png",   "mask_scale_up.png",    "mask_scale_uphi.png",
 		"mask_scale_chkd.png",  "mask_scale_xdown.png",  "mask_scale_chkdhi.png",

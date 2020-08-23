@@ -1013,7 +1013,6 @@ void Tracks::paste_automation(double selectionstart,
 	Track* current_atrack = 0;
 	Track* current_vtrack = 0;
 	Track* dst_track = 0;
-	int src_type;
 	int result = 0;
 	double length;
 	double frame_rate = edl->session->frame_rate;
@@ -1022,17 +1021,15 @@ void Tracks::paste_automation(double selectionstart,
 	string[0] = 0;
 
 // Search for start
-	do{
-	  result = file->read_tag();
-	}while(!result &&
-		!file->tag.title_is("AUTO_CLIPBOARD"));
+	do {
+		result = file->read_tag();
+	} while(!result && !file->tag.title_is("AUTO_CLIPBOARD"));
 
 	if(!result)
 	{
 		length = file->tag.get_property("LENGTH", 0);
 		frame_rate = file->tag.get_property("FRAMERATE", frame_rate);
 		sample_rate = file->tag.get_property("SAMPLERATE", sample_rate);
-
 
 		do
 		{
@@ -1048,15 +1045,9 @@ void Tracks::paste_automation(double selectionstart,
 				if(file->tag.title_is("TRACK"))
 				{
 					file->tag.get_property("TYPE", string);
-					if(!strcmp(string, "AUDIO"))
-					{
-						src_type = TRACK_AUDIO;
-					}
-					else
-					{
-						src_type = TRACK_VIDEO;
-					}
-
+					double src_rate = !strcmp(string, "AUDIO") ?
+						sample_rate : frame_rate;
+					double src_length = length / src_rate;
 // paste to any media type
 					if(typeless)
 					{
@@ -1098,22 +1089,9 @@ void Tracks::paste_automation(double selectionstart,
 
 					if(dst_track)
 					{
-						double frame_rate2 = frame_rate;
-						double sample_rate2 = sample_rate;
-
-						if(src_type != dst_track->data_type)
-						{
-							frame_rate2 = sample_rate;
-							sample_rate2 = frame_rate;
-						}
-
-						dst_track->paste_automation(selectionstart,
-							length,
-							frame_rate2,
-							sample_rate2,
-							file,
-							default_only,
-							active_only);
+						dst_track->paste_automation(file,
+							selectionstart, src_length, src_rate,
+							default_only, active_only);
 					}
 				}
 			}

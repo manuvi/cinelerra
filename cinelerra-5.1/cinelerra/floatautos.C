@@ -235,48 +235,58 @@ float FloatAutos::get_value(int64_t position,
 	next = (FloatAuto*)get_next_auto(position, direction, (Auto* &)next, 0);
 
 // Constant
-	if(!next && !previous) return ((FloatAuto*)default_auto)->get_value();
-	if(!previous) return next->get_value();
-	if(!next) return previous->get_value();
-	if(next == previous) return previous->get_value();
+	if( !next && !previous )
+		return ((FloatAuto*)default_auto)->get_value();
+	if( next == previous )
+		return previous->get_value();
 
-	if(direction == PLAY_FORWARD)
-	{
-		if(EQUIV(previous->get_value(), next->get_value())) {
+	if( direction == PLAY_FORWARD) {
+		if( !previous ) return next->get_value(1);
+		if( !next ) return previous->get_value(0);
+		if( EQUIV(previous->get_value(0), next->get_value(1)) ) {
 			if( (previous->curve_mode == FloatAuto::LINEAR &&
 			     next->curve_mode == FloatAuto::LINEAR) ||
 			    (EQUIV(previous->get_control_out_value(), 0) &&
-			     EQUIV(next->get_control_in_value(), 0))) {
-				return previous->get_value();
+			     EQUIV(next->get_control_in_value(), 0)) ) {
+				return previous->get_value(0);
 			}
 		}
 	}
 	else if(direction == PLAY_REVERSE) {
-		if(EQUIV(previous->get_value(), next->get_value())) {
+		if( !previous ) return next->get_value(0);
+		if( !next ) return previous->get_value(1);
+		if( EQUIV(previous->get_value(0), next->get_value(1)) ) {
 			if( (previous->curve_mode == FloatAuto::LINEAR &&
 			     next->curve_mode == FloatAuto::LINEAR) ||
 			    (EQUIV(previous->get_control_in_value(), 0) &&
-			     EQUIV(next->get_control_out_value(), 0))) {
-				return previous->get_value();
+			     EQUIV(next->get_control_out_value(), 0)) ) {
+				return previous->get_value(1);
 			}
 		}
 	}
 // at this point: previous and next not NULL, positions differ, value not constant.
 
-	return calculate_bezier(previous, next, position);
+	return calculate_bezier(previous, next, position, direction);
 }
 
 
-float FloatAutos::calculate_bezier(FloatAuto *previous, FloatAuto *next, int64_t position)
+float FloatAutos::calculate_bezier(FloatAuto *previous, FloatAuto *next,
+		int64_t position, int direction)
 {
-	if(next->position - previous->position == 0) return previous->get_value();
+	int edge = direction == PLAY_FORWARD ? 0 : 1;
+	if( next->position == previous->position )
+		return previous->get_value(edge);
 
-	float y0 = previous->get_value();
-	float y3 = next->get_value();
+	float y0 = previous->get_value(edge);
+	float y3 = next->get_value(1-edge);
 
 // control points
-	float y1 = previous->get_value() + previous->get_control_out_value();
-	float y2 = next->get_value() + next->get_control_in_value();
+	float y1 = y0 + (direction == PLAY_FORWARD ?
+		previous->get_control_out_value() :
+		previous->get_control_in_value());
+	float y2 = y3 + (direction == PLAY_FORWARD ?
+		next->get_control_in_value() :
+		next->get_control_out_value());
 	float t = (float)(position - previous->position) /
 			(next->position - previous->position);
 
@@ -306,12 +316,12 @@ float FloatAutos::calculate_bezier_derivation(FloatAuto *previous, FloatAuto *ne
 			return 0;
 		return previous->get_control_out_value() / previous->get_control_out_position();
 	}
-	float y0 = previous->get_value();
-	float y3 = next->get_value();
+	float y0 = previous->get_value(0);
+	float y3 = next->get_value(1);
 
 // control points
-	float y1 = previous->get_value() + previous->get_control_out_value();
-	float y2 = next->get_value() + next->get_control_in_value();
+	float y1 = y0 + previous->get_control_out_value();
+	float y2 = y3 + next->get_control_in_value();
 // normalized scale
 	float t = (float)(position - previous->position) / scale;
 
@@ -416,10 +426,14 @@ void FloatAutos::set_proxy(int orig_scale, int new_scale)
 	float orig_value;
 	orig_value = ((FloatAuto*)default_auto)->value * orig_scale;
 	((FloatAuto*)default_auto)->value = orig_value / new_scale;
+	orig_value = ((FloatAuto*)default_auto)->value1 * orig_scale;
+	((FloatAuto*)default_auto)->value1 = orig_value / new_scale;
 
 	for( FloatAuto *current= (FloatAuto*)first; current; current=(FloatAuto*)NEXT ) {
 		orig_value = current->value * orig_scale;
 		current->value = orig_value / new_scale;
+		orig_value = current->value1 * orig_scale;
+		current->value1 = orig_value / new_scale;
 		orig_value = current->control_in_value * orig_scale;
 		current->control_in_value = orig_value / new_scale;
 		orig_value = current->control_out_value * orig_scale;
@@ -460,17 +474,16 @@ double FloatAutos::automation_integral(int64_t start, int64_t length, int direct
 		if( prev ) prev_pos = prev->position;
 		FloatAuto *next = (FloatAuto*)get_next_auto(pos, direction, znext, 0);
 		if( next ) next_pos = next->position;
-		if( !prev && !next ) prev = next = (FloatAuto*)default_auto;
-		else if( !prev ) prev = next;
-		else if( !next ) next = prev;
-
+		if( !prev && !next ) prev = (FloatAuto*)default_auto;
 		double dt = next_pos - prev_pos;
 		double t0 = (pos - prev_pos) / dt;
 		if( (pos = next_pos) > end ) pos = end;
 		double t1 = (pos - prev_pos) / dt;
 
-		double y0 = prev->get_value(), y1 = y0 + prev->get_control_out_value();
-		double y3 = next->get_value(), y2 = y3 + next->get_control_in_value();
+		double y0 = !prev ? next->get_value(1) : prev->get_value(0);
+		double y1 = y0 + (!prev ? 0 : prev->get_control_out_value());
+		double y3 = !next ? prev->get_value(0) : next->get_value(1);
+		double y2 = y3 + (!next ? 0 : next->get_control_in_value());
 		if( y0 != y1 || y1 != y2 || y2 != y3 ) {
 // bezier definite integral t0..t1
 			double f4 = -y0/4 + 3*y1/4 - 3*y2/4 + y3/4;

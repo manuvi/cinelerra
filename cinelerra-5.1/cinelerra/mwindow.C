@@ -2968,6 +2968,7 @@ void MWindow::show_cwindow()
 {
 	session->show_cwindow = 1;
 	cwindow->show_window();
+	cwindow->gui->tool_panel->raise_tool();
 	gui->mainmenu->show_cwindow->set_checked(1);
 }
 
@@ -3741,8 +3742,7 @@ void MWindow::update_project(int load_mode)
 	if( load_mode == LOADMODE_REPLACE ||
 	    load_mode == LOADMODE_REPLACE_CONCATENATE ) {
 		edl->session->timecode_offset = 0;
-		delete gui->keyvalue_popup;
-		gui->keyvalue_popup = 0;
+		gui->close_keyvalue_popup();
 		gui->load_panes();
 	}
 

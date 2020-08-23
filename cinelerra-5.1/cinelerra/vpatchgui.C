@@ -161,14 +161,12 @@ void VPatchGUI::update_faders(float v)
 	double position = mwindow->edl->local_session->get_selectionstart(1);
 	Autos *fade_autos = vtrack->automation->autos[AUTOMATION_FADE];
 	int need_undo = !fade_autos->auto_exists_for_editing(position);
-
 	mwindow->undo->update_undo_before(_("fade"), need_undo ? 0 : this);
 	FloatAuto *current = (FloatAuto*)fade_autos->get_auto_for_editing(position);
-	float change = v - current->get_value();
-	current->set_value(v);
-
+	float change = v - current->get_value(edge);
+	current->bump_value(v, edge, span);
 	if( track->is_ganged() && track->is_armed() )
-		patchbay->synchronize_faders(change, TRACK_AUDIO, track);
+		patchbay->synchronize_faders(change, TRACK_VIDEO, track, edge, span);
 	mwindow->undo->update_undo_after(_("fade"), LOAD_AUTOMATION);
 	change_source = 0;
 
@@ -189,33 +187,64 @@ int VFadePatch::handle_event()
 	return 1;
 }
 
-VKeyFadePatch::VKeyFadePatch(MWindow *mwindow, VPatchGUI *patch, int x, int y)
- : BC_SubWindow(x,y, xS(200),yS(20), GWindowGUI::auto_colors[AUTOMATION_FADE])
+VKeyFadePatch::VKeyFadePatch(MWindow *mwindow, VPatchGUI *gui,
+			int bump, int x, int y)
+ : BC_SubWindow(x,y, xS(200),yS(bump ? 50 : 24),
+		GWindowGUI::auto_colors[AUTOMATION_FADE])
 {
 	this->mwindow = mwindow;
-	this->patch = patch;
+	this->gui = gui;
+}
+VKeyFadePatch::~VKeyFadePatch()
+{
 }
 
 void VKeyFadePatch::create_objects()
 {
-	int x = 0, y = 0;
-	int64_t v = mwindow->get_float_auto(patch, AUTOMATION_FADE)->get_value();
+	int x = 0, x1 = x, y = 0, dy = 0;
+	FloatAuto *fade_auto = mwindow->get_float_auto(gui, AUTOMATION_FADE);
+	int64_t v = fade_auto->get_value(gui->edge);
 	add_subwindow(vkey_fade_text = new VKeyFadeText(this, x, y, xS(64), v));
 	x += vkey_fade_text->get_w();
+	dy = bmax(dy, vkey_fade_text->get_h());
 	VFrame **lok_images = mwindow->theme->get_image_set("lok");
 	int w1 = get_w() - x - lok_images[0]->get_w();
 	add_subwindow(vkey_fade_slider = new VKeyFadeSlider(this, x, y, w1, v));
 	x += vkey_fade_slider->get_w();
+	dy = bmax(dy, vkey_fade_slider->get_h());
 	add_subwindow(vkey_fade_ok = new VKeyFadeOK(this, x, y, lok_images));
+	dy = bmax(dy, vkey_fade_ok->get_h());
+	if( fade_auto->is_bump() ) {
+		y += dy;
+		set_color(get_resources()->get_bg_color());
+		draw_box(0,y, get_w(),get_h());
+		add_subwindow(auto_edge = new VKeyPatchAutoEdge(mwindow, this, x1, y));
+		x1 += auto_edge->get_w() + xS(15);
+		add_subwindow(auto_span = new VKeyPatchAutoSpan(mwindow, this, x1, y));
+	}
+	draw_3d_border(0,0, get_w(), get_h(), 0);
 	activate();
 	show_window();
+}
+
+void VKeyFadePatch::set_edge(int edge)
+{
+	gui->edge = edge;
+	FloatAuto *fade_auto = mwindow->get_float_auto(gui, AUTOMATION_FADE);
+	int64_t v = fade_auto->get_value(edge);
+	update(v);
+}
+
+void VKeyFadePatch::set_span(int span)
+{
+	gui->span = span;
 }
 
 void VKeyFadePatch::update(int64_t v)
 {
 	vkey_fade_text->update(v);
 	vkey_fade_slider->update(v);
-	patch->update_faders(v);
+	gui->update_faders(v);
 }
 
 VKeyFadeOK::VKeyFadeOK(VKeyFadePatch *vkey_fade_patch, int x, int y, VFrame **images)
@@ -226,9 +255,8 @@ VKeyFadeOK::VKeyFadeOK(VKeyFadePatch *vkey_fade_patch, int x, int y, VFrame **im
 
 int VKeyFadeOK::handle_event()
 {
-	MWindowGUI *mgui = vkey_fade_patch->mwindow->gui;
-	delete mgui->keyvalue_popup;
-	mgui->keyvalue_popup = 0;
+	MWindow *mwindow = vkey_fade_patch->mwindow;
+	mwindow->gui->close_keyvalue_popup();
 	return 1;
 }
 
@@ -248,7 +276,7 @@ int VKeyFadeText::handle_event()
 
 VKeyFadeSlider::VKeyFadeSlider(VKeyFadePatch *vkey_fade_patch,
 	int x, int y, int w, int64_t v)
- : VFadePatch(vkey_fade_patch->patch, x,y, w, v)
+ : VFadePatch(vkey_fade_patch->gui, x,y, w, v)
 {
 	this->vkey_fade_patch = vkey_fade_patch;
 }
@@ -299,14 +327,10 @@ int VModePatch::handle_event()
 	double position = mwindow->edl->local_session->get_selectionstart(1);
 	Autos *mode_autos = patch->vtrack->automation->autos[AUTOMATION_MODE];
 	int need_undo = !mode_autos->auto_exists_for_editing(position);
-
 	mwindow->undo->update_undo_before(_("mode"), need_undo ? 0 : this);
-
 	current = (IntAuto*)mode_autos->get_auto_for_editing(position);
 	current->value = mode;
-
 	mwindow->undo->update_undo_after(_("mode"), LOAD_AUTOMATION);
-
 	mwindow->sync_parameters(CHANGE_PARAMS);
 
 	if( mwindow->edl->session->auto_conf->autos[AUTOMATION_MODE] ) {
@@ -487,5 +511,37 @@ VMixPatch::VMixPatch(MWindow *mwindow, VPatchGUI *patch, int x, int y)
 
 VMixPatch::~VMixPatch()
 {
+}
+
+VKeyPatchAutoEdge::VKeyPatchAutoEdge(MWindow *mwindow,
+		VKeyFadePatch *patch, int x, int y)
+ : BC_Toggle(x, y, mwindow->theme->get_image_set("bump_edge"),
+                patch->gui->span,_("Edge"))
+{
+        this->mwindow = mwindow;
+        this->patch = patch;
+        set_tooltip(_("Bump uses left edge"));
+}
+
+int VKeyPatchAutoEdge::handle_event()
+{
+        patch->set_edge(get_value());
+        return 1;
+}
+
+VKeyPatchAutoSpan::VKeyPatchAutoSpan(MWindow *mwindow,
+                VKeyFadePatch *patch, int x, int y)
+ : BC_Toggle(x, y, mwindow->theme->get_image_set("bump_span"),
+                patch->gui->span,_("Span"))
+{
+        this->mwindow = mwindow;
+        this->patch = patch;
+        set_tooltip(_("Bump spans to next"));
+}
+
+int VKeyPatchAutoSpan::handle_event()
+{
+        patch->set_span(get_value());
+        return 1;
 }
 

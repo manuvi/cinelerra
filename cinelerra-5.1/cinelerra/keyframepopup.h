@@ -55,6 +55,7 @@ public:
 	Automation *keyframe_automation;
 	Auto *keyframe_auto;
 	BC_MenuItem *key_mbar;
+	int popx, popy;
 
 private:
 	KeyframePopupDelete *key_delete;
@@ -66,6 +67,7 @@ private:
 	KeyframePopupCurveMode *key_linear;
 	KeyframePopupCurveMode *key_free_t;
 	KeyframePopupCurveMode *key_free;
+	KeyframePopupCurveMode *key_bump;
 	bool key_edit_displayed;
 	bool key_mode_displayed;
 
@@ -192,16 +194,22 @@ public:
 class KeySpeedPatch : public BC_SubWindow
 {
 public:
-	KeySpeedPatch(MWindow *mwindow, PatchGUI *patch, int x, int y);
+	KeySpeedPatch(MWindow *mwindow, PatchGUI *gui,
+			int bump, int x, int y);
+	~KeySpeedPatch();
 	void create_objects();
 	void update(float v);
+	void set_edge(int edge);
+	void set_span(int span);
 	void update_speed(float v);
 
 	MWindow *mwindow;
-	PatchGUI *patch;
+	PatchGUI *gui;
 	KeySpeedSlider *key_speed_slider;
 	KeySpeedText *key_speed_text;
 	KeySpeedOK *key_speed_ok;
+	KeySpeedAutoEdge *auto_edge;
+	KeySpeedAutoSpan *auto_span;
 };
 
 class KeySpeedOK : public BC_Button
@@ -232,6 +240,24 @@ public:
 	int handle_event();
 
 	KeySpeedPatch *key_speed_patch;
+};
+
+class KeySpeedAutoEdge : public BC_Toggle
+{
+public:
+	KeySpeedAutoEdge(MWindow *mwindow, KeySpeedPatch *patch, int x, int y);
+	int handle_event();
+	MWindow *mwindow;
+	KeySpeedPatch *patch;
+};
+
+class KeySpeedAutoSpan : public BC_Toggle
+{
+public:
+	KeySpeedAutoSpan(MWindow *mwindow, KeySpeedPatch *patch, int x, int y);
+	int handle_event();
+	MWindow *mwindow;
+	KeySpeedPatch *patch;
 };
 
 #endif

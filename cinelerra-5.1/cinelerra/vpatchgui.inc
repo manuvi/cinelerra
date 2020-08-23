@@ -34,6 +34,8 @@ class VModePatchSubMenu;
 class VModeSubMenuItem;
 class VKeyModePatch;
 class VMixPatch;
+class VKeyPatchAutoEdge;
+class VKeyPatchAutoSpan;
 
 #define MAX_VIDEO_FADE 100
 

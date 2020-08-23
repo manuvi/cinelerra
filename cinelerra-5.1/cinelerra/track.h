@@ -244,8 +244,8 @@ public:
 	virtual int copy_automation_derived(AutoConf *auto_conf,
 		double selectionstart, double selectionend,
 		FileXML *file) { return 0; };
-	int paste_automation(double selectionstart, double total_length,
-		double frame_rate, int64_t sample_rate, FileXML *file,
+	int paste_automation(FileXML *file,
+		double selectionstart, double src_length, double src_rate,
 		int default_only, int active_only);
 	virtual int paste_automation_derived(double selectionstart, double selectionend,
 		double total_length, FileXML *file, int shift_autos, int &current_pan) { return 0; };
@@ -321,6 +321,7 @@ public:
 // If the edit under position is playable.
 // Used by PlayableTracks::is_playable.
 	int playable_edit(int64_t position, int direction);
+	void create_keyframes(double position, int mask, int mode);
 
 // ===================================== for handles, titles, etc
 

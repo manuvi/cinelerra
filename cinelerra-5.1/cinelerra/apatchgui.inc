@@ -36,5 +36,7 @@ class APanPatch;
 class AKeyPanPatch;
 class AMeterPatch;
 class AMixPatch;
+class AKeyPatchAutoEdge;
+class AKeyPatchAutoSpan;
 
 #endif

@@ -250,24 +250,18 @@ double Track::get_length()
 int Track::has_speed()
 {
 	FloatAutos *autos = (FloatAutos*)automation->autos[AUTOMATION_SPEED];
-	if(autos)
-	{
-		if(autos->first)
-		{
-			for(FloatAuto *current = (FloatAuto*)autos->first;
-				current;
-				current = (FloatAuto*)current->next)
-			{
-				if(!EQUIV(current->get_value(), 1.0) ||
-					!EQUIV(current->get_control_in_value(), 0.0) ||
-					!EQUIV(current->get_control_out_value(), 0.0))
-				{
-					return 1;
-				}
-			}
+	if( autos ) {
+		FloatAuto *current = (FloatAuto*)autos->first;
+		for( ; current; current=(FloatAuto*)current->next ) {
+			if( !EQUIV(current->get_value(0), 1.0) ||
+			    !EQUIV(current->get_control_in_value(), 0.0) ||
+			    !EQUIV(current->get_control_out_value(), 0.0))
+				return 1;
+			if( current->curve_mode == FloatAuto::BUMP &&
+			    !EQUIV(current->get_value(1), 1.0) )
+				return 1;
 		}
 	}
-
 	return 0;
 }
 
@@ -872,18 +866,16 @@ int Track::copy_automation(double selectionstart,
 	return 0;
 }
 
-int Track::paste_automation(double selectionstart, double total_length,
-	double frame_rate, int64_t sample_rate,
-	FileXML *file, int default_only, int active_only)
+int Track::paste_automation(FileXML *file,
+	double selectionstart, double src_length, double src_rate,
+	int default_only, int active_only)
 {
 // Only used for pasting automation alone.
-	double scale = data_type == TRACK_AUDIO ?
-		edl->session->sample_rate / sample_rate :
-		edl->session->frame_rate / frame_rate ;
-
-	total_length *= scale;
-	int64_t start = to_units(selectionstart, 0);
-	int64_t length = to_units(total_length, 1);
+	double dst_rate = data_type == TRACK_AUDIO ?
+		edl->session->sample_rate : edl->session->frame_rate;
+	double scale = dst_rate / src_rate;
+	int64_t start = to_units(selectionstart, 1);
+	int64_t length = to_units(selectionstart + src_length, 1) - start;
 	int result = 0;
 	int current_pluginset = 0;
 //printf("Track::paste_automation 1\n");
@@ -1862,5 +1854,17 @@ int Track::index_in(Mixer *mixer)
 	int k = mixer->mixer_ids.size();
 	while( --k >= 0 && mixer_id != mixer->mixer_ids[k] );
 	return k;
+}
+
+void Track::create_keyframes(double position, int mask, int mode)
+{
+	for( int idx=0; idx<AUTOMATION_TOTAL; mask>>=1,++idx ) {
+		if( !(mask & 1) ) continue;
+		Autos *autos = automation->autos[idx];
+		if( !autos ) continue;
+		FloatAuto *float_auto = (FloatAuto *)
+			autos->get_auto_for_editing(position, -1);
+		float_auto->change_curve_mode((FloatAuto::t_mode)mode, 0);
+	}
 }
 

@@ -613,6 +613,7 @@ public:
 // in the clipboard.
 	int paste_default_keyframe();
 	int clear_default_keyframe();
+	void create_keyframes(int mask, int mode);
 
 	FloatAuto* get_float_auto(PatchGUI *patch,int idx);
 	IntAuto* get_int_auto(PatchGUI *patch,int idx);

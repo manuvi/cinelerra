@@ -174,11 +174,13 @@ void MainMenu::create_objects()
 	keyframemenu->add_item(new CopyKeyframes(mwindow));
 	keyframemenu->add_item(new PasteKeyframes(mwindow));
 	keyframemenu->add_item(new ClearKeyframes(mwindow));
-	keyframemenu->add_item(new StraightenKeyframes(mwindow));
-	keyframemenu->add_item(new BendKeyframes(mwindow));
+	keyframemenu->add_item(set_auto_curves = new SetAutomationCurveMode(mwindow));
+	set_auto_curves->create_objects();
 	keyframemenu->add_item(keyframe_curve_type = new KeyframeCurveType(mwindow));
 	keyframe_curve_type->create_objects();
 	keyframe_curve_type->update(mwindow->edl->local_session->floatauto_type);
+	keyframemenu->add_item(keyframe_create = new KeyframeCreate(mwindow));
+	keyframe_create->create_objects();
 	keyframemenu->add_item(new BC_MenuItem("-"));
 	keyframemenu->add_item(new CopyDefaultKeyframe(mwindow));
 	keyframemenu->add_item(new PasteDefaultKeyframe(mwindow));
@@ -732,34 +734,38 @@ int ClearKeyframes::handle_event()
 }
 
 
-
-StraightenKeyframes::StraightenKeyframes(MWindow *mwindow)
- : BC_MenuItem(_("Change to linear"))
+SetAutomationCurveItem::SetAutomationCurveItem(SetAutomationCurveMode *set_curve_mode, int id)
+ : BC_MenuItem(FloatAuto::curve_name(id))
 {
-	this->mwindow = mwindow;
+	this->set_curve_mode = set_curve_mode;
+	this->id = id;
 }
 
-int StraightenKeyframes::handle_event()
+int SetAutomationCurveItem::handle_event()
 {
-	mwindow->set_automation_mode(FloatAuto::LINEAR);
+	set_curve_mode->mwindow->set_automation_mode((FloatAuto::t_mode)id);
 	return 1;
 }
 
+SetAutoCurveModeMenu::SetAutoCurveModeMenu(SetAutomationCurveMode *curve_mode)
+: BC_SubMenu()
+{
+	this->curve_mode = curve_mode;
+}
 
-
-
-BendKeyframes::BendKeyframes(MWindow *mwindow)
- : BC_MenuItem(_("Change to smooth"))
+SetAutomationCurveMode::SetAutomationCurveMode(MWindow *mwindow)
+ : BC_MenuItem(_("Set curve modes..."))
 {
 	this->mwindow = mwindow;
+	curve_mode_menu = 0;
 }
 
-int BendKeyframes::handle_event()
+void SetAutomationCurveMode::create_objects()
 {
-	mwindow->set_automation_mode(FloatAuto::SMOOTH);
-	return 1;
+	add_submenu(curve_mode_menu = new SetAutoCurveModeMenu(this));
+	for( int id=FloatAuto::SMOOTH; id<=FloatAuto::BUMP; ++id )
+		curve_mode_menu->add_item(new SetAutomationCurveItem(this, id));
 }
-
 
 
 KeyframeCurveType::KeyframeCurveType(MWindow *mwindow)
@@ -775,7 +781,7 @@ KeyframeCurveType::~KeyframeCurveType()
 void KeyframeCurveType::create_objects()
 {
 	add_submenu(curve_menu = new KeyframeCurveTypeMenu(this));
-	for( int i=FloatAuto::SMOOTH; i<=FloatAuto::FREE; ++i ) {
+	for( int i=FloatAuto::SMOOTH; i<=FloatAuto::BUMP; ++i ) {
 		KeyframeCurveTypeItem *curve_type_item = new KeyframeCurveTypeItem(i, this);
 		curve_menu->add_submenuitem(curve_type_item);
 	}
@@ -818,6 +824,63 @@ int KeyframeCurveTypeItem::handle_event()
 	main_item->update(type);
 	main_item->mwindow->set_keyframe_type(type);
 	return 1;
+}
+
+
+KeyframeCreateItem::KeyframeCreateItem(KeyframeCreate *keyframe_create,
+			const char *text, int mask)
+ : BC_MenuItem(text)
+{
+	this->keyframe_create = keyframe_create;
+	this->mask = mask;
+}
+
+int KeyframeCreateItem::handle_event()
+{
+	MWindow *mwindow = keyframe_create->mwindow;
+	int mode = mwindow->edl->local_session->floatauto_type;
+	int mask = this->mask;
+	if( !mask ) { // visible
+		int *autos = mwindow->edl->session->auto_conf->autos;
+		int modes = (1<<AUTOMATION_FADE) + (1<<AUTOMATION_SPEED) + 
+			(7<<AUTOMATION_CAMERA_X) + (7<<AUTOMATION_PROJECTOR_X);
+		for( int i=0; i<AUTOMATION_TOTAL; modes>>=1, ++i ) {
+			if( !(modes & 1) ) continue;
+			if( autos[i] ) mask |= (1<<i);
+		}
+	}
+	mwindow->create_keyframes(mask, mode);
+	return 1;
+}
+
+KeyframeCreateMenu::KeyframeCreateMenu(KeyframeCreate *keyframe_create)
+: BC_SubMenu()
+{
+	this->keyframe_create = keyframe_create;
+}
+
+KeyframeCreate::KeyframeCreate(MWindow *mwindow)
+ : BC_MenuItem(_("Create keyframes..."))
+{
+	this->mwindow = mwindow;
+	keyframe_create_menu = 0;
+}
+
+void KeyframeCreate::create_objects()
+{
+	add_submenu(keyframe_create_menu = new KeyframeCreateMenu(this));
+	keyframe_create_menu->add_item(new KeyframeCreateItem(this, _("Visible"), 0));
+	keyframe_create_menu->add_item(new KeyframeCreateItem(this, _("Fade"),
+				(1<<AUTOMATION_FADE)));
+	keyframe_create_menu->add_item(new KeyframeCreateItem(this, _("Speed"),
+				(1<<AUTOMATION_SPEED)));
+	keyframe_create_menu->add_item(new KeyframeCreateItem(this, _("Camera XYZ"),
+				(7<<AUTOMATION_CAMERA_X)));
+	keyframe_create_menu->add_item(new KeyframeCreateItem(this, _("Projector XYZ"),
+				(7<<AUTOMATION_PROJECTOR_X)));
+	keyframe_create_menu->add_item(new KeyframeCreateItem(this, _("Fade+Speed+XYZ"),
+				(1<<AUTOMATION_FADE) + (1<<AUTOMATION_SPEED) + 
+				(7<<AUTOMATION_CAMERA_X) + (7<<AUTOMATION_PROJECTOR_X)));
 }
 
 

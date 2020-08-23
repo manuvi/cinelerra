@@ -2460,14 +2460,20 @@ void TrackCanvas::draw_cropped_line(int x1,
 }
 
 
-void TrackCanvas::draw_floatauto(FloatAuto *current, int x, int y,
-		int in_x, int in_y, int out_x, int out_y,
-		int center_pixel, int data_h, int color)
+void TrackCanvas::draw_floatauto(FloatAuto *current,
+		int x_offset, int center_pixel, int data_h, int color,
+		double unit_start, double zoom_units, double yscale,
+		int autogrouptype)
 {
+	double xx, yy;
+	calculate_auto_position(1, &xx, &yy, 0, 0, 0, 0,
+		current, unit_start, zoom_units, yscale, autogrouptype);
+	int x = (int)xx + x_offset;
 	int x1 = x - HANDLE_W / 2; // Center
 	int x2 = x + HANDLE_W / 2;
-	int y1 = center_pixel + y - HANDLE_H / 2;
-	int y2 = center_pixel + y + HANDLE_H / 2;
+	int y = (int)yy + center_pixel;
+	int y1 = y - HANDLE_H / 2;
+	int y2 = y + HANDLE_H / 2;
 	int ymin = center_pixel - data_h / 2;
 	int ymax = center_pixel + data_h / 2;
 	CLAMP(y1, ymin, ymax);
@@ -2495,13 +2501,22 @@ void TrackCanvas::draw_floatauto(FloatAuto *current, int x, int y,
 // show bezier control points (only) if this
 // floatauto doesn't adjust it's tangents automatically
 	if(current->curve_mode != FloatAuto::FREE &&
-	   current->curve_mode != FloatAuto::TFREE)
+	   current->curve_mode != FloatAuto::TFREE &&
+	   current->curve_mode != FloatAuto::BUMP)
 		return;
-
-	if(in_x != x)
-		draw_floatauto_ctrlpoint(x, y, in_x, in_y, center_pixel, data_h, color);
-	if(out_x != x)
-		draw_floatauto_ctrlpoint(x, y, out_x, out_y, center_pixel, data_h, color);
+	double in_xx, in_yy, out_xx, out_yy;
+	calculate_auto_position(1, &xx, &yy, &in_xx, &in_yy, 0, 0,
+		current, unit_start, zoom_units, yscale, autogrouptype);
+	int ix = xx, iy = yy, in_x = in_xx, in_y = in_yy;
+	if( in_x != ix )
+		draw_floatauto_ctrlpoint(ix, iy, in_x, in_y, center_pixel, data_h, color);
+	calculate_auto_position(0, &xx, &yy, 0, 0, &out_xx, &out_yy,
+		current, unit_start, zoom_units, yscale, autogrouptype);
+	int ox = xx, oy = yy, out_x = out_xx, out_y = out_yy;
+	if( out_x != ox )
+		draw_floatauto_ctrlpoint(ox, oy, out_x, out_y, center_pixel, data_h, color);
+	if( current->curve_mode == FloatAuto::BUMP && iy != oy )
+		draw_bline(ix, iy+center_pixel, ox, oy+center_pixel);
 }
 
 inline int quantize(float f) { return (int)floor(f + 0.5); }
@@ -2642,16 +2657,21 @@ float TrackCanvas::value_to_percentage(float auto_value, int autogrouptype)
 
 
 
-int TrackCanvas::test_floatauto(FloatAuto *current, int x, int y, int in_x,
-	int in_y, int out_x, int out_y, int center_pixel, int data_h,
-	int cursor_x, int cursor_y, int buttonpress, int autogrouptype)
+int TrackCanvas::test_floatauto(FloatAuto *current, int buttonpress,
+		int center_pixel, int data_h, int cursor_x, int cursor_y,
+		double unit_start, double zoom_units, double yscale,
+		int autogrouptype)
 {
 	int result = 0;
+	double xx, yy, in_xx, in_yy, out_xx, out_yy;
+	calculate_auto_position(1, &xx, &yy, &in_xx, &in_yy, 0, 0,
+		current, unit_start, zoom_units, yscale, autogrouptype);
+	int ix = xx, iy = yy, in_x = in_xx, in_y = in_yy;
 
-	int x1 = x - HANDLE_W / 2;
-	int x2 = x + HANDLE_W / 2;
-	int y1 = center_pixel + y - HANDLE_W / 2;
-	int y2 = center_pixel + y + HANDLE_W / 2;
+	int x1 = ix - HANDLE_W / 2;
+	int x2 = ix + HANDLE_W / 2;
+	int y1 = center_pixel + iy - HANDLE_W / 2;
+	int y2 = center_pixel + iy + HANDLE_W / 2;
 	int ymin = center_pixel - data_h/2;
 	int ymax = center_pixel + data_h/2;
 	CLAMP(y1, ymin, ymax);
@@ -2664,6 +2684,9 @@ int TrackCanvas::test_floatauto(FloatAuto *current, int x, int y, int in_x,
 	CLAMP(in_y1, ymin, ymax);
 	CLAMP(in_y2, ymin, ymax);
 
+	calculate_auto_position(0, &xx, &yy, 0, 0, &out_xx, &out_yy,
+		current, unit_start, zoom_units, yscale, autogrouptype);
+	int ox = xx, oy = yy, out_x = out_xx, out_y = out_yy;
 	int out_x1 = out_x - HANDLE_W / 2;
 	int out_x2 = out_x + HANDLE_W / 2;
 	int out_y1 = center_pixel + out_y - HANDLE_W / 2;
@@ -2721,13 +2744,14 @@ int TrackCanvas::test_floatauto(FloatAuto *current, int x, int y, int in_x,
 		float lever = 0.0; // we use the tangent as a draggable lever. 1.0 is at the ctrl point
 
 // Test in control
-		if( in_x != x && current->position > 0 &&
+		if( in_x != ix && current->position > 0 &&
 			(FloatAuto::FREE == current->curve_mode ||
-			 FloatAuto::TFREE == current->curve_mode))
+			 FloatAuto::TFREE == current->curve_mode ||
+			 FloatAuto::BUMP == current->curve_mode))
 // act on in control handle only if
 // tangent is significant and is editable (not automatically choosen)
 		{
-			lever = test_curve_line(x, y, in_x, in_y, cursor_x, cursor_y-center_pixel);
+			lever = test_curve_line(ix, iy, in_x, in_y, cursor_x, cursor_y-center_pixel);
  // either cursor in ctrl-point handle or cursor on tangent line
 			if( WITHIN(in_x1,in_x2,in_y1,in_y2) || lever > 0.0 ) {
 				result = 1;
@@ -2743,12 +2767,13 @@ int TrackCanvas::test_floatauto(FloatAuto *current, int x, int y, int in_x,
 		}
 
 // Test out control
-		if(out_x != x &&
+		if(out_x != ox &&
 			(FloatAuto::FREE == current->curve_mode ||
-			 FloatAuto::TFREE == current->curve_mode))
+			 FloatAuto::TFREE == current->curve_mode ||
+			 FloatAuto::BUMP == current->curve_mode))
 // act on out control only if tangent is significant and is editable
 		{
-			lever = test_curve_line(x, y, out_x, out_y, cursor_x, cursor_y-center_pixel);
+			lever = test_curve_line(ox, oy, out_x, out_y, cursor_x, cursor_y-center_pixel);
 			if(WITHIN(out_x1,out_x2,out_y1,out_y2) || lever > 0.0 ) {
 				result = 1;
 				if(buttonpress && (buttonpress != 3)) {
@@ -2776,6 +2801,9 @@ int TrackCanvas::test_floatauto(FloatAuto *current, int x, int y, int in_x,
 	if(buttonpress && (buttonpress != 3) && result)
 	{
 		mwindow->undo->update_undo_before();
+		double position = current->autos->track->from_units(current->position);
+		mwindow->edl->local_session->set_selectionstart(position);
+		mwindow->edl->local_session->set_selectionend(position);
 	}
 
 	return result;
@@ -2783,43 +2811,31 @@ int TrackCanvas::test_floatauto(FloatAuto *current, int x, int y, int in_x,
 
 static int is_linear(FloatAuto *prev, FloatAuto *next)
 {
-	if( !prev || !next ) return 1;
+	if( !prev || !next ) return 0;
 	if( prev->curve_mode == FloatAuto::LINEAR ) return 1;
 	int64_t ipos = prev->get_control_in_position();
 	int64_t opos = prev->get_control_out_position();
 	if( !ipos && !opos ) return 1;
 	if( !ipos || !opos ) return 0;
-	float ival = prev->get_control_in_value();
+	float ival = next->get_control_in_value();
 	float oval = prev->get_control_out_value();
-	float cval = prev->get_value(), nval = next->get_value();
+	float cval = prev->get_value(0), nval = next->get_value(1);
 	if( !ival && !oval && EQUIV(cval, nval) ) return 1;
 	float ig = ival / ipos, og = oval / opos;
 	int64_t cpos = prev->position, npos = next->position;
 	float g = (nval - cval) / (npos - cpos);
-	if( EQUIV(ig, g) && EQUIV(og, g) ) return 1;
+	if( !EQUIV(g, 0) && EQUIV(ig, g) && EQUIV(og, g) ) return 1;
 	return 0;
 }
 
 // Get the float value & y for position x on the canvas
 #define X_TO_FLOATLINE(x) \
-	int64_t position1 = (int64_t)(unit_start + x * zoom_units); \
-	int64_t position2 = (int64_t)(unit_start + x * zoom_units) + 1; \
+	double position = unit_start + x * zoom_units; \
+	int64_t position1 = (int64_t)position, position2 = position1 + 1; \
 /* Call by reference fails for some reason here */ \
 	float value1 = autos->get_value(position1, PLAY_FORWARD, previous1, next1); \
 	float value2 = autos->get_value(position2, PLAY_FORWARD, previous1, next1); \
-	double position = unit_start + x * zoom_units; \
-	double value = 0; \
-	if(position2 > position1) \
-	{ \
-		value = value1 + \
-			(value2 - value1) * \
-			(position - position1) / \
-			(position2 - position1); \
-	} \
-	else \
-	{ \
-		value = value1; \
-	} \
+	double value = value1 + (value2 - value1) * (position - position1); \
 	AUTOMATIONCLAMPS(value, autogrouptype); \
 	int y = center_pixel + \
 		(int)(((value - automation_min) / automation_range - 0.5) * -yscale);
@@ -2837,6 +2853,12 @@ void TrackCanvas::draw_floatline(int center_pixel,
 	if( (y1 < ytop && y1 >= ybot) && (y2 < ytop || y2 >= ybot) ) return;
 // check for line draw
 	if( is_linear(previous, next) ) {
+		if( previous && previous->curve_mode == FloatAuto::BUMP ) {
+			double ax, ay;
+			calculate_auto_position(0, &ax, &ay, 0, 0, 0, 0, previous,
+				unit_start, zoom_units, yscale, autogrouptype);
+			x1 = ax;  y1 = ay;  y1 += center_pixel;
+		}
 		draw_line(x1, y1, x2, y2);
 		return;
 	}
@@ -2930,41 +2952,44 @@ int TrackCanvas::test_floatline(int center_pixel,
 	return result;
 }
 
-
-void TrackCanvas::fill_ganged_autos(int all, float change, Track *skip, FloatAuto *fauto)
+// gang=-1 for keyframepopup update, all tracks where fautos exist
+// gang=0 for trackcanvas drag update, all gang matching tracks, create new fautos if needed
+// gang=1 for trackcanvas drag update, all gang tracks, create new fautos if needed
+void TrackCanvas::fill_ganged_autos(int gang, float change, Track *skip, FloatAuto *fauto)
 {
 	if( !skip->is_ganged() ) return;
 // Handles the special case of modifying a fadeauto
 // when there are ganged faders on several tracks
 	double position = skip->from_units(fauto->position);
 	int autoidx = fauto->autos->autoidx;
-
+	PatchGUI *patch = gang < 0 ? pane->patchbay->get_patch_of(skip) : 0;
+	int edge = patch ? patch->edge : 0;
+	int span = patch ? patch->span : 0;
 	for(Track *current = mwindow->edl->tracks->first; current; current = NEXT) {
-		if( (all || current->data_type == skip->data_type) &&
+		if( (gang || current->data_type == skip->data_type) &&
 		    current->armed_gang(skip) && current->is_armed() &&
 		    current != skip ) {
 			FloatAutos *fade_autos = (FloatAutos*)current->automation->autos[autoidx];
-			float auto_min = mwindow->edl->local_session->automation_mins[fade_autos->autogrouptype];
-			float auto_max = mwindow->edl->local_session->automation_maxs[fade_autos->autogrouptype];
-			int64_t current_position = current->to_units(position, 1);
 			FloatAuto *keyframe = (FloatAuto*)fade_autos->get_auto_at_position(position);
+			int64_t current_position = current->to_units(position, 1);
 			if( keyframe ) {
 // keyframe exists, just change it
-				float value = keyframe->get_value();
-				float new_value = value + change;
-				CLAMP(new_value, auto_min, auto_max);
-				keyframe->adjust_to_new_coordinates(current_position, new_value);
+				keyframe->bump_update(current_position, change, edge, span);
 			}
-			else if( all >= 0 ) {
+			else if( gang >= 0 && ( get_double_click() ||
+				   mwindow->edl->session->auto_keyframes ) ) {
 // create keyframe on neighbouring track at the point in time given by fauto
 				FloatAuto *previous = 0, *next = 0;
 				float value = fade_autos->get_value(current_position, PLAY_FORWARD, previous, next);
 				float new_value = value + change;
-				CLAMP(new_value, auto_min, auto_max);
+				float auto_min = mwindow->edl->local_session->automation_mins[fade_autos->autogrouptype];
+				float auto_max = mwindow->edl->local_session->automation_maxs[fade_autos->autogrouptype];
+				bclamp(new_value, auto_min, auto_max);
 				keyframe = (FloatAuto*)fade_autos->insert_auto(current_position);
-				keyframe->set_value(new_value);
+				keyframe->set_value(new_value, edge);
 			}
-			if( !keyframe ) continue;
+			else
+				continue;
 			mwindow->session->drag_auto_gang->append((Auto *)keyframe);
 		}
 	}
@@ -2977,11 +3002,9 @@ void TrackCanvas::update_ganged_autos(float change, Track *skip, FloatAuto *faut
 	for (int i = 0; i < mwindow->session->drag_auto_gang->total; i++) {
 		FloatAuto *keyframe = (FloatAuto *)mwindow->session->drag_auto_gang->values[i];
 		int64_t keyframe_position = keyframe->autos->track->to_units(position, 1);
-		float new_value = keyframe->get_value() + change;
-		CLAMP(new_value,
-		      mwindow->edl->local_session->automation_mins[keyframe->autos->autogrouptype],
-		      mwindow->edl->local_session->automation_maxs[keyframe->autos->autogrouptype]);
-		keyframe->adjust_to_new_coordinates(keyframe_position, new_value);
+		keyframe->bump_update(keyframe_position, change, 0, 0);
+		keyframe->set_control_in_value(fauto->get_control_in_value());
+		keyframe->set_control_out_value(fauto->get_control_out_value());
 	}
 }
 
@@ -3133,7 +3156,7 @@ float TrackCanvas::percentage_to_value(float percentage,
 }
 
 
-void TrackCanvas::calculate_auto_position(double *x, double *y,
+void TrackCanvas::calculate_auto_position(int edge, double *x, double *y,
 	double *in_x, double *in_y, double *out_x, double *out_y,
 	Auto *current, double unit_start, double zoom_units, double yscale,
 	int autogrouptype)
@@ -3145,7 +3168,7 @@ void TrackCanvas::calculate_auto_position(double *x, double *y,
 		automation_range = SPEED_MIN;
 	FloatAuto *ptr = (FloatAuto*)current;
 	*x = (double)(ptr->position - unit_start) / zoom_units;
-	*y = ((ptr->get_value() - automation_min) / automation_range - 0.5) * -yscale;
+	*y = ((ptr->get_value(edge) - automation_min) / automation_range - 0.5) * -yscale;
 
 	if(in_x) {
 //		*in_x = EQUIV(ptr->control_in_value, 0.0) ? *x : *x - mwindow->theme->control_pixels;
@@ -3153,7 +3176,7 @@ void TrackCanvas::calculate_auto_position(double *x, double *y,
 	}
 
 	if(in_y) {
-		*in_y = (((ptr->get_value() + ptr->get_control_in_value()) -
+		*in_y = (((ptr->get_value(edge) + ptr->get_control_in_value()) -
 				automation_min) / automation_range - 0.5) * -yscale;
 	}
 
@@ -3163,7 +3186,7 @@ void TrackCanvas::calculate_auto_position(double *x, double *y,
 	}
 
 	if(out_y) {
-		*out_y = (((ptr->get_value() + ptr->get_control_out_value()) -
+		*out_y = (((ptr->get_value(edge) + ptr->get_control_out_value()) -
 				 automation_min) / automation_range - 0.5) * -yscale;
 	}
 }
@@ -3178,7 +3201,6 @@ int TrackCanvas::do_float_autos(Track *track, Autos *autos, int cursor_x, int cu
 	double view_start, unit_start;
 	double view_end, unit_end, yscale;
 	double zoom_sample, zoom_units;
-	double in_x2, in_y2, out_x2, out_y2;
 	double slope;
 	//int skip = 0;
 
@@ -3201,7 +3223,7 @@ int TrackCanvas::do_float_autos(Track *track, Autos *autos, int cursor_x, int cu
 
 	double ax = 0, ay = 0, ax2 = 0, ay2 = 0;
 	if( first_auto ) {
-		calculate_auto_position(&ax, &ay, 0, 0, 0, 0,
+		calculate_auto_position(0, &ax, &ay, 0, 0, 0, 0,
 			first_auto, unit_start, zoom_units, yscale, autogrouptype);
 	}
 	if( current )
@@ -3216,7 +3238,7 @@ int TrackCanvas::do_float_autos(Track *track, Autos *autos, int cursor_x, int cu
 		draw_auto = 1;
 
 		if(current) {
-			calculate_auto_position(&ax2, &ay2, &in_x2, &in_y2, &out_x2, &out_y2,
+			calculate_auto_position(1, &ax2, &ay2, 0, 0, 0, 0,
 				current, unit_start, zoom_units, yscale, autogrouptype);
 		}
 		else {
@@ -3241,18 +3263,16 @@ int TrackCanvas::do_float_autos(Track *track, Autos *autos, int cursor_x, int cu
 // Draw or test handle
 		if( current && !result && current != autos->default_auto ) {
 			if( !draw && track->is_armed() ) {
-				result = test_floatauto((FloatAuto*)current, (int)ax2, (int)ay2,
-					(int)in_x2, (int)in_y2, (int)out_x2, (int)out_y2,
+				result = test_floatauto((FloatAuto*)current, buttonpress,
 					(int)center_pixel, (int)yscale, cursor_x, cursor_y,
-					buttonpress, autogrouptype);
+					unit_start, zoom_units, yscale, autogrouptype);
 				if( result )
 					auto_instance = current;
 			}
 			if( draw && draw_auto ) {
-				draw_floatauto((FloatAuto*)current, (int)ax2 + x_offset, (int)ay2,
-					(int)in_x2 + x_offset, (int)in_y2,
-					(int)out_x2 + x_offset, (int)out_y2,
-					(int)center_pixel + y_offset, (int)yscale, color);
+				draw_floatauto((FloatAuto*)current, x_offset,
+					(int)center_pixel + y_offset, (int)yscale, color,
+					unit_start, zoom_units, yscale, autogrouptype);
 			}
 		}
 
@@ -3272,9 +3292,10 @@ int TrackCanvas::do_float_autos(Track *track, Autos *autos, int cursor_x, int cu
 
 		if( current ) {
 			previous = current;
+			calculate_auto_position(0, &ax2, &ay2, 0, 0, 0, 0, previous,
+				unit_start, zoom_units, yscale, autogrouptype);
 			current = NEXT;
 		}
-
 		ax = ax2;  ay = ay2;
 	} while( current && current->position <= unit_end && !result );
 
@@ -3687,7 +3708,7 @@ int TrackCanvas::draw_hairline(Auto *auto_keyframe, int color, int show)
 		return 0;
 
 	double ax = 0, ay = 0;
-	calculate_auto_position(&ax, &ay, 0, 0, 0, 0,
+	calculate_auto_position(0, &ax, &ay, 0, 0, 0, 0,
 		auto_keyframe, unit_start, zoom_units, yscale, autogrouptype);
 
 	set_color(color);
@@ -4026,7 +4047,8 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 // not really editing the node, rather start editing the curve
 // tangent is editable and drag movement is significant
 		if( (FloatAuto::FREE == current->curve_mode ||
-		     FloatAuto::TFREE==current->curve_mode) &&
+		     FloatAuto::TFREE==current->curve_mode ||
+		     FloatAuto::BUMP==current->curve_mode) &&
 		    (fabs(x) > HANDLE_W / 2 || fabs(y) > HANDLE_W / 2))
 			mwindow->session->drag_handle = x < 0 ? 1 : 2;
 	}
@@ -4036,28 +4058,27 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 // Snap to nearby values
 		old_value = current->get_value();
 		if(shift_down()) {
-			double value1, value2, distance1=-1, distance2=-1;
-
+			double distance1=-1, distance2=-1;
 			if(current->previous) {
 				int autogrouptype = current->previous->autos->autogrouptype;
 				value = percentage_to_value(percentage, 0, 0, autogrouptype);
-				value1 = ((FloatAuto*)current->previous)->get_value();
+				double value1 = ((FloatAuto*)current->previous)->get_value(0);
 				distance1 = fabs(value - value1);
-				current->set_value(value1);
+				current->set_value(value1, 1);
 			}
 
 			if(current->next) {
 				int autogrouptype = current->next->autos->autogrouptype;
 				value = percentage_to_value(percentage, 0, 0, autogrouptype);
-				value2 = ((FloatAuto*)current->next)->get_value();
+				double value2 = ((FloatAuto*)current->next)->get_value(1);
 				distance2 = fabs(value - value2);
 				if(!current->previous || distance2 < distance1) {
-					current->set_value(value2);
+					current->set_value(value2, 0);
 				}
 			}
 
 			if(!current->previous && !current->next) {
-				current->set_value( ((FloatAutos*)current->autos)->default_);
+				current->set_value(((FloatAutos*)current->autos)->default_, 0);
 			}
 			value = current->get_value();
 		}

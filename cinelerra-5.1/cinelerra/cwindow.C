@@ -190,7 +190,8 @@ void CWindow::calculate_affected_autos(Track *track,
 	if( y_auto )
 		*y_auto = (FloatAuto*) calculate_affected_auto(track->automation->autos[iy],
 				create_y, &y_created, redraw);
-	if( z_auto ) *z_auto = (FloatAuto*) calculate_affected_auto(track->automation->autos[iz],
+	if( z_auto )
+		*z_auto = (FloatAuto*) calculate_affected_auto(track->automation->autos[iz],
 				create_z, &z_created, redraw);
 }
 

@@ -49,9 +49,14 @@ public:
 	void copy(int64_t start, int64_t end, FileXML *file, int default_only);
 	void load(FileXML *xml);
 
-// "the value" (=payload of this keyframe)
-	float get_value() {return this->value;}
-	void  set_value(float newval);
+// for curves, edge==0: the right value, for bumps, edge!=0: the left value1
+	float get_value(int edge=0) {
+		return curve_mode==BUMP && edge ? this->value1 : this->value;
+	}
+// edge==0: set value, for bumps: edge>0, set value1, edge<0: set both
+	void set_value(float value, int edge=-1);
+	void bump_update(int64_t pos, float dv, int edge, int span);
+	void bump_value(float v, int edge, int span);
 
 // Possible policies to handle the tagents for the
 // bézier curves connecting adjacent automation points
@@ -60,12 +65,14 @@ public:
 		SMOOTH,     // curves are coupled in order to yield a smooth curve
 		LINEAR,     // curves always pointing directly to neighbouring automation points
 		TFREE,      // curves on both sides coupled but editable by dragging the handles
-		FREE        // curves on both sides are independent and editable via GUI
+		FREE,       // curves on both sides are independent and editable via GUI
+		BUMP,       // curves and values both sides are independent and editable via GUI
 	};
 
 	t_mode curve_mode;
-	void change_curve_mode(t_mode); // recalculates curves as well
+	void change_curve_mode(t_mode, int adjust=1); // recalculates curves as well
 	void toggle_curve_mode();       // cycles through all modes (e.g. by ctrl-click)
+	int is_bump() { return curve_mode == BUMP ? 1 : 0; }
 
 // Control values (y coords of bézier control point), relative to value
 	float get_control_in_value()            {check_pos(); return this->control_in_value;}
@@ -82,7 +89,6 @@ public:
 	void adjust_to_new_coordinates(int64_t position, float value);
 // text name for curve mode
 	static const char *curve_name(int curve_mode);
-
 private:
 	void adjust_curves();             // recalc. ctrk in and out points, if automatic curve mode (SMOOTH or LINEAR)
 	void adjust_ctrl_positions(FloatAuto *p=0, FloatAuto *n=0); // recalc. x location of ctrl points, notify neighbours
@@ -93,7 +99,7 @@ private:
 	void handle_automatic_curve_after_copy();
 
 // Control values are relative to value
-	float value, control_in_value, control_out_value;
+	float value, control_in_value, control_out_value, value1;
 // X control positions relative to value position for drawing.
 // In native units of the track.
 	int64_t control_in_position, control_out_position;

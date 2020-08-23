@@ -87,7 +87,7 @@ TitleConfig::TitleConfig()
 	strcpy(font, "fixed");
 	strcpy(encoding, DEFAULT_ENCODING);
 	style = FONT_ALIAS;
-	size = 24;
+	size = 48;
 	color = BLACK;
 	alpha = 0xff;
 	outline_size = 0.;
@@ -110,7 +110,7 @@ TitleConfig::TitleConfig()
 	next_keyframe_position = 0;
 	prev_keyframe_position = 0;
 	timecode = 0;
-	dropshadow = 2;
+	dropshadow = 0;
 	background = 0;
 	strcpy(background_path, "");
 	timecode_format = DEFAULT_TIMECODEFORMAT;

@@ -141,6 +141,8 @@ public:
 	int total_aeffects, total_veffects;
 
 	KeyframeCurveType *keyframe_curve_type;
+	KeyframeCreate *keyframe_create;
+	SetAutomationCurveMode *set_auto_curves;
 	LabelsFollowEdits *labels_follow_edits;
 	PluginsFollowEdits *plugins_follow_edits;
 	KeyframesFollowEdits *keyframes_follow_edits;
@@ -341,21 +343,33 @@ public:
 	MWindow *mwindow;
 };
 
-class StraightenKeyframes : public BC_MenuItem
+
+class SetAutomationCurveItem : public BC_MenuItem
 {
 public:
-	StraightenKeyframes(MWindow *mwindow);
+	SetAutomationCurveItem(SetAutomationCurveMode *set_curve_mode, int id);
 	int handle_event();
-	MWindow *mwindow;
+	SetAutomationCurveMode *set_curve_mode;
+	int id;
 };
 
-class BendKeyframes : public BC_MenuItem
+class SetAutoCurveModeMenu : public BC_SubMenu
 {
 public:
-	BendKeyframes(MWindow *mwindow);
-	int handle_event();
-	MWindow *mwindow;
+	SetAutoCurveModeMenu(SetAutomationCurveMode *curve_mode);
+	SetAutomationCurveMode *curve_mode;
 };
+
+class SetAutomationCurveMode : public BC_MenuItem
+{
+public:
+	SetAutomationCurveMode(MWindow *mwindow);
+	void create_objects();
+
+	MWindow *mwindow;
+	SetAutoCurveModeMenu *curve_mode_menu;
+};
+
 
 class KeyframeCurveType : public BC_MenuItem
 {
@@ -391,6 +405,34 @@ public:
 
 	int handle_event();
 };
+
+class KeyframeCreateItem : public BC_MenuItem
+{
+public:
+	KeyframeCreateItem(KeyframeCreate *keyframe_create, const char *text, int mask);
+	int handle_event();
+
+	KeyframeCreate *keyframe_create;
+	int mask;
+};
+
+class KeyframeCreateMenu : public BC_SubMenu
+{
+public:
+	KeyframeCreateMenu(KeyframeCreate *keyframe_create);
+	KeyframeCreate *keyframe_create;
+};
+
+class KeyframeCreate : public BC_MenuItem
+{
+public:
+	KeyframeCreate(MWindow *mwindow);
+	void create_objects();
+
+	MWindow *mwindow;
+	KeyframeCreateMenu *keyframe_create_menu;
+};
+
 
 class CutDefaultKeyframe : public BC_MenuItem
 {

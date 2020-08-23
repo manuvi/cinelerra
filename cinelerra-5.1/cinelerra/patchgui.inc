@@ -23,5 +23,17 @@
 #define PATCHGUI_INC
 
 class PatchGUI;
+class PlayPatch;
+class RecordPatch;
+class TitlePatch;
+class AutoPatch;
+class GangPatch;
+class DrawPatch;
+class MutePatch;
+class ZoomPatch;
+class MasterPatch;
+class ExpandPatch;
+class NudgePatch;
+class MixPatch;
 
 #endif

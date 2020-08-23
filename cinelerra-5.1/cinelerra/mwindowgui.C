@@ -2284,6 +2284,19 @@ void MWindowGUI::stop_transport(const char *lock_msg)
 	}
 }
 
+void MWindowGUI::close_keyvalue_popup()
+{
+	if( !keyvalue_popup ) return;
+	delete keyvalue_popup;
+	keyvalue_popup = 0;
+}
+
+void MWindowGUI::open_keyvalue_popup(BC_SubWindow *popup)
+{
+	close_keyvalue_popup();
+	keyvalue_popup = popup;
+}
+
 PaneButton::PaneButton(MWindow *mwindow, int x, int y)
  : BC_Button(x, y, mwindow->theme->get_image_set("pane"))
 {

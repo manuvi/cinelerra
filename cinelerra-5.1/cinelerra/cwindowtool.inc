@@ -27,6 +27,8 @@ class CWindowToolGUI;
 class CWindowCoord;
 class CWindowCoordSlider;
 class CWindowCoordRange;
+class CWindowCurveAutoEdge;
+class CWindowCurveAutoSpan;
 class CWindowCropApply;
 class CWindowCropOpMode;
 class CWindowCropOpItem;
