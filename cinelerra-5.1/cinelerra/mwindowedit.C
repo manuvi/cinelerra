@@ -2630,7 +2630,50 @@ int MWindow::normalize_speed(EDL *old_edl, EDL *new_edl)
 			}
 			first_track = 0;
 		}
-		if( autos_follow_edits ) {
+		if( plugins_follow_edits ) {
+			int old_size = old_track->plugin_set.size();
+			int new_size = new_track->plugin_set.size();
+			int n = bmin(old_size, new_size);
+			for( int i=0; i<n; ++i ) {
+				PluginSet *old_plugin_set = old_track->plugin_set[i];
+				Plugin *old_plugin = (Plugin *)(old_plugin_set ? old_plugin_set->first : 0);
+				PluginSet *new_plugin_set = new_track->plugin_set[i];
+				Plugin *new_plugin = (Plugin *)(new_plugin_set ? new_plugin_set->first : 0);
+				while( old_plugin && new_plugin ) {
+					int64_t plugin_start = old_plugin->startproject;
+					int64_t plugin_end = plugin_start + old_plugin->length;
+					if( old_speed || new_speed ) {
+						double orig_start = old_speeds->automation_integral(0, plugin_start, PLAY_FORWARD);
+						double orig_end   = old_speeds->automation_integral(0, plugin_end, PLAY_FORWARD);
+						plugin_start = new_track->frame_align(new_speeds->speed_position(orig_start), 1);
+						plugin_end = new_track->frame_align(new_speeds->speed_position(orig_end), 1);
+						result = 1;
+					}
+					new_plugin->startproject = plugin_start;
+					new_plugin->length = plugin_end - plugin_start;
+					if( autos_follow_edits ) {
+						KeyFrames *old_keyframes = old_plugin->keyframes;
+						Auto *old_auto = old_keyframes ? old_keyframes->first : 0;
+						KeyFrames *new_keyframes = new_plugin->keyframes;
+						Auto *new_auto = new_keyframes ? new_keyframes->first : 0;
+						while( old_auto && new_auto ) {
+							int64_t auto_pos = old_auto->position;
+							if( old_speed || new_speed ) {
+								double orig_pos = old_speeds->automation_integral(0, auto_pos, PLAY_FORWARD);
+								auto_pos = new_track->frame_align(new_speeds->speed_position(orig_pos), 1);
+								result = 1;
+							}
+							new_auto->position = auto_pos;
+							old_auto = old_auto->next;
+							new_auto = new_auto->next;
+						}
+					}
+					old_plugin = (Plugin *)old_plugin->next;
+					new_plugin = (Plugin *)new_plugin->next;
+				}
+			}
+		}
+		if( autos_follow_edits ) { // must be last
 			for( int i=0; i<AUTOMATION_TOTAL; ++i ) {
 				Autos *old_autos = old_track->automation->autos[i];
 				Autos *new_autos = new_track->automation->autos[i];
@@ -2647,48 +2690,6 @@ int MWindow::normalize_speed(EDL *old_edl, EDL *new_edl)
 					old_auto = old_auto->next;
 					new_auto = new_auto->next;
 				}
-			}
-		}
-		if( !plugins_follow_edits ) continue;
-		int old_size = old_track->plugin_set.size();
-		int new_size = new_track->plugin_set.size();
-		int n = bmin(old_size, new_size);
-		for( int i=0; i<n; ++i ) {
-			PluginSet *old_plugin_set = old_track->plugin_set[i];
-			Plugin *old_plugin = (Plugin *)(old_plugin_set ? old_plugin_set->first : 0);
-			PluginSet *new_plugin_set = new_track->plugin_set[i];
-			Plugin *new_plugin = (Plugin *)(new_plugin_set ? new_plugin_set->first : 0);
-			while( old_plugin && new_plugin ) {
-				int64_t plugin_start = old_plugin->startproject;
-				int64_t plugin_end = plugin_start + old_plugin->length;
-				if( old_speed || new_speed ) {
-					double orig_start = old_speeds->automation_integral(0, plugin_start, PLAY_FORWARD);
-					double orig_end   = old_speeds->automation_integral(0, plugin_end, PLAY_FORWARD);
-					plugin_start = new_track->frame_align(new_speeds->speed_position(orig_start), 1);
-					plugin_end = new_track->frame_align(new_speeds->speed_position(orig_end), 1);
-					result = 1;
-				}
-				new_plugin->startproject = plugin_start;
-				new_plugin->length = plugin_end - plugin_start;
-				if( autos_follow_edits ) {
-					KeyFrames *old_keyframes = old_plugin->keyframes;
-					Auto *old_auto = old_keyframes ? old_keyframes->first : 0;
-					KeyFrames *new_keyframes = new_plugin->keyframes;
-					Auto *new_auto = new_keyframes ? new_keyframes->first : 0;
-					while( old_auto && new_auto ) {
-						int64_t auto_pos = old_auto->position;
-						if( old_speed || new_speed ) {
-							double orig_pos = old_speeds->automation_integral(0, auto_pos, PLAY_FORWARD);
-							auto_pos = new_track->frame_align(new_speeds->speed_position(orig_pos), 1);
-							result = 1;
-						}
-						new_auto->position = auto_pos;
-						old_auto = old_auto->next;
-						new_auto = new_auto->next;
-					}
-				}
-				old_plugin = (Plugin *)old_plugin->next;
-				new_plugin = (Plugin *)new_plugin->next;
 			}
 		}
 	}

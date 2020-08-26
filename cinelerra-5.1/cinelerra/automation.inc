@@ -43,6 +43,7 @@ enum
 	AUTOMATION_PAN,
 	AUTOMATION_MODE,
 	AUTOMATION_MASK,
+// must be last or autos move when pasted due to speed pos shifts
 	AUTOMATION_SPEED,
 	AUTOMATION_TOTAL
 };

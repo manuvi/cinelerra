@@ -770,7 +770,7 @@ int KeySpeedSlider::handle_event()
 KeySpeedAutoEdge::KeySpeedAutoEdge(MWindow *mwindow,
 		KeySpeedPatch *patch, int x, int y)
  : BC_Toggle(x, y, mwindow->theme->get_image_set("bump_edge"),
-                patch->gui->span,_("Edge"))
+                patch->gui->edge,_("Edge"))
 {
 	this->mwindow = mwindow;
 	this->patch = patch;

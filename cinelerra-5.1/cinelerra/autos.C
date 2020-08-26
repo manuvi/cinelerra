@@ -265,16 +265,11 @@ int Autos::auto_exists_for_editing(double position)
 
 Auto* Autos::get_auto_at_position(double position)
 {
-	int64_t unit_position = track->to_units(position, 1);
 
-	for(Auto *current = first;
-		current;
-		current = NEXT)
-	{
-		if(edl->equivalent(current->position, unit_position))
-		{
+	for( Auto *current=first; current; current=NEXT ) {
+		double pos = track->from_units(current->position);
+		if( edl->equivalent(position, pos) )
 			return current;
-		}
 	}
 	return 0;
 }
