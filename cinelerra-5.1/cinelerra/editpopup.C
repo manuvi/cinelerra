@@ -67,6 +67,7 @@ void EditPopup::create_objects()
 {
 	add_item(open_edl = new EditPopupOpenEDL(mwindow, this));
 	add_item(new EditPopupClearSelect(mwindow, this));
+	add_item(new EditPopupSelectEdits(mwindow, this));
 	add_item(new EditPopupCopy(mwindow, this));
 	add_item(new EditPopupCut(mwindow, this));
 	add_item(new EditPopupMute(mwindow, this));
@@ -159,6 +160,21 @@ int EditPopupClearSelect::handle_event()
 	return 1;
 }
 
+EditPopupSelectEdits::EditPopupSelectEdits(MWindow *mwindow, EditPopup *popup)
+ : BC_MenuItem(_("Select Edits"),_("Ctrl-Alt-a"),'a')
+{
+	this->mwindow = mwindow;
+	this->popup = popup;
+	set_ctrl(1);
+	set_alt(1);
+}
+
+int EditPopupSelectEdits::handle_event()
+{
+	mwindow->select_edits();
+	return 1;
+}
+
 EditPopupCopy::EditPopupCopy(MWindow *mwindow, EditPopup *popup)
  : BC_MenuItem(_("Copy"),_("Ctrl-c"),'c')
 {
@@ -203,11 +219,12 @@ int EditPopupCut::handle_event()
 }
 
 EditPopupCutPack::EditPopupCutPack(MWindow *mwindow, EditPopup *popup)
- : BC_MenuItem(_("Cut pack"),_("Ctrl-z"),'z')
+ : BC_MenuItem(_("Cut pack"),_("Ctrl-Alt-z"),'z')
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
 	set_ctrl(1);
+	set_alt();
 }
 
 int EditPopupCutPack::handle_event()

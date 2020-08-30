@@ -59,6 +59,7 @@ public:
 	void clear_selected_edits();
 	int clear_hard_edges(double start, double end);
 	void get_selected_edits(ArrayList<Edit*> *drag_edits);
+	void select_edits(double start, double end);
 	int next_group_id();
 	int new_group(int id);
 	int set_group_selected(int id, int v);

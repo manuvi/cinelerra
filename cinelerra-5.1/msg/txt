@@ -7,6 +7,13 @@ Cinfinity icons selected in Preferences Sam (CC BY 3.0,
 Cakewalk and Neophyte themes by Olaf Wolff (CC BY 4.0,
   https://creativecommons.org/licenses/by/4.0/)
 .
+August 2020 New Features of note:
+  Bump Autos new feature; especially useful for speed.
+  Language preference now in Settings->Preferences.
+  Align Timecodes time-reference added as an improvement.
+  Ctrl-s and Ctrl-z more standard usage implemented.
+  Added drag speed highlighting for easier usage of auto.
+  Option and shortcut to select multiple edits.
 July 2020 New Features of note:
   Align Timecodes for various timecodes/stamps is available.
   FFmpeg plugins will have changes take effect when use Enter.

@@ -20,8 +20,8 @@ agate
 #ainterleave
 #alimiter
 allpass
-#allrgb
-#allyuv
+allrgb
+allyuv
 aloop
 #alphaextract ###Operation not permitted
 #alphamerge ###Input/output error
@@ -71,7 +71,7 @@ boxblur
 #buffer size=320x240:pixfmt=6:time_base=1/24:pixel_aspect=1/1 ###Invalid argument
 #buffersink ###Input/output error
 bwdif
-#cellauto p=@:s=100x400:full=0:rule=18
+cellauto p=@:s=100x400:full=0:rule=18
 #channelmap 1|2|0|5|3|4:5.1 ###Invalid argument
 #channelsplit ###Operation not permitted
 chorus in_gain=0.400000:out_gain=0.400000:delays=1|1:decays=1|1:speeds=1|1:depths=1|1
@@ -87,8 +87,8 @@ colorspace iall=smpte170m:all=bt709
 compand
 compensationdelay
 #concat ###Operation not permitted
-#convolution 0 -1 0 -1 5 -1 0 -1 0:0 -1 0 -1 5 -1 0 -1 0:0 -1 0 -1 5 -1 0 -1 0:0 -1 0 -1 5 -1 0 -1 0
-#copy
+#convolution ###Invalid argument
+#copy ###not appropriate
 cover_rect
 crop
 cropdetect
@@ -133,11 +133,11 @@ fillborders
 #firequalizer delay=0.1:fixed=on:zero_phase=on
 flanger
 format pix_fmts=yuv420p|yuv444p|yuv410p
-#fps 30
+#fps 30 ###not appropriate
 #framepack ###Input/output error
 framerate
 framestep step=30
-#freezedetect
+#freezedetect ###not appropriate
 fspp
 gblur
 #geq ###Invalid argument
@@ -153,9 +153,9 @@ hqdn3d
 hqx
 #hstack ###Operation not permitted
 hue
-#hwdownload
-#hwmap
-#hwupload
+#hwdownload ###Operation not permitted
+#hwmap ###Input/output error
+#hwupload ###Operation not permitted
 #hwupload_cuda
 #hysteresis ###Input/output error
 idet
@@ -191,28 +191,28 @@ nlmeans r=15:p=7:s=2
 #nnedi ###Invalid argument
 #noformat ###not part of frame data
 noise
-#null
+#null ###not appropriate
 #nullsink ###Input/output error
 #nullsrc
 #overlay x=main_w-overlay_w-10:y=main_h-overlay_h-10 ###Input/output error
 owdenoise
 pad
-#palettegen
+#palettegen ###Resource temporarily unavailable
 #paletteuse ###Input/output error
 pan 1c|c0=0.9*c0+0.1*c1
 perms
 perspective
 phase
-#pixdesctest
+#pixdesctest ###not appropriate
 pp
 pp7
 #premultiply ###Operation not permitted
 prewitt
 #procamp_vaapi ###Operation not permitted
 #psnr PSNR=10*log10(MAX^2/MSE) ###Input/output error
-#pullup
-#qp     ###not part of frame data
-#random seed=-1
+pullup
+#qp     ###Operation not permitted
+#random seed =-1 ###Resource temporarily unavailable
 readeia608
 readvitc
 realtime
@@ -221,7 +221,7 @@ removegrain
 #removelogo ###Invalid argument
 repeatfields
 #replaygain
-#reverse
+#reverse ###Resource temporarily unavailable
 rgbtestsrc
 rotate
 sab
@@ -230,14 +230,14 @@ scale 200:100
 #scale_vaapi ###Operation not permitted
 #scale2ref ###Input/output error
 #select ###Operation not permitted
-#selectivecolor greens=.5 0 -.33 0:blues=0 .27
+selectivecolor greens=.5 0 -.33 0:blues=0 .27
 #sendcmd ###Invalid argument
 separatefields
 #setdar   ###will not work because Format already set
 #setfield ###not part of frame data
 #setpts   ###not part of frame data
 #setsar   ###will not work because Format already set
-#settb
+#settb ###not appropriate
 #sharpness_vaapi ###Operation not permitted
 #showcqt ###Input/output error
 #showfreqs ###Input/output error
@@ -327,8 +327,8 @@ roberts
 #superequalizer
 #surround
 tlut2
-#tonemap
-#vmafmotion
+tonemap
+#vmafmotion ###not appropriate
 ; new in 4.0
 acontrast
 #afir ###Operation not permitted

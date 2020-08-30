@@ -1079,27 +1079,32 @@ int MWindowGUI::keypress_event()
 	if( result ) return result;
 
 	Track *this_track = 0, *first_track = 0;
-	int collapse = 0, packed = 0, overwrite = 0, plugins = 0;
+	int packed = 0, overwrite = 0, plugins = 0;
 	double position = 0;
 
 	switch( get_keypress() ) {
 	case 'A':
-		if( !alt_down() ) {
-			if( !ctrl_down() || !shift_down() ) break;
+		if( !alt_down() && ctrl_down() ) {
 			mwindow->edl->tracks->clear_selected_edits();
 			draw_overlays(1);
 			result = 1;
-			break;
-		} // fall thru
+		}
+		break;
 	case 'a':
-		if( !alt_down() ) break;
-		stop_transport("MWindowGUI::keypress_event 1");
-		mwindow->nearest_auto_keyframe(shift_down(),
-			!ctrl_down() ? PLAY_FORWARD : PLAY_REVERSE);
-		result = 1;
+		if( !ctrl_down() && alt_down() ) {
+			stop_transport("MWindowGUI::keypress_event 1");
+			mwindow->nearest_auto_keyframe(shift_down(),
+				!ctrl_down() ? PLAY_FORWARD : PLAY_REVERSE);
+			result = 1;
+		}
+		else if( ctrl_down() && alt_down() ) {
+			mwindow->select_edits();
+			result = 1;
+		}
 		break;
 
 	case 'e':
+		if( ctrl_down() || alt_down() ) break;
 		mwindow->toggle_editing_mode();
 		result = 1;
 		break;
@@ -1150,17 +1155,29 @@ int MWindowGUI::keypress_event()
 		result = 1;
 		break;
 	case 'M':
-		collapse = 1;
+		mwindow->cut_selected_edits(0, 1);
+		result = 1;
+		break;
 	case BACKSPACE:
 	case 'm':
-		mwindow->cut_selected_edits(0, collapse);
+		mwindow->cut_selected_edits(0, 0);
 		result = 1;
 		break;
 	case 'z':
-		collapse = 1;
+		if( !alt_down() ) {
+			// z and ctrl-z both are undo, z mainmenu item
+			if( mwindow->session->current_operation == NO_OPERATION )
+				mwindow->undo_entry(this);
+			result = 1;
+		}
+		else if( ctrl_down() ) {
+			mwindow->cut_selected_edits(1, 1);
+			result = 1;
+		}
+		break;
 	case 'x':
 		if( !ctrl_down() || alt_down() ) break;
-		mwindow->cut_selected_edits(1, collapse);
+		mwindow->cut_selected_edits(1, 0);
 		result = 1;
 		break;
 

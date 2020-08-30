@@ -426,6 +426,14 @@ void MWindow::clear_select()
 	gui->draw_overlays(1);
 }
 
+void MWindow::select_edits()
+{
+	double start = edl->local_session->get_selectionstart();
+	double end = edl->local_session->get_selectionend();
+	edl->tracks->select_edits(start, end);
+	gui->draw_overlays(1);
+}
+
 void MWindow::concatenate_tracks()
 {
 	undo_before();

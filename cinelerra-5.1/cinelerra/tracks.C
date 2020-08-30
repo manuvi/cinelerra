@@ -126,6 +126,20 @@ void Tracks::get_selected_edits(ArrayList<Edit*> *drag_edits)
 	}
 }
 
+void Tracks::select_edits(double start, double end)
+{
+	for( Track *track=first; track; track=track->next ) {
+		if( !track->is_armed() ) continue;
+		int64_t start_pos = track->to_units(start, 0);
+		int64_t end_pos = track->to_units(end, 0);
+		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
+			if( start_pos >= edit->startproject+edit->length ) continue;
+			if( edit->startproject >= end_pos ) continue;
+			edit->is_selected = 1;
+		}
+	}
+}
+
 void Tracks::get_automation_extents(float *min,
 	float *max,
 	double start,
