@@ -253,3 +253,21 @@ void SaveProject::run()
 	mwindow->save_project(dir_path, save_mode, overwrite, reload);
 }
 
+  
+SaveSession::SaveSession(MWindow *mwindow)
+ : BC_MenuItem(_("Save Session"),_("Ctrl-s"),'s')
+{
+	this->mwindow = mwindow;
+	set_ctrl(1);
+}
+
+int SaveSession::handle_event()
+{
+	mwindow->save_defaults();
+	mwindow->save_backup();
+	mwindow->save(0);
+	mwindow->gui->show_message(_("Saved session."));
+	return 1;
+}
+
+

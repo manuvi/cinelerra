@@ -1790,29 +1790,6 @@ void Track::set_camera(float x, float y, float z)
 	set_fauto_xyz(AUTOMATION_CAMERA_X, x, y, z);
 }
 
-Track *Track::gang_master()
-{
-	Track *track = this;
-	switch( edl->session->gang_tracks ) {
-	case GANG_NONE:
-		return track;
-	case GANG_CHANNELS: {
-		Track *current = track;
-		int data_type = track->data_type;
-		while( current && !track->master ) {
-			if( !(current = current->previous) ) break;
-			if( current->data_type == data_type ) track = current;
-			if( track->master ) break;
-		}
-		break; }
-	case GANG_MEDIA: {
-		while( track && !track->master ) track = track->previous;
-		break; }
-	}
-	if( !track ) track = tracks->first;
-	return track;
-}
-
 int Track::is_hidden()
 {
 	if( master ) return 0;
@@ -1825,6 +1802,38 @@ int Track::is_hidden()
 	}
 	return 0;
 }
+
+Track *Track::gang_master()
+{
+	Track *track = this;
+	switch( edl->session->gang_tracks ) {
+	case GANG_NONE:
+		return track;
+	case GANG_CHANNELS: {
+		Track *current = track;
+		int data_type = track->data_type;
+		while( current && !track->master ) {
+			if( !(current = current->previous) ) break;
+			if( current->data_type == data_type ) track = current;
+		}
+		break; }
+	case GANG_MEDIA: {
+		while( track && !track->master ) track = track->previous;
+		break; }
+	}
+	if( !track ) track = tracks->first;
+	return track;
+}
+
+int Track::in_gang(Track *track)
+{
+	if( edl->session->gang_tracks == GANG_NONE ) return ganged;
+	Track *current = this;
+	while( current && !current->master ) current = current->previous;
+	while( track && !track->master ) track = track->previous;
+	return current == track ? 1 : 0;
+}
+
 int Track::is_armed()
 {
 	return gang_master()->armed;

@@ -118,8 +118,8 @@ void MainMenu::create_objects()
 	filemenu->add_item(saveas = new SaveAs(mwindow));
 	save->create_objects(saveas);
 	saveas->set_mainmenu(this);
-	SaveProject *save_project;
-	filemenu->add_item(save_project = new SaveProject(mwindow));
+	filemenu->add_item(new SaveProject(mwindow));
+	filemenu->add_item(new SaveSession(mwindow));
 
 	filemenu->add_item(record_menu_item = new RecordMenuItem(mwindow));
 #ifdef HAVE_DVB
@@ -1573,10 +1573,11 @@ int ScrubSpeed::handle_event()
 }
 
 SaveSettingsNow::SaveSettingsNow(MWindow *mwindow)
- : BC_MenuItem(_("Save settings now"),_("Ctrl-s"),'s')
+ : BC_MenuItem(_("Save settings now"),_("Ctrl-Shift-S"),'S')
 {
 	this->mwindow = mwindow;
 	set_ctrl(1);
+	set_shift(1);
 }
 
 int SaveSettingsNow::handle_event()

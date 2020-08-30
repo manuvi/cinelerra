@@ -71,6 +71,8 @@ public:
 	void draw_highlighting();
 	void draw_keyframe_reticle();
 	int draw_hairline(Auto *auto_keyframe, int color, int show);
+	void draw_speed_highlight();
+	void draw_speed_track(Track *track);
 
 // User can either call draw or draw_overlays to copy a fresh
 // canvas and just draw the overlays over it

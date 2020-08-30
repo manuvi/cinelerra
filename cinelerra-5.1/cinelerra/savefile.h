@@ -129,4 +129,12 @@ public:
 	MWindow *mwindow;
 };
 
+class SaveSession : public BC_MenuItem
+{
+public:
+	SaveSession(MWindow *mwindow);
+	int handle_event();
+	MWindow *mwindow;
+};
+
 #endif

@@ -182,7 +182,7 @@ mcdeint
 mestimate
 #metadata mode=add:file=/tmp/metadata.txt
 #midequalizer ###Input/output error
-#minterpolate
+minterpolate
 #movie ###Operation not permitted
 mpdecimate
 mptestsrc t=dc_luma

@@ -200,7 +200,7 @@ int KeyframePopupDelete::handle_event()
 	mwindow->undo->update_undo_before(_("delete keyframe"), 0);
 	mwindow->speed_before();
 	delete popup->keyframe_auto;
-	mwindow->speed_after(1);
+	mwindow->speed_after(1, 1);
 	mwindow->undo->update_undo_after(_("delete keyframe"), LOAD_ALL);
 
 	mwindow->save_backup();
@@ -702,8 +702,6 @@ void KeySpeedPatch::update_speed(float v)
 		track_canvas->update_ganged_autos(0, track, current);
 		track_canvas->clear_ganged_autos();
 	}
-	mwindow->undo->update_undo_after(_("speed"),
-			LOAD_AUTOMATION + LOAD_EDITS + LOAD_TIMEBAR);
 	gui->change_source = 0;
 
 	mwindow->sync_parameters(CHANGE_PARAMS);
@@ -721,7 +719,9 @@ KeySpeedOK::KeySpeedOK(KeySpeedPatch *key_speed_patch, int x, int y, VFrame **im
 int KeySpeedOK::handle_event()
 {
 	MWindow *mwindow = key_speed_patch->mwindow;
-	mwindow->speed_after(1);
+	mwindow->speed_after(1, 1);
+	mwindow->undo->update_undo_after(_("speed"),
+			LOAD_AUTOMATION + LOAD_EDITS + LOAD_TIMEBAR);
 	mwindow->resync_guis();
 	mwindow->gui->close_keyvalue_popup();
 	return 1;

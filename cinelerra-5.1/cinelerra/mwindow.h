@@ -839,8 +839,8 @@ public:
 	static void add_plugins(ArrayList<PluginServer*> &plugins);
 	static void delete_plugins();
 	void speed_before();
-	int speed_after(int done);
-	int normalize_speed(EDL *old_edl, EDL *new_edl);
+	int speed_after(int done, int edit_speed);
+	int normalize_speed(EDL *old_edl, EDL *new_edl, int edit_speed);
 	int get_cpus(int out_w, int out_h);
 	int get_cpus();
 //

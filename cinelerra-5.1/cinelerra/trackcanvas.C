@@ -1658,12 +1658,42 @@ void TrackCanvas::draw_highlighting()
 			}
 			break;
 
+		case DRAG_SPEED:
+			draw_speed_highlight();
+			break;
 	}
 
 	if( draw_box )
 		draw_highlight_rectangle(x, y, w, h);
 
 	draw_selected_edits(mwindow->edl, 0, 0, GREEN+BLUE, RED);
+}
+
+void TrackCanvas::draw_speed_highlight()
+{
+	FloatAuto *drag_speed = (FloatAuto*)mwindow->session->drag_auto;
+	if( !drag_speed ) return;
+	draw_speed_track(drag_speed->autos->track);
+	ArrayList<Auto*> &speed_gang = *mwindow->session->drag_auto_gang;
+	for( int i=0, sz=speed_gang.size(); i<sz; ++i ) {
+		Track *track = speed_gang[i]->autos->track;
+		if( track->is_hidden() ) continue;
+		draw_speed_track(track);
+	}
+}
+
+void TrackCanvas::draw_speed_track(Track *track)
+{
+	for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
+		int64_t x, y, w, h;
+		edit_dimensions(edit, x, y, w, h);
+		if( !MWindowGUI::visible(x, x + w, 0, get_w()) ) continue;
+		if( !MWindowGUI::visible(y, y + h, 0, get_h()) ) continue;
+		int color = 0xc00cc0;
+		set_color(color);
+		set_opaque();
+		draw_selected(x, y, w, h);
+	}
 }
 
 // x does not reliably draw a really big rectangle
@@ -2240,7 +2270,7 @@ int TrackCanvas::do_keyframes(int cursor_x,
 							auto_keyframe, grouptype);
 
 						if( !result && buttonpress && i == AUTOMATION_SPEED )
-							mwindow->speed_after(-1);
+							mwindow->speed_after(-1, 0);
 						if( result && buttonpress ) {
 							int color = GWindowGUI::auto_colors[i];
 							mwindow->gui->zoombar->update_autozoom(grouptype, color);
@@ -2966,9 +2996,9 @@ void TrackCanvas::fill_ganged_autos(int gang, float change, Track *skip, FloatAu
 	int edge = patch ? patch->edge : 0;
 	int span = patch ? patch->span : 0;
 	for(Track *current = mwindow->edl->tracks->first; current; current = NEXT) {
-		if( (gang || current->data_type == skip->data_type) &&
-		    current->armed_gang(skip) && current->is_armed() &&
-		    current != skip ) {
+		if( current == skip || !current->is_armed() ) continue;
+		if( !gang && current->data_type != skip->data_type ) continue;
+		if( skip->armed_gang(current) || get_double_click() ) {
 			FloatAutos *fade_autos = (FloatAutos*)current->automation->autos[autoidx];
 			FloatAuto *keyframe = (FloatAuto*)fade_autos->get_auto_at_position(position);
 			int64_t current_position = current->to_units(position, 1);
@@ -2976,8 +3006,7 @@ void TrackCanvas::fill_ganged_autos(int gang, float change, Track *skip, FloatAu
 // keyframe exists, just change it
 				keyframe->bump_update(current_position, change, edge, span);
 			}
-			else if( gang >= 0 && ( get_double_click() ||
-				   mwindow->edl->session->auto_keyframes ) ) {
+			else if( gang >= 0 ) {
 // create keyframe on neighbouring track at the point in time given by fauto
 				FloatAuto *previous = 0, *next = 0;
 				float value = fade_autos->get_value(current_position, PLAY_FORWARD, previous, next);
@@ -4343,7 +4372,7 @@ int TrackCanvas::cursor_update(int in_motion)
 			if(active) rerender = update_overlay =
 				update_drag_floatauto(get_cursor_x(), get_cursor_y());
 			if( rerender && mwindow->session->current_operation == DRAG_SPEED )
-				mwindow->speed_after(!in_motion ? 1 : 0);
+				mwindow->speed_after(!in_motion ? 1 : 0, 0);
 			break;
 
 		case DRAG_PLAY:
@@ -4651,7 +4680,7 @@ int TrackCanvas::button_release_event()
 
 		case DRAG_SPEED:
 			redraw = FORCE_REDRAW;
-			load_flags |= LOAD_EDITS;
+			load_flags |= LOAD_EDITS | LOAD_TIMEBAR;
 		case DRAG_FADE:
 // delete the drag_auto_gang first and remove out of order keys
 			clear_ganged_autos();

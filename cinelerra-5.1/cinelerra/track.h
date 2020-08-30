@@ -171,6 +171,7 @@ public:
 	Plugin *plugin_exists(int plugin_id);
 	Track *gang_master();
 	int is_hidden();
+	int in_gang(Track *track);
 	int is_armed();
 	int is_ganged();
 	int armed_gang(Track *track);

@@ -889,7 +889,7 @@ int PluginFVClient::activate(int width, int height, int color_model)
 		char args[BCTEXTLEN];
 		snprintf(args, sizeof(args),
 			"video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d",
-			width, height, pix_fmt, best_rate.num, best_rate.den, aspect_w, aspect_h);
+			width, height, pix_fmt, best_rate.den, best_rate.num, aspect_w, aspect_h);
 		ret = avfilter_graph_create_filter(&fsrc, avfilter_get_by_name("buffer"),
 			"in", args, NULL, graph);
 	}
@@ -947,7 +947,7 @@ int PluginFAClient::process_buffer(int64_t size, Samples **buffer, int64_t start
 		frame->format = AV_SAMPLE_FMT_FLTP;
 		frame->channel_layout = (1<<in_channels)-1;
 		frame->sample_rate = sample_rate;
-		frame->pts = local_to_edl(filter_position);
+		frame->pts = filter_position;
 	}
 
 	int retry = 10;
@@ -1048,11 +1048,11 @@ int PluginFVClient::process_buffer(VFrame **frames, int64_t position, double fra
 		ret = av_buffersink_get_frame(fsink, frame);
 		if( ret >= 0 || ret != AVERROR(EAGAIN) ) break;
 		if( !fsrc ) { ret = AVERROR(EIO);  break; }
-		read_frame(vframe, 0, filter_position++, frame_rate, 0);
+		read_frame(vframe, 0, filter_position, frame_rate, 0);
 		frame->format = pix_fmt;
 	        frame->width  = width;
 		frame->height = height;
-		frame->pts = local_to_edl(position);
+		frame->pts = filter_position++;
 		ret = av_frame_get_buffer(frame, 32);
 		if( ret < 0 ) break;
 		ret = transfer_pixfmt(vframe, frame);

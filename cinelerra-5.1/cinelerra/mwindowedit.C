@@ -337,7 +337,7 @@ void MWindow::set_automation_mode(int mode)
 		edl->local_session->get_selectionstart(),
 		edl->local_session->get_selectionend(),
 		mode);
-	int changed_edl = speed_after(1);
+	int changed_edl = speed_after(1, 1);
 	save_backup();
 	char string[BCSTRLEN];
 	sprintf(string,"set %s", FloatAuto::curve_name(mode));
@@ -353,7 +353,7 @@ void MWindow::clear_automation()
 	speed_before();
 	edl->tracks->clear_automation(edl->local_session->get_selectionstart(),
 		edl->local_session->get_selectionend());
-	int changed_edl = speed_after(1);
+	int changed_edl = speed_after(1, 1);
 	save_backup();
 	undo_after(_("clear keyframes"),
 		!changed_edl ? LOAD_AUTOMATION :
@@ -366,7 +366,7 @@ int MWindow::clear_default_keyframe()
 	undo_before();
 	speed_before();
 	edl->tracks->clear_default_keyframe();
-	int changed_edl = speed_after(1);
+	int changed_edl = speed_after(1, 1);
 	save_backup();
 	undo_after(_("clear default keyframe"),
 		!changed_edl ? LOAD_AUTOMATION :
@@ -669,7 +669,7 @@ int MWindow::cut_automation()
 	copy_automation();
 	edl->tracks->clear_automation(edl->local_session->get_selectionstart(),
 		edl->local_session->get_selectionend());
-	int changed_edl = speed_after(1);
+	int changed_edl = speed_after(1, 1);
 	save_backup();
 	undo_after(_("cut keyframes"),
 		!changed_edl ? LOAD_AUTOMATION :
@@ -685,7 +685,7 @@ int MWindow::cut_default_keyframe()
 	speed_before();
 	copy_default_keyframe();
 	edl->tracks->clear_default_keyframe();
-	int changed_edl = speed_after(1);
+	int changed_edl = speed_after(1, 1);
 	save_backup();
 	undo_after(_("cut default keyframe"),
 		!changed_edl ? LOAD_AUTOMATION :
@@ -1494,7 +1494,7 @@ int MWindow::paste_automation()
 		edl->tracks->clear_automation(start, end);
 		edl->tracks->paste_automation(start, &file, 0, 1,
 			edl->session->typeless_keyframes);
-		int changed_edl = speed_after(1);
+		int changed_edl = speed_after(1, 0);
 		save_backup();
 		undo_after(_("paste keyframes"),
 			!changed_edl ? LOAD_AUTOMATION :
@@ -1521,7 +1521,7 @@ int MWindow::paste_default_keyframe()
 		edl->tracks->paste_automation(start, &file, 1, 0,
 			edl->session->typeless_keyframes);
 //		edl->tracks->paste_default_keyframe(&file);
-		int changed_edl = speed_after(1);
+		int changed_edl = speed_after(1, 1);
 		undo_after(_("paste default keyframe"),
 			!changed_edl ? LOAD_AUTOMATION :
 				LOAD_AUTOMATION + LOAD_EDITS + LOAD_TIMEBAR);
@@ -2574,12 +2574,13 @@ void MWindow::cut_commercials()
 #endif
 }
 
-int MWindow::normalize_speed(EDL *old_edl, EDL *new_edl)
+int MWindow::normalize_speed(EDL *old_edl, EDL *new_edl, int edit_speed)
 {
+	int edit_plugins = edl->session->plugins_follow_edits;
+	int edit_autos = edl->session->autos_follow_edits;
+	int edit_labels = edl->session->labels_follow_edits;
+	if( !edit_autos ) edit_speed = 0;
 	int result = 0, first_track = 1;
-	int plugins_follow_edits = edl->session->plugins_follow_edits;
-	int autos_follow_edits = edl->session->autos_follow_edits;
-	int labels_follow_edits = edl->session->labels_follow_edits;
 	Track *old_track = old_edl->tracks->first;
 	Track *new_track = new_edl->tracks->first;
 	for( ; old_track && new_track; old_track=old_track->next, new_track=new_track->next ) {
@@ -2592,6 +2593,23 @@ int MWindow::normalize_speed(EDL *old_edl, EDL *new_edl)
 		while( old_speed && new_speed && old_speed->equals(new_speed) ) {
 			old_speed = (FloatAuto *)old_speed->next;
 			new_speed = (FloatAuto *)new_speed->next;
+		}
+		if( edit_speed ) {
+			Autos *old_autos = old_track->automation->autos[AUTOMATION_SPEED];
+			Autos *new_autos = new_track->automation->autos[AUTOMATION_SPEED];
+			Auto *old_auto = old_autos ? old_autos->first : 0;
+			Auto *new_auto = new_autos ? new_autos->first : 0;
+			while( old_auto && new_auto ) {
+				int64_t auto_pos = old_auto->position;
+				if( old_speed || new_speed ) {
+					double orig_pos = old_speeds->automation_integral(0, auto_pos, PLAY_FORWARD);
+					auto_pos = new_track->frame_align(new_speeds->speed_position(orig_pos), 1);
+					result = 1;
+				}
+				new_auto->position = auto_pos;
+				old_auto = old_auto->next;
+				new_auto = new_auto->next;
+			}
 		}
 		Edit *old_edit = old_track->edits->first;
 		Edit *new_edit = new_track->edits->first;
@@ -2611,7 +2629,7 @@ int MWindow::normalize_speed(EDL *old_edl, EDL *new_edl)
 			new_edit = new_edit->next;
 		}
 		if( first_track && old_track->is_armed() ) {
-			if( labels_follow_edits ) {
+			if( edit_labels ) {
 				Labels *old_labels = old_edl->labels;
 				Labels *new_labels = new_edl->labels;
 				Label *old_label = old_labels ? old_labels->first : 0;
@@ -2630,7 +2648,7 @@ int MWindow::normalize_speed(EDL *old_edl, EDL *new_edl)
 			}
 			first_track = 0;
 		}
-		if( plugins_follow_edits ) {
+		if( edit_plugins ) {
 			int old_size = old_track->plugin_set.size();
 			int new_size = new_track->plugin_set.size();
 			int n = bmin(old_size, new_size);
@@ -2651,7 +2669,7 @@ int MWindow::normalize_speed(EDL *old_edl, EDL *new_edl)
 					}
 					new_plugin->startproject = plugin_start;
 					new_plugin->length = plugin_end - plugin_start;
-					if( autos_follow_edits ) {
+					if( edit_autos ) {
 						KeyFrames *old_keyframes = old_plugin->keyframes;
 						Auto *old_auto = old_keyframes ? old_keyframes->first : 0;
 						KeyFrames *new_keyframes = new_plugin->keyframes;
@@ -2673,8 +2691,8 @@ int MWindow::normalize_speed(EDL *old_edl, EDL *new_edl)
 				}
 			}
 		}
-		if( autos_follow_edits ) { // must be last
-			for( int i=0; i<AUTOMATION_TOTAL; ++i ) {
+		if( edit_autos ) { // speed must be last
+			for( int i=0; i<AUTOMATION_SPEED; ++i ) {
 				Autos *old_autos = old_track->automation->autos[i];
 				Autos *new_autos = new_track->automation->autos[i];
 				Auto *old_auto = old_autos ? old_autos->first : 0;
@@ -2705,12 +2723,12 @@ void MWindow::speed_before()
 	speed_edl->copy_all(edl);
 }
 
-int MWindow::speed_after(int done)
+int MWindow::speed_after(int done, int edit_speed)
 {
 	int result = 0;
 	if( speed_edl ) {
 		if( done >= 0 )
-			result = normalize_speed(speed_edl, edl);
+			result = normalize_speed(speed_edl, edl, edit_speed);
 		if( done != 0 ) {
 			speed_edl->remove_user();
 			speed_edl = 0;
