@@ -57,10 +57,9 @@ public:
 
 	virtual void get_caption(char *string) {};
 
-
-	int skip;       // if added by selection event for moves
 	EDL *edl;
 	Autos *autos;
+	int id, orig_id;
 	int WIDTH, HEIGHT;
 // Units native to the track
 	int is_default;

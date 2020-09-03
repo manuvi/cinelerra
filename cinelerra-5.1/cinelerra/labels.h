@@ -60,6 +60,7 @@ public:
 	char textstr[BCTEXTLEN];
 // Seconds
 	double position;
+	int id, orig_id;
 };
 
 class Labels : public List<Label>
@@ -98,6 +99,7 @@ public:
 // Get nearest labels or 0 if start or end of timeline
 	Label* prev_label(double position);
 	Label* next_label(double position);
+	Label* get_label(int id);
 
 	Label* label_of(double position); // first label on or after position
 	TimeBar *timebar;

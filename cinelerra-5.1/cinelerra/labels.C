@@ -272,7 +272,9 @@ void Labels::copy_from(Labels *labels)
 
 	for(Label *current = labels->first; current; current = NEXT)
 	{
-		append(new Label(edl, this, current->position, current->textstr));
+		Label *new_label = new Label(edl, this, current->position, current->textstr);
+		new_label->orig_id = current->orig_id;
+		append(new_label);
 	}
 }
 
@@ -460,6 +462,13 @@ Label* Labels::next_label(double position)
 	return current;
 }
 
+Label* Labels::get_label(int id)
+{
+	Label *current = first;
+	while( current && current->orig_id != id ) current = NEXT;
+	return current;
+}
+
 int Labels::insert(double start, double length)
 {      // shift every label including the first one back
 	Label *current;
@@ -541,6 +550,8 @@ Label* Labels::label_of(double position)
 Label::Label()
  : ListItem<Label>()
 {
+	id = EDL::next_id();
+	orig_id = id;
 }
 
 Label::Label(EDL *edl, Labels *labels, double position, const char *textstr)
@@ -550,6 +561,8 @@ Label::Label(EDL *edl, Labels *labels, double position, const char *textstr)
 	this->labels = labels;
 	this->position = position;
 	strcpy(this->textstr, textstr ? textstr : "");
+	id = EDL::next_id();
+	orig_id = id;
 }
 
 

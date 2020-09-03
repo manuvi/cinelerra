@@ -106,6 +106,8 @@ public:
 	Condition *pause_lock;
 // Wait until thread has started
 	Condition *start_lock;
+// Reinit caches
+	Mutex *cache_lock;
 
 	MWindow *mwindow;
 	Canvas *output;

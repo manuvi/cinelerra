@@ -560,6 +560,13 @@ Edit* Edits::editof(int64_t position, int direction, int use_nudge)
 	return 0;     // return 0 on failure
 }
 
+Edit* Edits::get_edit(int id)
+{
+	Edit *current = first;
+	while( current && current->orig_id != id ) current = NEXT;
+	return current;
+}
+
 Edit* Edits::get_playable_edit(int64_t position, int use_nudge)
 {
 	Edit *current;

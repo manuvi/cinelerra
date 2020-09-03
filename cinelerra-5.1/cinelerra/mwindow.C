@@ -4480,26 +4480,20 @@ void MWindow::reset_caches()
 	int locked  = gui->get_window_lock();
 	if( locked ) gui->unlock_window();
 	awindow->gui->stop_vicon_drawing(1);
-	frame_cache->remove_all();
-	wave_cache->remove_all();
-	audio_cache->remove_all();
-	video_cache->remove_all();
-	if( cwindow->playback_engine ) {
-		if( cwindow->playback_engine->audio_cache )
-			cwindow->playback_engine->audio_cache->remove_all();
-		if( cwindow->playback_engine->video_cache )
-			cwindow->playback_engine->video_cache->remove_all();
-	}
+	if( cwindow->playback_engine )
+		cwindow->playback_engine->create_cache();
 	for(int i = 0; i < vwindows.size(); i++) {
 		VWindow *vwindow = vwindows[i];
 		if( !vwindow->is_running() ) continue;
 		if( !vwindow->playback_engine ) continue;
-		if( vwindow->playback_engine->audio_cache )
-			vwindow->playback_engine->audio_cache->remove_all();
-		if( vwindow->playback_engine->video_cache )
-			vwindow->playback_engine->video_cache->remove_all();
+		vwindow->playback_engine->create_cache();
 	}
-	if( locked ) gui->lock_window("MWindow::reset_caches");
+	gui->lock_window("MWindow::reset_caches");
+	frame_cache->remove_all();
+	wave_cache->remove_all();
+	audio_cache->remove_all();
+	video_cache->remove_all();
+	if( !locked ) gui->unlock_window();
 }
 
 void MWindow::remove_from_caches(Indexable *idxbl)

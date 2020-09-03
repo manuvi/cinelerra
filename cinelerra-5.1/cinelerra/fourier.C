@@ -429,9 +429,11 @@ int CrossfadeFFT::process_buffer(int64_t output_sample,
 	}
 
 	input_buffer->set_offset(input_size);
-	result = read_samples(input_sample, need_samples-input_size, input_buffer);
+	if( need_samples > input_size ) {
+		result = read_samples(input_sample, need_samples-input_size, input_buffer);
+		input_sample += step * (need_samples - input_size);
+	}
 	input_buffer->set_offset(0);
-	input_sample += step * (need_samples - input_size);
 	input_size = need_samples;
 
 

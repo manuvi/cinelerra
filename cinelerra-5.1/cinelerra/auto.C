@@ -21,6 +21,7 @@
 
 #include "auto.h"
 #include "autos.h"
+#include "edl.h"
 #include "filexml.h"
 
 Auto::Auto()
@@ -29,10 +30,11 @@ Auto::Auto()
 	this->edl = 0;
 	this->autos = 0;
 	position = 0;
-	skip = 0;
 	WIDTH = xS(10);
 	HEIGHT = yS(10);
 	is_default = 0;
+	id = EDL::next_id();
+	orig_id = id;
 }
 
 Auto::Auto(EDL *edl, Autos *autos)
@@ -41,10 +43,11 @@ Auto::Auto(EDL *edl, Autos *autos)
 	this->edl = edl;
 	this->autos = autos;
 	position = 0;
-	skip = 0;
 	WIDTH = xS(10);
 	HEIGHT = yS(10);
 	is_default = 0;
+	id = EDL::next_id();
+	orig_id = id;
 }
 
 Auto& Auto::operator=(Auto& that)
@@ -66,6 +69,7 @@ void Auto::copy(int64_t start, int64_t end, FileXML *file, int default_only)
 
 void Auto::copy_from(Auto *that)
 {
+	this->orig_id = orig_id;
 	this->position = that->position;
 }
 

@@ -61,6 +61,7 @@ public:
 	int auto_exists_for_editing(double position);
 // Returns auto at exact position, null if non-existent. ignores autokeyframming and align on frames
 	Auto* get_auto_at_position(double position = -1);
+	Auto* get_auto(int id);
 
 // Get keyframe for editing with creation
 // create: <0: always new keyframe, =0: no new keyframe, >0: auto keyframe

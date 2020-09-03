@@ -945,6 +945,11 @@ void AssetPicon::create_objects()
 		if( asset->video_data ) {
 			if( mwindow->preferences->use_thumbnails ) {
 				gui->unlock_window();
+				char string[BCTEXTLEN];
+				sprintf(string, _("Reading %s"), name);
+				mwindow->gui->lock_window("AssetPicon::create_objects");
+				mwindow->gui->show_message(string);
+				mwindow->gui->unlock_window();
 				File *file = mwindow->video_cache->check_out(asset,
 					mwindow->edl,
 					1);
@@ -968,11 +973,6 @@ void AssetPicon::create_objects()
 							asset->width, asset->height,
 							BC_RGB888, -1);
 					}
-					{ char string[BCTEXTLEN];
-					sprintf(string, _("Reading %s"), name);
-					mwindow->gui->lock_window("AssetPicon::create_objects");
-					mwindow->gui->show_message(string);
-					mwindow->gui->unlock_window(); }
 					file->read_frame(gui->temp_picon);
 					mwindow->video_cache->check_in(asset);
 

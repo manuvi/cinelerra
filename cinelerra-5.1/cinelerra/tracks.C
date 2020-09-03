@@ -336,8 +336,7 @@ int Tracks::delete_track(Track *track, int gang)
 		gang = edl->session->gang_tracks != GANG_NONE ? 1 : 0;
 	Track *nxt = track->next;
 	if( gang ) {
-		while( track && !track->master && track->previous )
-			track = track->previous;
+		track = track->gang_master();
 		while( nxt && !nxt->master )
 			nxt = nxt->next;
 	}

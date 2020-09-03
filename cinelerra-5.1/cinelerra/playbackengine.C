@@ -71,6 +71,7 @@ PlaybackEngine::PlaybackEngine(MWindow *mwindow, Canvas *output)
 	tracking_done = new Condition(1, "PlaybackEngine::tracking_done");
 	pause_lock = new Condition(0, "PlaybackEngine::pause_lock");
 	start_lock = new Condition(0, "PlaybackEngine::start_lock");
+	cache_lock = new Mutex("PlaybackEngine::cache_lock");
 	input_lock = new Condition(1, "PlaybackEngine::input_lock");
 	output_lock = new Condition(0, "PlaybackEngine::output_lock", 1);
 
@@ -93,6 +94,7 @@ PlaybackEngine::~PlaybackEngine()
 	delete tracking_done;
 	delete pause_lock;
 	delete start_lock;
+	delete cache_lock;
 	delete renderengine_lock;
 	delete command;
 	delete next_command;
@@ -164,12 +166,14 @@ void PlaybackEngine::wait_render_engine()
 
 void PlaybackEngine::create_cache()
 {
+	cache_lock->lock("PlaybackEngine::create_cache");
 	if( audio_cache )
 		audio_cache->remove_user();
 	if( video_cache )
 		video_cache->remove_user();
 	audio_cache = new CICache(preferences);
 	video_cache = new CICache(preferences);
+	cache_lock->unlock();
 }
 
 

@@ -274,6 +274,12 @@ Auto* Autos::get_auto_at_position(double position)
 	return 0;
 }
 
+Auto* Autos::get_auto(int id)
+{
+	Auto *current = first;
+	while( current && current->orig_id != id ) current = NEXT;
+	return current;
+}
 
 Auto* Autos::get_auto_for_editing(double position, int create)
 {
