@@ -210,6 +210,7 @@ public:
 	KeySpeedOK *key_speed_ok;
 	KeySpeedAutoEdge *auto_edge;
 	KeySpeedAutoSpan *auto_span;
+	int need_undo;
 };
 
 class KeySpeedOK : public BC_Button

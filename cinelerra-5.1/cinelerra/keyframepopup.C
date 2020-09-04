@@ -629,6 +629,7 @@ KeySpeedPatch::KeySpeedPatch(MWindow *mwindow, PatchGUI *gui,
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
+	need_undo = 1;
 }
 KeySpeedPatch::~KeySpeedPatch()
 {
@@ -693,8 +694,10 @@ void KeySpeedPatch::update_speed(float v)
 	float change = v - current->get_value(gui->edge);
 	if( !change ) return;
 	gui->change_source = 1;
-	int need_undo = !speed_autos->auto_exists_for_editing(position);
-	mwindow->undo->update_undo_before(_("speed"), need_undo ? 0 : this);
+	if( need_undo ) {
+		need_undo = 0;
+		mwindow->undo->update_undo_before(_("speed"), this);
+	}
 	current->bump_value(v, gui->edge, gui->span);
 	if( track->is_ganged() ) {
 		TrackCanvas *track_canvas = gui->patchbay->pane->canvas;
@@ -720,8 +723,10 @@ int KeySpeedOK::handle_event()
 {
 	MWindow *mwindow = key_speed_patch->mwindow;
 	mwindow->speed_after(1, 1);
-	mwindow->undo->update_undo_after(_("speed"),
+	if( !key_speed_patch->need_undo ) {
+		mwindow->undo->update_undo_after(_("speed"),
 			LOAD_AUTOMATION + LOAD_EDITS + LOAD_TIMEBAR);
+	}
 	mwindow->resync_guis();
 	mwindow->gui->close_keyvalue_popup();
 	return 1;
