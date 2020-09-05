@@ -30,6 +30,7 @@
 #include "file.h"
 #include "language.h"
 #include "theme.h"
+#include "transportque.inc"
 #include "units.h"
 
 #include <string.h>

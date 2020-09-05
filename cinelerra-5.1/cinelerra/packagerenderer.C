@@ -80,10 +80,19 @@ RenderPackage::~RenderPackage()
 }
 
 
+PackageFile::PackageFile(PackageRenderer *package_renderer)
+{
+	this->package_renderer = package_renderer;
+}
 
+PackageFile::~PackageFile()
+{
+}
 
-
-
+int PackageFile::write_frame_done(int64_t position)
+{
+	return package_renderer->set_video_map(position, BRender::RENDERED);
+}
 
 
 // Used by RenderFarm and in the future, Render, to do packages.
@@ -160,7 +169,7 @@ void PackageRenderer::create_output()
 	else
 		strncpy(asset->path, package->path, sizeof(asset->path));
 
-	file = new File;
+	file = new PackageFile(this);
 	file->set_processors(preferences->processors);
 	result = file->open_file(preferences, asset, 0, 1);
 
@@ -396,13 +405,6 @@ void PackageRenderer::do_video()
 
 					if( video_write_position >= video_write_length ) {
 						result = file->write_video_buffer(video_write_position);
-// Update the brender map after writing the files.
-						if( package->use_brender ) {
-							for( int i = 0; i < video_write_position && !result; i++ ) {
-								result = set_video_map(video_position + 1 - video_write_position + i,
-									BRender::RENDERED);
-							}
-						}
 						video_write_position = 0;
 					}
 				}
@@ -438,12 +440,6 @@ void PackageRenderer::stop_output()
 		delete compressed_output;
 		if( video_write_position )
 			file->write_video_buffer(video_write_position);
-		if( package->use_brender ) {
-			for( int i = 0; i < video_write_position && !error; i++ ) {
-				error = set_video_map(video_position - video_write_position + i,
-					BRender::RENDERED);
-			}
-		}
 		video_write_position = 0;
 		if( !error ) file->stop_video_thread();
 		if( mwindow ) {

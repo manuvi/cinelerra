@@ -79,8 +79,11 @@ int Auto::interpolate_from(Auto *a1, Auto *a2, int64_t new_position, Auto *templ
 	if( !templ ) templ = previous;
 	if( !templ && this->autos )
 		templ = this->autos->default_auto;
-	if( templ )
+	if( templ ) {
+		int orig_id = this->orig_id;
 		copy_from(templ);
+		this->orig_id = orig_id;
+	}
 	position = new_position;
 	return 0;
 }

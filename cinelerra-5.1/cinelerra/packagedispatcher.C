@@ -279,9 +279,11 @@ RenderPackage* PackageDispatcher::get_package(double frames_per_second,
 			result->video_start = video_position;
 			result->audio_end = result->audio_start +
 				Units::to_int64(scaled_len * default_asset->sample_rate);
+			if( result->audio_end > audio_end ) result->audio_end = audio_end;
 			result->video_end = result->video_start +
 				Units::to_int64(scaled_len * default_asset->frame_rate);
-			if(result->video_end == result->video_start) result->video_end++;
+			if( result->video_end > video_end ) result->video_end = video_end;
+			if( result->video_end == result->video_start ) result->video_end++;
 			audio_position = result->audio_end;
 			video_position = result->video_end;
 			result->audio_do = default_asset->audio_data;

@@ -29,9 +29,10 @@
 #include "cache.inc"
 #include "edit.inc"
 #include "edl.inc"
-#include "file.inc"
+#include "file.h"
 #include "maxchannels.h"
 #include "mwindow.inc"
+#include "packagerenderer.inc"
 #include "playabletracks.inc"
 #include "playbackconfig.inc"
 #include "pluginserver.inc"
@@ -66,6 +67,15 @@ public:
 	int audio_do;
 };
 
+class PackageFile : public File
+{
+public:
+	PackageFile(PackageRenderer *package_renderer);
+	~PackageFile();
+	int write_frame_done(int64_t position);
+
+	PackageRenderer *package_renderer;
+};
 
 
 
@@ -131,7 +141,7 @@ public:
 	int64_t audio_position;
 	int64_t audio_preroll;
 	int64_t audio_read_length;
-	File *file;
+	PackageFile *file;
 // This is 1 if an error is encountered.
 	int result;
 	VFrame ***video_output;

@@ -22,8 +22,10 @@
 
 #include "asset.inc"
 #include "cache.inc"
+#include "edl.inc"
 #include "filebase.h"
 #include "file.inc"
+#include "maxchannels.h"
 #include "renderengine.inc"
 #include "samples.inc"
 #include "transportque.inc"

@@ -45,7 +45,6 @@
 #include "preferences.inc"
 #include "samples.inc"
 #include "vframe.inc"
-#include "packagingengine.h"
 
 // ======================================= include file types here
 
@@ -56,7 +55,7 @@ class File
 {
 public:
 	File();
-	~File();
+	virtual ~File();
 
 	int probe();
 // Get attributes for various file formats.
@@ -266,6 +265,8 @@ public:
 	int bytes_per_sample(int bits); // Convert the bit descriptor into a byte count.
 // get record stream file descriptor
 	int record_fd();
+// brender update video map
+	virtual int write_frame_done(int64_t position) { return 0; }
 
 	Asset *asset;    // Copy of asset since File outlives EDL
 	FileBase *file; // virtual class for file type

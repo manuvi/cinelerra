@@ -22,6 +22,7 @@
 #include "asset.h"
 #include "arender.h"
 #include "cache.h"
+#include "edl.h"
 #include "filebase.h"
 #include "file.h"
 #include "fileref.h"

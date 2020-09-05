@@ -277,16 +277,20 @@ void FileThread::run()
 					else
 					if(do_video)
 					{
-						if(compressed)
-						{
-							for(j = 0; j < file->asset->layers && !result; j++)
-								for(i = 0; i < output_size[local_buffer] && !result; i++)
-									result = file->write_compressed_frame(video_buffer[local_buffer][j][i]);
+						int layers = 1, count = output_size[local_buffer];
+						VFrame ***frames = video_buffer[local_buffer];
+						if( compressed ) {
+							layers = file->asset->layers;
+							for( j=0; j<layers && !result; ++j )
+								for( i=0; i<count && !result; ++i )
+									result = file->write_compressed_frame(frames[j][i]);
 						}
 						else
-						{
-							result = file->write_frames(video_buffer[local_buffer],
-								output_size[local_buffer]);
+							result = file->write_frames(frames, count);
+						if( !result ) {
+							for( j=0; j<layers && !result; ++j )
+								for( i=0; i<count && !result; ++i )
+									file->write_frame_done(frames[j][i]->get_number());
 						}
 					}
 

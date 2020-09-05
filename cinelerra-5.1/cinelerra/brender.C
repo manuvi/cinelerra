@@ -230,56 +230,36 @@ void BRender::allocate_map(int64_t brender_start, int64_t start, int64_t end)
 
 int BRender::set_video_map(int64_t position, int value)
 {
-	int update_gui = 0;
+printf("BRender::set_video_map(%jd, %d)\n", position, value);
 	map_lock->lock("BRender::set_video_map");
-
 
 	if(value == BRender::NOT_SCANNED)
 	{
 		printf(_("BRender::set_video_map called to set NOT_SCANNED\n"));
 	}
-
-// Preroll
-	if(position < 0)
-	{
-		;
-	}
-	else
-// In range
-	if(position < map_size)
-	{
-		map[position] = value;
-	}
-	else
-// Obsolete EDL
-	{
+	if( position < 0) {} // Preroll
+	else if( position < map_size ) map[position] = value; // In range
+	else // Obsolete EDL
 		printf(_("BRender::set_video_map %jd: attempt to set beyond end of map %jd.\n"),
 			position, map_size);
-	}
 
+	int update_gui = 0;
 // Maintain last contiguous here to reduce search time
-	if(position == last_contiguous && last_contiguous < map_size )
-	{
-		int i;
-		for(i = position + 1; i < map_size && map[i]; i++)
-		{
-			;
-		}
-		last_contiguous = i;
+	if( position == last_contiguous && last_contiguous < map_size ) {
+		while( last_contiguous < map_size && map[last_contiguous] )
+			++last_contiguous;
+		if( last_contiguous >= map_size ) update_gui = 1;
 		mwindow->session->brender_end = (double)last_contiguous /
 			mwindow->edl->session->frame_rate;
 
-		if(timer->get_difference() > 1000 || last_contiguous >= map_size)
-		{
-			update_gui = 1;
-			timer->update();
-		}
 	}
+	if( timer->get_difference() > 1000 )
+		update_gui = 1;
 
 	map_lock->unlock();
 
-	if(update_gui)
-	{
+	if( update_gui ) {
+		timer->update();
 		mwindow->gui->lock_window("BRender::set_video_map");
 		mwindow->gui->update_timebar(1);
 		mwindow->gui->unlock_window();
