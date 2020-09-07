@@ -221,17 +221,18 @@ void MainSession::default_window_positions(int window_config)
 			}
 		}
 		if( left_w > 0 ) {
+			int min_x = INT_MAX;
 			for( int s=0; s<xin_screens; ++s ) {
 				if( display_info.xinerama_geometry(s, x, y, w, h) )
 					continue;
-				if( !y && x == left_w ) {
+				if( !y && x >= left_w && x < min_x ) {
+					min_x = x;
 					right_w = w;
 					screens = 2;
-					break;
 				}
 			}
 			if( window_config == 1 ) {
-				root_x = left_w;
+				root_x = min_x;
 				root_w = right_w;
 			}
 			else {

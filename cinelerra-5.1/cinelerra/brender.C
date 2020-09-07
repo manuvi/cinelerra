@@ -230,7 +230,7 @@ void BRender::allocate_map(int64_t brender_start, int64_t start, int64_t end)
 
 int BRender::set_video_map(int64_t position, int value)
 {
-printf("BRender::set_video_map(%jd, %d)\n", position, value);
+//printf("BRender::set_video_map(%jd, %d)\n", position, value);
 	map_lock->lock("BRender::set_video_map");
 
 	if(value == BRender::NOT_SCANNED)
