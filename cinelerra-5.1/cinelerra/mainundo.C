@@ -219,11 +219,10 @@ int MainUndo::undo()
 		}
 	}
 
+	mwindow->reset_caches(1);
 	reset_creators();
-	mwindow->reset_caches();
 	return 0;
 }
-
 
 int MainUndo::redo()
 {
@@ -247,8 +246,8 @@ int MainUndo::redo()
 				update_caption(current ? current->get_description() : "");
 		}
 	}
+	mwindow->reset_caches(1);
 	reset_creators();
-	mwindow->reset_caches();
 //dump();
 	return 0;
 }

@@ -300,3 +300,16 @@ int64_t FileBase::base_memory_usage()
 }
 
 
+VFrame *FileBase::new_cache_frame(VFrame *vframe, int64_t position)
+{
+	return file->new_cache_frame(vframe, position, 0);
+}
+void FileBase::put_cache_frame()
+{
+	return file->put_cache_frame();
+}
+int FileBase::get_use_cache()
+{
+	return file->get_use_cache();
+}
+

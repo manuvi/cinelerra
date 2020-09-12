@@ -344,6 +344,25 @@ int File::delete_oldest()
 	return frame_cache->delete_oldest();
 }
 
+// create cache frame using input vframe as template
+VFrame *File::new_cache_frame(VFrame *vframe, int64_t position, int first_frame)
+{
+	return frame_cache->new_cache_frame(position,
+		vframe->get_w(), vframe->get_h(), vframe->get_color_model(),
+		current_layer, asset->frame_rate, first_frame);
+}
+
+void File::put_cache_frame()
+{
+	return frame_cache->put_cache_frame();
+}
+
+int File::get_use_cache()
+{
+	return use_cache;
+}
+
+
 // file driver in order of probe precidence
 //  can be reordered in preferences->interface
 const char *File::default_probes[] = { 

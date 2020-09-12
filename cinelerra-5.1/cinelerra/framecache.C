@@ -204,87 +204,67 @@ void FrameCache::put_frame(VFrame *frame, int64_t position,
 	lock->unlock();
 }
 
-
-
+VFrame *FrameCache::new_cache_frame(int64_t position, int w, int h,
+		int color_model, int layer, double frame_rate, int first_frame)
+{
+	FrameCacheItem *item = 0;
+	lock->lock("FrameCache::put_vframe");
+	if( frame_exists(position, layer, frame_rate, color_model, w, h, &item, -1) ) {
+		lock->unlock();
+		return 0;
+	}
+	if( first_frame ) {
+		while( last ) delete last;
+		total_items = 0;
+		current_item = 0;
+	}
+	item = new FrameCacheItem;
+	item->data = new VFrame(w, h, color_model);
+	item->position = position;
+	item->layer = layer;
+	item->frame_rate = frame_rate;
+	item->source_id = -1;
+	item->age = position < 0 ? INT_MAX : get_age();
+	put_item(item);
+	return item->data;
+}
+void FrameCache::put_cache_frame()
+{
+	lock->unlock();
+}
 
 int FrameCache::frame_exists(VFrame *format, int64_t position,
 	int layer, double frame_rate, FrameCacheItem **item_return, int source_id)
 {
 	FrameCacheItem *item = (FrameCacheItem*)get_item(position);
-// printf("FrameCache::frame_exists %d item=%p item->position=%jd position=%jd\n",
-// __LINE__,
-// item,
-// item ? item->position : 0,
-// position);
-
-	while(item && item->position == position)
-	{
-// printf("FrameCache::frame_exists %d %f,%f %d,%d %d,%d format match=%d item->data=%p\n",
-// __LINE__,
-// item->frame_rate,
-// frame_rate,
-// item->layer,
-// layer,
-// item->source_id,
-// source_id,
-// format->equivalent(item->data, 1),
-// item->data);
-// format->dump_params();
-
-// This originally tested the frame stacks because a change in the
-// interpolate plugin could cause CR2 to interpolate or not interpolate.
-// This was disabled.
-		if(EQUIV(item->frame_rate, frame_rate) &&
-			layer == item->layer &&
-			format->equivalent(item->data, 0) &&
-			(source_id == -1 || item->source_id == -1 || source_id == item->source_id))
-		{
+	for( ; item && item->position == position; item = (FrameCacheItem*)item->next ) {
+		if( !EQUIV(item->frame_rate, frame_rate) ) continue;
+		if( layer != item->layer ) continue;
+		if( !format->equivalent(item->data, 0) ) continue;
+		if( source_id == -1 || item->source_id == -1 ||
+		    source_id == item->source_id ) {
 			*item_return = item;
 			return 1;
 		}
-		else
-			item = (FrameCacheItem*)item->next;
 	}
 	return 0;
 }
 
-int FrameCache::frame_exists(int64_t position,
-	int layer,
-	double frame_rate,
-	int color_model,
-	int w,
-	int h,
-	FrameCacheItem **item_return,
-	int source_id)
+int FrameCache::frame_exists(int64_t position, int layer, double frame_rate,
+		int color_model, int w, int h, FrameCacheItem **item_return, int source_id)
 {
 	FrameCacheItem *item = (FrameCacheItem*)get_item(position);
-	while(item && item->position == position)
-	{
-// printf("FrameCache::frame_exists %d %f,%f %d,%d %d,%d %d,%d\n",
-// __LINE__,
-// item->frame_rate,
-// frame_rate,
-// item->layer,
-// layer,
-// item->data->get_color_model(),
-// color_model,
-// item->data->get_w(),
-// w,
-// item->data->get_h(),
-// h);
-
-		if(EQUIV(item->frame_rate, frame_rate) &&
-			layer == item->layer &&
-			color_model == item->data->get_color_model() &&
-			w == item->data->get_w() &&
-			h == item->data->get_h() &&
-			(source_id == -1 || item->source_id == -1 || source_id == item->source_id))
-		{
+	for( ; item && item->position == position ; item = (FrameCacheItem*)item->next ) {
+		if( !EQUIV(item->frame_rate, frame_rate) ) continue;
+		if( layer != item->layer ) continue;
+		if( color_model != item->data->get_color_model() ) continue;
+		if( w != item->data->get_w() ) continue;
+		if( h != item->data->get_h() ) continue;
+		if( source_id == -1 || item->source_id == -1 ||
+		    source_id == item->source_id ) {
 			*item_return = item;
 			return 1;
 		}
-		else
-			item = (FrameCacheItem*)item->next;
 	}
 	return 0;
 }

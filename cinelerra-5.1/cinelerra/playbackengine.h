@@ -86,6 +86,7 @@ public:
 	void stop_playback(int wait);
 	void refresh_frame(int change_type, EDL *edl, int dir=1);
 	int get_direction();
+	void update_preferences(Preferences *prefs);
 
 // Maintain caches through console changes
 	CICache *audio_cache, *video_cache;

@@ -132,6 +132,10 @@ public:
 		int channel,
 		int64_t len);
 	void allocate_history(int len);
+// create cache frames
+	VFrame *new_cache_frame(VFrame *vframe, int64_t position);
+	void put_cache_frame();
+	int get_use_cache();
 
 // For static functions to access it
 	Asset *asset;

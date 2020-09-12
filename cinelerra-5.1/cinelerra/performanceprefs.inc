@@ -44,6 +44,7 @@ class PrefsRenderFarmSortNodes;
 class PrefsRenderFarmReset;
 class PrefsRenderFarmWatchdog;
 class CICacheSize;
+class CacheTransitions;
 class PerfsUseHWDev;
 
 #endif

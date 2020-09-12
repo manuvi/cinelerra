@@ -124,6 +124,7 @@ BC_Window* PreferencesThread::new_gui()
 	redraw_overlays = 0;
 	close_assets = 0;
 	reload_plugins = 0;
+	reset_caches = 0;
 	//int need_new_indexes = 0;
 	rerender = 0;
 
@@ -251,6 +252,9 @@ int PreferencesThread::apply_settings()
 		File::setenv_path("LV2_PATH", preferences->lv2_path, 1);
 		mwindow->restart_status = -1;
 	}
+	if( preferences->cache_size != mwindow->preferences->cache_size ||
+	    preferences->cache_transitions != mwindow->preferences->cache_transitions )
+		reset_caches = 1;
 
 	if( mwindow->preferences->perpetual_session && !preferences->perpetual_session )
 		mwindow->remove_undo_data();
@@ -269,6 +273,8 @@ int PreferencesThread::apply_settings()
 	else {
 		BC_Trace::disable_locks();
 	}
+	if( reset_caches )
+		mwindow->reset_caches(0);
 
 	mwindow->reset_android_remote();
 	int ffmpeg_early_probe = mwindow->preferences->get_file_probe_armed("FFMPEG_Early");

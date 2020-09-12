@@ -466,6 +466,12 @@ int PlaybackEngine::get_direction()
 	return TransportCommand::get_direction(curr_command);
 }
 
+void PlaybackEngine::update_preferences(Preferences *prefs)
+{
+	preferences->copy_from(prefs);
+	create_render_engine();
+}
+
 void PlaybackEngine::send_command(int command, EDL *edl, int wait_tracking, int use_inout)
 {
 //printf("PlaybackEngine::send_command 1 %d\n", command);

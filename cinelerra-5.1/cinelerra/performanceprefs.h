@@ -46,6 +46,7 @@ public:
 	int hot_node;
 
 	CICacheSize *cache_size;
+	CacheTransitions *cache_transitions;
 	PerfsUseHWDev *use_hw_dev;
 
 	enum
@@ -330,6 +331,18 @@ class CICacheSize : public BC_TumbleTextBox
 {
 public:
 	CICacheSize(int x, int y,
+		PreferencesWindow *pwindow,
+		PerformancePrefs *subwindow);
+
+	int handle_event();
+
+	PreferencesWindow *pwindow;
+};
+
+class CacheTransitions : public BC_CheckBox
+{
+public:
+	CacheTransitions(int x, int y,
 		PreferencesWindow *pwindow,
 		PerformancePrefs *subwindow);
 

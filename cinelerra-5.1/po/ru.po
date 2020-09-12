@@ -1,20 +1,18 @@
-# translation of cin.po to russian
-# translation of ru-4.po to
-# translation of ru-3.po to
-# translation of ru-2.po to
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# Translation of Cinelerra-GG Infinity to Russian
+# Copyright (C) 2006-2019 Heroine Virtual Ltd. by Adam Williams
+# Copyright (C) 2007-2020 mods for Cinelerra-GG by W.P.Morrow aka goodguy
 # This file is distributed under the same license as the PACKAGE package.
 #
-# Andrew Randrianasulu <randrianasulu@gmail.com>, 2019, 2020.
 # Igor Vladimirsky aka igor_ubuntu <sitelve@gmail.com> 2016-2018
+# Andrew Randrianasulu randrianasulu@gmail.com> 2019-2020
 msgid ""
 msgstr ""
-"Project-Id-Version: CinelerraGG\n"
-"Report-Msgid-Bugs-To: \n"
+"Project-Id-Version: Cinelerra-GG Infinity\n"
+"Report-Msgid-Bugs-To: <cin@lists.cinelerra-gg.org>\n"
 "POT-Creation-Date: 2020-09-01 04:28+0300\n"
 "PO-Revision-Date: 2020-09-06 15:06+0300\n"
 "Last-Translator: Andrew Randrianasulu <randrianasulu@gmail.com>\n"
-"Language-Team: русский <Igor Vladimirsky aka igor_ubuntu <sitelve@gmail.com>>\n"
+"Language-Team: <randrianasulu@gmail.com>\n"
 "Language: ru_RU\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"

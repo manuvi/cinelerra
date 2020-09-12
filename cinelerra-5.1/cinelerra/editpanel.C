@@ -1127,7 +1127,7 @@ EditUndo::EditUndo(MWindow *mwindow, EditPanel *panel, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	set_tooltip(_("Undo ( z )"));
+	set_tooltip(_("Undo ( z or Ctrl-z)"));
 }
 EditUndo::~EditUndo()
 {

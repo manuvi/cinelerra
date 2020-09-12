@@ -236,6 +236,11 @@ public:
 // Get nearest colormodel that can be decoded without a temporary frame.
 // Used by read_frame.
 	int colormodel_supported(int colormodel);
+// create frame_cache vframe for position, use template vframe
+// clear cache if first frame is a read miss
+	VFrame *new_cache_frame(VFrame *vframe, int64_t position, int first_frame);
+	void put_cache_frame();
+	int get_use_cache();
 
 // stubs for now
 	static const char *compressiontostr(const char *codec) { return codec; }

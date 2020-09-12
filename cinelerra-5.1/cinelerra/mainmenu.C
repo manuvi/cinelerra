@@ -638,7 +638,7 @@ int DumpUndo::handle_event()
 
 // ================================================= edit
 
-Undo::Undo(MWindow *mwindow) : BC_MenuItem(_("Undo"), "z", 'z')
+Undo::Undo(MWindow *mwindow) : BC_MenuItem(_("Undo"), "z or Ctrl-z", 'z')
 {
 	this->mwindow = mwindow;
 }

@@ -71,6 +71,7 @@ public:
 	int rerender;
 	int close_assets;
 	int reload_plugins;
+	int reset_caches;
 	PreferencesWindow *window;
 	MWindow *mwindow;
 // Copy of mwindow preferences

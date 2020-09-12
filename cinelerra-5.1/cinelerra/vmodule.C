@@ -218,73 +218,50 @@ int VModule::import_frame(VFrame *output, VEdit *current_edit,
 //printf("VModule::import_frame %d cache=%p\n", __LINE__, get_cache());
 		if( current_edit->asset ) {
 			get_cache()->age();
-			file = get_cache()->check_out(current_edit->asset,
-				get_edl());
+			file = get_cache()->check_out(current_edit->asset, get_edl());
 //			get_cache()->dump();
 		}
 
 // File found
 		if( file || nested_edl ) {
-// Make all positions based on requested frame rate.
-			int64_t edit_startproject = Units::to_int64(current_edit->startproject *
-				frame_rate /
-				edl_rate);
-			int64_t edit_startsource = Units::to_int64(current_edit->startsource *
-				frame_rate /
-				edl_rate);
-// Source position going forward
-			uint64_t position = direction_position -
-				edit_startproject +
-				edit_startsource;
 			int64_t nested_position = 0;
+// Source position going forward, in edl framerate
+			int64_t pos = Units::to_int64((double)direction_position / frame_rate * edl_rate);
+			int64_t len = pos - current_edit->startproject;
+			FloatAutos *speed_autos = !track->has_speed() ? 0 :
+				(FloatAutos*)track->automation->autos[AUTOMATION_SPEED];
+			if( speed_autos && len > 0 )
+				len = speed_autos->automation_integral(current_edit->startproject, len, PLAY_FORWARD);
+			pos = current_edit->startsource + len;
+// Make positions based on requested frame rate.
+			int64_t position = Units::to_int64((double)pos * frame_rate / edl_rate);
 
-
-
-
-
-// apply speed curve to source position so the timeline agrees with the playback
-			if( track->has_speed() ) {
-// integrate position from start of edit.
-				double speed_position = edit_startsource;
-				FloatAutos *speed_autos = (FloatAutos*)track->automation->autos[AUTOMATION_SPEED];
-				speed_position += speed_autos->automation_integral(edit_startproject,
-						direction_position-edit_startproject, PLAY_FORWARD);
-//printf("VModule::import_frame %d %jd %jd\n", __LINE__, position, (int64_t)speed_position);
-				position = (int64_t)speed_position;
-			}
-
-
-
-
-
-			int asset_w;
-			int asset_h;
-			if( debug ) printf("VModule::import_frame %d\n", __LINE__);
-
-
-// maybe apply speed curve here, so timeline reflects actual playback
-
-
-
-// if we hit the end of stream, freeze at last frame
-			uint64_t max_position = 0;
+			int64_t max_position;
+			int asset_w, asset_h;
 			if( file ) {
+				asset_w = current_edit->asset->width;
+				asset_h = current_edit->asset->height;
 				max_position = Units::to_int64((double)file->get_video_length() *
-					frame_rate /
-					current_edit->asset->frame_rate - 1);
+					frame_rate / current_edit->asset->frame_rate - 1);
 			}
 			else {
+				asset_w = nested_edl->session->output_w;
+				asset_h = nested_edl->session->output_h;
 				max_position = Units::to_int64(nested_edl->tracks->total_length() *
 					frame_rate - 1);
 			}
+// if we hit the end of stream, freeze at last frame
+			CLAMP(position, 0, max_position);
 
-
-			if( position > max_position ) position = max_position;
-			else
-			if( position < 0 ) position = 0;
+			VFrame *&input = commonrender ?
+				((VRender*)commonrender)->input_temp : // Realtime playback
+				input_temp ; // Menu effect
+			VFrame::get_temp(input, asset_w, asset_h, get_edl()->session->color_model);
 
 			int use_cache = renderengine &&
-				renderengine->command->single_frame();
+				( renderengine->command->single_frame() ||
+				  renderengine->command->get_direction() == PLAY_REVERSE );
+
 //			int use_asynchronous = !use_cache &&
 //				renderengine &&
 // Try to make rendering go faster.
@@ -299,24 +276,54 @@ int VModule::import_frame(VFrame *output, VEdit *current_edit,
 //				else
 					file->stop_video_thread();
 
-				int64_t normalized_position = Units::to_int64(position *
-					current_edit->asset->frame_rate /
-					frame_rate);
-// printf("VModule::import_frame %d %lld %lld\n",
-// __LINE__,
-// position,
-// normalized_position);
+// cache transitions
+				VEdit *vnext = (VEdit *)current_edit->next;
+				pos = Units::to_int64((double)input_position / frame_rate * edl_rate);
+				if( renderengine && renderengine->preferences->cache_transitions &&
+				    renderengine->command->get_direction() == PLAY_FORWARD &&
+				    current_edit->next && current_edit->next->transition &&
+				    file->get_video_length() >= 0 && pos >= vnext->startproject &&
+				    pos < vnext->startproject + vnext->transition->length ) {
+					file->set_cache_frames(0);
+					file->set_layer(current_edit->channel);
+					VEdit *vnext = (VEdit *)current_edit->next;
+					Track *track = current_edit->track;
+					FloatAutos *speed_autos = (FloatAutos*)(track->has_speed() ?
+						track->automation->autos[AUTOMATION_SPEED] : 0);
+					int64_t end = vnext->startproject + vnext->transition->length;
+					int first_frame = 1;
+					int count = renderengine->preferences->cache_size /
+						input->get_data_size() / 2;  // try to burn only 1/2 of cache
+					while( !result && pos < end && count > 0 ) {
+						int64_t curr_pos = pos - current_edit->startproject;
+						if( curr_pos > 0 && speed_autos )
+							curr_pos = speed_autos->automation_integral(
+								current_edit->startproject, curr_pos, PLAY_FORWARD);
+						curr_pos += current_edit->startsource;
+						int64_t norm_pos = Units::to_int64((double)curr_pos *
+							current_edit->asset->frame_rate / edl_rate);
+						VFrame *cache_frame = file->new_cache_frame(input, norm_pos, first_frame);
+						if( cache_frame ) {
+							file->set_video_position(norm_pos, 0);
+							result = file->read_frame(cache_frame);
+							file->put_cache_frame();
+						}
+						else if( first_frame ) // already loaded
+							break;
+						first_frame = 0;
+						++pos;  --count;
+					}
+					use_cache = 1;
+				}
+
+				int64_t normalized_position = Units::to_int64((double)position *
+					current_edit->asset->frame_rate / frame_rate);
+//printf("VModule::import_frame %d %lld %lld\n", __LINE__, position, normalized_position);
 				file->set_layer(current_edit->channel);
-				file->set_video_position(normalized_position,
-					0);
-				asset_w = current_edit->asset->width;
-				asset_h = current_edit->asset->height;
-//printf("VModule::import_frame %d normalized_position=%lld\n", __LINE__, normalized_position);
+				file->set_video_position(normalized_position, 0);
 			}
 			else {
 				if( debug ) printf("VModule::import_frame %d\n", __LINE__);
-				asset_w = nested_edl->session->output_w;
-				asset_h = nested_edl->session->output_h;
 // Get source position in nested frame rate in direction of playback.
 				nested_position = Units::to_int64(position *
 					nested_edl->session->frame_rate /
@@ -375,35 +382,14 @@ int VModule::import_frame(VFrame *output, VEdit *current_edit,
 				!EQUIV(in_h, asset_h)) {
 //printf("VModule::import_frame %d file -> temp -> output\n", __LINE__);
 // Get temporary input buffer
-				VFrame **input = 0;
-// Realtime playback
-				if( commonrender ) {
-					VRender *vrender = (VRender*)commonrender;
-//printf("VModule::import_frame %d vrender->input_temp=%p\n", __LINE__, vrender->input_temp);
-					input = &vrender->input_temp;
-				}
-				else {
-// Menu effect
-					input = &input_temp;
-				}
-
-
-				if( (*input) &&
-				   ((*input)->get_w() != asset_w ||
-				   (*input)->get_h() != asset_h) ) {
-					delete (*input);
-					(*input) = 0;
-				}
-
-				if( !(*input) ) {
-					(*input) =
-						new VFrame(asset_w, asset_h,
-							get_edl()->session->color_model);
-				}
+				VFrame **input = commonrender ?  // Realtime playback
+					&((VRender*)commonrender)->input_temp :
+					&input_temp ; // Menu effect
+				VFrame::get_temp(*input, asset_w, asset_h,
+						get_edl()->session->color_model);
 				(*input)->copy_stacks(output);
-
 // file -> temp
-// Cache for single frame only
+// Cache for single frame, reverse playback
 				if( file ) {
 					if( debug ) printf("VModule::import_frame %d this=%p file=%s\n",
 						__LINE__,

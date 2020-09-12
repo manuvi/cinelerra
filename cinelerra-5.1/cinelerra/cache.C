@@ -253,36 +253,29 @@ int CICache::get_oldest()
 int CICache::delete_oldest()
 {
 	int result = 0;
-	total_lock->lock("CICache::delete_oldest");
 	CICacheItem *oldest = 0;
-// at least 2
-	if( first != last ) {
-		oldest = first;
-		CICacheItem *current = oldest->next;
-		while( current ) {
+	total_lock->lock("CICache::delete_oldest");
+	if( first != last ) { // at least 2
+		CICacheItem *current = first;
+		for( ; !oldest && current; current=current->next )
+			if( !current->checked_out ) oldest = current;
+		for( ; current; current=current->next ) {
+			if( current->checked_out ) continue;
 			if( current->age < oldest->age )
 				oldest = current;
-			current = current->next;
+		}
+// delete oldest of at least 2 cache files
+		if( oldest ) {
+			remove_pointer(oldest);
+			result = 1;
 		}
 	}
 // settle for just deleting one frame
-	else if( first )
+	else if( first && !first->checked_out )
 		result = first->file->delete_oldest();
-	if( oldest ) {
-// Got the oldest file.  Try requesting cache purge from it.
-		if( oldest->file )
-			oldest->file->purge_cache();
-// Delete the file if cache already empty and not checked out.
-		if( !oldest->checked_out )
-			remove_pointer(oldest);
-		else
-			oldest = 0;
-	}
 	total_lock->unlock();
-	if( oldest ) {
+	if( oldest )
 		oldest->Garbage::remove_user();
-		result = 1;
-	}
 	return result;
 }
 

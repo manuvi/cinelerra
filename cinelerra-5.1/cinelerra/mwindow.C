@@ -303,7 +303,7 @@ MWindow::~MWindow()
 	gui->del_keyboard_listener(
 		(int (BC_WindowBase::*)(BC_WindowBase *))
 		&MWindowGUI::keyboard_listener);
-	reset_caches();
+	reset_caches(0);
 #if 0
 // release the hounds
 	if( awindow && awindow->gui ) awindow->gui->close(0);
@@ -4089,18 +4089,18 @@ void MWindow::update_preferences(Preferences *prefs)
 	if( prefs != preferences )
 		preferences->copy_from(prefs);
 	if( cwindow->playback_engine )
-		cwindow->playback_engine->preferences->copy_from(prefs);
+		cwindow->playback_engine->update_preferences(prefs);
 	for(int i = 0; i < vwindows.size(); i++) {
 		VWindow *vwindow = vwindows[i];
 		if( !vwindow->is_running() ) continue;
 		if( vwindow->playback_engine )
-			vwindow->playback_engine->preferences->copy_from(prefs);
+			vwindow->playback_engine->update_preferences(prefs);
 	}
 	for(int i = 0; i < zwindows.size(); i++) {
 		ZWindow *zwindow = zwindows[i];
 		if( !zwindow->is_running() ) continue;
 		if( zwindow->zgui->playback_engine )
-			zwindow->zgui->playback_engine->preferences->copy_from(prefs);
+			zwindow->zgui->playback_engine->update_preferences(prefs);
 	}
 }
 
@@ -4475,9 +4475,8 @@ int MWindow::create_aspect_ratio(float &w, float &h, int width, int height)
 	return 0;
 }
 
-void MWindow::reset_caches()
+void MWindow::reset_caches(int locked)
 {
-	int locked  = gui->get_window_lock();
 	if( locked ) gui->unlock_window();
 	awindow->gui->stop_vicon_drawing(1);
 	if( cwindow->playback_engine )

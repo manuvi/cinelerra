@@ -133,7 +133,8 @@ int VRender::process_buffer(int64_t input_position,
 	int use_vconsole = 1;
 	int use_brender = 0;
 	int result = 0;
-	int use_cache = renderengine->command->single_frame();
+	int use_cache = renderengine->command->single_frame() ||
+		renderengine->command->get_direction() == PLAY_REVERSE;
 // 	int use_asynchronous = 
 // 		renderengine->command->realtime && 
 // 		renderengine->get_edl()->session->video_every_frame &&

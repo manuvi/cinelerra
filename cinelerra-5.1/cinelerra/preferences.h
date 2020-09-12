@@ -156,6 +156,7 @@ public:
 // Several caches of cache_size exist so multiply by 4.
 // rendering, playback, timeline, preview
 	int64_t cache_size;
+	int cache_transitions;
 
 	int use_renderfarm;
 	int renderfarm_port;

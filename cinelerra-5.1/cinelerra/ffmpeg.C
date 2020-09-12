@@ -270,7 +270,8 @@ FFStream::FFStream(FFMPEG *ffmpeg, AVStream *st, int fidx)
 	frm_count = 0;
 	nudge = AV_NOPTS_VALUE;
 	seek_pos = curr_pos = 0;
-	seeked = 1;  eof = 0;
+	seeking = 0; seeked = 1;
+	eof = 0;
 	reading = writing = 0;
 	hw_pixfmt = AV_PIX_FMT_NONE;
 	hw_device_ctx = 0;
@@ -714,6 +715,7 @@ int FFStream::seek(int64_t no, double rate)
 		}
 	}
 	if( pos == curr_pos ) return 0;
+	seeking = -1;
 	double secs = pos < 0 ? 0. : pos / rate;
 	AVRational time_base = st->time_base;
 	int64_t tstmp = time_base.num > 0 ? secs * time_base.den/time_base.num : 0;
@@ -1222,8 +1224,20 @@ int FFVideoStream::load(VFrame *vframe, int64_t pos)
 	int i = MAX_RETRY + pos - curr_pos;
 	while( ret>=0 && !flushed && curr_pos<=pos && --i>=0 ) {
 		ret = read_frame(frame);
-		if( ret > 0 ) ++curr_pos;
+		if( ret > 0 ) {
+			if( frame->key_frame && seeking < 0 )
+				seeking = 1;
+			if( ffmpeg->file_base->get_use_cache() && seeking > 0 && curr_pos < pos ) {
+				VFrame *cache_frame = ffmpeg->file_base->new_cache_frame(vframe, curr_pos);
+				if( cache_frame ) {
+					ret = convert_cmodel(cache_frame, frame);
+					ffmpeg->file_base->put_cache_frame();
+				}
+			}
+			++curr_pos;
+		}
 	}
+	seeking = 0;
 	if( frame->format == AV_PIX_FMT_NONE || frame->width <= 0 || frame->height <= 0 )
 		ret = -1;
 	if( ret >= 0 ) {

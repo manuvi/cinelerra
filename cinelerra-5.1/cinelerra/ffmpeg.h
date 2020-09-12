@@ -138,7 +138,7 @@ public:
 	int64_t seek_pos, curr_pos;
 	int fidx;
 	int reading, writing;
-	int seeked, eof;
+	int seeking, seeked, eof;
 
 	int hw_pixfmt;
 	AVBufferRef *hw_device_ctx;

@@ -85,6 +85,13 @@ public:
 		double frame_rate,
 		int use_copy,
 		Indexable *indexable);
+// create new cache vframe at position, return 0 if it already exists
+// if first_frame set, clear cache before new vframe created
+// if new vframe created, leave cache locked for frame load
+	VFrame *new_cache_frame(int64_t position, int w, int h,
+			int color_model, int layer, double frame_rate,
+			int first_frame);
+	void put_cache_frame();
 
 	void dump();
 

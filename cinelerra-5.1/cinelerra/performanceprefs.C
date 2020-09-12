@@ -63,7 +63,6 @@ void PerformancePrefs::create_objects()
 	char string[BCTEXTLEN];
 	BC_Resources *resources = BC_WindowBase::get_resources();
 	BC_WindowBase *win;
-	int maxw, curw;
 
 	node_list = 0;
 	generate_node_list();
@@ -73,37 +72,30 @@ void PerformancePrefs::create_objects()
 
 	int y0 = y;
 	win = add_subwindow(new BC_Title(x, y + ys5, _("Cache size (MB):"), MEDIUMFONT, resources->text_default));
-	maxw = win->get_w();
-	int x1 = x + xmargin4;
-	win = add_subwindow(new BC_Title(x1, y + ys5, _("Use HW Device:")));
-	x1 += win->get_w() + xs5;
-	PrefsUseHWDev *use_hw_dev = new PrefsUseHWDev(pwindow, this, x1, y);
-	use_hw_dev->create_objects();
-
+	int maxw = win->get_w();
 	int y1 = y += ys30;
-	win = add_subwindow(new BC_Title(x, y + ys5, _("Seconds to preroll renders:")));
-	if((curw = win->get_w()) > maxw)
-		maxw = curw;
-	maxw += x + xs5;
-
-	cache_size = new CICacheSize(maxw, y0, pwindow, this);
+	win = add_subwindow(new BC_Title(x, y1 + ys5, _("Seconds to preroll renders:")));
+	maxw = bmax(win->get_w(), maxw);
+	int x2 = x + maxw + xs5;
+	int y2 = y += ys30;
+	cache_size = new CICacheSize(x2, y0, pwindow, this);
 	cache_size->create_objects();
-
-	add_subwindow(new BC_Title(x, y + ys5, _("Seconds to preroll renders:")));
-	PrefsRenderPreroll *preroll = new PrefsRenderPreroll(pwindow, this, maxw, y1);
+	PrefsRenderPreroll *preroll = new PrefsRenderPreroll(pwindow, this, x2, y1);
 	preroll->create_objects();
+	add_subwindow(new PrefsForceUniprocessor(pwindow, x, y2));
 	y += ys30;
 
-	x1 = x + xmargin4;
-	BC_Title *smp_title = new BC_Title(x1, y + ys5, _("Project SMP cpus:"));
-	add_subwindow(smp_title);
-	x1 += smp_title->get_w() + xs5;
-	PrefsProjectSMP *proj_smp = new PrefsProjectSMP(pwindow, this, x1, y);
+	int x1 = x + xmargin4;
+	add_subwindow(cache_transitions = new CacheTransitions(x1, y0, pwindow, this));
+	win = add_subwindow(new BC_Title(x1, y1, _("Use HW Device:")));
+	maxw = win->get_w();
+	win = add_subwindow(new BC_Title(x1, y2, _("Project SMP cpus:")));
+	maxw = bmax(win->get_w(), maxw);
+	x2 = x1 + maxw + xs5;
+	PrefsUseHWDev *use_hw_dev = new PrefsUseHWDev(pwindow, this, x2, y1);
+	use_hw_dev->create_objects();
+	PrefsProjectSMP *proj_smp = new PrefsProjectSMP(pwindow, this, x2, y2);
 	proj_smp->create_objects();
-
-	PrefsForceUniprocessor *force_1cpu = new PrefsForceUniprocessor(pwindow, x, y);
-	add_subwindow(force_1cpu);
-	y += ys30;
 
 // Background rendering
 	add_subwindow(new BC_Bar(xs5, y, get_w() - xs10));
@@ -319,6 +311,20 @@ int CICacheSize::handle_event()
 	result = (int64_t)atol(get_text()) * 0x100000;
 	CLAMP(result, MIN_CACHE_SIZE, MAX_CACHE_SIZE);
 	pwindow->thread->preferences->cache_size = result;
+	return 0;
+}
+
+CacheTransitions::CacheTransitions(int x, int y,
+	PreferencesWindow *pwindow, PerformancePrefs *subwindow)
+ : BC_CheckBox(x, y, pwindow->thread->preferences->cache_transitions,
+	_("Cache Transitions"))
+{
+	this->pwindow = pwindow;
+}
+
+int CacheTransitions::handle_event()
+{
+	pwindow->thread->preferences->cache_transitions = get_value();
 	return 0;
 }
 

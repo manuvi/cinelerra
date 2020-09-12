@@ -565,7 +565,7 @@ public:
 	void remove_indexfile(Indexable *indexable);
 	void rebuild_indices();
 // Asset removal from caches
-	void reset_caches();
+	void reset_caches(int locked);
 	void remove_from_caches(Indexable *idxbl);
 	void remove_assets_from_project(int push_undo, int redraw, int delete_indexes,
 		ArrayList<Indexable*> *drag_assets /* mwindow->session->drag_assets */,

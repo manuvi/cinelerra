@@ -1562,7 +1562,7 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls, int load_mode,
 // Delete current project
 	if( load_mode == LOADMODE_REPLACE ||
 	    load_mode == LOADMODE_REPLACE_CONCATENATE ) {
-		reset_caches();
+		reset_caches(1);
 		edl->save_defaults(defaults);
 		hide_plugins();
 		edl->Garbage::remove_user();

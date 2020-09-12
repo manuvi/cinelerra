@@ -98,8 +98,8 @@ void New::create_new_edl()
 int New::create_new_project(int load_mode)
 {
 	mwindow->stop_playback(0);
+	mwindow->reset_caches(0);
 	mwindow->gui->lock_window();
-	mwindow->reset_caches();
 
 	memcpy(new_edl->session->achannel_positions,
 		&mwindow->preferences->channel_positions[new_edl->session->audio_channels - 1],

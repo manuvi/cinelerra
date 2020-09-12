@@ -59,6 +59,7 @@ Preferences::Preferences()
 	if( strlen(index_directory) )
 		fs.complete_path(index_directory);
 	cache_size = 0x10000000;
+	cache_transitions = 1;
 	index_size = 0x400000;
 	index_count = 500;
 	use_thumbnails = 1;
@@ -206,6 +207,7 @@ void Preferences::copy_from(Preferences *that)
 	for( int i=0; i<that->file_probes.size(); ++i )
 		this->file_probes.append(new ProbePref(*that->file_probes[i]));
 	cache_size = that->cache_size;
+	cache_transitions = that->cache_transitions;
 	project_smp = that->project_smp;
 	force_uniprocessor = that->force_uniprocessor;
 	strcpy(lv2_path, that->lv2_path);
@@ -387,6 +389,7 @@ int Preferences::load_defaults(BC_Hash *defaults)
 	use_brender = defaults->get("USE_BRENDER", use_brender);
 	brender_fragment = defaults->get("BRENDER_FRAGMENT", brender_fragment);
 	cache_size = defaults->get("CACHE_SIZE", cache_size);
+	cache_transitions = defaults->get("CACHE_TRANSITIONS", cache_transitions);
 	local_rate = defaults->get("LOCAL_RATE", local_rate);
 	use_renderfarm = defaults->get("USE_RENDERFARM", use_renderfarm);
 	renderfarm_port = defaults->get("RENDERFARM_PORT", renderfarm_port);
@@ -485,6 +488,7 @@ int Preferences::save_defaults(BC_Hash *defaults)
 	defaults->update("ANDROID_PORT", android_port);
 
 	defaults->update("CACHE_SIZE", cache_size);
+	defaults->update("CACHE_TRANSITIONS", cache_transitions);
 	defaults->update("INDEX_DIRECTORY", index_directory);
 	defaults->update("INDEX_SIZE", index_size);
 	defaults->update("INDEX_COUNT", index_count);
