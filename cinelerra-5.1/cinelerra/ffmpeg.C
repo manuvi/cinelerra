@@ -1225,13 +1225,15 @@ int FFVideoStream::load(VFrame *vframe, int64_t pos)
 	while( ret>=0 && !flushed && curr_pos<=pos && --i>=0 ) {
 		ret = read_frame(frame);
 		if( ret > 0 ) {
-			if( frame->key_frame && seeking < 0 )
+			if( frame->key_frame && seeking < 0 ) {
 				seeking = 1;
-			if( ffmpeg->file_base->get_use_cache() && seeking > 0 && curr_pos < pos ) {
-				VFrame *cache_frame = ffmpeg->file_base->new_cache_frame(vframe, curr_pos);
+				ffmpeg->purge_cache();
+			}
+			if( ffmpeg->get_use_cache() && seeking > 0 && curr_pos < pos ) {
+				VFrame *cache_frame = ffmpeg->new_cache_frame(vframe, curr_pos);
 				if( cache_frame ) {
 					ret = convert_cmodel(cache_frame, frame);
-					ffmpeg->file_base->put_cache_frame();
+					ffmpeg->put_cache_frame();
 				}
 			}
 			++curr_pos;
@@ -2229,6 +2231,26 @@ int FFMPEG::scan_options(const char *options, AVDictionary *&opts, AVStream *st)
 		if( tag ) st->id = strtol(tag->value,0,0);
 	}
 	return ret;
+}
+
+VFrame *FFMPEG::new_cache_frame(VFrame *vframe, int64_t position)
+{
+	return file_base->file->new_cache_frame(vframe, position, 0);
+}
+
+void FFMPEG::put_cache_frame()
+{
+	return file_base->file->put_cache_frame();
+}
+
+int FFMPEG::get_use_cache()
+{
+	return file_base->file->get_use_cache();
+}
+
+void FFMPEG::purge_cache()
+{
+	file_base->file->purge_cache();
 }
 
 FFCodecRemap::FFCodecRemap()
