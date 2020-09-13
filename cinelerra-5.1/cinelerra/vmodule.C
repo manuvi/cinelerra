@@ -250,6 +250,7 @@ int VModule::import_frame(VFrame *output, VEdit *current_edit,
 				max_position = Units::to_int64(nested_edl->tracks->total_length() *
 					frame_rate - 1);
 			}
+			if( max_position < 0 ) max_position = 0;
 // if we hit the end of stream, freeze at last frame
 			CLAMP(position, 0, max_position);
 

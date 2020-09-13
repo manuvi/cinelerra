@@ -41,6 +41,7 @@ int BC_DisplayInfo::bottom_border = -1;
 int BC_DisplayInfo::right_border = -1;
 int BC_DisplayInfo::auto_reposition_x = -1;
 int BC_DisplayInfo::auto_reposition_y = -1;
+int BC_DisplayInfo::gl_max_texture_size = -1;
 char BC_DisplayInfo::gl_shader_version[64] = { 0, };
 
 BC_DisplayInfo::BC_DisplayInfo(const char *display_name, int show_error)
@@ -240,6 +241,8 @@ int BC_DisplayInfo::gl_probe(Window win)
 		if( shader_version )
 			strncpy(gl_shader_version, shader_version, sizeof(gl_shader_version));
 	}
+	gl_max_texture_size = 0;
+	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &gl_max_texture_size);
 	glXMakeContextCurrent(display, None, None, 0);
 	if( glx_ctx ) glXDestroyContext(display, glx_ctx);
 	if( glx_win ) glXDestroyWindow(display, glx_win);
@@ -386,6 +389,12 @@ int BC_DisplayInfo::get_bottom_border()
 {
 	init_borders();
 	return bottom_border;
+}
+
+int BC_DisplayInfo::get_gl_max_texture_size()
+{
+	init_borders();
+	return gl_max_texture_size;
 }
 
 const char *BC_DisplayInfo::get_gl_shader_version()

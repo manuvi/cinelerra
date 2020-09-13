@@ -182,8 +182,8 @@ void Asset::boundaries()
 // 	CLAMP(sample_rate, 1, 1000000);
 // 	CLAMP(frame_rate, 0.001, 1000000);
  	CLAMP(channels, 0, MAX_CHANNELS-1);
- 	CLAMP(width, 0, 32767);
- 	CLAMP(height, 0, 32767);
+ 	CLAMP(width, 0, ASSET_MAX_WIDTH);
+ 	CLAMP(height, 0, ASSET_MAX_HEIGHT);
 //printf("Asset::boundaries %d %d %f\n", __LINE__, sample_rate, frame_rate);
 }
 

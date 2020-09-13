@@ -29,6 +29,7 @@
 #include "awindow.h"
 #include "awindowgui.h"
 #include "bccmodels.h"
+#include "bcdisplayinfo.h"
 #include "bchash.h"
 #include "bcsignals.h"
 #include "bctimer.h"
@@ -2073,6 +2074,21 @@ void AWindowGUI::update_asset_list()
 			AssetPicon *picon = new AssetPicon(mwindow,
 				this, current);
 			new_assets.append(picon);
+			if( current->width > ASSET_MAX_WIDTH || current->height > ASSET_MAX_HEIGHT ) {
+				eprintf(_("Warning: %s\n"
+					" dimensions %dx%d exceed asset maximum limits %dx%d\n"),
+					current->path, current->width, current->height,
+						ASSET_MAX_WIDTH, ASSET_MAX_HEIGHT);
+			}
+			else if( mwindow->edl->session->playback_config->vconfig->driver == PLAYBACK_X11_GL ) {
+				int texture_limit = BC_DisplayInfo::get_gl_max_texture_size();
+				if( texture_limit >= 0 &&
+				    (current->width >= texture_limit || current->height >= texture_limit) ) {
+					eprintf(_("Warning: %s\n"
+						" dimensions %dx%d exceed OpenGL texture limit %d\n"),
+						current->path, current->width, current->height, texture_limit);
+				}
+			}
 		}
 	}
 
