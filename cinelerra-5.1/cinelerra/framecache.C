@@ -79,159 +79,118 @@ FrameCache::~FrameCache()
 }
 
 
-// Returns 1 if frame exists in cache and copies it to the frame argument.
-int FrameCache::get_frame(VFrame *frame,
-	int64_t position,
-	int layer,
-	double frame_rate,
-	int source_id)
-{
-	lock->lock("FrameCache::get_frame");
-	FrameCacheItem *result = 0;
-
-	if(frame_exists(frame,
-		position,
-		layer,
-		frame_rate,
-		&result,
-		source_id))
-	{
-		if(result->data)
-		{
-// Frame may have come from the readahead thread.
-// Those frames are in the codec color model.
-// But to pass frame_exists, they must be identical.
-// 			BC_CModels::transfer(frame->get_rows(),
-// 				result->data->get_rows(),
-// 				result->data->get_y(),
-// 				result->data->get_u(),
-// 				result->data->get_v(),
-// 				frame->get_y(),
-// 				frame->get_u(),
-// 				frame->get_v(),
-// 				0,
-// 				0,
-// 				result->data->get_w(),
-// 				result->data->get_h(),
-// 				0,
-// 				0,
-// 				frame->get_w(),
-// 				frame->get_h(),
-// 				result->data->get_color_model(),
-// 				frame->get_color_model(),
-// 				0,
-// 				result->data->get_w(),
-// 				frame->get_w());
-
-// no context data since keyframe updates may vary input
-			frame->copy_from(result->data);
-		}
-		result->age = get_age();
-	}
-
-
-
-
-	lock->unlock();
-	if(result) return 1;
-	return 0;
-}
-
-
-VFrame* FrameCache::get_frame_ptr(int64_t position,
-	int layer,
-	double frame_rate,
-	int color_model,
-	int w,
-	int h,
-	int source_id)
+VFrame* FrameCache::get_frame_ptr(int64_t position, int layer, double frame_rate,
+		int color_model, int w, int h, int source_id)
 {
 	lock->lock("FrameCache::get_frame_ptr");
-	FrameCacheItem *result = 0;
-	if(frame_exists(position,
-		layer,
-		frame_rate,
-		color_model,
-		w,
-		h,
-		&result,
-		source_id))
-	{
-		result->age = get_age();
-		return result->data;
-	}
-
-
+	VFrame *vframe = get_vframe(position, w, h, color_model,
+			layer, frame_rate, source_id);
+	if( vframe ) return vframe;  // not unlocked
 	lock->unlock();
 	return 0;
 }
 
-// Puts frame in cache if enough space exists and the frame doesn't already
-// exist.
-void FrameCache::put_frame(VFrame *frame, int64_t position,
-	int layer, double frame_rate, int use_copy, Indexable *indexable)
+VFrame *FrameCache::get_vframe(int64_t position, int w, int h,
+		int color_model, int layer, double frame_rate,
+		int source_id)
 {
-	lock->lock("FrameCache::put_frame");
 	FrameCacheItem *item = 0;
-	int source_id = -1;
-	if(indexable) source_id = indexable->id;
-
-//printf("FrameCache::put_frame %d position=%jd\n", __LINE__, position);
-
-	if(frame_exists(frame, position, layer, frame_rate, &item, source_id)) {
+	int ret = frame_exists(position, layer, frame_rate,
+			w, h, color_model, &item, source_id);
+	if( ret && position >= 0 && item )
 		item->age = get_age();
-		lock->unlock();
-		return;
-	}
+	return ret && item ? item->data : 0;
+}
+
+VFrame *FrameCache::get_frame(int64_t position, int w, int h,
+		int color_model, int layer, double frame_rate,
+		int source_id)
+{
+	lock->lock("FrameCache::get_frame");
+	VFrame *frame = get_vframe(position, w, h,
+			color_model, layer, frame_rate, source_id);
+	lock->unlock();
+	return frame;
+}
+
+// Returns 1 if frame exists in cache and copies it to the frame argument.
+int FrameCache::get_frame(VFrame *frame, int64_t position,
+		int layer, double frame_rate, int source_id)
+{
+	lock->lock("FrameCache::get_frame");
+	VFrame *vframe = get_vframe(position,
+			frame->get_w(), frame->get_h(), frame->get_color_model(),
+			layer, frame_rate, source_id);
+	if( vframe )
+		frame->copy_from(vframe);
+	lock->unlock();
+	return vframe ? 1 : 0;
+}
 
 
-	item = new FrameCacheItem;
-
-	item->data = use_copy ? new VFrame(*frame) : frame;
-
-// Copy metadata
+void FrameCache::put_vframe(VFrame *frame, int64_t position,
+		int layer, double frame_rate, int source_id)
+{
+	FrameCacheItem *item = new FrameCacheItem;
+	item->data = frame;
 	item->position = position;
 	item->layer = layer;
 	item->frame_rate = frame_rate;
 	item->source_id = source_id;
-	if(indexable)
-		item->path = cstrdup(indexable->path);
-
 	item->age = position < 0 ? INT_MAX : get_age();
-
-//printf("FrameCache::put_frame %d position=%jd\n", __LINE__, position);
 	put_item(item);
+}
+
+// Puts frame in cache if the frame doesn't already exist.
+void FrameCache::put_frame(VFrame *frame, int64_t position,
+		int layer, double frame_rate, int use_copy, Indexable *idxbl)
+{
+	int source_id = idxbl ? idxbl->id : -1;
+	lock->lock("FrameCache::put_frame");
+	VFrame *vframe = get_vframe(position,
+			frame->get_w(), frame->get_h(), frame->get_color_model(),
+			layer, frame_rate, source_id);
+	if( !vframe ) {
+		if( use_copy ) frame = new VFrame(*frame);
+		put_vframe(frame, position, layer, frame_rate, source_id);
+	}
 	lock->unlock();
 }
 
-VFrame *FrameCache::new_cache_frame(int64_t position, int w, int h,
-		int color_model, int layer, double frame_rate, int first_frame)
+// get vframe for keys, overwrite frame if found
+int FrameCache::get_cache_frame(VFrame *frame, int64_t position,
+		int layer, double frame_rate)
 {
+	lock->lock("FrameCache::get_cache_frame");
+	VFrame *vframe = get_vframe(position,
+		frame->get_w(), frame->get_h(), frame->get_color_model(),
+		layer, frame_rate, -1);
+	if( vframe )
+		frame->copy_from(vframe);
+	lock->unlock();
+	return vframe ? 1 : 0;
+}
+
+// adds or replaces vframe, consumes frame if not use_copy
+void FrameCache::put_cache_frame(VFrame *frame, int64_t position,
+		int layer, double frame_rate, int use_copy)
+{
+	lock->lock("FrameCache::put_cache_frame");
 	FrameCacheItem *item = 0;
-	lock->lock("FrameCache::put_vframe");
-	if( frame_exists(position, layer, frame_rate, color_model, w, h, &item, -1) ) {
-		lock->unlock();
-		return 0;
+	int w = frame->get_w(), h = frame->get_h(); 
+	int color_model = frame->get_color_model();
+	int ret = frame_exists(position, layer, frame_rate,
+			w, h, color_model, &item, -1);
+	if( use_copy ) frame = new VFrame(*frame);
+	if( ret ) {
+		delete item->data;
+		item->data = frame;
 	}
-	if( first_frame ) {
-		while( last ) delete last;
-		total_items = 0;
-		current_item = 0;
-	}
-	item = new FrameCacheItem;
-	item->data = new VFrame(w, h, color_model);
-	item->position = position;
-	item->layer = layer;
-	item->frame_rate = frame_rate;
-	item->source_id = -1;
-	item->age = position < 0 ? INT_MAX : get_age();
-	put_item(item);
-	return item->data;
-}
-void FrameCache::put_cache_frame()
-{
+	else
+		put_vframe(frame, position, layer, frame_rate, -1);
 	lock->unlock();
 }
+
 
 int FrameCache::frame_exists(VFrame *format, int64_t position,
 	int layer, double frame_rate, FrameCacheItem **item_return, int source_id)
@@ -251,7 +210,7 @@ int FrameCache::frame_exists(VFrame *format, int64_t position,
 }
 
 int FrameCache::frame_exists(int64_t position, int layer, double frame_rate,
-		int color_model, int w, int h, FrameCacheItem **item_return, int source_id)
+		int w, int h, int color_model, FrameCacheItem **item_return, int source_id)
 {
 	FrameCacheItem *item = (FrameCacheItem*)get_item(position);
 	for( ; item && item->position == position ; item = (FrameCacheItem*)item->next ) {

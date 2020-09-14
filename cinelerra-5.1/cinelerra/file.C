@@ -344,17 +344,16 @@ int File::delete_oldest()
 	return frame_cache->delete_oldest();
 }
 
-// create cache frame using input vframe as template
-VFrame *File::new_cache_frame(VFrame *vframe, int64_t position, int first_frame)
+int File::get_cache_frame(VFrame *frame, int64_t position)
 {
-	return frame_cache->new_cache_frame(position,
-		vframe->get_w(), vframe->get_h(), vframe->get_color_model(),
-		current_layer, asset->frame_rate, first_frame);
+	return frame_cache->get_cache_frame(frame, position,
+		current_layer, asset->frame_rate);
 }
 
-void File::put_cache_frame()
+void File::put_cache_frame(VFrame *frame, int64_t position, int use_copy)
 {
-	return frame_cache->put_cache_frame();
+	frame_cache->put_cache_frame(frame,
+		position, current_layer, asset->frame_rate, use_copy);
 }
 
 int File::get_use_cache()
@@ -1168,52 +1167,52 @@ int File::read_frame(VFrame *frame, int is_thread)
 	if( debug ) PRINT_TRACE
 	int result = 0;
 	int supported_colormodel = colormodel_supported(frame->get_color_model());
-	int advance_position = 1;
-	int cache_active = use_cache || asset->single_frame ? 1 : 0;
+	int do_read = 1;
+// if reverse playback reading, use_cache is -1
+	int cache_active = asset->single_frame ? 1 : use_cache;
 	int64_t cache_position = !asset->single_frame ? current_frame : -1;
 
 // Test cache
-	if( cache_active && frame_cache->get_frame(frame, cache_position,
-			current_layer, asset->frame_rate) ) {
-// Can't advance position if cache used.
-//printf("File::read_frame %d\n", __LINE__);
-		advance_position = 0;
+	if( cache_active ) {
+		if( get_cache_frame(frame, cache_position) ) {
+			do_read = 0;
+		}
+		else if( cache_active < 0 && frame_cache->cache_items() > 0 ) {
+// reverse reading and cache miss, clear cache for new readahead
+			purge_cache();
+		}
 	}
-// Need temp
-	else if( frame->get_color_model() != BC_COMPRESSED &&
-		(supported_colormodel != frame->get_color_model() ||
-		(!file->can_scale_input() &&
-			(frame->get_w() != asset->width ||
-			 frame->get_h() != asset->height))) ) {
-
-//			printf("File::read_frame %d\n", __LINE__);
-// Can't advance position here because it needs to be added to cache
-		if( temp_frame ) {
-			if( !temp_frame->params_match(asset->width, asset->height, supported_colormodel) ) {
-				delete temp_frame;
-				temp_frame = 0;
+// Need to read
+	if( do_read ) {
+		VFrame *vframe = frame;
+		if( frame->get_color_model() != BC_COMPRESSED &&
+		    (supported_colormodel != frame->get_color_model() ||
+			(!file->can_scale_input() &&
+				(frame->get_w() != asset->width ||
+				 frame->get_h() != asset->height))) ) {
+			if( temp_frame ) {
+				if( !temp_frame->params_match(asset->width, asset->height,
+						supported_colormodel) ) {
+					delete temp_frame;  temp_frame = 0;
+				}
 			}
-		}
+			if( !temp_frame ) {
+				temp_frame = new VFrame(asset->width, asset->height,
+						supported_colormodel, 0);
+				temp_frame->clear_frame();
+			}
 
-		if( !temp_frame ) {
-			temp_frame = new VFrame(asset->width, asset->height, supported_colormodel, 0);
-			temp_frame->clear_frame();
+			temp_frame->copy_stacks(frame);
+			vframe = temp_frame;
 		}
-
-//			printf("File::read_frame %d\n", __LINE__);
-		temp_frame->copy_stacks(frame);
-		result = file->read_frame(temp_frame);
-		if( !result )
-			frame->transfer_from(temp_frame);
-		else if( result && frame->get_status() > 0 )
-			frame->set_status(-1);
-//printf("File::read_frame %d\n", __LINE__);
-	}
-	else {
-// Can't advance position here because it needs to be added to cache
-//printf("File::read_frame %d\n", __LINE__);
-		result = file->read_frame(frame);
-		if( result && frame->get_status() > 0 )
+		result = file->read_frame(vframe);
+		if( !result ) {
+			if( frame != vframe )
+				frame->transfer_from(vframe);
+			if( cache_active > 0 )
+				put_cache_frame(frame, cache_position, 1);
+		}
+		else if( frame->get_status() > 0 )
 			frame->set_status(-1);
 //for( int i = 0; i < 100 * 1000; i++ ) ((float*)frame->get_rows()[0])[i] = 1.0;
 	}
@@ -1221,12 +1220,9 @@ int File::read_frame(VFrame *frame, int is_thread)
 	if( result && !current_frame )
 		frame->clear_frame();
 
-	if( cache_active && advance_position && frame->get_status() > 0 )
-		frame_cache->put_frame(frame, cache_position,
-			current_layer, asset->frame_rate, 1, 0);
 //printf("File::read_frame %d\n", __LINE__);
 
-	if( advance_position ) current_frame++;
+	if( do_read ) current_frame++;
 	if( debug ) PRINT_TRACE
 	return 0;
 }

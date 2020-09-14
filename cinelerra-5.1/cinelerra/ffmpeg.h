@@ -368,8 +368,7 @@ public:
 	static double to_secs(int64_t time, AVRational time_base);
 	int info(char *text, int len);
 
-	VFrame *new_cache_frame(VFrame *vframe, int64_t position);
-	void put_cache_frame();
+	void put_cache_frame(VFrame *frame, int64_t position);
 	int get_use_cache();
 	void purge_cache();
 

@@ -1226,15 +1226,22 @@ int FFVideoStream::load(VFrame *vframe, int64_t pos)
 		ret = read_frame(frame);
 		if( ret > 0 ) {
 			if( frame->key_frame && seeking < 0 ) {
-				seeking = 1;
-				ffmpeg->purge_cache();
-			}
-			if( ffmpeg->get_use_cache() && seeking > 0 && curr_pos < pos ) {
-				VFrame *cache_frame = ffmpeg->new_cache_frame(vframe, curr_pos);
-				if( cache_frame ) {
-					ret = convert_cmodel(cache_frame, frame);
-					ffmpeg->put_cache_frame();
+				int use_cache = ffmpeg->get_use_cache();
+				if( use_cache < 0 ) {
+// for reverse read, reload file frame_cache from keyframe to pos
+					ffmpeg->purge_cache();
+					seeking = 1;
 				}
+				else
+					seeking = 0;
+			}
+			if( seeking > 0 && curr_pos < pos ) {
+				int vw =vframe->get_w(), vh = vframe->get_h();
+				int vcolor_model = vframe->get_color_model();
+				VFrame *cache_frame = new VFrame(vw, vh, vcolor_model);
+				ret = convert_cmodel(cache_frame, frame);
+				if( ret > 0 )
+					ffmpeg->put_cache_frame(cache_frame, curr_pos);
 			}
 			++curr_pos;
 		}
@@ -2233,14 +2240,9 @@ int FFMPEG::scan_options(const char *options, AVDictionary *&opts, AVStream *st)
 	return ret;
 }
 
-VFrame *FFMPEG::new_cache_frame(VFrame *vframe, int64_t position)
+void FFMPEG::put_cache_frame(VFrame *frame, int64_t position)
 {
-	return file_base->file->new_cache_frame(vframe, position, 0);
-}
-
-void FFMPEG::put_cache_frame()
-{
-	return file_base->file->put_cache_frame();
+	file_base->file->put_cache_frame(frame, position, 0);
 }
 
 int FFMPEG::get_use_cache()

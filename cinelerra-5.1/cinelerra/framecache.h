@@ -57,67 +57,49 @@ public:
 	FrameCache();
 	~FrameCache();
 
-// Returns 1 if frame exists in cache and copies it to the frame argument.
-	int get_frame(VFrame *frame,
-		int64_t position,
-		int layer,
-		double frame_rate,
-		int source_id = -1);
 // Returns pointer to cache entry if frame exists or 0.
 // If a frame is found, the frame cache is left in the locked state until
 // unlock is called.  If nothing is found, the frame cache is unlocked before
 // returning.  This keeps the item from being deleted.
 // asset - supplied by user if the cache is not part of a file.
-	VFrame* get_frame_ptr(int64_t position,
-		int layer,
-		double frame_rate,
-		int color_model,
-		int w,
-		int h,
-		int source_id = -1);
+	VFrame* get_frame_ptr(int64_t position, int layer, double frame_rate,
+			int color_model, int w, int h, int source_id);
+// lock and call get_vframe
+	VFrame *get_vframe(int64_t position, int w, int h,
+			int color_model, int layer, double frame_rate,
+			int source_id);
+// caller holds lock
+	VFrame *get_frame(int64_t position, int w, int h,
+			int color_model, int layer, double frame_rate,
+			int source_id);
+// Returns 1 if frame exists in cache and copies it to the frame argument.
+	int get_frame(VFrame *frame, int64_t position,
+			int layer, double frame_rate, int source_id);
 // Puts the frame in cache.
 // use_copy - if 1 a copy of the frame is made.  if 0 the argument is stored.
 // The copy of the frame is deleted by FrameCache in a future delete_oldest.
 // asset - supplied by user if the cache is not part of a file.
-	void put_frame(VFrame *frame,
-		int64_t position,
-		int layer,
-		double frame_rate,
-		int use_copy,
-		Indexable *indexable);
-// create new cache vframe at position, return 0 if it already exists
-// if first_frame set, clear cache before new vframe created
-// if new vframe created, leave cache locked for frame load
-	VFrame *new_cache_frame(int64_t position, int w, int h,
-			int color_model, int layer, double frame_rate,
-			int first_frame);
-	void put_cache_frame();
-
+// caller holds lock
+	void put_vframe(VFrame *frame, int64_t position,
+			int layer, double frame_rate, int source_id);
+// lock, call get_vframe, if exists: ret = 0; else add frame, ret = 1; unlock
+	void put_frame(VFrame *frame, int64_t position,
+			int layer, double frame_rate, int use_copy, Indexable *idxbl);
+	int get_cache_frame(VFrame *frame, int64_t position,
+			int layer, double frame_rate);
+	void put_cache_frame(VFrame *frame, int64_t position,
+			int layer, double frame_rate, int use_copy);
 	void dump();
-
-
-
-
 
 private:
 // Return 1 if matching frame exists.
 // Return 0 if not.
 	int frame_exists(VFrame *format,
-		int64_t position,
-		int layer,
-		double frame_rate,
-		FrameCacheItem **item_return,
-		int source_id);
-	int frame_exists(int64_t position,
-		int layer,
-		double frame_rate,
-		int color_model,
-		int w,
-		int h,
-		FrameCacheItem **item_return,
-		int source_id);
+			int64_t position, int layer, double frame_rate,
+			FrameCacheItem **item_return, int source_id);
+	int frame_exists(int64_t position, int layer, double frame_rate,
+			int w, int h, int color_model,
+			FrameCacheItem **item_return, int source_id);
 };
-
-
 
 #endif

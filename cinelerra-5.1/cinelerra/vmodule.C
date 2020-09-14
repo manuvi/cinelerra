@@ -259,9 +259,8 @@ int VModule::import_frame(VFrame *output, VEdit *current_edit,
 				input_temp ; // Menu effect
 			VFrame::get_temp(input, asset_w, asset_h, get_edl()->session->color_model);
 
-			int use_cache = renderengine &&
-				( renderengine->command->single_frame() ||
-				  renderengine->command->get_direction() == PLAY_REVERSE );
+			int use_cache = renderengine->command->single_frame() ? 1 :
+				renderengine->command->get_direction() == PLAY_REVERSE ? -1 : 0;
 
 //			int use_asynchronous = !use_cache &&
 //				renderengine &&
@@ -277,13 +276,12 @@ int VModule::import_frame(VFrame *output, VEdit *current_edit,
 //				else
 					file->stop_video_thread();
 
-// cache transitions
 				VEdit *vnext = (VEdit *)current_edit->next;
 				pos = Units::to_int64((double)input_position / frame_rate * edl_rate);
-				if( renderengine && renderengine->preferences->cache_transitions &&
-				    renderengine->command->get_direction() == PLAY_FORWARD &&
-				    current_edit->next && current_edit->next->transition &&
-				    file->get_video_length() >= 0 && pos >= vnext->startproject &&
+				if( renderengine->preferences->cache_transitions && !use_cache &&
+// cache transitions not using cache and inside transition 
+				    vnext && vnext->transition && file->get_video_length() >= 0 &&
+				    pos >= vnext->startproject &&
 				    pos < vnext->startproject + vnext->transition->length ) {
 					file->set_cache_frames(0);
 					file->set_layer(current_edit->channel);
@@ -303,15 +301,15 @@ int VModule::import_frame(VFrame *output, VEdit *current_edit,
 						curr_pos += current_edit->startsource;
 						int64_t norm_pos = Units::to_int64((double)curr_pos *
 							current_edit->asset->frame_rate / edl_rate);
-						VFrame *cache_frame = file->new_cache_frame(input, norm_pos, first_frame);
-						if( cache_frame ) {
-							file->set_video_position(norm_pos, 0);
-							result = file->read_frame(cache_frame);
-							file->put_cache_frame();
+						if( first_frame ) {
+							if( file->get_cache_frame(input, norm_pos) )
+								break;  // if inside a cache run
+							first_frame = 0;
+							file->purge_cache(); // start new run
 						}
-						else if( first_frame ) // already loaded
-							break;
-						first_frame = 0;
+						file->set_cache_frames(1);
+						file->set_video_position(norm_pos, 0);
+						result = file->read_frame(input);
 						++pos;  --count;
 					}
 					use_cache = 1;
@@ -396,9 +394,11 @@ int VModule::import_frame(VFrame *output, VEdit *current_edit,
 						__LINE__,
 						this,
 						current_edit->asset->path);
-					if( use_cache ) file->set_cache_frames(1);
+					if( use_cache )
+						file->set_cache_frames(use_cache);
 					result = file->read_frame((*input));
-					if( use_cache ) file->set_cache_frames(0);
+					if( use_cache )
+						file->set_cache_frames(0);
 					(*input)->set_opengl_state(VFrame::RAM);
 				}
 				else
@@ -613,9 +613,11 @@ if( debug ) printf("VModule::import_frame %d %d %d %d %d %d %d\n",
 				else if( file ) {
 // Cache single frames
 //memset(output->get_rows()[0], 0xff, 1024);
-					if( use_cache ) file->set_cache_frames(1);
+					if( use_cache )
+						file->set_cache_frames(use_cache);
 					result = file->read_frame(output);
-					if( use_cache ) file->set_cache_frames(0);
+					if( use_cache )
+						file->set_cache_frames(0);
 					output->set_opengl_state(VFrame::RAM);
 				}
 			}
