@@ -1222,6 +1222,7 @@ int FFVideoStream::load(VFrame *vframe, int64_t pos)
 		return -1;
 	}
 	int i = MAX_RETRY + pos - curr_pos;
+	int64_t cache_start = 0;
 	while( ret>=0 && !flushed && curr_pos<=pos && --i>=0 ) {
 		ret = read_frame(frame);
 		if( ret > 0 ) {
@@ -1230,15 +1231,19 @@ int FFVideoStream::load(VFrame *vframe, int64_t pos)
 				if( use_cache < 0 ) {
 // for reverse read, reload file frame_cache from keyframe to pos
 					ffmpeg->purge_cache();
+					int count = preferences->cache_size /
+						vframe->get_data_size() / 2;  // try to burn only 1/2 of cache
+					cache_start = pos - count + 1;
 					seeking = 1;
 				}
 				else
 					seeking = 0;
 			}
-			if( seeking > 0 && curr_pos < pos ) {
+			if( seeking > 0 && curr_pos >= cache_start && curr_pos < pos ) {
 				int vw =vframe->get_w(), vh = vframe->get_h();
 				int vcolor_model = vframe->get_color_model();
-				VFrame *cache_frame = new VFrame(vw, vh, vcolor_model);
+// do not use shm here, puts too much pressure on 32bit systems
+				VFrame *cache_frame = new VFrame(vw, vh, vcolor_model, 0);
 				ret = convert_cmodel(cache_frame, frame);
 				if( ret > 0 )
 					ffmpeg->put_cache_frame(cache_frame, curr_pos);

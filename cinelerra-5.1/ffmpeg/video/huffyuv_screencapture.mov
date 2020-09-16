@@ -2,3 +2,4 @@ mov huffyuv
 #probesize=100M
 #thread_queue_size=512
 pixel_format=bgra
+cin_pix_fmt bgra

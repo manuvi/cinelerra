@@ -279,7 +279,7 @@ int VModule::import_frame(VFrame *output, VEdit *current_edit,
 				VEdit *vnext = (VEdit *)current_edit->next;
 				pos = Units::to_int64((double)input_position / frame_rate * edl_rate);
 				if( renderengine->preferences->cache_transitions && !use_cache &&
-// cache transitions not using cache and inside transition 
+// cache transitions, not caching and inside transition 
 				    vnext && vnext->transition && file->get_video_length() >= 0 &&
 				    pos >= vnext->startproject &&
 				    pos < vnext->startproject + vnext->transition->length ) {

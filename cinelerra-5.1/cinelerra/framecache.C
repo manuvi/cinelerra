@@ -181,7 +181,12 @@ void FrameCache::put_cache_frame(VFrame *frame, int64_t position,
 	int color_model = frame->get_color_model();
 	int ret = frame_exists(position, layer, frame_rate,
 			w, h, color_model, &item, -1);
-	if( use_copy ) frame = new VFrame(*frame);
+	if( use_copy ) {
+// do not use shm here, puts too much pressure on 32bit systems
+		VFrame *vframe = new VFrame(w, h, color_model, 0);
+		vframe->copy_from(frame);
+		frame = vframe;
+	}
 	if( ret ) {
 		delete item->data;
 		item->data = frame;

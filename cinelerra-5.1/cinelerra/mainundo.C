@@ -256,6 +256,7 @@ int MainUndo::redo()
 // Here the master EDL loads
 int MainUndo::load_from_undo(FileXML *file, uint32_t load_flags)
 {
+	mwindow->hide_plugins();
 	if( load_flags & LOAD_SESSION ) {
 		mwindow->gui->unlock_window();
 		mwindow->close_mixers();

@@ -500,7 +500,7 @@ int VFrame::allocate_data(unsigned char *data, int shmid,
 		bytes_per_line : this->bytes_per_pixel * w;
 
 // Allocate data + padding for MMX
-	if(data) {
+	if( data ) {
 //printf("VFrame::allocate_data %d %p\n", __LINE__, this->data);
 		memory_type = VFrame::SHARED;
 		this->data = data;
@@ -509,9 +509,16 @@ int VFrame::allocate_data(unsigned char *data, int shmid,
 		this->u_offset = u_offset;
 		this->v_offset = v_offset;
 	}
-	else if(shmid >= 0) {
+	else if( shmid >= 0 ) {
 		memory_type = VFrame::SHMGET;
 		this->data = (unsigned char*)shmat(shmid, NULL, 0);
+		if( this->data == (unsigned char*)-1 ) {
+			printf("VFrame::allocate_data %d could not attach"
+				" shared memory, %dx%d (model %d) shmid=0x%08x\n",
+				__LINE__, w, h, color_model, shmid);
+			BC_Trace::dump_shm_stats(stdout);
+			exit(1);
+		}
 //printf("VFrame::allocate_data %d shmid=%d data=%p\n", __LINE__, shmid, this->data);
 		this->shmid = shmid;
 		this->y_offset = y_offset;
@@ -528,20 +535,24 @@ int VFrame::allocate_data(unsigned char *data, int shmid,
 			this->shmid = shmget(IPC_PRIVATE, size, IPC_CREAT | 0777);
 			if( this->shmid >= 0 ) {
 				this->data = (unsigned char*)shmat(this->shmid, NULL, 0);
-//printf("VFrame::allocate_data %d %d %d %p\n", __LINE__, size, this->shmid, this->data);
-// This causes it to automatically delete when the program exits.
-				shmctl(this->shmid, IPC_RMID, 0);
+				if( this->data == (unsigned char *)-1 ) this->data = 0;
 			}
-			else {
+			if( !this->data ) {
 				printf("VFrame::allocate_data %d could not allocate"
 					" shared memory, %dx%d (model %d) size=0x%08x\n",
 					__LINE__, w, h, color_model, size);
 				BC_Trace::dump_shm_stats(stdout);
+				exit(1);
 			}
+// This causes it to automatically delete when the program exits.
+			shmctl(this->shmid, IPC_RMID, 0);
 		}
-// Have to use malloc for libpng
-		if( !this->data ) {
+		else {
 			this->data = (unsigned char *)malloc(size);
+			if( !this->data ) {
+				printf("VFrame::allocate_data %dx%d: memory exhausted.\n", this->w, this->h);
+				exit(1);
+			}
 			this->shmid = -1;
 		}
 // Memory check
@@ -549,8 +560,6 @@ int VFrame::allocate_data(unsigned char *data, int shmid,
 // printf("VFrame::allocate_data 2 this=%p w=%d h=%d this->data=%p\n",
 // this, this->w, this->h, this->data);
 
-		if(!this->data)
-			printf("VFrame::allocate_data %dx%d: memory exhausted.\n", this->w, this->h);
 #ifdef LEAKER
 printf("==new %p from %p sz %d\n", this->data, __builtin_return_address(0), size);
 #endif
@@ -665,65 +674,76 @@ int VFrame::reallocate(
 
 int VFrame::allocate_compressed_data(long bytes)
 {
-	if(bytes < 1) return 1;
+	if( bytes < 1 ) return 1;
 
 // Want to preserve original contents
-	if(data && compressed_allocated < bytes)
-	{
+	if( data && compressed_allocated < bytes ) {
 		int new_shmid = -1;
 		unsigned char *new_data = 0;
-		if(BC_WindowBase::get_resources()->use_vframe_shm() && use_shm)
-		{
-			new_shmid = shmget(IPC_PRIVATE,
-				bytes,
-				IPC_CREAT | 0777);
-			new_data = (unsigned char*)shmat(new_shmid, NULL, 0);
+		if( BC_WindowBase::get_resources()->use_vframe_shm() && use_shm ) {
+			new_shmid = shmget(IPC_PRIVATE, bytes, IPC_CREAT | 0777);
+			if( new_shmid >= 0 ) {
+				new_data = (unsigned char *) shmat(new_shmid, NULL, 0);
+				if( new_data == (unsigned char *)-1 ) new_data = 0;
+			}
+			if( !new_data ) {
+				printf("VFrame::allocate_compressed_data %d could not allocate"
+					" shared memory, %ld\n", __LINE__, bytes);
+				BC_Trace::dump_shm_stats(stdout);
+				exit(1);
+			}
 			shmctl(new_shmid, IPC_RMID, 0);
 		}
-		else
-		{
+		else {
 // Have to use malloc for libpng
 			new_data = (unsigned char *)malloc(bytes);
+			if( !new_data ) {
+				printf("VFrame::allocate_compressed_data %ld: memory exhausted.\n", bytes);
+				exit(1);
+			}
 		}
 
 		bcopy(data, new_data, compressed_allocated);
 UNBUFFER(data);
 
-		if(memory_type == VFrame::PRIVATE)
-		{
-			if(shmid > 0) {
-				if(data)
-					shmdt(data);
+		if( memory_type == VFrame::PRIVATE ) {
+			if( shmid > 0 ) {
+				if( data ) shmdt(data);
 			}
 			else
 				free(data);
 		}
-		else
-		if(memory_type == VFrame::SHMGET)
-		{
-			if(data)
-				shmdt(data);
+		else if( memory_type == VFrame::SHMGET ) {
+			if( data ) shmdt(data);
 		}
 
 		data = new_data;
 		shmid = new_shmid;
 		compressed_allocated = bytes;
 	}
-	else
-	if(!data)
-	{
-		if(BC_WindowBase::get_resources()->use_vframe_shm() && use_shm)
-		{
-			shmid = shmget(IPC_PRIVATE,
-				bytes,
-				IPC_CREAT | 0777);
-			data = (unsigned char*)shmat(shmid, NULL, 0);
+	else if( !data ) {
+		if( BC_WindowBase::get_resources()->use_vframe_shm() && use_shm ) {
+			shmid = shmget(IPC_PRIVATE, bytes, IPC_CREAT | 0777);
+			if( shmid >= 0 ) {
+				data = (unsigned char *)shmat(shmid, NULL, 0);
+				if( data == (unsigned char *)-1 ) data = 0;
+			}
+			if( !data ) {
+				printf("VFrame::allocate_compressed_data %d: could not allocate"
+					" shared memory, %ld\n", __LINE__, bytes);
+				BC_Trace::dump_shm_stats(stdout);
+				exit(1);
+			}
 			shmctl(shmid, IPC_RMID, 0);
 		}
-		else
-		{
+		else {
 // Have to use malloc for libpng
 			data = (unsigned char *)malloc(bytes);
+			if( !data ) {
+				printf("VFrame::allocate_compressed_data %d: memory exhausted, %ld\n",
+					__LINE__, bytes);
+				exit(1);
+			}
 		}
 
 		compressed_allocated = bytes;
@@ -1114,15 +1134,10 @@ void VFrame::flip_horiz()
 
 int VFrame::copy_from(VFrame *frame)
 {
-	if(this->w != frame->get_w() ||
-		this->h != frame->get_h())
-	{
+	if( this->w != frame->get_w() ||
+	    this->h != frame->get_h() ) {
 		printf("VFrame::copy_from %d sizes differ src %dx%d != dst %dx%d\n",
-			__LINE__,
-			frame->get_w(),
-			frame->get_h(),
-			get_w(),
-			get_h());
+			__LINE__, frame->get_w(), frame->get_h(), get_w(), get_h());
 		return 1;
 	}
 
@@ -1130,50 +1145,46 @@ int VFrame::copy_from(VFrame *frame)
 	int h = MIN(this->h, frame->get_h());
 	timestamp = frame->timestamp;
 
-	switch(frame->color_model)
-	{
-		case BC_COMPRESSED:
-			allocate_compressed_data(frame->compressed_size);
-			memcpy(data, frame->data, frame->compressed_size);
-			this->compressed_size = frame->compressed_size;
-			break;
+	switch( frame->color_model ) {
+	case BC_COMPRESSED:
+		allocate_compressed_data(frame->compressed_size);
+		memcpy(data, frame->data, frame->compressed_size);
+		this->compressed_size = frame->compressed_size;
+		break;
 
-		case BC_YUV410P:
-			memcpy(get_y(), frame->get_y(), w * h);
-			memcpy(get_u(), frame->get_u(), w / 4 * h / 4);
-			memcpy(get_v(), frame->get_v(), w / 4 * h / 4);
-			break;
+	case BC_YUV410P:
+		memcpy(get_y(), frame->get_y(), w * h);
+		memcpy(get_u(), frame->get_u(), w / 4 * h / 4);
+		memcpy(get_v(), frame->get_v(), w / 4 * h / 4);
+		break;
 
-		case BC_YUV420P:
-		case BC_YUV420PI:
-		case BC_YUV411P:
+	case BC_YUV420P:
+	case BC_YUV420PI:
+	case BC_YUV411P:
 //printf("%d %d %p %p %p %p %p %p\n", w, h, get_y(), get_u(), get_v(), frame->get_y(), frame->get_u(), frame->get_v());
-			memcpy(get_y(), frame->get_y(), w * h);
-			memcpy(get_u(), frame->get_u(), w * h / 4);
-			memcpy(get_v(), frame->get_v(), w * h / 4);
-			break;
+		memcpy(get_y(), frame->get_y(), w * h);
+		memcpy(get_u(), frame->get_u(), w * h / 4);
+		memcpy(get_v(), frame->get_v(), w * h / 4);
+		break;
 
-		case BC_YUV422P:
+	case BC_YUV422P:
 //printf("%d %d %p %p %p %p %p %p\n", w, h, get_y(), get_u(), get_v(), frame->get_y(), frame->get_u(), frame->get_v());
-			memcpy(get_y(), frame->get_y(), w * h);
-			memcpy(get_u(), frame->get_u(), w * h / 2);
-			memcpy(get_v(), frame->get_v(), w * h / 2);
-			break;
+		memcpy(get_y(), frame->get_y(), w * h);
+		memcpy(get_u(), frame->get_u(), w * h / 2);
+		memcpy(get_v(), frame->get_v(), w * h / 2);
+		break;
 
-		case BC_YUV444P:
+	case BC_YUV444P:
 //printf("%d %d %p %p %p %p %p %p\n", w, h, get_y(), get_u(), get_v(), frame->get_y(), frame->get_u(), frame->get_v());
-			memcpy(get_y(), frame->get_y(), w * h);
-			memcpy(get_u(), frame->get_u(), w * h);
-			memcpy(get_v(), frame->get_v(), w * h);
-			break;
-		default:
-// printf("VFrame::copy_from %d\n", calculate_data_size(w,
-// 				h,
-// 				-1,
-// 				frame->color_model));
+		memcpy(get_y(), frame->get_y(), w * h);
+		memcpy(get_u(), frame->get_u(), w * h);
+		memcpy(get_v(), frame->get_v(), w * h);
+		break;
+	default:
+// printf("VFrame::copy_from %d\n", calculate_data_size(w, h, -1, frame->color_model));
 // Copy without extra 4 bytes in case the source is a hardware device
-			memmove(data, frame->data, get_data_size());
-			break;
+		memmove(data, frame->data, get_data_size());
+		break;
 	}
 
 	return 0;
