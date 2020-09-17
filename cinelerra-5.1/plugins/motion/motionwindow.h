@@ -233,6 +233,43 @@ public:
 };
 
 
+class MotionNoiseLevel : public BC_FPot
+{
+public:
+	MotionNoiseLevel(MotionMain *plugin, MotionWindow *gui,	int x, int y);
+	int handle_event();
+	MotionWindow *gui;
+	MotionMain *plugin;
+};
+
+class MotionNoiseLevelText : public BC_TextBox
+{
+public:
+	MotionNoiseLevelText(MotionMain *plugin, MotionWindow *gui, int x, int y);
+	int handle_event();
+	MotionWindow *gui;
+	MotionMain *plugin;
+};
+
+class MotionNoiseRotation : public BC_FPot
+{
+public:
+	MotionNoiseRotation(MotionMain *plugin, MotionWindow *gui, int x, int y);
+	int handle_event();
+	MotionWindow *gui;
+	MotionMain *plugin;
+};
+
+class MotionNoiseRotationText : public BC_TextBox
+{
+public:
+	MotionNoiseRotationText(MotionMain *plugin, MotionWindow *gui, int x, int y);
+	int handle_event();
+	MotionWindow *gui;
+	MotionMain *plugin;
+};
+
+
 class MotionDrawVectors : public BC_CheckBox
 {
 public:
@@ -261,6 +298,33 @@ public:
 	MotionWindow *gui;
 };
 
+class MotionResetTracking : public BC_GenericButton
+{
+public:
+	MotionResetTracking(MotionMain *plugin,	MotionWindow *gui, int x, int y);
+	int handle_event();
+	MotionMain *plugin;
+	MotionWindow *gui;
+};
+
+class MotionClearTracking : public BC_GenericButton
+{
+public:
+	MotionClearTracking(MotionMain *plugin,	MotionWindow *gui, int x, int y);
+	int handle_event();
+	MotionMain *plugin;
+	MotionWindow *gui;
+};
+
+class MotionFrameCurrent : public BC_GenericButton
+{
+public:
+	MotionFrameCurrent(MotionMain *plugin,	MotionWindow *gui, int x, int y);
+	int handle_event();
+	MotionMain *plugin;
+	MotionWindow *gui;
+};
+
 class MotionGlobal : public BC_CheckBox
 {
 public:
@@ -274,6 +338,15 @@ class MotionRotate : public BC_CheckBox
 {
 public:
 	MotionRotate(MotionMain *plugin, MotionWindow *gui, int x, int y);
+	int handle_event();
+	MotionWindow *gui;
+	MotionMain *plugin;
+};
+
+class MotionTwopass : public BC_CheckBox
+{
+public:
+	MotionTwopass(MotionMain *plugin, MotionWindow *gui, int x, int y);
 	int handle_event();
 	MotionWindow *gui;
 	MotionMain *plugin;
@@ -309,11 +382,19 @@ public:
 	MotionRMagnitude *rotate_magnitude;
 	MotionReturnSpeed *return_speed;
 	MotionRReturnSpeed *rotate_return_speed;
+	MotionNoiseLevel *noise_level;
+	MotionNoiseLevelText *noise_level_text;
+	MotionNoiseRotation *noise_rotation;
+	MotionNoiseRotationText *noise_rotation_text;
 	ActionType *action_type;
 	MotionDrawVectors *vectors;
 	MotionTrackingFile *tracking_file;
+	MotionResetTracking *reset_tracking;
+	MotionClearTracking *clear_tracking;
+	MotionFrameCurrent *frame_current;
 	MotionGlobal *global;
 	MotionRotate *rotate;
+	MotionTwopass *twopass;
 	AddTrackedFrameOffset *addtrackedframeoffset;
 	TrackSingleFrame *track_single;
 	TrackFrameNumber *track_frame_number;

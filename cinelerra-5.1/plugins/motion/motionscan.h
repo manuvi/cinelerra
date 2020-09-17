@@ -89,7 +89,8 @@ public:
 class MotionScan : public LoadServer
 {
 public:
-	MotionScan(int total_clients,
+	MotionScan(MotionMain *plugin,
+		int total_clients,
 		int total_packages);
 	~MotionScan();
 
@@ -107,7 +108,7 @@ public:
 		int global_range_w, int global_range_h, int global_block_w, int global_block_h,
 		double block_x, double block_y, int frame_type, int tracking_type, int action_type,
 		int horizontal_only, int vertical_only, int source_position, int total_steps,
-		int total_dx, int total_dy, int global_origin_x, int global_origin_y,
+		int total_dx, int total_dy, int global_origin_x, int global_origin_y, int passno,
 		int load_ok=0, int load_dx=0, int load_dy=0);
 	int64_t get_cache(int x, int y);
 	void put_cache(int x, int y, int64_t difference);
@@ -125,6 +126,9 @@ public:
 // Change between previous frame and current frame multiplied by
 // OVERSAMPLE
 	int dx_result, dy_result;
+
+// Currently best expected location of scan block
+	int x_result, y_result;
 
 	enum { // action_type
 		TRACK,
@@ -158,6 +162,7 @@ private:
 // Downsampled frames
 	VFrame *downsampled_previous;
 	VFrame *downsampled_current;
+	MotionMain *plugin;
 // Test for identical frames before processing
 // Faster to skip it if the frames are usually different
 	int test_match;

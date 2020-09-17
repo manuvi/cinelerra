@@ -59,7 +59,7 @@ class RotateScan;
 #define MIN_BLOCKS 1
 #define MAX_BLOCKS 200
 
-// Precision of rotation
+// Precision of rotation (in radian!)
 #define MIN_ANGLE 0.0001
 
 #define TRACKING_FILE "/tmp/motion"
@@ -98,6 +98,9 @@ public:
 // Block position in percentage 0 - 100
 	double block_x;
 	double block_y;
+// Noise levels to ignore frame differences as 0-100% of (maxdiff-mindiff)
+	double noise_level;
+	double noise_rotation;
 
 	int horizontal_only;
 	int vertical_only;
@@ -111,6 +114,8 @@ public:
 	int tracking_type;
 // Track a single frame, previous frame, or previous frame same block
 	int tracking_object;
+// 1 == two pass tracking
+	int twopass;
 
 // Number of single frame to track relative to timeline start
 	int64_t track_frame;
@@ -128,6 +133,8 @@ public:
 	int process_buffer(VFrame **frame, int64_t start_position, double frame_rate);
 	void process_global();
 	void process_rotation();
+	void refine_global();
+	void refine_rotation();
 	void draw_vectors(VFrame *frame);
 	int is_multichannel();
 	int is_realtime();
@@ -180,6 +187,7 @@ public:
 	int64_t cache_key, active_key;
 // add constant frame offset values
 	int dx_offset, dy_offset;
+	float dt_offset;
 	int64_t tracking_frame;
 // save/load result values
 	int load_ok;
@@ -276,7 +284,8 @@ public:
 		VFrame *current_frame,
 // Pivot
 		int block_x,
-		int block_y);
+		int block_y,
+		int passno);
 	int64_t get_cache(float angle);
 	void put_cache(float angle, int64_t difference);
 

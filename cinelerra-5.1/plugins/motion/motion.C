@@ -56,6 +56,8 @@ MotionConfig::MotionConfig()
 	global_block_h = 33; //MIN_BLOCK;
 	block_x = 50;
 	block_y = 50;
+	noise_level = 0;
+	noise_rotation = 0;
 	global_positions = 256;
 	rotate_positions = 8; // 4;
 	magnitude = 100;
@@ -65,6 +67,7 @@ MotionConfig::MotionConfig()
 	action_type = MotionScan::STABILIZE;
 	global = 1;
 	rotate = 1;
+	twopass = 0;
 	addtrackedframeoffset = 0;
 	strcpy(tracking_file, TRACKING_FILE);
 	tracking_type = MotionScan::SAVE; //MotionScan::NO_CALCULATE;
@@ -96,6 +99,7 @@ int MotionConfig::equivalent(MotionConfig &that)
 		rotation_center == that.rotation_center &&
 		action_type == that.action_type &&
 		global == that.global && rotate == that.rotate &&
+		twopass == that.twopass &&
 		addtrackedframeoffset == that.addtrackedframeoffset &&
 		draw_vectors == that.draw_vectors &&
 		block_count == that.block_count &&
@@ -103,6 +107,8 @@ int MotionConfig::equivalent(MotionConfig &that)
 		global_block_h == that.global_block_h &&
 		EQUIV(block_x, that.block_x) &&
 		EQUIV(block_y, that.block_y) &&
+		noise_level == that.noise_level &&
+		noise_rotation == that.noise_rotation &&
 		global_positions == that.global_positions &&
 		rotate_positions == that.rotate_positions &&
 		magnitude == that.magnitude &&
@@ -125,12 +131,15 @@ void MotionConfig::copy_from(MotionConfig &that)
 	action_type = that.action_type;
 	global = that.global;
 	rotate = that.rotate;
+	twopass = that.twopass;
 	addtrackedframeoffset = that.addtrackedframeoffset;
 	tracking_type = that.tracking_type;
 	draw_vectors = that.draw_vectors;
 	block_count = that.block_count;
 	block_x = that.block_x;
 	block_y = that.block_y;
+	noise_level = that.noise_level;
+	noise_rotation = that.noise_rotation;
 	global_positions = that.global_positions;
 	rotate_positions = that.rotate_positions;
 	global_block_w = that.global_block_w;
@@ -178,6 +187,7 @@ MotionMain::MotionMain(PluginServer *server)
 	cache_line[0] = 0;
 	cache_key = active_key = -1;
 	dx_offset = dy_offset = 0;
+	dt_offset = 0;
 	load_ok = 0;
 	save_dx = load_dx = 0;
 	save_dy = load_dy = 0;
@@ -242,6 +252,10 @@ void MotionMain::update_gui()
 	window->block_y->update(config.block_y);
 	window->block_x_text->update((float)config.block_x);
 	window->block_y_text->update((float)config.block_y);
+	window->noise_level->update(config.noise_level);
+	window->noise_level_text->update((float)config.noise_level);
+	window->noise_rotation->update(config.noise_rotation);
+	window->noise_rotation_text->update((float)config.noise_rotation);
 	window->magnitude->update(config.magnitude);
 	window->return_speed->update(config.return_speed);
 	window->rotate_magnitude->update(config.rotate_magnitude);
@@ -255,9 +269,15 @@ void MotionMain::update_gui()
 	window->track_previous->update(config.tracking_object == MotionScan::TRACK_PREVIOUS);
 	window->previous_same->update(config.tracking_object == MotionScan::PREVIOUS_SAME_BLOCK);
 	if( config.tracking_object != MotionScan::TRACK_SINGLE )
+	{
 		window->track_frame_number->disable();
+		window->frame_current->disable();
+	}
 	else
+	{
 		window->track_frame_number->enable();
+		window->frame_current->enable();
+	}
 
 	window->action_type->set_text(
 		ActionType::to_text(config.action_type));
@@ -298,9 +318,12 @@ void MotionMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("RETURN_SPEED", config.return_speed);
 	output.tag.set_property("ROTATE_MAGNITUDE", config.rotate_magnitude);
 	output.tag.set_property("ROTATE_RETURN_SPEED", config.rotate_return_speed);
+	output.tag.set_property("NOISE_LEVEL", config.noise_level);
+	output.tag.set_property("NOISE_ROTATION", config.noise_rotation);
 	output.tag.set_property("ACTION_TYPE", config.action_type);
 	output.tag.set_property("GLOBAL", config.global);
 	output.tag.set_property("ROTATE", config.rotate);
+	output.tag.set_property("TWOPASS", config.twopass);
 	output.tag.set_property("ADDTRACKEDFRAMEOFFSET", config.addtrackedframeoffset);
 	output.tag.set_property("TRACKING_FILE", config.tracking_file);
 	output.tag.set_property("TRACKING_TYPE", config.tracking_type);
@@ -339,9 +362,12 @@ void MotionMain::read_data(KeyFrame *keyframe)
 			config.return_speed = input.tag.get_property("RETURN_SPEED", config.return_speed);
 			config.rotate_magnitude = input.tag.get_property("ROTATE_MAGNITUDE", config.rotate_magnitude);
 			config.rotate_return_speed = input.tag.get_property("ROTATE_RETURN_SPEED", config.rotate_return_speed);
+			config.noise_level = input.tag.get_property("NOISE_LEVEL", config.noise_level);
+			config.noise_rotation = input.tag.get_property("NOISE_ROTATION", config.noise_rotation);
 			config.action_type = input.tag.get_property("ACTION_TYPE", config.action_type);
 			config.global = input.tag.get_property("GLOBAL", config.global);
 			config.rotate = input.tag.get_property("ROTATE", config.rotate);
+			config.twopass = input.tag.get_property("TWOPASS", config.twopass);
 			config.addtrackedframeoffset = input.tag.get_property("ADDTRACKEDFRAMEOFFSET", config.addtrackedframeoffset);
 			input.tag.get_property("TRACKING_FILE", config.tracking_file);
 			config.tracking_type = input.tag.get_property("TRACKING_TYPE", config.tracking_type);
@@ -370,10 +396,12 @@ void MotionMain::allocate_temp(int w, int h, int color_model)
 void MotionMain::process_global()
 {
 
-	if( !engine ) engine = new MotionScan(PluginClient::get_project_smp() + 1,
+	if( !engine ) engine = new MotionScan(this,
+		PluginClient::get_project_smp() + 1,
 		PluginClient::get_project_smp() + 1);
 
-// Determine if frames changed
+// Determine if frames changed, either single pass or pass 1
+// Attention, prev_global_ref and current_global_ref are interchanged
 	engine->scan_frame(current_global_ref, prev_global_ref,
 		config.global_range_w, config.global_range_h,
 		config.global_block_w, config.global_block_h,
@@ -382,14 +410,14 @@ void MotionMain::process_global()
 		config.action_type, config.horizontal_only,
 		config.vertical_only, get_source_position(),
 		config.global_positions, total_dx, total_dy,
-		0, 0, load_ok, load_dx, load_dy);
+		0, 0, config.twopass, load_ok, load_dx, load_dy);
 	current_dx = (engine->dx_result += dx_offset);
 	current_dy = (engine->dy_result += dy_offset);
 
-// Write results
+// Save results
 	if( config.tracking_type == MotionScan::SAVE ) {
-		save_dx = engine->dx_result;
-		save_dy = engine->dy_result;
+		save_dx = current_dx;
+		save_dy = current_dy;
 	}
 
 // Add current motion vector to accumulation vector.
@@ -410,11 +438,11 @@ void MotionMain::process_global()
 
 // Clamp accumulation vector
 	if( config.magnitude < 100 ) {
-		int block_x_orig = (int64_t)(config.block_x * current_global_ref->get_w() / 100);
-		int block_y_orig = (int64_t)(config.block_y * current_global_ref->get_h() / 100);
-		int max_block_x = (int64_t)(current_global_ref->get_w() - block_x_orig)
+		int block_x_orig = lrint(config.block_x * prev_global_ref->get_w() / 100);
+		int block_y_orig = lrint(config.block_y * prev_global_ref->get_h() / 100);
+		int max_block_x = (int64_t)(prev_global_ref->get_w() - block_x_orig)
 			* OVERSAMPLE * config.magnitude / 100;
-		int max_block_y = (int64_t)(current_global_ref->get_h() - block_y_orig)
+		int max_block_y = (int64_t)(prev_global_ref->get_h() - block_y_orig)
 			* OVERSAMPLE * config.magnitude / 100;
 		int min_block_x = (int64_t)-block_x_orig
 			* OVERSAMPLE * config.magnitude / 100;
@@ -430,6 +458,186 @@ printf("MotionMain::process_global 2 total_dx=%.02f total_dy=%.02f\n",
   (float)total_dx / OVERSAMPLE, (float)total_dy / OVERSAMPLE);
 #endif
 
+// If there will be 2nd pass, target will be transformed then
+	if(!config.twopass || load_ok)
+	{
+		if( config.tracking_object != MotionScan::TRACK_SINGLE && !config.rotate ) {
+// Transfer current reference frame to previous reference frame and update
+// counter.  Must wait for rotate to compare.
+			prev_global_ref->copy_from(current_global_ref);
+			previous_frame_number = get_source_position();
+		}
+
+// No 2nd pass, decide here what to do with target based on requested operation
+		int interpolation = NEAREST_NEIGHBOR;
+		float dx = 0., dy = 0.;
+		switch(config.action_type) {
+		case MotionScan::NOTHING:
+			global_target_dst->copy_from(global_target_src);
+			break;
+		case MotionScan::TRACK_PIXEL:
+			interpolation = NEAREST_NEIGHBOR;
+			dx = rint((float)total_dx / OVERSAMPLE);
+			dy = rint((float)total_dy / OVERSAMPLE);
+			break;
+		case MotionScan::STABILIZE_PIXEL:
+			interpolation = NEAREST_NEIGHBOR;
+			dx = -rint((float)total_dx / OVERSAMPLE);
+			dy = -rint((float)total_dy / OVERSAMPLE);
+			break;
+		case MotionScan::TRACK:
+			interpolation = CUBIC_LINEAR;
+			dx = (float)total_dx / OVERSAMPLE;
+			dy = (float)total_dy / OVERSAMPLE;
+			break;
+		case MotionScan::STABILIZE:
+			interpolation = CUBIC_LINEAR;
+			dx = -(float)total_dx / OVERSAMPLE;
+			dy = -(float)total_dy / OVERSAMPLE;
+			break;
+		}
+
+
+		if( config.action_type != MotionScan::NOTHING ) {
+			if( !overlayer )
+				overlayer = new OverlayFrame(PluginClient::get_project_smp() + 1);
+			global_target_dst->clear_frame();
+			overlayer->overlay(global_target_dst, global_target_src,
+				0, 0, global_target_src->get_w(), global_target_src->get_h(),
+				dx, dy,
+				(float)global_target_src->get_w() + dx,
+				(float)global_target_src->get_h() + dy,
+				1, TRANSFER_REPLACE, interpolation);
+		}
+	}
+}
+
+void MotionMain::refine_global()
+{
+	int block_x, block_y;
+	double tmp_x, tmp_y;
+	float dx = 0., dy = 0.;
+
+// Use temp_frame instead of current_global_ref for refined translation search
+	allocate_temp(w, h, current_global_ref->get_color_model());
+	temp_frame->clear_frame();
+
+	if(config.rotate)
+	{
+// Here we have to rotate current_rotate_ref into temp_frame
+// backwards because prev_global_ref and current_global_ref are interchanged
+		if(!rotate_engine)
+			rotate_engine = new AffineEngine(
+				PluginClient::get_project_smp() + 1,
+				PluginClient::get_project_smp() + 1);
+
+		float angle;
+		if(config.tracking_object == MotionScan::TRACK_SINGLE)
+		{
+			angle = total_angle;
+		}
+		else
+		{
+			angle = current_angle;
+		}
+
+// Pivot need not be very accurate, it is attached to the previous frame
+// while current frame is moved and rotated
+// Nevertheless compute it in floating point and round to int afterwards
+		tmp_x = current_rotate_ref->get_w() * config.block_x / 100;
+		tmp_y = current_rotate_ref->get_h() * config.block_y / 100;
+		if(config.tracking_object == MotionScan::TRACK_PREVIOUS)
+		{
+// Pivot is moved along the previous frame
+			tmp_x += (double)(total_dx-current_dx) / OVERSAMPLE;
+			tmp_y += (double)(total_dy-current_dy) / OVERSAMPLE;
+		}
+		block_x = lrint (tmp_x);
+		block_y = lrint (tmp_y);
+		rotate_engine->set_in_pivot(block_x, block_y);
+		rotate_engine->set_out_pivot(block_x, block_y);
+
+		rotate_engine->rotate(temp_frame, current_rotate_ref, -angle);
+	}
+	else
+	{
+// Here we have to translate current_global_ref into temp_frame
+// backwards because prev_global_ref and current_global_ref are interchanged
+		if(!overlayer) 
+			overlayer = new OverlayFrame(PluginClient::get_project_smp() + 1);
+		if(config.tracking_object == MotionScan::TRACK_SINGLE)
+		{
+			dx = (float)total_dx / OVERSAMPLE;
+			dy = (float)total_dy / OVERSAMPLE;
+		}
+		else
+		{
+			dx = (float)current_dx / OVERSAMPLE;
+			dy = (float)current_dy / OVERSAMPLE;
+		}
+
+		overlayer->overlay(temp_frame,
+			current_global_ref,
+			0,
+			0,
+			current_global_ref->get_w(),
+			current_global_ref->get_h(),
+			-dx,
+			-dy,
+			(float)current_global_ref->get_w() - dx,
+			(float)current_global_ref->get_h() - dy,
+			1,
+			TRANSFER_REPLACE,
+			CUBIC_LINEAR);
+	}
+
+// Determine additional translation, pass 2
+// Attention, prev_global_ref and current_global_ref are interchanged
+// Engine must have been created already by process_global()
+	engine->scan_frame(temp_frame, prev_global_ref,
+		config.global_range_w, config.global_range_h,
+		config.global_block_w, config.global_block_h,
+		config.block_x, config.block_y,
+		config.tracking_object, config.tracking_type,
+		config.action_type, config.horizontal_only,
+		config.vertical_only, get_source_position(),
+		config.global_positions, total_dx, total_dy,
+		0, 0, 2, load_ok, load_dx, load_dy);
+
+// Translation correction is to be added to motion vector
+	current_dx += engine->dx_result;
+	current_dy += engine->dy_result;
+	total_dx   += engine->dx_result;
+	total_dy   += engine->dy_result;
+
+// Refine saved results
+	if( config.tracking_type == MotionScan::SAVE ) {
+		save_dx = current_dx;
+		save_dy = current_dy;
+	}
+
+// Clamp accumulation vector
+	if( config.magnitude < 100 ) {
+		int block_x_orig = lrint(config.block_x * prev_global_ref->get_w() / 100);
+		int block_y_orig = lrint(config.block_y * prev_global_ref->get_h() / 100);
+		int max_block_x = (int64_t)(prev_global_ref->get_w() - block_x_orig)
+			* OVERSAMPLE * config.magnitude / 100;
+		int max_block_y = (int64_t)(prev_global_ref->get_h() - block_y_orig)
+			* OVERSAMPLE * config.magnitude / 100;
+		int min_block_x = (int64_t)-block_x_orig
+			* OVERSAMPLE * config.magnitude / 100;
+		int min_block_y = (int64_t)-block_y_orig
+			* OVERSAMPLE * config.magnitude / 100;
+
+		CLAMP(total_dx, min_block_x, max_block_x);
+		CLAMP(total_dy, min_block_y, max_block_y);
+	}
+
+#ifdef DEBUG
+printf("MotionMain::refine_global 2 total_dx=%.02f total_dy=%.02f\n",
+  (float)total_dx / OVERSAMPLE, (float)total_dy / OVERSAMPLE);
+#endif
+
 	if( config.tracking_object != MotionScan::TRACK_SINGLE && !config.rotate ) {
 // Transfer current reference frame to previous reference frame and update
 // counter.  Must wait for rotate to compare.
@@ -439,20 +647,20 @@ printf("MotionMain::process_global 2 total_dx=%.02f total_dy=%.02f\n",
 
 // Decide what to do with target based on requested operation
 	int interpolation = NEAREST_NEIGHBOR;
-	float dx = 0., dy = 0.;
+	dx = dy = 0.;
 	switch(config.action_type) {
 	case MotionScan::NOTHING:
 		global_target_dst->copy_from(global_target_src);
 		break;
 	case MotionScan::TRACK_PIXEL:
 		interpolation = NEAREST_NEIGHBOR;
-		dx = (int)(total_dx / OVERSAMPLE);
-		dy = (int)(total_dy / OVERSAMPLE);
+		dx = rint((float)total_dx / OVERSAMPLE);
+		dy = rint((float)total_dy / OVERSAMPLE);
 		break;
 	case MotionScan::STABILIZE_PIXEL:
 		interpolation = NEAREST_NEIGHBOR;
-		dx = -(int)(total_dx / OVERSAMPLE);
-		dy = -(int)(total_dy / OVERSAMPLE);
+		dx = -rint((float)total_dx / OVERSAMPLE);
+		dy = -rint((float)total_dy / OVERSAMPLE);
 		break;
 	case MotionScan::TRACK:
 		interpolation = CUBIC_LINEAR;
@@ -468,6 +676,7 @@ printf("MotionMain::process_global 2 total_dx=%.02f total_dy=%.02f\n",
 
 
 	if( config.action_type != MotionScan::NOTHING ) {
+// Should be already created elsewhere but try it here just for safety
 		if( !overlayer )
 			overlayer = new OverlayFrame(PluginClient::get_project_smp() + 1);
 		global_target_dst->clear_frame();
@@ -485,8 +694,11 @@ printf("MotionMain::process_global 2 total_dx=%.02f total_dy=%.02f\n",
 void MotionMain::process_rotation()
 {
 	int block_x, block_y;
+	double tmp_x, tmp_y;
 
-// Convert the previous global reference into the previous rotation reference.
+// Here we have to translate current_global_ref into current_rotate_ref
+// backwards because prev_rotate_ref and current_rotate_ref are interchanged.
+// Also copy prev_global_ref into prev_rotate_ref for comparing.
 // Convert global target destination into rotation target source.
 	if( config.global ) {
 		if( !overlayer )
@@ -501,41 +713,54 @@ void MotionMain::process_rotation()
 			dy = (float)current_dy / OVERSAMPLE;
 		}
 
-		prev_rotate_ref->clear_frame();
-		overlayer->overlay(prev_rotate_ref, prev_global_ref,
-			0, 0, prev_global_ref->get_w(), prev_global_ref->get_h(),
-			dx, dy,
-			(float)prev_global_ref->get_w() + dx,
-			(float)prev_global_ref->get_h() + dy,
+		prev_rotate_ref->copy_from(prev_global_ref);
+		current_rotate_ref->clear_frame();
+		overlayer->overlay(current_rotate_ref, current_global_ref,
+			0, 0, current_global_ref->get_w(), current_global_ref->get_h(),
+			-dx, -dy,
+			(float)current_global_ref->get_w() - dx,
+			(float)current_global_ref->get_h() - dy,
 			1, TRANSFER_REPLACE, CUBIC_LINEAR);
-// Pivot is destination global position
-		block_x = (int)(prev_rotate_ref->get_w() *
-			config.block_x / 100 + (float)total_dx / OVERSAMPLE);
-		block_y = (int)(prev_rotate_ref->get_h() *
-			config.block_y / 100 + (float)total_dy / OVERSAMPLE);
+// Pivot need not be very accurate, it is attached to the previous frame
+// while current frame is moved and rotated
+// Nevertheless compute it in floating point and round to int afterwards
+		tmp_x = prev_rotate_ref->get_w() * config.block_x / 100;
+		tmp_y = prev_rotate_ref->get_h() * config.block_y / 100;
+		if(config.tracking_object == MotionScan::TRACK_PREVIOUS)
+		{
+// Pivot is moved along the previous frame
+			tmp_x += (double)(total_dx-current_dx) / OVERSAMPLE;
+			tmp_y += (double)(total_dy-current_dy) / OVERSAMPLE;
+		}
 // Use the global target output as the rotation target input
 		rotate_target_src->copy_from(global_target_dst);
 // Transfer current reference frame to previous reference frame for global.
-		if( config.tracking_object != MotionScan::TRACK_SINGLE ) {
+		if(config.tracking_object != MotionScan::TRACK_SINGLE &&
+			(!config.twopass || load_ok))
+		{
 			prev_global_ref->copy_from(current_global_ref);
 			previous_frame_number = get_source_position();
 		}
 	}
 	else {
-// Pivot is fixed
-		block_x = (int)(prev_rotate_ref->get_w() * config.block_x / 100);
-		block_y = (int)(prev_rotate_ref->get_h() * config.block_y / 100);
+// Pivot is fixed as translation switched off
+		tmp_x = prev_rotate_ref->get_w() * config.block_x / 100;
+		tmp_y = prev_rotate_ref->get_h() * config.block_y / 100;
 	}
+	block_x = lrint (tmp_x);
+	block_y = lrint (tmp_y);
 
-// Get rotation
+// Get rotation, either single pass or pass 1
 	if( !motion_rotate )
 		motion_rotate = new RotateScan(this,
 			get_project_smp() + 1, get_project_smp() + 1);
 
+// Attention, prev_rotate_ref and current_rotate_ref are interchanged
 	current_angle = motion_rotate->
-		scan_frame(prev_rotate_ref, current_rotate_ref, block_x, block_y);
+		scan_frame(current_rotate_ref, prev_rotate_ref, block_x, block_y, config.twopass);
+	current_angle += dt_offset;
 
-// Write results
+// Save result
 	if( config.tracking_type == MotionScan::SAVE ) {
 		save_dt = current_angle;
 	}
@@ -551,12 +776,6 @@ void MotionMain::process_rotation()
 		if( config.rotate_magnitude < 90 ) {
 			CLAMP(total_angle, -config.rotate_magnitude, config.rotate_magnitude);
 		}
-
-		if( !config.global ) {
-// Transfer current reference frame to previous reference frame and update counter.
-			prev_rotate_ref->copy_from(current_rotate_ref);
-			previous_frame_number = get_source_position();
-		}
 	}
 	else {
 		total_angle = current_angle;
@@ -566,15 +785,192 @@ void MotionMain::process_rotation()
 printf("MotionMain::process_rotation total_angle=%f\n", total_angle);
 #endif
 
+// If there will be 2nd pass, target will be transformed then
+	if(!config.twopass || load_ok)
+	{
+		if( config.tracking_object != MotionScan::TRACK_SINGLE && !config.global ) {
+// Transfer current reference frame to previous reference frame and update counter.
+			prev_rotate_ref->copy_from(current_rotate_ref);
+			previous_frame_number = get_source_position();
+		}
+
+// No 2nd pass, calculate rotation parameters based on requested operation
+// Use origin of global stabilize operation for pivot by default
+// Compute it in floating point for accuracy and round to int afterwards
+		tmp_x = rotate_target_src->get_w() * config.block_x / 100;
+		tmp_y = rotate_target_src->get_h() * config.block_y / 100;
+
+		float angle = 0.;
+		switch(config.action_type) {
+		case MotionScan::NOTHING:
+			rotate_target_dst->copy_from(rotate_target_src);
+			break;
+		case MotionScan::TRACK:
+		case MotionScan::TRACK_PIXEL:
+			if(config.global)
+			{
+// Use destination of global tracking for pivot.
+				tmp_x += (double)total_dx / OVERSAMPLE;
+				tmp_y += (double)total_dy / OVERSAMPLE;
+			}
+			angle = total_angle;
+			break;
+		case MotionScan::STABILIZE:
+		case MotionScan::STABILIZE_PIXEL:
+			angle = -total_angle;
+			break;
+		}
+		block_x = lrint (tmp_x);
+		block_y = lrint (tmp_y);
+
+		if( config.action_type != MotionScan::NOTHING ) {
+			if( !rotate_engine )
+				rotate_engine = new AffineEngine(
+					PluginClient::get_project_smp() + 1,
+					PluginClient::get_project_smp() + 1);
+
+			rotate_target_dst->clear_frame();
+
+			rotate_engine->set_in_pivot(block_x, block_y);
+			rotate_engine->set_out_pivot(block_x, block_y);
+
+			rotate_engine->rotate(rotate_target_dst, rotate_target_src, angle);
+		}
+	}
+}
+
+void MotionMain::refine_rotation()
+{
+	int block_x, block_y;
+	double tmp_x, tmp_y;
+	float angle;
+
+// Use temp_frame instead of current_rotate_ref for refined rotation search
+	allocate_temp(w, h, current_rotate_ref->get_color_model());
+	temp_frame->clear_frame();
+
+	if( config.global ) {
+// Here we have to translate current_global_ref into current_rotate_ref
+// backwards because prev_rotate_ref and current_rotate_ref are interchanged
+// prev_rotate_ref must have been copied already by process_rotation()
+		if( !overlayer )
+			overlayer = new OverlayFrame(PluginClient::get_project_smp() + 1);
+		float dx, dy;
+		if( config.tracking_object == MotionScan::TRACK_SINGLE ) {
+			dx = (float)total_dx / OVERSAMPLE;
+			dy = (float)total_dy / OVERSAMPLE;
+		}
+		else {
+			dx = (float)current_dx / OVERSAMPLE;
+			dy = (float)current_dy / OVERSAMPLE;
+		}
+
+		current_rotate_ref->clear_frame();
+		overlayer->overlay(current_rotate_ref, current_global_ref,
+			0, 0, current_global_ref->get_w(), current_global_ref->get_h(),
+			-dx, -dy,
+			(float)current_global_ref->get_w() - dx,
+			(float)current_global_ref->get_h() - dy,
+			1, TRANSFER_REPLACE, CUBIC_LINEAR);
+
+// Pivot need not be very accurate, it is attached to the previous frame
+// while current frame is moved and rotated
+// Nevertheless compute it in floating point and round to int afterwards
+		tmp_x = current_rotate_ref->get_w() * config.block_x / 100;
+		tmp_y = current_rotate_ref->get_h() * config.block_y / 100;
+		if(config.tracking_object == MotionScan::TRACK_PREVIOUS)
+		{
+// Pivot is moved along the previous frame
+			tmp_x += (double)(total_dx-current_dx) / OVERSAMPLE;
+			tmp_y += (double)(total_dy-current_dy) / OVERSAMPLE;
+		}
+	}
+	else {
+// Pivot is fixed as translation switched off
+		tmp_x = current_rotate_ref->get_w() * config.block_x / 100;
+		tmp_y = current_rotate_ref->get_h() * config.block_y / 100;
+	}
+	block_x = lrint (tmp_x);
+	block_y = lrint (tmp_y);
+
+// Now rotate current_rotate_ref into temp_frame
+// backwards because prev_global_ref and current_global_ref are interchanged
+	if(!rotate_engine)
+		rotate_engine = new AffineEngine(
+			PluginClient::get_project_smp() + 1,
+			PluginClient::get_project_smp() + 1);
+
+	if(config.tracking_object == MotionScan::TRACK_SINGLE)
+	{
+		angle = total_angle;
+	}
+	else
+	{
+		angle = current_angle;
+	}
+
+	rotate_engine->set_in_pivot(block_x, block_y);
+	rotate_engine->set_out_pivot(block_x, block_y);
+
+	rotate_engine->rotate(temp_frame, current_rotate_ref, -angle);
+
+// Determine additional rotation, pass 2
+// Attention, prev_rotate_ref and current_rotate_ref are interchanged
+// Engine must have been created already by process_rotation()
+	angle = motion_rotate->
+		scan_frame(temp_frame, prev_rotate_ref, block_x, block_y, 2);
+
+// Rotation correction is to be added to accumulated angle
+	current_angle += angle;
+	total_angle   += angle;
+
+// Refine saved result
+	if( config.tracking_type == MotionScan::SAVE ) {
+		save_dt = current_angle;
+	}
+
+// Clamp rotation accumulation
+	if( config.rotate_magnitude < 90 ) {
+		CLAMP(total_angle, -config.rotate_magnitude, config.rotate_magnitude);
+	}
+
+#ifdef DEBUG
+printf("MotionMain::process_rotation total_angle=%f\n", total_angle);
+#endif
+
+	if(config.tracking_object != MotionScan::TRACK_SINGLE)
+	{
+// Transfer current reference frame to previous reference frame and update
+// counter.
+		if(config.global)
+		{
+			prev_global_ref->copy_from(current_global_ref);
+		}
+		else
+		{
+			prev_rotate_ref->copy_from(current_rotate_ref);
+		}
+		previous_frame_number = get_source_position();
+	}
 
 // Calculate rotation parameters based on requested operation
-	float angle = 0.;
+// Use origin of global stabilize operation for pivot by default
+// Compute it in floating point for accuracy and round to int afterwards
+	tmp_x = rotate_target_src->get_w() * config.block_x / 100;
+	tmp_y = rotate_target_src->get_h() * config.block_y / 100;
+
 	switch(config.action_type) {
 	case MotionScan::NOTHING:
 		rotate_target_dst->copy_from(rotate_target_src);
 		break;
 	case MotionScan::TRACK:
 	case MotionScan::TRACK_PIXEL:
+		if(config.global)
+		{
+// Use destination of global tracking for pivot.
+			tmp_x += (double)total_dx / OVERSAMPLE;
+			tmp_y += (double)total_dy / OVERSAMPLE;
+		}
 		angle = total_angle;
 		break;
 	case MotionScan::STABILIZE:
@@ -582,8 +978,11 @@ printf("MotionMain::process_rotation total_angle=%f\n", total_angle);
 		angle = -total_angle;
 		break;
 	}
+	block_x = lrint (tmp_x);
+	block_y = lrint (tmp_y);
 
 	if( config.action_type != MotionScan::NOTHING ) {
+// Should be already created elsewhere but try it here just for safety
 		if( !rotate_engine )
 			rotate_engine = new AffineEngine(
 				PluginClient::get_project_smp() + 1,
@@ -591,50 +990,16 @@ printf("MotionMain::process_rotation total_angle=%f\n", total_angle);
 
 		rotate_target_dst->clear_frame();
 
-// Determine pivot based on a number of factors.
-		switch(config.action_type) {
-		case MotionScan::TRACK:
-		case MotionScan::TRACK_PIXEL:
-// Use destination of global tracking.
-			rotate_engine->set_in_pivot(block_x, block_y);
-			rotate_engine->set_out_pivot(block_x, block_y);
-			break;
-
-		case MotionScan::STABILIZE:
-		case MotionScan::STABILIZE_PIXEL:
-			if( config.global ) {
-// Use origin of global stabilize operation
-				rotate_engine->set_in_pivot(
-					(int)(rotate_target_dst->get_w() * config.block_x / 100),
-					(int)(rotate_target_dst->get_h() * config.block_y / 100));
-				rotate_engine->set_out_pivot(
-					(int)(rotate_target_dst->get_w() * config.block_x / 100),
-					(int)(rotate_target_dst->get_h() * config.block_y / 100));
-				}
-				else {
-// Use origin
-					rotate_engine->set_in_pivot(block_x, block_y);
-					rotate_engine->set_out_pivot(block_x, block_y);
-				}
-				break;
-		}
+		rotate_engine->set_in_pivot(block_x, block_y);
+		rotate_engine->set_out_pivot(block_x, block_y);
 
 		rotate_engine->rotate(rotate_target_dst, rotate_target_src, angle);
-// overlayer->overlay(rotate_target_dst, prev_rotate_ref,
-// 	0, 0, prev_rotate_ref->get_w(), prev_rotate_ref->get_h(),
-// 	0, 0, prev_rotate_ref->get_w(), prev_rotate_ref->get_h(),
-// 	1, TRANSFER_NORMAL, CUBIC_LINEAR);
-// overlayer->overlay(rotate_target_dst, current_rotate_ref,
-// 	0, 0, prev_rotate_ref->get_w(), prev_rotate_ref->get_h(),
-// 	0, 0, prev_rotate_ref->get_w(), prev_rotate_ref->get_h(),
-// 	1, TRANSFER_NORMAL, // 	CUBIC_LINEAR);
 	}
 }
 
 
 int MotionMain::process_buffer(VFrame **frame, int64_t start_position, double frame_rate)
 {
-	int prev_config_tracking_type = config.tracking_type;
 	int need_reconfigure = load_configuration();
 	int color_model = frame[0]->get_color_model();
 	w = frame[0]->get_w();
@@ -697,18 +1062,11 @@ printf("MotionMain::process_buffer %d start_position=%jd\n", __LINE__, start_pos
 
 //printf("process_realtime: %jd %d %jd %jd\n", start_position,
 // skip_current, previous_frame_number, actual_previous_number);
-	if( prev_config_tracking_type != MotionScan::SAVE &&
-	    config.tracking_type == MotionScan::SAVE ) {
-		reset_cache_file();
-		char save_file[BCTEXTLEN];
-		snprintf(save_file, sizeof(save_file), "%s.bak", config.tracking_file);
-#ifdef DEBUG
-printf("MotionMain::process_buffer 2 rename tracking file: %s to %s\n",
- config.tracking_file, save_file);
-#endif
-		::rename(config.tracking_file, save_file);
-	}
-	else if( !cache_file[0] || active_key > start_position )
+	if( ((config.tracking_type != MotionScan::LOAD &&
+	      config.tracking_type != MotionScan::SAVE) && cache_fp) ||
+	    ((config.tracking_type == MotionScan::LOAD ||
+	      config.tracking_type == MotionScan::SAVE) && !cache_fp) ||
+	    !cache_file[0] || (active_fp && active_key > start_position) )
 		reset_cache_file();
 
 // Load match frame and reset vectors
@@ -807,7 +1165,6 @@ printf("MotionMain::process_buffer 2 rename tracking file: %s to %s\n",
 			start_position, frame_rate, 0);
 	}
 
-	dx_offset = 0; dy_offset = 0;
 	if( config.tracking_type == MotionScan::LOAD ) {
 		if( config.addtrackedframeoffset ) {
 			if( config.track_frame != tracking_frame ) {
@@ -815,7 +1172,8 @@ printf("MotionMain::process_buffer 2 rename tracking file: %s to %s\n",
 				int64_t no;  int dx, dy;  float dt;
 				if( !get_cache_line(tracking_frame) &&
 				    sscanf(cache_line, "%jd %d %d %f", &no, &dx, &dy, &dt) == 4 ) {
-					dx_offset = dx; dy_offset = dy;
+					dx_offset += dx; dy_offset += dy;
+					dt_offset += dt;
 				}
 				else {
 					eprintf("no offset data frame %jd\n", tracking_frame);
@@ -823,7 +1181,19 @@ printf("MotionMain::process_buffer 2 rename tracking file: %s to %s\n",
 			}
 		}
 		else
+		{
+			dx_offset = 0;
+			dy_offset = 0;
+			dt_offset = 0;
 			tracking_frame = -1;
+		}
+	}
+	else
+	{
+		dx_offset = 0;
+		dy_offset = 0;
+		dt_offset = 0;
+		tracking_frame = -1;
 	}
 
 	if( !skip_current ) {
@@ -852,6 +1222,12 @@ printf("MotionMain::process_buffer: no tracking data frame %jd\n", frame_no);
 			process_rotation();
 //frame[target_layer]->copy_from(prev_rotate_ref);
 //frame[target_layer]->copy_from(current_rotate_ref);
+		if(config.twopass && !load_ok)
+// Second pass not needed if coords loaded from cache
+		{
+			if(config.global) refine_global();
+			if(config.rotate) refine_rotation();
+		}
 
 // write results to disk
 		if( config.tracking_type == MotionScan::SAVE ) {
@@ -896,40 +1272,56 @@ void MotionMain::draw_vectors(VFrame *frame)
 	int block_x3, block_y3, block_x4, block_y4;
 	int search_x1, search_y1, search_x2, search_y2;
 	int search_w, search_h;
+	double tmp_x1, tmp_y1;
+	double tmp_x2, tmp_y2;
 
 
 	if( config.global ) {
-// Get vector
-// Start of vector is center of previous block.
-// End of vector is total accumulation.
+// Get vector as double and round the result for more regular behavior
 		if( config.tracking_object == MotionScan::TRACK_SINGLE ) {
-			global_x1 = (int64_t)(config.block_x * w / 100);
-			global_y1 = (int64_t)(config.block_y * h / 100);
-			global_x2 = global_x1 + total_dx / OVERSAMPLE;
-			global_y2 = global_y1 + total_dy / OVERSAMPLE;
-//printf("MotionMain::draw_vectors %d %d %d %d %d %d\n", total_dx, total_dy, global_x1, global_y1, global_x2, global_y2);
+// Start of vector is center of original block.
+// Length of vector is total accumulation.
+			tmp_x1 = config.block_x * w / 100;
+			tmp_y1 = config.block_y * h / 100;
+			tmp_x2 = tmp_x1 + (double)total_dx / OVERSAMPLE;
+			tmp_y2 = tmp_y1 + (double)total_dy / OVERSAMPLE;
 		}
-// Start of vector is center of previous block.
-// End of vector is current change.
 		else if( config.tracking_object == MotionScan::PREVIOUS_SAME_BLOCK ) {
-			global_x1 = (int64_t)(config.block_x * w / 100);
-			global_y1 = (int64_t)(config.block_y * h / 100);
-			global_x2 = global_x1 + current_dx / OVERSAMPLE;
-			global_y2 = global_y1 + current_dy / OVERSAMPLE;
+// Start of vector is center of original block.
+// Length of vector is current change.
+			tmp_x1 = config.block_x * w / 100;
+			tmp_y1 = config.block_y * h / 100;
+			tmp_x2 = tmp_x1 + (double)current_dx / OVERSAMPLE;
+			tmp_y2 = tmp_y1 + (double)current_dy / OVERSAMPLE;
 		}
 		else {
-			global_x1 = (int64_t)(config.block_x * w / 100
-				+ (total_dx - current_dx) / OVERSAMPLE);
-			global_y1 = (int64_t)(config.block_y * h / 100
-				+ (total_dy - current_dy) / OVERSAMPLE);
-			global_x2 = (int64_t)(config.block_x * w / 100
-				+ total_dx / OVERSAMPLE);
-			global_y2 = (int64_t)(config.block_y * h / 100
-				+ total_dy / OVERSAMPLE);
+// Start of vector is center of current block.
+// Length of vector is current change.
+			tmp_x1 = config.block_x * w / 100 + 
+				(double)(total_dx - current_dx) / OVERSAMPLE;
+			tmp_y1 = config.block_y * h / 100 +
+				(double)(total_dy - current_dy) / OVERSAMPLE;
+			tmp_x2 = config.block_x * w / 100 + 
+				(double)total_dx / OVERSAMPLE;
+			tmp_y2 = config.block_y * h / 100 +
+				(double)total_dy / OVERSAMPLE;
 		}
+		global_x1 = lrint (tmp_x1);
+		global_y1 = lrint (tmp_y1);
+		global_x2 = lrint (tmp_x2);
+		global_y2 = lrint (tmp_y2);
+//printf("MotionMain::draw_vectors %d %d %d %d %d %d\n", total_dx, total_dy, global_x1, global_y1, global_x2, global_y2);
 
 		block_x = global_x1;
 		block_y = global_y1;
+		if((config.tracking_object == MotionScan::TRACK_SINGLE ||
+		    config.tracking_object == MotionScan::TRACK_PREVIOUS) &&
+		   !config.rotate)
+		{
+// Show block at endpoint of motion if no rotation shown
+			block_x = global_x2;
+			block_y = global_y2;
+		}
 		block_w = config.global_block_w * w / 100;
 		block_h = config.global_block_h * h / 100;
 		block_x1 = block_x - block_w / 2;
@@ -973,8 +1365,8 @@ void MotionMain::draw_vectors(VFrame *frame)
 		}
 	}
 	else {
-		block_x = (int64_t)(config.block_x * w / 100);
-		block_y = (int64_t)(config.block_y * h / 100);
+		block_x = lrint (config.block_x * w / 100);
+		block_y = lrint (config.block_y * h / 100);
 	}
 
 	block_w = config.global_block_w * w / 100;
@@ -986,14 +1378,14 @@ void MotionMain::draw_vectors(VFrame *frame)
 		double target_angle1 = base_angle1 + angle;
 		double target_angle2 = base_angle2 + angle;
 		double radius = sqrt(block_w * block_w + block_h * block_h) / 2;
-		block_x1 = (int)(block_x - cos(target_angle1) * radius);
-		block_y1 = (int)(block_y - sin(target_angle1) * radius);
-		block_x2 = (int)(block_x + sin(target_angle2) * radius);
-		block_y2 = (int)(block_y - cos(target_angle2) * radius);
-		block_x3 = (int)(block_x - sin(target_angle2) * radius);
-		block_y3 = (int)(block_y + cos(target_angle2) * radius);
-		block_x4 = (int)(block_x + cos(target_angle1) * radius);
-		block_y4 = (int)(block_y + sin(target_angle1) * radius);
+		block_x1 = lrint(block_x - cos(target_angle1) * radius);
+		block_y1 = lrint(block_y - sin(target_angle1) * radius);
+		block_x2 = lrint(block_x + sin(target_angle2) * radius);
+		block_y2 = lrint(block_y - cos(target_angle2) * radius);
+		block_x3 = lrint(block_x - sin(target_angle2) * radius);
+		block_y3 = lrint(block_y + cos(target_angle2) * radius);
+		block_x4 = lrint(block_x + cos(target_angle1) * radius);
+		block_y4 = lrint(block_y + sin(target_angle1) * radius);
 
 		draw_line(frame, block_x1, block_y1, block_x2, block_y2);
 		draw_line(frame, block_x2, block_y2, block_x4, block_y4);
@@ -1043,22 +1435,13 @@ void MotionMain::draw_line(VFrame *frame, int x1, int y1, int x2, int y2)
 #define ARROW_SIZE 10
 void MotionMain::draw_arrow(VFrame *frame, int x1, int y1, int x2, int y2)
 {
-	double angle = atan((float)(y2 - y1) / (float)(x2 - x1));
-	double angle1 = angle + (float)145 / 360 * 2 * 3.14159265;
-	double angle2 = angle - (float)145 / 360 * 2 * 3.14159265;
-	int x3, y3, x4, y4;
-	if( x2 < x1 ) {
-		x3 = x2 - (int)(ARROW_SIZE * cos(angle1));
-		y3 = y2 - (int)(ARROW_SIZE * sin(angle1));
-		x4 = x2 - (int)(ARROW_SIZE * cos(angle2));
-		y4 = y2 - (int)(ARROW_SIZE * sin(angle2));
-	}
-	else {
-		x3 = x2 + (int)(ARROW_SIZE * cos(angle1));
-		y3 = y2 + (int)(ARROW_SIZE * sin(angle1));
-		x4 = x2 + (int)(ARROW_SIZE * cos(angle2));
-		y4 = y2 + (int)(ARROW_SIZE * sin(angle2));
-	}
+	double angle = atan2((double)(y2 - y1), (double)(x2 - x1));
+	double angle1 = angle + (float)145 / 360 * 2 * M_PI;
+	double angle2 = angle - (float)145 / 360 * 2 * M_PI;
+	int x3 = x2 + (int)(ARROW_SIZE * cos(angle1));
+	int y3 = y2 + (int)(ARROW_SIZE * sin(angle1));
+	int x4 = x2 + (int)(ARROW_SIZE * cos(angle2));
+	int y4 = y2 + (int)(ARROW_SIZE * sin(angle2));
 
 // Main vector
 	draw_line(frame, x1, y1, x2, y2);
@@ -1139,6 +1522,7 @@ int MotionMain::put_cache_line(const char *line)
 	if( !active_fp ) {
 		close_cache_file();
 		snprintf(cache_file, sizeof(cache_file), "%s.bak", config.tracking_file);
+		::remove(cache_file);
 		::rename(config.tracking_file, cache_file);
 		if( !(active_fp = fopen(config.tracking_file, "w")) ) {
 			perror(config.tracking_file);
@@ -1177,6 +1561,7 @@ void MotionMain::reset_cache_file()
 	else
 		close_cache_file();
 	strcpy(cache_file, config.tracking_file);
+	if (!cache_file[0]) strcpy(cache_file, TRACKING_FILE);
 }
 
 
@@ -1209,6 +1594,12 @@ void RotateScanUnit::process_package(LoadPackage *package)
 		int color_model = server->previous_frame->get_color_model();
 		int pixel_size = BC_CModels::calculate_pixelsize(color_model);
 		int row_bytes = server->previous_frame->get_bytes_per_line();
+		float angle = pkg->angle;
+// Ensure a tiny displacement if angle is nearly exact zero
+// As angle is in degree and MIN_ANGLE is in radian,
+// displacement of 1/57th of the smallest possible angle can be discarded
+// This trick is needed to trigger interpolation
+		if (fabs (angle) < MIN_ANGLE) angle = MIN_ANGLE;
 
 		if( !rotater )
 			rotater = new AffineEngine(1, 1);
@@ -1231,7 +1622,7 @@ void RotateScanUnit::process_package(LoadPackage *package)
 		rotater->set_in_pivot(server->block_x, server->block_y);
 		rotater->set_out_pivot(server->block_x, server->block_y);
 //printf("RotateScanUnit::process_package %d\n", __LINE__);
-		rotater->rotate(temp, server->previous_frame, pkg->angle);
+		rotater->rotate(temp, server->previous_frame, angle);
 
 // Scan reduced block size
 //plugin->output_frame->copy_from(server->current_frame);
@@ -1256,6 +1647,14 @@ void RotateScanUnit::process_package(LoadPackage *package)
 				row_bytes, x2 - x1, y2 - y1, color_model);
 //printf("RotateScanUnit::process_package %d\n", __LINE__);
 			server->put_cache(pkg->angle, pkg->difference);
+// Dumping rotated frame for debugging
+//			temp->write_ppm(temp, "/tmp/a%06ld-a%f.ppm",
+//					plugin->get_source_position(),
+//					pkg->angle);
+//			if (pkg->angle == 0)
+//			  temp->write_ppm(server->previous_frame,
+//					  "/tmp/a%06ld-t.ppm",
+//					  plugin->get_source_position());
 		}
 #if 0
 	VFrame png(x2-x1, y2-y1, BC_RGB888, -1);
@@ -1293,7 +1692,7 @@ void RotateScan::init_packages()
 	for( int i = 0; i < get_total_packages(); i++ ) {
 		RotateScanPackage *pkg = (RotateScanPackage*)get_package(i);
 		pkg->angle = scan_angle1 +
-			i * (scan_angle2 - scan_angle1) / (total_steps - 1);
+			i * (scan_angle2 - scan_angle1) / total_steps;
 	}
 }
 
@@ -1309,16 +1708,35 @@ LoadPackage* RotateScan::new_package()
 
 
 float RotateScan::scan_frame(VFrame *previous_frame, VFrame *current_frame,
-	int block_x, int block_y)
+	int block_x, int block_y, int passno)
 {
+// Attention, process_buffer feeds previous_frame and current_frame interchanged
+// Preinitialize sane rotation results
 	skip = 0;
 	this->block_x = block_x;
 	this->block_y = block_y;
 
-//printf("RotateScan::scan_frame %d\n", __LINE__);
+// passno == 0: single pass tracking
+// passno == 1: 1st pass of two-pass tracking (reduce accuracy)
+// passno == 2: 2nd pass of two-pass tracking (reduce angle range)
+// Save may be needed for 2nd pass
+//	float result_saved = 0;
+	if (passno == 2)
+	{
+// result_saved needed for some debug printing only
+//		result_saved = result;
+		result = 0;
+	}
+	else
+	{
+		result = plugin->config.rotation_center;
+	}
+
+//printf("RotateScan::scan_frame %d frame=%ld passno=%d\n", __LINE__, plugin->get_source_position(), passno);
 	switch(plugin->config.tracking_type) {
 	case MotionScan::NO_CALCULATE:
 		result = plugin->config.rotation_center;
+		if (passno == 2) result = 0;
 		skip = 1;
 		break;
 
@@ -1326,8 +1744,16 @@ float RotateScan::scan_frame(VFrame *previous_frame, VFrame *current_frame,
 	case MotionScan::SAVE:
 		if( plugin->load_ok ) {
 			result = plugin->load_dt;
+			if (passno == 2) result = 0;
 			skip = 1;
 		}
+		break;
+
+// Scan from scratch with sane rotation results
+	default:
+		result = plugin->config.rotation_center;
+		if (passno == 2) result = 0;
+		skip = 0;
 		break;
 	}
 
@@ -1414,10 +1840,13 @@ float RotateScan::scan_frame(VFrame *previous_frame, VFrame *current_frame,
 // Determine min angle from size of block
 	double angle1 = atan((double)block_h / block_w);
 	double angle2 = atan((double)(block_h - 1) / (block_w + 1));
+// Attention we get min_angle and MIN_ANGLE in radian, but elsewhere use degree
 	double min_angle = fabs(angle2 - angle1) / OVERSAMPLE;
 	min_angle = MAX(min_angle, MIN_ANGLE);
+// Convert min_angle to degree for convenience
+	min_angle *= 180 / M_PI;
 
-//printf("RotateScan::scan_frame %d min_angle=%f\n", __LINE__, min_angle * 360 / 2 / M_PI);
+//printf("RotateScan::scan_frame %d min_angle=%f\n", __LINE__, min_angle);
 
 	cache.remove_all_objects();
 
@@ -1426,6 +1855,7 @@ float RotateScan::scan_frame(VFrame *previous_frame, VFrame *current_frame,
 		if( previous_frame->data_matches(current_frame) ) {
 //printf("RotateScan::scan_frame: frames match.  Skipping.\n");
 			result = plugin->config.rotation_center;
+			if (passno == 2) result = 0;
 			skip = 1;
 		}
 	}
@@ -1434,37 +1864,123 @@ float RotateScan::scan_frame(VFrame *previous_frame, VFrame *current_frame,
 // Initial search range
 		float angle_range = max_angle;
 		result = plugin->config.rotation_center;
-		total_steps = plugin->config.rotate_positions;
+		if (passno == 2) result = 0;
 
+		if (passno == 1)
+		{
+// Evtl stop search earlier for 1st pass to gain speed
+			if (angle_range > 16 && min_angle < 1) min_angle = 1;
+			else if (angle_range > 4 && min_angle < 0.25) min_angle = angle_range/16;
+			else if (angle_range > min_angle*4) min_angle *= 4;
+		}
 
-		while( angle_range >= min_angle * total_steps ) {
+		if (passno == 2)
+		{
+// Evtl reduce angle_range for refinement pass to gain speed
+			if (angle_range > 16) angle_range /= 4;
+			else if (angle_range > 4) angle_range = 4;
+			if (angle_range < min_angle*4) angle_range = min_angle*4;
+			if (angle_range > max_angle) angle_range = max_angle;
+		}
+
+// Pre-negate result as previous_frame and current_frame have been interchanged
+		result = -result;
+
+		while( angle_range >= min_angle ) {
 			scan_angle1 = result - angle_range;
 			scan_angle2 = result + angle_range;
+// Find number of required steps, even and no more than configured at once
+			total_steps = (int)ceil(angle_range*2/min_angle);
+			if (total_steps & 1) total_steps ++;
+			if (total_steps > plugin->config.rotate_positions) total_steps = plugin->config.rotate_positions;
 
-			set_package_count(total_steps);
+//printf("RotateScan::scan_frame angle_range=%f from=%f to=%f steps=%d\n", angle_range, scan_angle1, scan_angle2, total_steps);
+
+// Use odd number of samples to ensure that rotation center be always included
+			set_package_count(total_steps+1);
 //set_package_count(1);
 			process_packages();
 
-			int64_t min_difference = -1;
+			int64_t min_difference = -1, max_difference = -1, noiselev = -1;
 			for( int i = 0; i < get_total_packages(); i++ ) {
 				RotateScanPackage *pkg = (RotateScanPackage*)get_package(i);
 				if( pkg->difference < min_difference || min_difference == -1 ) {
 					min_difference = pkg->difference;
 					result = pkg->angle;
 				}
+				if( pkg->difference > max_difference || max_difference == -1 ) {
+					max_difference = pkg->difference;
+				}
+//printf("RotateScan::scan_frame pkg=%d angle=%f diff=%ld min_diff=%ld max_diff=%ld\n", i, pkg->angle, pkg->difference, min_difference, max_difference);
 //break;
 			}
-
-			angle_range /= 2;
-
+// Determine noise level (not active on pass 2)
+			noiselev = min_difference+(max_difference-min_difference)*plugin->config.noise_rotation/100;
+			if (passno == 2) noiselev = min_difference;
+//printf("RotateScan::scan_frame min_diff=%ld max_diff=%ld noiselev=%ld\n", min_difference, max_difference, noiselev);
+			for(int i = 0; i < get_total_packages(); i++)
+			{
+				RotateScanPackage *pkg = (RotateScanPackage*)get_package(i);
+// Already found as the best sample, not necessary to memorize
+				if(result == pkg->angle) continue;
+// Above noise level - a definitely bad sample, skip
+				if(pkg->difference > noiselev) continue;
+// Below noise level but farther from rotation center, skip
+				if(fabs(pkg->angle-plugin->config.rotation_center) > fabs(result-plugin->config.rotation_center)) continue;
+// Below noise level and nearer to rotation center, memorize
+				if(fabs(pkg->angle-plugin->config.rotation_center) < fabs(result-plugin->config.rotation_center))
+				{
+					min_difference = pkg->difference;
+					result = pkg->angle;
+//printf("RotateScan::scan_frame angle override=%d angle=%f diff=%ld min_diff=%ld\n", i, pkg->angle, pkg->difference, min_difference);
+					continue;
+				}
+// Equal distances to rotation center, memorize sample with min difference
+				if(pkg->difference < min_difference)
+				{
+					min_difference = pkg->difference;
+					result = pkg->angle;
+//printf("RotateScan::scan_frame difference override=%d angle=%f diff=%ld min_diff=%ld\n", i, pkg->angle, pkg->difference, min_difference);
+					continue;
+				}
+			}
+			float new_range = 0, angle_diff = 0;
+			for(int i = 0; i < get_total_packages(); i++)
+			{
+				RotateScanPackage *pkg = (RotateScanPackage*)get_package(i);
+// Above noise level - skip this angle
+				if(pkg->difference > noiselev) continue;
+// Below noise level - measure max difference from the best angle
+				if(angle_diff < fabs(result-pkg->angle))
+				{
+					angle_diff = fabs(result-pkg->angle);
+//printf("RotateScan::scan_frame angle diff override=%d angle=%f diff=%f\n", i, pkg->angle, angle_diff);
+				}
+			}
+// Optimum new angle range might be +/- one search step from the best angle
+			new_range = angle_range * 2 / total_steps;
+// Evtl expand angle range to +/- two search steps if some samples below noise
+			if (angle_diff > 0) new_range = angle_range * 4 / total_steps;
+// Evtl expand angle range to include samples below noise level
+			if (new_range < angle_diff) new_range = angle_diff;
+// But always reduce angle range at least twice
+			if (new_range > angle_range / 2) new_range = angle_range / 2;
+			angle_range = new_range;
 //break;
 		}
+// Negate result as previous_frame and current_frame have been interchanged
+// and get rid of negative zeros in coord files
+		result = -result;
+		if (fabs (result) < MIN_ANGLE) result = 0;
 	}
 
-	if( plugin->config.tracking_type == MotionScan::SAVE ) {
-		plugin->save_dt = result;
-	}
-//printf("RotateScan::scan_frame %d angle=%f\n", __LINE__, result);
+// Dumping compared frames for debugging
+//		current_frame->write_ppm(previous_frame, "/tmp/a%06ld-p.ppm",
+//					 plugin->get_source_position());
+//		current_frame->write_ppm(current_frame, "/tmp/a%06ld-c.ppm",
+//					 plugin->get_source_position());
+
+//printf("RotateScan::scan_frame %d passno=%d saved angle=%f measured angle=%f twopass angle=%f\n", __LINE__, passno, result_saved, result, result_saved+result);
 	return result;
 }
 
@@ -1474,7 +1990,8 @@ int64_t RotateScan::get_cache(float angle)
 	cache_lock->lock("RotateScan::get_cache");
 	for( int i = 0; i < cache.total; i++ ) {
 		RotateScanCache *ptr = cache.values[i];
-		if( fabs(ptr->angle - angle) <= MIN_ANGLE ) {
+// Attention, MIN_ANGLE in radian, while angle and ptr->angle in degree !
+		if( fabs(ptr->angle - angle) <= MIN_ANGLE * 90 / M_PI ) {
 			result = ptr->difference;
 			break;
 		}
