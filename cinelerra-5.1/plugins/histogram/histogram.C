@@ -25,9 +25,11 @@
 #include <unistd.h>
 
 #include "bcdisplayinfo.h"
+#include "bchash.h"
+#include "bcprogressbox.h"
 #include "bcsignals.h"
 #include "clip.h"
-#include "bchash.h"
+#include "edl.h"
 #include "filexml.h"
 #include "histogram.h"
 #include "histogramconfig.h"
@@ -35,7 +37,11 @@
 #include "keyframe.h"
 #include "language.h"
 #include "loadbalance.h"
+#include "localsession.h"
+#include "mainsession.h"
+#include "mwindow.h"
 #include "playback3d.h"
+#include "pluginserver.h"
 #include "bccolors.h"
 #include "vframe.h"
 #include "workarounds.h"
@@ -68,6 +74,7 @@ HistogramMain::HistogramMain(PluginServer *server)
 {
 
 	engine = 0;
+	stripe_engine = 0;
 	for(int i = 0; i < HISTOGRAM_MODES; i++)
 	{
 		lookup[i] = 0;
@@ -82,6 +89,9 @@ HistogramMain::HistogramMain(PluginServer *server)
 	w = 440;
 	h = 500;
 	parade = 0;
+	fframe = 0;
+	last_frames = 0;
+	last_position = -1;
 }
 
 HistogramMain::~HistogramMain()
@@ -94,6 +104,8 @@ HistogramMain::~HistogramMain()
 		delete [] preview_lookup[i];
 	}
 	delete engine;
+	delete stripe_engine;
+	delete fframe;
 }
 
 const char* HistogramMain::plugin_title() { return N_("Histogram"); }
@@ -187,6 +199,8 @@ void HistogramMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("THRESHOLD", config.threshold);
 	output.tag.set_property("PLOT", config.plot);
 	output.tag.set_property("SPLIT", config.split);
+	output.tag.set_property("FRAMES", config.frames);
+	output.tag.set_property("LOG_SLIDER", config.log_slider);
 	output.tag.set_property("W", w);
 	output.tag.set_property("H", h);
 	output.tag.set_property("PARADE", parade);
@@ -235,6 +249,8 @@ void HistogramMain::read_data(KeyFrame *keyframe)
 				config.threshold = input.tag.get_property("THRESHOLD", config.threshold);
 				config.plot = input.tag.get_property("PLOT", config.plot);
 				config.split = input.tag.get_property("SPLIT", config.split);
+				config.frames = input.tag.get_property("FRAMES", config.frames);
+				config.log_slider = input.tag.get_property("LOG_SLIDER", config.log_slider);
 
 				if(is_defaults())
 				{
@@ -434,27 +450,84 @@ int HistogramMain::process_buffer(VFrame *frame,
 	double frame_rate)
 {
 	int need_reconfigure = load_configuration();
-
-
-
 	int use_opengl = calculate_use_opengl();
-
-//printf("%d\n", use_opengl);
-	read_frame(frame,
-		0,
-		start_position,
-		frame_rate,
-		use_opengl);
 
 	this->input = frame;
 	this->output = frame;
-	if( !engine )
-	{
-		int cpus = input->get_w() * input->get_h() / 0x80000 + 2;
-		int smps = get_project_smp();
-		if( cpus > smps ) cpus = smps;
+	int cpus = input->get_w() * input->get_h() / 0x80000 + 2;
+	int smps = get_project_smp();
+	if( cpus > smps ) cpus = smps;
+	if( !engine ) {
 		engine = new HistogramEngine(this, cpus, cpus);
 	}
+	int frames = config.frames;
+	MWindow *mwindow = server->mwindow;
+	if( frames > 1 && (!mwindow || // dont scan during SELECT_REGION
+	      mwindow->session->current_operation != SELECT_REGION ||
+	      mwindow->edl->local_session->get_selectionstart() ==
+		  mwindow->edl->local_session->get_selectionend() ) ) {
+		if( !stripe_engine )
+			stripe_engine = new HistStripeEngine(this, cpus, cpus);
+		int fw = frame->get_w(), fh =frame->get_h();
+		new_temp(fw, fh, BC_RGB_FLOAT);
+		MWindow *mwindow = server->mwindow;
+		if( (mwindow && mwindow->session->current_operation == SELECT_REGION) ||
+		    ( last_frames == frames && last_position-1 == start_position &&
+		      fframe && fframe->get_w() == fw && fframe->get_h() == fh ) ) {
+			read_frame(temp, 0, start_position, frame_rate, use_opengl);
+			stripe_engine->process_packages(ADD_FFRM);
+			frame->transfer_from(temp);
+		}
+		else if( last_frames != frames || last_position != start_position ||
+		      !fframe || fframe->get_w() != fw || fframe->get_h() != fh ) {
+			last_frames = frames;
+			last_position = start_position;
+			VFrame::get_temp(fframe, fw, fh, BC_RGB_FLOAT);
+			read_frame(fframe, 0, start_position+1, frame_rate, use_opengl);
+			BC_ProgressBox *progress = 0;
+			const char *progress_title = _("Histogram: scanning\n");
+			Timer timer;
+			for( int i=2; i<frames; ++i ) {
+                                read_frame(temp, 0, start_position+i, frame_rate, use_opengl);
+				stripe_engine->process_packages(ADD_TEMP);
+				if( !progress && gui_open() && frames > 2*frame_rate ) {
+					progress = new BC_ProgressBox(-1, -1, progress_title, frames);
+					progress->start();
+				}
+				if( progress && timer.get_difference() > 100 ) {
+					timer.update();
+					progress->update(i, 1);
+					char string[BCTEXTLEN];
+					sprintf(string, "%sframe: %d", progress_title, i);
+					progress->update_title(string, 1);
+					if( progress->is_cancelled() ) break;
+				}
+				if( progress && !gui_open() ) {
+					progress->stop_progress();
+					delete progress;  progress = 0;
+				}
+			}
+			read_frame(temp, 0, start_position, frame_rate, use_opengl);
+			stripe_engine->process_packages(ADD_FFRMS);
+			frame->transfer_from(temp);
+			if( progress ) {
+				progress->stop_progress();
+				delete progress;
+			}
+			++last_position;
+		}
+		else {
+			read_frame(temp, 0, start_position+frames-1, frame_rate, use_opengl);
+			stripe_engine->process_packages(ADD_TEMPS);
+			frame->transfer_from(fframe);
+			read_frame(temp, 0, start_position, frame_rate, use_opengl);
+			stripe_engine->process_packages(SUB_TEMPS);
+			++last_position;
+		}
+	}
+	else
+		read_frame(frame, 0, start_position, frame_rate, use_opengl);
+
 // if to plot histogram
 	if(config.plot) send_render_gui(frame);
 
@@ -814,13 +887,118 @@ int HistogramMain::handle_opengl()
 }
 
 
+HistStripePackage::HistStripePackage()
+ : LoadPackage()
+{
+}
 
+HistStripeUnit::HistStripeUnit(HistStripeEngine *server, HistogramMain *plugin)
+ : LoadClient(server)
+{
+	this->plugin = plugin;
+	this->server = server;
+}
 
+void HistStripeUnit::process_package(LoadPackage *package)
+{
+	HistStripePackage *pkg = (HistStripePackage*)package;
+	int frames = plugin->config.frames;
+	float scale = 1. / frames;
+	int iy0 = pkg->y0, iy1 = pkg->y1;
+	int fw = plugin->fframe->get_w();
+	uint8_t **frows = plugin->fframe->get_rows();
+	uint8_t **trows = plugin->temp->get_rows();
+	switch( server->operation ) {
+	case ADD_TEMP:  // add temp to fframe
+		for( int iy=iy0; iy<iy1; ++iy ) {
+			float *trow = (float *)trows[iy];
+			float *frow = (float *)frows[iy];
+			for( int ix=0; ix<fw; ++ix ) {
+				*frow++ += *trow++;
+				*frow++ += *trow++;
+				*frow++ += *trow++;
+			}
+		}
+		break;
+	case ADD_FFRM:  // add fframe to scaled temp
+		for( int iy=iy0; iy<iy1; ++iy ) {
+			float *trow = (float *)trows[iy];
+			float *frow = (float *)frows[iy];
+			for( int ix=0; ix<fw; ++ix ) {
+				*trow = *trow * scale + *frow++;  ++trow;
+				*trow = *trow * scale + *frow++;  ++trow;
+				*trow = *trow * scale + *frow++;  ++trow;
+			}
+		}
+		break;
+	case ADD_FFRMS:  // add fframe to temp, scale temp, scale fframe
+		for( int iy=iy0; iy<iy1; ++iy ) {
+			float *trow = (float *)trows[iy];
+			float *frow = (float *)frows[iy];
+			for( int ix=0; ix<fw; ++ix ) {
+				*trow += *frow;  *trow++ *= scale;  *frow++ *= scale;
+				*trow += *frow;  *trow++ *= scale;  *frow++ *= scale;
+				*trow += *frow;  *trow++ *= scale;  *frow++ *= scale;
+			}
+		}
+		break;
+	case ADD_TEMPS:  // add scaled temp to fframe
+		for( int iy=iy0; iy<iy1; ++iy ) {
+			float *trow = (float *)trows[iy];
+			float *frow = (float *)frows[iy];
+			for( int ix=0; ix<fw; ++ix ) {
+				*frow++ += *trow++ * scale;
+				*frow++ += *trow++ * scale;
+				*frow++ += *trow++ * scale;
+			}
+		}
+		break;
+	case SUB_TEMPS:  // sub scaled temp from frame
+		for( int iy=iy0; iy<iy1; ++iy ) {
+			float *trow = (float *)trows[iy];
+			float *frow = (float *)frows[iy];
+			for( int ix=0; ix<fw; ++ix ) {
+				*frow++ -= *trow++ * scale;
+				*frow++ -= *trow++ * scale;
+				*frow++ -= *trow++ * scale;
+			}
+		}
+		break;
+	}
+}
 
+HistStripeEngine::HistStripeEngine(HistogramMain *plugin,
+	int total_clients, int total_packages)
+ : LoadServer(total_clients, total_packages)
+{
+	this->plugin = plugin;
+}
+void HistStripeEngine::init_packages()
+{
+	int ih = plugin->input->get_h(), iy0 = 0;
+	for( int i=0,n=get_total_packages(); i<n; ) {
+		HistStripePackage *pkg = (HistStripePackage*)get_package(i);
+		int iy1 = (ih * ++i) / n;
+		pkg->y0 = iy0;  pkg->y1 = iy1;
+		iy0 = iy1;
+	}
+}
 
+LoadClient* HistStripeEngine::new_client()
+{
+	return new HistStripeUnit(this, plugin);
+}
 
+LoadPackage* HistStripeEngine::new_package()
+{
+	return new HistStripePackage();
+}
 
-
+void HistStripeEngine::process_packages(int operation)
+{
+	this->operation = operation;
+	LoadServer::process_packages();
+}
 
 
 
@@ -828,9 +1006,6 @@ HistogramPackage::HistogramPackage()
  : LoadPackage()
 {
 }
-
-
-
 
 HistogramUnit::HistogramUnit(HistogramEngine *server,
 	HistogramMain *plugin)

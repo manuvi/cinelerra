@@ -54,8 +54,13 @@
 #define BOX_SIZE 10
 
 
-class HistogramEngine;
 class HistogramMain;
+class HistStripePackage;
+class HistStripeUnit;
+class HistStripeEngine;
 
+class HistogramPackage;
+class HistogramUnit;
+class HistogramEngine;
 
 #endif

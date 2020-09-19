@@ -52,6 +52,9 @@ void HistogramConfig::reset(int do_mode)
 		automatic_v = 0;
 		threshold = 1.0;
 	}
+
+	frames = 0;
+	log_slider = .5;
 }
 
 void HistogramConfig::reset_points(int colors_only)
@@ -80,6 +83,8 @@ void HistogramConfig::boundaries()
 		high_output[i] = Units::quantize(high_output[i], PRECISION);
 	}
 	CLAMP(threshold, 0, 1);
+	CLAMP(log_slider, 0, 1);
+	CLAMP(frames, 0, 65535);
 }
 
 int HistogramConfig::equivalent(HistogramConfig &that)
@@ -104,7 +109,9 @@ int HistogramConfig::equivalent(HistogramConfig &that)
 		threshold != that.threshold) return 0;
 
 	if(plot != that.plot ||
-		split != that.split) return 0;
+		split != that.split ||
+		frames != that.frames ||
+		log_slider != that.log_slider ) return 0;
 
 	return 1;
 }
@@ -125,6 +132,8 @@ void HistogramConfig::copy_from(HistogramConfig &that)
 	threshold = that.threshold;
 	plot = that.plot;
 	split = that.split;
+	frames = that.frames;
+	log_slider = that.log_slider;
 }
 
 void HistogramConfig::interpolate(HistogramConfig &prev,
@@ -150,8 +159,8 @@ void HistogramConfig::interpolate(HistogramConfig &prev,
 	automatic_v = prev.automatic_v;
 	plot = prev.plot;
 	split = prev.split;
-
-
+	frames = prev.frames;
+	log_slider = prev.log_slider;
 }
 
 
@@ -159,7 +168,7 @@ void HistogramConfig::dump()
 {
 	for(int j = 0; j < HISTOGRAM_MODES; j++)
 	{
-		printf("HistogramConfig::dump mode=%d plot=%d split=%d\n", j, plot, split);
+		printf("HistogramConfig::dump mode=%d plot=%d split=%d frames=%d\n", j, plot, split, frames);
 	}
 }
 

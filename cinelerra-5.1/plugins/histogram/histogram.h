@@ -67,6 +67,8 @@ public:
 
 	VFrame *input, *output;
 	HistogramEngine *engine;
+	HistStripeEngine *stripe_engine;
+
 	int *lookup[HISTOGRAM_MODES];
 // No value applied to this
 	int *preview_lookup[HISTOGRAM_MODES];
@@ -80,7 +82,41 @@ public:
 	int point_y_offset;
 	int w, h;
 	int parade;
+	VFrame *fframe;
+	int64_t last_position;
+	int last_frames;
 };
+
+enum { ADD_TEMP, ADD_FFRM, ADD_FFRMS, ADD_TEMPS, SUB_TEMPS };
+
+class HistStripePackage : public LoadPackage
+{
+public:
+	HistStripePackage();
+	int y0, y1;
+};
+
+class HistStripeUnit : public LoadClient
+{
+public:
+	HistStripeUnit(HistStripeEngine *server, HistogramMain *plugin);
+	void process_package(LoadPackage *package);
+	HistStripeEngine *server;
+	HistogramMain *plugin;
+};
+
+class HistStripeEngine : public LoadServer
+{
+public:
+	HistStripeEngine(HistogramMain *plugin, int total_clients, int total_packages);
+	void process_packages(int operation);
+	void init_packages();
+	LoadClient *new_client();
+	LoadPackage *new_package();
+	HistogramMain *plugin;
+	int operation;
+};
+
 
 class HistogramPackage : public LoadPackage
 {

@@ -22,11 +22,15 @@
 #include "bcdisplayinfo.h"
 #include "bcsignals.h"
 #include "cursors.h"
+#include "edl.h"
 #include "histogram.h"
 #include "histogramconfig.h"
 #include "histogramwindow.h"
 #include "keys.h"
 #include "language.h"
+#include "localsession.h"
+#include "mwindow.h"
+#include "pluginserver.h"
 #include "theme.h"
 
 #include <unistd.h>
@@ -199,10 +203,20 @@ void HistogramWindow::create_objects()
 			low_output_carrot->get_w() / 2, y));
 	y += high_output_carrot->get_h() + margin;
 
+
 //	add_subwindow(title = new BC_Title(x, y, _("Output:")));
 //	x += title->get_w() + margin;
 	low_output = new HistogramText(plugin, this, x, y);
 	low_output->create_objects();
+
+	const char *linear_text = _("Linear");
+	int xs = get_w()/2 - xS(50);
+	x = xs - BC_Title::calculate_w(this, linear_text) - margin;
+	add_subwindow(log_title1 = new BC_Title(x, y, linear_text));
+	add_subwindow(log_slider = new HistogramLogSlider(plugin, this, xs, y));
+	xs += log_slider->get_w() + margin;
+	add_subwindow(log_title2 = new BC_Title(xs, y, _("Log")));
+
 	high_output = new HistogramText(plugin, this,
 		get_w() - low_output->get_w() - margin, y);
 	high_output->create_objects();
@@ -214,24 +228,25 @@ void HistogramWindow::create_objects()
 	y += bar->get_h() + margin;
 
 	add_subwindow(automatic = new HistogramAuto(plugin, x, y));
-
-	//int y1 = y;
-	x = xS(200);
-	add_subwindow(threshold_title = new BC_Title(x, y, _("Threshold:")));
-	x += threshold_title->get_w() + margin;
-	threshold = new HistogramText(plugin, this, x, y);
+	int x2 = xS(190);
+	add_subwindow(threshold_title = new BC_Title(x2, y, _("Threshold:")));
+	int x3 = xS(305);
+	threshold = new HistogramText(plugin, this, x3, y);
 	threshold->create_objects();
+	y += automatic->get_h() + margin;
 
-	x = get_w() / 2;
-	add_subwindow(reset = new HistogramReset(plugin,
-		x, y + threshold->get_h() + margin));
+	add_subwindow(plot = new HistogramPlot(plugin, x1, y));
+	add_subwindow(select = new HistogramSelect(plugin, this, x2, y));
+	frames = new HistogramFrames(plugin, this, x3, y);
+	frames->create_objects();
+	x = x3 + frames->get_w() + margin;
+	add_subwindow(clear_frames = new HistogramClearFrames(plugin, this, x, y));
+	y += plot->get_h() + margin;
 
 	x = x1;
-	y += automatic->get_h() + margin;
-	add_subwindow(plot = new HistogramPlot(plugin, x, y));
-
-	y += plot->get_h() + yS(5);
 	add_subwindow(split = new HistogramSplit(plugin, x, y));
+	x = xS(340);
+	add_subwindow(reset = new HistogramReset(plugin, x, y + yS(5)));
 
 	update(1, 1, 1, 1);
 
@@ -308,6 +323,14 @@ int HistogramWindow::resize_event(int w, int h)
 
 	low_output->reposition_window(low_output->get_x(),
 		low_output->get_y() + ydiff);
+	int xs = (get_w() - log_slider->get_w()) / 2;
+	int margin = plugin->get_theme()->widget_border;
+	log_title1->reposition_window(xs - log_title1->get_w() - margin,
+		log_title1->get_y() + ydiff);
+	log_slider->reposition_window(xs,
+		log_slider->get_y() + ydiff);
+	log_title2->reposition_window(xs + log_slider->get_w() + margin,
+		log_title2->get_y() + ydiff);
 	high_output->reposition_window(high_output->get_x() + xdiff,
 		high_output->get_y() + ydiff);
 
@@ -321,13 +344,20 @@ int HistogramWindow::resize_event(int w, int h)
 		threshold_title->get_y() + ydiff);
 	threshold->reposition_window(threshold->get_x(),
 		threshold->get_y() + ydiff);
+	plot->reposition_window(plot->get_x(),
+		plot->get_y() + ydiff);
+
+	split->reposition_window(split->get_x(),
+		split->get_y() + ydiff);
 	reset->reposition_window(reset->get_x(),
 		reset->get_y() + ydiff);
 
-	plot->reposition_window(plot->get_x(),
-		plot->get_y() + ydiff);
-	split->reposition_window(split->get_x(),
-		split->get_y() + ydiff);
+	frames->reposition_window(frames->get_x(),
+		frames->get_y() + ydiff);
+	select->reposition_window(select->get_x(),
+		select->get_y() + ydiff);
+	clear_frames->reposition_window(clear_frames->get_x(),
+		clear_frames->get_y() + ydiff);
 
 	update(1, 1, 1, 1);
 
@@ -388,8 +418,10 @@ void HistogramWindow::update(int do_canvases,
 		mode_b->update(plugin->mode == HISTOGRAM_BLUE ? 1 : 0);
 		plot->update(plugin->config.plot);
 		split->update(plugin->config.split);
+		frames->update(plugin->config.frames);
 		parade_on->update(plugin->parade ? 1 : 0);
 		parade_off->update(plugin->parade ? 0 : 1);
+		log_slider->update(plugin->config.log_slider);
 		output->update();
 	}
 
@@ -423,43 +455,36 @@ void HistogramWindow::update(int do_canvases,
 
 void HistogramWindow::draw_canvas_mode(int mode, int color, int y, int h)
 {
-	int *accum = plugin->accum[mode];
-	int accum_per_canvas_i = HISTOGRAM_SLOTS / canvas_w + 1;
-	float accum_per_canvas_f = (float)HISTOGRAM_SLOTS / canvas_w;
-	int normalize = 0;
-	int max = 0;
-
-
 // Draw histogram
-	for(int i = 0; i < HISTOGRAM_SLOTS; i++)
-	{
-		if(accum && accum[i] > normalize) normalize = accum[i];
-	}
-
-
-	if(normalize)
-	{
-		for(int i = 0; i < canvas_w; i++)
-		{
-			int accum_start = (int)(accum_per_canvas_f * i);
-			int accum_end = accum_start + accum_per_canvas_i;
-			max = 0;
-			for(int j = accum_start; j < accum_end; j++)
-			{
-				max = MAX(accum[j], max);
-			}
-
-//			max = max * h / normalize;
-			max = (int)(log(max) / log(normalize) * h);
-
-			canvas->set_color(BLACK);
-			canvas->draw_line(i, y, i, y + h - max);
-			canvas->set_color(color);
-			canvas->draw_line(i, y + h - max, i, y + h);
+	int max = 0, *accum = plugin->accum[mode];
+	if( accum ) {
+		for( int i=0; i<HISTOGRAM_SLOTS; ++i ) {
+			int v = accum[i];
+			if( max < v ) max = v;
 		}
 	}
-	else
-	{
+
+	if( max > 0 ) {
+		double log_slider = plugin->config.log_slider;
+		double lin_slider = 1. - log_slider;
+		double lin_scale = (lin_slider * h) / max;
+		double log_scale = (log_slider * h) / log(max);
+		for( int i=0,x=0; x<canvas_w; ++x ) {
+			int m = 0;
+			int i1 = (HISTOGRAM_SLOTS * (x+1)) / canvas_w;
+			while( i < i1 ) {
+				int v = accum[i++];
+				if( m < v ) m = v;
+			}
+			m = m*lin_scale + log(m)*log_scale;
+
+			canvas->set_color(BLACK);
+			canvas->draw_line(x, y, x, y+h - m);
+			canvas->set_color(color);
+			canvas->draw_line(x, y+h - m, x, y+h);
+		}
+	}
+	else {
 		canvas->set_color(BLACK);
 		canvas->draw_box(0, y, canvas_w, h);
 	}
@@ -470,26 +495,16 @@ void HistogramWindow::draw_canvas_mode(int mode, int color, int y, int h)
 	int y1 = 0;
 
 // Draw output line
-	for(int i = 0; i < canvas_w; i++)
-	{
-		float input = (float)i /
-				canvas_w *
-				FLOAT_RANGE +
-				HIST_MIN_INPUT;
-		float output = plugin->calculate_level(input,
-			mode,
-			0);
-
+	for( int x=0; x<canvas_w; ++x ) {
+		float input = (float)x / canvas_w * FLOAT_RANGE + HIST_MIN_INPUT;
+		float output = plugin->calculate_level(input, mode, 0);
 		int y2 = h - (int)(output * h);
-		if(i > 0)
-		{
-			canvas->draw_line(i - 1, y + y1, i, y + y2);
-		}
+		if( x > 0 )
+			canvas->draw_line(x-1, y+y1, x, y+y2);
 		y1 = y2;
 	}
 
 	canvas->set_line_width(1);
-
 }
 
 
@@ -606,21 +621,7 @@ int HistogramCanvas::button_release_event()
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-HistogramReset::HistogramReset(HistogramMain *plugin,
-	int x,
-	int y)
+HistogramReset::HistogramReset(HistogramMain *plugin, int x, int y)
  : BC_GenericButton(x, y, _("Reset"))
 {
 	this->plugin = plugin;
@@ -634,19 +635,66 @@ int HistogramReset::handle_event()
 }
 
 
+HistogramSelect::HistogramSelect(HistogramMain *plugin, HistogramWindow *gui,
+		int x, int y)
+ : BC_GenericButton(x, y, xS(100), _("Frames"))
+{
+	this->plugin = plugin;
+	this->gui = gui;
+	set_tooltip(_("Set frames to selection duration"));
+}
+int HistogramSelect::handle_event()
+{
+	MWindow *mwindow = plugin->server->mwindow;
+	if( mwindow ) {
+		EDL *edl = mwindow->edl;
+		double start = edl->local_session->get_selectionstart();
+		int64_t start_pos = edl->get_frame_rate() * start;
+		double end = edl->local_session->get_selectionend();
+		int64_t end_pos = edl->get_frame_rate() * end;
+		int64_t frames = end_pos - start_pos;
+		gui->frames->update(frames);
+		plugin->config.frames = frames;
+		plugin->send_configure_change();
+	}
+	return 1;
+}
 
+HistogramClearFrames::HistogramClearFrames(HistogramMain *plugin, HistogramWindow *gui,
+		int x, int y)
+ : BC_Button(x, y, plugin->get_theme()->get_image_set("reset_button"))
+{
+	this->plugin = plugin;
+	this->gui = gui;
+	set_tooltip(_("Clear frames"));
+}
 
+int HistogramClearFrames::handle_event()
+{
+	plugin->config.frames = 0;
+	gui->frames->update(0);
+	plugin->send_configure_change();
+	return 1;
+}
 
+HistogramLogSlider::HistogramLogSlider(HistogramMain *plugin, HistogramWindow *gui,
+		int x, int y)
+: BC_FSlider(x, y, 0, xS(100), xS(100), 0., 1., plugin->config.log_slider)
 
+{
+	this->plugin = plugin;
+	this->gui = gui;
+}
 
-HistogramCarrot::HistogramCarrot(HistogramMain *plugin,
-	HistogramWindow *gui,
-	int x,
-	int y)
- : BC_Toggle(x,
- 	y,
-	plugin->get_theme()->get_image_set("histogram_carrot"),
-	0)
+int HistogramLogSlider::handle_event()
+{
+	plugin->config.log_slider = get_value();
+	plugin->send_configure_change();
+	return 1;
+}
+
+HistogramCarrot::HistogramCarrot(HistogramMain *plugin, HistogramWindow *gui, int x, int y)
+ : BC_Toggle(x, y, plugin->get_theme()->get_image_set("histogram_carrot"), 0)
 {
 	this->plugin = plugin;
 	this->gui = gui;
@@ -659,30 +707,16 @@ HistogramCarrot::~HistogramCarrot()
 
 float* HistogramCarrot::get_value()
 {
-	if(this == gui->low_input_carrot)
-	{
+	if( this == gui->low_input_carrot )
 		return &plugin->config.low_input[plugin->mode];
-	}
-	else
-	if(this == gui->high_input_carrot)
-	{
+	if( this == gui->high_input_carrot )
 		return &plugin->config.high_input[plugin->mode];
-	}
-	else
-	if(this == gui->gamma_carrot)
-	{
+	if( this == gui->gamma_carrot )
 		return &plugin->config.gamma[plugin->mode];
-	}
-	else
-	if(this == gui->low_output_carrot)
-	{
+	if( this == gui->low_output_carrot )
 		return &plugin->config.low_output[plugin->mode];
-	}
-	else
-	if(this == gui->high_output_carrot)
-	{
+	if( this == gui->high_output_carrot )
 		return &plugin->config.high_output[plugin->mode];
-	}
 	return 0;
 }
 
@@ -935,7 +969,6 @@ int HistogramSplit::handle_event()
 }
 
 
-
 HistogramMode::HistogramMode(HistogramMain *plugin,
 	int x,
 	int y,
@@ -963,17 +996,30 @@ int HistogramMode::handle_event()
 }
 
 
+HistogramFrames::HistogramFrames(HistogramMain *plugin, HistogramWindow *gui,
+		int x, int y)
+ : BC_TumbleTextBox(gui, 0, 0, 65535, x, y, xS(80))
+{
+	this->plugin = plugin;
+	this->gui = gui;
+}
 
+int HistogramFrames::handle_event()
+{
+	plugin->config.frames = atoi(get_text());
+	plugin->send_configure_change();
+	return 1;
+}
 
-
-
-
-
+void HistogramFrames::update(int frames)
+{
+	BC_TumbleTextBox::update((int64_t)frames);
+}
 
 
 HistogramText::HistogramText(HistogramMain *plugin,
 	HistogramWindow *gui, int x, int y, float hist_min, float hist_max)
- : BC_TumbleTextBox(gui, 0.0, hist_min, hist_max, x, y, xS(70))
+ : BC_TumbleTextBox(gui, 0.0, hist_min, hist_max, x, y, xS(80))
 {
 	this->plugin = plugin;
 	this->gui = gui;
@@ -983,46 +1029,26 @@ HistogramText::HistogramText(HistogramMain *plugin,
 
 float* HistogramText::get_value()
 {
-	if(this == gui->low_input)
-	{
+	if( this == gui->low_input )
 		return &plugin->config.low_input[plugin->mode];
-	}
-	else
-	if(this == gui->high_input)
-	{
+	if( this == gui->high_input )
 		return &plugin->config.high_input[plugin->mode];
-	}
-	else
-	if(this == gui->gamma)
-	{
+	if( this == gui->gamma )
 		return &plugin->config.gamma[plugin->mode];
-	}
-	else
-	if(this == gui->low_output)
-	{
+	if( this == gui->low_output )
 		return &plugin->config.low_output[plugin->mode];
-	}
-	else
-	if(this == gui->high_output)
-	{
+	if( this == gui->high_output )
 		return &plugin->config.high_output[plugin->mode];
-	}
-	else
-	if(this == gui->threshold)
-	{
+	if( this == gui->threshold )
 		return &plugin->config.threshold;
-	}
-
 	return 0;
 }
 
 int HistogramText::handle_event()
 {
 	float *output = get_value();
-	if(output)
-	{
+	if( output )
 		*output = atof(get_text());
-	}
 
 	gui->update(1, 1, 0, 0);
 	plugin->send_configure_change();
@@ -1032,23 +1058,7 @@ int HistogramText::handle_event()
 void HistogramText::update()
 {
 	float *output = get_value();
-	if(output)
-	{
+	if( output )
 		BC_TumbleTextBox::update(*output);
-	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

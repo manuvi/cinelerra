@@ -74,10 +74,7 @@ public:
 class HistogramCarrot : public BC_Toggle
 {
 public:
-	HistogramCarrot(HistogramMain *plugin,
-		HistogramWindow *gui,
-		int x,
-		int y);
+	HistogramCarrot(HistogramMain *plugin, HistogramWindow *gui, int x, int y);
 	virtual ~HistogramCarrot();
 
 	void update();
@@ -98,9 +95,7 @@ public:
 class HistogramAuto : public BC_CheckBox
 {
 public:
-	HistogramAuto(HistogramMain *plugin,
-		int x,
-		int y);
+	HistogramAuto(HistogramMain *plugin, int x, int y);
 	int handle_event();
 	HistogramMain *plugin;
 };
@@ -108,9 +103,7 @@ public:
 class HistogramPlot : public BC_CheckBox
 {
 public:
-	HistogramPlot(HistogramMain *plugin,
-		int x,
-		int y);
+	HistogramPlot(HistogramMain *plugin, int x, int y);
 	int handle_event();
 	HistogramMain *plugin;
 };
@@ -118,9 +111,7 @@ public:
 class HistogramSplit : public BC_CheckBox
 {
 public:
-	HistogramSplit(HistogramMain *plugin,
-		int x,
-		int y);
+	HistogramSplit(HistogramMain *plugin, int x, int y);
 	int handle_event();
 	HistogramMain *plugin;
 };
@@ -128,10 +119,7 @@ public:
 class HistogramMode : public BC_Radial
 {
 public:
-	HistogramMode(HistogramMain *plugin,
-		int x,
-		int y,
-		int value,
+	HistogramMode(HistogramMain *plugin, int x, int y, int value,
 		char *text);
 	int handle_event();
 	HistogramMain *plugin;
@@ -141,11 +129,47 @@ public:
 class HistogramReset : public BC_GenericButton
 {
 public:
-	HistogramReset(HistogramMain *plugin,
-		int x,
-		int y);
+	HistogramReset(HistogramMain *plugin, int x, int y);
 	int handle_event();
 	HistogramMain *plugin;
+};
+
+class HistogramSelect : public BC_GenericButton
+{
+public:
+	HistogramSelect(HistogramMain *plugin, HistogramWindow *gui, int x, int y);
+	int handle_event();
+	HistogramMain *plugin;
+	HistogramWindow *gui;
+};
+
+class HistogramClearFrames : public BC_Button
+{
+public:
+	HistogramClearFrames(HistogramMain *plugin, HistogramWindow *gui, int x, int y);
+	int handle_event();
+	HistogramMain *plugin;
+	HistogramWindow *gui;
+};
+
+class HistogramLogSlider : public BC_FSlider
+{
+public:
+	HistogramLogSlider(HistogramMain *plugin, HistogramWindow *gui, int x, int y);
+	int handle_event();
+	HistogramMain *plugin;
+	HistogramWindow *gui;
+};
+
+class HistogramFrames : public BC_TumbleTextBox
+{
+public:
+	HistogramFrames(HistogramMain *plugin, HistogramWindow *gui, int x, int y);
+	int handle_event();
+	void update(int frames);
+
+	HistogramMain *plugin;
+	HistogramWindow *gui;
 };
 
 class HistogramText : public BC_TumbleTextBox
@@ -167,12 +191,8 @@ public:
 class HistogramCanvas : public BC_SubWindow
 {
 public:
-	HistogramCanvas(HistogramMain *plugin,
-		HistogramWindow *gui,
-		int x,
-		int y,
-		int w,
-		int h);
+	HistogramCanvas(HistogramMain *plugin, HistogramWindow *gui,
+			int x, int y, int w, int h);
 	int button_press_event();
 	int cursor_motion_event();
 	int button_release_event();
@@ -187,22 +207,14 @@ public:
 	~HistogramWindow();
 
 	void create_objects();
-	void update(int do_canvases,
-		int do_carrots,
-		int do_text,
-		int do_toggles);
+	void update(int do_canvases, int do_carrots, int do_text, int do_toggles);
 	void draw_canvas_mode(int mode, int color, int y, int h);
 	void update_canvas();
 	int keypress_event();
 	int resize_event(int w, int h);
 
 	void get_point_extents(HistogramPoint *current,
-		int *x1,
-		int *y1,
-		int *x2,
-		int *y2,
-		int *x,
-		int *y);
+			int *x1, int *y1, int *x2, int *y2, int *x, int *y);
 
 	HistogramSlider *output;
 	HistogramAuto *automatic;
@@ -214,6 +226,7 @@ public:
 	HistogramText *low_input;
 	HistogramText *high_input;
 	HistogramText *gamma;
+	HistogramFrames *frames;
 	HistogramCanvas *canvas;
 	HistogramCarrot *low_input_carrot;
 	HistogramCarrot *gamma_carrot;
@@ -225,6 +238,11 @@ public:
 	BC_Title *canvas_title2;
 	BC_Title *threshold_title;
 	BC_Bar *bar;
+	HistogramSelect *select;
+	HistogramClearFrames *clear_frames;
+	HistogramLogSlider *log_slider;
+	BC_Title *log_title1;
+	BC_Title *log_title2;
 
 // Value to change with keypresses
 	float *active_value;
@@ -238,11 +256,5 @@ public:
 	HistogramPlot *plot;
 	HistogramSplit *split;
 };
-
-
-
-
-
-
 
 #endif

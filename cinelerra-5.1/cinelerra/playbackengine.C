@@ -84,8 +84,8 @@ PlaybackEngine::~PlaybackEngine()
 	done = 1;
 	output_lock->unlock();
 	Thread::join();
-	delete preferences;
 	delete_render_engine();
+	delete preferences;
 	if( audio_cache )
 		audio_cache->remove_user();
 	if( video_cache )
@@ -147,14 +147,18 @@ void PlaybackEngine::delete_render_engine()
 
 void PlaybackEngine::arm_render_engine()
 {
+	renderengine_lock->lock("PlaybackEngine::arm_render_engine");
 	if( render_engine )
 		render_engine->arm_command(command);
+	renderengine_lock->unlock();
 }
 
 void PlaybackEngine::start_render_engine()
 {
+	renderengine_lock->lock("PlaybackEngine::start_render_engine");
 	if( render_engine )
 		render_engine->start_command();
+	renderengine_lock->unlock();
 }
 
 void PlaybackEngine::wait_render_engine()
@@ -180,14 +184,21 @@ void PlaybackEngine::create_cache()
 void PlaybackEngine::perform_change()
 {
 	switch( command->change_type ) {
-		case CHANGE_ALL:
-			create_cache();
-		case CHANGE_EDL:
-			create_render_engine();
-			break;
-		case CHANGE_PARAMS:
-			render_engine->get_edl()->synchronize_params(command->get_edl());
-		case CHANGE_NONE:
+	case CHANGE_ALL:
+		create_cache();
+	case CHANGE_EDL:
+		create_render_engine();
+		break;
+	case CHANGE_PARAMS: {
+		renderengine_lock->lock("PlaybackEngine::perform_change");
+		EDL *edl = render_engine ? render_engine->get_edl() : 0;
+		if( edl ) edl->add_user();
+		renderengine_lock->unlock();
+		if( !edl ) break;
+		edl->synchronize_params(command->get_edl());
+		edl->remove_user();
+		}
+	case CHANGE_NONE:
 			break;
 	}
 }

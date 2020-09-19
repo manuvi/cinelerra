@@ -22,7 +22,19 @@
 #ifndef HISTOGRAMWINDOW_INC
 #define HISTOGRAMWINDOW_INC
 
+class HistogramSlider;
+class HistogramParade;
+class HistogramCarrot;
+class HistogramAuto;
+class HistogramPlot;
+class HistogramSplit;
+class HistogramMode;
+class HistogramReset;
+class HistogramSelect;
+class HistogramLogSlider;
+class HistogramFrames;
+class HistogramText;
+class HistogramCanvas;
 class HistogramWindow;
-class HistogramThread;
 
 #endif

@@ -61,6 +61,8 @@ public:
 	float threshold;
 	int plot;
 	int split;
+	int frames;
+	float log_slider;
 };
 
 
