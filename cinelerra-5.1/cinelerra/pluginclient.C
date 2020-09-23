@@ -939,8 +939,7 @@ double PluginClient::get_project_framerate()
 
 const char *PluginClient::get_source_path()
 {
-	EDL *edl = get_edl();
-	Plugin *plugin = edl->tracks->plugin_exists(server->plugin_id);
+	Plugin *plugin = server->edl->tracks->plugin_exists(server->plugin_id);
 	int64_t source_position = plugin->startproject;
 	Edit *edit = plugin->track->edits->editof(source_position,PLAY_FORWARD,0);
 	Indexable *indexable = edit ? edit->get_source() : 0;

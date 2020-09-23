@@ -121,7 +121,6 @@ public:
 	int cwindow_click2play;
 // CWindow clear color
 	int cwindow_clear_color;
-	int cwindow_clear_alpha;
 // Transition
 	char default_atransition[BCTEXTLEN];
 	char default_vtransition[BCTEXTLEN];

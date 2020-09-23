@@ -1,7 +1,7 @@
-diff -ruN dav1d-0.7.1.orig/Makefile dav1d-0.7.1/Makefile
---- dav1d-0.7.1.orig/Makefile	1969-12-31 17:00:00.000000000 -0700
-+++ dav1d-0.7.1/Makefile	2020-07-09 20:10:47.066626832 -0600
-@@ -0,0 +1,371 @@
+diff -urN a/Makefile b/Makefile
+--- a/Makefile	1969-12-31 17:00:00.000000000 -0700
++++ b/Makefile	2019-10-14 10:54:47.354841430 -0600
+@@ -0,0 +1,363 @@
 +
 +_ARCH := $(shell uname -m)
 +ARCH_I32 := $(shell expr "x$(_ARCH)" : 'xi[346]86.*')
@@ -36,7 +36,7 @@ diff -ruN dav1d-0.7.1.orig/Makefile dav1d-0.7.1/Makefile
 +
 +STATIC_LIB=$(BUILD)/src/libdav1d.a
 +SHARED_LIB=$(BUILD)/src/libdav1d.so
-+DEFS= -DNDEBUG -D_FILE_OFFSET_BITS=64 -D_POSIX_C_SOURCE=200112L -D_GNU_SOURCE
++DEFS= -DNDEBUG -D_FILE_OFFSET_BITS=64 -D_POSIX_C_SOURCE=200112L
 +FUZZ= -DDAV1D_MT_FUZZING
 +
 +BLD_INCL= $(DEFS) -I. -Isrc -Iinclude/dav1d -Iinclude \
@@ -78,7 +78,7 @@ diff -ruN dav1d-0.7.1.orig/Makefile dav1d-0.7.1/Makefile
 +	-fomit-frame-pointer \
 +	-ffast-math \
 +	-fPIC \
-+	-mpreferred-stack-boundary=6 \
++	-mpreferred-stack-boundary=5 \
 +	-MD -MQ $@ -MF $@.d \
 +
 +SHA_OPTS=\
@@ -88,9 +88,9 @@ diff -ruN dav1d-0.7.1.orig/Makefile dav1d-0.7.1/Makefile
 +	-shared \
 +	-fPIC \
 +	-Wl,--start-group \
-+	-Wl,-soname,libdav1d.so.3 \
++	-Wl,-soname,libdav1d.so.2 \
 +	-Wl,--end-group \
-+	-pthread -ldl \
++	-pthread \
 +
 +CC_CC=$(Q)cc $(CC_OPTS) $(CFLAGS)
 +NASM=$(Q)/usr/bin/nasm
@@ -98,13 +98,11 @@ diff -ruN dav1d-0.7.1.orig/Makefile dav1d-0.7.1/Makefile
 +
 +# nasm
 +NASM_OBJS=$(call any,$(NASM_BLD), \
-+	cdef_avx512.obj \
-+	cdef_avx2.obj \
++	cdef.obj \
 +	film_grain.obj \
 +	ipred.obj \
 +	itx.obj \
 +	cdef_sse.obj \
-+	film_grain_ssse3.obj \
 +	ipred_ssse3.obj \
 +	loopfilter.obj \
 +	looprestoration.obj \
@@ -112,7 +110,7 @@ diff -ruN dav1d-0.7.1.orig/Makefile dav1d-0.7.1/Makefile
 +	itx_ssse3.obj \
 +	looprestoration_ssse3.obj \
 +	loopfilter_ssse3.obj \
-+	mc_sse.obj \
++	mc_ssse3.obj \
 +	cpuid.obj \
 +	msac.obj )
 +
@@ -138,7 +136,6 @@ diff -ruN dav1d-0.7.1.orig/Makefile dav1d-0.7.1/Makefile
 +	dequant_tables.o \
 +	getbits.o \
 +	intra_edge.o \
-+	itx_1d.o \
 +	lf_mask.o \
 +	log.o \
 +	msac.o \
@@ -146,13 +143,12 @@ diff -ruN dav1d-0.7.1.orig/Makefile dav1d-0.7.1/Makefile
 +	picture.o \
 +	qm.o \
 +	ref.o \
-+	refmvs.o \
++	ref_mvs.o \
 +	scan.o \
 +	tables.o \
 +	warpmv.o \
 +	wedge.o \
-+	x86/cpu.c.o \
-+	x86/msac_init.c.o)
++	x86/cpu.c.o)
 +$(SRC_BLD)/%.o: src/%.c
 +	$(CC_CC) $(BLD_INCL) -pthread -o $@ -c $<
 +$(SRC_BLD)/x86/%.c.o: src/x86/%.c
@@ -206,9 +202,6 @@ diff -ruN dav1d-0.7.1.orig/Makefile dav1d-0.7.1/Makefile
 +	echo >> $@ "#define CONFIG_LOG 1"
 +	echo >> $@ "#define ENDIANNESS_BIG 0"
 +	echo >> $@ "#define HAVE_ASM 1"
-+	echo >> $@ "#define HAVE_AVX512ICL 0"
-+	echo >> $@ "#define HAVE_CLOCK_GETTIME 1"
-+	echo >> $@ "#define HAVE_DLSYM 1"
 +	echo >> $@ "#define HAVE_POSIX_MEMALIGN 1"
 +	echo >> $@ "#define HAVE_UNISTD_H 1"
 +	echo >> $@ "#define STACK_ALIGNMENT 32"
@@ -218,17 +211,16 @@ diff -ruN dav1d-0.7.1.orig/Makefile dav1d-0.7.1/Makefile
 +	echo >> $@ "%define ARCH_X86_64 $(ARCH_X86_64)"
 +	echo >> $@ "%define PIC 1"
 +	echo >> $@ "%define STACK_ALIGNMENT 32"
-+	echo >> $@ "%define HAVE_AVX512ICL 0"
 +
 +$(BUILD)/include/vcs_version.h:
 +	mkdir -p $(BUILD)/include
-+	echo  > $@ "#define DAV1D_VERSION \"0.7.1\""
++	echo  > $@ "#define DAV1D_VERSION \"0.5.0\""
 +
 +$(BUILD)/include/dav1d/version.h:
 +	mkdir -p $(BUILD)/include/dav1d
 +	echo  > $@ "#ifndef DAV1D_VERSION_H"
 +	echo >> $@ "#define DAV1D_VERSION_H"
-+	echo >> $@ "#define DAV1D_API_VERSION_MAJOR 3"
++	echo >> $@ "#define DAV1D_API_VERSION_MAJOR 2"
 +	echo >> $@ "#define DAV1D_API_VERSION_MINOR 0"
 +	echo >> $@ "#define DAV1D_API_VERSION_PATCH 0"
 +	echo >> $@ "#endif /* DAV1D_VERSION_H */"

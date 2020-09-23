@@ -722,8 +722,7 @@ void VideoDevice::new_output_buffer(VFrame **output, int colormodel, EDL *edl)
 	if(!output_base) return;
 	output_base->new_output_buffer(output, colormodel, edl);
 	int clr_color = edl->session->cwindow_clear_color;
-	int clr_alpha = edl->session->cwindow_clear_alpha;
-	(*output)->set_clear_color(clr_color, clr_alpha);
+	(*output)->set_clear_color(clr_color, 0xff);
 }
 
 

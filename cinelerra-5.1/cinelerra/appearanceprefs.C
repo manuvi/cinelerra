@@ -184,9 +184,8 @@ void AppearancePrefs::create_objects()
 	y += ys35;
 	add_subwindow(title = new BC_Title(x, y, _("Composer BG Color:")));
 	int clr_color = pwindow->thread->edl->session->cwindow_clear_color;
-	int clr_alpha = pwindow->thread->edl->session->cwindow_clear_alpha;
         add_subwindow(cwdw_bg_color = new Composer_BG_Color(pwindow,
-		x2, y, xS(80), yS(24), clr_color, clr_alpha));
+		x2, y, xS(80), yS(24), clr_color));
 	draw_3d_border(x2-2,y-2, xS(80)+4,xS(24)+4, 1);
 	cwdw_bg_color->create_objects();
 	x2 += cwdw_bg_color->get_w();
@@ -932,8 +931,8 @@ int RectifyAudioToggle::handle_event()
 }
 
 Composer_BG_Color::Composer_BG_Color(PreferencesWindow *pwindow,
-		int x, int y, int w, int h, int color, int alpha)
- : ColorBoxButton(_("Composer BG color"), x, y, w, h, color, alpha, 1)
+		int x, int y, int w, int h, int color)
+ : ColorBoxButton(_("Composer BG color"), x, y, w, h, color, -1, 1)
 {
 	this->pwindow = pwindow;
 }
@@ -955,7 +954,6 @@ void Composer_BG_Color::handle_done_event(int result)
 int Composer_BG_Color::handle_new_color(int color, int alpha)
 {
 	pwindow->thread->edl->session->cwindow_clear_color = color;
-	pwindow->thread->edl->session->cwindow_clear_alpha = alpha;
 	return 1;
 }
 

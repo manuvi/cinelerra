@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: Cinelerra-GG Infinity\n"
 "Report-Msgid-Bugs-To: <cin@lists.cinelerra-gg.org>\n"
 "POT-Creation-Date: 2020-09-01 04:28+0300\n"
-"PO-Revision-Date: 2020-09-06 15:06+0300\n"
+"PO-Revision-Date: 2020-09-21 08:48+0300\n"
 "Last-Translator: Andrew Randrianasulu <randrianasulu@gmail.com>\n"
 "Language-Team: <randrianasulu@gmail.com>\n"
 "Language: ru_RU\n"
@@ -11247,7 +11247,7 @@ msgstr "Компрессор"
 #: plugins/compressor/compressor.C:394
 #: plugins/compressormulti/comprmultigui.C:113
 msgid "Sound level (Press shift to snap to grid):"
-msgstr "Уровень звука (нажм. shift дял выравнивания по сетке):"
+msgstr "Уровень звука (нажм. shift для выравнивания по сетке):"
 
 #: plugins/compressor/compressor.C:406
 #: plugins/compressormulti/comprmultigui.C:129

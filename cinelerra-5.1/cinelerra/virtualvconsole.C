@@ -99,6 +99,10 @@ int VirtualVConsole::process_buffer(int64_t input_position,
 			exit_nodes.total);
 
 
+	EDLSession *session = renderengine->get_edl()->session;
+	int clr_color = session->cwindow_clear_color;
+	vrender->video_out->set_clear_color(clr_color, 0xff);
+
 	if(use_opengl)
 	{
 // clear hardware framebuffer
@@ -156,9 +160,6 @@ int VirtualVConsole::process_buffer(int64_t input_position,
 			EDL *edl = renderengine->get_edl();
 			output_temp = new VFrame( track->track_w, track->track_h,
 				edl->session->color_model);
-			int clr_color = edl->session->cwindow_clear_color;
-			int clr_alpha = edl->session->cwindow_clear_alpha;
-			output_temp->set_clear_color(clr_color, clr_alpha);
 		}
 
 // Reset OpenGL state

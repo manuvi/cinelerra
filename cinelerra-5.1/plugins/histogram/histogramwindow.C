@@ -323,7 +323,7 @@ int HistogramWindow::resize_event(int w, int h)
 
 	low_output->reposition_window(low_output->get_x(),
 		low_output->get_y() + ydiff);
-	int xs = (get_w() - log_slider->get_w()) / 2;
+	int xs = (w - log_slider->get_w()) / 2;
 	int margin = plugin->get_theme()->widget_border;
 	log_title1->reposition_window(xs - log_title1->get_w() - margin,
 		log_title1->get_y() + ydiff);

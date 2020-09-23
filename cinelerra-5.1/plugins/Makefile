@@ -101,8 +101,6 @@ DIRS = $(OPENCV_OBJS) \
 	loopvideo \
 	motion \
 	motion51 \
-	motion-cv \
-	motion-hv \
 	motion2point \
 	motionblur \
 	normalize \
@@ -171,6 +169,9 @@ DIRS = $(OPENCV_OBJS) \
 	theme_unflat \
 	theme_cakewalk \
 
+# not maintained
+#	motion-cv \
+#	motion-hv \
 # too costly
 #	findobject \
 #	greycstoration \

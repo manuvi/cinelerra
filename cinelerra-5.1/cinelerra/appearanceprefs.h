@@ -438,7 +438,7 @@ class Composer_BG_Color : public ColorBoxButton
 {
 public:
 	Composer_BG_Color(PreferencesWindow *pwindow,
-		int x, int y, int w, int h, int color, int alpha);
+		int x, int y, int w, int h, int color);
 	~Composer_BG_Color();
 	void handle_done_event(int result);
 	int handle_new_color(int color, int alpha);

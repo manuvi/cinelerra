@@ -122,6 +122,11 @@ void RenderFarmClient::main_loop()
 			perror(_("RenderFarmClient::main_loop: socket"));
 			return;
 		}
+		struct linger lgr;
+		lgr.l_onoff = 0;
+		lgr.l_linger = 0;
+		if( setsockopt(socket_fd, SOL_SOCKET, SO_LINGER, &lgr, sizeof(lgr)) < 0 )
+			perror("RenderFarmClient::setsockopt:setlinger 0");
 
 		if(bind(socket_fd,
 			(struct sockaddr*)&addr,
@@ -147,6 +152,11 @@ void RenderFarmClient::main_loop()
 			perror(_("RenderFarmClient::main_loop: socket"));
 			return;
 		}
+		struct linger lgr;
+		lgr.l_onoff = 0;
+		lgr.l_linger = 0;
+		if( setsockopt(socket_fd, SOL_SOCKET, SO_LINGER, &lgr, sizeof(lgr)) < 0 )
+			perror("RenderFarmClient::setsockopt:setlinger 1");
 
 		if(bind(socket_fd,
 			(struct sockaddr*)&addr,
@@ -267,7 +277,8 @@ int RenderFarmClientThread::read_socket(char *data, int len)
 	int bytes_read = 0;
 	int offset = 0;
 //printf("RenderFarmClientThread::read_socket 1\n");
-	watchdog->begin_request();
+	if( watchdog )
+		watchdog->begin_request();
 	while(len > 0 && bytes_read >= 0)
 	{
 		bytes_read = read(socket_fd, data + offset, len);
@@ -282,7 +293,8 @@ int RenderFarmClientThread::read_socket(char *data, int len)
 			break;
 		}
 	}
-	watchdog->end_request();
+	if( watchdog )
+		watchdog->end_request();
 //printf("RenderFarmClientThread::read_socket 10\n");
 
 	return offset;

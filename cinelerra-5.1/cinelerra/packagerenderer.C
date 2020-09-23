@@ -91,6 +91,7 @@ PackageFile::~PackageFile()
 
 int PackageFile::write_frame_done(int64_t position)
 {
+	if( !package_renderer->package->use_brender ) return 0;
 	return package_renderer->set_video_map(position, BRender::RENDERED);
 }
 

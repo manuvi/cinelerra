@@ -156,7 +156,6 @@ ColorGUI::ColorGUI(BC_WindowBase *window)
 	hue = 0; sat = 0; val = 0;
 	red = 0; grn = 0; blu = 0;
 	lum = 0; c_r = 0; c_b = 0;
-	alpha = 0;
 
 	hsv_h = 0;  hsv_s = 0;  hsv_v = 0;
 	rgb_r = 0;  rgb_g = 0;  rgb_b = 0;
@@ -1451,7 +1450,8 @@ void ColorBoxButton::create_objects()
 void ColorBoxButton::set_color(int color)
 {
 	this->color = (color & 0xffffff);
-	this->alpha = (~color>>24) & 0xff;
+	if( this->alpha >= 0 )
+		this->alpha = (~color>>24) & 0xff;
 	int r = (color>>16) & 0xff;
 	int g = (color>> 8) & 0xff;
 	int b = (color>> 0) & 0xff;
@@ -1513,7 +1513,8 @@ void ColorCircleButton::create_objects()
 void ColorCircleButton::set_color(int color)
 {
 	this->color = (color & 0xffffff);
-	this->alpha = (~color>>24) & 0xff;
+	if( this->alpha >= 0 )
+		this->alpha = (~color>>24) & 0xff;
 	int r = (color>>16) & 0xff;
 	int g = (color>>8) & 0xff;
 	int b = (color>>0) & 0xff;

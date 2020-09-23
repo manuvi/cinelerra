@@ -127,7 +127,7 @@
 enum
 {
 	RENDERFARM_NONE,
-	RENDERFARM_PREFERENCES,  // 0 Get preferences on startup
+	RENDERFARM_PREFERENCES,  // Get preferences on startup
 	RENDERFARM_ASSET,        // Get output format on startup
 	RENDERFARM_EDL,          // Get EDL on startup
 	RENDERFARM_PACKAGE,      // Get one package after another to render
@@ -135,7 +135,7 @@ enum
 	RENDERFARM_SET_RESULT,   // Update error status
 	RENDERFARM_GET_RESULT,   // Retrieve error status
 	RENDERFARM_DONE,         // Quit
-	RENDERFARM_SET_VMAP,     // 8 Update video map in background rendering
+	RENDERFARM_SET_VMAP,     // Update video map in background rendering
 	RENDERFARM_COMMAND,      // Get the client to run
 	RENDERFARM_TUNER,        // Run a tuner server
 	RENDERFARM_PACKAGES,     // Run packages
