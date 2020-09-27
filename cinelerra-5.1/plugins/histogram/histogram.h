@@ -60,9 +60,8 @@ public:
 // Value is only calculated for preview.
 	void calculate_histogram(VFrame *data, int do_value);
 // Calculate the linear, smoothed, lookup curves
-	void tabulate_curve(int subscript, int use_value);
-
-
+	void tabulate_curve(int **table, int idx, int len, int use_value);
+	void tabulate_curve(int idx, int use_value);
 
 
 	VFrame *input, *output;

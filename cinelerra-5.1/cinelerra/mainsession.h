@@ -38,6 +38,7 @@
 #include "pluginset.inc"
 #include "pluginserver.inc"
 #include "track.inc"
+#include "transition.inc"
 #include "vwindowgui.inc"
 
 // Options not in EDL but not changed in preferences
@@ -73,6 +74,7 @@ public:
 // Item being dragged
 	ArrayList <PluginServer*> *drag_pluginservers;
 	Plugin *drag_plugin;
+	Transition *drag_transition;
 // When trim should only affect the selected edits or plugins
 	Edits *trim_edits;
 	ArrayList<Indexable*> *drag_assets;

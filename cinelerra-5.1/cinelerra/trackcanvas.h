@@ -250,53 +250,28 @@ public:
 	int ibeam_mode();
 
 // Get edit and handle the cursor is over
-	int do_edit_handles(int cursor_x,
-		int cursor_y,
-		int button_press,
-		int &rerender,
-		int &update_overlay,
-		int &new_cursor,
-		int &update_cursor);
+	int do_edit_handles(int cursor_x, int cursor_y, int button_press,
+		int &rerender, int &update_overlay, int &new_cursor, int &update_cursor);
 // Get plugin and handle the cursor if over
-	int do_plugin_handles(int cursor_x,
-		int cursor_y,
-		int button_press,
-		int &rerender,
-		int &update_overlay,
-		int &new_cursor,
-		int &update_cursor);
+	int do_plugin_handles(int cursor_x, int cursor_y, int button_press,
+		int &rerender, int &update_overlay, int &new_cursor, int &update_cursor);
+	int do_transition_handles(int cursor_x, int cursor_y, int button_press,
+		int &rerender, int &update_overlay, int &new_cursor, int &update_cursor);
+	int drag_transition_handle(double position);
 // Get edit the cursor is over
-	int do_edits(int cursor_x,
-		int cursor_y,
-		int button_press,
-		int drag_start,
-		int &redraw,
-		int &rerender,
-		int &new_cursor,
-		int &update_cursor);
+	int do_edits(int cursor_x, int cursor_y, int button_press,
+		int drag_start, int &redraw, int &rerender, int &new_cursor, int &update_cursor);
 	int do_tracks(int cursor_x,
 		int cursor_y,
 		int button_press);
 	int test_track_group(EDL *group, Track *first_track, double &pos);
 	int edit_intersects(Track *track, Edit *src_edit, double &pos);
 	int test_resources(int cursor_x, int cursor_y);
-	int do_plugins(int cursor_x,
-		int cursor_y,
-		int drag_start,
-		int button_press,
-		int &redraw,
-		int &rerender);
-	int do_transitions(int cursor_x,
-		int cursor_y,
-		int button_press,
-		int &new_cursor,
-		int &update_cursor);
-	void draw_cropped_line(int x1,
-		int y1,
-		int x2,
-		int y2,
-		int min_y,
-		int max_y);
+	int do_plugins(int cursor_x, int cursor_y, int drag_start, int button_press,
+		int &redraw, int &rerender);
+	int do_transitions(int cursor_x, int cursor_y, int button_press,
+		int &new_cursor, int &update_cursor);
+	void draw_cropped_line(int x1, int y1, int x2, int y2, int min_y, int max_y);
 	int button_press_event();
 	int button_release_event();
 	int cursor_update(int in_motion);
@@ -319,6 +294,7 @@ public:
 	int64_t drop_plugin_position(PluginSet *plugin_set, Plugin *moved_plugin);
 	void end_edithandle_selection();
 	void end_pluginhandle_selection();
+	void end_transnhandle_selection();
 // Number of seconds spanned by the trackcanvas
 	double time_visible();
 	void update_drag_handle();

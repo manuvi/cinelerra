@@ -2919,7 +2919,7 @@ void MWindow::run()
 	run_lock->unlock();
 }
 
-void MWindow::show_vwindow()
+void MWindow::show_vwindow(int raise)
 {
 	int total_running = 0;
 	session->show_vwindow = 1;
@@ -2929,19 +2929,17 @@ void MWindow::show_vwindow()
 	for(int j = 0; j < vwindows.size(); j++) {
 		VWindow *vwindow = vwindows[j];
 		if( !vwindow->is_running() ) continue;
+		total_running++;
+		if( !raise && !vwindow->gui->is_hidden() ) continue;
 		vwindow->gui->lock_window("MWindow::show_vwindow");
 		vwindow->gui->show_window(0);
 		vwindow->gui->raise_window();
 		vwindow->gui->flush();
 		vwindow->gui->unlock_window();
-		total_running++;
 	}
-
 // If no windows visible
-	if(!total_running)
-	{
+	if( !total_running )
 		get_viewer(1, DEFAULT_VWINDOW);
-	}
 
 	gui->mainmenu->show_vwindow->set_checked(1);
 }
@@ -3016,8 +3014,8 @@ void MWindow::restore_windows()
 			vwindow->gui->unlock_window();
 		}
 	}
-	else
-		show_vwindow();
+	else 
+		show_vwindow(0);
 
 	if( !session->show_awindow && !awindow->gui->is_hidden() ) {
 		awindow->gui->lock_window("MWindow::restore_windows");

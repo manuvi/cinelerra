@@ -1967,7 +1967,8 @@ void TrackCanvas::draw_inout_points()
 void TrackCanvas::draw_drag_handle()
 {
 	if( mwindow->session->current_operation != DRAG_EDITHANDLE2 &&
-	    mwindow->session->current_operation != DRAG_PLUGINHANDLE2 ) return;
+	    mwindow->session->current_operation != DRAG_PLUGINHANDLE2 &&
+	    mwindow->session->current_operation != DRAG_TRANSNHANDLE2 ) return;
 	int64_t pixel1 = Units::round(mwindow->session->drag_position *
 		mwindow->edl->session->sample_rate /
 		mwindow->edl->local_session->zoom_sample -
@@ -3846,14 +3847,8 @@ void TrackCanvas::update_drag_handle()
 	double new_position;
 	int cursor_x = get_cursor_x();
 
-	new_position =
-		(double)(cursor_x +
-		mwindow->edl->local_session->view_start[pane->number]) *
-		mwindow->edl->local_session->zoom_sample /
-		mwindow->edl->session->sample_rate;
-
-	new_position =
-		mwindow->edl->align_to_frame(new_position, 0);
+	new_position = mwindow->edl->get_cursor_position(cursor_x, pane->number);
+	new_position = mwindow->edl->align_to_frame(new_position, 0);
 
 	if( ctrl_down() && alt_down() ) {
 #define snapper(v) do { \
@@ -4321,42 +4316,46 @@ int TrackCanvas::cursor_update(int in_motion)
 	{
 		case DRAG_EDITHANDLE1:
 // Outside threshold.  Upgrade status
-			if(active)
-			{
-				if(labs(get_cursor_x() - mwindow->session->drag_origin_x) > HANDLE_W)
-				{
-					mwindow->session->current_operation = DRAG_EDITHANDLE2;
-					update_overlay = 1;
-				}
-			}
-			break;
-
-		case DRAG_EDITHANDLE2:
-			if(active)
-			{
-				update_drag_handle();
+			if( !active ) break;
+			if( labs(get_cursor_x() - mwindow->session->drag_origin_x) > HANDLE_W ) {
+				mwindow->session->current_operation = DRAG_EDITHANDLE2;
 				update_overlay = 1;
 			}
+			break;
+		case DRAG_EDITHANDLE2:
+			if( !active ) break;
+			update_drag_handle();
+			update_overlay = 1;
 			break;
 
 		case DRAG_PLUGINHANDLE1:
-			if(active)
-			{
-				if(labs(get_cursor_x() - mwindow->session->drag_origin_x) > HANDLE_W)
-				{
-					mwindow->session->current_operation = DRAG_PLUGINHANDLE2;
-					update_overlay = 1;
-				}
-			}
-			break;
-
-		case DRAG_PLUGINHANDLE2:
-			if(active)
-			{
-				update_drag_handle();
+			if( !active ) break;
+			if( labs(get_cursor_x() - mwindow->session->drag_origin_x) > HANDLE_W ) {
+				mwindow->session->current_operation = DRAG_PLUGINHANDLE2;
 				update_overlay = 1;
 			}
 			break;
+		case DRAG_PLUGINHANDLE2:
+			if( !active ) break;
+			update_drag_handle();
+			update_overlay = 1;
+			break;
+
+		case DRAG_TRANSNHANDLE1:
+			if( !active ) break;
+			if( labs(get_cursor_x() - mwindow->session->drag_origin_x) > HANDLE_W ) {
+				mwindow->session->current_operation = DRAG_TRANSNHANDLE2;
+				update_overlay = 1;
+			}
+			break;
+		case DRAG_TRANSNHANDLE2: {
+			if( !active ) break;
+			position = mwindow->edl->get_cursor_position(get_cursor_x(), pane->number);
+			position = mwindow->edl->align_to_frame(position, 1);
+			drag_transition_handle(position);
+			rerender = 1;
+			update_overlay = 1;
+			break; }
 
 // Rubber band curves
 		case DRAG_FADE:
@@ -4479,6 +4478,8 @@ int TrackCanvas::cursor_update(int in_motion)
 						0, new_cursor, update_cursor)) break;
 				if(do_keyframes(get_cursor_x(), get_cursor_y(),
 					0, 0, new_cursor, update_cursor, rerender)) break;
+				if(do_transition_handles(get_cursor_x(), get_cursor_y(),
+					0, rerender, update_overlay, new_cursor, update_cursor)) break;
 				if(do_edit_handles(get_cursor_x(), get_cursor_y(),
 					0, rerender, update_overlay, new_cursor, update_cursor)) break;
 // Plugin boundaries
@@ -4673,6 +4674,20 @@ int TrackCanvas::button_release_event()
 			break;
 
 		case DRAG_PLUGINHANDLE1:
+			mwindow->session->current_operation = NO_OPERATION;
+			drag_scroll = 0;
+			result = 1;
+			break;
+
+		case DRAG_TRANSNHANDLE2:
+			mwindow->session->current_operation = NO_OPERATION;
+			drag_scroll = 0;
+			result = 1;
+
+			end_transnhandle_selection();
+			break;
+
+		case DRAG_TRANSNHANDLE1:
 			mwindow->session->current_operation = NO_OPERATION;
 			drag_scroll = 0;
 			result = 1;
@@ -4998,6 +5013,95 @@ int TrackCanvas::do_plugin_handles(int cursor_x,
 	}
 
 	return result;
+}
+
+int TrackCanvas::do_transition_handles(int cursor_x, int cursor_y, int button_press,
+		int &rerender, int &update_overlay, int &new_cursor, int &update_cursor)
+{
+	Transition *trans_result = 0;
+	int result = 0;
+
+	Track *track = mwindow->edl->tracks->first;
+	for( ; track && !result; track=track->next) {
+		if( track->is_hidden() ) continue;
+		Edit *edit = track->edits->first;
+		for( ; edit && !result; edit=edit->next ) {
+			Transition *trans = edit->transition;
+			if( !trans ) continue;
+			int64_t x, y, w, h;
+			edit_dimensions(edit, x, y, w, h);
+			int strip_x = x, edit_y = y;
+			get_transition_coords(edit, x, y, w, h);
+			VFrame *strip = mwindow->theme->get_image("plugin_bg_data");
+			int strip_y = y - strip->get_h();
+			if( track->show_assets() && track->show_titles() )
+				edit_y += mwindow->theme->get_image("title_bg_data")->get_h();
+			if( strip_y < edit_y ) strip_y = edit_y;
+			int strip_w = Units::round(edit->track->from_units(edit->transition->length) *
+				mwindow->edl->session->sample_rate / mwindow->edl->local_session->zoom_sample);
+			int x1 = strip_x + strip_w - HANDLE_W/2, x2 = x1 + HANDLE_W;
+			int y1 = strip_y + strip->get_h()/2 - HANDLE_H/2, y2 = y1 + HANDLE_W;
+			if( cursor_x >= x1 && cursor_x < x2 &&
+			    cursor_y >= y1 && cursor_y < y2 ) {
+				trans_result = trans;
+				result = 1;
+			}
+		}
+	}
+
+	if( result ) {
+		if( button_press ) {
+			mwindow->session->drag_transition = trans_result;
+			mwindow->session->drag_handle = 1;
+			mwindow->session->drag_button = get_buttonpress() - 1;
+			int64_t trans_end = trans_result->edit->startproject + trans_result->length;
+			double position = trans_result->edit->track->from_units(trans_end);
+			mwindow->session->drag_position = position;
+			mwindow->session->drag_start = position;
+			mwindow->session->current_operation = DRAG_TRANSNHANDLE1;
+			mwindow->session->drag_origin_x = get_cursor_x();
+			mwindow->session->drag_origin_y = get_cursor_y();
+			update_cursor = 1;
+		}
+		new_cursor = RIGHT_CURSOR;
+		update_overlay = 1;
+	}
+
+	return result;
+}
+
+int TrackCanvas::drag_transition_handle(double position)
+{
+	Transition *transition = mwindow->session->drag_transition;
+	if( !transition ) return 1;
+	mwindow->session->drag_position = position;
+	mwindow->edl->local_session->set_selectionstart(position);
+	mwindow->edl->local_session->set_selectionend(position);
+	char string[BCSTRLEN];
+	int64_t length = transition->length;
+	Track *track = transition->edit->track;
+	int64_t start_pos = track->to_units(mwindow->session->drag_start, 0);
+	int64_t end_pos = track->to_units(mwindow->session->drag_position, 0);
+	length += end_pos - start_pos;
+	if( length < 0 ) length = 0;
+	double time = track->from_units(length);
+	Units::totext(string, time,
+		mwindow->edl->session->time_format,
+		mwindow->edl->session->sample_rate,
+		mwindow->edl->session->frame_rate,
+		mwindow->edl->session->frames_per_foot);
+	mwindow->gui->show_message(string);
+	if( mwindow->gui->transition_menu->length_thread->running() ) {
+		TransitionLengthDialog *dialog = (TransitionLengthDialog *)
+			 mwindow->gui->transition_menu->length_thread->get_gui();
+		if( dialog ) {
+			dialog->lock_window("TrackCanvas::drag_transition_handle");
+			dialog->update_text(time);
+			dialog->thread->new_length = time;
+			dialog->unlock_window();
+		}
+	}
+	return 0;
 }
 
 
@@ -5421,6 +5525,10 @@ int TrackCanvas::button_press_event()
 					0, get_buttonpress(), new_cursor,
 					update_cursor, rerender) ) break;
 				update_message = 1;
+
+				if( do_transition_handles(cursor_x, cursor_y,
+					1, rerender, update_overlay, new_cursor,
+					update_cursor) ) break;
 // Test edit boundaries
 				if( do_edit_handles(cursor_x, cursor_y,
 					1, rerender, update_overlay, new_cursor,
@@ -5457,6 +5565,8 @@ int TrackCanvas::button_press_event()
 					break;
 				}
 				update_message = 1;
+				if( do_transition_handles(cursor_x, cursor_y,
+					1, rerender, update_overlay, new_cursor, update_cursor) ) break;
 // Test edit boundaries
 				if( do_edit_handles(cursor_x, cursor_y,
 					1, rerender, update_overlay, new_cursor, update_cursor) ) break;
@@ -5553,11 +5663,19 @@ int TrackCanvas::start_selection(double position)
 void TrackCanvas::end_edithandle_selection()
 {
 	mwindow->modify_edithandles();
+	mwindow->session->drag_edit = 0;
 }
 
 void TrackCanvas::end_pluginhandle_selection()
 {
 	mwindow->modify_pluginhandles();
+	mwindow->session->drag_plugin = 0;
+}
+
+void TrackCanvas::end_transnhandle_selection()
+{
+	mwindow->modify_transnhandles();
+	mwindow->session->drag_transition = 0;
 }
 
 

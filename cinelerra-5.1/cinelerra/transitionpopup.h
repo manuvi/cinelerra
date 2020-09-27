@@ -84,6 +84,7 @@ public:
 
 	void create_objects();
 	int close_event();
+	void update_text(double length);
 
 	MWindow *mwindow;
 	TransitionLengthThread *thread;

@@ -960,6 +960,34 @@ void MWindow::finish_modify_handles()
 	cwindow->update(1, 0, 0, 0, 1);
 }
 
+int MWindow::modify_transnhandles()
+{
+	gui->reset_default_message();
+	gui->default_message();
+	Transition *transition = session->drag_transition;
+	if( !transition ) return 1;
+	int64_t length = transition->length;
+	Track *track = transition->edit->track;
+	int64_t start_pos = track->to_units(session->drag_start, 0);
+	int64_t end_pos = track->to_units(session->drag_position, 0);
+	length += end_pos - start_pos;
+	if( length < 0 ) length = 0;
+	if( length == transition->length ) return 0;
+
+	undo_before();
+	transition->length = length;
+	undo_after(_("trans handle"), LOAD_EDITS);
+
+	save_backup();
+	restart_brender();
+	sync_parameters(CHANGE_EDL);
+	update_plugin_guis();
+	gui->update(1, FORCE_REDRAW, 1, 1, 1, 1, 0);
+	cwindow->update(1, 0, 0, 0, 1);
+
+	return 0;
+}
+
 void MWindow::match_output_size(Track *track)
 {
 	undo_before();

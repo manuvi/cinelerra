@@ -209,7 +209,7 @@ public:
 	void media_to_clip();
 	int create_ref(Asset *asset, EDL *ref);
 // Show windows
-	void show_vwindow();
+	void show_vwindow(int raise);
 	void show_awindow();
 	void show_lwindow();
 	void show_cwindow();
@@ -623,6 +623,7 @@ public:
 
 	int modify_edithandles();
 	int modify_pluginhandles();
+	int modify_transnhandles();
 	void finish_modify_handles();
 	void rescale_proxy(EDL *clip, int orig_scale, int new_scale);
 	void add_proxy(ArrayList<Indexable*> *orig_assets,

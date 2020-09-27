@@ -36,6 +36,7 @@
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "plugin.h"
+#include "transition.h"
 
 MainSession::MainSession(MWindow *mwindow)
 {
@@ -51,6 +52,7 @@ MainSession::MainSession(MWindow *mwindow)
 	current_operation = NO_OPERATION;
 	drag_pluginservers = new ArrayList<PluginServer*>;
 	drag_plugin = 0;
+	drag_transition = 0;
 	drag_assets = new ArrayList<Indexable*>;
 	drag_auto_gang = new ArrayList<Auto*>;
 	drag_clips = new ArrayList<EDL*>;
@@ -656,6 +658,10 @@ Track *MainSession::drag_handle_track()
 	case DRAG_PLUGINHANDLE1:
 	case DRAG_PLUGINHANDLE2:
 		track = drag_plugin->edits->track;
+		break;
+	case DRAG_TRANSNHANDLE1:
+	case DRAG_TRANSNHANDLE2:
+		track = drag_transition->edits->track;
 		break;
 	}
 	return track;

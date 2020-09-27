@@ -111,14 +111,9 @@ int TransitionUnitsItem::handle_event()
 {
 	TransitionUnitsPopup *units_popup = (TransitionUnitsPopup *)get_popup_menu();
 	TransitionLengthDialog *gui = units_popup->gui;
-	TransitionLengthText *length_text = gui->text;
-	EDLSession *session = gui->mwindow->edl->session;
 	double length = gui->thread->new_length;
-	char text[BCSTRLEN];
 	units_popup->units = id;
-	Units::totext(text, length, units_popup->units, session->sample_rate,
-			session->frame_rate, session->frames_per_foot);
-	length_text->update(text);
+	gui->update_text(length);
 	units_popup->set_text(get_text());
 	return 1;
 }
@@ -181,6 +176,17 @@ int TransitionLengthDialog::close_event()
 	return 1;
 }
 
+void TransitionLengthDialog::update_text(double length)
+{
+	int units = units_popup->units;
+	EDLSession *session = mwindow->edl->session;
+	char string[BCSTRLEN];
+	Units::totext(string, length, units,
+		session->sample_rate, session->frame_rate,
+		session->frames_per_foot);
+	text->update(string);
+}
+
 
 TransitionLengthText::TransitionLengthText(MWindow *mwindow,
 	TransitionLengthDialog *gui, int x, int y)
@@ -220,11 +226,7 @@ int TransitionLengthText::handle_up_down(int dir)
 		break;
 	}
 	double length = gui->thread->new_length + delta * dir;
-	char text[BCSTRLEN];
-	Units::totext(text, length, units,
-		session->sample_rate, session->frame_rate,
-		session->frames_per_foot);
-	update(text);
+	gui->update_text(length);
 	return gui->thread->update(length);
 }
 

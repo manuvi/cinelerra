@@ -60,63 +60,34 @@ void HistogramWindow::create_objects()
 	int margin = plugin->get_theme()->widget_border;
 	int x = margin, y = margin, x1 = margin;
 
-	add_subwindow(mode_v = new HistogramMode(plugin,
-		x,
-		y,
-		HISTOGRAM_VALUE,
-		_("Value")));
+	add_subwindow(mode_v = new HistogramMode(plugin, x, y,
+		HISTOGRAM_VALUE, _("Value")));
 	x += mode_v->get_w() + margin;
-	add_subwindow(mode_r = new HistogramMode(plugin,
-		x,
-		y,
-		HISTOGRAM_RED,
-		_("Red")));
+	add_subwindow(mode_r = new HistogramMode(plugin, x, y,
+		HISTOGRAM_RED, _("Red")));
 	x += mode_r->get_w() + margin;
-	add_subwindow(mode_g = new HistogramMode(plugin,
-		x,
-		y,
-		HISTOGRAM_GREEN,
-		_("Green")));
+	add_subwindow(mode_g = new HistogramMode(plugin, x, y,
+		HISTOGRAM_GREEN, _("Green")));
 	x += mode_g->get_w() + margin;
-	add_subwindow(mode_b = new HistogramMode(plugin,
-		x,
-		y,
-		HISTOGRAM_BLUE,
-		_("Blue")));
-
-
+	add_subwindow(mode_b = new HistogramMode(plugin, x, y,
+		HISTOGRAM_BLUE, _("Blue")));
 	x = get_w() - margin - plugin->get_theme()->get_image_set("histogram_rgb_toggle")[0]->get_w();
-	add_subwindow(parade_on = new HistogramParade(plugin,
-		this,
-		x,
-		y,
-		1));
+	add_subwindow(parade_on = new HistogramParade(plugin, this,
+		x, y, 1));
 	x -= parade_on->get_w() + margin;
-	add_subwindow(parade_off = new HistogramParade(plugin,
-		this,
-		x,
-		y,
-		0));
-
+	add_subwindow(parade_off = new HistogramParade(plugin, this, x, y, 0));
 
 	x = x1;
 	y += parade_on->get_h() + margin;
-	add_subwindow(canvas_title1 = new BC_Title(margin,
-		y,
-		"-10%"));
-	add_subwindow(canvas_title2 = new BC_Title(get_w() - get_text_width(MEDIUMFONT, "110%") - margin,
-		y,
-		"110%"));
+	add_subwindow(canvas_title1 = new BC_Title(margin, y, "-10%"));
+	x = get_w() - get_text_width(MEDIUMFONT, "110%") - margin;
+	add_subwindow(canvas_title2 = new BC_Title(x, y, "110%"));
 
 	y += canvas_title2->get_h() + margin;
 	x = x1;
 	canvas_h = get_h() - y - yS(210);
 
-
-	add_subwindow(low_input_carrot = new HistogramCarrot(plugin,
-		this,
-		x,
-		y + canvas_h));
+	add_subwindow(low_input_carrot = new HistogramCarrot(plugin, this, x, y + canvas_h));
 
 	x = low_input_carrot->get_w() / 2 + x;
 	canvas_w = get_w() - x - x;
@@ -126,48 +97,27 @@ void HistogramWindow::create_objects()
 	title3_x = x + (int)(canvas_w * (1.0 - HIST_MIN_INPUT) / FLOAT_RANGE);
 	title4_x = x + (int)(canvas_w);
 
-
-
-
-
-	add_subwindow(canvas = new HistogramCanvas(plugin,
-		this,
-		x,
-		y,
-		canvas_w,
-		canvas_h));
+	add_subwindow(canvas = new HistogramCanvas(plugin, this,
+			x, y, canvas_w, canvas_h));
 
 // Canvas border
-	draw_3d_border(x - 2,
-		y - 2,
-		canvas_w + 4,
-		canvas_h + 4,
-		get_bg_color(),
-		BLACK,
-		MDGREY,
-		get_bg_color());
+	draw_3d_border(x - 2, y - 2, canvas_w + 4, canvas_h + 4,
+		get_bg_color(), BLACK, MDGREY, get_bg_color());
 
 // Calculate output curve with no value function
-	plugin->tabulate_curve(plugin->mode, 0);
+	plugin->tabulate_curve(plugin->preview_lookup, plugin->mode, 0x10000, 0);
 
 	y += canvas->get_h();
 	x = margin;
 
-	add_subwindow(gamma_carrot = new HistogramCarrot(plugin,
-		this,
-		canvas->get_x() +
-			canvas->get_w() / 2 -
-			low_input_carrot->get_w() / 2 ,
-		y));
+	add_subwindow(gamma_carrot = new HistogramCarrot(plugin, this,
+		canvas->get_x() + canvas->get_w() / 2 -
+			low_input_carrot->get_w() / 2 , y));
 
-	add_subwindow(high_input_carrot = new HistogramCarrot(plugin,
-		this,
-		canvas->get_x() +
-			canvas->get_w() -
-			low_input_carrot->get_w() / 2,
-		y));
+	add_subwindow(high_input_carrot = new HistogramCarrot(plugin, this,
+		canvas->get_x() + canvas->get_w() -
+			low_input_carrot->get_w() / 2, y));
 	y += low_input_carrot->get_h() + margin;
-
 
 //	add_subwindow(title = new BC_Title(x, y, _("Input:")));
 //	x += title->get_w() + margin;
@@ -271,20 +221,13 @@ int HistogramWindow::resize_event(int w, int h)
 // Canvas follows window size
 	canvas_w = canvas_w + xdiff;
 	canvas_h = canvas_h + ydiff;
-	canvas->reposition_window(canvas->get_x(),
-		canvas->get_y(),
-		canvas_w,
-		canvas_h);
+	canvas->reposition_window(canvas->get_x(), canvas->get_y(),
+		canvas_w, canvas_h);
 
 // Canvas border
-	draw_3d_border(canvas->get_x() - 2,
-		canvas->get_y() - 2,
-		canvas_w + 4,
-		canvas_h + 4,
-		get_bg_color(),
-		BLACK,
-		MDGREY,
-		get_bg_color());
+	draw_3d_border(canvas->get_x() - 2, canvas->get_y() - 2,
+		canvas_w + 4, canvas_h + 4,
+		get_bg_color(), BLACK, MDGREY, get_bg_color());
 
 	low_input_carrot->reposition_window(low_input_carrot->get_x(),
 		low_input_carrot->get_y() + ydiff);
@@ -307,14 +250,9 @@ int HistogramWindow::resize_event(int w, int h)
 	output->update();
 
 // Output border
-	draw_3d_border(output->get_x() - 2,
-		output->get_y() - 2,
-		output->get_w() + 4,
-		output->get_h() + 4,
-		get_bg_color(),
-		BLACK,
-		MDGREY,
-		get_bg_color());
+	draw_3d_border(output->get_x() - 2, output->get_y() - 2,
+		output->get_w() + 4, output->get_h() + 4,
+		get_bg_color(), BLACK, MDGREY, get_bg_color());
 
 	low_output_carrot->reposition_window(low_output_carrot->get_x(),
 		low_output_carrot->get_y() + ydiff);
@@ -458,9 +396,11 @@ void HistogramWindow::draw_canvas_mode(int mode, int color, int y, int h)
 // Draw histogram
 	int max = 0, *accum = plugin->accum[mode];
 	if( accum ) {
-		for( int i=0; i<HISTOGRAM_SLOTS; ++i ) {
-			int v = accum[i];
-			if( max < v ) max = v;
+		for( int i=0,x=0; x<canvas_w; ++x ) {
+			int m = 0;
+			int i1 = (HISTOGRAM_SLOTS * (x+1)) / canvas_w;
+			while( i < i1 ) m += accum[i++];
+			if( max < m ) max = m;
 		}
 	}
 
@@ -470,13 +410,11 @@ void HistogramWindow::draw_canvas_mode(int mode, int color, int y, int h)
 		double lin_scale = (lin_slider * h) / max;
 		double log_scale = (log_slider * h) / log(max);
 		for( int i=0,x=0; x<canvas_w; ++x ) {
-			int m = 0;
+			int m = 0, i0 = i;
 			int i1 = (HISTOGRAM_SLOTS * (x+1)) / canvas_w;
-			while( i < i1 ) {
-				int v = accum[i++];
-				if( m < v ) m = v;
-			}
-			m = m*lin_scale + log(m)*log_scale;
+			while( i < i1 ) m += accum[i++];
+			double v = m > 0 && i1 > i0 ? (double)m : 0;
+			m = v > 0 ? v*lin_scale + log(v)*log_scale : 0;
 
 			canvas->set_color(BLACK);
 			canvas->draw_line(x, y, x, y+h - m);

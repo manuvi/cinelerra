@@ -205,7 +205,7 @@ void AppearancePrefs::create_objects()
 	if( y2 < y ) y2 = y;
 
 	add_subwindow(new BC_Bar(x0, y2, get_w()-x0 - xs30));
-	y += ys15;
+	y += ys35;
 
 	x = x0;  y1 = y;
 	add_subwindow(title = new BC_Title(x, y, _("Warnings:"), LARGEFONT,

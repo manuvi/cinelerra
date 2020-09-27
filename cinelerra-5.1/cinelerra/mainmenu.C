@@ -1605,7 +1605,7 @@ ShowVWindow::ShowVWindow(MWindow *mwindow)
 int ShowVWindow::handle_event()
 {
 	mwindow->gui->unlock_window();
-	mwindow->show_vwindow();
+	mwindow->show_vwindow(1);
 	mwindow->gui->lock_window("ShowVWindow::handle_event");
 	return 1;
 }

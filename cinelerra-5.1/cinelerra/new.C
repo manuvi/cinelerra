@@ -60,7 +60,7 @@
 // add tracks dialog
 #define HEIGHT1 yS(240)
 // offset for folder panel
-#define HEIGHT2 yS(440)
+#define HEIGHT2 yS(435)
 
 New::New(MWindow *mwindow)
 {

@@ -61,6 +61,8 @@ enum
 	DRAG_PLUGINKEY,
 	DRAG_PLUGINHANDLE1,        // Waiting to move out of drag threshold
 	DRAG_PLUGINHANDLE2,         // Dragging outside drag threshold
+	DRAG_TRANSNHANDLE1,
+	DRAG_TRANSNHANDLE2,
 	DRAG_SPEED,
 	DRAG_GROUP,
 	GROUP_TOGGLE,
