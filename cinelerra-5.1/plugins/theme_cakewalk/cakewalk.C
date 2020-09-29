@@ -591,6 +591,11 @@ void CAKEWALKTHEME::initialize()
       "zoomtumble_hi.png",
       "zoomtumble_bottom.png",
       "zoomtumble_top.png");
+new_image_set("auto_range", 4,
+      "autorange_up.png",
+      "autorange_hi.png",
+      "autorange_bottom.png",
+      "autorange_top.png");
  new_image_set("mode_popup", 3,
       "mode_up.png", "mode_hi.png", "mode_dn.png");
  new_image("mode_add", "mode_add.png");

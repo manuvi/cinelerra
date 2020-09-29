@@ -43,8 +43,8 @@
 		value = INFINITYGAIN;					\
 	if (autogrouptype == AUTOGROUPTYPE_VIDEO_FADE)			\
 		CLAMP(value, 0, 100);					\
-	if (autogrouptype == AUTOGROUPTYPE_ZOOM && value < 0)		\
-		value = 0;						\
+	if (autogrouptype == AUTOGROUPTYPE_ZOOM && value < ZOOM_MIN)	\
+		value = ZOOM_MIN;					\
 	else if (autogrouptype == AUTOGROUPTYPE_SPEED && value < SPEED_MIN) \
 		value = SPEED_MIN;
 

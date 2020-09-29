@@ -89,5 +89,10 @@ enum
 };
 
 #define SPEED_MIN 0.005
+#define SPEED_MAX 200.0
+#define ZOOM_MIN 0.001
+#define ZOOM_MAX 1000.
+#define XY_MIN -32767
+#define XY_MAX 32767
 
 #endif

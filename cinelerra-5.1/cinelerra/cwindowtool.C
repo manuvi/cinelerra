@@ -385,15 +385,27 @@ void CWindowCoord::create_objects()
 {
 	BC_TumbleTextBox::create_objects();
 	if( type >= 0 ) {
-		int x1 = get_x() + BC_TumbleTextBox::get_w() + xS(10), y1 = get_y();
+		float v = atof(get_text());
+		int xs10 = xS(10);
+		int x1 = get_x() + BC_TumbleTextBox::get_w() + xs10, y1 = get_y();
+		gui->add_subwindow(min_tumbler = new CWindowToolAutoRangeTumbler(this, x1, y1,
+				0, _("Range min")));
+		x1 += min_tumbler->get_w() + xs10;
 		int group = Automation::autogrouptype(type, 0);
 		float min = gui->mwindow->edl->local_session->automation_mins[group];
 		float max = gui->mwindow->edl->local_session->automation_maxs[group];
-		float v = atof(get_text());
 		gui->add_subwindow(slider = new CWindowCoordSlider(this,
 				x1, y1, xS(150), min, max, v));
-		x1 += slider->get_w() + xS(5);
-		gui->add_subwindow(range = new CWindowCoordRange(this, x1, y1));
+		x1 += slider->get_w() + xS(10);
+		gui->add_subwindow(max_tumbler = new CWindowToolAutoRangeTumbler(this, x1, y1,
+				1, _("Range max")));
+		x1 += max_tumbler->get_w() + xS(10);
+		gui->add_subwindow(range_reset = new CWindowToolAutoRangeReset(this, x1, y1));
+		x1 += range_reset->get_w() + xS(10);
+		gui->add_subwindow(range_text = new CWindowToolAutoRangeTextBox(this, x1, y1));
+		range_text->update_range();
+		x1 += range_text->get_w() + xS(10);
+		gui->add_subwindow(range = new CWindowCoordRangeTumbler(this, x1, y1));
 	}
 }
 
@@ -407,7 +419,7 @@ void CWindowCoord::update_gui(float value)
 			local_session->automation_mins[group],
 			local_session->automation_maxs[group]);
 		int x1 = range->get_x() + range->get_w() + xS(5);
-		int y1 = range->get_y() - yS(2), d = xS(16);
+		int y1 = range->get_y() + yS(5), d = xS(16);
 		gui->set_color(GWindowGUI::auto_colors[type]);
 		gui->draw_disc(x1, y1, d, d);
 	}
@@ -443,16 +455,16 @@ int CWindowCoordSlider::handle_event()
 	return 1;
 }
 
-CWindowCoordRange::CWindowCoordRange(CWindowCoord *coord, int x, int y)
+CWindowCoordRangeTumbler::CWindowCoordRangeTumbler(CWindowCoord *coord, int x, int y)
  : BC_Tumbler(x, y)
 {
 	this->coord = coord;
 }
-CWindowCoordRange::~CWindowCoordRange()
+CWindowCoordRangeTumbler::~CWindowCoordRangeTumbler()
 {
 }
 
-int CWindowCoordRange::update(float scale)
+int CWindowCoordRangeTumbler::update(float scale)
 {
 	CWindowCoordSlider *slider = coord->slider;
 	MWindow *mwindow = coord->gui->mwindow;
@@ -462,33 +474,30 @@ int CWindowCoordRange::update(float scale)
 	float max = local_session->automation_maxs[group];
 	if( min >= max ) {
 		switch( group ) {
-		case AUTOGROUPTYPE_ZOOM: min = 0.005;  max = 5.0;  break;
-		case AUTOGROUPTYPE_X:    min = -100;   max = 100;  break;
-		case AUTOGROUPTYPE_Y:    min = -100;   max = 100;  break;
+		case AUTOGROUPTYPE_ZOOM: min = 0.005;  max = 5.0;   break;
+		case AUTOGROUPTYPE_X:    min = -1000;  max = 1000;  break;
+		case AUTOGROUPTYPE_Y:    min = -1000;  max = 1000;  break;
 		}
 	}
 	switch( group ) {
 	case AUTOGROUPTYPE_ZOOM: { // exp
-		float lv = log(slider->get_value());
 		float lmin = log(min), lmax = log(max);
 		float lr = (lmax - lmin) * scale;
-		min = exp(lv - 0.5*lr);
-		max = exp(lv + 0.5*lr);
-		if( min < 0.001 ) min = 0.001;
-		if( max > 1000. ) max = 1000.;
+		if( (min = exp(lmin - lr)) < ZOOM_MIN ) min = ZOOM_MIN;
+		if( (max = exp(lmax + lr)) > ZOOM_MAX ) max = ZOOM_MAX;
 		break; }
 	case AUTOGROUPTYPE_X:
 	case AUTOGROUPTYPE_Y: { // linear
-		float dr = (max - min) * (scale-1);
-		if( (min -= dr) < -32767 ) min = -32767;
-		if( (max += dr) >  32767 ) max =  32767;
+		float dr = (max - min) * scale;
+		if( (min -= dr) < XY_MIN ) min = XY_MIN;
+		if( (max += dr) > XY_MAX ) max =  XY_MAX;
 		break; }
 	}
 	slider->update(slider->get_pointer_motion_range(),
 			slider->get_value(), min, max);
 	unlock_window();
 	MWindowGUI *mgui = mwindow->gui;
-	mgui->lock_window("CWindowCoordRange::update");
+	mgui->lock_window("CWindowCoordRangeTumbler::update");
 	local_session->zoombar_showautotype = group;
 	local_session->automation_mins[group] = min;
 	local_session->automation_maxs[group] = max;
@@ -497,17 +506,17 @@ int CWindowCoordRange::update(float scale)
 	mgui->update_patchbay();
 	mgui->flash_canvas(1);
 	mgui->unlock_window();
-	lock_window("CWindowCoordRange::update");
-	return 1;
+	lock_window("CWindowCoordRangeTumbler::update");
+	return coord->range_text->update_range();
 }
 
-int CWindowCoordRange::handle_up_event()
+int CWindowCoordRangeTumbler::handle_up_event()
 {
-	return update(1.25);
+	return update(0.125);
 }
-int CWindowCoordRange::handle_down_event()
+int CWindowCoordRangeTumbler::handle_down_event()
 {
-	return update(0.8);
+	return update(-0.1);
 }
 
 CWindowCropApply::CWindowCropApply(MWindow *mwindow, CWindowCropGUI *crop_gui, int x, int y)
@@ -942,7 +951,7 @@ int CWindowEyedropCheckBox::handle_event()
 
 
 CWindowCameraGUI::CWindowCameraGUI(MWindow *mwindow, CWindowTool *thread)
- : CWindowToolGUI(mwindow, thread, _(PROGRAM_NAME ": Camera"), xS(340), yS(170))
+ : CWindowToolGUI(mwindow, thread, _(PROGRAM_NAME ": Camera"), xS(580), yS(200))
 {
 }
 CWindowCameraGUI::~CWindowCameraGUI()
@@ -951,7 +960,7 @@ CWindowCameraGUI::~CWindowCameraGUI()
 
 void CWindowCameraGUI::create_objects()
 {
-	int xs10 = xS(10), xs15 = xS(15);
+	int xs5 = xS(5), xs10 = xS(10), xs15 = xS(15), xs25 = xS(25);
 	int ys10 = yS(10), ys30 = yS(30);
 	int x = xs10, y = ys10;
 	Track *track = mwindow->cwindow->calculate_affected_track();
@@ -965,9 +974,14 @@ void CWindowCameraGUI::create_objects()
 		mwindow->cwindow->calculate_affected_autos(track,
 			&x_auto, &y_auto, &z_auto, 1, 0, 0, 0);
 	}
+	int x1 = x;
+	add_subwindow(bar1 = new BC_TitleBar(x1, y, xS(340), xs10, xs10, _("Position")));
+	x1 += bar1->get_w() + xS(35);
+	add_subwindow(bar2 = new BC_TitleBar(x1, y, get_w()-x1-xs10, xs10, xs10, _("Range")));
+	y += bar1->get_h() + ys10;
 
 	add_subwindow(title = new BC_Title(x, y, "X:"));
-	int x1 = x + title->get_w() + xS(3);
+	x1 = x + title->get_w() + xS(3);
 	float xvalue = x_auto ? x_auto->get_value() : 0;
 	this->x = new CWindowCoord(this, x1, y, xvalue, AUTOMATION_CAMERA_X);
 	this->x->create_objects();
@@ -980,22 +994,34 @@ void CWindowCameraGUI::create_objects()
 	this->y->range->set_tooltip(_("expand Y range"));
 	y += ys30;
 	add_subwindow(title = new BC_Title(x = xs10, y, "Z:"));
-	x += title->get_w();
 	float zvalue = z_auto ? z_auto->get_value() : 1;
 	this->z = new CWindowCoord(this, x1, y, zvalue, AUTOMATION_CAMERA_Z);
 	this->z->create_objects();
 	this->z->set_increment(0.01);
 	this->z->range->set_tooltip(_("expand Zoom range"));
+	y += ys30 + ys10;
 
-	y += ys30;
-	x1 = xs10;
+	x1 = x;
+	add_subwindow(bar3 = new BC_TitleBar(x1, y, xS(180)-x1, xs5, xs5, _("Justify")));
+	x1 += bar3->get_w() + xS(35);
+	add_subwindow(bar4 = new BC_TitleBar(x1, y, xS(375)-x1, xs5, xs5, _("Curve type")));
+	x1 += bar4->get_w() + xS(25);
+	add_subwindow(bar5 = new BC_TitleBar(x1, y, get_w()-xS(60)-x1, xs5, xs5, _("Keyframe")));
+	y += bar3->get_h() + ys10;
+
+	x1 = x;
 	add_subwindow(button = new CWindowCameraLeft(mwindow, this, x1, y));
 	x1 += button->get_w();
 	add_subwindow(button = new CWindowCameraCenter(mwindow, this, x1, y));
 	x1 += button->get_w();
 	add_subwindow(button = new CWindowCameraRight(mwindow, this, x1, y));
-// additional Buttons to control the curve mode of the "current" keyframe
-	x1 += button->get_w() + xs15;
+	x1 += button->get_w() + xs25;
+	add_subwindow(button = new CWindowCameraTop(mwindow, this, x1, y));
+	x1 += button->get_w();
+	add_subwindow(button = new CWindowCameraMiddle(mwindow, this, x1, y));
+	x1 += button->get_w();
+	add_subwindow(button = new CWindowCameraBottom(mwindow, this, x1, y));
+	x1 += button->get_w() + xS(35);
 	add_subwindow(t_smooth = new CWindowCurveToggle(Camera_Crv_Smooth, mwindow, this, x1, y));
 	x1 += t_smooth->get_w() + xs10;
 	add_subwindow(t_linear = new CWindowCurveToggle(Camera_Crv_Linear, mwindow, this, x1, y));
@@ -1005,21 +1031,14 @@ void CWindowCameraGUI::create_objects()
 	add_subwindow(t_free = new CWindowCurveToggle(Camera_Crv_Free, mwindow, this, x1, y));
 	x1 += t_free->get_w() + xs10;
 	add_subwindow(t_bump = new CWindowCurveToggle(Camera_Crv_Bump, mwindow, this, x1, y));
-
-	y += button->get_h();
-	x1 = xs10;
-	add_subwindow(button = new CWindowCameraTop(mwindow, this, x1, y));
-	x1 += button->get_w();
-	add_subwindow(button = new CWindowCameraMiddle(mwindow, this, x1, y));
-	x1 += button->get_w();
-	add_subwindow(button = new CWindowCameraBottom(mwindow, this, x1, y));
-	x1 += button->get_w() + xs15;
+	x1 += button->get_w() + xs25;
+	y += yS(5);
 	add_subwindow(add_keyframe = new CWindowCameraAddKeyframe(mwindow, this, x1, y));
 	x1 += add_keyframe->get_w() + xs15;
 	add_subwindow(auto_edge = new CWindowCurveAutoEdge(mwindow, this, x1, y));
 	x1 += auto_edge->get_w() + xs10;
 	add_subwindow(auto_span = new CWindowCurveAutoSpan(mwindow, this, x1, y));
-	x1 += auto_span->get_w() + xs15;
+	x1 += auto_span->get_w() + xS(50);
 	add_subwindow(reset = new CWindowCameraReset(mwindow, this, x1, y));
 
 // fill in current auto keyframe values, set toggle states.
@@ -1086,9 +1105,160 @@ void CWindowCameraGUI::update()
 		t_free->check_toggle_state(x_auto, y_auto, z_auto);
 		t_bump->check_toggle_state(x_auto, y_auto, z_auto);
 	}
+	x->range_text->update_range();
+	y->range_text->update_range();
+	z->range_text->update_range();
 }
 
+CWindowToolAutoRangeTumbler::CWindowToolAutoRangeTumbler(CWindowCoord *coord, int x, int y,
+		int use_max, const char *tip)
+ : BC_Tumbler(x, y, coord->gui->mwindow->theme->get_image_set("auto_range"),
+		TUMBLER_HORZ)
+{
+	this->coord = coord;
+	this->use_max = use_max;
+	set_tooltip(tip);
+}
 
+int CWindowToolAutoRangeTumbler::handle_up_event()
+{
+	coord->gui->mwindow->update_autorange(coord->type, 1, use_max);
+	coord->range_text->update_range();
+	return 1;
+}
+
+int CWindowToolAutoRangeTumbler::handle_down_event()
+{
+	coord->gui->mwindow->update_autorange(coord->type, 0, use_max);
+	coord->range_text->update_range();
+	return 1;
+}
+
+CWindowToolAutoRangeReset::CWindowToolAutoRangeReset(CWindowCoord *coord, int x, int y)
+ : BC_Button(x, y, coord->gui->mwindow->theme->get_image_set("reset_button"))
+{
+	this->coord = coord;
+	set_tooltip(_("Reset"));
+}
+
+int CWindowToolAutoRangeReset::handle_event()
+{
+	float v = 0;
+	int group = Automation::autogrouptype(coord->type, 0);
+	MWindow *mwindow = coord->gui->mwindow;
+	LocalSession *local_session = mwindow->edl->local_session;
+	float min = local_session->automation_mins[group];
+	float max = local_session->automation_maxs[group];
+	switch( group ) {
+	case AUTOGROUPTYPE_ZOOM: // exp
+		min = 0.005;  max= 5.000;  v = 1;
+		break;
+	case AUTOGROUPTYPE_X:
+		max = mwindow->edl->session->output_w;
+		min = -max;
+		break;
+	case AUTOGROUPTYPE_Y:
+		max = mwindow->edl->session->output_h;
+		min = -max;
+		break;
+	}
+	local_session->automation_mins[group] = min;
+	local_session->automation_maxs[group] = max;
+	coord->range_text->update_range();
+	unlock_window();
+	MWindowGUI *mgui = mwindow->gui;
+	mgui->lock_window("CWindowToolAutoRangeReset::update");
+	int color = GWindowGUI::auto_colors[coord->type];
+	mgui->zoombar->update_autozoom(group, color);
+	mgui->draw_overlays(0);
+	mgui->update_patchbay();
+	mgui->flash_canvas(1);
+	mgui->unlock_window();
+	mwindow->save_backup();
+	lock_window("CWindowToolAutoRangeReset::update");
+	CWindowCoordSlider *slider = coord->slider;
+	slider->update(slider->get_pointer_motion_range(), v, min, max);
+	return slider->handle_event();
+}
+
+CWindowToolAutoRangeTextBox::CWindowToolAutoRangeTextBox(CWindowCoord *coord, int x, int y)
+ : BC_TextBox(x, y, xS(130), 1, "0.000 to 0.000")
+{
+        this->coord = coord;
+        set_tooltip(_("Automation range"));
+}
+
+int CWindowToolAutoRangeTextBox::button_press_event()
+{
+        if (!is_event_win()) return 0;
+	int use_max = get_cursor_x() < get_w()/2 ? 0 : 1;
+        switch( get_buttonpress() ) {
+	case WHEEL_UP:
+		coord->gui->mwindow->update_autorange(coord->type, 1, use_max);
+		break;
+	case WHEEL_DOWN:
+		coord->gui->mwindow->update_autorange(coord->type, 0, use_max);
+		break;
+	default:
+		return BC_TextBox::button_press_event();
+        }
+	return coord->range_text->update_range();
+}
+
+int CWindowToolAutoRangeTextBox::handle_event()
+{
+        float imin, imax;
+        if( sscanf(this->get_text(),"%f to%f",&imin, &imax) == 2 ) {
+		MWindow *mwindow = coord->gui->mwindow;
+		int group = Automation::autogrouptype(coord->type, 0);
+		LocalSession *local_session = mwindow->edl->local_session;
+		float min = imin, max = imax;
+		switch( group ) {
+		case AUTOGROUPTYPE_ZOOM:
+			if( min < ZOOM_MIN ) min = ZOOM_MIN;
+			if( max > ZOOM_MAX ) max = ZOOM_MAX;
+			break;
+		case AUTOGROUPTYPE_X:
+		case AUTOGROUPTYPE_Y:
+			if( min < XY_MIN ) min = XY_MIN;
+			if( max > XY_MAX ) max = XY_MAX;
+			break;
+		}
+                if( max > min ) {
+			local_session->automation_mins[group] = min;
+			local_session->automation_maxs[group] = max;
+			if( min != imin || max != imax ) update_range();
+			mwindow->gui->lock_window("CWindowToolAutoRangeTextBox::handle_event");
+			int color = GWindowGUI::auto_colors[coord->type];
+			mwindow->gui->zoombar->update_autozoom(group, color);
+			mwindow->gui->draw_overlays(0);
+			mwindow->gui->update_patchbay();
+			mwindow->gui->flash_canvas(1);
+			mwindow->gui->unlock_window();
+		}
+	}
+	return 1;
+}
+
+int CWindowToolAutoRangeTextBox::update_range()
+{
+	char string[BCSTRLEN];
+	LocalSession *local_session = coord->gui->mwindow->edl->local_session;
+	int group = Automation::autogrouptype(coord->type, 0);
+	float min = local_session->automation_mins[group];
+	float max = local_session->automation_maxs[group];
+	switch( group ) {
+	case AUTOGROUPTYPE_ZOOM:
+		sprintf(string, "%0.03f to %0.03f\n", min, max);
+		break;
+	case AUTOGROUPTYPE_X:
+	case AUTOGROUPTYPE_Y:
+		sprintf(string, "%0.0f to %.0f\n", min, max);
+		break;
+	}
+	update(string);
+	return 1;
+}
 
 
 CWindowCameraLeft::CWindowCameraLeft(MWindow *mwindow, CWindowCameraGUI *gui, int x, int y)
@@ -1328,6 +1498,8 @@ CWindowCameraReset::CWindowCameraReset(MWindow *mwindow,
 
 int CWindowCameraReset::handle_event()
 {
+	mwindow->edl->local_session->reset_view_limits();
+	CWindowCameraGUI *gui = (CWindowCameraGUI *)this->gui;
 	return gui->press(&CWindowCanvas::reset_camera);
 }
 
@@ -1365,7 +1537,7 @@ int CWindowCurveAutoSpan::handle_event()
 
 
 CWindowProjectorGUI::CWindowProjectorGUI(MWindow *mwindow, CWindowTool *thread)
- : CWindowToolGUI(mwindow, thread, _(PROGRAM_NAME ": Projector"), xS(340), yS(170))
+ : CWindowToolGUI(mwindow, thread, _(PROGRAM_NAME ": Projector"), xS(580), yS(200))
 {
 }
 CWindowProjectorGUI::~CWindowProjectorGUI()
@@ -1373,9 +1545,9 @@ CWindowProjectorGUI::~CWindowProjectorGUI()
 }
 void CWindowProjectorGUI::create_objects()
 {
-	int xs10 = xS(10), xs15 = xS(15);
-	int ys30 = yS(30);
-	int x = xs10, y = yS(10);
+	int xs5 = xS(5), xs10 = xS(10), xs15 = xS(15), xs25 = xS(25);
+	int ys10 = yS(10), ys30 = yS(30);
+	int x = xs10, y = ys10;
 	Track *track = mwindow->cwindow->calculate_affected_track();
 	FloatAuto *x_auto = 0;
 	FloatAuto *y_auto = 0;
@@ -1389,9 +1561,13 @@ void CWindowProjectorGUI::create_objects()
 		mwindow->cwindow->calculate_affected_autos(track,
 			&x_auto, &y_auto, &z_auto, 0, 0, 0, 0);
 	}
-
+	int x1 = x;
+	add_subwindow(bar1 = new BC_TitleBar(x1, y, xS(340), xs10, xs10, _("Position")));
+	x1 += bar1->get_w() + xS(35);
+	add_subwindow(bar2 = new BC_TitleBar(x1, y, get_w()-x1-xs10, xs10, xs10, _("Range")));
+	y += bar1->get_h() + ys10;
 	add_subwindow(title = new BC_Title(x = xs10, y, "X:"));
-	int x1 = x + title->get_w() + xS(3);
+	x1 = x + title->get_w() + xS(3);
 	float xvalue = x_auto ? x_auto->get_value() : 0;
 	this->x = new CWindowCoord(this, x1, y, xvalue, AUTOMATION_PROJECTOR_X);
 	this->x->create_objects();
@@ -1409,40 +1585,46 @@ void CWindowProjectorGUI::create_objects()
 	this->z->create_objects();
 	this->z->range->set_tooltip(_("expand Zoom range"));
 	this->z->set_increment(0.01);
+	y += ys30 + ys10;
 
-	y += ys30;
-	x1 = xs10;
+	x1 = x;
+	add_subwindow(bar3 = new BC_TitleBar(x1, y, xS(180)-x1, xs5, xs5, _("Justify")));
+	x1 += bar3->get_w() + xS(35);
+	add_subwindow(bar4 = new BC_TitleBar(x1, y, xS(375)-x1, xs5, xs5, _("Curve type")));
+	x1 += bar4->get_w() + xS(25);
+	add_subwindow(bar5 = new BC_TitleBar(x1, y, get_w()-xS(60)-x1, xs5, xs5, _("Keyframe")));
+	y += bar3->get_h() + ys10;
+
+	x1 = x;
 	add_subwindow(button = new CWindowProjectorLeft(mwindow, this, x1, y));
 	x1 += button->get_w();
 	add_subwindow(button = new CWindowProjectorCenter(mwindow, this, x1, y));
 	x1 += button->get_w();
 	add_subwindow(button = new CWindowProjectorRight(mwindow, this, x1, y));
-// additional Buttons to control the curve mode of the "current" keyframe
-	x1 += button->get_w() + xs15;
-	add_subwindow(t_smooth = new CWindowCurveToggle(Projector_Crv_Smooth, mwindow, this, x1, y));
-	x1 += t_smooth->get_w() + xs10;
-	add_subwindow(t_linear = new CWindowCurveToggle(Projector_Crv_Linear, mwindow, this, x1, y));
-	x1 += t_linear->get_w() + xs15;
-	add_subwindow(t_tangent = new CWindowCurveToggle(Projector_Crv_Tangent, mwindow, this, x1, y));
-	x1 += t_tangent->get_w() + xs10;
-	add_subwindow(t_free = new CWindowCurveToggle(Projector_Crv_Free, mwindow, this, x1, y));
-	x1 += t_free->get_w() + xs10;
-	add_subwindow(t_bump = new CWindowCurveToggle(Projector_Crv_Bump, mwindow, this, x1, y));
-
-	y += button->get_h();
-	x1 = xs10;
+	x1 += button->get_w() + xs25;
 	add_subwindow(button = new CWindowProjectorTop(mwindow, this, x1, y));
 	x1 += button->get_w();
 	add_subwindow(button = new CWindowProjectorMiddle(mwindow, this, x1, y));
 	x1 += button->get_w();
 	add_subwindow(button = new CWindowProjectorBottom(mwindow, this, x1, y));
-	x1 += button->get_w() + xs15;
+	x1 += button->get_w() + xS(35);
+	add_subwindow(t_smooth = new CWindowCurveToggle(Projector_Crv_Smooth, mwindow, this, x1, y));
+	x1 += t_smooth->get_w() + xs10;
+	add_subwindow(t_linear = new CWindowCurveToggle(Projector_Crv_Linear, mwindow, this, x1, y));
+	x1 += t_linear->get_w() + xs10;
+	add_subwindow(t_tangent = new CWindowCurveToggle(Projector_Crv_Tangent, mwindow, this, x1, y));
+	x1 += t_tangent->get_w() + xs10;
+	add_subwindow(t_free = new CWindowCurveToggle(Projector_Crv_Free, mwindow, this, x1, y));
+	x1 += t_free->get_w() + xs10;
+	add_subwindow(t_bump = new CWindowCurveToggle(Projector_Crv_Bump, mwindow, this, x1, y));
+	x1 += button->get_w() + xs25;
+	y += yS(5);
 	add_subwindow(add_keyframe = new CWindowProjectorAddKeyframe(mwindow, this, x1, y));
 	x1 += add_keyframe->get_w() + xs15;
-	add_subwindow(auto_span = new CWindowCurveAutoSpan(mwindow, this, x1, y));
-	x1 += auto_span->get_w() + xs10;
 	add_subwindow(auto_edge = new CWindowCurveAutoEdge(mwindow, this, x1, y));
-	x1 += auto_edge->get_w() + xs15;
+	x1 += auto_edge->get_w() + xs10;
+	add_subwindow(auto_span = new CWindowCurveAutoSpan(mwindow, this, x1, y));
+	x1 += auto_span->get_w() + xS(50);
 	add_subwindow(reset = new CWindowProjectorReset(mwindow, this, x1, y));
 
 // fill in current auto keyframe values, set toggle states.
@@ -1509,6 +1691,9 @@ void CWindowProjectorGUI::update()
 		t_free->check_toggle_state(x_auto, y_auto, z_auto);
 		t_bump->check_toggle_state(x_auto, y_auto, z_auto);
 	}
+	x->range_text->update_range();
+	y->range_text->update_range();
+	z->range_text->update_range();
 }
 
 CWindowProjectorLeft::CWindowProjectorLeft(MWindow *mwindow, CWindowProjectorGUI *gui, int x, int y)
@@ -1714,6 +1899,8 @@ CWindowProjectorReset::CWindowProjectorReset(MWindow *mwindow,
 
 int CWindowProjectorReset::handle_event()
 {
+	mwindow->edl->local_session->reset_view_limits();
+	CWindowProjectorGUI *gui = (CWindowProjectorGUI *)this->gui;
 	return gui->press(&CWindowCanvas::reset_projector);
 }
 

@@ -2648,6 +2648,7 @@ void CWindowCanvas::reset_keyframe(int do_camera)
 		gui->mwindow->edl->local_session->reset_view_limits();
 		gui->mwindow->gui->zoombar->update_autozoom();
 		mgui->unlock_window();
+		mwindow->save_backup();
 	}
 }
 

@@ -28,6 +28,7 @@
 #include "edits.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "gwindowgui.h"
 #include "keyframe.h"
 #include "labels.h"
 #include "localsession.h"
@@ -259,7 +260,7 @@ void MWindow::change_currentautorange(int autogrouptype, int increment, int chan
 			break;
 		case AUTOGROUPTYPE_X:
 		case AUTOGROUPTYPE_Y:
-			val = floor(val + 5);
+			val = floor(val + 50);
 			break;
 		}
 	}
@@ -278,7 +279,7 @@ void MWindow::change_currentautorange(int autogrouptype, int increment, int chan
 			break;
 		case AUTOGROUPTYPE_X:
 		case AUTOGROUPTYPE_Y:
-			val = floor(val-5);
+			val = floor(val-50);
 			break;
 		}
 	}
@@ -296,6 +297,18 @@ void MWindow::change_currentautorange(int autogrouptype, int increment, int chan
 	}
 }
 
+void MWindow::update_autorange(int type, int increment, int use_max)
+{
+	gui->lock_window("MWindow::update_autorange");
+	int group = Automation::autogrouptype(type, 0);
+	change_currentautorange(group, increment, use_max);
+	int color = GWindowGUI::auto_colors[type];
+	gui->zoombar->update_autozoom(group, color);
+	gui->draw_overlays(0);
+	gui->update_patchbay();
+	gui->flash_canvas(1);
+	gui->unlock_window();
+}
 
 void MWindow::expand_autos(int changeall, int domin, int domax)
 {

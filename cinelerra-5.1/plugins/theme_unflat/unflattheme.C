@@ -576,6 +576,7 @@ void UNFLATTHEME::initialize()
 
 	new_image_set("zoombar_menu", 3, "zoompopup_up.png", "zoompopup_hi.png", "zoompopup_dn.png");
 	new_image_set("zoombar_tumbler", 4, "zoomtumble_up.png", "zoomtumble_hi.png", "zoomtumble_bottom.png", "zoomtumble_top.png");
+	new_image_set("auto_range", 4, "autorange_up.png", "autorange_hi.png", "autorange_bottom.png", "autorange_top.png");
 
 	new_image_set("mode_popup", 3, "mode_up.png", "mode_hi.png", "mode_dn.png");
 	new_image("mode_add", "mode_add.png");

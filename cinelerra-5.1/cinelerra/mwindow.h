@@ -265,6 +265,7 @@ public:
 // Fit selected autos to the vertical display range
 	void fit_autos(int all);
 	void change_currentautorange(int autogrouptype, int increment, int changemax);
+	void update_autorange(int type, int increment, int use_max);
 	void expand_autos(int changeall, int domin, int domax);
 	void shrink_autos(int changeall, int domin, int domax);
 // move the window to include the cursor

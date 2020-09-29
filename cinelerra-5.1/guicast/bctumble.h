@@ -24,17 +24,20 @@
 
 #include "bcsubwindow.h"
 
+#define TUMBLER_VERT 0
+#define TUMBLER_HORZ 1
+
 class BC_Tumbler : public BC_SubWindow
 {
 public:
-	BC_Tumbler(int x, int y, VFrame **data = 0);
+	BC_Tumbler(int x, int y, VFrame **data = 0, int orient=TUMBLER_VERT);
 	virtual ~BC_Tumbler();
 
 	virtual int handle_up_event() { return 0; };
 	virtual int handle_down_event() { return 0; };
 	int repeat_event(int64_t repeat_id);
-	static int calculate_w();
-	static int calculate_h();
+	static int calculate_w(VFrame **data = 0);
+	static int calculate_h(VFrame **data = 0);
 
 	int initialize();
 	int set_images(VFrame **data);
@@ -55,6 +58,7 @@ private:
 
 	BC_Pixmap *images[4];
 	int status;
+	int orient;
 	int64_t repeat_count;
 	VFrame **data;
 };

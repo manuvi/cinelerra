@@ -24,6 +24,7 @@
 #include "clip.h"
 #include "bchash.h"
 #include "edl.h"
+#include "edlsession.h"
 #include "filesystem.h"
 #include "filexml.h"
 #include "floatauto.h"
@@ -511,9 +512,12 @@ void LocalSession::reset_view_limits()
 {
 	automation_mins[AUTOGROUPTYPE_ZOOM] = 0.005;
 	automation_maxs[AUTOGROUPTYPE_ZOOM] = 5.000;
-	automation_mins[AUTOGROUPTYPE_X] = -100;
-	automation_maxs[AUTOGROUPTYPE_X] = 100;
-	automation_mins[AUTOGROUPTYPE_Y] = -100;
-	automation_maxs[AUTOGROUPTYPE_Y] = 100;
+	int out_w = edl->session->output_w;
+	automation_mins[AUTOGROUPTYPE_X] = -out_w;
+	automation_maxs[AUTOGROUPTYPE_X] = out_w;
+	int out_h = edl->session->output_h;
+	automation_mins[AUTOGROUPTYPE_Y] = -out_h;
+	automation_maxs[AUTOGROUPTYPE_Y] = out_h;
+
 }
 

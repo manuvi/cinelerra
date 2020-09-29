@@ -594,6 +594,7 @@ void BlondCVTheme::initialize()
 
 	new_image_set("zoombar_menu", 3, "generic_up.png", "generic_hi.png", "generic_dn.png");
 	new_image_set("zoombar_tumbler", 4, "tumble_up.png", "tumble_hi.png", "tumble_bottom.png", "tumble_top.png");
+	new_image_set("auto_range", 4, "autorange_up.png", "autorange_hi.png", "autorange_bottom.png", "autorange_top.png");
 
 	new_image_set("mode_popup", 3, "generic_up.png", "generic_hi.png", "generic_dn.png");
 	new_image("mode_add", "mode_add.png");

@@ -118,9 +118,13 @@ public:
 	int handle_event();
 
 	CWindowToolGUI *gui;
-	CWindowCoordSlider *slider;
-	CWindowCoordRange *range;
 	int type;
+	CWindowToolAutoRangeTumbler *min_tumbler;
+	CWindowCoordSlider *slider;
+	CWindowToolAutoRangeTumbler *max_tumbler;
+	CWindowToolAutoRangeReset *range_reset;
+	CWindowToolAutoRangeTextBox *range_text;
+	CWindowCoordRangeTumbler *range;
 };
 
 class CWindowCoordSlider : public BC_FSlider
@@ -134,11 +138,11 @@ public:
 	CWindowCoord *coord;
 };
 
-class CWindowCoordRange : public BC_Tumbler
+class CWindowCoordRangeTumbler : public BC_Tumbler
 {
 public:
-	CWindowCoordRange(CWindowCoord *coord, int x, int y);
-	~CWindowCoordRange();
+	CWindowCoordRangeTumbler(CWindowCoord *coord, int x, int y);
+	~CWindowCoordRangeTumbler();
 	int update(float scale);
 	int handle_up_event();
 	int handle_down_event();
@@ -804,6 +808,38 @@ public:
 };
 
 
+class CWindowToolAutoRangeTumbler : public BC_Tumbler
+{
+public:
+	CWindowToolAutoRangeTumbler(CWindowCoord *coord, int x, int y,
+			int use_max, const char *tip);
+	int handle_up_event();
+	int handle_down_event();
+
+	CWindowCoord *coord;
+	int use_max;
+};
+
+class CWindowToolAutoRangeReset : public BC_Button
+{
+public:
+	CWindowToolAutoRangeReset(CWindowCoord *coord, int x, int y);
+	int handle_event();
+
+	CWindowCoord *coord;
+};
+
+class CWindowToolAutoRangeTextBox : public BC_TextBox
+{
+public:
+	CWindowToolAutoRangeTextBox(CWindowCoord *coord, int x, int y);
+	int button_press_event();
+	int handle_event();
+	int update_range();
+
+	CWindowCoord *coord;
+};
+
 
 class CWindowCameraGUI : public CWindowToolGUI
 {
@@ -814,9 +850,11 @@ public:
 	void create_objects();
 	void update();
 
+	BC_TitleBar *bar1, *bar2;
 	CWindowCoord *x, *y, *z;
 	CWindowCameraAddKeyframe *add_keyframe;
 	CWindowCameraReset *reset;
+	BC_TitleBar *bar3, *bar4, *bar5;
 	CWindowCurveToggle *t_smooth, *t_linear, *t_tangent, *t_free, *t_bump;
 	CWindowCurveAutoSpan *auto_span;
 	CWindowCurveAutoEdge *auto_edge;
@@ -912,9 +950,11 @@ public:
 	void create_objects();
 	void update();
 
+	BC_TitleBar *bar1, *bar2;
 	CWindowCoord *x, *y, *z;
 	CWindowProjectorAddKeyframe *add_keyframe;
 	CWindowProjectorReset *reset;
+	BC_TitleBar *bar3, *bar4, *bar5;
 	CWindowCurveToggle *t_smooth, *t_linear, *t_tangent, *t_free, *t_bump;
 	CWindowCurveAutoSpan *auto_span;
 	CWindowCurveAutoEdge *auto_edge;
