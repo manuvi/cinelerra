@@ -515,14 +515,14 @@ public:
 	void move_effect(Plugin *plugin, PluginSet *plugin_set, int64_t position);
 	void move_plugins_up(PluginSet *plugin_set);
 	void move_plugins_down(PluginSet *plugin_set);
+	void roll_track_down(Track *track);
+	void roll_tracks_down();
+	void roll_track_up(Track *track);
+	void roll_tracks_up();
 	void move_track_down(Track *track);
 	void move_tracks_down();
 	void move_track_up(Track *track);
 	void move_tracks_up();
-	void swap_track_down(Track *track);
-	void swap_tracks_down();
-	void swap_track_up(Track *track);
-	void swap_tracks_up();
 	void mute_selection();
 	void new_folder(const char *new_folder, int is_clips);
 	void delete_folder(char *folder);

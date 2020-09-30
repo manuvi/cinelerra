@@ -207,13 +207,13 @@ void MainMenu::create_objects()
 	add_menu(trackmenu = new BC_Menu(_("Tracks")));
 	trackmenu->add_item(new MoveTracksUp(mwindow));
 	trackmenu->add_item(new MoveTracksDown(mwindow));
+	trackmenu->add_item(new RollTracksUp(mwindow));
+	trackmenu->add_item(new RollTracksDown(mwindow));
 	trackmenu->add_item(new DeleteTracks(mwindow));
 	trackmenu->add_item(new DeleteFirstTrack(mwindow));
 	trackmenu->add_item(new DeleteLastTrack(mwindow));
 	trackmenu->add_item(new ConcatenateTracks(mwindow));
 	trackmenu->add_item(new AlignTimecodes(mwindow));
-	trackmenu->add_item(new SwapTracksUp(mwindow));
-	trackmenu->add_item(new SwapTracksDown(mwindow));
 	AppendTracks *append_tracks;
 	trackmenu->add_item(append_tracks = new AppendTracks(mwindow));
 	append_tracks->create_objects();
@@ -1345,7 +1345,8 @@ int MoveTracksUp::handle_event()
 MoveTracksDown::MoveTracksDown(MWindow *mwindow)
  : BC_MenuItem(_("Move tracks down"), _("Shift-Down"), DOWN)
 {
-	set_shift(); this->mwindow = mwindow;
+	this->mwindow = mwindow;
+	set_shift();
 }
 
 int MoveTracksDown::handle_event()
@@ -1356,30 +1357,33 @@ int MoveTracksDown::handle_event()
 }
 
 
-SwapTracksUp::SwapTracksUp(MWindow *mwindow)
- : BC_MenuItem(_("Swap tracks up"), 0, UP)
+RollTracksUp::RollTracksUp(MWindow *mwindow)
+ : BC_MenuItem(_("Roll tracks up"), _("Ctrl-Shift-Up"), UP)
 {
 	this->mwindow = mwindow;
+	set_ctrl();
 	set_shift();
 }
 
-int SwapTracksUp::handle_event()
+int RollTracksUp::handle_event()
 {
 	if( mwindow->session->current_operation == NO_OPERATION )
-		mwindow->swap_tracks_up();
+		mwindow->roll_tracks_up();
 	return 1;
 }
 
-SwapTracksDown::SwapTracksDown(MWindow *mwindow)
- : BC_MenuItem(_("Swap tracks down"), 0, DOWN)
+RollTracksDown::RollTracksDown(MWindow *mwindow)
+ : BC_MenuItem(_("Roll tracks down"), _("Ctrl-Shift-Down"), DOWN)
 {
-	set_shift(); this->mwindow = mwindow;
+	this->mwindow = mwindow;
+	set_ctrl();
+	set_shift();
 }
 
-int SwapTracksDown::handle_event()
+int RollTracksDown::handle_event()
 {
 	if( mwindow->session->current_operation == NO_OPERATION )
-		mwindow->swap_tracks_down();
+		mwindow->roll_tracks_down();
 	return 1;
 }
 

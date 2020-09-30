@@ -1192,12 +1192,62 @@ void MWindow::move_plugins_down(PluginSet *plugin_set)
 	sync_parameters(CHANGE_EDL);
 }
 
+void MWindow::roll_track_down(Track *track)
+{
+	undo_before();
+	edl->tracks->roll_track_down(track);
+	save_backup();
+	undo_after(_("move track down"), LOAD_ALL);
+
+	restart_brender();
+	gui->update(1, NORMAL_DRAW, 0, 0, 1, 0, 0);
+	sync_parameters(CHANGE_EDL);
+	save_backup();
+}
+
+void MWindow::roll_tracks_down()
+{
+	undo_before();
+	edl->tracks->roll_tracks_down();
+	save_backup();
+	undo_after(_("move tracks down"), LOAD_ALL);
+
+	restart_brender();
+	gui->update(1, NORMAL_DRAW, 0, 0, 1, 0, 0);
+	sync_parameters(CHANGE_EDL);
+	save_backup();
+}
+
+void MWindow::roll_track_up(Track *track)
+{
+	undo_before();
+	edl->tracks->roll_track_up(track);
+	save_backup();
+	undo_after(_("move track up"), LOAD_ALL);
+	restart_brender();
+	gui->update(1, NORMAL_DRAW, 0, 0, 1, 0, 0);
+	sync_parameters(CHANGE_EDL);
+	save_backup();
+}
+
+void MWindow::roll_tracks_up()
+{
+	undo_before();
+	edl->tracks->roll_tracks_up();
+	save_backup();
+	undo_after(_("move tracks up"), LOAD_ALL);
+	restart_brender();
+	gui->update(1, NORMAL_DRAW, 0, 0, 1, 0, 0);
+	sync_parameters(CHANGE_EDL);
+}
+
+
 void MWindow::move_track_down(Track *track)
 {
 	undo_before();
 	edl->tracks->move_track_down(track);
 	save_backup();
-	undo_after(_("move track down"), LOAD_ALL);
+	undo_after(_("swap track down"), LOAD_ALL);
 
 	restart_brender();
 	gui->update(1, NORMAL_DRAW, 0, 0, 1, 0, 0);
@@ -1210,7 +1260,7 @@ void MWindow::move_tracks_down()
 	undo_before();
 	edl->tracks->move_tracks_down();
 	save_backup();
-	undo_after(_("move tracks down"), LOAD_ALL);
+	undo_after(_("swap tracks down"), LOAD_ALL);
 
 	restart_brender();
 	gui->update(1, NORMAL_DRAW, 0, 0, 1, 0, 0);
@@ -1223,7 +1273,7 @@ void MWindow::move_track_up(Track *track)
 	undo_before();
 	edl->tracks->move_track_up(track);
 	save_backup();
-	undo_after(_("move track up"), LOAD_ALL);
+	undo_after(_("swap track up"), LOAD_ALL);
 	restart_brender();
 	gui->update(1, NORMAL_DRAW, 0, 0, 1, 0, 0);
 	sync_parameters(CHANGE_EDL);
@@ -1234,56 +1284,6 @@ void MWindow::move_tracks_up()
 {
 	undo_before();
 	edl->tracks->move_tracks_up();
-	save_backup();
-	undo_after(_("move tracks up"), LOAD_ALL);
-	restart_brender();
-	gui->update(1, NORMAL_DRAW, 0, 0, 1, 0, 0);
-	sync_parameters(CHANGE_EDL);
-}
-
-
-void MWindow::swap_track_down(Track *track)
-{
-	undo_before();
-	edl->tracks->swap_track_down(track);
-	save_backup();
-	undo_after(_("swap track down"), LOAD_ALL);
-
-	restart_brender();
-	gui->update(1, NORMAL_DRAW, 0, 0, 1, 0, 0);
-	sync_parameters(CHANGE_EDL);
-	save_backup();
-}
-
-void MWindow::swap_tracks_down()
-{
-	undo_before();
-	edl->tracks->swap_tracks_down();
-	save_backup();
-	undo_after(_("swap tracks down"), LOAD_ALL);
-
-	restart_brender();
-	gui->update(1, NORMAL_DRAW, 0, 0, 1, 0, 0);
-	sync_parameters(CHANGE_EDL);
-	save_backup();
-}
-
-void MWindow::swap_track_up(Track *track)
-{
-	undo_before();
-	edl->tracks->swap_track_up(track);
-	save_backup();
-	undo_after(_("swap track up"), LOAD_ALL);
-	restart_brender();
-	gui->update(1, NORMAL_DRAW, 0, 0, 1, 0, 0);
-	sync_parameters(CHANGE_EDL);
-	save_backup();
-}
-
-void MWindow::swap_tracks_up()
-{
-	undo_before();
-	edl->tracks->swap_tracks_up();
 	save_backup();
 	undo_after(_("swap tracks up"), LOAD_ALL);
 	restart_brender();

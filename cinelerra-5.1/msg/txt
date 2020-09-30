@@ -2,11 +2,12 @@ Email cin@lists.cinelerra-gg.org 4 help.
 For usage help, refer to the following:
   https://cinelerra-gg.org/download/CinelerraGG_Manual.pdf
   http://g-raffa.eu/Cinelerra/HOWTO/basics.html
-Cinfinity icons selected in Preferences Sam (CC BY 3.0,
-  https://creativecommons.org/licenses/by/3.0/)
-Cakewalk and Neophyte themes by Olaf Wolff (CC BY 4.0,
-  https://creativecommons.org/licenses/by/4.0/)
 .
+September 2020 New Features of note:
+  Motion plugin improvements by SGE for better results.
+  Camera and Projector menus now include easy range change.
+  Faster transition playing with cache + drag capable.
+  Histogram new feature of average frame calculation.
 August 2020 New Features of note:
   Bump Autos new feature; especially useful for speed.
   Language preference now in Settings->Preferences.

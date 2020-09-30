@@ -73,15 +73,15 @@ public:
 
 	void equivalent_output(Tracks *tracks, double *result);
 
-	void move_tracks(Track *src, Track *dst, int n);
+	void roll_tracks(Track *src, Track *dst, int n);
+	int roll_track_up(Track *track);
+	int roll_track_down(Track *track);
+	int roll_tracks_up();
+	int roll_tracks_down();
 	int move_track_up(Track *track);
 	int move_track_down(Track *track);
 	int move_tracks_up();
 	int move_tracks_down();
-	int swap_track_up(Track *track);
-	int swap_track_down(Track *track);
-	int swap_tracks_up();
-	int swap_tracks_down();
 	void paste_audio_transition(PluginServer *server);
 	void paste_video_transition(PluginServer *server, int first_track = 0);
 

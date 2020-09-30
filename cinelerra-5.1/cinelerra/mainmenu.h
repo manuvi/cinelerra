@@ -696,6 +696,22 @@ public:
 // ========================================== settings
 
 
+class RollTracksUp : public BC_MenuItem
+{
+public:
+	RollTracksUp(MWindow *mwindow);
+	int handle_event();
+	MWindow *mwindow;
+};
+
+class RollTracksDown : public BC_MenuItem
+{
+public:
+	RollTracksDown(MWindow *mwindow);
+	int handle_event();
+	MWindow *mwindow;
+};
+
 class MoveTracksUp : public BC_MenuItem
 {
 public:
@@ -708,22 +724,6 @@ class MoveTracksDown : public BC_MenuItem
 {
 public:
 	MoveTracksDown(MWindow *mwindow);
-	int handle_event();
-	MWindow *mwindow;
-};
-
-class SwapTracksUp : public BC_MenuItem
-{
-public:
-	SwapTracksUp(MWindow *mwindow);
-	int handle_event();
-	MWindow *mwindow;
-};
-
-class SwapTracksDown : public BC_MenuItem
-{
-public:
-	SwapTracksDown(MWindow *mwindow);
 	int handle_event();
 	MWindow *mwindow;
 };

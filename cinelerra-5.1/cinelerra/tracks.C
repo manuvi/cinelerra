@@ -782,7 +782,7 @@ Track *Tracks::get(int idx, int data_type)
 	return 0;
 }
 
-void Tracks::move_tracks(Track *src, Track *dst, int n)
+void Tracks::roll_tracks(Track *src, Track *dst, int n)
 {
 	if( src == dst ) return;
 	while( --n >= 0 && src ) {

@@ -66,14 +66,14 @@ void TrackPopup::create_objects()
 	add_item(new TrackAttachEffect(mwindow, this));
 	add_item(new TrackMoveUp(mwindow, this));
 	add_item(new TrackMoveDown(mwindow, this));
+	add_item(new TrackRollUp(mwindow, this));
+	add_item(new TrackRollDown(mwindow, this));
 	add_item(new TrackPopupDeleteTrack(mwindow, this));
 	add_item(new TrackPopupAddTrack(mwindow, this));
 	add_item(new TrackPopupFindAsset(mwindow, this));
 	add_item(new TrackPopupShow(mwindow, this));
 	add_item(new TrackPopupUserTitle(mwindow, this));
 	add_item(new TrackPopupTitleColor(mwindow, this));
-	add_item(new TrackSwapUp(mwindow, this));
-	add_item(new TrackSwapDown(mwindow, this));
 	resize_option = 0;
 	matchsize_option = 0;
 }
@@ -153,33 +153,33 @@ int TrackMoveDown::handle_event()
 }
 
 
-TrackSwapUp::TrackSwapUp(MWindow *mwindow, TrackPopup *popup)
- : BC_MenuItem(_("Swap up"))
+TrackRollUp::TrackRollUp(MWindow *mwindow, TrackPopup *popup)
+ : BC_MenuItem(_("Roll up"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
 }
-TrackSwapUp::~TrackSwapUp()
+TrackRollUp::~TrackRollUp()
 {
 }
-int TrackSwapUp::handle_event()
+int TrackRollUp::handle_event()
 {
-	mwindow->swap_track_up(popup->track);
+	mwindow->roll_track_up(popup->track);
 	return 1;
 }
 
-TrackSwapDown::TrackSwapDown(MWindow *mwindow, TrackPopup *popup)
- : BC_MenuItem(_("Swap down"))
+TrackRollDown::TrackRollDown(MWindow *mwindow, TrackPopup *popup)
+ : BC_MenuItem(_("Roll down"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
 }
-TrackSwapDown::~TrackSwapDown()
+TrackRollDown::~TrackRollDown()
 {
 }
-int TrackSwapDown::handle_event()
+int TrackRollDown::handle_event()
 {
-	mwindow->swap_track_down(popup->track);
+	mwindow->roll_track_down(popup->track);
 	return 1;
 }
 

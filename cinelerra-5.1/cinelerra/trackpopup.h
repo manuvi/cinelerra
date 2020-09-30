@@ -130,11 +130,11 @@ public:
 	TrackPopup *popup;
 };
 
-class TrackSwapUp : public BC_MenuItem
+class TrackRollUp : public BC_MenuItem
 {
 public:
-	TrackSwapUp(MWindow *mwindow, TrackPopup *popup);
-	~TrackSwapUp();
+	TrackRollUp(MWindow *mwindow, TrackPopup *popup);
+	~TrackRollUp();
 
 	int handle_event();
 
@@ -142,11 +142,11 @@ public:
 	TrackPopup *popup;
 };
 
-class TrackSwapDown : public BC_MenuItem
+class TrackRollDown : public BC_MenuItem
 {
 public:
-	TrackSwapDown(MWindow *mwindow, TrackPopup *popup);
-	~TrackSwapDown();
+	TrackRollDown(MWindow *mwindow, TrackPopup *popup);
+	~TrackRollDown();
 
 	int handle_event();
 

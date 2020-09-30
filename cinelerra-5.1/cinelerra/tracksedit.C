@@ -851,7 +851,7 @@ int Tracks::copy(int copy_flags, double start, double end,
 
 
 
-int Tracks::move_track_up(Track *track)
+int Tracks::roll_track_up(Track *track)
 {
 	if( first == last ) return 1;
 	int n = 1;
@@ -865,11 +865,11 @@ int Tracks::move_track_up(Track *track)
 		while( dst && !dst->master ) { dst = dst->previous; }
 	}
 	if( src == dst ) return 1;
-	move_tracks(src, dst, n);
+	roll_tracks(src, dst, n);
 	return 0;
 }
 
-int Tracks::move_track_down(Track *track)
+int Tracks::roll_track_down(Track *track)
 {
 	if( first == last ) return 1;
 	int n = 1;
@@ -890,12 +890,12 @@ int Tracks::move_track_down(Track *track)
 	else
 		dst = !dst ? first : dst->next;
 	if( src == dst ) return 1;
-	move_tracks(src, dst, n);
+	roll_tracks(src, dst, n);
 	return 0;
 }
 
 
-int Tracks::move_tracks_up()
+int Tracks::roll_tracks_up()
 {
 	if( first == last ) return 1;
 	int n = 1;
@@ -905,11 +905,11 @@ int Tracks::move_tracks_up()
 		while( nxt && !nxt->master ) { ++n;  nxt = nxt->next; }
 	}
 	if( src == dst ) return 1;
-	move_tracks(src, dst, n);
+	roll_tracks(src, dst, n);
 	return 0;
 }
 
-int Tracks::move_tracks_down()
+int Tracks::roll_tracks_down()
 {
 	if( first == last ) return 1;
 	int n = 1;
@@ -918,12 +918,12 @@ int Tracks::move_tracks_down()
 		while( src && !src->master ) { ++n;  src = src->previous; }
 	}
 	if( src == dst ) return 1;
-	move_tracks(src, dst, n);
+	roll_tracks(src, dst, n);
 	return 0;
 }
 
 
-int Tracks::swap_track_up(Track *track)
+int Tracks::move_track_up(Track *track)
 {
 	Track *next_track = track->previous;
 	if(!next_track) next_track = last;
@@ -933,7 +933,7 @@ int Tracks::swap_track_up(Track *track)
 	return 0;
 }
 
-int Tracks::swap_track_down(Track *track)
+int Tracks::move_track_down(Track *track)
 {
 	Track *next_track = track->next;
 	if(!next_track) next_track = first;
@@ -944,7 +944,7 @@ int Tracks::swap_track_down(Track *track)
 }
 
 
-int Tracks::swap_tracks_up()
+int Tracks::move_tracks_up()
 {
 	int result = 0;
 	Track *next = first;
@@ -961,7 +961,7 @@ int Tracks::swap_tracks_up()
 	return result;
 }
 
-int Tracks::swap_tracks_down()
+int Tracks::move_tracks_down()
 {
 	int result = 0;
 	Track *prev = last;
