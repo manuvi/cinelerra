@@ -2051,6 +2051,7 @@ void TrackCanvas::draw_drag_handle()
 void TrackCanvas::draw_transitions()
 {
 	int64_t x, y, w, h;
+	if( !mwindow->edl->session->auto_conf->transitions ) return;
 
 	for(Track *track = mwindow->edl->tracks->first; track; track = track->next) {
 		if( track->is_hidden() ) continue;

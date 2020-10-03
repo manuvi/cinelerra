@@ -309,30 +309,25 @@ void Module::update_transition(int64_t current_position,
 		if(renderengine) {
 			PluginServer *plugin_server = MWindow::scan_plugindb(transition->title,
 				track->data_type);
-			transition_server = new PluginServer(*plugin_server);
-			transition_server->open_plugin(0,
-				get_preferences(),
-				get_edl(),
-				transition);
-			transition_server->init_realtime(
-				get_edl()->session->real_time_playback &&
-				renderengine->command->realtime,
-				1,
-				get_buffer_size());
+			if( plugin_server ) {
+				transition_server = new PluginServer(*plugin_server);
+				transition_server->open_plugin(0, get_preferences(), get_edl(),
+						transition);
+				transition_server->init_realtime(
+					get_edl()->session->real_time_playback &&
+					renderengine->command->realtime, 1, get_buffer_size());
+			}
 		}
 		else
 		if(plugin_array) {
 			PluginServer *plugin_server = MWindow::scan_plugindb(transition->title,
 				plugin_array->data_type);
-			transition_server = new PluginServer(*plugin_server);
-			transition_server->open_plugin(0,
-				get_preferences(),
-				get_edl(),
-				transition);
-			transition_server->init_realtime(
-				0,
-				1,
-				get_buffer_size());
+			if( plugin_server ) {
+				transition_server = new PluginServer(*plugin_server);
+				transition_server->open_plugin(0, get_preferences(), get_edl(),
+						transition);
+				transition_server->init_realtime( 0, 1, get_buffer_size());
+			}
 		}
 	}
 }

@@ -32,6 +32,7 @@
 #include "file.h"
 #include "filexml.h"
 #include "floatautos.h"
+#include "mainerror.h"
 #include "maskauto.h"
 #include "maskautos.h"
 #include "mwindow.h"
@@ -280,8 +281,8 @@ int VModule::import_frame(VFrame *output, VEdit *current_edit,
 				pos = Units::to_int64((double)input_position / frame_rate * edl_rate);
 				if( renderengine->preferences->cache_transitions && !use_cache &&
 // cache transitions, not caching and inside transition 
-				    vnext && vnext->transition && file->get_video_length() >= 0 &&
-				    pos >= vnext->startproject &&
+				    vnext && vnext->transition && vnext->transition->on &&
+				    file->get_video_length() >= 0 && pos >= vnext->startproject &&
 				    pos < vnext->startproject + vnext->transition->length ) {
 					file->set_cache_frames(0);
 					file->set_layer(current_edit->channel);
@@ -738,14 +739,18 @@ int VModule::render(VFrame *output,
 // (*transition_input), (*transition_input)->get_pbuffer(),
 // output, output->get_pbuffer());
 
+		if( transition_server ) {
 // Execute plugin with transition_input and output here
-		if( renderengine )
-			transition_server->set_use_opengl(use_opengl, renderengine->video);
-		transition_server->process_transition((*transition_input), output,
-			(direction == PLAY_FORWARD) ?
-				(start_position_project - current_edit->startproject) :
-				(start_position_project - current_edit->startproject - 1),
-			transition->length);
+			if( renderengine )
+				transition_server->set_use_opengl(use_opengl, renderengine->video);
+			transition_server->process_transition((*transition_input), output,
+				(direction == PLAY_FORWARD) ?
+					(start_position_project - current_edit->startproject) :
+					(start_position_project - current_edit->startproject - 1),
+				transition->length);
+		}
+		else
+			eprintf("missing transition plugin: %s\n", transition->title);
 	}
 	else {
 // Load output buffer

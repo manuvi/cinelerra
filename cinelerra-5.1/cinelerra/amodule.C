@@ -37,6 +37,7 @@
 #include "filexml.h"
 #include "floatautos.h"
 #include "language.h"
+#include "mainerror.h"
 #include "module.h"
 #include "patch.h"
 #include "plugin.h"
@@ -502,7 +503,7 @@ if(debug) printf("AModule::render %d %jd\n", __LINE__, fragment_len);
 // Clamp to end of transition
 			int64_t transition_len = 0;
 			Plugin *transition = get_edl()->tracks->plugin_exists(transition_id);
-			if( transition && previous_edit ) {
+			if( transition && transition->on && previous_edit ) {
 				transition_len = transition->length * sample_rate / edl_rate;
 				if(direction == PLAY_FORWARD &&
 					start_position < edit_startproject + transition_len &&
@@ -534,7 +535,7 @@ if(debug) printf("AModule::render %d\n", __LINE__);
 
 
 // Read transition into temp and render
-			if(transition && previous_edit)
+			if(transition && transition->on && previous_edit)
 			{
 				int64_t previous_startproject = previous_edit->startproject *
 					sample_rate /
@@ -592,13 +593,13 @@ if(debug) printf("AModule::render %d %jd\n", __LINE__, fragment_len);
 					{
 						current_position = start_position - edit_startproject;
 					}
-
-					transition_server->process_transition(
-						transition_temp,
-						&output,
-						current_position,
-						transition_fragment_len,
-						transition->length);
+					if( transition_server ) {
+						transition_server->process_transition(
+							transition_temp, &output, current_position,
+							transition_fragment_len, transition->length);
+					}
+					else
+						eprintf("missing transition plugin: %s\n", transition->title);
 
 // Reverse output buffer here so transitions always render forward.
 					if(direction == PLAY_REVERSE)
