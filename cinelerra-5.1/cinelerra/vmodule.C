@@ -237,23 +237,18 @@ int VModule::import_frame(VFrame *output, VEdit *current_edit,
 // Make positions based on requested frame rate.
 			int64_t position = Units::to_int64((double)pos * frame_rate / edl_rate);
 
-			int64_t max_position;
+			int64_t video_length;
 			int asset_w, asset_h;
 			if( file ) {
 				asset_w = current_edit->asset->width;
 				asset_h = current_edit->asset->height;
-				max_position = Units::to_int64((double)file->get_video_length() *
-					frame_rate / current_edit->asset->frame_rate - 1);
+				video_length = file->get_video_length();
 			}
 			else {
 				asset_w = nested_edl->session->output_w;
 				asset_h = nested_edl->session->output_h;
-				max_position = Units::to_int64(nested_edl->tracks->total_length() *
-					frame_rate - 1);
+				video_length = nested_edl->tracks->total_length();
 			}
-			if( max_position < 0 ) max_position = 0;
-// if we hit the end of stream, freeze at last frame
-			CLAMP(position, 0, max_position);
 
 			VFrame *&input = commonrender ?
 				((VRender*)commonrender)->input_temp : // Realtime playback
@@ -302,6 +297,10 @@ int VModule::import_frame(VFrame *output, VEdit *current_edit,
 						curr_pos += current_edit->startsource;
 						int64_t norm_pos = Units::to_int64((double)curr_pos *
 							current_edit->asset->frame_rate / edl_rate);
+						if( norm_pos < 0 || video_length < 0 )
+							norm_pos = 0;
+						else if( norm_pos >= video_length )
+							norm_pos = video_length-1;
 						if( first_frame ) {
 							if( file->get_cache_frame(input, norm_pos) )
 								break;  // if inside a cache run
@@ -318,6 +317,10 @@ int VModule::import_frame(VFrame *output, VEdit *current_edit,
 
 				int64_t normalized_position = Units::to_int64((double)position *
 					current_edit->asset->frame_rate / frame_rate);
+				if( normalized_position < 0 || video_length < 0 )
+					normalized_position = 0;
+				else if( normalized_position >= video_length )
+					normalized_position = video_length-1;
 //printf("VModule::import_frame %d %lld %lld\n", __LINE__, position, normalized_position);
 				file->set_layer(current_edit->channel);
 				file->set_video_position(normalized_position, 0);

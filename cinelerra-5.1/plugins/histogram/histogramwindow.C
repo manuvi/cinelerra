@@ -185,12 +185,8 @@ void HistogramWindow::create_objects()
 	threshold->create_objects();
 	y += automatic->get_h() + margin;
 
-	add_subwindow(plot = new HistogramPlot(plugin, x1, y));
-	add_subwindow(select = new HistogramSelect(plugin, this, x2, y));
-	frames = new HistogramFrames(plugin, this, x3, y);
-	frames->create_objects();
-	x = x3 + frames->get_w() + margin;
-	add_subwindow(clear_frames = new HistogramClearFrames(plugin, this, x, y));
+	add_subwindow(plot= new HistogramPlot(plugin, x, y));
+	add_subwindow(sum_frames = new HistogramSumFrames(plugin, x2, y));
 	y += plot->get_h() + margin;
 
 	x = x1;
@@ -284,18 +280,13 @@ int HistogramWindow::resize_event(int w, int h)
 		threshold->get_y() + ydiff);
 	plot->reposition_window(plot->get_x(),
 		plot->get_y() + ydiff);
+	sum_frames->reposition_window(sum_frames->get_x(),
+		sum_frames->get_y() + ydiff);
 
 	split->reposition_window(split->get_x(),
 		split->get_y() + ydiff);
 	reset->reposition_window(reset->get_x(),
 		reset->get_y() + ydiff);
-
-	frames->reposition_window(frames->get_x(),
-		frames->get_y() + ydiff);
-	select->reposition_window(select->get_x(),
-		select->get_y() + ydiff);
-	clear_frames->reposition_window(clear_frames->get_x(),
-		clear_frames->get_y() + ydiff);
 
 	update(1, 1, 1, 1);
 
@@ -342,34 +333,28 @@ int HistogramWindow::keypress_event()
 	return result;
 }
 
-void HistogramWindow::update(int do_canvases,
-	int do_carrots,
-	int do_text,
-	int do_toggles)
+void HistogramWindow::update(int do_canvases, int do_carrots, int do_text, int do_toggles)
 {
-	if(do_toggles)
-	{
+	if(do_toggles) {
 		automatic->update(plugin->config.automatic);
 		mode_v->update(plugin->mode == HISTOGRAM_VALUE ? 1 : 0);
 		mode_r->update(plugin->mode == HISTOGRAM_RED ? 1 : 0);
 		mode_g->update(plugin->mode == HISTOGRAM_GREEN ? 1 : 0);
 		mode_b->update(plugin->mode == HISTOGRAM_BLUE ? 1 : 0);
 		plot->update(plugin->config.plot);
+		sum_frames->update(plugin->config.sum_frames);
 		split->update(plugin->config.split);
-		frames->update(plugin->config.frames);
 		parade_on->update(plugin->parade ? 1 : 0);
 		parade_off->update(plugin->parade ? 0 : 1);
 		log_slider->update(plugin->config.log_slider);
 		output->update();
 	}
 
-	if(do_canvases)
-	{
+	if(do_canvases) {
 		update_canvas();
 	}
 
-	if(do_carrots)
-	{
+	if(do_carrots) {
 		low_input_carrot->update();
 		high_input_carrot->update();
 		gamma_carrot->update();
@@ -377,8 +362,7 @@ void HistogramWindow::update(int do_canvases,
 		high_output_carrot->update();
 	}
 
-	if(do_text)
-	{
+	if(do_text) {
 		low_input->update();
 		gamma->update();
 		high_input->update();
@@ -386,40 +370,45 @@ void HistogramWindow::update(int do_canvases,
 		high_output->update();
 		threshold->update();
 	}
-
-
 }
 
 
 void HistogramWindow::draw_canvas_mode(int mode, int color, int y, int h)
 {
 // Draw histogram
-	int max = 0, *accum = plugin->accum[mode];
-	if( accum ) {
-		for( int i=0,x=0; x<canvas_w; ++x ) {
-			int m = 0;
-			int i1 = (HISTOGRAM_SLOTS * (x+1)) / canvas_w;
-			while( i < i1 ) m += accum[i++];
-			if( max < m ) max = m;
+	int64_t max = 0;
+	int64_t *accum = plugin->accum[mode];
+	for( int k0=0,x=0; x<canvas_w; ++x ) {
+		int k1 = (HISTOGRAM_SLOTS * (x+1)) / canvas_w;
+		if( k0 == k1 ) continue;
+		int64_t m = accum[k0];
+		for( int k=k0; ++k<k1; ) {
+			if( m < accum[k] ) m = accum[k];
 		}
+		if( max < m ) max = m;
+		k0 = k1;
 	}
-
 	if( max > 0 ) {
 		double log_slider = plugin->config.log_slider;
 		double lin_slider = 1. - log_slider;
-		double lin_scale = (lin_slider * h) / max;
-		double log_scale = (log_slider * h) / log(max);
-		for( int i=0,x=0; x<canvas_w; ++x ) {
-			int m = 0, i0 = i;
-			int i1 = (HISTOGRAM_SLOTS * (x+1)) / canvas_w;
-			while( i < i1 ) m += accum[i++];
-			double v = m > 0 && i1 > i0 ? (double)m : 0;
-			m = v > 0 ? v*lin_scale + log(v)*log_scale : 0;
-
+		double lin_max = (lin_slider * h) / max;
+		double log_max = (log_slider * h) / log(max);
+		for( int k0=0,x=0; x<canvas_w; ++x ) {
+			int k1 = (HISTOGRAM_SLOTS * (x+1)) / canvas_w;
+			if( k0 == k1 ) continue;
+			int64_t m = accum[k0];
+			for( int k=k0; ++k<k1; ) {
+				if( m < accum[k] ) m = accum[k];
+			}
+			int y1 = y+h;
+			double vv = m > 0 ? (double)m : 0;
+			m = vv > 0 ? vv*lin_max + log(vv)*log_max : 0;
 			canvas->set_color(BLACK);
-			canvas->draw_line(x, y, x, y+h - m);
+			int y0 = y1 - m;
+			canvas->draw_line(x, y, x, y0);
 			canvas->set_color(color);
-			canvas->draw_line(x, y+h - m, x, y+h);
+			canvas->draw_line(x, y0, x, y1);
+			k0 = k1;
 		}
 	}
 	else {
@@ -463,28 +452,16 @@ void HistogramWindow::update_canvas()
 // Draw 0 and 100% lines.
 	canvas->set_color(RED);
 	int x = (int)(canvas_w * -HIST_MIN_INPUT / FLOAT_RANGE);
-	canvas->draw_line(x,
-		0,
-		x,
-		canvas_h);
+	canvas->draw_line(x, 0, x, canvas_h);
 	x = (int)(canvas_w * (1.0 - HIST_MIN_INPUT) / FLOAT_RANGE);
-	canvas->draw_line(x,
-		0,
-		x,
-		canvas_h);
+	canvas->draw_line(x, 0, x, canvas_h);
 	canvas->flash();
 }
 
 
-
-
-HistogramParade::HistogramParade(HistogramMain *plugin,
-	HistogramWindow *gui,
-	int x,
-	int y,
-	int value)
- : BC_Toggle(x,
- 	y,
+HistogramParade::HistogramParade(HistogramMain *plugin, HistogramWindow *gui,
+		int x, int y, int value)
+ : BC_Toggle(x, y,
 	value ? plugin->get_theme()->get_image_set("histogram_rgb_toggle") :
 		plugin->get_theme()->get_image_set("histogram_toggle"),
 	0)
@@ -502,30 +479,13 @@ int HistogramParade::handle_event()
 {
 	update(1);
 	plugin->parade = value;
-	gui->update(1,
-		0,
-		0,
-		1);
+	gui->update(1, 0, 0, 1);
 	return 1;
 }
 
-
-
-
-
-
-
-HistogramCanvas::HistogramCanvas(HistogramMain *plugin,
-	HistogramWindow *gui,
-	int x,
-	int y,
-	int w,
-	int h)
- : BC_SubWindow(x,
- 	y,
-	w,
-	h,
-	BLACK)
+HistogramCanvas::HistogramCanvas(HistogramMain *plugin, HistogramWindow *gui,
+		int x, int y, int w, int h)
+ : BC_SubWindow(x, y, w, h, BLACK)
 {
 	this->plugin = plugin;
 	this->gui = gui;
@@ -572,48 +532,6 @@ int HistogramReset::handle_event()
 	return 1;
 }
 
-
-HistogramSelect::HistogramSelect(HistogramMain *plugin, HistogramWindow *gui,
-		int x, int y)
- : BC_GenericButton(x, y, xS(100), _("Frames"))
-{
-	this->plugin = plugin;
-	this->gui = gui;
-	set_tooltip(_("Set frames to selection duration"));
-}
-int HistogramSelect::handle_event()
-{
-	MWindow *mwindow = plugin->server->mwindow;
-	if( mwindow ) {
-		EDL *edl = mwindow->edl;
-		double start = edl->local_session->get_selectionstart();
-		int64_t start_pos = edl->get_frame_rate() * start;
-		double end = edl->local_session->get_selectionend();
-		int64_t end_pos = edl->get_frame_rate() * end;
-		int64_t frames = end_pos - start_pos;
-		gui->frames->update(frames);
-		plugin->config.frames = frames;
-		plugin->send_configure_change();
-	}
-	return 1;
-}
-
-HistogramClearFrames::HistogramClearFrames(HistogramMain *plugin, HistogramWindow *gui,
-		int x, int y)
- : BC_Button(x, y, plugin->get_theme()->get_image_set("reset_button"))
-{
-	this->plugin = plugin;
-	this->gui = gui;
-	set_tooltip(_("Clear frames"));
-}
-
-int HistogramClearFrames::handle_event()
-{
-	plugin->config.frames = 0;
-	gui->frames->update(0);
-	plugin->send_configure_change();
-	return 1;
-}
 
 HistogramLogSlider::HistogramLogSlider(HistogramMain *plugin, HistogramWindow *gui,
 		int x, int y)
@@ -782,18 +700,8 @@ int HistogramCarrot::cursor_motion_event()
 
 
 
-
-
-
-
-
-HistogramSlider::HistogramSlider(HistogramMain *plugin,
-	HistogramWindow *gui,
-	int x,
-	int y,
-	int w,
-	int h,
-	int is_input)
+HistogramSlider::HistogramSlider(HistogramMain *plugin, HistogramWindow *gui,
+		int x, int y, int w, int h, int is_input)
  : BC_SubWindow(x, y, w, h)
 {
 	this->plugin = plugin;
@@ -820,44 +728,30 @@ void HistogramSlider::update()
 
 	clear_box(0, 0, w, h);
 
-	switch(mode)
-	{
-		case HISTOGRAM_RED:
-			g = b = 0x00;
-			break;
-		case HISTOGRAM_GREEN:
-			r = b = 0x00;
-			break;
-		case HISTOGRAM_BLUE:
-			r = g = 0x00;
-			break;
+	switch(mode) {
+	case HISTOGRAM_RED:
+		g = b = 0x00;
+		break;
+	case HISTOGRAM_GREEN:
+		r = b = 0x00;
+		break;
+	case HISTOGRAM_BLUE:
+		r = g = 0x00;
+		break;
 	}
 
-	for(int i = 0; i < w; i++)
-	{
+	for( int i = 0; i < w; i++ ) {
 		int color = (int)(i * 0xff / w);
 		set_color(((r * color / 0xff) << 16) |
 			((g * color / 0xff) << 8) |
 			(b * color / 0xff));
-
 		draw_line(i, 0, i, h);
 	}
-
-
 	flash();
 }
 
 
-
-
-
-
-
-
-
-HistogramAuto::HistogramAuto(HistogramMain *plugin,
-	int x,
-	int y)
+HistogramAuto::HistogramAuto(HistogramMain *plugin, int x, int y)
  : BC_CheckBox(x, y, plugin->config.automatic, _("Automatic"))
 {
 	this->plugin = plugin;
@@ -871,11 +765,7 @@ int HistogramAuto::handle_event()
 }
 
 
-
-
-HistogramPlot::HistogramPlot(HistogramMain *plugin,
-	int x,
-	int y)
+HistogramPlot::HistogramPlot(HistogramMain *plugin, int x, int y)
  : BC_CheckBox(x, y, plugin->config.plot, _("Plot histogram"))
 {
 	this->plugin = plugin;
@@ -889,11 +779,21 @@ int HistogramPlot::handle_event()
 }
 
 
+HistogramSumFrames::HistogramSumFrames(HistogramMain *plugin, int x, int y)
+ : BC_CheckBox(x, y, plugin->config.sum_frames, _("Sum frames"))
+{
+	this->plugin = plugin;
+}
+
+int HistogramSumFrames::handle_event()
+{
+	plugin->config.sum_frames = get_value();
+	plugin->send_configure_change();
+	return 1;
+}
 
 
-HistogramSplit::HistogramSplit(HistogramMain *plugin,
-	int x,
-	int y)
+HistogramSplit::HistogramSplit(HistogramMain *plugin, int x, int y)
  : BC_CheckBox(x, y, plugin->config.split, _("Split output"))
 {
 	this->plugin = plugin;
@@ -908,10 +808,7 @@ int HistogramSplit::handle_event()
 
 
 HistogramMode::HistogramMode(HistogramMain *plugin,
-	int x,
-	int y,
-	int value,
-	char *text)
+		int x, int y, int value, char *text)
  : BC_Radial(x, y, plugin->mode == value, text)
 {
 	this->plugin = plugin;
@@ -931,27 +828,6 @@ int HistogramMode::handle_event()
 	gui->update(1, 1, 1, 1);
 //	plugin->send_configure_change();
 	return 1;
-}
-
-
-HistogramFrames::HistogramFrames(HistogramMain *plugin, HistogramWindow *gui,
-		int x, int y)
- : BC_TumbleTextBox(gui, 0, 0, 65535, x, y, xS(80))
-{
-	this->plugin = plugin;
-	this->gui = gui;
-}
-
-int HistogramFrames::handle_event()
-{
-	plugin->config.frames = atoi(get_text());
-	plugin->send_configure_change();
-	return 1;
-}
-
-void HistogramFrames::update(int frames)
-{
-	BC_TumbleTextBox::update((int64_t)frames);
 }
 
 

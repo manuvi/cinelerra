@@ -31,7 +31,7 @@ HistogramConfig::HistogramConfig()
 {
 	plot = 1;
 	split = 0;
-
+	sum_frames = 0;
 	reset(1);
 }
 
@@ -49,11 +49,9 @@ void HistogramConfig::reset(int do_mode)
 	if(do_mode)
 	{
 		automatic = 0;
-		automatic_v = 0;
-		threshold = 1.0;
+		threshold = 0.97;
 	}
 
-	frames = 0;
 	log_slider = .5;
 }
 
@@ -84,34 +82,31 @@ void HistogramConfig::boundaries()
 	}
 	CLAMP(threshold, 0, 1);
 	CLAMP(log_slider, 0, 1);
-	CLAMP(frames, 0, 65535);
 }
 
 int HistogramConfig::equivalent(HistogramConfig &that)
 {
 // EQUIV isn't precise enough to detect changes in points
-	for(int i = 0; i < HISTOGRAM_MODES; i++)
-	{
+	for(int i = 0; i < HISTOGRAM_MODES; i++) {
 // 		if(!EQUIV(low_input[i], that.low_input[i]) ||
 // 			!EQUIV(high_input[i], that.high_input[i]) ||
 // 			!EQUIV(gamma[i], that.gamma[i]) ||
 // 			!EQUIV(low_output[i], that.low_output[i]) ||
 // 			!EQUIV(high_output[i], that.high_output[i])) return 0;
-		if(low_input[i] != that.low_input[i] ||
-			high_input[i] != that.high_input[i] ||
-			gamma[i] != that.gamma[i] ||
-			low_output[i] != that.low_output[i] ||
-			high_output[i] != that.high_output[i]) return 0;
+		if( low_input[i] != that.low_input[i] ||
+		    high_input[i] != that.high_input[i] ||
+		    gamma[i] != that.gamma[i] ||
+		    low_output[i] != that.low_output[i] ||
+		    high_output[i] != that.high_output[i] ) return 0;
 	}
 
-	if(automatic != that.automatic ||
-		automatic_v != that.automatic_v ||
-		threshold != that.threshold) return 0;
+	if( automatic != that.automatic ||
+	    threshold != that.threshold ) return 0;
 
-	if(plot != that.plot ||
-		split != that.split ||
-		frames != that.frames ||
-		log_slider != that.log_slider ) return 0;
+	if( plot != that.plot ||
+	    split != that.split ||
+	    sum_frames != that.sum_frames ||
+	    log_slider != that.log_slider ) return 0;
 
 	return 1;
 }
@@ -128,25 +123,20 @@ void HistogramConfig::copy_from(HistogramConfig &that)
 	}
 
 	automatic = that.automatic;
-	automatic_v = that.automatic_v;
 	threshold = that.threshold;
 	plot = that.plot;
 	split = that.split;
-	frames = that.frames;
+	sum_frames = that.sum_frames;
 	log_slider = that.log_slider;
 }
 
-void HistogramConfig::interpolate(HistogramConfig &prev,
-	HistogramConfig &next,
-	int64_t prev_frame,
-	int64_t next_frame,
-	int64_t current_frame)
+void HistogramConfig::interpolate(HistogramConfig &prev, HistogramConfig &next,
+		int64_t prev_frame, int64_t next_frame, int64_t current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = 1.0 - next_scale;
 
-	for(int i = 0; i < HISTOGRAM_MODES; i++)
-	{
+	for( int i=0; i<HISTOGRAM_MODES; ++i ) {
 		low_input[i] = prev.low_input[i] * prev_scale + next.low_input[i] * next_scale;
 		high_input[i] = prev.high_input[i] * prev_scale + next.high_input[i] * next_scale;
 		gamma[i] = prev.gamma[i] * prev_scale + next.gamma[i] * next_scale;
@@ -156,21 +146,18 @@ void HistogramConfig::interpolate(HistogramConfig &prev,
 
 	threshold = prev.threshold * prev_scale + next.threshold * next_scale;
 	automatic = prev.automatic;
-	automatic_v = prev.automatic_v;
 	plot = prev.plot;
 	split = prev.split;
-	frames = prev.frames;
+	sum_frames = prev.sum_frames;
 	log_slider = prev.log_slider;
 }
 
 
 void HistogramConfig::dump()
 {
-	for(int j = 0; j < HISTOGRAM_MODES; j++)
-	{
-		printf("HistogramConfig::dump mode=%d plot=%d split=%d frames=%d\n", j, plot, split, frames);
+	for( int j=0; j<HISTOGRAM_MODES; ++j ) {
+		printf("HistogramConfig::dump mode=%d plot=%d split=%d sum_frames=%d\n",
+			j, plot, split, sum_frames);
 	}
 }
-
-
 

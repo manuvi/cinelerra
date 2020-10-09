@@ -809,6 +809,16 @@ int RecordGUIMonitorVideo::handle_event()
 		lock_window("RecordGUIMonitorVideo::handle_event");
 		record->video_window_open = 1;
 	}
+	else {
+		unlock_window();
+		BC_Window *window = record->record_monitor->window;
+		window->lock_window("RecordGUIMonitorVideo::handle_event");
+		window->hide_window();
+		window->flush();
+		window->unlock_window();
+		lock_window("RecordGUIMonitorVideo::handle_event");
+		record->video_window_open = 0;
+	}
 	return 1;
 }
 

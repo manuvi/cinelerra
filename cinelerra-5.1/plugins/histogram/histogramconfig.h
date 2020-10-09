@@ -57,11 +57,10 @@ public:
 	float high_output[HISTOGRAM_MODES];
 
 	int automatic;
-	int automatic_v;
 	float threshold;
 	int plot;
+	int sum_frames;
 	int split;
-	int frames;
 	float log_slider;
 };
 

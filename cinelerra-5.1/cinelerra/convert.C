@@ -71,10 +71,19 @@ ConvertRender::ConvertRender(MWindow *mwindow)
 	result = 0;
 	beep = 0;
 	to_proxy = 0;
+	renderer = 0;
 }
 
 ConvertRender::~ConvertRender()
 {
+	if( running() ) {
+		canceled = 1;
+		if( renderer )
+			renderer->set_result(1);
+		cancel();
+		join();
+	}
+	delete renderer;
 	delete [] suffix;
 	delete progress;
 	delete counter_lock;
@@ -515,19 +524,20 @@ void ConvertRender::create_copy(int i)
 	Asset *needed_copy = needed_copies[i];
 	EDL *edl = convert_edl(mwindow->edl, orig_idxbl);
 	double length = get_length(orig_idxbl);
-	ConvertPackageRenderer renderer(this);
-	renderer.initialize(mwindow, edl, mwindow->preferences, needed_copy);
+	renderer = new ConvertPackageRenderer(this);
+	renderer->initialize(mwindow, edl, mwindow->preferences, needed_copy);
 	PackageDispatcher dispatcher;
 	dispatcher.create_packages(mwindow, edl, mwindow->preferences,
 		SINGLE_PASS, needed_copy, 0, length, 0);
 	RenderPackage *package = dispatcher.get_package(0);
-	if( !renderer.render_package(package) ) {
+	if( !renderer->render_package(package) ) {
 		Asset *asset = mwindow->edl->assets->update(needed_copy);
 		mwindow->mainindexes->add_indexable(asset);
 		mwindow->mainindexes->start_build();
 	}
 	else
 		failed = 1;
+	delete renderer;  renderer = 0;
 	edl->remove_user();
 }
 

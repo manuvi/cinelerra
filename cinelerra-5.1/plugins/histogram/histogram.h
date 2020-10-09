@@ -45,6 +45,7 @@ public:
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
 	void render_gui(void *data);
+	void do_render_gui(HistogramWindow *gui);
 	int calculate_use_opengl();
 	int handle_opengl();
 
@@ -60,18 +61,18 @@ public:
 // Value is only calculated for preview.
 	void calculate_histogram(VFrame *data, int do_value);
 // Calculate the linear, smoothed, lookup curves
-	void tabulate_curve(int **table, int idx, int len, int use_value);
-	void tabulate_curve(int idx, int use_value);
+	void tabulate_curve(int **table, int idx, int use_value, int len);
+	void tabulate_curve(int **table, int use_value, int len=-1);
 
 
 	VFrame *input, *output;
 	HistogramEngine *engine;
-	HistStripeEngine *stripe_engine;
 
+	int need_reconfigure;
 	int *lookup[HISTOGRAM_MODES];
 // No value applied to this
 	int *preview_lookup[HISTOGRAM_MODES];
-	int *accum[HISTOGRAM_MODES];
+	int64_t *accum[HISTOGRAM_MODES];
 // Input point being dragged or edited
 	int current_point;
 // Current channel being viewed
@@ -81,39 +82,8 @@ public:
 	int point_y_offset;
 	int w, h;
 	int parade;
-	VFrame *fframe;
 	int64_t last_position;
-	int last_frames;
-};
-
-enum { ADD_TEMP, ADD_FFRM, ADD_FFRMS, ADD_TEMPS, SUB_TEMPS };
-
-class HistStripePackage : public LoadPackage
-{
-public:
-	HistStripePackage();
-	int y0, y1;
-};
-
-class HistStripeUnit : public LoadClient
-{
-public:
-	HistStripeUnit(HistStripeEngine *server, HistogramMain *plugin);
-	void process_package(LoadPackage *package);
-	HistStripeEngine *server;
-	HistogramMain *plugin;
-};
-
-class HistStripeEngine : public LoadServer
-{
-public:
-	HistStripeEngine(HistogramMain *plugin, int total_clients, int total_packages);
-	void process_packages(int operation);
-	void init_packages();
-	LoadClient *new_client();
-	LoadPackage *new_package();
-	HistogramMain *plugin;
-	int operation;
+	int sum_frames, frames;
 };
 
 
@@ -132,7 +102,7 @@ public:
 	void process_package(LoadPackage *package);
 	HistogramEngine *server;
 	HistogramMain *plugin;
-	int *accum[5];
+	int64_t *accum[HISTOGRAM_MODES];
 };
 
 class HistogramEngine : public LoadServer

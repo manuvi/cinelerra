@@ -140,6 +140,7 @@ DIRS = $(OPENCV_OBJS) \
 	synthesizer \
 	threshold \
 	timeavg \
+	timeblur \
 	timefront \
 	timestretch \
 	timestretchrt \

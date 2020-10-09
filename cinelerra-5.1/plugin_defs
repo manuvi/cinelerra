@@ -112,6 +112,7 @@ video := \
 	swapframes \
 	threshold \
 	timeavg \
+	timeblur \
 	timefront \
 	titler \
 	tracer \

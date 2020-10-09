@@ -279,9 +279,10 @@ update_view(int do_audio)
 {
 	if( viewing ) viewing->stop_audio();
 	delete view_win;  view_win = 0;
-	if( (viewing=vicon) != 0 ) {
+	VFrame *vfrm;
+	if( (viewing=vicon) != 0 && (vfrm=viewing->frame()) != 0 ) {
 		view_win = new_view_window(0);
-		view_win->draw_vframe(viewing->frame());
+		view_win->draw_vframe(vfrm);
 		view_win->flash(0);
 		view_win->show_window();
 		if( do_audio ) vicon->start_audio();
@@ -292,14 +293,15 @@ update_view(int do_audio)
 
 int VIconThread::zoom_scale(int dir)
 {
-	if( !viewing || !view_win ) return 0;
+	VFrame *vfrm;
+	if( !viewing || !view_win || !(vfrm=viewing->frame()) ) return 0;
 	int view_h = this->view_h;
 	view_h += dir*view_h/10 + dir;
 	bclamp(view_h, 16,512);
 	this->view_h = view_h;
 	this->view_w = view_h * vw/vh;
 	new_view_window(view_win);
-	view_win->draw_vframe(viewing->frame());
+	view_win->draw_vframe(vfrm);
 	view_win->flash(1);
 	return 1;
 }
@@ -328,13 +330,14 @@ draw(VIcon *vicon)
 	int draw_img = visible(vicon, x, y);
 	int draw_win = view_win && viewing == vicon ? 1 : 0;
 	if( !draw_img && !draw_win ) return 0;
-	if( !vicon->frame() ) return 0;
+	VFrame *vfrm = vicon->frame();
+	if( !vfrm ) return 0;
 	if( draw_img ) {
 		vicon->draw_vframe(this, wdw, x, y);
 		img_dirty = 1;
 	}
 	if( draw_win ) {
-		view_win->draw_vframe(vicon->frame());
+		view_win->draw_vframe(vfrm);
 		win_dirty = 1;
 	}
 	return 1;

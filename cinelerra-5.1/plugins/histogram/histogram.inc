@@ -22,16 +22,12 @@
 #ifndef HISTOGRAM_INC
 #define HISTOGRAM_INC
 
-
-
-
-
 // modes
-#define HISTOGRAM_MODES 4
 #define HISTOGRAM_RED 0
 #define HISTOGRAM_GREEN 1
 #define HISTOGRAM_BLUE 2
 #define HISTOGRAM_VALUE 3
+#define HISTOGRAM_MODES 4
 
 // Number of divisions in histogram.
 // 65536 + min and max range to speed up the tabulation
@@ -55,10 +51,6 @@
 
 
 class HistogramMain;
-class HistStripePackage;
-class HistStripeUnit;
-class HistStripeEngine;
-
 class HistogramPackage;
 class HistogramUnit;
 class HistogramEngine;

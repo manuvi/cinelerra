@@ -74,6 +74,7 @@ public:
 	MainProgressBar *progress;
 	ConvertProgress *convert_progress;
 	Timer *progress_timer;
+	ConvertPackageRenderer *renderer;
 
 	Mutex *counter_lock;
 	int total_rendered, remove_originals;
@@ -151,7 +152,7 @@ class ConvertPackageRenderer : public PackageRenderer
 {
 public:
 	ConvertPackageRenderer(ConvertRender *render);
-	~ConvertPackageRenderer();
+	virtual ~ConvertPackageRenderer();
 
 	int get_master();
 	int get_result();

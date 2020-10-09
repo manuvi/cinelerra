@@ -33,20 +33,14 @@
 class HistogramSlider : public BC_SubWindow
 {
 public:
-	HistogramSlider(HistogramMain *plugin,
-		HistogramWindow *gui,
-		int x,
-		int y,
-		int w,
-		int h,
-		int is_input);
+	HistogramSlider(HistogramMain *plugin, HistogramWindow *gui,
+			int x, int y, int w, int h, int is_input);
 
 	void update();
 	int input_to_pixel(float input);
 
 	int operation;
-	enum
-	{
+	enum {
 		NONE,
 		DRAG_INPUT,
 		DRAG_MIN_OUTPUT,
@@ -60,11 +54,8 @@ public:
 class HistogramParade : public BC_Toggle
 {
 public:
-	HistogramParade(HistogramMain *plugin,
-		HistogramWindow *gui,
-		int x,
-		int y,
-		int value);
+	HistogramParade(HistogramMain *plugin, HistogramWindow *gui,
+			int x, int y, int value);
 	int handle_event();
 	HistogramMain *plugin;
 	HistogramWindow *gui;
@@ -108,6 +99,14 @@ public:
 	HistogramMain *plugin;
 };
 
+class HistogramSumFrames : public BC_CheckBox
+{
+public:
+	HistogramSumFrames(HistogramMain *plugin, int x, int y);
+	int handle_event();
+	HistogramMain *plugin;
+};
+
 class HistogramSplit : public BC_CheckBox
 {
 public:
@@ -134,40 +133,11 @@ public:
 	HistogramMain *plugin;
 };
 
-class HistogramSelect : public BC_GenericButton
-{
-public:
-	HistogramSelect(HistogramMain *plugin, HistogramWindow *gui, int x, int y);
-	int handle_event();
-	HistogramMain *plugin;
-	HistogramWindow *gui;
-};
-
-class HistogramClearFrames : public BC_Button
-{
-public:
-	HistogramClearFrames(HistogramMain *plugin, HistogramWindow *gui, int x, int y);
-	int handle_event();
-	HistogramMain *plugin;
-	HistogramWindow *gui;
-};
-
 class HistogramLogSlider : public BC_FSlider
 {
 public:
 	HistogramLogSlider(HistogramMain *plugin, HistogramWindow *gui, int x, int y);
 	int handle_event();
-	HistogramMain *plugin;
-	HistogramWindow *gui;
-};
-
-class HistogramFrames : public BC_TumbleTextBox
-{
-public:
-	HistogramFrames(HistogramMain *plugin, HistogramWindow *gui, int x, int y);
-	int handle_event();
-	void update(int frames);
-
 	HistogramMain *plugin;
 	HistogramWindow *gui;
 };
@@ -226,7 +196,6 @@ public:
 	HistogramText *low_input;
 	HistogramText *high_input;
 	HistogramText *gamma;
-	HistogramFrames *frames;
 	HistogramCanvas *canvas;
 	HistogramCarrot *low_input_carrot;
 	HistogramCarrot *gamma_carrot;
@@ -238,8 +207,6 @@ public:
 	BC_Title *canvas_title2;
 	BC_Title *threshold_title;
 	BC_Bar *bar;
-	HistogramSelect *select;
-	HistogramClearFrames *clear_frames;
 	HistogramLogSlider *log_slider;
 	BC_Title *log_title1;
 	BC_Title *log_title2;
@@ -254,6 +221,7 @@ public:
 	int title3_x;
 	int title4_x;
 	HistogramPlot *plot;
+	HistogramSumFrames *sum_frames;
 	HistogramSplit *split;
 };
 

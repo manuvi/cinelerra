@@ -62,23 +62,24 @@ HistogramMain::HistogramMain(PluginServer *server)
  : PluginVClient(server)
 {
 	engine = 0;
-	stripe_engine = 0;
 	for( int i=0; i<HISTOGRAM_MODES; ++i ) {
-		lookup[i] = 0;
-		accum[i] = 0;
-		preview_lookup[i] = 0;
+		lookup[i] = new int[0x10000];
+		preview_lookup[i] = new int[0x10000];
+		accum[i] = new int64_t[HISTOGRAM_SLOTS];
+		bzero(accum[i], sizeof(int64_t)*HISTOGRAM_SLOTS);
 	}
 	current_point = -1;
 	mode = HISTOGRAM_VALUE;
+	last_position = -1;
+	need_reconfigure = 1;
+	sum_frames = 0;
+	frames = 1;
 	dragging_point = 0;
 	input = 0;
 	output = 0;
 	w = 440;
 	h = 500;
 	parade = 0;
-	fframe = 0;
-	last_frames = 0;
-	last_position = -1;
 }
 
 HistogramMain::~HistogramMain()
@@ -86,12 +87,10 @@ HistogramMain::~HistogramMain()
 
 	for( int i=0; i<HISTOGRAM_MODES; ++i ) {
 		delete [] lookup[i];
-		delete [] accum[i];
 		delete [] preview_lookup[i];
+		delete [] accum[i];
 	}
 	delete engine;
-	delete stripe_engine;
-	delete fframe;
 }
 
 const char* HistogramMain::plugin_title() { return N_("Histogram"); }
@@ -105,50 +104,22 @@ LOAD_CONFIGURATION_MACRO(HistogramMain, HistogramConfig)
 
 void HistogramMain::render_gui(void *data)
 {
-	input = (VFrame*)data;
-	if( thread ) {
-// Process just the RGB values to determine the automatic points or
-// all the points if manual
-		if( !config.automatic ) {
-// Generate curves for value histogram
-// Lock out changes to curves
-			((HistogramWindow*)thread->window)->lock_window("HistogramMain::render_gui 1");
-			tabulate_curve(HISTOGRAM_RED, 0);
-			tabulate_curve(HISTOGRAM_GREEN, 0);
-			tabulate_curve(HISTOGRAM_BLUE, 0);
-			tabulate_curve(preview_lookup, HISTOGRAM_RED, 0x10000, 0);
-			tabulate_curve(preview_lookup, HISTOGRAM_GREEN, 0x10000, 0);
-			tabulate_curve(preview_lookup, HISTOGRAM_BLUE, 0x10000, 0);
-			((HistogramWindow*)thread->window)->unlock_window();
-		}
-
-		calculate_histogram(input, !config.automatic);
-
-		if( config.automatic ) {
-			calculate_automatic(input);
-// Generate curves for value histogram
-// Lock out changes to curves
-			((HistogramWindow*)thread->window)->lock_window("HistogramMain::render_gui 1");
-			tabulate_curve(HISTOGRAM_RED, 0);
-			tabulate_curve(HISTOGRAM_GREEN, 0);
-			tabulate_curve(HISTOGRAM_BLUE, 0);
-			tabulate_curve(preview_lookup, HISTOGRAM_RED, 0x10000, 0);
-			tabulate_curve(preview_lookup, HISTOGRAM_GREEN, 0x10000, 0);
-			tabulate_curve(preview_lookup, HISTOGRAM_BLUE, 0x10000, 0);
-			((HistogramWindow*)thread->window)->unlock_window();
-// Need a second pass to get the luminance values.
-			calculate_histogram(input, 1);
-		}
-
-		((HistogramWindow*)thread->window)->lock_window("HistogramMain::render_gui 2");
-// Always draw the histogram but don't update widgets if automatic
-		((HistogramWindow*)thread->window)->update(1,
-			config.automatic && mode != HISTOGRAM_VALUE,
-			config.automatic && mode != HISTOGRAM_VALUE,
-			0);
-
-		((HistogramWindow*)thread->window)->unlock_window();
+	if( !thread ) return;
+	HistogramWindow *window = (HistogramWindow*)thread->window;
+	HistogramMain *plugin = (HistogramMain*)data;
+//update gui client instance, needed for drawing
+	for( int i=0; i<HISTOGRAM_MODES; ++i ) {
+		config.low_input[i] = plugin->config.low_input[i];
+		config.high_input[i] = plugin->config.high_input[i];
+		memcpy(accum[i], plugin->accum[i], HISTOGRAM_SLOTS*sizeof(*accum));
 	}
+	window->lock_window("HistogramMain::render_gui 2");
+// draw all if reconfigure
+	int reconfig = plugin->need_reconfigure;
+// Always draw the histogram but don't update widgets if automatic
+	int auto_rgb = reconfig ? 1 : config.automatic && mode != HISTOGRAM_VALUE ? 1 : 0;
+	window->update(1, auto_rgb, auto_rgb, reconfig);
+	window->unlock_window();
 }
 
 void HistogramMain::update_gui()
@@ -166,7 +137,6 @@ void HistogramMain::update_gui()
 void HistogramMain::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
-
 // cause data to be stored directly in text
 	output.set_shared_output(keyframe->xbuf);
 	output.tag.set_title("HISTOGRAM");
@@ -176,8 +146,8 @@ void HistogramMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("AUTOMATIC", config.automatic);
 	output.tag.set_property("THRESHOLD", config.threshold);
 	output.tag.set_property("PLOT", config.plot);
+	output.tag.set_property("SUM_FRAMES", config.sum_frames);
 	output.tag.set_property("SPLIT", config.split);
-	output.tag.set_property("FRAMES", config.frames);
 	output.tag.set_property("LOG_SLIDER", config.log_slider);
 	output.tag.set_property("W", w);
 	output.tag.set_property("H", h);
@@ -216,8 +186,8 @@ void HistogramMain::read_data(KeyFrame *keyframe)
 			config.automatic = input.tag.get_property("AUTOMATIC", config.automatic);
 			config.threshold = input.tag.get_property("THRESHOLD", config.threshold);
 			config.plot = input.tag.get_property("PLOT", config.plot);
+			config.sum_frames = input.tag.get_property("SUM_FRAMES", config.sum_frames);
 			config.split = input.tag.get_property("SPLIT", config.split);
-			config.frames = input.tag.get_property("FRAMES", config.frames);
 			config.log_slider = input.tag.get_property("LOG_SLIDER", config.log_slider);
 
 			if( is_defaults() ) {
@@ -289,21 +259,22 @@ void HistogramMain::calculate_histogram(VFrame *data, int do_value)
 		if( cpus > smps ) cpus = smps;
 		engine = new HistogramEngine(this, cpus, cpus);
 	}
-	if( !accum[0] ) {
-		for( int i=0; i<HISTOGRAM_MODES; ++i )
-			accum[i] = new int[HISTOGRAM_SLOTS];
-	}
 
 	engine->process_packages(HistogramEngine::HISTOGRAM, data, do_value);
 
+	int k = 0;
 	HistogramUnit *unit = (HistogramUnit*)engine->get_client(0);
-	for( int i=0; i<HISTOGRAM_MODES; ++i )
-		memcpy(accum[i], unit->accum[i], sizeof(int)*HISTOGRAM_SLOTS);
+	if( !sum_frames ) {
+		frames = 0;
+		for( int i=0; i<HISTOGRAM_MODES; ++i )
+			memcpy(accum[i], unit->accum[i], sizeof(int64_t)*HISTOGRAM_SLOTS);
+		k = 1;
+	}
 
-	for( int i=1,n=engine->get_total_clients(); i<n; ++i ) {
+	for( int i=k,n=engine->get_total_clients(); i<n; ++i ) {
 		unit = (HistogramUnit*)engine->get_client(i);
 		for( int j=0; j<HISTOGRAM_MODES; ++j ) {
-			int *in = unit->accum[j], *out = accum[j];
+			int64_t *in = unit->accum[j], *out = accum[j];
 			for( int k=HISTOGRAM_SLOTS; --k>=0; ) *out++ += *in++;
 		}
 	}
@@ -314,6 +285,7 @@ void HistogramMain::calculate_histogram(VFrame *data, int do_value)
 		accum[i][0] = 0;
 		accum[i][HISTOGRAM_SLOTS - 1] = 0;
 	}
+	++frames;
 }
 
 
@@ -324,14 +296,16 @@ void HistogramMain::calculate_automatic(VFrame *data)
 
 // Do each channel
 	for( int i=0; i<3; ++i ) {
-		int *accum = this->accum[i];
-		int pixels = data->get_w() * data->get_h();
+		int64_t *accum = this->accum[i];
+		int64_t sz = data->get_w() * data->get_h();
+		int64_t pixels = sz * frames;
 		float white_fraction = 1.0 - (1.0 - config.threshold) / 2;
 		int threshold = (int)(white_fraction * pixels);
 		float min_level = 0.0, max_level = 1.0;
 
 // Get histogram slot above threshold of pixels
-		for( int j=0, total=0; j<HISTOGRAM_SLOTS; ++j ) {
+		int64_t total = 0;
+		for( int j=0; j<HISTOGRAM_SLOTS; ++j ) {
 			total += accum[j];
 			if( total >= threshold ) {
 				max_level = (float)j / HISTOGRAM_SLOTS * FLOAT_RANGE + HIST_MIN_INPUT;
@@ -339,8 +313,9 @@ void HistogramMain::calculate_automatic(VFrame *data)
 			}
 		}
 
-// Get slot below 99% of pixels
-		for( int j=HISTOGRAM_SLOTS, total=0; --j> 0; ) {
+// Get histogram slot below threshold of pixels
+		total = 0;
+		for( int j=HISTOGRAM_SLOTS; --j> 0; ) {
 			total += accum[j];
 			if( total >= threshold ) {
 				min_level = (float)j / HISTOGRAM_SLOTS * FLOAT_RANGE + HIST_MIN_INPUT;
@@ -368,100 +343,34 @@ int HistogramMain::process_buffer(VFrame *frame,
 	int64_t start_position,
 	double frame_rate)
 {
-	int need_reconfigure = load_configuration();
+	need_reconfigure = load_configuration();
 	int use_opengl = calculate_use_opengl();
-
+	sum_frames = last_position == start_position ? config.sum_frames : 0;
+	last_position = get_direction() == PLAY_FORWARD ?
+			start_position+1 : start_position-1;
 	this->input = frame;
 	this->output = frame;
 	int cpus = input->get_w() * input->get_h() / 0x80000 + 2;
 	int smps = get_project_smp();
 	if( cpus > smps ) cpus = smps;
-	if( !engine ) {
+	if( !engine )
 		engine = new HistogramEngine(this, cpus, cpus);
+	read_frame(frame, 0, start_position, frame_rate, use_opengl);
+	if( config.automatic )
+		calculate_automatic(frame);
+	if( config.plot ) {
+// Generate curves for value histogram
+		tabulate_curve(lookup, 0);
+		tabulate_curve(preview_lookup, 0, 0x10000);
+// Need to get the luminance values.
+		calculate_histogram(input, 1);
+		send_render_gui(this);
 	}
-	int frames = config.frames;
-	MWindow *mwindow = server->mwindow;
-	if( frames > 1 && (!mwindow || // dont scan during SELECT_REGION
-	      mwindow->session->current_operation != SELECT_REGION ||
-	      mwindow->edl->local_session->get_selectionstart() ==
-		  mwindow->edl->local_session->get_selectionend() ) ) {
-		if( !stripe_engine )
-			stripe_engine = new HistStripeEngine(this, cpus, cpus);
-		int fw = frame->get_w(), fh =frame->get_h();
-		new_temp(fw, fh, BC_RGB_FLOAT);
-		MWindow *mwindow = server->mwindow;
-		if( (mwindow && mwindow->session->current_operation == SELECT_REGION) ||
-		    ( last_frames == frames && last_position-1 == start_position &&
-		      fframe && fframe->get_w() == fw && fframe->get_h() == fh ) ) {
-			read_frame(temp, 0, start_position, frame_rate, use_opengl);
-			stripe_engine->process_packages(ADD_FFRM);
-			frame->transfer_from(temp);
-		}
-		else if( last_frames != frames || last_position != start_position ||
-		      !fframe || fframe->get_w() != fw || fframe->get_h() != fh ) {
-			last_frames = frames;
-			last_position = start_position;
-			VFrame::get_temp(fframe, fw, fh, BC_RGB_FLOAT);
-			read_frame(fframe, 0, start_position+1, frame_rate, use_opengl);
-			BC_ProgressBox *progress = 0;
-			const char *progress_title = _("Histogram: scanning\n");
-			Timer timer;
-			for( int i=2; i<frames; ++i ) {
-                                read_frame(temp, 0, start_position+i, frame_rate, use_opengl);
-				stripe_engine->process_packages(ADD_TEMP);
-				if( !progress && gui_open() && frames > 2*frame_rate ) {
-					progress = new BC_ProgressBox(-1, -1, progress_title, frames);
-					progress->start();
-				}
-				if( progress && timer.get_difference() > 100 ) {
-					timer.update();
-					progress->update(i, 1);
-					char string[BCTEXTLEN];
-					sprintf(string, "%sframe: %d", progress_title, i);
-					progress->update_title(string, 1);
-					if( progress->is_cancelled() ) break;
-				}
-				if( progress && !gui_open() ) {
-					progress->stop_progress();
-					delete progress;  progress = 0;
-				}
-			}
-			read_frame(temp, 0, start_position, frame_rate, use_opengl);
-			stripe_engine->process_packages(ADD_FFRMS);
-			frame->transfer_from(temp);
-			if( progress ) {
-				progress->stop_progress();
-				delete progress;
-			}
-			++last_position;
-		}
-		else {
-			read_frame(temp, 0, start_position+frames-1, frame_rate, use_opengl);
-			stripe_engine->process_packages(ADD_TEMPS);
-			frame->transfer_from(fframe);
-			read_frame(temp, 0, start_position, frame_rate, use_opengl);
-			stripe_engine->process_packages(SUB_TEMPS);
-			++last_position;
-		}
-	}
-	else
-		read_frame(frame, 0, start_position, frame_rate, use_opengl);
 
-// if to plot histogram
-	if(config.plot) send_render_gui(frame);
-
-// Generate tables here.  The same table is used by many packages to render
-// each horizontal stripe.  Need to cover the entire output range in  each
-// table to avoid green borders
-
-
-	if( need_reconfigure || !lookup[0] || config.automatic ) {
+	if( need_reconfigure || config.automatic || config.plot ) {
 // Calculate new curves
-		if( config.automatic )
-			calculate_automatic(input);
 // Generate transfer tables with value function for integer colormodels.
-		for( int i=0; i<3; ++i )
-			tabulate_curve(i, 1);
+		tabulate_curve(lookup, 1);
 	}
 
 // Apply histogram in hardware
@@ -473,24 +382,26 @@ int HistogramMain::process_buffer(VFrame *frame,
 	return 0;
 }
 
-void HistogramMain::tabulate_curve(int **table, int idx, int len, int use_value)
+void HistogramMain::tabulate_curve(int **table, int idx, int use_value, int len)
 {
-	if( !table[idx] )  // must use max demand here
-		table[idx] = new int[0x10000];
-	int *curve = table[idx], len1 = len-1;
+	int len1 = len - 1;
+	int *curve = table[idx];
 	for( int i=0; i<len; ++i ) {
 		curve[i] = calculate_level((float)i/len1, idx, use_value) * len1;
 		CLAMP(curve[i], 0, len1);
 	}
 }
 
-void HistogramMain::tabulate_curve(int idx, int use_value)
+void HistogramMain::tabulate_curve(int **table, int use_value, int len)
 {
 // uint8 rgb is 8 bit, all others are converted to 16 bit RGB
-	int color_model = input->get_color_model();
-	int lookup_len = color_model == BC_RGB888 ||
-		  color_model == BC_RGBA8888 ? 0x100 : 0x10000;
-	tabulate_curve(lookup, idx, lookup_len, use_value);
+	if( len < 0 ) {
+		int color_model = input->get_color_model();
+		len = color_model == BC_RGB888 || color_model == BC_RGBA8888 ?
+			0x100 : 0x10000;
+	}
+	for( int i=0; i<3; ++i )
+		tabulate_curve(table, i, use_value, len);
 }
 
 int HistogramMain::handle_opengl()
@@ -750,121 +661,6 @@ int HistogramMain::handle_opengl()
 }
 
 
-HistStripePackage::HistStripePackage()
- : LoadPackage()
-{
-}
-
-HistStripeUnit::HistStripeUnit(HistStripeEngine *server, HistogramMain *plugin)
- : LoadClient(server)
-{
-	this->plugin = plugin;
-	this->server = server;
-}
-
-void HistStripeUnit::process_package(LoadPackage *package)
-{
-	HistStripePackage *pkg = (HistStripePackage*)package;
-	int frames = plugin->config.frames;
-	float scale = 1. / frames;
-	int iy0 = pkg->y0, iy1 = pkg->y1;
-	int fw = plugin->fframe->get_w();
-	uint8_t **frows = plugin->fframe->get_rows();
-	uint8_t **trows = plugin->temp->get_rows();
-	switch( server->operation ) {
-	case ADD_TEMP:  // add temp to fframe
-		for( int iy=iy0; iy<iy1; ++iy ) {
-			float *trow = (float *)trows[iy];
-			float *frow = (float *)frows[iy];
-			for( int ix=0; ix<fw; ++ix ) {
-				*frow++ += *trow++;
-				*frow++ += *trow++;
-				*frow++ += *trow++;
-			}
-		}
-		break;
-	case ADD_FFRM:  // add fframe to scaled temp
-		for( int iy=iy0; iy<iy1; ++iy ) {
-			float *trow = (float *)trows[iy];
-			float *frow = (float *)frows[iy];
-			for( int ix=0; ix<fw; ++ix ) {
-				*trow = *trow * scale + *frow++;  ++trow;
-				*trow = *trow * scale + *frow++;  ++trow;
-				*trow = *trow * scale + *frow++;  ++trow;
-			}
-		}
-		break;
-	case ADD_FFRMS:  // add fframe to temp, scale temp, scale fframe
-		for( int iy=iy0; iy<iy1; ++iy ) {
-			float *trow = (float *)trows[iy];
-			float *frow = (float *)frows[iy];
-			for( int ix=0; ix<fw; ++ix ) {
-				*trow += *frow;  *trow++ *= scale;  *frow++ *= scale;
-				*trow += *frow;  *trow++ *= scale;  *frow++ *= scale;
-				*trow += *frow;  *trow++ *= scale;  *frow++ *= scale;
-			}
-		}
-		break;
-	case ADD_TEMPS:  // add scaled temp to fframe
-		for( int iy=iy0; iy<iy1; ++iy ) {
-			float *trow = (float *)trows[iy];
-			float *frow = (float *)frows[iy];
-			for( int ix=0; ix<fw; ++ix ) {
-				*frow++ += *trow++ * scale;
-				*frow++ += *trow++ * scale;
-				*frow++ += *trow++ * scale;
-			}
-		}
-		break;
-	case SUB_TEMPS:  // sub scaled temp from frame
-		for( int iy=iy0; iy<iy1; ++iy ) {
-			float *trow = (float *)trows[iy];
-			float *frow = (float *)frows[iy];
-			for( int ix=0; ix<fw; ++ix ) {
-				*frow++ -= *trow++ * scale;
-				*frow++ -= *trow++ * scale;
-				*frow++ -= *trow++ * scale;
-			}
-		}
-		break;
-	}
-}
-
-HistStripeEngine::HistStripeEngine(HistogramMain *plugin,
-	int total_clients, int total_packages)
- : LoadServer(total_clients, total_packages)
-{
-	this->plugin = plugin;
-}
-void HistStripeEngine::init_packages()
-{
-	int ih = plugin->input->get_h(), iy0 = 0;
-	for( int i=0,n=get_total_packages(); i<n; ) {
-		HistStripePackage *pkg = (HistStripePackage*)get_package(i);
-		int iy1 = (ih * ++i) / n;
-		pkg->y0 = iy0;  pkg->y1 = iy1;
-		iy0 = iy1;
-	}
-}
-
-LoadClient* HistStripeEngine::new_client()
-{
-	return new HistStripeUnit(this, plugin);
-}
-
-LoadPackage* HistStripeEngine::new_package()
-{
-	return new HistStripePackage();
-}
-
-void HistStripeEngine::process_packages(int operation)
-{
-	this->operation = operation;
-	LoadServer::process_packages();
-}
-
-
-
 HistogramPackage::HistogramPackage()
  : LoadPackage()
 {
@@ -877,7 +673,7 @@ HistogramUnit::HistogramUnit(HistogramEngine *server,
 	this->plugin = plugin;
 	this->server = server;
 	for(int i = 0; i < HISTOGRAM_MODES; i++)
-		accum[i] = new int[HISTOGRAM_SLOTS];
+		accum[i] = new int64_t[HISTOGRAM_SLOTS];
 }
 
 HistogramUnit::~HistogramUnit()
@@ -908,7 +704,7 @@ void HistogramUnit::process_package(LoadPackage *package)
 				b_out = preview_b[bclip(b, 0, 0xffff)]; \
 /*				v = (r * 76 + g * 150 + b * 29) >> 8; */ \
 /* Value takes the maximum of the output RGB values */ \
-				v = MAX(r_out, g_out); v = MAX(v, b_out); \
+				int v = MAX(r_out, g_out); v = MAX(v, b_out); \
 				++accum_v[bclip(v -= hmin, 0, slots1)]; \
 			} \
  \
@@ -923,10 +719,10 @@ void HistogramUnit::process_package(LoadPackage *package)
 		VFrame *data = server->data;
 		int w = data->get_w();
 		//int h = data->get_h();
-		int *accum_r = accum[HISTOGRAM_RED];
-		int *accum_g = accum[HISTOGRAM_GREEN];
-		int *accum_b = accum[HISTOGRAM_BLUE];
-		int *accum_v = accum[HISTOGRAM_VALUE];
+		int64_t *accum_r = accum[HISTOGRAM_RED];
+		int64_t *accum_g = accum[HISTOGRAM_GREEN];
+		int64_t *accum_b = accum[HISTOGRAM_BLUE];
+		int64_t *accum_v = accum[HISTOGRAM_VALUE];
 		int32_t r, g, b, y, u, v;
 		int r_out, g_out, b_out;
 		int *preview_r = plugin->preview_lookup[HISTOGRAM_RED];
@@ -1159,7 +955,7 @@ void HistogramEngine::init_packages()
 	for( int i=0,n=get_total_clients(); i<n; ++i ) {
 		HistogramUnit *unit = (HistogramUnit*)get_client(i);
 		for( int j=0; j<HISTOGRAM_MODES; ++j )
-			bzero(unit->accum[j], sizeof(int) * HISTOGRAM_SLOTS);
+			bzero(unit->accum[j], sizeof(int64_t) * HISTOGRAM_SLOTS);
 	}
 }
 
