@@ -68,6 +68,7 @@ void EditPopup::create_objects()
 	add_item(open_edl = new EditPopupOpenEDL(mwindow, this));
 	add_item(new EditPopupClearSelect(mwindow, this));
 	add_item(new EditPopupSelectEdits(mwindow, this));
+	add_item(new EditPopupDeselectEdits(mwindow, this));
 	add_item(new EditPopupCopy(mwindow, this));
 	add_item(new EditPopupCut(mwindow, this));
 	add_item(new EditPopupMute(mwindow, this));
@@ -171,7 +172,20 @@ EditPopupSelectEdits::EditPopupSelectEdits(MWindow *mwindow, EditPopup *popup)
 
 int EditPopupSelectEdits::handle_event()
 {
-	mwindow->select_edits();
+	mwindow->select_edits(1);
+	return 1;
+}
+
+EditPopupDeselectEdits::EditPopupDeselectEdits(MWindow *mwindow, EditPopup *popup)
+ : BC_MenuItem(_("Deselect Edits"))
+{
+	this->mwindow = mwindow;
+	this->popup = popup;
+}
+
+int EditPopupDeselectEdits::handle_event()
+{
+	mwindow->select_edits(0);
 	return 1;
 }
 

@@ -126,7 +126,7 @@ void Tracks::get_selected_edits(ArrayList<Edit*> *drag_edits)
 	}
 }
 
-void Tracks::select_edits(double start, double end)
+void Tracks::select_edits(double start, double end, int v)
 {
 	for( Track *track=first; track; track=track->next ) {
 		if( !track->is_armed() ) continue;
@@ -135,7 +135,7 @@ void Tracks::select_edits(double start, double end)
 		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
 			if( start_pos >= edit->startproject+edit->length ) continue;
 			if( edit->startproject >= end_pos ) continue;
-			edit->is_selected = 1;
+			edit->is_selected = v > 1 ? 1 : v < 0 ? 0 : !edit->is_selected ;
 		}
 	}
 }

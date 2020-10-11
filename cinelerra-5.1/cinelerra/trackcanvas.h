@@ -308,6 +308,7 @@ public:
 
 // Update status bar to reflect drag operation
 	void update_drag_caption();
+	void drag_edit_select(Edit *over_edit, int select, int draw);
 
 	int get_title_h();
 

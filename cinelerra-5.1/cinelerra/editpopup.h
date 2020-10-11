@@ -83,6 +83,16 @@ public:
 	EditPopup *popup;
 };
 
+class EditPopupDeselectEdits : public BC_MenuItem
+{
+public:
+	EditPopupDeselectEdits(MWindow *mwindow, EditPopup *popup);
+	int handle_event();
+
+	MWindow *mwindow;
+	EditPopup *popup;
+};
+
 class EditPopupCopy : public BC_MenuItem
 {
 public:

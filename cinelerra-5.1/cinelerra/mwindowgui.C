@@ -1098,7 +1098,7 @@ int MWindowGUI::keypress_event()
 			result = 1;
 		}
 		else if( ctrl_down() && alt_down() ) {
-			mwindow->select_edits();
+			mwindow->select_edits(1);
 			result = 1;
 		}
 		break;

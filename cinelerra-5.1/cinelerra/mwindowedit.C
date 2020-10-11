@@ -426,11 +426,11 @@ void MWindow::clear_select()
 	gui->draw_overlays(1);
 }
 
-void MWindow::select_edits()
+void MWindow::select_edits(int v)
 {
 	double start = edl->local_session->get_selectionstart();
 	double end = edl->local_session->get_selectionend();
-	edl->tracks->select_edits(start, end);
+	edl->tracks->select_edits(start, end, v);
 	gui->draw_overlays(1);
 }
 

@@ -188,6 +188,7 @@ int TrackCanvas::drag_motion(
 		Track **over_track, Edit **over_edit,
 		PluginSet **over_pluginset, Plugin **over_plugin)
 {
+	int update_scroll = 0;
 	int cursor_x = get_relative_cursor_x();
 	int cursor_y = get_relative_cursor_y();
 	if( get_cursor_over_window() ) {
@@ -196,6 +197,28 @@ int TrackCanvas::drag_motion(
 	}
 	if( over_track && !*over_track )
 		*over_track = pane->over_patchbay();
+
+	switch( mwindow->session->current_operation ) {
+	case DRAG_EDIT_SELECT: {
+		Edit *edit = over_edit ? *over_edit : 0;
+		double position = mwindow->edl->get_cursor_position(cursor_x, pane->number);
+		mwindow->session->drag_position = mwindow->edl->align_to_frame(position, 0);
+		drag_edit_select(edit, 0, 1);
+		update_scroll = 1;
+		break; }
+	}
+
+	if( update_scroll ) {
+		if( !drag_scroll &&
+		    (cursor_x >= get_w() || cursor_x < 0 ||
+		     cursor_y >= get_h() || cursor_y < 0))
+			start_dragscroll();
+		else if( drag_scroll &&
+			 cursor_x < get_w() && cursor_x >= 0 &&
+			 cursor_y < get_h() && cursor_y >= 0 )
+			stop_dragscroll();
+	}
+
 	return 0;
 }
 
@@ -500,7 +523,7 @@ int TrackCanvas::drag_stop(int *redraw)
 				result = 1;
 			}
 			break;
-		case DRAG_GROUP:
+		case DRAG_GROUP: {
 			mwindow->session->current_operation = NO_OPERATION;
 			EDL *drag_group = mwindow->session->drag_group;
 			if( drag_group ) {
@@ -532,8 +555,19 @@ int TrackCanvas::drag_stop(int *redraw)
 				}
 			}
 			result = 1;
+			break; }
+		case DRAG_EDIT_SELECT:
+			int select = ctrl_down() ? -1 : 1;
+			drag_edit_select(mwindow->session->edit_highlighted, select, 0);
 			break;
 		}
+	}
+
+	switch( mwindow->session->current_operation ) {
+	case DRAG_EDIT_SELECT:
+		mwindow->session->current_operation = NO_OPERATION;
+		result = 1;
+		break;
 	}
 
 	return result;
@@ -4293,6 +4327,53 @@ void TrackCanvas::update_drag_caption()
 }
 
 
+void TrackCanvas::drag_edit_select(Edit *over_edit, int select, int draw)
+{
+	if( !over_edit ) return;
+	if( !mwindow->session->drag_edit ) return;
+	Track *drag_track = mwindow->session->drag_edit->track;
+	Track *over_track = over_edit->track;
+	if( !drag_track || !over_track ) return;
+	if( drag_track->number_of() > over_track->number_of() ) {
+		Track *trk = drag_track;
+		drag_track = over_track;
+		over_track = trk;
+	}
+	double start_pos = mwindow->session->drag_start;
+	double end_pos = mwindow->session->drag_position;
+	if( start_pos > end_pos ) {
+		double pos = start_pos;
+		start_pos = end_pos;
+		end_pos = pos;
+	}
+	int done = 0, do_flash = 0;
+	for( Track *track=drag_track; !done; track=track->next ) {
+		if( !track->is_armed() ) continue;
+		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
+			int64_t pos = edit->startproject;
+			int64_t end = pos + edit->length;
+			double edit_start = track->from_units(pos);
+			double edit_end = track->from_units(end);
+			if( start_pos >= edit_end ) continue;
+			if( edit_start > end_pos ) continue;
+			if( select > 0 )
+				edit->is_selected = 1;
+			else if( select < 0 )
+				edit->is_selected = 0;
+			if( draw ) {
+				int64_t edit_x, edit_y, edit_w, edit_h;
+				edit_dimensions(edit, edit_x, edit_y, edit_w, edit_h);
+				set_color(YELLOW);
+				draw_rectangle(edit_x, edit_y, edit_w, edit_h);
+				do_flash = 1;
+			}
+		}
+		if( track == over_track ) done = 1;
+	}
+	if( do_flash )
+		flash();
+}
+
 
 int TrackCanvas::cursor_update(int in_motion)
 {
@@ -4306,7 +4387,7 @@ int TrackCanvas::cursor_update(int in_motion)
 	int update_cursor = 0;
 	int rerender = 0;
 	double position = 0.;
-//printf("TrackCanvas::cursor_update %d\n", __LINE__);
+//printf("TrackCanvas::cursor_update %d %d,%d\n", __LINE__, get_cursor_x(), get_cursor_y());
 
 // Default cursor
 	int new_cursor =
@@ -4577,6 +4658,7 @@ int TrackCanvas::repeat_event(int64_t duration)
 	int result = 0;
 
 	switch(mwindow->session->current_operation) {
+		case DRAG_EDIT_SELECT:
 		case SELECT_REGION:
 //printf("TrackCanvas::repeat_event 1 %d\n", mwindow->edl->local_session->view_start);
 		if(get_cursor_x() > get_w()) {
@@ -4773,6 +4855,10 @@ int TrackCanvas::button_release_event()
 			result = 1;
 			drag_scroll = 0;
 			break; }
+
+		case DRAG_EDIT_SELECT:
+			//result = 0;
+			break;
 
 		default:
 			if( mwindow->session->current_operation ) {
@@ -5185,8 +5271,15 @@ int TrackCanvas::do_edits(int cursor_x, int cursor_y, int button_press, int drag
 					mwindow->session->drag_origin_x = cursor_x;
 					mwindow->session->drag_origin_y = cursor_y;
 // Where the drag started, so we know relative position inside the edit later
-					mwindow->session->drag_position =
-						mwindow->edl->get_cursor_position(cursor_x, pane->number);
+					double position = mwindow->edl->get_cursor_position(cursor_x, pane->number);
+					mwindow->session->drag_position = mwindow->edl->align_to_frame(position, 1);
+					if( get_buttonpress() == LEFT_BUTTON && alt_down() ) {
+						mwindow->session->drag_start = mwindow->session->drag_position;
+						drag_edit_select(edit, 0, 1);
+						mwindow->session->current_operation = DRAG_EDIT_SELECT;
+						result = 1;
+						continue;
+					}
 					drag_start = 0; // if unselected "fast" drag
 					if( !edit->silence() && !edit->is_selected ) {
 						mwindow->edl->tracks->clear_selected_edits();
