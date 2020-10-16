@@ -368,11 +368,6 @@ int Asset::equivalent(Asset &asset, int test_audio, int test_video, EDL *edl)
 			header == asset.header &&
 			dither == asset.dither &&
 			!strcmp(acodec, asset.acodec));
-		if( result && format == FILE_FFMPEG )
-			result = !strcmp(ff_audio_options, asset.ff_audio_options) &&
-				!strcmp(ff_sample_format, asset.ff_sample_format) &&
-				ff_audio_bitrate == asset.ff_audio_bitrate &&
-				ff_audio_quality == asset.ff_audio_quality;
 	}
 
 
@@ -387,13 +382,6 @@ int Asset::equivalent(Asset &asset, int test_audio, int test_video, EDL *edl)
 			!strcmp(vcodec, asset.vcodec) &&
 			mov_sphere == asset.mov_sphere &&
 			jpeg_sphere == asset.jpeg_sphere);
-		if( result && format == FILE_FFMPEG )
-			result = !strcmp(ff_video_options, asset.ff_video_options) &&
-				!strcmp(ff_pixel_format, asset.ff_pixel_format) &&
-				ff_video_bitrate == asset.ff_video_bitrate &&
-				ff_video_quality == asset.ff_video_quality &&
-				ff_color_space == asset.ff_color_space &&
-				ff_color_range == asset.ff_color_range;
 	}
 
 	return result;
@@ -804,13 +792,6 @@ void Asset::load_defaults(BC_Hash *defaults,
 	vmpeg_seq_codes = GET_DEFAULT("VMPEG_SEQ_CODES", vmpeg_seq_codes);
 	vmpeg_preset = GET_DEFAULT("VMPEG_PRESET", vmpeg_preset);
 	vmpeg_field_order = GET_DEFAULT("VMPEG_FIELD_ORDER", vmpeg_field_order);
-
-	theora_fix_bitrate = GET_DEFAULT("THEORA_FIX_BITRATE", theora_fix_bitrate);
-	theora_bitrate = GET_DEFAULT("THEORA_BITRATE", theora_bitrate);
-	theora_quality = GET_DEFAULT("THEORA_QUALITY", theora_quality);
-	theora_sharpness = GET_DEFAULT("THEORA_SHARPNESS", theora_sharpness);
-	theora_keyframe_frequency = GET_DEFAULT("THEORA_KEYFRAME_FREQUENCY", theora_keyframe_frequency);
-	theora_keyframe_force_frequency = GET_DEFAULT("THEORA_FORCE_KEYFRAME_FEQUENCY", theora_keyframe_force_frequency);
 
 
 	ac3_bitrate = GET_DEFAULT("AC3_BITRATE", ac3_bitrate);
