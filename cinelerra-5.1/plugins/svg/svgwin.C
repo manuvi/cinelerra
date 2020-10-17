@@ -34,8 +34,6 @@
 
 #include <errno.h>
 
-#include "empty_svg.h"
-
 struct fifo_struct {
 	int pid;
 // 1 = update from client, 2 = client closes, 3 = quit
@@ -235,8 +233,13 @@ void NewSvgButton::run()
 		else {
 			FILE *out = fopen(filename,"w");
 			if( out ) {
-				unsigned long size = sizeof(empty_svg) - 4;
-				fwrite(empty_svg+4, size,  1, out);
+				extern unsigned char _binary_new_svg_start[];
+				extern unsigned char _binary_new_svg_end[];
+				unsigned int *ip = (unsigned int *)_binary_new_svg_start;
+				unsigned int hdr_sz = *ip++;
+				unsigned char *dp = (unsigned char *)ip + hdr_sz;
+				unsigned char *ep = _binary_new_svg_end;
+				fwrite(dp, ep - dp,  1, out);
 				fclose(out);
 				result = 0;
 			}

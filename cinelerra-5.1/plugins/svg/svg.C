@@ -199,18 +199,19 @@ int SvgMain::process_realtime(VFrame *input, VFrame *output)
 		int fd = ms_time < config.ms_time ? -1 : open(filename_png, O_RDWR);
 		if( fd < 0 ) { // file does not exist, export it
 			char command[BCTEXTLEN], dpi[BCSTRLEN];
-			snprintf(command, sizeof(command),
-				"inkscape --without-gui --export-background=0x000000 "
-				"--export-background-opacity=0 -d %f %s --export-png=%s",
+			snprintf(command, sizeof(command), "inkscape "
+//				"--without-gui "
+				"--export-background=0x000000 --export-background-opacity=0.001 "
+				" -d %f %s --export-filename=%s",
 				config.dpi, config.svg_file, filename_png);
 			printf(_("Running command %s\n"), command);
 			snprintf(dpi, sizeof(dpi), "%f", config.dpi);
-			snprintf(command, sizeof(command), "--export-png=%s",filename_png);
+			snprintf(command, sizeof(command), "--export-filename=%s",filename_png);
 			char *const argv[] = {
 				(char*)"inkscape",
-				(char*)"--without-gui",
+//				(char*)"--without-gui",
 				(char*)"--export-background=0x000000",
-                                (char*)"--export-background-opacity=0",
+                                (char*)"--export-background-opacity=0.001",
 				(char*)"-d", dpi, config.svg_file, command,
 				0, };
 			exec_command(argv);
