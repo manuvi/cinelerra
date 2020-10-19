@@ -25,6 +25,7 @@
 #include "bcdialog.h"
 #include "guicast.h"
 #include "editpanel.inc"
+#include "localsession.inc"
 #include "meterpanel.inc"
 #include "mwindow.inc"
 #include "manualgoto.inc"

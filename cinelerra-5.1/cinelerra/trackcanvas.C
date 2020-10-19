@@ -805,14 +805,11 @@ void TrackCanvas::draw_resources(int mode,
 
 	resource_timer->update();
 
+	if(!indexes_only) {
 // Age resource pixmaps for deletion
-	if(!indexes_only)
 		for(int i = 0; i < gui->resource_pixmaps.total; i++)
 			gui->resource_pixmaps.values[i]->visible--;
-
-	if(mode == FORCE_REDRAW)
-		gui->resource_pixmaps.remove_all_objects();
-
+	}
 	if(debug) PRINT_TRACE
 	if(mode != IGNORE_THREAD)
 		gui->resource_thread->reset(pane->number, indexes_only);
@@ -978,12 +975,9 @@ ResourcePixmap* TrackCanvas::create_pixmap(Edit *edit,
 	if(!result)
 	{
 //SET_TRACE
-		result = new ResourcePixmap(mwindow,
-			gui,
-			edit,
-			pane->number,
-			pixmap_w,
-			pixmap_h);
+		result = new ResourcePixmap(mwindow, gui, edit, pane->number, pixmap_w, pixmap_h);
+		set_bg_color(BLACK);
+		clear_box(0,0, pixmap_w,pixmap_h, result);
 //SET_TRACE
 		gui->resource_pixmaps.append(result);
 	}
@@ -2240,7 +2234,8 @@ int TrackCanvas::do_keyframes(int cursor_x,
 // track context menu to appear
 	int result = 0;
 	EDLSession *session = mwindow->edl->session;
-	int gang = session->gang_tracks != GANG_NONE || get_double_click() ? 1 : 0;
+	int gang = mwindow->edl->local_session->gang_tracks != GANG_NONE ||
+			get_double_click() ? 1 : 0;
 
 	static BC_Pixmap *auto_pixmaps[AUTOMATION_TOTAL] =
 	{
@@ -5105,6 +5100,8 @@ int TrackCanvas::do_plugin_handles(int cursor_x,
 int TrackCanvas::do_transition_handles(int cursor_x, int cursor_y, int button_press,
 		int &rerender, int &update_overlay, int &new_cursor, int &update_cursor)
 {
+	if( !mwindow->edl->session->auto_conf->transitions )
+		return 0;
 	Transition *trans_result = 0;
 	int result = 0;
 

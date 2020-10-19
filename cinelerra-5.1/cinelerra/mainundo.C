@@ -198,11 +198,9 @@ int MainUndo::undo()
 	}
 	if( current ) {
 // Set the redo text to the current description
-		if( mwindow->gui ) {
-			UndoStackItem *next = NEXT;
-			mwindow->gui->mainmenu->redo->
-				update_caption(next ? next->get_description() : "");
-		}
+		UndoStackItem *next = NEXT;
+		mwindow->gui->mainmenu->redo->
+			update_caption(next ? next->get_description() : "");
 		char *current_data = current->get_data();
 		if( current_data ) {
 			FileXML file;

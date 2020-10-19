@@ -333,7 +333,7 @@ int Tracks::delete_track(Track *track, int gang)
 {
 	if( !track ) return 0;
 	if( gang < 0 )
-		gang = edl->session->gang_tracks != GANG_NONE ? 1 : 0;
+		gang = edl->local_session->gang_tracks != GANG_NONE ? 1 : 0;
 	Track *nxt = track->next;
 	if( gang ) {
 		track = track->gang_master();
@@ -363,7 +363,7 @@ int Tracks::detach_shared_effects(int module)
 } 
 int Tracks::detach_ganged_effects(Plugin *plugin)
 {
-	if( edl->session->gang_tracks == GANG_NONE ) return 1;
+	if( edl->local_session->gang_tracks == GANG_NONE ) return 1;
 	for( Track *current=first; current; current=NEXT ) {
 		if( current == plugin->track ) continue;
 		if( !current->armed_gang(plugin->track) ) continue;
@@ -385,7 +385,7 @@ int Tracks::total_of(int type)
 		IntAuto *mute_auto = (IntAuto *)mute_keyframe;
 
 		result +=
-			(current->play && type == PLAY) ||
+			(current->plays() && type == PLAY) ||
 			(current->is_armed() && type == RECORD) ||
 			(current->is_ganged() && type == GANG) ||
 			(current->draw && type == DRAW) ||
@@ -420,7 +420,7 @@ int Tracks::playable_audio_tracks()
 
 	for(Track *current = first; current; current = NEXT)
 	{
-		if(current->data_type == TRACK_AUDIO && current->play)
+		if(current->data_type == TRACK_AUDIO && current->plays())
 		{
 			result++;
 		}
@@ -435,7 +435,7 @@ int Tracks::playable_video_tracks()
 
 	for(Track *current = first; current; current = NEXT)
 	{
-		if(current->data_type == TRACK_VIDEO && current->play)
+		if(current->data_type == TRACK_VIDEO && current->plays())
 		{
 			result++;
 		}
@@ -464,7 +464,7 @@ double Tracks::total_playable_length()
 	double total = 0;
 	for(Track *current = first; current; current = NEXT)
 	{
-		if( current->play )
+		if( current->plays() )
 		{
 			double length = current->get_length();
 			if(length > total) total = length;
@@ -745,7 +745,7 @@ int Tracks::new_group(int id)
 int Tracks::set_group_selected(int id, int v)
 {
 	int count = 0;
-	int gang = edl->session->gang_tracks != GANG_NONE ? 1 : 0;
+	int gang = edl->local_session->gang_tracks != GANG_NONE ? 1 : 0;
 	for( Track *track=first; track; track=track->next ) {
 		if( track->is_hidden() ) continue;
 		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {

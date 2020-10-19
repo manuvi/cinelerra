@@ -128,7 +128,6 @@ EDLSession::EDLSession(EDL *edl)
 	scrub_speed = 2.;
 	show_assets = 1;
 	show_titles = 1;
-	gang_tracks = GANG_NONE;
 	si_useduration = 1;
 	si_duration = 3;
 	test_playback_edits = 1;
@@ -323,7 +322,6 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 
 	show_assets = defaults->get("SHOW_ASSETS", 1);
 	show_titles = defaults->get("SHOW_TITLES", 1);
-	gang_tracks = defaults->get("GANG_TRACKS", GANG_NONE);
 //	test_playback_edits = defaults->get("TEST_PLAYBACK_EDITS", 1);
 	time_format = defaults->get("TIME_FORMAT", TIME_HMSF);
 	timecode_offset = defaults->get("TIMECODE_OFFSET", timecode_offset);
@@ -462,7 +460,6 @@ int EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->update("SI_DURATION",si_duration);
 	defaults->update("SHOW_ASSETS", show_assets);
 	defaults->update("SHOW_TITLES", show_titles);
-	defaults->update("GANG_TRACKS", gang_tracks);
 //	defaults->update("TEST_PLAYBACK_EDITS", test_playback_edits);
 	defaults->update("TIME_FORMAT", time_format);
 	defaults->update("TIMECODE_OFFSET", timecode_offset);
@@ -647,7 +644,6 @@ int EDLSession::load_xml(FileXML *file,
 		safe_regions = file->tag.get_property("SAFE_REGIONS", safe_regions);
 		show_assets = file->tag.get_property("SHOW_ASSETS", 1);
 		show_titles = file->tag.get_property("SHOW_TITLES", 1);
-		gang_tracks = file->tag.get_property("GANG_TRACKS", GANG_NONE);
 //		test_playback_edits = file->tag.get_property("TEST_PLAYBACK_EDITS", test_playback_edits);
 		time_format = file->tag.get_property("TIME_FORMAT", time_format);
 		timecode_offset = file->tag.get_property("TIMECODE_OFFSET", timecode_offset);
@@ -717,7 +713,6 @@ int EDLSession::save_xml(FileXML *file)
 	file->tag.set_property("SAFE_REGIONS", safe_regions);
 	file->tag.set_property("SHOW_ASSETS", show_assets);
 	file->tag.set_property("SHOW_TITLES", show_titles);
-	file->tag.set_property("GANG_TRACKS", gang_tracks);
 	file->tag.set_property("TEST_PLAYBACK_EDITS", test_playback_edits);
 	file->tag.set_property("TIME_FORMAT", time_format);
 	file->tag.set_property("TIMECODE_OFFSET", timecode_offset);
@@ -894,7 +889,6 @@ int EDLSession::copy(EDLSession *session)
 	si_duration = session->si_duration;
 	show_assets = session->show_assets;
 	show_titles = session->show_titles;
-	gang_tracks = session->gang_tracks;
 	test_playback_edits = session->test_playback_edits;
 	time_format = session->time_format;
 	timecode_offset = session->timecode_offset;

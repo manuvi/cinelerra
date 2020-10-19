@@ -65,7 +65,7 @@ int PlayableTracks::is_playable(Track *current_track, int64_t position,
 			result = 0;
 // Test play patch
 	if( result &&
-		!current_track->play )
+		!current_track->plays() )
 			result = 0;
 	if( result ) {
 		EDL *edl = current_track->edl;

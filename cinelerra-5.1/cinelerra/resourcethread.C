@@ -452,7 +452,8 @@ void ResourceVideoThread::do_video(VResourceThreadItem *item)
 			item->pixmap->draw_vframe(temp_picon2,
 				item->picon_x, item->picon_y,
 				item->picon_w, item->picon_h, 0, 0);
-			gui->update(0, IGNORE_THREAD, 0, 0, 0, 0, 0);
+			TimelinePane *pane = gui->pane[item->pane_number];
+		        if( pane ) pane->update(0, IGNORE_THREAD, 0, 0);
 		}
 	}
 

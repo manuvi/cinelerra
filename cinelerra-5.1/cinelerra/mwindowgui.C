@@ -299,14 +299,14 @@ void MWindowGUI::redraw_time_dependancies()
 int MWindowGUI::focus_in_event()
 {
 	for(int i = 0; i < TOTAL_PANES; i++)
-		if(pane[i]) pane[i]->cursor->focus_in_event();
+		if(pane[i] && pane[i]->cursor) pane[i]->cursor->focus_in_event();
 	return 1;
 }
 
 int MWindowGUI::focus_out_event()
 {
 	for(int i = 0; i < TOTAL_PANES; i++)
-		if(pane[i]) pane[i]->cursor->focus_out_event();
+		if(pane[i] && pane[i]->cursor) pane[i]->cursor->focus_out_event();
 	return 1;
 }
 
@@ -512,7 +512,7 @@ void MWindowGUI::deactivate_timeline()
 {
 	for(int i = 0; i < TOTAL_PANES; i++)
 	{
-		if(pane[i])
+		if(pane[i] && pane[i]->canvas)
 		{
 			pane[i]->canvas->deactivate();
 		}
@@ -534,7 +534,7 @@ void MWindowGUI::draw_overlays(int flash_it)
 {
 	for(int i = 0; i < TOTAL_PANES; i++)
 	{
-		if(pane[i])
+		if(pane[i] && pane[i]->canvas)
 		{
 			pane[i]->canvas->draw_overlays();
 			if(flash_it) pane[i]->canvas->flash();
@@ -591,7 +591,7 @@ void MWindowGUI::update_plugintoggles()
 {
 	for(int i = 0; i < TOTAL_PANES; i++)
 	{
-		if(pane[i])
+		if(pane[i] && pane[i]->canvas)
 		{
 			pane[i]->canvas->refresh_plugintoggles();
 		}
@@ -603,7 +603,7 @@ void MWindowGUI::draw_indexes(Indexable *indexable)
 {
 	for(int i = 0; i < TOTAL_PANES; i++)
 	{
-		if(pane[i])
+		if(pane[i] && pane[i]->canvas)
 		{
 			pane[i]->canvas->draw_indexes(indexable);
 		}
@@ -613,8 +613,11 @@ void MWindowGUI::draw_indexes(Indexable *indexable)
 void MWindowGUI::draw_canvas(int redraw, int hide_cursor)
 {
 	resource_thread->stop_draw(0);
-
-	int mode = redraw ? FORCE_REDRAW : NORMAL_DRAW;
+	int mode = NORMAL_DRAW;
+	if( redraw ) {
+		mode = FORCE_REDRAW;
+		resource_pixmaps.remove_all_objects();
+	}
 	for(int i = 0; i < TOTAL_PANES; i++) {
 		if( pane[i] )
 			pane[i]->canvas->draw(mode, hide_cursor);
@@ -627,7 +630,7 @@ void MWindowGUI::flash_canvas(int flush)
 {
 	for(int i = 0; i < TOTAL_PANES; i++)
 	{
-		if(pane[i])
+		if(pane[i] && pane[i]->canvas)
 		{
 			pane[i]->canvas->flash(flush);
 		}
@@ -646,7 +649,7 @@ void MWindowGUI::draw_cursor(int do_plugintoggles)
 {
 	for(int i = 0; i < TOTAL_PANES; i++)
 	{
-		if(pane[i])
+		if(pane[i] && pane[i]->cursor)
 		{
 			pane[i]->cursor->draw(do_plugintoggles);
 		}
@@ -657,7 +660,7 @@ void MWindowGUI::show_cursor(int do_plugintoggles)
 {
 	for(int i = 0; i < TOTAL_PANES; i++)
 	{
-		if(pane[i])
+		if(pane[i] && pane[i]->cursor)
 		{
 			pane[i]->cursor->show(do_plugintoggles);
 		}
@@ -668,7 +671,7 @@ void MWindowGUI::hide_cursor(int do_plugintoggles)
 {
 	for(int i = 0; i < TOTAL_PANES; i++)
 	{
-		if(pane[i])
+		if(pane[i] && pane[i]->cursor)
 		{
 			pane[i]->cursor->hide(do_plugintoggles);
 		}
@@ -679,7 +682,7 @@ void MWindowGUI::update_cursor()
 {
 	for(int i = 0; i < TOTAL_PANES; i++)
 	{
-		if(pane[i])
+		if(pane[i] && pane[i]->cursor)
 		{
 			pane[i]->cursor->update();
 		}
@@ -690,7 +693,7 @@ void MWindowGUI::set_playing_back(int value)
 {
 	for(int i = 0; i < TOTAL_PANES; i++)
 	{
-		if(pane[i])
+		if(pane[i] && pane[i]->cursor)
 		{
 			pane[i]->cursor->playing_back = value;
 		}
@@ -746,7 +749,7 @@ void MWindowGUI::set_editing_mode(int flush)
 {
 	for(int i = 0; i < TOTAL_PANES; i++)
 	{
-		if(pane[i])
+		if(pane[i] && pane[i]->canvas)
 		{
 			pane[i]->canvas->update_cursor(flush);
 		}
@@ -781,6 +784,9 @@ void MWindowGUI::update(int scrollbars,
 
 	if( do_canvas != NO_DRAW && do_canvas != IGNORE_THREAD )
 		resource_thread->stop_draw(1);
+
+	if( do_canvas == FORCE_REDRAW )
+		resource_pixmaps.remove_all_objects();
 
 	for(int i = 0; i < TOTAL_PANES; i++)
 	{
@@ -882,11 +888,9 @@ int MWindowGUI::drag_motion()
 
 	for(int i = 0; i < TOTAL_PANES; i++)
 	{
-		if(pane[i]) pane[i]->canvas->drag_motion(
-			&over_track,
-			&over_edit,
-			&over_pluginset,
-			&over_plugin);
+		if(pane[i] && pane[i]->canvas)
+			pane[i]->canvas->drag_motion(&over_track, &over_edit,
+					&over_pluginset, &over_plugin);
 	}
 
 	if(mwindow->session->track_highlighted != over_track)
@@ -943,8 +947,8 @@ int MWindowGUI::drag_stop()
 
 	for(int i = 0; i < TOTAL_PANES; i++)
 	{
-		if(pane[i]) result |= pane[i]->canvas->drag_stop(
-			&redraw);
+		if(pane[i] && pane[i]->canvas)
+			result |= pane[i]->canvas->drag_stop(&redraw);
 	}
 	mwindow->edl->optimize();
 
@@ -1048,7 +1052,8 @@ int MWindowGUI::repeat_event(int64_t duration)
 	int result = 0;
 	for(int i = 0; i < TOTAL_PANES; i++)
 	{
-		if(pane[i]) result = pane[i]->cursor->repeat_event(duration);
+		if(pane[i] && pane[i]->cursor)
+			result = pane[i]->cursor->repeat_event(duration);
 	}
 	return result;
 }

@@ -1793,8 +1793,8 @@ void Track::set_camera(float x, float y, float z)
 int Track::is_hidden()
 {
 	if( master ) return 0;
-	if( edl->session->gang_tracks == GANG_MEDIA ) return 1;
-	if( edl->session->gang_tracks == GANG_CHANNELS ) {
+	if( edl->local_session->gang_tracks == GANG_MEDIA ) return 1;
+	if( edl->local_session->gang_tracks == GANG_CHANNELS ) {
 		for( Track *track=previous; track; track=track->previous ) {
 			if( track->data_type == data_type ) return 1;
 			if( track->master ) return 0;
@@ -1806,13 +1806,13 @@ int Track::is_hidden()
 Track *Track::gang_master()
 {
 	Track *track = this;
-	switch( edl->session->gang_tracks ) {
+	switch( edl->local_session->gang_tracks ) {
 	case GANG_NONE:
 		return track;
 	case GANG_CHANNELS: {
 		Track *current = track;
 		int data_type = track->data_type;
-		while( current && !track->master ) {
+		while( current && !current->master ) {
 			if( !(current = current->previous) ) break;
 			if( current->data_type == data_type ) track = current;
 		}
@@ -1827,7 +1827,7 @@ Track *Track::gang_master()
 
 int Track::in_gang(Track *track)
 {
-	if( edl->session->gang_tracks == GANG_NONE ) return ganged;
+	if( edl->local_session->gang_tracks == GANG_NONE ) return ganged;
 	Track *current = this;
 	while( current && !current->master ) current = current->previous;
 	while( track && !track->master ) track = track->previous;
@@ -1846,7 +1846,7 @@ int Track::is_ganged()
 
 int Track::armed_gang(Track *track)
 {
-	if( edl->session->gang_tracks == GANG_NONE ) return ganged;
+	if( edl->local_session->gang_tracks == GANG_NONE ) return ganged;
 	Track *current = gang_master();
 	for(;;) {
 		if( track == current ) return 1;
@@ -1856,6 +1856,10 @@ int Track::armed_gang(Track *track)
 	return 1;
 }
 
+int Track::plays()
+{
+	return gang_master()->play;
+}
 
 int Track::index_in(Mixer *mixer)
 {

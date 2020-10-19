@@ -116,6 +116,8 @@ public:
 	int use_max;
 // mask solo track, or -1
 	int solo_track_id;
+// gang mode: none, channels, media
+	int gang_tracks;
 private:
 // The reason why selection ranges and inpoints have to be separate:
 // The selection position has to change to set new in points.

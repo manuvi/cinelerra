@@ -24,4 +24,9 @@
 
 class LocalSession;
 
+#define GANG_NONE  0
+#define GANG_CHANNELS 1
+#define GANG_MEDIA 2
+#define TOTAL_GANGS 3
+
 #endif

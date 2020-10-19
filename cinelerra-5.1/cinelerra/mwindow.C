@@ -1524,7 +1524,8 @@ void MWindow::tile_mixers()
 
 void MWindow::set_gang_tracks(int v)
 {
-	edl->session->gang_tracks = v;
+	edl->local_session->gang_tracks = v;
+	sync_parameters(CHANGE_PARAMS);
 	gui->update(1, 1, 0, 0, 1, 0, 0);
 	gui->flush();
 }

@@ -162,7 +162,7 @@ void EditPanel::update()
 			mwindow->edl->session->vwindow_click2play ;
 		click2play->set_value(value);
 	}
-	if( gang_tracks ) gang_tracks->update(mwindow->edl->session->gang_tracks);
+	if( gang_tracks ) gang_tracks->update(mwindow->edl->local_session->gang_tracks);
 	if( meters ) {
 		if( is_cwindow() ) {
 			meters->update(mwindow->edl->session->cwindow_meter);
@@ -1338,7 +1338,7 @@ EditPanelGangTracks::EditPanelGangTracks(MWindow *mwindow, EditPanel *panel,
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	int gang = mwindow->edl->session->gang_tracks;
+	int gang = mwindow->edl->local_session->gang_tracks;
 	set_tooltip(_(gang_tips[gang]));
 }
 
@@ -1353,7 +1353,7 @@ VFrame **EditPanelGangTracks::get_images(MWindow *mwindow)
 	gang_images[GANG_NONE] = mwindow->theme->get_image_set("gang0");
 	gang_images[GANG_MEDIA] = mwindow->theme->get_image_set("gang1");
 	gang_images[GANG_CHANNELS] = mwindow->theme->get_image_set("gang2");
-	int gang = mwindow->edl->session->gang_tracks;
+	int gang = mwindow->edl->local_session->gang_tracks;
 	return gang_images[gang];
 }
 
@@ -1366,7 +1366,7 @@ void EditPanelGangTracks::update(int gang)
 
 int EditPanelGangTracks::handle_event()
 {
-	int gang = mwindow->edl->session->gang_tracks;
+	int gang = mwindow->edl->local_session->gang_tracks;
 	if( !shift_down() ) {
 		if( ++gang > GANG_MEDIA ) gang = GANG_NONE;
 	}

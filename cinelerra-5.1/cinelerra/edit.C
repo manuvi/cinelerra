@@ -236,7 +236,7 @@ void Edit::detach_transition()
 {
 	delete transition;
 	transition = 0;
-	if( edl->session->gang_tracks == GANG_NONE ) return;
+	if( edl->local_session->gang_tracks == GANG_NONE ) return;
 	double pos = track->from_units(startproject);
 	Track *current = edl->tracks->first;
 	for( ; current; current=current->next ) {
@@ -264,7 +264,7 @@ void Edit::set_selected(int v)
 {
 	if( !group_id ) {
 		if( v < 0 ) v = !is_selected ? 1 : 0;
-		int gang = edl->session->gang_tracks != GANG_NONE ? 1 : 0;
+		int gang = edl->local_session->gang_tracks != GANG_NONE ? 1 : 0;
 		select_affected_edits(v, gang);
 	}
 	else

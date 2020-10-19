@@ -779,7 +779,7 @@ void MWindow::insert_effects_canvas(Track *dest_track, double start, double leng
 
 	ArrayList<SharedLocation> shared_locations;
 	PluginSet *pluginset = session->pluginset_highlighted;
-	int gang = edl->session->gang_tracks != GANG_NONE ? 1 : 0;
+	int gang = edl->local_session->gang_tracks != GANG_NONE ? 1 : 0;
 	int data_type = dest_track->data_type;
 	int first_track = 1;
 

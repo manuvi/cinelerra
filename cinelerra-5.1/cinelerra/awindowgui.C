@@ -2879,6 +2879,18 @@ int AWindowAssets::selection_changed()
 
 		deactivate_selection();
 	}
+	else if( get_button_down() && get_buttonpress() == LEFT_BUTTON &&
+		 get_double_click() ) {
+		item = (AssetPicon*)get_selection(0, 0);
+		if( item ) {
+			switch( folder ) {
+			case AW_LABEL_FOLDER:
+				if( !item->label ) break;
+				mwindow->set_position(item->label->position);
+				break;
+			}
+		}
+	}
 	else if( get_button_down() && !gui->play_off &&
 		 mwindow->edl->session->assetlist_format != ASSETS_TEXT ) {
 		item = (AssetPicon*)get_selection(0, 0);

@@ -76,6 +76,7 @@ LocalSession::LocalSession(EDL *edl)
 	zoom_atrack = 0;
 	zoom_vtrack = 0;
 	x_pane = y_pane = -1;
+	gang_tracks = GANG_NONE;
 
 	for(int i = 0; i < TOTAL_PANES; i++) {
 		view_start[i] = 0;
@@ -101,6 +102,7 @@ LocalSession::LocalSession(EDL *edl)
 	red_max = green_max = blue_max = 0;
 	use_max = 0;
 	solo_track_id = -1;
+	gang_tracks = GANG_NONE;
 }
 
 LocalSession::~LocalSession()
@@ -142,6 +144,7 @@ void LocalSession::copy_from(LocalSession *that)
 	blue_max = that->blue_max;
 	use_max = that->use_max;
 	solo_track_id = that->solo_track_id;
+	gang_tracks = that->gang_tracks;
 
 	for (int i = 0; i < AUTOGROUPTYPE_COUNT; i++) {
 		automation_mins[i] = that->automation_mins[i];
@@ -196,6 +199,8 @@ void LocalSession::save_xml(FileXML *file, double start)
 	file->tag.set_property("GREEN_MAX", green_max);
 	file->tag.set_property("BLUE_MAX", blue_max);
 	file->tag.set_property("USE_MAX", use_max);
+	file->tag.set_property("GANG_TRACKS", gang_tracks);
+
 
 	for (int i = 0; i < AUTOGROUPTYPE_COUNT; i++) {
 		if (!Automation::autogrouptypes_fixedrange[i]) {
@@ -234,6 +239,7 @@ void LocalSession::synchronize_params(LocalSession *that)
 	blue_max = that->blue_max;
 	if( solo_track_id < 0 || that->solo_track_id < 0 )
 		solo_track_id = that->solo_track_id;
+	gang_tracks = that->gang_tracks;
 }
 
 
@@ -293,7 +299,7 @@ void LocalSession::load_xml(FileXML *file, unsigned long load_flags)
 		green_max = file->tag.get_property("GREEN_MAX", green_max);
 		blue_max = file->tag.get_property("BLUE_MAX", blue_max);
 		use_max = file->tag.get_property("USE_MAX", use_max);
-
+		gang_tracks = file->tag.get_property("GANG_TRACKS", gang_tracks);
 		for (int i = 0; i < AUTOGROUPTYPE_COUNT; i++) {
 			if (!Automation::autogrouptypes_fixedrange[i]) {
 				automation_mins[i] = file->tag.get_property(xml_autogrouptypes_titlesmin[i],automation_mins[i]);
@@ -360,6 +366,7 @@ int LocalSession::load_defaults(BC_Hash *defaults)
 	green_max = defaults->get("GREEN_MAX", 0.0);
 	blue_max = defaults->get("BLUE_MAX", 0.0);
 	use_max = defaults->get("USE_MAX", 0);
+	gang_tracks = defaults->get("GANG_TRACKS", GANG_NONE);
 
 	for (int i = 0; i < AUTOGROUPTYPE_COUNT; i++) {
 		if (!Automation::autogrouptypes_fixedrange[i]) {
@@ -397,6 +404,7 @@ int LocalSession::save_defaults(BC_Hash *defaults)
 	defaults->update("GREEN_MAX", green_max);
 	defaults->update("BLUE_MAX", blue_max);
 	defaults->update("USE_MAX", use_max);
+	defaults->update("GANG_TRACKS", gang_tracks);
 
 	for (int i = 0; i < AUTOGROUPTYPE_COUNT; i++) {
 		if (!Automation::autogrouptypes_fixedrange[i]) {

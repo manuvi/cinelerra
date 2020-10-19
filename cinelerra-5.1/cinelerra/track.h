@@ -176,6 +176,7 @@ public:
 	int is_ganged();
 	int armed_gang(Track *track);
 	int index_in(Mixer *mixer);
+	int plays();
 
 	EDL *edl;
 	Tracks *tracks;

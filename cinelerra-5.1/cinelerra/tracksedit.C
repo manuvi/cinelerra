@@ -386,7 +386,7 @@ void Tracks::set_transition_length(Transition *transition, double length)
 		}
 	}
 	if( !found ) return;
-	if( edl->session->gang_tracks == GANG_NONE ) return;
+	if( edl->local_session->gang_tracks == GANG_NONE ) return;
 	Track *track = transition->edit->track;
 	double pos = track->from_units(transition->edit->startproject);
 	Track *current = edl->tracks->first;
@@ -558,7 +558,7 @@ int Tracks::delete_tracks()
 {
 	int total_deleted = 0;
 	int done = 0;
-	int gang = edl->session->gang_tracks != GANG_NONE ? 1 : 0;
+	int gang = edl->local_session->gang_tracks != GANG_NONE ? 1 : 0;
 
 	while( !done ) {
 		done = 1;
@@ -757,7 +757,7 @@ int Tracks::concatenate_tracks(int edit_plugins, int edit_autos)
 			input_track = input_track->next)
 		{
 			if(input_track->data_type == data_type &&
-				input_track->play &&
+				input_track->plays() &&
 				!input_track->is_armed()) break;
 		}
 
@@ -783,7 +783,7 @@ int Tracks::concatenate_tracks(int edit_plugins, int edit_autos)
 
 					if(input_track->data_type == data_type &&
 						!input_track->is_armed() &&
-						input_track->play) break;
+						input_track->plays()) break;
 				}
 
 				for(output_track = output_track->next;
@@ -856,7 +856,7 @@ int Tracks::roll_track_up(Track *track)
 	if( first == last ) return 1;
 	int n = 1;
 	Track *src = track, *dst = src->previous;
-	if( edl->session->gang_tracks != GANG_NONE ) {
+	if( edl->local_session->gang_tracks != GANG_NONE ) {
 		while( src && !src->master ) src = src->previous;
 		if( !src ) src = first;
 		Track *nxt = src->next;
@@ -874,7 +874,7 @@ int Tracks::roll_track_down(Track *track)
 	if( first == last ) return 1;
 	int n = 1;
 	Track *src = track, *dst = src->next;
-	if( edl->session->gang_tracks != GANG_NONE ) {
+	if( edl->local_session->gang_tracks != GANG_NONE ) {
 		while( src && !src->master ) src = src->previous;
 		if( !src ) src = first;
 		Track *nxt = src->next;
@@ -900,7 +900,7 @@ int Tracks::roll_tracks_up()
 	if( first == last ) return 1;
 	int n = 1;
 	Track *src = first, *dst = 0;
-	if( edl->session->gang_tracks != GANG_NONE ) {
+	if( edl->local_session->gang_tracks != GANG_NONE ) {
 		Track *nxt = src->next;
 		while( nxt && !nxt->master ) { ++n;  nxt = nxt->next; }
 	}
@@ -914,7 +914,7 @@ int Tracks::roll_tracks_down()
 	if( first == last ) return 1;
 	int n = 1;
 	Track *src = last, *dst = first;
-	if( edl->session->gang_tracks != GANG_NONE ) {
+	if( edl->local_session->gang_tracks != GANG_NONE ) {
 		while( src && !src->master ) { ++n;  src = src->previous; }
 	}
 	if( src == dst ) return 1;
@@ -1108,7 +1108,7 @@ void Tracks::paste_automation(double selectionstart,
 void Tracks::paste_transition(PluginServer *server, Edit *dest_edit)
 {
 	dest_edit->insert_transition(server->title);
-	if( edl->session->gang_tracks == GANG_NONE ) return;
+	if( edl->local_session->gang_tracks == GANG_NONE ) return;
 	Track *track = dest_edit->track;
 	double pos = track->from_units(dest_edit->startproject);
 	for( Track *current=first; current; current=current->next ) {
