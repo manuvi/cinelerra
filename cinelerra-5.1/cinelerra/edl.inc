@@ -182,4 +182,8 @@ class EDL;
 #define INSERT_EFFECTS_EXTRA 5
 #define INSERT_EFFECTS_MASTER 6
 
+#define PROXY_INACTIVE 0
+#define PROXY_ACTIVE   1
+#define PROXY_DISABLED 2
+
 #endif

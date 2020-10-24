@@ -164,7 +164,7 @@ public:
 	int program_no;
 	int playback_software_position;
 // current settings are scaled this much from the original settings
-        int proxy_scale;
+        int proxy_scale, proxy_state;
 // original proxy_scale when proxy_enable disables/enables proxy
 	int proxy_disabled_scale;
 // upscale geom from proxy to session on read in

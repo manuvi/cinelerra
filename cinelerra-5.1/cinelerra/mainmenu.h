@@ -35,6 +35,7 @@
 #include "module.inc"
 #include "new.inc"
 #include "plugindialog.inc"
+#include "proxy.inc"
 #include "quit.inc"
 #include "record.inc"
 #include "render.inc"
@@ -176,6 +177,7 @@ public:
 	MixerItems *mixer_items;
 	LoadLayout *load_layout;
 	LoadLayout *save_layout;
+	ProxyMenuItem *proxy;
 };
 
 // ========================================= edit

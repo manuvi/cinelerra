@@ -101,6 +101,7 @@ EDLSession::EDLSession(EDL *edl)
 	playback_buffer = 4096;
 	playback_cursor_visible = 0;
 	playback_preload = 0;
+	proxy_state = PROXY_INACTIVE;
 	proxy_scale = 1;
 	proxy_disabled_scale = 1;
 	proxy_use_scaler = 0;
@@ -179,6 +180,7 @@ int EDLSession::need_rerender(EDLSession *ptr)
 		(subtitle_number != ptr->subtitle_number) ||
 		(interpolate_raw != ptr->interpolate_raw) ||
 		(white_balance_raw != ptr->white_balance_raw) ||
+		(proxy_state != ptr->proxy_state) ||
 		(proxy_disabled_scale != ptr->proxy_disabled_scale) ||
 		(proxy_scale != ptr->proxy_scale) ||
 	 	(proxy_use_scaler != ptr->proxy_use_scaler) ||
@@ -196,6 +198,7 @@ void EDLSession::equivalent_output(EDLSession *session, double *result)
 	    session->white_balance_raw != white_balance_raw ||
 	    session->decode_subtitles != decode_subtitles ||
 	    session->subtitle_number != subtitle_number ||
+	    session->proxy_state != proxy_state ||
 	    session->proxy_disabled_scale != proxy_disabled_scale ||
 	    session->proxy_scale != proxy_scale ||
 	    session->proxy_use_scaler != proxy_use_scaler )
@@ -570,6 +573,11 @@ int EDLSession::load_video_config(FileXML *file, int append_mode, uint32_t load_
 	proxy_disabled_scale = file->tag.get_property("PROXY_DISABLED_SCALE", proxy_disabled_scale);
 	proxy_use_scaler = file->tag.get_property("PROXY_USE_SCALER", proxy_use_scaler);
 	proxy_auto_scale = file->tag.get_property("PROXY_AUTO_SCALE", proxy_auto_scale);
+	proxy_state = file->tag.get_property("PROXY_STATE", -1);
+	if( proxy_state < 0 )  // convert older edl
+		proxy_state = proxy_scale != 1 ? PROXY_ACTIVE :
+			proxy_disabled_scale != 1 ? PROXY_DISABLED :
+			PROXY_INACTIVE;
 	return 0;
 }
 
@@ -762,6 +770,7 @@ int EDLSession::save_video_config(FileXML *file)
 	file->tag.set_property("OUTPUTH", output_h);
 	file->tag.set_property("ASPECTW", aspect_w);
 	file->tag.set_property("ASPECTH", aspect_h);
+	file->tag.set_property("PROXY_STATE", proxy_state);
 	file->tag.set_property("PROXY_SCALE", proxy_scale);
 	file->tag.set_property("PROXY_DISABLED_SCALE", proxy_disabled_scale);
 	file->tag.set_property("PROXY_USE_SCALER", proxy_use_scaler);
@@ -908,6 +917,7 @@ int EDLSession::copy(EDLSession *session)
 	vwindow_meter = session->vwindow_meter;
 	vwindow_zoom = session->vwindow_zoom;
 	vwindow_click2play = session->vwindow_click2play;
+	proxy_state = session->proxy_state;
 	proxy_scale = session->proxy_scale;
 	proxy_disabled_scale = session->proxy_disabled_scale;
 	proxy_use_scaler = session->proxy_use_scaler;
@@ -928,13 +938,12 @@ void EDLSession::dump()
 	printf("EDLSession::dump\n");
 	printf("    audio_tracks=%d audio_channels=%d sample_rate=%jd\n"
 		"    video_tracks=%d frame_rate=%f output_w=%d output_h=%d aspect_w=%f aspect_h=%f\n"
-		"    decode subtitles=%d subtitle_number=%d label_cells=%d program_no=%d\n"
-		"    proxy scale=%d\n disabled_scale=%d, use_scaler=%d, auto_scale=%d\n"
-		"    proxy_beep=%f render_beep=%f\n",
-		audio_tracks, audio_channels, sample_rate, video_tracks,
-		frame_rate, output_w, output_h, aspect_w, aspect_h,
-		decode_subtitles, subtitle_number, label_cells, program_no,
-		proxy_scale, proxy_disabled_scale, proxy_use_scaler, proxy_auto_scale,
-		proxy_beep, render_beep);
+		"    decode subtitles=%d subtitle_number=%d label_cells=%d program_no=%d render_beep=%f\n"
+		"    proxy_* auto_scale=%d state=%d scale=%d disabled_scale=%d use_scaler=%d beep=%f\n",
+		audio_tracks, audio_channels, sample_rate,
+		video_tracks, frame_rate, output_w, output_h, aspect_w, aspect_h,
+		decode_subtitles, subtitle_number, label_cells, program_no, render_beep,
+		proxy_auto_scale, proxy_state, proxy_scale, proxy_disabled_scale,
+		proxy_use_scaler, proxy_beep);
 }
 

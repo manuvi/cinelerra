@@ -1836,18 +1836,20 @@ int Track::in_gang(Track *track)
 
 int Track::is_armed()
 {
-	return gang_master()->armed;
+	return armed && gang_master()->armed;
 }
 
 int Track::is_ganged()
 {
-	return gang_master()->ganged;
+	return ganged && gang_master()->ganged;
 }
 
 int Track::armed_gang(Track *track)
 {
+	if( !track->ganged ) return 0;
 	if( edl->local_session->gang_tracks == GANG_NONE ) return ganged;
 	Track *current = gang_master();
+	if( !current->ganged ) return 0;
 	for(;;) {
 		if( track == current ) return 1;
 		current = current->next;
@@ -1858,7 +1860,7 @@ int Track::armed_gang(Track *track)
 
 int Track::plays()
 {
-	return gang_master()->play;
+	return play && gang_master()->play;
 }
 
 int Track::index_in(Mixer *mixer)

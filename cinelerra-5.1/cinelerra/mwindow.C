@@ -2302,6 +2302,7 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 	      load_mode == LOADMODE_REPLACE_CONCATENATE ) &&
 	    (ftype != FILE_IS_XML || edl_mode != LOADMODE_EDL_CLIP) ) {
 		select_asset(0, 0);
+		edl->session->proxy_state = PROXY_INACTIVE;
 		edl->session->proxy_scale = 1;
 		edl->session->proxy_disabled_scale = 1;
 		edl->session->proxy_use_scaler = 0;
@@ -2319,8 +2320,8 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 		goto_start();
 	}
 
-	if( ( edl->session->proxy_auto_scale && edl->session->proxy_scale != 1 ) &&
-	    ( load_mode != LOADMODE_REPLACE && load_mode != LOADMODE_REPLACE_CONCATENATE ) ) {
+	if( edl->session->proxy_state != PROXY_INACTIVE && edl->session->proxy_auto_scale &&
+	    load_mode != LOADMODE_REPLACE && load_mode != LOADMODE_REPLACE_CONCATENATE ) {
 		ArrayList<Indexable *> orig_idxbls;
 		for( int i=0; i<new_assets.size(); ++i )
 			orig_idxbls.append(new_assets.get(i));
@@ -2425,8 +2426,7 @@ int MWindow::render_proxy(ArrayList<Indexable *> &new_idxbls)
 int MWindow::enable_proxy()
 {
 	int ret = 0;
-	if( edl->session->proxy_scale == 1 &&
-	    edl->session->proxy_disabled_scale != 1 ) {
+	if( edl->session->proxy_state == PROXY_DISABLED ) {
 		int new_scale = edl->session->proxy_disabled_scale;
 		int new_use_scaler = edl->session->proxy_use_scaler;
 		Asset *asset = new Asset;
@@ -2439,6 +2439,7 @@ int MWindow::enable_proxy()
 			beep(2000., 1.5, gain);
 		}
 		edl->session->proxy_disabled_scale = 1;
+		edl->session->proxy_state = PROXY_ACTIVE;
 		gui->lock_window("MWindow::to_proxy");
 		update_project(LOADMODE_REPLACE);
 		gui->unlock_window();
@@ -2448,15 +2449,15 @@ int MWindow::enable_proxy()
 
 int MWindow::disable_proxy()
 {
-	if( edl->session->proxy_scale != 1 &&
-	    edl->session->proxy_disabled_scale == 1 ) {
-		int old_scale = edl->session->proxy_scale, new_scale = 1;
+	if( edl->session->proxy_state == PROXY_ACTIVE ) {
+		int old_scale = edl->session->proxy_scale, new_scale = 0;
 		int new_use_scaler = edl->session->proxy_use_scaler;
 		Asset *asset = new Asset;
 		asset->format = FILE_FFMPEG;
 		asset->load_defaults(defaults, "PROXY_", 1, 1, 0, 0, 0);
 		to_proxy(asset, new_scale, new_use_scaler);
 		asset->remove_user();
+		edl->session->proxy_state = PROXY_DISABLED;
 		edl->session->proxy_disabled_scale = old_scale;
 		gui->lock_window("MWindow::to_proxy");
 		update_project(LOADMODE_REPLACE);
@@ -2473,7 +2474,7 @@ int MWindow::to_proxy(Asset *asset, int new_scale, int new_use_scaler)
 	edl->Garbage::add_user();
 	save_backup();
 	undo_before(_("proxy"), this);
-	int asset_scale = new_scale == 1 ? 0 :
+	int asset_scale = !new_scale ? 0 :
 			!new_use_scaler ? 1 : new_scale;
 	ProxyRender proxy_render(this, asset, asset_scale);
 
@@ -2481,7 +2482,7 @@ int MWindow::to_proxy(Asset *asset, int new_scale, int new_use_scaler)
 // remove all session proxy assets at the at the current proxy_scale
 	int proxy_scale = edl->session->proxy_scale;
 
-	if( proxy_scale > 1 ) {
+	if( edl->session->proxy_state == PROXY_ACTIVE ) {
 		Asset *orig_asset = edl->assets->first;
 		for( ; orig_asset; orig_asset=orig_asset->next ) {
 			char new_path[BCTEXTLEN];
@@ -2520,7 +2521,7 @@ int MWindow::to_proxy(Asset *asset, int new_scale, int new_use_scaler)
 		}
 
 // convert from the proxy assets to the original assets
-		edl->set_proxy(1, 0, &proxy_assets, &orig_idxbls);
+		edl->set_proxy(0, 0, &proxy_assets, &orig_idxbls);
 
 // remove the references
 		for( int i=0; i<proxy_assets.size(); ++i ) {
@@ -2541,7 +2542,7 @@ int MWindow::to_proxy(Asset *asset, int new_scale, int new_use_scaler)
 	confirm_paths.set_array_delete();
 
 // convert to new size if not original size
-	if( new_scale != 1 ) {
+	if( new_scale ) {
 		FileSystem fs;
 		Asset *orig = edl->assets->first;
 		for( ; orig; orig=orig->next ) {
@@ -2569,7 +2570,10 @@ int MWindow::to_proxy(Asset *asset, int new_scale, int new_use_scaler)
 				proxy_render.add_needed(orig_nested, proxy);
 			}
 		}
+		edl->session->proxy_state = PROXY_ACTIVE;
 	}
+	else
+		edl->session->proxy_state = PROXY_INACTIVE;
 
 	int result = 0;
 // test for existing files
@@ -2578,13 +2582,13 @@ int MWindow::to_proxy(Asset *asset, int new_scale, int new_use_scaler)
 		confirm_paths.remove_all_objects();
 	}
 
-	if( !result )
+	if( !result && new_scale )
 		result = proxy_render.create_needed_proxies(new_scale);
 
-	if( !result ) // resize project
+	if( !result ) { // resize project
 		edl->set_proxy(new_scale, new_use_scaler,
 			&proxy_render.orig_idxbls, &proxy_render.orig_proxies);
-
+	}
 	undo_after(_("proxy"), LOAD_ALL);
 	edl->Garbage::remove_user();
 	restart_brender();
@@ -3437,8 +3441,9 @@ int MWindow::get_hash_color(Edit *edit)
 		(Indexable*)edit->asset : (Indexable*)edit->nested_edl;
 	if( !idxbl ) return 0;
 	char path[BCTEXTLEN];
-	if( !edit->asset || edit->track->data_type != TRACK_VIDEO ||
-	    edl->session->proxy_scale == 1 ||
+// map proxy colors to unproxy colors
+	if( edl->session->proxy_state != PROXY_ACTIVE ||
+	    !edit->asset || edit->track->data_type != TRACK_VIDEO ||
 	    ProxyRender::from_proxy_path(path, (Asset*)idxbl, edl->session->proxy_scale) )
 		strcpy(path, idxbl->path);
 	char *cp = strrchr(path, '/');

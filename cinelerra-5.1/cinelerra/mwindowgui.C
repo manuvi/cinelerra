@@ -56,6 +56,7 @@
 #include "pluginpopup.h"
 #include "pluginset.h"
 #include "preferences.h"
+#include "proxy.h"
 #include "record.h"
 #include "recordgui.h"
 #include "renderengine.h"
@@ -578,10 +579,9 @@ void MWindowGUI::update_patchbay()
 
 void MWindowGUI::update_proxy_toggle()
 {
-	int value = mwindow->edl->session->proxy_scale == 1 ? 1 : 0;
+	int value = mwindow->edl->session->proxy_state == PROXY_ACTIVE ? 0 : 1;
 	proxy_toggle->set_value(value);
-	if( mwindow->edl->session->proxy_scale == 1 &&
-	    mwindow->edl->session->proxy_disabled_scale == 1 )
+	if( mwindow->edl->session->proxy_state == PROXY_INACTIVE )
 		proxy_toggle->hide();
 	else
 		proxy_toggle->show();
@@ -2414,12 +2414,12 @@ ProxyToggle::ProxyToggle(MWindow *mwindow, MButtons *mbuttons, int x, int y)
  : BC_Toggle(x, y, ( !mwindow->edl->session->proxy_use_scaler ?
 			mwindow->theme->proxy_p_toggle :
 			mwindow->theme->proxy_s_toggle ),
-		mwindow->edl->session->proxy_disabled_scale != 1)
+		mwindow->edl->session->proxy_state == PROXY_DISABLED)
 {
 	this->mwindow = mwindow;
 	this->mbuttons = mbuttons;
 	scaler_images = mwindow->edl->session->proxy_use_scaler;
-	set_tooltip(mwindow->edl->session->proxy_disabled_scale==1 ?
+	set_tooltip(mwindow->edl->session->proxy_state!=PROXY_DISABLED ?
 		_("Disable proxy") : _("Enable proxy"));
 }
 
@@ -2455,6 +2455,12 @@ int ProxyToggle::handle_event()
 		mwindow->enable_proxy();
 	mwindow->gui->lock_window("ProxyToggle::handle_event");
 	set_tooltip(!disabled ? _("Disable proxy") : _("Enable proxy"));
+	ProxyDialog *dialog = mwindow->gui->mainmenu->proxy->dialog;
+	if( dialog && dialog->gui ) {
+		dialog->gui->lock_window("ProxyToggle::handle_event");
+		dialog->gui->update();
+		dialog->gui->unlock_window();
+	}
 	return 1;
 }
 

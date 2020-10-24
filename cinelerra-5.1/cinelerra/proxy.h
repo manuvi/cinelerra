@@ -29,7 +29,7 @@
 #include "bcdialog.h"
 #include "cache.inc"
 #include "file.inc"
-#include "formattools.inc"
+#include "formattools.h"
 #include "loadbalance.h"
 #include "mutex.inc"
 #include "mwindow.inc"
@@ -112,7 +112,8 @@ public:
 	int orig_scale, new_scale;
 	int use_scaler, auto_scale;
 	int orig_w, orig_h;
-	float beep;
+	int beeper_on;
+	float beeper_volume;
 	char *size_text[MAX_SIZES];
 	int size_factors[MAX_SIZES];
 	int total_sizes;
@@ -138,11 +139,19 @@ public:
 	ProxyWindow *pwindow;
 };
 
-class ProxyBeepOnDone : public BC_FPot
+class ProxyBeepOnDone : public BC_CheckBox
 {
 public:
 	ProxyBeepOnDone(ProxyWindow *pwindow, int x, int y);
-	void update();
+	int handle_event();
+
+	ProxyWindow *pwindow;
+};
+
+class ProxyBeepVolume : public BC_FSlider
+{
+public:
+	ProxyBeepVolume(ProxyWindow *pwindow, int x, int y);
 	int handle_event();
 
 	ProxyWindow *pwindow;
@@ -194,13 +203,16 @@ public:
 
 	MWindow *mwindow;
 	ProxyDialog *dialog;
+	BC_TitleBar *title_bar1, *title_bar2;
 	FormatTools *format_tools;
 	BC_Title *new_dimensions;
 	BC_Title *active_scale;
+	BC_Title *active_state;
 	ProxyMenu *scale_factor;
 	ProxyUseScaler *use_scaler;
 	ProxyAutoScale *auto_scale;
 	ProxyBeepOnDone *beep_on_done;
+	ProxyBeepVolume *beep_volume;
 };
 
 class ProxyFarm;

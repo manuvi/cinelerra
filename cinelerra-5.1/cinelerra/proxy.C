@@ -48,7 +48,7 @@
 #include "vrender.h"
 
 #define WIDTH xS(400)
-#define HEIGHT yS(330)
+#define HEIGHT yS(400)
 #define MAX_SCALE 16
 
 ProxyMenuItem::ProxyMenuItem(MWindow *mwindow)
@@ -92,9 +92,11 @@ ProxyDialog::ProxyDialog(MWindow *mwindow)
 
 	bzero(size_text, sizeof(char*) * MAX_SIZES);
 	bzero(size_factors, sizeof(int) * MAX_SIZES);
-	size_text[0] = cstrdup(_("Original size"));
-	size_factors[0] = 1;
-	total_sizes = 1;
+	size_text[0] = cstrdup(_("off"));
+	size_text[1] = cstrdup(_("1"));
+	size_factors[0] = 0;
+	size_factors[1] = 1;
+	total_sizes = 2;
 }
 
 ProxyDialog::~ProxyDialog()
@@ -131,12 +133,12 @@ void ProxyDialog::scale_to_text(char *string, int scale)
 
 void ProxyDialog::calculate_sizes()
 {
-	for( int i=1; i<total_sizes; ++i ) {
+	for( int i=2; i<total_sizes; ++i ) {
 		delete [] size_text[i];
 		size_text[i] = 0;
 		size_factors[i] = 0;
 	}
-	total_sizes = 1;
+	total_sizes = 2;
 
 	if( !use_scaler ) {
 // w,h should stay even for yuv
@@ -156,7 +158,7 @@ void ProxyDialog::calculate_sizes()
 		size_factors[total_sizes++] = 16;  size_factors[total_sizes++] = 24;
 		size_factors[total_sizes++] = 32;
 	}
-	for( int i=1; i<total_sizes; ++i ) {
+	for( int i=2; i<total_sizes; ++i ) {
 		char string[BCTEXTLEN];
 		sprintf(string, "1/%d", size_factors[i]);
 		size_text[i] = cstrdup(string);
@@ -165,25 +167,26 @@ void ProxyDialog::calculate_sizes()
 
 void ProxyDialog::handle_close_event(int result)
 {
+	gui = 0;
 	if( result ) return;
 	if( !File::renders_video(asset) ) {
 		eprintf(_("Specified format does not render video"));
 		return;
 	}
 	mwindow->edl->session->proxy_auto_scale = auto_scale;
-	mwindow->edl->session->proxy_beep = beep;
+	mwindow->edl->session->proxy_beep = beeper_volume;
 	asset->save_defaults(mwindow->defaults, "PROXY_", 1, 1, 0, 0, 0); 
 	result = mwindow->to_proxy(asset, new_scale, use_scaler);
-	if( result >= 0 && beep > 0 && new_scale != 1 ) {
+	if( result >= 0 && beeper_on && beeper_volume > 0 && new_scale >= 1 ) {
 		if( !result ) {
-			mwindow->beep(4000., 0.5, beep);
+			mwindow->beep(4000., 0.5, beeper_volume);
 			usleep(250000);
-			mwindow->beep(1000., 0.5, beep);
+			mwindow->beep(1000., 0.5, beeper_volume);
 			usleep(250000);
-			mwindow->beep(4000., 0.5, beep);
+			mwindow->beep(4000., 0.5, beeper_volume);
 		}
 		else
-			mwindow->beep(2000., 2.0, beep);
+			mwindow->beep(2000., 2.0, beeper_volume);
 	}
 	mwindow->edl->session->proxy_disabled_scale = 1;
 	mwindow->gui->lock_window("ProxyDialog::handle_close_event");
@@ -407,13 +410,17 @@ void ProxyWindow::create_objects()
 {
 	lock_window("ProxyWindow::create_objects");
 	int margin = mwindow->theme->widget_border;
-	int lmargin = margin + xS(10);
+	int xs10 = xS(10), x1 = xS(50);
+	int lmargin = margin + xs10;
+	int x = lmargin, y = margin+yS(10);
 
 	dialog->use_scaler = mwindow->edl->session->proxy_use_scaler;
 	dialog->orig_scale = mwindow->edl->session->proxy_scale;
 	dialog->auto_scale = mwindow->edl->session->proxy_auto_scale;
-	dialog->beep = mwindow->edl->session->proxy_beep;
-	dialog->new_scale = dialog->orig_scale;
+	dialog->beeper_on = mwindow->edl->session->proxy_beep > 0 ? 1 : 0;
+	dialog->beeper_volume = mwindow->edl->session->proxy_beep;
+	dialog->new_scale = mwindow->edl->session->proxy_state != PROXY_INACTIVE ?
+		dialog->orig_scale : 0;
 	dialog->orig_w = mwindow->edl->session->output_w;
 	dialog->orig_h = mwindow->edl->session->output_h;
 	if( !dialog->use_scaler ) {
@@ -421,48 +428,59 @@ void ProxyWindow::create_objects()
 		dialog->orig_h *= dialog->orig_scale;
 	}
 
-	int x = lmargin;
-	int y = margin+yS(10);
-	add_subwindow(use_scaler = new ProxyUseScaler(this, x, y));
-	y += use_scaler->get_h() + margin;
+	add_subwindow(title_bar1 = new BC_TitleBar(xs10, y, get_w()-xS(30), xS(20), xs10,
+		_("Scaling options")));
+	y += title_bar1->get_h() + 3*margin;
 
 	BC_Title *text;
+	x = lmargin;
 	add_subwindow(text = new BC_Title(x, y, _("Scale factor:")));
-	x += text->get_w() + margin;
-
-	int popupmenu_w = BC_PopupMenu::calculate_w(get_text_width(MEDIUMFONT, dialog->size_text[0])+xS(15));
+	int popupmenu_w = BC_PopupMenu::calculate_w(get_text_width(MEDIUMFONT, dialog->size_text[0])+xS(25));
+	x += text->get_w() + 2*margin;
 	add_subwindow(scale_factor = new ProxyMenu(mwindow, this, x, y, popupmenu_w, ""));
 	scale_factor->update_sizes();
-	x += scale_factor->get_w() + margin;
-
+	x += popupmenu_w + margin;
 	ProxyTumbler *tumbler;
 	add_subwindow(tumbler = new ProxyTumbler(mwindow, this, x, y));
 	y += tumbler->get_h() + margin;
 
-	x = lmargin;
-	add_subwindow(text = new BC_Title(x, y, _("New media dimensions: ")));
+	x = x1;
+	add_subwindow(text = new BC_Title(x, y, _("Media size: ")));
 	x += text->get_w() + margin;
 	add_subwindow(new_dimensions = new BC_Title(x, y, ""));
 	y += new_dimensions->get_h() + margin;
 
-	x = lmargin;
+	x = x1;
 	add_subwindow(text = new BC_Title(x, y, _("Active Scale: ")));
 	x += text->get_w() + margin;
 	add_subwindow(active_scale = new BC_Title(x, y, ""));
+	x += xS(64);
+	add_subwindow(text = new BC_Title(x, y, _("State: ")));
+	x += text->get_w() + margin;
+	add_subwindow(active_state = new BC_Title(x, y, ""));
 	y += active_scale->get_h() + margin;
 
-	x = lmargin;  y += yS(25);
+	add_subwindow(use_scaler = new ProxyUseScaler(this, x1, y));
+	y += use_scaler->get_h() + margin;
+	add_subwindow(auto_scale = new ProxyAutoScale(this, x1, y));
+	y += auto_scale->get_h() + 2*margin;
+
+	x = lmargin;  y += yS(15);
 	format_tools = new ProxyFormatTools(mwindow, this, dialog->asset);
 	format_tools->create_objects(x, y, 0, 1, 0, 0, 0, 1, 0, 1, // skip the path
 		0, 0);
 
+	y += margin;
+	add_subwindow(title_bar2 = new BC_TitleBar(xs10, y, get_w()-xS(30), xS(20), xs10,
+		_("Beep on Done")));
+	y += title_bar2->get_h() + 3*margin;
+
 	x = lmargin;
-	add_subwindow(auto_scale = new ProxyAutoScale(this, x, y));
-	y += auto_scale->get_h() + margin;
+	add_subwindow(text = new BC_Title(x, y, _("Volume:")));
+	x += text->get_w() + 2*margin;
 	add_subwindow(beep_on_done = new ProxyBeepOnDone(this, x, y));
 	x += beep_on_done->get_w() + margin + xS(10);
-	add_subwindow(new BC_Title(x, y+yS(10), _("Beep on done volume")));
-//	y += beep_on_done->get_h() + margin;
+	add_subwindow(beep_volume = new ProxyBeepVolume(this, x, y));
 
 	update();
 
@@ -488,25 +506,38 @@ void ProxyFormatTools::update_format()
 void ProxyWindow::update()
 {
 	char string[BCSTRLEN];
-	int new_w = dialog->orig_w / dialog->new_scale;
+	dialog->scale_to_text(string, dialog->new_scale);
+	scale_factor->set_text(string);
+	int new_scale = dialog->new_scale;
+	if( new_scale < 1 ) new_scale = 1;
+	int new_w = dialog->orig_w / new_scale;
 	if( new_w & 1 ) ++new_w;
-	int new_h = dialog->orig_h / dialog->new_scale;
+	int new_h = dialog->orig_h / new_scale;
 	if( new_h & 1 ) ++new_h;
 	sprintf(string, "%dx%d", new_w, new_h);
 	new_dimensions->update(string);
-	dialog->scale_to_text(string, dialog->new_scale);
-	scale_factor->set_text(string);
 	use_scaler->update();
 	auto_scale->update();
-	int scale = mwindow->edl->session->proxy_scale;
-	if( scale == 1 ) scale = mwindow->edl->session->proxy_disabled_scale;
+	int scale = mwindow->edl->session->proxy_state == PROXY_ACTIVE ?
+			mwindow->edl->session->proxy_scale :
+		mwindow->edl->session->proxy_state == PROXY_DISABLED ?
+			mwindow->edl->session->proxy_disabled_scale : 1;
 	sprintf(string, scale>1 ? "1/%d" : "%d", scale);
 	active_scale->update(string);
+	const char *state = "";
+	switch( mwindow->edl->session->proxy_state ) {
+	case PROXY_INACTIVE: state = _("Off");  break;
+	case PROXY_ACTIVE:   state = _("Active");    break;
+	case PROXY_DISABLED: state = _("Disabled");  break;
+	}
+	active_state->update(state);
+	beep_on_done->update(dialog->beeper_on);
+	beep_volume->update(dialog->beeper_volume*100.f);
 }
 
 
 ProxyUseScaler::ProxyUseScaler(ProxyWindow *pwindow, int x, int y)
- : BC_CheckBox(x, y, pwindow->dialog->use_scaler, _("Use scaler   (FFMPEG only)"))
+ : BC_CheckBox(x, y, pwindow->dialog->use_scaler, _("Don't resize project (FFMPEG only)"))
 {
 	this->pwindow = pwindow;
 }
@@ -539,11 +570,11 @@ ProxyAutoScale::ProxyAutoScale(ProxyWindow *pwindow, int x, int y)
 void ProxyAutoScale::update()
 {
 	ProxyDialog *dialog = pwindow->dialog;
-	if( dialog->new_scale == 1 ) dialog->auto_scale = 0;
+	int can_auto_scale = dialog->new_scale >= 1 ? 1 : 0;
+	if( !can_auto_scale ) dialog->auto_scale = 0;
 	BC_CheckBox::update(dialog->auto_scale);
-	int can_auto_proxy = dialog->new_scale != 1 ? 1 : 0;
-	if( !can_auto_proxy &&  enabled ) disable();
-	if( can_auto_proxy  && !enabled ) enable();
+	if( !can_auto_scale &&  enabled ) disable();
+	if( can_auto_scale  && !enabled ) enable();
 }
 
 int ProxyAutoScale::handle_event()
@@ -554,14 +585,28 @@ int ProxyAutoScale::handle_event()
 }
 
 ProxyBeepOnDone::ProxyBeepOnDone(ProxyWindow *pwindow, int x, int y)
- : BC_FPot(x, y, pwindow->dialog->beep*100.f, 0.f, 100.f)
+ : BC_CheckBox(x, y, pwindow->dialog->beeper_on)
 {
 	this->pwindow = pwindow;
 }
 
 int ProxyBeepOnDone::handle_event()
 {
-	pwindow->dialog->beep = get_value()/100.f;
+	pwindow->dialog->beeper_on = get_value();
+	return 1;
+}
+
+ProxyBeepVolume::ProxyBeepVolume(ProxyWindow *pwindow, int x, int y)
+ : BC_FSlider(x, y, 0, xS(160), xS(160), 0.f, 100.f,
+		pwindow->dialog->beeper_volume*100.f, 0)
+{
+	this->pwindow = pwindow;
+}
+
+int ProxyBeepVolume::handle_event()
+{
+	pwindow->dialog->beeper_volume = get_value()/100.f;
+	pwindow->dialog->beeper_on = pwindow->dialog->beeper_volume>0 ? 1 : 0;
 	pwindow->update();
 	return 1;
 }

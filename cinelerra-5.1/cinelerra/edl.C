@@ -1675,26 +1675,29 @@ void EDL::set_proxy(int new_scale, int new_use_scaler,
 	ArrayList<Indexable*> *orig_assets, ArrayList<Indexable*> *proxy_assets)
 {
 	int orig_scale = session->proxy_scale;
-	session->proxy_scale = new_scale;
+	int proxy_scale = new_scale;
+	if( !proxy_scale ) proxy_scale = 1;
+	session->proxy_scale = proxy_scale;
 	int orig_use_scaler = session->proxy_use_scaler;
 	session->proxy_use_scaler = new_use_scaler;
 	if( orig_use_scaler ) orig_scale = 1;
-	int scale = new_use_scaler ? new_scale : 1;
-	int asset_scale = new_scale == 1 && !new_use_scaler ? 0 : scale;
+	int scale = new_use_scaler ? proxy_scale : 1;
+	int asset_scale = !new_scale ? 0 : !new_use_scaler ? 1 : scale;
 // change original assets to proxy assets
-	int folder_no = new_use_scaler || new_scale != 1 ? AW_PROXY_FOLDER : AW_MEDIA_FOLDER;
+	int folder_no = !new_use_scaler && !new_scale ? AW_MEDIA_FOLDER : AW_PROXY_FOLDER;
 	for( int i=0,n=proxy_assets->size(); i<n; ++i ) {
 		Indexable *proxy_idxbl = proxy_assets->get(i);
 		proxy_idxbl->folder_no = folder_no;
 		if( !proxy_idxbl->is_asset ) continue;
 		Asset *proxy_asset = assets->update((Asset *)proxy_idxbl);
+		proxy_asset->proxy_scale = asset_scale;
+		if( !new_scale ) continue;  // in case geom resized
 		proxy_asset->width = proxy_asset->actual_width * scale;
 		proxy_asset->height = proxy_asset->actual_height * scale;
-		proxy_asset->proxy_scale = asset_scale;
 	}
 // rescale to full size asset in read_frame
-	if( new_use_scaler ) new_scale = 1;
-	rescale_proxy(orig_scale, new_scale);
+	if( new_use_scaler ) proxy_scale = 1;
+	rescale_proxy(orig_scale, proxy_scale);
 
 // replace track contents
 	for( Track *track=tracks->first; track; track=track->next ) {
@@ -1738,7 +1741,7 @@ void EDL::set_proxy(int new_scale, int new_use_scaler,
 			}
 		}
 		if( has_proxy && !orig_use_scaler )
-			clip->rescale_proxy(orig_scale, new_scale);
+			clip->rescale_proxy(orig_scale, proxy_scale);
 	}
 }
 

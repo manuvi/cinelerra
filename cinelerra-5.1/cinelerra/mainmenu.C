@@ -223,7 +223,6 @@ void MainMenu::create_objects()
 
 	settingsmenu->add_item(new SetFormat(mwindow));
 	settingsmenu->add_item(preferences = new PreferencesMenuitem(mwindow));
-	ProxyMenuItem *proxy;
 	settingsmenu->add_item(proxy = new ProxyMenuItem(mwindow));
 	proxy->create_objects();
 	ConvertMenuItem *convert;

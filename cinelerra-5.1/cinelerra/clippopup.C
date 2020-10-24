@@ -439,10 +439,10 @@ ClipPopupToMedia::~ClipPopupToMedia()
 
 int ClipPopupToMedia::handle_event()
 {
-	if( mwindow->edl->session->proxy_scale == 1 )
+	if( mwindow->edl->session->proxy_state != PROXY_ACTIVE )
 		mwindow->clip_to_media();
 	else
-		eprintf("Nesting not allowed when proxy scale != 1");
+		eprintf("Nesting not allowed when proxy active");
 	return 1;
 }
 
