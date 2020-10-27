@@ -28,8 +28,12 @@
 #include "editpanel.inc"
 
 class ManualGoto;
+class ManualGotoKeyItem;
+class ManualGotoDirection;
+class ManualGotoUnitItem;
+class ManualGotoUnits;
+class ManualGotoText;
 class ManualGotoWindow;
-class ManualGotoNumber;
 
 class ManualGoto : public BC_DialogThread
 {
@@ -39,13 +43,60 @@ public:
 
 	EditPanel *panel;
 	MWindow *mwindow;
-	ManualGotoWindow *gotowindow;
+	ManualGotoWindow *window;
 
 	BC_Window *new_gui();
 	void handle_done_event(int result);
 
 };
 
+class ManualGotoKeyItem : public BC_MenuItem
+{
+public:
+	ManualGotoKeyItem(ManualGotoDirection *popup,
+		const char *text, const char *htxt);
+	int handle_event();
+
+	ManualGotoDirection *popup;
+	const char *htxt;
+};
+
+class ManualGotoDirection : public BC_PopupMenu
+{
+public:
+	ManualGotoDirection(ManualGotoWindow *window, int x, int y, int w);
+	void create_objects();
+
+	ManualGotoWindow *window;
+};
+
+class ManualGotoUnitItem : public BC_MenuItem
+{
+public:
+	ManualGotoUnitItem(ManualGotoUnits *popup, int type);
+	int handle_event();
+
+	ManualGotoUnits *popup;
+	int type;
+};
+
+class ManualGotoUnits : public BC_PopupMenu
+{
+public:
+	ManualGotoUnits(ManualGotoWindow *window, int x, int y, int w);
+	void create_objects();
+
+	ManualGotoWindow *window;
+};
+
+
+class ManualGotoText : public BC_TextBox
+{
+public:
+	ManualGotoText(ManualGotoWindow *window, int x, int y, int w);
+	int keypress_event();
+	ManualGotoWindow *window;
+};
 
 class ManualGotoWindow : public BC_Window
 {
@@ -54,32 +105,15 @@ public:
 	~ManualGotoWindow();
 
 	void create_objects();
-	void reset_data(double position);
-	double get_new_position();
-	void update_position(double position);
+	void update(double position);
+	void update();
 
 	ManualGoto *mango;
-	BC_Title *signtitle;
-	ManualGotoNumber *hours;
-	ManualGotoNumber *minutes;
-	ManualGotoNumber *seconds;
-	ManualGotoNumber *msecs;
-};
-
-
-
-class ManualGotoNumber : public BC_TextBox
-{
-public:
-	ManualGotoNumber(ManualGotoWindow *window, int x, int y, int w,
-		int max, const char *format);
-	int handle_event();
-	ManualGotoWindow *window;
-	int keypress_event();
-	void update(int64_t number);
-
-	int min, max;
-	const char *format;
+	int time_format;
+	BC_Title *format_text;
+	ManualGotoDirection *direction;
+	ManualGotoUnits *units;
+	ManualGotoText *time_text;
 };
 
 #endif

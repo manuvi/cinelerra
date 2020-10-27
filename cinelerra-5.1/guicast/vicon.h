@@ -24,7 +24,6 @@ public:
 
 class VIFrame {
 	unsigned char *img_data;
-	VFrame *vfrm;
 public:
 	VIFrame(int ww, int hh, int vcmdl) {
 		int size = BC_CModels::calculate_datasize(ww, hh, -1, vcmdl);
@@ -32,8 +31,7 @@ public:
 		vfrm = new VFrame(img_data, -1, ww, hh, vcmdl, -1);
 	}
 	~VIFrame() { delete vfrm;  delete [] img_data; }
-
-	operator VFrame *() { return vfrm; }
+	VFrame *vfrm;
 };
 
 class VIcon
@@ -53,7 +51,7 @@ public:
 	void init_audio(int audio_size);
 
 	virtual int64_t set_seq_no(int64_t no) { return seq_no = no; }
-	virtual VFrame *frame() { return *images[seq_no]; }
+	virtual VFrame *frame() { return images[seq_no]->vfrm; }
 	virtual int get_vx() { return 0; }
 	virtual int get_vy() { return 0; }
 	virtual void load_audio() {}

@@ -68,7 +68,8 @@ void ResizeVTrackThread::start_window(int w, int h, int w1, int h1)
 	}
 	this->w = w;    this->h = h;
 	this->w1 = w1;  this->h1 = h1;
-	w_scale = h_scale = 1;
+	w_scale = (float)w / w1;
+	h_scale = (float)h / h1;
 	start();
 }
 
@@ -96,7 +97,7 @@ void ResizeVTrackThread::run()
 #endif
 }
 
-#define RSZ_W xS(320)
+#define RSZ_W xS(330)
 #define RSZ_H yS(120)
 
 ResizeVTrackWindow::ResizeVTrackWindow(MWindow *mwindow,
@@ -142,6 +143,8 @@ void ResizeVTrackWindow::create_objects()
 	add_subwindow(w_scale = new ResizeVTrackScaleW(this, thread, x1, y1));
 	add_subwindow(new BC_Title(x2, y1, _("x")));
 	add_subwindow(h_scale = new ResizeVTrackScaleH(this, thread, x3, y1));
+	x = x3 + h_scale->get_w() + xs5;
+	add_subwindow(reset = new ResizeReset(this, thread, x, y1));
 
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
@@ -151,29 +154,21 @@ void ResizeVTrackWindow::create_objects()
 	unlock_window();
 }
 
-void ResizeVTrackWindow::update(int changed_scale,
-	int changed_size,
-	int changed_all)
+void ResizeVTrackWindow::update(int changed_scale, int changed_size)
 {
-//printf("ResizeVTrackWindow::update %d %d %d\n", changed_scale, changed_size, changed_all);
-	if(changed_scale || changed_all)
-	{
+	if( changed_scale ) {
 		thread->w = (int)(thread->w1 * thread->w_scale);
 		w->update((int64_t)thread->w);
 		thread->h = (int)(thread->h1 * thread->h_scale);
 		h->update((int64_t)thread->h);
 	}
-	else
-	if(changed_size || changed_all)
-	{
+	if( changed_size ) {
 		thread->w_scale = thread->w1 ? (double)thread->w / thread->w1 : 1.;
 		w_scale->update((float)thread->w_scale);
 		thread->h_scale = thread->h1 ? (double)thread->h / thread->h1 : 1.;
 		h_scale->update((float)thread->h_scale);
 	}
 }
-
-
 
 
 
@@ -197,7 +192,7 @@ int ResizeVTrackSwap::handle_event()
 	thread->h = w;
 	gui->w->update((int64_t)h);
 	gui->h->update((int64_t)w);
-	gui->update(0, 1, 0);
+	gui->update(0, 1);
 	return 1;
 }
 
@@ -218,7 +213,7 @@ ResizeVTrackWidth::ResizeVTrackWidth(ResizeVTrackWindow *gui,
 int ResizeVTrackWidth::handle_event()
 {
 	thread->w = atol(get_text());
-	gui->update(0, 1, 0);
+	gui->update(0, 1);
 	return 1;
 }
 
@@ -234,7 +229,7 @@ ResizeVTrackHeight::ResizeVTrackHeight(ResizeVTrackWindow *gui,
 int ResizeVTrackHeight::handle_event()
 {
 	thread->h = atol(get_text());
-	gui->update(0, 1, 0);
+	gui->update(0, 1);
 	return 1;
 }
 
@@ -251,7 +246,7 @@ ResizeVTrackScaleW::ResizeVTrackScaleW(ResizeVTrackWindow *gui,
 int ResizeVTrackScaleW::handle_event()
 {
 	thread->w_scale = atof(get_text());
-	gui->update(1, 0, 0);
+	gui->update(1, 0);
 	return 1;
 }
 
@@ -267,11 +262,28 @@ ResizeVTrackScaleH::ResizeVTrackScaleH(ResizeVTrackWindow *gui,
 int ResizeVTrackScaleH::handle_event()
 {
 	thread->h_scale = atof(get_text());
-	gui->update(1, 0, 0);
+	gui->update(1, 0);
 	return 1;
 }
 
 
+ResizeReset::ResizeReset(ResizeVTrackWindow *gui,
+	ResizeVTrackThread *thread, int x, int y)
+ : BC_Button(x, y, thread->mwindow->theme->get_image_set("reset_button"))
+{
+	this->gui = gui;
+	this->thread = thread;
+	set_tooltip(_("Reset"));
+}
+int ResizeReset::handle_event()
+{
+	thread->w = thread->w1;
+	thread->h = thread->h1;
+	thread->w_scale = 1;
+	thread->h_scale = 1;
+	gui->update(1, 1);
+	return 1;
+}
 
 
 

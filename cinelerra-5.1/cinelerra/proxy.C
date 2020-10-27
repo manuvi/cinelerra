@@ -537,7 +537,7 @@ void ProxyWindow::update()
 
 
 ProxyUseScaler::ProxyUseScaler(ProxyWindow *pwindow, int x, int y)
- : BC_CheckBox(x, y, pwindow->dialog->use_scaler, _("Don't resize project (FFMPEG only)"))
+ : BC_CheckBox(x, y, pwindow->dialog->use_scaler, _("Rescaled to project size (FFMPEG only)"))
 {
 	this->pwindow = pwindow;
 }
@@ -562,7 +562,7 @@ int ProxyUseScaler::handle_event()
 }
 
 ProxyAutoScale::ProxyAutoScale(ProxyWindow *pwindow, int x, int y)
- : BC_CheckBox(x, y, pwindow->dialog->auto_scale, _("Auto proxy/scale media loads"))
+ : BC_CheckBox(x, y, pwindow->dialog->auto_scale, _("Creation of proxy on media loading"))
 {
 	this->pwindow = pwindow;
 }

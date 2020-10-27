@@ -21,13 +21,16 @@
 
 #include "bcdisplayinfo.h"
 #include "editpanel.h"
+#include "edl.h"
+#include "edlsession.h"
+#include "keys.h"
 #include "language.h"
 #include "manualgoto.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
-#include "keys.h"
+#include "theme.h"
 
-#define MGT_W xS(250)
+#define MGT_W xS(285)
 #define MGT_H yS(80)
 
 ManualGoto::ManualGoto(MWindow *mwindow, EditPanel *panel)
@@ -35,7 +38,7 @@ ManualGoto::ManualGoto(MWindow *mwindow, EditPanel *panel)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	gotowindow = 0;
+	window = 0;
 }
 
 ManualGoto::~ManualGoto()
@@ -48,20 +51,23 @@ BC_Window *ManualGoto::new_gui()
 	BC_DisplayInfo dpy_info;
 	int x = dpy_info.get_abs_cursor_x() - MGT_W / 2;
 	int y = dpy_info.get_abs_cursor_y() - MGT_H / 2;
-	gotowindow = new ManualGotoWindow(this, x, y);
-	gotowindow->create_objects();
-	double position = panel->get_position();
-	gotowindow->reset_data(position);
-	gotowindow->show_window();
-	return gotowindow;
+	window = new ManualGotoWindow(this, x, y);
+	window->create_objects();
+	window->show_window();
+	return window;
 }
 
 void ManualGoto::handle_done_event(int result)
 {
 	if( result ) return;
 	double current_position = panel->get_position();
-	double new_position = gotowindow->get_new_position();
-	char modifier = gotowindow->signtitle->get_text()[0];
+	const char *text = window->time_text->get_text();
+	double new_position = Units::text_to_seconds(text,
+			mwindow->edl->session->sample_rate,
+			window->time_format,
+			mwindow->edl->session->frame_rate,
+			mwindow->edl->session->frames_per_foot);
+	char modifier = window->direction->get_text()[0];
 	switch( modifier ) {
 	case '+':  new_position = current_position + new_position;  break;
 	case '-':  new_position = current_position - new_position;  break;
@@ -71,7 +77,6 @@ void ManualGoto::handle_done_event(int result)
 	panel->set_position(new_position);
 	panel->subwindow->unlock_window();
 }
-
 
 ManualGotoWindow::ManualGotoWindow(ManualGoto *mango, int x, int y)
  : BC_Window(_(PROGRAM_NAME ": Goto position"), x, y,
@@ -84,111 +89,129 @@ ManualGotoWindow::~ManualGotoWindow()
 {
 }
 
-void ManualGotoWindow::reset_data(double position)
+
+ManualGotoText::ManualGotoText(ManualGotoWindow *window, int x, int y, int w)
+ : BC_TextBox(x, y, w, 1, "")
 {
-	lock_window("ManualGotoWindow::reset_data");
-	update_position(position);
-	signtitle->update("=");
-	unlock_window();
+	this->window = window;
 }
 
-double ManualGotoWindow::get_new_position()
+int ManualGotoText::keypress_event()
 {
-	int64_t hh = atoi(hours->get_text());
-	int mm = atoi(minutes->get_text());
-	int ss = atoi(seconds->get_text());
-	int ms = atoi(msecs->get_text());
-
-	double seconds = ((((hh * 60) + mm) * 60) + ss) + (1.0 * ms) / 1000;
-	return seconds;
+        int key = get_keypress();
+        if( key == '+' || key == '-' || key == '=' ) {
+		char text[2];  text[0] = key;  text[1] = 0;
+                window->direction->set_text(text);
+                return 1;
+        }
+	if( key == RETURN ) {
+		unlock_window();
+		window->mango->handle_done_event(0);
+		lock_window("ManualGotoText::handle_event");
+                return 1;
+	}
+	return BC_TextBox::keypress_event();
 }
 
-void ManualGotoWindow::update_position(double position)
+void ManualGotoWindow::update(double position)
 {
-	if( position < 0 ) position = 0;
-	int64_t pos = position;
-	int64_t hour = (pos / 3600);
-	int minute = (pos / 60 - hour * 60);
-	int second = pos - hour * 3600 - minute * 60;
-	int thousandths = ((int64_t)(position * 1000)) % 1000;
+	MWindow *mwindow = mango->mwindow;
+	format_text->update(Units::timetype_toformat(time_format));
+	char string[BCSTRLEN];
+	Units::totext(string, position, time_format,
+		mwindow->edl->session->sample_rate,
+		mwindow->edl->session->frame_rate,
+		mwindow->edl->session->frames_per_foot,
+		mwindow->get_timecode_offset());
+	time_text->update(string);
+}
 
-	hours->update((int)hour);
-	minutes->update(minute);
-	seconds->update(second);
-	msecs->update(thousandths);
+void ManualGotoWindow::update()
+{
+	double position = mango->panel->get_position();
+	update(position);
+}
+
+ManualGotoKeyItem::ManualGotoKeyItem(ManualGotoDirection *popup,
+		const char *text, const char *htxt)
+ : BC_MenuItem(text, htxt, htxt[0])
+{
+	this->popup = popup;
+	this->htxt = htxt;
+}
+
+int ManualGotoKeyItem::handle_event()
+{
+	popup->set_text(htxt);
+	return 1;
+}
+
+ManualGotoDirection::ManualGotoDirection(ManualGotoWindow *window,
+	int x, int y, int w)
+ : BC_PopupMenu(x, y, w, "=", -1, 0, 1)
+{
+	this->window = window;
+}
+
+void ManualGotoDirection::create_objects()
+{
+	add_item(new ManualGotoKeyItem(this, _("Forward"),  "+"));
+	add_item(new ManualGotoKeyItem(this, _("Position"), "="));
+	add_item(new ManualGotoKeyItem(this, _("Reverse"),  "-"));
+}
+
+ManualGotoUnitItem::ManualGotoUnitItem(ManualGotoUnits *popup, int type)
+ : BC_MenuItem(Units::timetype_toformat(type))
+{
+	this->popup = popup;
+	this->type = type;
+}
+
+int ManualGotoUnitItem::handle_event()
+{
+	popup->window->time_format = type;
+	popup->window->update();
+	return 1;
+}
+
+ManualGotoUnits::ManualGotoUnits(ManualGotoWindow *window, int x, int y, int w)
+ : BC_PopupMenu(x, y, w, "", 1, 0, 0)
+{
+	this->window = window;
+}
+
+void ManualGotoUnits::create_objects()
+{
+	add_item(new ManualGotoUnitItem(this, TIME_HMS));
+	add_item(new ManualGotoUnitItem(this, TIME_HMSF));
+	add_item(new ManualGotoUnitItem(this, TIME_TIMECODE));
+	add_item(new ManualGotoUnitItem(this, TIME_FRAMES));
+	add_item(new ManualGotoUnitItem(this, TIME_SAMPLES));
+	add_item(new ManualGotoUnitItem(this, TIME_SAMPLES_HEX));
+	add_item(new ManualGotoUnitItem(this, TIME_SECONDS));
+	add_item(new ManualGotoUnitItem(this, TIME_FEET_FRAMES));
 }
 
 void ManualGotoWindow::create_objects()
 {
 	lock_window("ManualGotoWindow::create_objects");
-	int x = xS(76), y = yS(5);
-
-	BC_Title *title = new BC_Title(x - 2, y, _("hour  min     sec     msec"), SMALLFONT);
-	add_subwindow(title);  y += title->get_h() + 3;
-
-	signtitle = new BC_Title(x - xS(17), y, "=", LARGEFONT);
-	add_subwindow(signtitle);
-	hours = new ManualGotoNumber(this, x, y, xS(16), 9, "%i");
-	add_subwindow(hours);    x += hours->get_w() + 4;
-	minutes = new ManualGotoNumber(this, x, y, xS(26), 59, "%02i");
-	add_subwindow(minutes);  x += minutes->get_w() + 4;
-	seconds = new ManualGotoNumber(this, x, y, xS(26), 59, "%02i");
-	add_subwindow(seconds);  x += seconds->get_w() + 4;
-	msecs = new ManualGotoNumber(this, x, y, xS(34), 999, "%03i");
-	add_subwindow(msecs);
-	y += hours->get_h() + yS(10);
-
+	MWindow *mwindow = mango->mwindow;
+	time_format = mwindow->edl->session->time_format;
+	int margin = mwindow->theme->widget_border;
+	int x = xS(10) + BC_OKButton::calculate_w() + margin, y = yS(10);
+	int pop_w = xS(24), x1 = x + pop_w + margin;
+	add_subwindow(format_text = new BC_Title(x1, y, ""));
+	y += format_text->get_h() + margin;
+	add_subwindow(direction = new ManualGotoDirection(this, x, y, pop_w));
+	direction->create_objects();
+	int tw = get_w() - x1 - xS(10) - BC_CancelButton::calculate_w() - margin - pop_w - margin;
+	add_subwindow(time_text = new ManualGotoText(this, x1, y, tw));
+	x1 += time_text->get_w() + margin;
+	add_subwindow(units = new ManualGotoUnits(this, x1, y, pop_w));
+	units->create_objects();
+	update();
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
 	unlock_window();
 }
-
-
-ManualGotoNumber::ManualGotoNumber(ManualGotoWindow *window, int x, int y, int w,
-	int max, const char *format)
- : BC_TextBox(x, y, w, 1, "")
-{
-	this->window = window;
-	this->max = max;
-	this->format = format;
-}
-
-int ManualGotoNumber::handle_event()
-{
-	return 1;
-}
-
-void ManualGotoNumber::update(int64_t v)
-{
-	char text[BCTEXTLEN];
-	if( v < 0 ) v = atoll(get_text());
-	if( v > max ) v = max;
-	sprintf(text, format, v);
-	BC_TextBox::update(text);
-}
-
-int ManualGotoNumber::keypress_event()
-{
-	int key = get_keypress();
-	if( key == '+' || key == '-' || key == '=' ) {
-		window->signtitle->update(key);
-		return 1;
-	}
-	if( key == '.' || key == TAB ) {
-		window->cycle_textboxes(1);
-		return 1;
-	}
-
-	int chars = 1, m = max;
-	while( (m /= 10) > 0 ) ++chars;
-	int in_textlen = strlen(get_text());
-	if( in_textlen >= chars )
-		BC_TextBox::update("");
-	int result = BC_TextBox::keypress_event();
-	int out_textlen = strlen(get_text());
-	if( out_textlen >= chars && get_ibeam_letter() >= chars )
-		window->cycle_textboxes(1);
-	return result;
-}
-
 

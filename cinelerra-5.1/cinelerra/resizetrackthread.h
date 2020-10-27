@@ -120,6 +120,16 @@ public:
 	ResizeVTrackThread *thread;
 };
 
+class ResizeReset : public BC_Button
+{
+public:
+	ResizeReset(ResizeVTrackWindow *gui,
+		ResizeVTrackThread *thread, int x, int y);
+	int handle_event();
+	ResizeVTrackWindow *gui;
+	ResizeVTrackThread *thread;
+};
+
 
 class ResizeVTrackWindow : public BC_Window
 {
@@ -131,9 +141,7 @@ public:
 	~ResizeVTrackWindow();
 
 	void create_objects();
-	void update(int changed_scale,
-		int changed_size,
-		int changed_all);
+	void update(int changed_scale, int changed_size);
 
 	MWindow *mwindow;
 	ResizeVTrackThread *thread;
@@ -141,6 +149,7 @@ public:
 	ResizeVTrackHeight *h;
 	ResizeVTrackScaleW *w_scale;
 	ResizeVTrackScaleH *h_scale;
+	ResizeReset *reset;
 };
 
 

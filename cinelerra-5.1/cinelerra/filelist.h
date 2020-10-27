@@ -58,6 +58,7 @@ public:
 
 	int read_list_header();
 	virtual int read_frame_header(char *path) { return 1; };
+	int can_scale_input() { return 1; }
 	int read_frame(VFrame *frame);
 
 // subclass returns whether the asset format is a list or single file

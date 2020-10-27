@@ -35,8 +35,7 @@ void VIcon::
 add_image(VFrame *frm, int ww, int hh, int vcmdl)
 {
 	VIFrame *vifrm = new VIFrame(ww, hh, vcmdl);
-	VFrame *img = *vifrm;
-	img->transfer_from(frm);
+	vifrm->vfrm->transfer_from(frm);
 	images.append(vifrm);
 }
 
@@ -437,10 +436,11 @@ void VIcon::dump(const char *dir)
 {
 	mkdir(dir,0777);
 	for( int i=0; i<images.size(); ++i ) {
+		VFrame *vfrm = images[i]->vfrm;
+		if( !vfrm ) continue;
 		char fn[1024];  sprintf(fn,"%s/img%05d.png",dir,i);
 		printf("\r%s",fn);
-		VFrame *img = *images[i];
-		img->write_png(fn);
+		vfrm->write_png(fn);
 	}
 	printf("\n");
 }

@@ -55,6 +55,8 @@
 #define TIME_HMS2__STR         "h:mm:ss"
 #define TIME_HMS3__STR         "hh:mm:ss"
 #define TIME_HMSF__STR         "h:mm:ss:ff"
+#define TIME_MS1__STR          "m:ss"
+#define TIME_MS2__STR          "+m:ss"
 #define TIME_TIMECODE__STR     "timecode"
 #define TIME_SAMPLES__STR      "audio samples"
 #define TIME_SAMPLES_HEX__STR  "audio samples (hex)"
@@ -157,8 +159,8 @@ public:
 	static void init();
 	static void finit();
 
-	static int timeformat_totype(char *tcf);
-
+	static int timeformat_totype(const char *tcf);
+	static const char *timetype_toformat(int type);
 // No rounding.
 	static float toframes(int64_t samples, int sample_rate, float framerate);
 // Round up if > .5

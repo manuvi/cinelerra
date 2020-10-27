@@ -321,7 +321,7 @@ int64_t Units::fromtext(const char *text, int samplerate, int time_format,
 	case TIME_HMS3: {
 		hours = get_int64(text);    skip_seperators(text);
 		minutes = get_int64(text);  skip_seperators(text);
-		seconds = get_int64(text);
+		seconds = get_double(text);
 		total_seconds = seconds + minutes*60 + hours*3600;
 		break; }
 
@@ -330,7 +330,7 @@ int64_t Units::fromtext(const char *text, int samplerate, int time_format,
 		hours = get_int64(text);    skip_seperators(text);
 		minutes = get_int64(text);  skip_seperators(text);
 		seconds = get_int64(text);  skip_seperators(text);
-		frames = get_int64(text);
+		frames = get_double(text);
 		total_seconds = frames/frame_rate + seconds + minutes*60 + hours*3600;
 		if( time_format == TIME_TIMECODE )
 			total_seconds -= timecode_offset;
@@ -382,8 +382,26 @@ double Units::text_to_seconds(const char *text, int samplerate, int time_format,
 
 
 
+const char *Units::timetype_toformat(int type)
+{
+	switch( type ) {
+	case TIME_HMS:		return TIME_HMS__STR;
+	case TIME_HMSF:		return TIME_HMSF__STR;
+	case TIME_SAMPLES:	return TIME_SAMPLES__STR;
+	case TIME_SAMPLES_HEX:	return TIME_SAMPLES_HEX__STR;
+	case TIME_FRAMES:	return TIME_FRAMES__STR;
+	case TIME_FEET_FRAMES:	return TIME_FEET_FRAMES__STR;
+	case TIME_HMS2:		return TIME_HMS2__STR;
+	case TIME_HMS3:		return TIME_HMS3__STR;
+	case TIME_SECONDS:	return TIME_SECONDS__STR;
+	case TIME_MS1:		return TIME_MS1__STR;
+	case TIME_MS2:		return TIME_MS2__STR;
+	case TIME_TIMECODE:	return TIME_TIMECODE__STR;
+	}
+	return "(err)";
+}
 
-int Units::timeformat_totype(char *tcf)
+int Units::timeformat_totype(const char *tcf)
 {
 	if (!strcmp(tcf,TIME_SECONDS__STR)) return(TIME_SECONDS);
 	if (!strcmp(tcf,TIME_HMS__STR)) return(TIME_HMS);

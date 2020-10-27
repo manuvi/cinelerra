@@ -112,6 +112,7 @@ int FileList::open_file(int rd, int wr)
 //printf("FileList::open_file %d asset->path=%s\n", __LINE__, asset->path);
 			if(stream)
 			{
+				int width = asset->width, height = asset->height;
 				char string[BCTEXTLEN];
 				int len = strlen(list_prefix);
 				int ret = fread(string, 1, strlen(list_prefix), stream);
@@ -131,12 +132,17 @@ int FileList::open_file(int rd, int wr)
 				else
 					result = 1;
 				if( !result ) {
-					asset->actual_width = asset->width;
-					asset->actual_height = asset->height;
+                                        asset->actual_width = asset->width;
+                                        asset->actual_height = asset->height;
 					int scale = asset->proxy_scale;
-					if( !scale ) scale = 1;
-					asset->width = asset->actual_width * scale;
-					asset->height = asset->actual_height * scale;
+					if( scale ) {
+						asset->width = asset->actual_width * scale;
+						asset->height = asset->actual_height * scale;
+					}
+					else { // can_scale_input
+						if( width ) asset->width = width;
+	                                        if( height ) asset->height = height;
+					}
 					asset->layers = 1;
 					if( !asset->frame_rate )
 						asset->frame_rate = 10;
