@@ -98,6 +98,7 @@ MainSession::MainSession(MWindow *mwindow)
 	gwindow_x = gwindow_y = 0;
 	cswindow_x = cswindow_y = cswindow_w = cswindow_h = 0;
 	swindow_x = swindow_y = swindow_w = swindow_h = 0;
+	tile_mixers_x = tile_mixers_y = tile_mixers_w = tile_mixers_h = 0;
 	ewindow_w = ewindow_h = 0;
 	channels_x = channels_y = 0;
 	picture_x = picture_y = 0;
@@ -378,6 +379,11 @@ void MainSession::default_window_positions(int window_config)
 	swindow_w = xS(600);
 	swindow_h = yS(400);
 
+	tile_mixers_x = 1 + mwindow_x;
+	tile_mixers_y = 1;
+	tile_mixers_w = cwindow_x - tile_mixers_x;
+	tile_mixers_h = mwindow_y - tile_mixers_y;
+
 	batchrender_w = xS(750);
 	batchrender_h = yS(400);
 	batchrender_x = root_w / 2 - batchrender_w / 2;
@@ -484,6 +490,11 @@ int MainSession::load_defaults(BC_Hash *defaults)
 	rmonitor_y = defaults->get("RMONITOR_Y", rmonitor_y);
 	rmonitor_w = defaults->get("RMONITOR_W", rmonitor_w);
 	rmonitor_h = defaults->get("RMONITOR_H", rmonitor_h);
+
+	tile_mixers_x = defaults->get("TILE_MIXERS_X", 0);
+	tile_mixers_y = defaults->get("TILE_MIXERS_Y", 0);
+	tile_mixers_w = defaults->get("TILE_MIXERS_W", 0);
+	tile_mixers_h = defaults->get("TILE_MIXERS_H", 0);
 
 	batchrender_x = defaults->get("BATCHRENDER_X", batchrender_x);
 	batchrender_y = defaults->get("BATCHRENDER_Y", batchrender_y);
@@ -594,6 +605,11 @@ int MainSession::save_defaults(BC_Hash *defaults)
 	defaults->update("RMONITOR_Y", rmonitor_y);
 	defaults->update("RMONITOR_W", rmonitor_w);
 	defaults->update("RMONITOR_H", rmonitor_h);
+
+	defaults->update("TILE_MIXERS_X", tile_mixers_x);
+	defaults->update("TILE_MIXERS_Y", tile_mixers_y);
+	defaults->update("TILE_MIXERS_W", tile_mixers_w);
+	defaults->update("TILE_MIXERS_H", tile_mixers_h);
 
 	defaults->update("RWINDOW_X", rwindow_x);
 	defaults->update("RWINDOW_Y", rwindow_y);

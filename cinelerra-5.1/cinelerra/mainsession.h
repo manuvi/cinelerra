@@ -154,6 +154,8 @@ public:
 	int cswindow_x, cswindow_y, cswindow_w, cswindow_h;
 // subtitle
 	int swindow_x, swindow_y, swindow_w, swindow_h;
+// mixer tile region
+	int tile_mixers_x, tile_mixers_y, tile_mixers_w, tile_mixers_h;
 // binfolder filter window
 	int bwindow_w, bwindow_h;
 // error window

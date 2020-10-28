@@ -1042,6 +1042,7 @@ void MWindowGUI::default_positions()
 	mwindow->cwindow->gui->unlock_window();
 	mwindow->awindow->gui->unlock_window();
 //printf("MWindowGUI::default_positions 2\n");
+	mwindow->tile_mixers();
 }
 
 

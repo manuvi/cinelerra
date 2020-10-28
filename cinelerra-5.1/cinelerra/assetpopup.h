@@ -430,40 +430,20 @@ public:
 
 	int handle_event();
 	GrabshotSubMenu *submenu;
-	int mode;
 	GrabshotThread *grab_thread;
+	int mode;
 };
 
-class GrabshotThread : public Thread
+class GrabshotThread : public BC_DragBox
 {
 public:
 	GrabshotThread(MWindow* mwindow);
 	~GrabshotThread();
+	void start(GrabshotMenuItem *menu_item);
+	int handle_done_event(int x0, int y0, int x1, int y1);
 
 	MWindow *mwindow;
-	GrabshotPopup *popup;
-	BC_Popup *edge[4];
-	int done;
-
-	void start(GrabshotMenuItem *menu_item);
-	void run();
-};
-
-class GrabshotPopup : public BC_Popup
-{
-public:
-	GrabshotPopup(GrabshotThread *grab_thread, int mode);
-	~GrabshotPopup();
-	int grab_event(XEvent *event);
-	void draw_selection(int invert);
-	void update();
-
-	GrabshotThread *grab_thread;
 	int mode;
-	int dragging;
-	int grab_color;
-	int x0, y0, x1, y1;
-	int lx0, ly0, lx1, ly1;
 };
 
 #endif

@@ -29,6 +29,7 @@
 #include "bcbutton.h"
 #include "bcclipboard.h"
 #include "bcdialog.h"
+#include "bcdragbox.h"
 #include "bcdragwindow.h"
 #include "bclistboxitem.h"
 #include "bcpan.h"

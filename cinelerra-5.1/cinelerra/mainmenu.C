@@ -1739,7 +1739,7 @@ void MixerItems::create_objects()
 	BC_SubMenu *mixer_submenu = new BC_SubMenu();
 	add_submenu(mixer_submenu);
 	mixer_submenu->add_submenuitem(new MixerViewer(this));
-	mixer_submenu->add_submenuitem(new TileMixers(this));
+	mixer_submenu->add_submenuitem(new DragTileMixers(this));
 	mixer_submenu->add_submenuitem(new AlignMixers(this));
 	mixer_submenu->add_submenuitem(new MixMasters(this));
 }
@@ -1810,16 +1810,51 @@ int MixerViewer::handle_event()
 	return 1;
 }
 
-TileMixers::TileMixers(MixerItems *mixer_items)
- : MixerItem(mixer_items, _("Tile mixers"), "Alt-t", 't')
+DragTileMixers::DragTileMixers(MixerItems *mixer_items)
+ : MixerItem(mixer_items, _("Drag Tile mixers"), "Alt-t", 't')
 {
 	set_alt();
+	drag_box = 0;
 }
 
-int TileMixers::handle_event()
+DragTileMixers::~DragTileMixers()
 {
-	MWindow *mwindow = mixer_items->mwindow;
-	mwindow->tile_mixers();
+	delete drag_box;
+}
+
+int DragTileMixers::handle_event()
+{
+	if( !drag_box ) {
+		MWindow *mwindow = mixer_items->mwindow;
+		drag_box = new TileMixersDragBox(mwindow->gui);
+	}
+	if( !drag_box->running() )
+		drag_box->start(this);
+	return 1;
+}
+
+TileMixersDragBox::TileMixersDragBox(MWindowGUI *gui)
+ : BC_DragBox(gui)
+{
+	tile_mixers = 0;
+}
+
+void TileMixersDragBox::start(DragTileMixers *tile_mixers)
+{
+	this->tile_mixers = tile_mixers;
+	start_drag();
+}
+
+int TileMixersDragBox::handle_done_event(int x0, int y0, int x1, int y1)
+{
+	MWindow *mwindow = tile_mixers->mixer_items->mwindow;
+	if( x0 >= x1 || y0 >= y1 ) x0 = x1 = y0 = y1 = 0;
+	mwindow->session->tile_mixers_x = x0;
+	mwindow->session->tile_mixers_y = y0;
+	mwindow->session->tile_mixers_w = x1 - x0;
+	mwindow->session->tile_mixers_h = y1 - y0;
+	mwindow->tile_mixers(x0, y0, x1, y1);
+	tile_mixers = 0;
 	return 1;
 }
 

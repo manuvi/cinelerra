@@ -1469,6 +1469,26 @@ int MWindow::select_zwindow(ZWindow *zwindow)
 
 void MWindow::tile_mixers()
 {
+	int x1 = session->tile_mixers_x;
+	int y1 = session->tile_mixers_y;
+	int x2 = x1 + session->tile_mixers_w;
+	int y2 = y1 + session->tile_mixers_h;
+	tile_mixers(x1, y1, x2, y2);
+}
+
+void MWindow::tile_mixers(int x1, int y1, int x2, int y2)
+{
+	if( x1 == x2 || y1 == y2 ) {
+// use top left quadrent
+		int sw = gui->get_screen_w(1, -1);
+		int sh = gui->get_screen_w(1, -1);
+		x1 = 1;     y1 = 1;
+		x2 = sw/2;  y2 = sh/2;
+	}
+	else {
+		if( x1 > x2 ) { int t = x1;  x1 = x2;  x2 = t; }
+		if( y1 > y2 ) { int t = y1;  y1 = y2;  y2 = t; }
+	}
 	int nz = 0;
 	for( int i=0; i<zwindows.size(); ++i ) {
 		ZWindow *zwindow = zwindows[i];
@@ -1477,8 +1497,6 @@ void MWindow::tile_mixers()
 	}
 	if( !nz ) return;
 	int zn = ceil(sqrt(nz));
-	int x1 = 1 + gui->get_x(), x2 = cwindow->gui->get_x();
-	int y1 = 1, y2 = gui->get_y();
 	int rw = gui->get_root_w(0), rh = gui->get_root_h(0);
 	if( x1 < 0 ) x1 = 0;
 	if( y1 < 0 ) y1 = 0;
@@ -3054,6 +3072,7 @@ void MWindow::restore_windows()
 	else if( session->show_lwindow && lwindow->gui->is_hidden() )
 		show_lwindow();
 
+	tile_mixers();
 	gui->lock_window("MWindow::restore_windows");
 	gui->focus();
 }

@@ -27,6 +27,7 @@ OBJS = \
 	$(OBJDIR)/bcdialog.o \
 	$(OBJDIR)/bcdisplay.o \
 	$(OBJDIR)/bcdisplayinfo.o \
+	$(OBJDIR)/bcdragbox.o \
 	$(OBJDIR)/bcdragwindow.o \
 	$(OBJDIR)/bcfilebox.o \
 	$(OBJDIR)/bcfontentry.o \

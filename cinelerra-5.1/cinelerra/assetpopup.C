@@ -1022,104 +1022,26 @@ int GrabshotMenuItem::handle_event()
 }
 
 GrabshotThread::GrabshotThread(MWindow *mwindow)
- : Thread(1, 0, 0)
+ : BC_DragBox(mwindow->gui)
 {
 	this->mwindow = mwindow;
-	popup = 0;
-	done = -1;
 }
+
 GrabshotThread::~GrabshotThread()
 {
-	delete popup;
 }
 
 void GrabshotThread::start(GrabshotMenuItem *menu_item)
 {
-	popup = new GrabshotPopup(this, menu_item->mode);
-	popup->lock_window("GrabshotThread::start");
-	for( int i=0; i<4; ++i )
-		edge[i] = new BC_Popup(mwindow->gui, 0,0, 1,1, ORANGE, 1);
-	mwindow->gui->grab_buttons();
-	mwindow->gui->grab_cursor();
-	popup->grab(mwindow->gui);
-	popup->create_objects();
-	popup->show_window();
-	popup->unlock_window();
-	done = 0;
-	Thread::start();
+	mode = menu_item->mode;
+	start_drag();
 }
 
-void GrabshotThread::run()
+int GrabshotThread::handle_done_event(int x0, int y0, int x1, int y1)
 {
-	popup->lock_window("GrabshotThread::run 0");
-	while( !done ) {
-		popup->update();
-		popup->unlock_window();
-		enable_cancel();
-		Timer::delay(200);
-		disable_cancel();
-		popup->lock_window("GrabshotThread::run 1");
-	}
-	mwindow->gui->ungrab_cursor();
-	mwindow->gui->ungrab_buttons();
-	popup->ungrab(mwindow->gui);
-	for( int i=0; i<4; ++i ) delete edge[i];
-	popup->unlock_window();
-	delete popup;  popup = 0;
-}
+	int cx = x0,    cy = y0;
+	int cw = x1-x0, ch = y1-y0;
 
-GrabshotPopup::GrabshotPopup(GrabshotThread *grab_thread, int mode)
- : BC_Popup(grab_thread->mwindow->gui, 0,0, 16,16, -1,1)
-{
-	this->grab_thread = grab_thread;
-	this->mode = mode;
-	dragging = -1;
-	grab_color = ORANGE;
-	x0 = y0 = x1 = y1 = -1;
-	lx0 = ly0 = lx1 = ly1 = -1;
-}
-GrabshotPopup::~GrabshotPopup()
-{
-}
-
-int GrabshotPopup::grab_event(XEvent *event)
-{
-	int cur_drag = dragging;
-	switch( event->type ) {
-	case ButtonPress:
-		if( cur_drag > 0 ) return 1;
-		x0 = event->xbutton.x_root;
-		y0 = event->xbutton.y_root;
-		if( !cur_drag ) {
-			draw_selection(-1);
-			if( event->xbutton.button == RIGHT_BUTTON ) break;
-			if( x0>=get_x() && x0<get_x()+get_w() &&
-			    y0>=get_y() && y0<get_y()+get_h() ) break;
-		}
-		x1 = x0;  y1 = y0;
-		draw_selection(1);
-		dragging = 1;
-		return 1;
-	case ButtonRelease:
-		dragging = 0;
-	case MotionNotify:
-		if( cur_drag > 0 ) {
-			x1 = event->xbutton.x_root;
-			y1 = event->xbutton.y_root;
-			draw_selection(0);
-		}
-		return 1;
-	default:
-		return 0;
-	}
-
-	int cx = lx0,     cy = ly0;
-	int cw = lx1-lx0, ch = ly1-ly0;
-	hide_window();
-	sync_display();
-	grab_thread->done = 1;
-
-	MWindow *mwindow = grab_thread->mwindow;
 	Preferences *preferences = mwindow->preferences;
 	char filename[BCTEXTLEN], snapshot_path[BCTEXTLEN];
 	static const char *exts[] = { "png", "jpg", "tif", "ppm" };
@@ -1153,12 +1075,13 @@ int GrabshotPopup::grab_event(XEvent *event)
 	}
 
 // no odd dimensions
-	int rw = get_root_w(0), rh = get_root_h(0);
+	int rw = mwindow->gui->get_root_w(0);
+	int rh = mwindow->gui->get_root_h(0);
 	if( cx < 0 ) { cw += cx;  cx = 0; }
 	if( cy < 0 ) { ch += cy;  cy = 0; }
 	if( cx+cw > rw ) cw = rw-cx;
 	if( cy+ch > rh ) ch = rh-cy;
-	if( !cw || !ch ) return 1;
+	if( !cw || !ch ) return 0;
 
 	VFrame vframe(cw,ch, BC_RGB888);
 	if( cx+cw < rw ) ++cw;
@@ -1199,39 +1122,5 @@ int GrabshotPopup::grab_event(XEvent *event)
 	}
 
 	return 1;
-}
-
-void GrabshotPopup::update()
-{
-	set_color(grab_color ^= GREEN);
-	draw_box(0,0, get_w(),get_h());
-	flash(1);
-}
-
-void GrabshotPopup::draw_selection(int show)
-{
-	if( show < 0 ) {
-		for( int i=0; i<4; ++i ) hide_window(0);
-		flush();
-		return;
-	}
-
-	int nx0 = x0 < x1 ? x0 : x1;
-	int nx1 = x0 < x1 ? x1 : x0;
-	int ny0 = y0 < y1 ? y0 : y1;
-	int ny1 = y0 < y1 ? y1 : y0;
-	lx0 = nx0;  lx1 = nx1;  ly0 = ny0;  ly1 = ny1;
-
-	--nx0;  --ny0;
-	BC_Popup **edge = grab_thread->edge;
-	edge[0]->reposition_window(nx0,ny0, nx1-nx0, 1);
-	edge[1]->reposition_window(nx1,ny0, 1, ny1-ny0);
-	edge[2]->reposition_window(nx0,ny1, nx1-nx0, 1);
-	edge[3]->reposition_window(nx0,ny0, 1, ny1-ny0);
-
-	if( show > 0 ) {
-		for( int i=0; i<4; ++i ) edge[i]->show_window(0);
-	}
-	flush();
 }
 

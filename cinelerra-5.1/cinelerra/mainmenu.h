@@ -568,11 +568,23 @@ public:
 	int handle_event();
 };
 
-class TileMixers : public MixerItem
+class DragTileMixers : public MixerItem
 {
 public:
-	TileMixers(MixerItems *mixer_items);
+	DragTileMixers(MixerItems *mixer_items);
+	~DragTileMixers();
 	int handle_event();
+	TileMixersDragBox *drag_box;
+};
+
+class TileMixersDragBox : public BC_DragBox
+{
+public:
+	TileMixersDragBox(MWindowGUI *gui);
+	void start(DragTileMixers *tile_mixers);
+	int handle_done_event(int x0, int y0, int x1, int y1);
+
+	DragTileMixers *tile_mixers;
 };
 
 class AlignMixers : public MixerItem

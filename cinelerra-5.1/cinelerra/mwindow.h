@@ -305,6 +305,7 @@ public:
 	void start_mixer();
 	int select_zwindow(ZWindow *zwindow);
 	void tile_mixers();
+	void tile_mixers(int x1, int x2, int y1, int y2);
 	int masters_to_mixers();
 	void mix_masters();
 	void set_gang_tracks(int v);

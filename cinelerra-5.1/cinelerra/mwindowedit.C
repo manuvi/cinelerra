@@ -2869,6 +2869,10 @@ int MWindow::masters_to_mixers()
 		for( ; track && !track->master; track=track->next )
 			mixer_last = track;
 		Track *next_track = track;
+		if( !master_track->armed ) {
+			master_track = next_track;
+			continue;
+		}
 		Mixer *master_mixer = 0;
 		for( int i=0, n=edl->mixers.size(); i<n; ++i ) {
 			if( master_track->index_in(edl->mixers[i]) >= 0 ) {

@@ -73,6 +73,7 @@ class TrimSelection;
 class MixerItems;
 class MixerViewer;
 class TileMixers;
+class TileMixersDragBox;
 class AlignMixers;
 class AlignTimecodes;
 class AddAudioTrack;
