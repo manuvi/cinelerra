@@ -1489,6 +1489,7 @@ void MWindow::tile_mixers(int x1, int y1, int x2, int y2)
 		if( x1 > x2 ) { int t = x1;  x1 = x2;  x2 = t; }
 		if( y1 > y2 ) { int t = y1;  y1 = y2;  y2 = t; }
 	}
+	int ow = edl->session->output_w, oh = edl->session->output_h;
 	int nz = 0;
 	for( int i=0; i<zwindows.size(); ++i ) {
 		ZWindow *zwindow = zwindows[i];
@@ -1496,32 +1497,63 @@ void MWindow::tile_mixers(int x1, int y1, int x2, int y2)
 		++nz;
 	}
 	if( !nz ) return;
-	int zn = ceil(sqrt(nz));
-	int rw = gui->get_root_w(0), rh = gui->get_root_h(0);
-	if( x1 < 0 ) x1 = 0;
-	if( y1 < 0 ) y1 = 0;
-	if( x2 > rw ) x2 = rw;
-	if( y2 > rh ) y2 = rh;
-	int dx = x2 - x1, dy = y2 - y1;
-	int zw = dx / zn;
 	int lt = BC_DisplayInfo::get_left_border();
 	int top = BC_DisplayInfo::get_top_border();
 	int bw = lt + BC_DisplayInfo::get_right_border();  // borders
 	int bh = top + BC_DisplayInfo::get_bottom_border();
-	int zx = 0, zy = 0;  // window origins
 	int mw = xS(10+10), mh = yS(10+10); // canvas margins
-	int rsz = 0, n = 0, dz = 0;
-	int ow = edl->session->output_w, oh = edl->session->output_h;
+	int dx = x2 - x1, dy = y2 - y1;
+	int64_t sz = dx * dy, best_r = sz;
+	int bx = 1, by = nz;
+	for( int nx=1; nx<=nz; ++nx ) {
+		int ny = ceil((double)nz / nx);
+		int zw = dx / nx;
+		int ww = zw - bw;
+		int hh = (ww - mw) * oh / ow + mh;
+		int zh = hh + bh;
+		int64_t za = zw*nx * zh*ny;
+		int64_t r = sz - za;
+		if( r < 0 ) continue;
+		if( r >= best_r ) continue;
+		best_r = r;
+		bx = nx;  by = ny;
+	}
+	for( int ny=1; ny<=nz; ++ny ) {
+		int nx = ceil((double)nz / ny);
+		int zh = dy / ny;
+		int hh = zh - bh;
+		int ww = (hh - mh) * ow / oh + mw;
+		int zw = ww + bw;
+		int64_t za = zw*nx * zh*ny;
+		int64_t r = sz - za;
+		if( r < 0 ) continue;
+		if( r >= best_r ) continue;
+		best_r = r;
+		bx = nx;  by = ny;
+	}
+	int zw, zh, ww, hh;
+	if( bx < by ) {
+		zh = dy / by;
+		hh = zh - bh;
+		ww = (hh - mh) * ow / oh + mw;
+		zw = ww + bw;
+	}
+	else {
+		zw = dx / bx;
+		ww = zw - bw;
+		hh = (ww - mw) * oh / ow + mh;
+		zh = hh + bh;
+	}
+
+	int zx = 0, zy = 0;  // window origins
+	int n = 0;
 	for( int i=0; i<zwindows.size(); ++i ) {
 		ZWindow *zwindow = zwindows[i];
 		if( zwindow->idx < 0 ) continue;
-		int ww = zw - bw, hh = (ww - mw) * oh / ow + mh, zh = hh + bh;
-		if( rsz < hh ) rsz = hh;
 		int xx = zx + x1, yy = zy + y1;
 		int mx = x2 - zw, my = y2 - zh;
 		if( xx > mx ) xx = mx;
 		if( yy > my ) yy = my;
-		xx += lt + xS(dz);  yy += top + yS(dz);
 		zwindow->reposition(xx,yy, ww,hh);
 		if( zwindow->running() ) {
 			ZWindowGUI *gui = (ZWindowGUI *)zwindow->get_gui();
@@ -1529,11 +1561,9 @@ void MWindow::tile_mixers(int x1, int y1, int x2, int y2)
 			gui->BC_WindowBase::reposition_window(xx,yy, ww,hh);
 			gui->unlock_window();
 		}
-		if( ++n >= zn ) {
-			n = 0;  rsz += bh;
-			if( (zy += rsz) > (dy - rsz) ) dz += 10;
-			rsz = 0;
-			zx = 0;
+		if( ++n >= bx ) {
+			zx = 0;  zy += zh;
+			n = 0;
 		}
 		else
 			zx += zw;
