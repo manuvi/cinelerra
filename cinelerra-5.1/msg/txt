@@ -3,6 +3,11 @@ For usage help, refer to the following:
   https://cinelerra-gg.org/download/CinelerraGG_Manual.pdf
   http://g-raffa.eu/Cinelerra/HOWTO/basics.html
 .
+October 2020 New Features of note:
+  Drag select and deselect edits was added on the timeline.
+  Gang mode for patchbay options is now available.
+  Proxy scale factor of 1:1 to change bitrate works.
+  Tile mixers allows for designating a rectangular area.
 September 2020 New Features of note:
   Motion plugin improvements by SGE for better results.
   Camera and Projector menus now include easy range change.
