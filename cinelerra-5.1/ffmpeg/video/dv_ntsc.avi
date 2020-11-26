@@ -1,4 +1,4 @@
 avi dvvideo
-pixel_format=yuv411p
+cin_pix_fmt=yuv411p
 field_order=bb
 # 720x480, 29.97 fps
