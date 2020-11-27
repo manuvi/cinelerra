@@ -754,6 +754,32 @@ void ScopeGUI::draw_overlays(int overlays, int borders, int flush)
 				waveform->draw_line(0, y, wave_w, y);
 				waveform->draw_rectangle(0, 0, wave_w, wave_h);
 			}
+
+			int y1 = wave_h * 1.8 / WAVEFORM_DIVISIONS;
+				int text_y1 = y1 + wave_y + get_text_ascent(SMALLFONT) / 2;
+				CLAMP(text_y1, waveform->get_y() + get_text_ascent(SMALLFONT), waveform->get_y() + waveform->get_h() - 1);
+			char string1[BCTEXTLEN];
+			sprintf( string1, "%d",(int)lround((FLOAT_MAX  -
+					1.8 * (FLOAT_MAX - FLOAT_MIN ) / WAVEFORM_DIVISIONS ) * 100) );
+				int text_x1 = wave_x + get_text_width(SMALLFONT, string1) - margin +wave_w;
+				set_color(text_color);
+				draw_text(text_x1, text_y1, string1);
+				CLAMP(y1, 0, waveform->get_h() - 1);
+				set_color(dark_color);
+				waveform->draw_line(0, y1, wave_w, y1);
+
+			int y2 = wave_h * 10.4 / WAVEFORM_DIVISIONS;
+				int text_y2 = y2 + wave_y + get_text_ascent(SMALLFONT) / 2;
+				CLAMP(text_y2, waveform->get_y() + get_text_ascent(SMALLFONT), waveform->get_y() + waveform->get_h() - 1);
+			char string2[BCTEXTLEN];
+			sprintf( string2, "%d",(int)lround((FLOAT_MAX  -
+					10.4 * (FLOAT_MAX - FLOAT_MIN ) / WAVEFORM_DIVISIONS) * 100) );
+				set_color(text_color);
+				draw_text(text_x1, text_y2, string2);
+				CLAMP(y2, 0, waveform->get_h() - 1);
+				set_color(dark_color);
+				waveform->draw_line(0, y2, wave_w, y2);
+			
 			set_line_dashes(0);
 			waveform->draw_point();
 			set_line_dashes(1);
