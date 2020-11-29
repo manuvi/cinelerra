@@ -162,7 +162,7 @@ int EditPopupClearSelect::handle_event()
 }
 
 EditPopupSelectEdits::EditPopupSelectEdits(MWindow *mwindow, EditPopup *popup)
- : BC_MenuItem(_("Select Edits"),_("Ctrl-Alt-a"),'a')
+ : BC_MenuItem(_("Select Edits"),_("Ctrl-Alt-'"),'\'')
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
