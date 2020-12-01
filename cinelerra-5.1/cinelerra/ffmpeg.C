@@ -1213,6 +1213,40 @@ int FFVideoStream::decode_frame(AVFrame *frame)
 	return 1;
 }
 
+int FFVideoStream::probe(int64_t pos)
+{
+	int ret = video_seek(pos);
+	if( ret < 0 ) return -1;
+	if( !frame && !(frame=av_frame_alloc()) ) {
+		fprintf(stderr, "FFVideoStream::probe: av_frame_alloc failed\n");
+		return -1;
+	}
+		
+	if (ffmpeg->interlace_from_codec)
+		return 1;
+
+		ret = read_frame(frame);
+		if( ret > 0 ) {
+			//printf("codec interlace: %i \n",frame->interlaced_frame);
+			//printf("codec tff: %i \n",frame->top_field_first);
+
+			if (!frame->interlaced_frame)
+				ffmpeg->interlace_from_codec = AV_FIELD_PROGRESSIVE;
+			if ((frame->interlaced_frame) && (frame->top_field_first))
+				ffmpeg->interlace_from_codec = AV_FIELD_TT;
+			if ((frame->interlaced_frame) && (!frame->top_field_first))
+				ffmpeg->interlace_from_codec = AV_FIELD_BB;
+			//printf("Interlace mode from codec: %i\n", ffmpeg->interlace_from_codec);
+
+	}
+
+	if( frame->format == AV_PIX_FMT_NONE || frame->width <= 0 || frame->height <= 0 )
+		ret = -1;
+
+	ret = ret > 0 ? 1 : ret < 0 ? -1 : 0;
+	return ret;
+}
+
 int FFVideoStream::load(VFrame *vframe, int64_t pos)
 {
 	int ret = video_seek(pos);
@@ -1221,6 +1255,8 @@ int FFVideoStream::load(VFrame *vframe, int64_t pos)
 		fprintf(stderr, "FFVideoStream::load: av_frame_alloc failed\n");
 		return -1;
 	}
+	
+
 	int i = MAX_RETRY + pos - curr_pos;
 	int64_t cache_start = 0;
 	while( ret>=0 && !flushed && curr_pos<=pos && --i>=0 ) {
@@ -1391,6 +1427,7 @@ int FFVideoStream::encode(VFrame *vframe)
 
 int FFVideoStream::drain()
 {
+
 	return 0;
 }
 
@@ -1776,6 +1813,7 @@ FFMPEG::FFMPEG(FileBase *file_base)
 	flow = 1;
 	decoding = encoding = 0;
 	has_audio = has_video = 0;
+	interlace_from_codec = 0;
 	opts = 0;
 	opt_duration = -1;
 	opt_video_filter = 0;
@@ -2411,6 +2449,10 @@ int FFMPEG::info(char *text, int len)
 		AVPixelFormat pix_fmt = (AVPixelFormat)st->codecpar->format;
 		const char *pfn = av_get_pix_fmt_name(pix_fmt);
 		report(" pix %s\n", pfn ? pfn : unkn);
+		int interlace = st->codecpar->field_order;
+		report("  interlace (container level): %i\n", interlace ? interlace : -1);
+		int interlace_codec = interlace_from_codec;
+		report("  interlace (codec level): %i\n", interlace_codec ? interlace_codec : -1);
 		enum AVColorSpace space = st->codecpar->color_space;
 		const char *nm = av_color_space_name(space);
 		report("    color space:%s", nm ? nm : unkn);
@@ -2889,6 +2931,25 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 			vid->interlaced = asset->interlace_mode == ILACE_MODE_TOP_FIRST ||
 				asset->interlace_mode == ILACE_MODE_BOTTOM_FIRST ? 1 : 0;
 			vid->top_field_first = asset->interlace_mode == ILACE_MODE_TOP_FIRST ? 1 : 0;
+			switch (asset->interlace_mode)	{		
+			case ILACE_MODE_TOP_FIRST: 
+			if (ctx->codec->id == AV_CODEC_ID_MJPEG)
+			av_dict_set(&sopts, "field_order", "tt", 0); 
+			else
+			av_dict_set(&sopts, "field_order", "tb", 0); 
+			if (ctx->codec_id != AV_CODEC_ID_MJPEG) 
+			av_dict_set(&sopts, "flags", "+ilme+ildct", 0);
+			break;
+			case ILACE_MODE_BOTTOM_FIRST: 
+			if (ctx->codec->id == AV_CODEC_ID_MJPEG)
+			av_dict_set(&sopts, "field_order", "bb", 0); 
+			else
+			av_dict_set(&sopts, "field_order", "bt", 0); 
+			if (ctx->codec_id != AV_CODEC_ID_MJPEG)
+			av_dict_set(&sopts, "flags", "+ilme+ildct", 0);
+			break;
+			case ILACE_MODE_NOTINTERLACED: av_dict_set(&sopts, "field_order", "progressive", 0); break;
+			}
 			break; }
 		default:
 			eprintf(_("not audio/video, %s:%s\n"), codec_name, filename);
@@ -3181,6 +3242,33 @@ int FFMPEG::audio_seek(int stream, int64_t pos)
 	return 0;
 }
 
+int FFMPEG::video_probe(int64_t pos)
+{
+	int vidx = vstrm_index[0].st_idx;
+	FFVideoStream *vid = ffvideo[vidx];
+	vid->probe(pos);
+	
+	int interlace1 = interlace_from_codec;
+	//printf("interlace from codec: %i\n", interlace1);
+
+	switch (interlace1)
+	{
+	case AV_FIELD_TT:
+	case AV_FIELD_TB:
+	    return ILACE_MODE_TOP_FIRST;
+	case AV_FIELD_BB:
+	case AV_FIELD_BT:
+	    return ILACE_MODE_BOTTOM_FIRST;
+	case AV_FIELD_PROGRESSIVE:
+	    return ILACE_MODE_NOTINTERLACED;
+	default:
+	    return ILACE_MODE_UNDETECTED;
+	}
+
+}
+
+
+
 int FFMPEG::video_seek(int stream, int64_t pos)
 {
 	int vidx = vstrm_index[stream].st_idx;
@@ -3468,7 +3556,22 @@ int FFMPEG::ff_coded_height(int stream)
 
 float FFMPEG::ff_aspect_ratio(int stream)
 {
-	return ffvideo[stream]->aspect_ratio;
+	//return ffvideo[stream]->aspect_ratio;
+	AVFormatContext *fmt_ctx = ffvideo[stream]->fmt_ctx;
+	AVStream *strm = ffvideo[stream]->st;
+	AVCodecParameters *par = ffvideo[stream]->st->codecpar;
+	AVRational dar;
+	AVRational sar = av_guess_sample_aspect_ratio(fmt_ctx, strm, NULL);
+        if (sar.num) {
+            printf("sample_aspect_ratio, %f \n", av_q2d(sar));
+            av_reduce(&dar.num, &dar.den,
+                      par->width  * sar.num,
+                      par->height * sar.den,
+                      1024*1024);
+                      printf("display_aspect_ratio, %f \n", av_q2d(dar));
+                      return av_q2d(dar);
+                      }
+        return ffvideo[stream]->aspect_ratio;
 }
 
 const char* FFMPEG::ff_video_codec(int stream)
@@ -3508,6 +3611,31 @@ int FFMPEG::ff_video_mpeg_color_range(int stream)
 {
 	return ffvideo[stream]->st->codecpar->color_range == AVCOL_RANGE_MPEG ? 1 : 0;
 }
+
+int FFMPEG::ff_interlace(int stream)
+{
+// https://ffmpeg.org/doxygen/trunk/structAVCodecParserContext.html
+/* reads from demuxer because codec frame not ready */
+	int interlace0 = ffvideo[stream]->st->codecpar->field_order;
+	printf("interlace from demux: %i\n", interlace0);
+
+	switch (interlace0)
+	{
+	case AV_FIELD_TT:
+	case AV_FIELD_TB:
+	    return ILACE_MODE_TOP_FIRST;
+	case AV_FIELD_BB:
+	case AV_FIELD_BT:
+	    return ILACE_MODE_BOTTOM_FIRST;
+	case AV_FIELD_PROGRESSIVE:
+	    return ILACE_MODE_NOTINTERLACED;
+	default:
+	    return ILACE_MODE_UNDETECTED;
+	}
+	
+}
+
+
 
 int FFMPEG::ff_cpus()
 {

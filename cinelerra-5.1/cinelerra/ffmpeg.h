@@ -256,6 +256,7 @@ public:
 
 	int init_frame(AVFrame *picture);
 	int load(VFrame *vframe, int64_t pos);
+	int probe(int64_t pos);
 	int video_seek(int64_t pos);
 	int encode(VFrame *vframe);
 	int drain();
@@ -383,6 +384,7 @@ public:
 	double get_initial_timecode(int data_type, int channel, double frame_rate);
 
 	int audio_seek(int ch, int64_t pos);
+	int video_probe(int64_t pos);
 	int video_seek(int layer, int64_t pos);
 
 	int decode(int chn, int64_t pos, double *samples, int len);
@@ -434,6 +436,7 @@ public:
 
 	int decoding, encoding;
 	int has_audio, has_video;
+	int interlace_from_codec;
 
 	FFMPEG(FileBase *file_base=0);
 	~FFMPEG();
@@ -463,6 +466,7 @@ public:
 	float ff_aspect_ratio(int stream);
 	int ff_color_range(int stream);
 	int ff_color_space(int stream);
+	int ff_interlace(int stream);
 	double ff_frame_rate(int stream);
 	const char *ff_video_codec(int stream);
 	int64_t ff_video_frames(int stream);

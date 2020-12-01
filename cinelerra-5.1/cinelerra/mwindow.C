@@ -4493,11 +4493,14 @@ static inline int gcd(int m, int n)
 int MWindow::create_aspect_ratio(float &w, float &h, int width, int height)
 {
 	w = 1;  h = 1;
+	double ar;
+	
 	if(!width || !height) return 1;
 	if( width == 720 && (height == 480 || height == 576) ) {
 		w = 4;  h = 3;  return 0; // for NTSC and PAL
 	}
-	double ar = (double)width / height;
+	
+	ar = (double)width / height;
 // square-ish pixels
 	if( EQUIV(ar, 1.0000) ) return 0;
 	if( EQUIV(ar, 1.3333) ) { w = 4;  h = 3;  return 0; }
@@ -4505,6 +4508,8 @@ int MWindow::create_aspect_ratio(float &w, float &h, int width, int height)
 	if( EQUIV(ar, 2.1111) ) { w = 19; h = 9;  return 0; }
 	if( EQUIV(ar, 2.2222) ) { w = 20; h = 9;  return 0; }
 	if( EQUIV(ar, 2.3333) ) { w = 21; h = 9;  return 0; }
+	if( EQUIV(ar, 2.37037) ) { w = 64; h = 27;  return 0; }
+
 	int ww = width, hh = height;
 	// numerator, denominator must be under mx
 	int mx = 255, n = gcd(ww, hh);
@@ -5048,12 +5053,26 @@ int MWindow::select_asset(Asset *asset, int vstream, int astream, int delete_tra
 		session->output_w = width;
 		session->output_h = height;
 		session->frame_rate = framerate;
+		session->interlace_mode = asset->interlace_mode;
 		// not, asset->actual_width/actual_height
 		asset->width = session->output_w;
 		asset->height = session->output_h;
 		asset->frame_rate = session->frame_rate;
+		
 		create_aspect_ratio(session->aspect_w, session->aspect_h,
 			session->output_w, session->output_h);
+	float ar = asset->aspect_ratio;
+	if (ar) {
+	//printf ("Aspect ratio from asset: %f \n", ar);
+	if( EQUIV(ar, 1.3333) ) { session->aspect_w = 4;  session->aspect_h = 3;  }
+	if( EQUIV(ar, 1.7777) ) { session->aspect_w = 16; session->aspect_h = 9;   }
+	if( EQUIV(ar, 2.1111) ) { session->aspect_w = 19; session->aspect_h = 9;  }
+	if( EQUIV(ar, 2.2222) ) { session->aspect_w = 20; session->aspect_h = 9;   }
+	if( EQUIV(ar, 2.3333) ) { session->aspect_w = 21; session->aspect_h = 9;   }
+	if( EQUIV(ar, 2.370370) ) { session->aspect_w = 64; session->aspect_h = 27; }
+	}
+			
+			
 		Track *track = edl->tracks->first;
 		for( Track *next_track=0; track; track=next_track ) {
 			next_track = track->next;

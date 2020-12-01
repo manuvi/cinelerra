@@ -326,7 +326,7 @@ int FileFFMPEG::open_file(int rd, int wr)
 	int result = 0;
 	if( ff ) return 1;
 	ff = new FFMPEG(this);
-
+	
 	if( rd ) {
 		result = ff->init_decoder(asset->path);
 		if( !result ) result = ff->open_decoder();
@@ -342,6 +342,11 @@ int FileFFMPEG::open_file(int rd, int wr)
 			int video_layers = ff->ff_total_video_layers();
 			if( video_layers > 0 ) {
 				asset->video_data = 1;
+				asset->aspect_ratio = ff->ff_aspect_ratio(0);
+				printf("ff_aspect_ratio, %f \n", asset->aspect_ratio);
+				if (!asset->interlace_mode) asset->interlace_mode = ff->ff_interlace(0);
+				ff->video_probe(1);
+				 if (!asset->interlace_mode && (ff->interlace_from_codec) ) asset->interlace_mode = ff->video_probe(1); 
 				if( !asset->layers ) asset->layers = video_layers;
 				asset->actual_width = ff->ff_video_width(0);
 				asset->actual_height = ff->ff_video_height(0);
@@ -1938,6 +1943,15 @@ int FFOptionsFormatView::handle_event()
 {
 	Asset *asset = fmt_config->asset;
 	char *format_name = asset->fformat;
+	char *replace_name0 = "mov";
+	char *replace_name1 = "mpegts";
+	char *replace_name2 = "matroska";
+	if (!strcmp(format_name, "qt"))
+		format_name = replace_name0; // fixup
+	if (!strcmp(format_name, "m2ts"))
+		format_name = replace_name1; // fixup
+	if (!strcmp(format_name, "mkv"))
+		format_name = replace_name2; // fixup
 	avformat_free_context(fmt_ctx);  fmt_ctx = 0;
 	int ret = avformat_alloc_output_context2(&fmt_ctx, 0, format_name, 0);
 	if( ret || !fmt_ctx ) {
