@@ -345,8 +345,10 @@ int FileFFMPEG::open_file(int rd, int wr)
 				asset->aspect_ratio = ff->ff_aspect_ratio(0);
 				printf("ff_aspect_ratio, %f \n", asset->aspect_ratio);
 				if (!asset->interlace_mode) asset->interlace_mode = ff->ff_interlace(0);
+				if ( ff->ff_video_frames(0) > 1 ) {
 				ff->video_probe(1);
 				 if (!asset->interlace_mode && (ff->interlace_from_codec) ) asset->interlace_mode = ff->video_probe(1); 
+				}
 				if( !asset->layers ) asset->layers = video_layers;
 				asset->actual_width = ff->ff_video_width(0);
 				asset->actual_height = ff->ff_video_height(0);
