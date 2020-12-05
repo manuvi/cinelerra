@@ -2997,6 +2997,25 @@ void MWindow::show_vwindow(int raise)
 	gui->mainmenu->show_vwindow->set_checked(1);
 }
 
+
+void MWindow::hide_vwindow()
+{
+	session->show_vwindow = 0;
+	int total_running = 0;
+
+	for(int j = 0; j < vwindows.size(); j++) {
+		VWindow *vwindow = vwindows[j];
+		if( !vwindow->is_running() ) continue;
+		total_running++;
+		if( !raise && !vwindow->gui->is_hidden() ) continue;
+		vwindow->gui->lock_window("MWindow::show_vwindow");
+		vwindow->gui->hide_window(0);
+		vwindow->gui->unlock_window();
+	}
+	gui->mainmenu->show_vwindow->set_checked(0);
+}
+
+
 void MWindow::show_awindow()
 {
 	session->show_awindow = 1;
@@ -3007,6 +3026,17 @@ void MWindow::show_awindow()
 	awindow->gui->unlock_window();
 	gui->mainmenu->show_awindow->set_checked(1);
 }
+
+void MWindow::hide_awindow()
+{
+	session->show_awindow = 0;
+
+	awindow->gui->lock_window("MWindow::show_awindow");
+	awindow->gui->hide_window();
+	awindow->gui->unlock_window();
+	gui->mainmenu->show_awindow->set_checked(0);
+}
+
 
 char *MWindow::get_cwindow_display()
 {
@@ -3023,6 +3053,18 @@ void MWindow::show_cwindow()
 	gui->mainmenu->show_cwindow->set_checked(1);
 }
 
+
+void MWindow::hide_cwindow()
+{
+	session->show_cwindow = 0;
+
+	cwindow->gui->lock_window("MWindow::show_cwindow");
+	cwindow->gui->hide_window();
+	cwindow->gui->unlock_window();
+	gui->mainmenu->show_cwindow->set_checked(0);
+}
+
+
 void MWindow::show_gwindow()
 {
 	session->show_gwindow = 1;
@@ -3035,6 +3077,7 @@ void MWindow::show_gwindow()
 
 	gui->mainmenu->show_gwindow->set_checked(1);
 }
+
 void MWindow::hide_gwindow()
 {
 	session->show_gwindow = 0;
@@ -3042,6 +3085,7 @@ void MWindow::hide_gwindow()
 	gwindow->gui->lock_window("MWindow::show_gwindow");
 	gwindow->gui->hide_window();
 	gwindow->gui->unlock_window();
+	gui->mainmenu->show_gwindow->set_checked(0);
 }
 
 void MWindow::show_lwindow()
@@ -3054,6 +3098,17 @@ void MWindow::show_lwindow()
 	lwindow->gui->unlock_window();
 	gui->mainmenu->show_lwindow->set_checked(1);
 }
+
+void MWindow::hide_lwindow()
+{
+	session->show_lwindow = 0;
+
+	lwindow->gui->lock_window("MWindow::show_lwindow");
+	lwindow->gui->hide_window();
+	lwindow->gui->unlock_window();
+	gui->mainmenu->show_lwindow->set_checked(0);
+}
+
 
 void MWindow::restore_windows()
 {

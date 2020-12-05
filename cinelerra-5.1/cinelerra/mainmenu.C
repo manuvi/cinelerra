@@ -1607,9 +1607,15 @@ ShowVWindow::ShowVWindow(MWindow *mwindow)
 }
 int ShowVWindow::handle_event()
 {
-	mwindow->gui->unlock_window();
-	mwindow->show_vwindow(1);
-	mwindow->gui->lock_window("ShowVWindow::handle_event");
+	if( mwindow->session->current_operation == NO_OPERATION ) {
+		mwindow->gui->unlock_window();
+		if( !mwindow->session->show_vwindow )
+			mwindow->show_vwindow(1);
+		else
+			mwindow->hide_vwindow();
+		mwindow->gui->lock_window("ShowVWindow::handle_event");
+		set_checked(mwindow->session->show_vwindow);
+	}
 	return 1;
 }
 
@@ -1621,9 +1627,16 @@ ShowAWindow::ShowAWindow(MWindow *mwindow)
 }
 int ShowAWindow::handle_event()
 {
-	mwindow->gui->unlock_window();
-	mwindow->show_awindow();
-	mwindow->gui->lock_window("ShowAWindow::handle_event");
+	if( mwindow->session->current_operation == NO_OPERATION ) {
+		mwindow->gui->unlock_window();
+		if( !mwindow->session->show_awindow )
+			mwindow->show_awindow();
+		else
+			mwindow->hide_awindow();
+		mwindow->gui->lock_window("ShowAWindow::handle_event");
+		set_checked(mwindow->session->show_awindow);
+
+	}
 	return 1;
 }
 
@@ -1635,9 +1648,15 @@ ShowCWindow::ShowCWindow(MWindow *mwindow)
 }
 int ShowCWindow::handle_event()
 {
-	mwindow->gui->unlock_window();
-	mwindow->show_cwindow();
-	mwindow->gui->lock_window("ShowCWindow::handle_event");
+	if( mwindow->session->current_operation == NO_OPERATION ) {
+		mwindow->gui->unlock_window();
+		if( !mwindow->session->show_cwindow )
+			mwindow->show_cwindow();
+		else
+			mwindow->hide_cwindow();
+		mwindow->gui->lock_window("ShowCWindow::handle_event");
+		set_checked(mwindow->session->show_cwindow);
+	}
 	return 1;
 }
 
@@ -1672,9 +1691,16 @@ ShowLWindow::ShowLWindow(MWindow *mwindow)
 }
 int ShowLWindow::handle_event()
 {
-	mwindow->gui->unlock_window();
-	mwindow->show_lwindow();
-	mwindow->gui->lock_window("ShowLWindow::handle_event");
+	if( mwindow->session->current_operation == NO_OPERATION ) {
+
+		mwindow->gui->unlock_window();
+		if( !mwindow->session->show_lwindow )
+			mwindow->show_lwindow();
+		else
+			mwindow->hide_lwindow();
+		mwindow->gui->lock_window("ShowLWindow::handle_event");
+		set_checked(mwindow->session->show_lwindow);
+	}
 	return 1;
 }
 
