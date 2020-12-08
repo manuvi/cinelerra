@@ -2998,7 +2998,7 @@ void MWindow::show_vwindow(int raise)
 }
 
 
-void MWindow::hide_vwindow()
+void MWindow::hide_vwindow(int raise)
 {
 	session->show_vwindow = 0;
 	int total_running = 0;
@@ -3139,7 +3139,7 @@ void MWindow::restore_windows()
 		cwindow->gui->unlock_window();
 	}
 	else if( session->show_cwindow && cwindow->gui->is_hidden() )
-		cwindow->show_window();
+		show_cwindow();
 
 	if( !session->show_gwindow && !gwindow->gui->is_hidden() ) {
 		gwindow->gui->lock_window("MWindow::restore_windows");

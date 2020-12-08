@@ -4,10 +4,11 @@
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 msgid ""
-msgstr "Project-Id-Version: Cinelerra 5.1\n"
+msgstr ""
+"Project-Id-Version: Cinelerra 5.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-10-15 14:02-0600\n"
-"PO-Revision-Date: 2020-11-28 22:47+0100\n"
+"PO-Revision-Date: 2020-12-08 16:49+0100\n"
 "Last-Translator: Sergio Daniel Gomez <sergio.sgsistemas@gmail.com>\n"
 "Language-Team: SPANISH <LL@li.org>\n"
 "Language: es\n"
@@ -15,6 +16,56 @@ msgstr "Project-Id-Version: Cinelerra 5.1\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 2.0.6\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-06-03 14:04-0700\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Rafa Mar <rafamar.mm.ig@gmail.com>\n"
+"Language-Team: SPANISH <LL@li.org>\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-07-02 17:42-0600\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-08-04 17:03-0600\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-09-03 16:31-0600\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-10-04 09:33-0600\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-11-17 12:16-0700\n"
@@ -235,7 +286,8 @@ msgstr ""
 msgid ""
 "Mary Egbert\n"
 "had a little lamb."
-msgstr "María Egbert\n"
+msgstr ""
+"María Egbert\n"
 "tiene un pequeño cordero."
 
 #: guicast/test.C:167 cinelerra/localsession.C:65
@@ -303,7 +355,8 @@ msgid ""
 "This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;\n"
 "without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR\n"
 "PURPOSE.  See the GNU General Public License for more details.\n"
-msgstr "Este programa es software libre; usted puede redistribuirlo y/o modificarlo bajo los siguientes términos\n"
+msgstr ""
+"Este programa es software libre; usted puede redistribuirlo y/o modificarlo bajo los siguientes términos\n"
 "de la Licencia Pública General de GNU publicada por la Free Software Foundation; cualquiera de las dos versiones\n"
 "2 de la Licencia, o (a su elección) cualquier versión posterior.\n"
 "  Este software utiliza bibliotecas del proyecto FFmpeg bajo la LGPLv2.1.\n"
@@ -777,7 +830,8 @@ msgstr "Abrir EDL"
 msgid ""
 "Error: unable to open:\n"
 "  %s"
-msgstr "Error: no se puede abrir:\n"
+msgstr ""
+"Error: no se puede abrir:\n"
 " %s"
 
 #: cinelerra/assetpopup.C:232 cinelerra/editpopup.C:128
@@ -786,7 +840,8 @@ msgstr "Error: no se puede abrir:\n"
 msgid ""
 "Error: unable to load:\n"
 "  %s"
-msgstr "Error: no se puede cargar:\n"
+msgstr ""
+"Error: no se puede cargar:\n"
 " %s"
 
 #: cinelerra/assetpopup.C:244 cinelerra/mwindow.C:4090
@@ -794,7 +849,8 @@ msgstr "Error: no se puede cargar:\n"
 msgid ""
 "media is not EDL:\n"
 "%s"
-msgstr "los medios no son EDL:\n"
+msgstr ""
+"los medios no son EDL:\n"
 "%s"
 
 #: cinelerra/assetpopup.C:250 cinelerra/clippopup.C:474
@@ -1131,7 +1187,8 @@ msgstr "eliminar %s\n"
 msgid ""
 "Warning: %s\n"
 " dimensions %dx%d exceed asset maximum limits %dx%d\n"
-msgstr "Atención: %s\n"
+msgstr ""
+"Atención: %s\n"
 " dimensiones %dx%d superan los límites máximos activos %dx%d\n"
 
 #: cinelerra/awindowgui.C:2089
@@ -1139,7 +1196,8 @@ msgstr "Atención: %s\n"
 msgid ""
 "Warning: %s\n"
 " dimensions %dx%d exceed OpenGL texture limit %d\n"
-msgstr "Atención: %s\n"
+msgstr ""
+"Atención: %s\n"
 " dimensiones %dx%d exceden el límite de textura OpenGL %d\n"
 
 #: cinelerra/awindowgui.C:2234
@@ -1483,7 +1541,8 @@ msgstr "Ctrl-Mayús-D"
 msgid ""
 "Unable to save: %s\n"
 "-- %s"
-msgstr "No se puede guardar: %s\n"
+msgstr ""
+"No se puede guardar: %s\n"
 "-- %s"
 
 #: cinelerra/bdcreate.C:230 cinelerra/dvdcreate.C:295
@@ -1501,7 +1560,8 @@ msgstr "Sin contenido: %s"
 msgid ""
 "Unable to create directory: %s\n"
 "-- %s"
-msgstr "No se puede crear la carpeta: %s\n"
+msgstr ""
+"No se puede crear la carpeta: %s\n"
 "-- %s"
 
 #: cinelerra/bdcreate.C:387 cinelerra/dvdcreate.C:509
@@ -2216,7 +2276,8 @@ msgstr "Grabación en curso\n"
 #: cinelerra/channelinfo.C:1685
 #, c-format
 msgid "capture driver not dvb\n"
-msgstr "el controlador de captura no está configurado como DVB.\n"
+msgstr ""
+"el controlador de captura no está configurado como DVB.\n"
 "Ajuste desde las preferencias de grabación el controlador como DVB\n"
 "Ajustes - Preferencias  Grabación  Controlador: DVB\n"
 
@@ -2549,7 +2610,8 @@ msgid ""
 "transcode target file exists but is incorrect format:\n"
 "%s\n"
 "remove file from disk before transcode to new format.\n"
-msgstr "el archivo de destino de transcodificación existe pero tiene un formato incorrecto:\n"
+msgstr ""
+"el archivo de destino de transcodificación existe pero tiene un formato incorrecto:\n"
 "%s\n"
 "eliminar el archivo del disco antes de transcodificar a un nuevo formato.\n"
 
@@ -2598,7 +2660,8 @@ msgstr "Sufijo:"
 
 #: cinelerra/convert.C:597 cinelerra/render.C:1063
 msgid "Beep on done volume"
-msgstr "Volumen del pitido\n"
+msgstr ""
+"Volumen del pitido\n"
 "al terminar"
 
 #: cinelerra/convert.C:638
@@ -3072,7 +3135,8 @@ msgstr "Activar para que mover/rotar/escalar afecte a toda las formas"
 
 #: cinelerra/cwindowtool.C:2794
 msgid "Gang points"
-msgstr "El desplazamiento desde los valores\n"
+msgstr ""
+"El desplazamiento desde los valores\n"
 "x e y afecta a todos los puntos de la forma"
 
 #: cinelerra/cwindowtool.C:2824
@@ -3234,7 +3298,8 @@ msgid ""
 "Wheel: rotate around Pivot Point\n"
 "Shift+Wheel: scale around Pivot Point\n"
 "Ctrl+Wheel: rotate/scale around pointer"
-msgstr "BIR: Insertar punto / mover punto\n"
+msgstr ""
+"BIR: Insertar punto / mover punto\n"
 "Mayús+BIR: Mover punto de la forma\n"
 "Ctrl+BIR: Mover/Crear la tangente Bézier\n"
 "Alt+BIR: Mover la máscara\n"
@@ -3333,7 +3398,8 @@ msgstr "Ángulo:"
 msgid ""
 "Press Ctrl to lock ruler to the\n"
 "nearest 45%c%c angle."
-msgstr "Presiona Ctrl para bloquear la regla en el\n"
+msgstr ""
+"Presiona Ctrl para bloquear la regla en el\n"
 " ángulo de 45%c%c más cercano."
 
 #: cinelerra/cwindowtool.C:4026
@@ -3429,7 +3495,8 @@ msgstr "%s tiene un tipo de CAMF desconocido %d.\n"
 #: cinelerra/dcraw.C:3256
 #, c-format
 msgid "%s: \"%s\" matrix not found!\n"
-msgstr "%s: \"%s\" matriz no encontrada!\n"
+msgstr ""
+"%s: \"%s\" matriz no encontrada!\n"
 "\n"
 
 #: cinelerra/dcraw.C:3359
@@ -3440,7 +3507,8 @@ msgstr "Interpolación Foveon\n"
 #: cinelerra/dcraw.C:3386
 #, c-format
 msgid "%s: Invalid white balance \"%s\"\n"
-msgstr "%s: Balance de blanco inválido \"%s\"\n"
+msgstr ""
+"%s: Balance de blanco inválido \"%s\"\n"
 "\n"
 
 #: cinelerra/dcraw.C:3882
@@ -3473,7 +3541,8 @@ msgstr "%s: No se puede usar balance de blancos de cámara.\n"
 msgid ""
 "Scaling with darkness %d, saturation %d, and\n"
 "multipliers"
-msgstr "Escalado con oscuridad %d, saturación %d, y\n"
+msgstr ""
+"Escalado con oscuridad %d, saturación %d, y\n"
 "multiplicadores"
 
 #: cinelerra/dcraw.C:4273
@@ -3581,7 +3650,8 @@ msgstr "Estirando la imagen...\n"
 msgid ""
 "\n"
 "Raw photo decoder \"dcraw\" v%s"
-msgstr "\n"
+msgstr ""
+"\n"
 "Decodificador de imagen en crudo \"dcraw\" v%s"
 
 #: cinelerra/dcraw.C:10168
@@ -3589,7 +3659,8 @@ msgstr "\n"
 msgid ""
 "\n"
 "by Dave Coffin, dcoffin a cybercom o net\n"
-msgstr "\n"
+msgstr ""
+"\n"
 "por Dave Coffin, dcoffin un cybercom o red\n"
 
 #: cinelerra/dcraw.C:10169
@@ -3598,7 +3669,8 @@ msgid ""
 "\n"
 "Usage:  %s [OPTION]... [FILE]...\n"
 "\n"
-msgstr "\n"
+msgstr ""
+"\n"
 "Uso: %s [OPCION]... [ARCHIVO]...\n"
 "\n"
 
@@ -3786,7 +3858,8 @@ msgstr "%s no tiene miniatura.\n"
 msgid ""
 "\n"
 "Filename: %s\n"
-msgstr "\n"
+msgstr ""
+"\n"
 "Nombre de archivo: %s\n"
 
 #: cinelerra/dcraw.C:10360
@@ -3855,7 +3928,8 @@ msgstr "Número de imágenes en crudo: %d\n"
 #: cinelerra/dcraw.C:10379
 #, c-format
 msgid "Pixel Aspect Ratio: %0.6f\n"
-msgstr "Relación de aspecto de pixel: %0.6f\n"
+msgstr ""
+"Relación de aspecto de pixel: %0.6f\n"
 "\n"
 
 #: cinelerra/dcraw.C:10381
@@ -3888,7 +3962,8 @@ msgstr "Colores crudos: %d"
 msgid ""
 "\n"
 "Filter pattern: "
-msgstr "\n"
+msgstr ""
+"\n"
 "Patrón de filtro: "
 
 #: cinelerra/dcraw.C:10427
@@ -3896,7 +3971,8 @@ msgstr "\n"
 msgid ""
 "\n"
 "Daylight multipliers:"
-msgstr "\n"
+msgstr ""
+"\n"
 "Multiplicadores de luz diurna:"
 
 #: cinelerra/dcraw.C:10430
@@ -3904,7 +3980,8 @@ msgstr "\n"
 msgid ""
 "\n"
 "Camera multipliers:"
-msgstr "\n"
+msgstr ""
+"\n"
 "Multiplicadores de cámara:"
 
 #: cinelerra/dcraw.C:10454
@@ -4105,7 +4182,8 @@ msgstr "Insertar ( v )"
 
 #: cinelerra/editpanel.C:797
 msgid "To clip ( i )"
-msgstr "Crear clip ( i )\n"
+msgstr ""
+"Crear clip ( i )\n"
 "Este se formará a partir de las pistas activas\n"
 "o a partir de lo seleccionado en las pistas activas."
 
@@ -4173,21 +4251,24 @@ msgstr "Ver Vectorscopio"
 msgid ""
 "Currently: Gang None\n"
 "  Click to: Gang Channels"
-msgstr "Actualmente: Ningún Grupo\n"
+msgstr ""
+"Actualmente: Ningún Grupo\n"
 "Clic para: Agrupar Canales"
 
 #: cinelerra/editpanel.C:1331
 msgid ""
 "Currently: Gang Channels\n"
 "  Click to: Gang Media"
-msgstr "Actualmente: Canales Agrupados\n"
+msgstr ""
+"Actualmente: Canales Agrupados\n"
 "Clic para: Agrupar Medios"
 
 #: cinelerra/editpanel.C:1332
 msgid ""
 "Currently: Gang Media\n"
 "  Click to: Gang None"
-msgstr "Actualmente: Medios Agrupados\n"
+msgstr ""
+"Actualmente: Medios Agrupados\n"
 "Clic para: Ningún Grupo"
 
 #: cinelerra/editpanel.C:1389
@@ -4395,7 +4476,8 @@ msgstr "ninguno"
 msgid ""
 "Error retrieving data from GPU to CPU\n"
 "file: %s\n"
-msgstr "Error recuperando datos desde GPU a CPU\n"
+msgstr ""
+"Error recuperando datos desde GPU a CPU\n"
 "archivo: %s\n"
 
 #: cinelerra/ffmpeg.C:1359
@@ -4403,7 +4485,8 @@ msgstr "Error recuperando datos desde GPU a CPU\n"
 msgid ""
 "Error converting data from GPU to CPU\n"
 "file: %s\n"
-msgstr "Error al convertir datos de GPU a CPU\n"
+msgstr ""
+"Error al convertir datos de GPU a CPU\n"
 "archivo: %s\n"
 
 #: cinelerra/ffmpeg.C:2191
@@ -4535,7 +4618,8 @@ msgstr "falla al abrir %s:%s\n"
 msgid ""
 "bitstream filter failed %s:\n"
 "%s\n"
-msgstr "fallo en el filtro de flujo de bits %s:\n"
+msgstr ""
+"fallo en el filtro de flujo de bits %s:\n"
 "%s\n"
 
 #: cinelerra/ffmpeg.C:3109
@@ -4543,7 +4627,8 @@ msgstr "fallo en el filtro de flujo de bits %s:\n"
 msgid ""
 "Cant write image2 header file: %s\n"
 "  %m"
-msgstr "No se puede escribir el archivo de encabezado \"image2\": %s\n"
+msgstr ""
+"No se puede escribir el archivo de encabezado \"image2\": %s\n"
 "  %m"
 
 #: cinelerra/ffmpeg.C:3159
@@ -4576,7 +4661,8 @@ msgstr "más de 100 read_frame yerra\n"
 msgid ""
 "Error while opening \"%s\" for reading. \n"
 "%m\n"
-msgstr "Error al abrir \"%s\" para leer. \n"
+msgstr ""
+"Error al abrir \"%s\" para leer. \n"
 "%m\n"
 
 #: cinelerra/fileac3.C:132
@@ -4589,7 +4675,8 @@ msgstr "FileAC3::códec OPEN_FILE no encontrado.\n"
 msgid ""
 "Error while opening \"%s\" for writing. \n"
 "%m\n"
-msgstr "Error al abrir \"%s\" para la escritura. \n"
+msgstr ""
+"Error al abrir \"%s\" para la escritura. \n"
 "%m\n"
 
 #: cinelerra/fileac3.C:159
@@ -4601,7 +4688,8 @@ msgstr "FileAC3::OPEN_FILE no pudo abrir el codec.\n"
 msgid ""
 "Error while writing samples. \n"
 "%m\n"
-msgstr "Error miestras se escribían muestras. \n"
+msgstr ""
+"Error miestras se escribían muestras. \n"
 "%m\n"
 
 #: cinelerra/fileac3.C:346 cinelerra/filedv.C:930 cinelerra/fileflac.C:340
@@ -4640,7 +4728,8 @@ msgstr "DESCONOCIDO"
 msgid ""
 "Raw DV format does not support following resolution: %ix%i framerate: %f\n"
 "Allowed resolutions are 720x576 25fps (PAL) and 720x480 29.97fps (NTSC)\n"
-msgstr "Formato Raw DV no admite la resolución siguiente: %ix%i frameRate: %f\n"
+msgstr ""
+"Formato Raw DV no admite la resolución siguiente: %ix%i frameRate: %f\n"
 "allowed son 720x576 25fps (PAL) y 720x480 (NTSC) 29,97\n"
 
 #: cinelerra/filedv.C:192
@@ -5126,7 +5215,8 @@ msgstr "%s: no existe el archivo"
 msgid ""
 "%s:\n"
 "list empty"
-msgstr "%s:\n"
+msgstr ""
+"%s:\n"
 "lista vacía"
 
 #: cinelerra/filelist.C:274
@@ -5134,7 +5224,8 @@ msgstr "%s:\n"
 msgid ""
 "%s:\n"
 "%d files not found"
-msgstr "%s:\n"
+msgstr ""
+"%s:\n"
 "%d archivos no encontrados"
 
 #: cinelerra/filempeg.C:148
@@ -5254,7 +5345,8 @@ msgstr "cell times:"
 msgid ""
 "\n"
 "system time: %s"
-msgstr "\n"
+msgstr ""
+"\n"
 "hora del sistema: %s"
 
 #: cinelerra/filempeg.C:256
@@ -5311,7 +5403,8 @@ msgstr "Velocidad de fotograma no soportado %f\n"
 msgid ""
 "Error while opening \"%s\" for writing\n"
 "%m\n"
-msgstr "Error al abrir \"%s\" para la escritura\n"
+msgstr ""
+"Error al abrir \"%s\" para la escritura\n"
 "%m\n"
 
 #: cinelerra/filempeg.C:718
@@ -5732,7 +5825,8 @@ msgstr "Los archivos de referencia no se pueden crear renderizando\n"
 msgid ""
 "Error loading Reference file:\n"
 "%s"
-msgstr "Error al cargar el archivo de referencia:\n"
+msgstr ""
+"Error al cargar el archivo de referencia:\n"
 "%s"
 
 #: cinelerra/filesndfile.C:269
@@ -5848,7 +5942,8 @@ msgstr "El formato seleccionado no soporta audio."
 msgid ""
 "ULAW compression is only available in\n"
 "Quicktime Movies and PCM files."
-msgstr "Compresión ULAW sólo está disponible para \n"
+msgstr ""
+"Compresión ULAW sólo está disponible para \n"
 "Quicktime y archivos PCM."
 
 #: cinelerra/formatpopup.C:36
@@ -6390,7 +6485,8 @@ msgstr "Niveles"
 msgid ""
 "Other projects can change this project\n"
 "and this can become a broken link"
-msgstr "Otros proyectos pueden cambiar este proyecto\n"
+msgstr ""
+"Otros proyectos pueden cambiar este proyecto\n"
 "y esto puede convertirse en un enlace roto"
 
 #: cinelerra/loadfile.C:162
@@ -6478,7 +6574,8 @@ msgstr "-b No puede ser utilizada por el usuario.\n"
 msgid ""
 "\n"
 "Usage:\n"
-msgstr "\n"
+msgstr ""
+"\n"
 "Uso:\n"
 
 #: cinelerra/main.C:314
@@ -6486,7 +6583,8 @@ msgstr "\n"
 msgid ""
 "%s [-f] [-c configuration] [-d port] [-n nice] [-r batch file] [filenames]\n"
 "\n"
-msgstr "%s [-f] [configuración -c] [puerto -d] [nice -n] [ lote ficheros -r] [nombre de archivo]\n"
+msgstr ""
+"%s [-f] [configuración -c] [puerto -d] [nice -n] [ lote ficheros -r] [nombre de archivo]\n"
 "\n"
 
 #: cinelerra/main.C:315
@@ -6530,7 +6628,8 @@ msgid ""
 "filenames = files to load\n"
 "\n"
 "\n"
-msgstr "nombres de archivo = archivos para cargar\n"
+msgstr ""
+"nombres de archivo = archivos para cargar\n"
 "\n"
 "\n"
 
@@ -6994,19 +7093,19 @@ msgstr "Mezcladores..."
 
 #: cinelerra/mainmenu.C:1801
 msgid "Mixer Viewer"
-msgstr "Visor de mezcladores"
+msgstr "Nuevo Visor de mezcladores"
 
 #: cinelerra/mainmenu.C:1814
 msgid "Drag Tile mixers"
-msgstr "Marcar posición mezcladores"
+msgstr "Marcar la posición de los mezcladores"
 
 #: cinelerra/mainmenu.C:1862
 msgid "Align mixers"
-msgstr "Alinear mezcladores"
+msgstr "Sincronizar mezcladores mediante el audio"
 
 #: cinelerra/mainmenu.C:1876
 msgid "Mix masters"
-msgstr "Mezclador master"
+msgstr "Crear Mezclador desde pistas activas"
 
 #: cinelerra/mainmenu.C:1889
 msgid "Align Timecodes"
@@ -7217,11 +7316,11 @@ msgstr "pos"
 
 #: cinelerra/mixersalign.C:396
 msgid "Match"
-msgstr "Ajustar"
+msgstr "Alinear"
 
 #: cinelerra/mixersalign.C:412
 msgid "Match All"
-msgstr "Ajustar todo"
+msgstr "Alinear todo"
 
 #: cinelerra/mixersalign.C:447 cinelerra/mixersalign.C:455
 msgid "Move"
@@ -7230,7 +7329,7 @@ msgstr "Mover"
 #: cinelerra/mixersalign.C:500
 #, c-format
 msgid "chkpt %d"
-msgstr "chkpt %d"
+msgstr "desde el punto %d"
 
 #: cinelerra/mixersalign.C:502 cinelerra/recordengine.C:606
 #, c-format
@@ -7239,11 +7338,11 @@ msgstr "comenzar de nuevo"
 
 #: cinelerra/mixersalign.C:508
 msgid "CheckPoint"
-msgstr "Punto de control"
+msgstr "Comenzar de 0"
 
 #: cinelerra/mixersalign.C:521
 msgid "Align Mixers"
-msgstr "Alinear mezcladores"
+msgstr "Sincronizar mezcladores"
 
 #: cinelerra/mixersalign.C:535
 msgid "Mixers:"
@@ -7251,11 +7350,11 @@ msgstr "Mezcladores:"
 
 #: cinelerra/mixersalign.C:537
 msgid "Master Track:"
-msgstr "Pista maestra:"
+msgstr "Pista Maestra:"
 
 #: cinelerra/mixersalign.C:539
 msgid "Audio Tracks:"
-msgstr "Pistas de audio:"
+msgstr "Pistas de Audio:"
 
 #: cinelerra/mixersalign.C:870
 msgid "align mixers"
@@ -7408,7 +7507,8 @@ msgstr "Cargando %s"
 msgid ""
 "%s's resolution is %dx%d.\n"
 "Images with odd dimensions may not decode properly."
-msgstr "%s's resolución es %dx%d.\n"
+msgstr ""
+"%s's resolución es %dx%d.\n"
 "\n"
 "Es posible que las imágenes con dimensiones impares no se decodifiquen correctamente."
 
@@ -7418,7 +7518,8 @@ msgid ""
 "%s's index was built for program number %d\n"
 "Playback preference is %d.\n"
 "  Using program %d."
-msgstr "%s's índice fue construído para el programa número %d\n"
+msgstr ""
+"%s's índice fue construído para el programa número %d\n"
 "Preferencias de reproducción es %d.\n"
 "  Usando programa %d."
 
@@ -7436,7 +7537,8 @@ msgstr "el formato 's no se pudo determinar."
 msgid ""
 "XML file %s\n"
 " not from cinelerra."
-msgstr "Archivo XML %s\n"
+msgstr ""
+"Archivo XML %s\n"
 " no es de cinelerra."
 
 #: cinelerra/mwindow.C:2207
@@ -7449,7 +7551,8 @@ msgstr "Desconocido %s"
 msgid ""
 "Warning: XML from cinelerra version %s\n"
 "Session data may be incompatible."
-msgstr "Cuidado: XML de la versión %s de cinelerra\n"
+msgstr ""
+"Cuidado: XML de la versión %s de cinelerra\n"
 "Datos de la sesión pueden ser incompatibles."
 
 #: cinelerra/mwindow.C:2271
@@ -7457,7 +7560,8 @@ msgstr "Cuidado: XML de la versión %s de cinelerra\n"
 msgid ""
 "Error: Unable to load xml:\n"
 "  %s"
-msgstr "Error: No se puede cargar el xml:\n"
+msgstr ""
+"Error: No se puede cargar el xml:\n"
 "  %s"
 
 #: cinelerra/mwindow.C:2404
@@ -7473,7 +7577,8 @@ msgstr "proxy"
 msgid ""
 "The %s '%s' in file '%s' is not part of your installation of Cinelerra.\n"
 "The project won't be rendered as it was meant and Cinelerra might crash.\n"
-msgstr "La %s '%s' en el archivo '%s' no forma parte de su instalación de Cinelerra. \n"
+msgstr ""
+"La %s '%s' en el archivo '%s' no forma parte de su instalación de Cinelerra. \n"
 "Posiblemente su proyecto no se exportará correctamente y Cinelerra puede bloquearse. \n"
 
 #: cinelerra/mwindow.C:2706
@@ -7489,7 +7594,8 @@ msgid ""
 "as root, run: echo 0x%jx > %s\n"
 "before trying to start cinelerra.\n"
 "It should be at least 0x%jx for Cinelerra.\n"
-msgstr "MWindow::init_shm: %s ds %p.\n"
+msgstr ""
+"MWindow::init_shm: %s ds %p.\n"
 "probablemente necesite ser root, o:\n"
 "como root, corra: eco 0x%jx > %s\n"
 "antes de intentar iniciar cinelerra.\n"
@@ -7586,7 +7692,8 @@ msgstr "Utilizando %s"
 msgid ""
 "This project's dimensions are not multiples of 4 so\n"
 "it can't be rendered by OpenGL."
-msgstr "Las dimensiones de este proyecto no son múltiplos de 4 por lo\n"
+msgstr ""
+"Las dimensiones de este proyecto no son múltiplos de 4 por lo\n"
 " cual no puede ser renderizado con OpenGL."
 
 #: cinelerra/mwindow.C:5122
@@ -7954,7 +8061,8 @@ msgstr ": Programa"
 
 #: cinelerra/mwindowgui.C:2385
 msgid "Changing the base codecs may require rebuilding indexes."
-msgstr "Cambiar la base de codificación puede requerir recargar los archivos.\n"
+msgstr ""
+"Cambiar la base de codificación puede requerir recargar los archivos.\n"
 "Puede hacer esto desde la ventana de recursos. Seleccione los archivos\n"
 "y desde el submenú del botón derecho elija \"Recargar seleccionados\"."
 
@@ -8397,7 +8505,8 @@ msgstr ": Agregar al proyecto"
 msgid ""
 "Cannot create and access project path:\n"
 "%s"
-msgstr "No se puede crear y acceder a la ruta del proyecto: \n"
+msgstr ""
+"No se puede crear y acceder a la ruta del proyecto: \n"
 "%s"
 
 #: cinelerra/new.C:333
@@ -8467,7 +8576,8 @@ msgstr "Procesar archivo por etiqueta y sin etiquetas\n"
 
 #: cinelerra/patchgui.C:336
 msgid "Play track"
-msgstr "Silenciar pista\n"
+msgstr ""
+"Silenciar pista\n"
 "AFECTA AL RENDER"
 
 #: cinelerra/patchgui.C:361
@@ -8476,7 +8586,8 @@ msgstr "reproducir parte"
 
 #: cinelerra/patchgui.C:389
 msgid "Arm track"
-msgstr "Bloquear/Desbloquear edición de la pista (TAB)\n"
+msgstr ""
+"Bloquear/Desbloquear edición de la pista (TAB)\n"
 "Click con Mayúsculas bloquea/desbloquea las demás (Mayús-TAB)"
 
 #: cinelerra/patchgui.C:419
@@ -8485,7 +8596,8 @@ msgstr "parchear la grabación"
 
 #: cinelerra/patchgui.C:446
 msgid "Gang faders"
-msgstr "Encadena el cambio de valores cuando se hace uso del deslizador\n"
+msgstr ""
+"Encadena el cambio de valores cuando se hace uso del deslizador\n"
 "Este cambio afectará a todas las pistas activas que tengan este icono activado\n"
 "Muy útil para cambiar la ganancia de las pistas de audio de manera simultánea"
 
@@ -8503,7 +8615,8 @@ msgstr "dibujar parte"
 
 #: cinelerra/patchgui.C:549
 msgid "Don't send to output"
-msgstr "Silenciar pista, se puede animar\n"
+msgstr ""
+"Silenciar pista, se puede animar\n"
 "AFECTA AL RENDER"
 
 #: cinelerra/patchgui.C:589
@@ -8617,7 +8730,8 @@ msgid ""
 "vdpau - Nvidia, Nouveau\n"
 "vaapi - Broadcom, Intel HD graphics, Amdgpu, Radeon\n"
 "cuda  - Nvidia + Cuda SDK"
-msgstr "vdpau - Nvidia, Nouveau\n"
+msgstr ""
+"vdpau - Nvidia, Nouveau\n"
 "vaapi - Broadcom, Intel HD graphics, Amdgpu, Radeon\n"
 "cuda  - Nvidia + Cuda SDK"
 
@@ -8905,14 +9019,16 @@ msgstr "RenderizarMux"
 msgid ""
 "Currently: Try FFMpeg first\n"
 "   Click to: Try FFMpeg last"
-msgstr "Actualmente: Probar FFMpeg Primero\n"
+msgstr ""
+"Actualmente: Probar FFMpeg Primero\n"
 "        Clic para: Probar FFMpeg Último"
 
 #: cinelerra/preferences.inc:39
 msgid ""
 "Currently: Try FFMpeg last\n"
 "   Click to: Try FFMpeg first"
-msgstr "Actualmente: Probar FFMpeg Último\n"
+msgstr ""
+"Actualmente: Probar FFMpeg Último\n"
 "        Clic para: Probar FFMpeg Primero"
 
 #: cinelerra/preferencesthread.C:74
@@ -9126,7 +9242,8 @@ msgstr "Noticias"
 msgid ""
 "Start batch recording\n"
 "from the current position."
-msgstr "Comience a importar lote\n"
+msgstr ""
+"Comience a importar lote\n"
 "desde la posición actual."
 
 #: cinelerra/recordbatches.C:532
@@ -9137,7 +9254,8 @@ msgstr "Activar"
 msgid ""
 "Make the highlighted\n"
 "clip active."
-msgstr "Hacer que el clip destacado\n"
+msgstr ""
+"Hacer que el clip destacado\n"
 "se active."
 
 #: cinelerra/record.C:87
@@ -9455,7 +9573,8 @@ msgstr "Interrumpido"
 msgid ""
 "Start recording\n"
 "from current position"
-msgstr "Comience a grabar\n"
+msgstr ""
+"Comience a grabar\n"
 "desde la posición actual"
 
 #: cinelerra/recordtransport.C:202
@@ -9694,7 +9813,8 @@ msgstr "Borde Vert"
 msgid ""
 "This track's dimensions are not multiples of 4 so\n"
 "it can't be rendered by OpenGL."
-msgstr "Las dimensiones de esta pista no son múltiplos de 4 por lo tanto\n"
+msgstr ""
+"Las dimensiones de esta pista no son múltiplos de 4 por lo tanto\n"
 "no puede ser renderizada por OpenGL."
 
 #: cinelerra/resizetrackthread.C:105
@@ -9981,7 +10101,8 @@ msgid ""
 "== A new entry is here for illustration purposes.\n"
 "*  Entry 2\n"
 "This is the second entry.\n"
-msgstr "Agregar subtítulos: Algunos consejos\n"
+msgstr ""
+"Agregar subtítulos: Algunos consejos\n"
 "(= o * al inicio de una línea indica que es un comentario)\n"
 "=Esto es un comentario y no actua como texto de subtítulos\n"
 "*A CONTINUACIÓN LA REFERENCIA DE LONGITUD MÁXIMA DE LÍNEA \n"
@@ -10020,7 +10141,8 @@ msgstr "Siguiente"
 msgid ""
 "cannot open: \"%s\"\n"
 "%s"
-msgstr "no puede abrir: \"%s\"\n"
+msgstr ""
+"no puede abrir: \"%s\"\n"
 "%s"
 
 #: cinelerra/swindow.C:866
@@ -10028,7 +10150,8 @@ msgstr "no puede abrir: \"%s\"\n"
 msgid ""
 "Unable to open %s:\n"
 "%m"
-msgstr "No se puede abrir %s:\n"
+msgstr ""
+"No se puede abrir %s:\n"
 "%m"
 
 #: cinelerra/swindow.C:929
@@ -10097,7 +10220,8 @@ msgstr "Sab"
 msgid ""
 "tip file missing:\n"
 " %s"
-msgstr "no existe archivo de consejos:\n"
+msgstr ""
+"no existe archivo de consejos:\n"
 " %s"
 
 #: cinelerra/tipwindow.C:119
@@ -10201,7 +10325,8 @@ msgid ""
 "StartSource: %s\n"
 "StartProject: %s\n"
 "Length: %s\n"
-msgstr "IniciarFuente: %s\n"
+msgstr ""
+"IniciarFuente: %s\n"
 "IniciarProject: %s\n"
 "Longitud: %s\n"
 
@@ -10863,7 +10988,8 @@ msgstr "BurningTV"
 msgid ""
 "BurningTV from EffectTV\n"
 "Copyright (C) 2001 FUKUCHI Kentarou"
-msgstr "BurningTV de EffectTV\n"
+msgstr ""
+"BurningTV de EffectTV\n"
 "Copyright (C) 2001 Fukuchi Kentarou"
 
 #: plugins/C41/c41.C:142
@@ -11301,7 +11427,8 @@ msgid ""
 "Shift-left click in Enable field:\n"
 "  if any off, turns all on\n"
 "  if all on, turns rest off."
-msgstr "Clic derecho en el compositor: crea nuevo punto\n"
+msgstr ""
+"Clic derecho en el compositor: crea nuevo punto\n"
 "Mayús-clic izquierdo en el campo de valor E :\n"
 "- si alguno está apagado, enciende todo\n"
 "- si todo está encendido, apaga todos los demás."
@@ -11779,7 +11906,8 @@ msgstr "DotTV"
 msgid ""
 "DotTV from EffectTV\n"
 "Copyright (C) 2001 FUKUCHI Kentarou"
-msgstr "DotTV de EffectTV\n"
+msgstr ""
+"DotTV de EffectTV\n"
 "Copyright (C) 2001 Fukuchi Kentarou"
 
 #: plugins/downsample/downsample.C:247
@@ -12562,7 +12690,8 @@ msgstr "Movimiento"
 msgid ""
 "Translation search radius:\n"
 "(W/H Percent of image)"
-msgstr "Buscar radio movimiento:\n"
+msgstr ""
+"Buscar radio movimiento:\n"
 "(W/H % de imagen)"
 
 #: plugins/motion/motionwindow.C:66 plugins/motion-cv/motionwindow-cv.C:65
@@ -12570,7 +12699,8 @@ msgstr "Buscar radio movimiento:\n"
 msgid ""
 "Rotation search radius:\n"
 "(Degrees)"
-msgstr "Buscar radio de rotación:\n"
+msgstr ""
+"Buscar radio de rotación:\n"
 "(Grados)"
 
 #: plugins/motion/motionwindow.C:72 plugins/motion2point/motionwindow.C:111
@@ -12579,7 +12709,8 @@ msgstr "Buscar radio de rotación:\n"
 msgid ""
 "Translation block size:\n"
 "(W/H Percent of image)"
-msgstr "Tamaño bloque mover:\n"
+msgstr ""
+"Tamaño bloque mover:\n"
 " (W/H % de imagen)"
 
 #: plugins/motion/motionwindow.C:94 plugins/motion-cv/motionwindow-cv.C:89
@@ -12634,7 +12765,8 @@ msgstr "Rotación de velocidad de asentamiento:"
 msgid ""
 "Motion noise level:\n"
 "(% of max diff.)"
-msgstr "Nivel de ruido de movimiento:\n"
+msgstr ""
+"Nivel de ruido de movimiento:\n"
 "(% of max dif.)"
 
 #: plugins/motion/motionwindow.C:159
@@ -12642,7 +12774,8 @@ msgstr "Nivel de ruido de movimiento:\n"
 msgid ""
 "Rotation noise level:\n"
 "(% of max diff.)"
-msgstr "Nivel de ruido de rotación:\n"
+msgstr ""
+"Nivel de ruido de rotación:\n"
 "(% of max dif.)"
 
 #: plugins/motion/motionwindow.C:174 plugins/motion2point/motionwindow.C:198
@@ -12674,7 +12807,8 @@ msgid ""
 "For best results\n"
 " Set: Play every frame\n"
 " Preferences-> Playback-> Video Out"
-msgstr "Para mejores resultados activar:\n"
+msgstr ""
+"Para mejores resultados activar:\n"
 "\"Reproducir cada fotograma\" en Ajustes:\n"
 "Preferencias→ Reproducción→ Salida de vídeo"
 
@@ -12828,7 +12962,8 @@ msgstr "Rastrear Punto 2"
 msgid ""
 "Translation search offset:\n"
 "(X/Y Percent of image)"
-msgstr "Buscar compensar movimiento:\n"
+msgstr ""
+"Buscar compensar movimiento:\n"
 "(X/Y % de imagen)"
 
 #: plugins/motion2point/motionwindow.C:165
@@ -12926,7 +13061,8 @@ msgstr "MovimientoCV"
 msgid ""
 "Rotation block size:\n"
 "(W/H Percent of image)"
-msgstr "Rotación tamaño de bloque: \n"
+msgstr ""
+"Rotación tamaño de bloque: \n"
 " (W/H Porcentaje de imagen)"
 
 #: plugins/motion-hv/motion-hv.C:261
@@ -13104,7 +13240,8 @@ msgid ""
 "Zoom image\n"
 "Translate image\n"
 "Translate view"
-msgstr "Mover punto seleccionado\n"
+msgstr ""
+"Mover punto seleccionado\n"
 "Zoom forma\n"
 "Mover forma\n"
 "Mover vista"
@@ -13592,7 +13729,8 @@ msgid ""
 "Ctrl=\n"
 "Ctrl+Alt=\n"
 "Ctrl+Shift="
-msgstr "\n"
+msgstr ""
+"\n"
 "Mayús=\n"
 "Ninguno=\n"
 "Ctrl=\n"
@@ -13607,7 +13745,8 @@ msgid ""
 "drag point\n"
 "drag all curves\n"
 "new fill point"
-msgstr "    BIRatón\n"
+msgstr ""
+"    BIRatón\n"
 "nuevo · para recta\n"
 "seleccionar punto\n"
 "mover punto\n"
@@ -13622,7 +13761,8 @@ msgid ""
 "drag curve\n"
 "new curve\n"
 "new off point"
-msgstr "      BDRatón\n"
+msgstr ""
+"      BDRatón\n"
 "nuevo · para curva\n"
 "seleccionar dibujo\n"
 "mover dibujo actual\n"
@@ -13634,7 +13774,8 @@ msgid ""
 "Wheel: rotate, centered on cursor\n"
 "Wheel: shift: scale, centered on cursor\n"
 "Key DEL= delete point, +Shift= delete curve\n"
-msgstr "RuedaRatón: Rotar. Cursor como pivote\n"
+msgstr ""
+"RuedaRatón: Rotar. Cursor como pivote\n"
 "Rueda + Mayús: Escalar. Cursor como centro\n"
 "Supr= Elimina punto seleccionado\n"
 "Supr+Mayús= Elimina el dibujo\n"
@@ -14033,7 +14174,8 @@ msgstr "Invertido"
 
 #: plugins/timefront/timefront.C:615
 msgid "Show grayscale (for tuning"
-msgstr "Mostrar escala de grises\n"
+msgstr ""
+"Mostrar escala de grises\n"
 "(para afinar resultado)"
 
 #: plugins/timefront/timefront.C:648
@@ -14301,7 +14443,8 @@ msgid ""
 "Btn3: shift: append point to end\n"
 "Wheel: rotate, centered on cursor\n"
 "Wheel: shift: scale, centered on cursor\n"
-msgstr "BIR: Seleccionar o arrastrar punto\n"
+msgstr ""
+"BIR: Seleccionar o arrastrar punto\n"
 "BCR: Arrastrar todos los puntos\n"
 "BDR: agregar punto en la línea más cercana\n"
 "BDR+Mayús: Añadir punto al final\n"

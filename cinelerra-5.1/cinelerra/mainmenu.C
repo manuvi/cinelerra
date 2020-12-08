@@ -1612,7 +1612,7 @@ int ShowVWindow::handle_event()
 		if( !mwindow->session->show_vwindow )
 			mwindow->show_vwindow(1);
 		else
-			mwindow->hide_vwindow();
+			mwindow->hide_vwindow(1);
 		mwindow->gui->lock_window("ShowVWindow::handle_event");
 		set_checked(mwindow->session->show_vwindow);
 	}

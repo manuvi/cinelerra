@@ -210,7 +210,7 @@ public:
 	int create_ref(Asset *asset, EDL *ref);
 // Show windows
 	void show_vwindow(int raise);
-	void hide_vwindow();
+	void hide_vwindow(int raise);
 	void show_awindow();
 	void hide_awindow();
 	void show_cwindow();
