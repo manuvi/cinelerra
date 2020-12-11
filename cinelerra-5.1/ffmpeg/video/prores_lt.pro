@@ -1,7 +1,7 @@
 mov prores_aw
 # encoder prores_aw. Container Apple QuickTime movie (.mov).
 # No alpha channel.
-profile=0
+profile=1
 quant_mat=auto
 cin_pix_fmt=yuv422p10le
 # The possible video profile values for the ProRes codec are:
