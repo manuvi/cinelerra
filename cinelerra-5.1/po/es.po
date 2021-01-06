@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: Cinelerra 5.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-10-15 14:02-0600\n"
-"PO-Revision-Date: 2020-12-08 16:49+0100\n"
+"PO-Revision-Date: 2021-01-05 11:27+0100\n"
 "Last-Translator: Sergio Daniel Gomez <sergio.sgsistemas@gmail.com>\n"
 "Language-Team: SPANISH <LL@li.org>\n"
 "Language: es\n"
@@ -1356,7 +1356,7 @@ msgstr "Etiquetado"
 
 #: cinelerra/batchrender.C:65
 msgid "Farmed"
-msgstr "Criado"
+msgstr "Granja"
 
 #: cinelerra/batchrender.C:65 cinelerra/compressortools.C:522
 msgid "Output"
@@ -1436,7 +1436,7 @@ msgstr "Ruta de salida:"
 
 #: cinelerra/batchrender.C:782
 msgid "EDL Path:"
-msgstr "Ruta EDL:"
+msgstr "Ruta EDL (EDL= Archivo de proyecto .xml):"
 
 #: cinelerra/batchrender.C:791
 msgid "Input EDL"
@@ -1477,35 +1477,35 @@ msgstr "Borrar"
 
 #: cinelerra/batchrender.C:1070
 msgid "Save Jobs"
-msgstr "Guardar los trabajos"
+msgstr "Guardar el lote"
 
 #: cinelerra/batchrender.C:1073
 msgid "Save a Batch Render List"
-msgstr "Guardar una Batch Render lista"
+msgstr "Guardar la lista de render"
 
 #: cinelerra/batchrender.C:1115
 msgid "Save Batch Render List"
-msgstr "Guardar Batch Render List"
+msgstr "Guardar la lista de render"
 
 #: cinelerra/batchrender.C:1116
 msgid "Enter a Batch Render filename to save as:"
-msgstr "Enter a Batch Render filename to save as:"
+msgstr "Introduzca un nombre para la lista de render que desea guardar:"
 
 #: cinelerra/batchrender.C:1148
 msgid "Load Jobs"
-msgstr "Cargar los trabajos"
+msgstr "Cargar un lote"
 
 #: cinelerra/batchrender.C:1152
 msgid "Load a previously saved Batch Render List"
-msgstr "Load a previously saved Batch Render List"
+msgstr "Cargar una lista de lotes previamente guardada"
 
 #: cinelerra/batchrender.C:1193
 msgid "Load Batch Render List"
-msgstr "Cargar Batch Render Lista"
+msgstr "Cargar la lista de render"
 
 #: cinelerra/batchrender.C:1194
 msgid "Enter a Batch Render filename to load from:"
-msgstr "Ender a Batch Render filename to load from:"
+msgstr "Escoja el archivo de Lotes que desea cargar:"
 
 #: cinelerra/batchrender.C:1228
 msgid "Use Current EDL"
@@ -1513,7 +1513,7 @@ msgstr "Utiliza EDL actual"
 
 #: cinelerra/batchrender.C:1242
 msgid "Save to EDL Path"
-msgstr "Guardar la Ruta EDL"
+msgstr "Guardar EDL (Esta opción puede destruir su trabajo)"
 
 #: cinelerra/batchrender.C:1343 cinelerra/recordbatches.C:503
 msgid "Start"
@@ -1521,7 +1521,7 @@ msgstr "Inicio"
 
 #: cinelerra/batchrender.C:1370
 msgid "warn if jobs/session mismatched"
-msgstr "advertir si los trabajos / sesiones no coinciden"
+msgstr "advertir si los trabajos/sesiones no coinciden"
 
 #: cinelerra/batchrender.C:1409 cinelerra/bdcreate.C:690
 #: cinelerra/dvdcreate.C:822 cinelerra/performanceprefs.C:406
@@ -7338,7 +7338,7 @@ msgstr "comenzar de nuevo"
 
 #: cinelerra/mixersalign.C:508
 msgid "CheckPoint"
-msgstr "Comenzar de 0"
+msgstr "Pto Control"
 
 #: cinelerra/mixersalign.C:521
 msgid "Align Mixers"
