@@ -8579,7 +8579,7 @@ msgstr "Секунд предрендеринга:"
 
 #: cinelerra/performanceprefs.C:98
 msgid "Project SMP cpus:"
-msgstr "Количество CPU (SMP), используемых плагинами:"
+msgstr "Кол-во CPU (SMP), исп. плагинами:"
 
 #: cinelerra/performanceprefs.C:113
 msgid "Background Rendering (Video only)"
