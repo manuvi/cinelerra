@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: Cinelerra 5.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-10-15 14:02-0600\n"
-"PO-Revision-Date: 2021-01-05 11:27+0100\n"
+"PO-Revision-Date: 2021-01-14 10:51+0100\n"
 "Last-Translator: Sergio Daniel Gomez <sergio.sgsistemas@gmail.com>\n"
 "Language-Team: SPANISH <LL@li.org>\n"
 "Language: es\n"
@@ -1352,7 +1352,7 @@ msgstr "Habilitado"
 
 #: cinelerra/batchrender.C:65
 msgid "Labeled"
-msgstr "Etiquetado"
+msgstr "Etiquetas"
 
 #: cinelerra/batchrender.C:65
 msgid "Farmed"
@@ -6507,7 +6507,7 @@ msgstr "Cargar copia de seguridad"
 
 #: cinelerra/loadmode.C:28
 msgid "Load strategy:"
-msgstr "Estrategia de inserción:"
+msgstr "Modo de carga:"
 
 #: cinelerra/loadmode.C:29
 msgid "EDL strategy:"

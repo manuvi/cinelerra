@@ -38,3 +38,10 @@ Alt + right moves to the next edit handle.
 Settings->typeless keyframes allows keyframes from any track to be pasted on either
 audio or video tracks.
 
+If colors in Compositor looks wrong, check "Setting/Preferences/Appearance" tab
+options YUV color space and YUV color range
+
+If you mistakingly saved empty backup, you still have  $HOME/.bcast5/backup.prev
+
+You can have more than one instance of Cinelerra-GG running.
+

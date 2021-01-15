@@ -113,3 +113,19 @@ Con el efecto de "Desenfoque de Caja" puedes definir la zona donde se aplica el 
 Y este marco se puede animar, lo que lo convierte en una herramienta perfecta para tapar
 caras u objetos de manera rápida.
 
+Cuando estiramos clips en la línea de tiempo y necesitamos ajustarlos con otros cortes con
+precisión, podemos mantener pulsado Ctrl+Alt para activar el imán. Éste sólo funciona con
+pistas desbloqueadas y también con etiquetas.
+
+Las etiquetas se insertan de manera rápida pulsando la letra "L". Son muy útiles para
+realizar ediciones avanzadas, desde selecciones entre ellas o para usar de referencia cuando
+necesitamos hacer ajustes precisos estirando clips haciendo uso del imán.
+
+Para cambiar la duración por defecto de las imágenes cuando las insertamos en la línea de 
+tiempo lo podemos hacer desde: Ajustes->Preferencias->Interfaz.
+
+Para hacer pases de fotografías de manera rápida podemos usar la opción "Concatenar con las
+pistas existentes" esto insertará las imágenes en una pista desbloqueada y al final de su
+contenido. La duración  de cada imagen será la definida en los ajustes. Ya solo nos resta
+hacer las transiciones y poner música.
+

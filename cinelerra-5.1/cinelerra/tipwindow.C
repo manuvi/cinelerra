@@ -117,7 +117,7 @@ void TipWindow::prev_tip()
 
 TipWindowGUI::TipWindowGUI(MWindow *mwindow, TipWindow *thread, int x, int y)
  : BC_Window(_(PROGRAM_NAME ": Tip of the day"), x, y,
-		xS(640), yS(100), xS(640), yS(100), 0, 0, 1)
+		xS(640), yS(110), xS(640), yS(110), 0, 0, 1)
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
