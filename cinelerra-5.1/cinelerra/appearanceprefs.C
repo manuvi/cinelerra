@@ -663,6 +663,7 @@ UseUnsafeGUI::UseUnsafeGUI(PreferencesWindow *pwindow, int x, int y)
 	_("Unsafe GUI in batchrender"))
 {
 	this->pwindow = pwindow;
+	set_tooltip(_("Save to EDL path option becomes available and will overwrite EDL on disk. \n Warn if jobs/session mismatch option is available but can be unchecked."));
 }
 
 int UseUnsafeGUI::handle_event()
@@ -761,7 +762,7 @@ AutoRotate::AutoRotate(PreferencesWindow *pwindow, int x, int y)
 	_("Auto rotate ffmpeg media"))
 {
 	this->pwindow = pwindow;
-	set_tooltip(_("Automatically rotates media if legal rotation metadata included."));
+	set_tooltip(_("Automatically rotates media if legal rotation metadata in file."));
 }
 
 int AutoRotate::handle_event()

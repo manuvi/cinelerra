@@ -3563,12 +3563,10 @@ float FFMPEG::ff_aspect_ratio(int stream)
 	AVRational dar;
 	AVRational sar = av_guess_sample_aspect_ratio(fmt_ctx, strm, NULL);
         if (sar.num) {
-            printf("sample_aspect_ratio, %f \n", av_q2d(sar));
             av_reduce(&dar.num, &dar.den,
                       par->width  * sar.num,
                       par->height * sar.den,
                       1024*1024);
-                      printf("display_aspect_ratio, %f \n", av_q2d(dar));
                       return av_q2d(dar);
                       }
         return ffvideo[stream]->aspect_ratio;
@@ -3617,7 +3615,6 @@ int FFMPEG::ff_interlace(int stream)
 // https://ffmpeg.org/doxygen/trunk/structAVCodecParserContext.html
 /* reads from demuxer because codec frame not ready */
 	int interlace0 = ffvideo[stream]->st->codecpar->field_order;
-	printf("interlace from demux: %i\n", interlace0);
 
 	switch (interlace0)
 	{

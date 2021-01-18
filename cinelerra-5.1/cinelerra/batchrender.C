@@ -197,7 +197,7 @@ BatchRenderThread::BatchRenderThread(MWindow *mwindow)
 	default_job = 0;
 	boot_defaults = 0;
 	preferences = 0;
-	warn = 1;
+	warn = 0;
 	render = 0;
 	batch_path[0] = 0;
 	do_farmed = 0;
