@@ -214,15 +214,25 @@ void AppearancePrefs::create_objects()
 	UseWarnIndecies *idx_warn = new UseWarnIndecies(pwindow, x, y);
 	add_subwindow(idx_warn);
 	y += idx_warn->get_h() + ys5;
-	UseWarnVersion *ver_warn = new UseWarnVersion(pwindow, x, y);
-	add_subwindow(ver_warn);
-	y += ver_warn->get_h() + ys5;
 	BD_WarnRoot *bdwr_warn = new BD_WarnRoot(pwindow, x, y);
 	add_subwindow(bdwr_warn);
 	y += bdwr_warn->get_h() + ys5;
 	UseWarnFileRef *warn_ref = new UseWarnFileRef(pwindow, x, y);
 	add_subwindow(warn_ref);
 	y += warn_ref->get_h() + ys5;
+	
+	add_subwindow(new BC_Bar(x0, y, warn_ref->get_w()-x0 - xs30));
+	y += ys15;
+
+	add_subwindow(title = new BC_Title(x, y, _("Dangerous:"), LARGEFONT,
+		resources->text_default));
+	y += title->get_h() + ys10;
+
+	
+	UseUnsafeGUI *unsafe_gui = new UseUnsafeGUI(pwindow, x, y);
+	add_subwindow(unsafe_gui);
+	y += unsafe_gui->get_h() + ys5;
+
 
 	x = get_w() / 3 + xs30;
 	y = y1;
@@ -648,16 +658,16 @@ int UseWarnIndecies::handle_event()
 	return 1;
 }
 
-UseWarnVersion::UseWarnVersion(PreferencesWindow *pwindow, int x, int y)
- : BC_CheckBox(x, y, pwindow->thread->preferences->warn_version,
-	_("EDL version warns if mismatched"))
+UseUnsafeGUI::UseUnsafeGUI(PreferencesWindow *pwindow, int x, int y)
+ : BC_CheckBox(x, y, pwindow->thread->preferences->unsafe_gui,
+	_("Unsafe GUI in batchrender"))
 {
 	this->pwindow = pwindow;
 }
 
-int UseWarnVersion::handle_event()
+int UseUnsafeGUI::handle_event()
 {
-	pwindow->thread->preferences->warn_version = get_value();
+	pwindow->thread->preferences->unsafe_gui = get_value();
 	return 1;
 }
 
@@ -751,6 +761,7 @@ AutoRotate::AutoRotate(PreferencesWindow *pwindow, int x, int y)
 	_("Auto rotate ffmpeg media"))
 {
 	this->pwindow = pwindow;
+	set_tooltip(_("Automatically rotates media if legal rotation metadata included."));
 }
 
 int AutoRotate::handle_event()
@@ -777,6 +788,7 @@ AutocolorAssets::AutocolorAssets(PreferencesWindow *pwindow, int x, int y)
 	_("Autocolor assets"))
 {
 	this->pwindow = pwindow;
+	set_tooltip(_("Displays automatically generated color overlay for the \n edits on the timeline that belong to the same media file."));
 }
 
 int AutocolorAssets::handle_event()
@@ -896,6 +908,7 @@ PerpetualSession::PerpetualSession(int x, int y, PreferencesWindow *pwindow)
 	pwindow->thread->preferences->perpetual_session, _("Perpetual session"))
 {
 	this->pwindow = pwindow;
+	set_tooltip(_("Resume previous session on startup with undo/redo stack saved between sessions. \n On startup, previous project is loaded as if there was no stoppage."));
 }
 
 int PerpetualSession::handle_event()
@@ -909,6 +922,7 @@ CtrlToggle::CtrlToggle(int x, int y, PreferencesWindow *pwindow)
 	pwindow->thread->preferences->ctrl_toggle, _("Clears before toggle"))
 {
 	this->pwindow = pwindow;
+	set_tooltip(_("Drag and Drop editing - when using LMB on edit,\n clears all selected edits except this one."));
 }
 
 int CtrlToggle::handle_event()
@@ -922,6 +936,7 @@ RectifyAudioToggle::RectifyAudioToggle(int x, int y, PreferencesWindow *pwindow)
 	pwindow->thread->preferences->rectify_audio, _("Timeline Rectify Audio"))
 {
 	this->pwindow = pwindow;
+	set_tooltip(_("Displays rectified audio showing only positive half of the waveform \n resulting in waveform stretched more over the height of the track."));
 }
 
 int RectifyAudioToggle::handle_event()

@@ -278,10 +278,10 @@ public:
 	PreferencesWindow *pwindow;
 };
 
-class UseWarnVersion : public BC_CheckBox
+class UseUnsafeGUI : public BC_CheckBox
 {
 public:
-	UseWarnVersion(PreferencesWindow *pwindow, int x, int y);
+	UseUnsafeGUI(PreferencesWindow *pwindow, int x, int y);
 	int handle_event();
 	PreferencesWindow *pwindow;
 };

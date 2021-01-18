@@ -268,7 +268,10 @@ void BatchRenderThread::load_jobs(char *path, Preferences *preferences)
 	while( !result ) {
 		if( !(result = file.read_tag()) ) {
 			if( file.tag.title_is("JOBS") ) {
+				if (mwindow->preferences->unsafe_gui)
 				warn = file.tag.get_property("WARN", 1);
+				if (!mwindow->preferences->unsafe_gui)
+				warn = 0;
 			}
 			else if( file.tag.title_is("JOB") ) {
 				BatchRenderJob *job =  new BatchRenderJob(preferences, 0,0);
@@ -293,6 +296,7 @@ void BatchRenderThread::save_jobs(char *path)
 {
 	FileXML file;
 	file.tag.set_title("JOBS");
+	if (mwindow->preferences->unsafe_gui)
 	file.tag.set_property("WARN", warn);
 	file.append_tag();
 	file.append_newline();
@@ -387,12 +391,16 @@ void BatchRenderThread::update_selected_edl()
         FileXML xml_file;
 	char *path = get_current_edl();
 	EDL *edl = mwindow->edl;
+	// result = 1 if user cancelled operation
+	int result = ConfirmSave::test_file(mwindow, path);
+	if (!result) {
         edl->save_xml(&xml_file, path);
         xml_file.terminate_string();
         if( xml_file.write_to_file(path) ) {
 		char msg[BCTEXTLEN];
 		sprintf(msg, _("Unable to save: %s"), path);
 		MainError::show_error(msg);
+	}
 	}
 }
 
@@ -792,8 +800,10 @@ void BatchRenderGUI::create_objects()
 	y2 = y + edl_path_browse->get_h() + mwindow->theme->widget_border;
 
 	x = x2;  y = y2;
+	if (mwindow->preferences->unsafe_gui) {
 	add_subwindow(update_selected_edl = new BatchRenderUpdateEDL(thread, x, y));
 	y += update_selected_edl->get_h() + mwindow->theme->widget_border;
+	}
 	add_subwindow(use_current_edl = new BatchRenderCurrentEDL(thread, x, y));
 	y += use_current_edl->get_h() + mwindow->theme->widget_border;
 	if( !mwindow->edl || !mwindow->edl->path[0] ) use_current_edl->disable();
@@ -805,8 +815,10 @@ void BatchRenderGUI::create_objects()
 	x += savelist_batch->get_w() + mwindow->theme->widget_border;
 	add_subwindow(loadlist_batch = new BatchRenderLoadList(thread, x, y));
 	y += loadlist_batch->get_h() + mwindow->theme->widget_border;
+	if (mwindow->preferences->unsafe_gui) {
 	add_subwindow(warning = new BatchRenderWarning(thread, x2, y));
 	y2 = y + warning->get_h() + mwindow->theme->widget_border;
+	}
 	if( y2 > y1 ) y1 = y2;
 	x = mwindow->theme->batchrender_x1, y = y1;
 
@@ -835,6 +847,7 @@ void BatchRenderGUI::button_disable()
 	new_batch->disable();
 	delete_batch->disable();
 	use_current_edl->disable();
+	if (mwindow->preferences->unsafe_gui)
 	update_selected_edl->disable();
 }
 
@@ -844,6 +857,7 @@ void BatchRenderGUI::button_enable()
 	delete_batch->enable();
 	if( mwindow->edl && mwindow->edl->path[0] )
 		use_current_edl->enable();
+	if (mwindow->preferences->unsafe_gui)
 	update_selected_edl->enable();
 }
 
@@ -876,8 +890,10 @@ int BatchRenderGUI::resize_event(int w, int h)
 	y2 = y + edl_path_browse->get_h() + mwindow->theme->widget_border;
 
 	x = x2;  y = y2;
+	if (mwindow->preferences->unsafe_gui) {
 	update_selected_edl->reposition_window(x, y);
 	y += update_selected_edl->get_h() + mwindow->theme->widget_border;
+	}
 	use_current_edl->reposition_window(x, y);
 	y += use_current_edl->get_h() + mwindow->theme->widget_border;
 	new_batch->reposition_window(x, y);
@@ -889,8 +905,9 @@ int BatchRenderGUI::resize_event(int w, int h)
 	x += savelist_batch->get_w() + mwindow->theme->widget_border;
 	loadlist_batch->reposition_window(x, y);
 	y += loadlist_batch->get_h() + mwindow->theme->widget_border;
+	if (mwindow->preferences->unsafe_gui) {
 	warning->reposition_window(x2, y);
-
+	}
 	y1 = ys15 + BC_GenericButton::calculate_h() + mwindow->theme->widget_border;
 	y2 = get_h() - y1 - batch_list->get_h();
 	y2 -= list_title->get_h() + mwindow->theme->widget_border;
@@ -1044,6 +1061,7 @@ BatchRenderNew::BatchRenderNew(BatchRenderThread *thread,
  : BC_GenericButton(x, y, _("New"))
 {
 	this->thread = thread;
+	set_tooltip(_("Create a new batch"));
 }
 
 int BatchRenderNew::handle_event()
@@ -1056,6 +1074,7 @@ BatchRenderDelete::BatchRenderDelete(BatchRenderThread *thread, int x, int y)
  : BC_GenericButton(x, y, _("Delete"))
 {
 	this->thread = thread;
+	set_tooltip(_("Delete loaded (highlighted) batch"));
 }
 
 int BatchRenderDelete::handle_event()
@@ -1228,6 +1247,7 @@ BatchRenderCurrentEDL::BatchRenderCurrentEDL(BatchRenderThread *thread,
  : BC_GenericButton(x, y, _("Use Current EDL"))
 {
 	this->thread = thread;
+	set_tooltip(_("Replaces highlighted batch job with session currently on timeline. File on disk NOT changed!"));
 }
 
 int BatchRenderCurrentEDL::handle_event()
@@ -1242,6 +1262,7 @@ BatchRenderUpdateEDL::BatchRenderUpdateEDL(BatchRenderThread *thread,
  : BC_GenericButton(x, y, _("Save to EDL Path"))
 {
 	this->thread = thread;
+	set_tooltip(_("WARNING - saves to loaded (highlighted) EDL, *overwrites* highlighted project!"));
 }
 
 int BatchRenderUpdateEDL::handle_event()
@@ -1343,6 +1364,7 @@ BatchRenderStart::BatchRenderStart(BatchRenderThread *thread, int x, int y)
  : BC_GenericButton(x, y, _("Start"))
 {
 	this->thread = thread;
+	set_tooltip(_("Start batch rendering"));
 }
 
 int BatchRenderStart::handle_event()
@@ -1355,6 +1377,7 @@ BatchRenderStop::BatchRenderStop(BatchRenderThread *thread, int x, int y)
  : BC_GenericButton(x, y, _("Stop"))
 {
 	this->thread = thread;
+	set_tooltip(_("Stops currently active batch rendering"));
 }
 
 int BatchRenderStop::handle_event()
@@ -1370,6 +1393,7 @@ BatchRenderWarning::BatchRenderWarning(BatchRenderThread *thread, int x, int y)
  : BC_CheckBox(x, y, thread->warn, _("warn if jobs/session mismatched"))
 {
 	this->thread = thread;
+	set_tooltip(_("Prevents rendering if loaded session and batch job(s) differ"));
 }
 
 int BatchRenderWarning::handle_event()
@@ -1382,6 +1406,7 @@ BatchRenderCancel::BatchRenderCancel(BatchRenderThread *thread, int x, int y)
  : BC_GenericButton(x, y, _("Close"))
 {
 	this->thread = thread;
+	set_tooltip(_("Closes this window"));
 }
 
 int BatchRenderCancel::handle_event()

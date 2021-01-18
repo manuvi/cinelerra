@@ -93,7 +93,7 @@ Preferences::Preferences()
 	ffmpeg_marker_indexes = 1;
 	memset(&use_hw_dev, 0, sizeof(use_hw_dev));
 	warn_indexes = 1;
-	warn_version = 1;
+	unsafe_gui = 0;
 	warn_fileref = 1;
 	bd_warn_root = 1;
 	popupmenu_btnup = 1;
@@ -220,7 +220,7 @@ void Preferences::copy_from(Preferences *that)
 	ffmpeg_marker_indexes = that->ffmpeg_marker_indexes;
 	strcpy(use_hw_dev, &that->use_hw_dev[0]);
 	warn_indexes = that->warn_indexes;
-	warn_version = that->warn_version;
+	unsafe_gui = that->unsafe_gui;
 	warn_fileref = that->warn_fileref;
 	bd_warn_root = that->bd_warn_root;
 	popupmenu_btnup = that->popupmenu_btnup;
@@ -371,7 +371,7 @@ int Preferences::load_defaults(BC_Hash *defaults)
 	memset(&use_hw_dev, 0, sizeof(use_hw_dev));
 	defaults->get("USE_HW_DEV", use_hw_dev);
 	warn_indexes = defaults->get("WARN_INDEXES", warn_indexes);
-	warn_version = defaults->get("WARN_VERSION", warn_version);
+	unsafe_gui = defaults->get("UNSAFE_GUI", unsafe_gui);
 	warn_fileref = defaults->get("WARN_FILEREF", warn_fileref);
 	bd_warn_root = defaults->get("BD_WARN_ROOT", bd_warn_root);
 	popupmenu_btnup = defaults->get("POPUPMENU_BTNUP", popupmenu_btnup);
@@ -522,7 +522,7 @@ int Preferences::save_defaults(BC_Hash *defaults)
 	defaults->update("FFMPEG_MARKER_INDEXES", ffmpeg_marker_indexes);
 	defaults->update("USE_HW_DEV", use_hw_dev);
 	defaults->update("WARN_INDEXES", warn_indexes);
-	defaults->update("WARN_VERSION", warn_version);
+	defaults->update("UNSAFE_GUI", unsafe_gui);
 	defaults->update("WARN_FILEREF", warn_fileref);
 	defaults->update("BD_WARN_ROOT", bd_warn_root);
 	defaults->update("POPUPMENU_BTNUP", popupmenu_btnup);
