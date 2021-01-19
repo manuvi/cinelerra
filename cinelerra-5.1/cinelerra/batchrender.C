@@ -268,9 +268,9 @@ void BatchRenderThread::load_jobs(char *path, Preferences *preferences)
 	while( !result ) {
 		if( !(result = file.read_tag()) ) {
 			if( file.tag.title_is("JOBS") ) {
-				if (mwindow->preferences->unsafe_gui)
+				if (mwindow && mwindow->preferences->unsafe_gui)
 				warn = file.tag.get_property("WARN", 1);
-				if (!mwindow->preferences->unsafe_gui)
+				if (mwindow && !mwindow->preferences->unsafe_gui)
 				warn = 0;
 			}
 			else if( file.tag.title_is("JOB") ) {
@@ -296,7 +296,7 @@ void BatchRenderThread::save_jobs(char *path)
 {
 	FileXML file;
 	file.tag.set_title("JOBS");
-	if (mwindow->preferences->unsafe_gui)
+	if (mwindow && mwindow->preferences->unsafe_gui)
 	file.tag.set_property("WARN", warn);
 	file.append_tag();
 	file.append_newline();
