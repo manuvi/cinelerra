@@ -77,6 +77,7 @@ public:
 	void start();
 
 	char transition_title[BCTEXTLEN];
+	char transition_title_untranslated[BCTEXTLEN];
 	MWindow *mwindow;
 	int data_type;
 	int number;

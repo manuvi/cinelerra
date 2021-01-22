@@ -73,9 +73,9 @@ void TransitionDialogThread::start()
 {
 	if(!transition_names.total)
 	{
-		strcpy(transition_title, data_type == TRACK_AUDIO ?
-			mwindow->edl->session->default_atransition :
-			mwindow->edl->session->default_vtransition);
+//		strcpy(transition_title, data_type == TRACK_AUDIO ?
+//			mwindow->edl->session->default_atransition :
+//			mwindow->edl->session->default_vtransition);
 
 // Construct listbox names
 		ArrayList<PluginServer*> plugindb;
@@ -112,6 +112,17 @@ void TransitionDialogThread::handle_close_event(int result)
 {
 	if(!result)
 	{
+	// Re-search plugindb and use untranslated plugin name
+			ArrayList<PluginServer*> plugindb;
+		mwindow->search_plugindb(data_type == TRACK_AUDIO,
+			data_type == TRACK_VIDEO, 0, 1, 0, plugindb);
+		for(int i = 0; i < plugindb.total; i++) {
+			const char *title = _(plugindb.values[i]->title);
+			if( !strcmp(transition_title, title)) {
+			strcpy(transition_title, N_(plugindb.values[i]->title));
+			}
+		}
+	
 		mwindow->paste_transitions(data_type, transition_title);
 	}
 }
@@ -144,12 +155,26 @@ int TransitionSetDefault::handle_event()
 	TransitionDialogThread *thread = (TransitionDialogThread *)window->thread;
 	const char *transition_title = thread->transition_title;
 	EDL *edl = window->mwindow->edl;
+	
+	// Re-search plugindb and use untranslated plugin name
+		
+		ArrayList<PluginServer*> plugindb;
+		thread->mwindow->search_plugindb(thread->data_type == TRACK_AUDIO,
+			thread->data_type == TRACK_VIDEO, 0, 1, 0, plugindb);
+		for(int i = 0; i < plugindb.total; i++) {
+			const char *title = _(plugindb.values[i]->title);
+			if( !strcmp(transition_title, title)) {
+			strcpy(thread->transition_title_untranslated, N_(plugindb.values[i]->title));
+			}
+		}
+	
+	
 	switch( thread->data_type ) {
 	case TRACK_AUDIO:
-		strcpy(edl->session->default_atransition, transition_title);
+		strcpy(edl->session->default_atransition, thread->transition_title_untranslated);
 		break;
 	case TRACK_VIDEO:
-		strcpy(edl->session->default_vtransition, transition_title);
+		strcpy(edl->session->default_vtransition, thread->transition_title_untranslated);
 		break;
 	}
 	window->set_default_text->update(transition_title);

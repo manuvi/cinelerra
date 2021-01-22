@@ -26,6 +26,14 @@ Use the +/- keys in the Compositor window to zoom in and out.
 Pressing Alt while clicking in the cropping window causes translation of
 all 4 points.
 
+Batch jobs in Batch Render, start rendering at the active region which
+will usually be the Insertion Pointer.  If you want the entire project
+to be rendered, be sure to set the pointer at the beginning when you save.
+
+When using Batch Render, define the region of the project you want to
+render by highlighting the desired section, setting in/out points, or
+moving the insertion pointer for the start point before saving your project.
+
 Pressing Tab over a track toggles the Record status.
 Pressing Shift-Tab over a track toggles the Record status of all the other tracks.
 
@@ -38,10 +46,11 @@ Alt + right moves to the next edit handle.
 Settings->typeless keyframes allows keyframes from any track to be pasted on either
 audio or video tracks.
 
-If colors in Compositor looks wrong, check "Setting/Preferences/Appearance" tab
-options YUV color space and YUV color range
+If colors in Compositor look wrong, check "Setting/Preferences/Appearance" tab
+options YUV color space and YUV color range.
 
-If you mistakingly saved empty backup, you still have  $HOME/.bcast5/backup.prev
+If you mistakingly saved empty backup and have performed no new operations, 
+you can still load $HOME/.bcast5/backup.prev to use as the backup.
 
 You can have more than one instance of Cinelerra-GG running.
 
