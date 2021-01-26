@@ -76,7 +76,7 @@ REGISTER_PLUGIN(TitleMain)
 #else
 #define DEFAULT_ENCODING "ISO8859-1"
 #endif
-#define DEFAULT_TIMECODEFORMAT TIME_HMS
+#define DEFAULT_TIMECODEFORMAT TIME_HMSF
 
 static inline int kw_strcmp(const char *ap, const char *bp) {
 	return !strcmp(ap, bp) ? 0 : strcmp(ap,_(bp));
@@ -88,10 +88,10 @@ TitleConfig::TitleConfig()
 	strcpy(encoding, DEFAULT_ENCODING);
 	style = FONT_ALIAS;
 	size = 48;
-	color = BLACK;
+	color = WHITE;
 	alpha = 0xff;
 	outline_size = 0.;
-	outline_color = WHITE;
+	outline_color = RED;
 	outline_alpha = 0xff;
 	color_stroke = 0xff0000;
 	stroke_width = 0.0;

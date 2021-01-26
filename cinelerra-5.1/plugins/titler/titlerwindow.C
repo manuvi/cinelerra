@@ -44,6 +44,8 @@
 #include "titlerwindow.h"
 #include "bcfontentry.h"
 
+#define DEFAULT_TIMECODEFORMAT TIME_HMSF
+
 static const int timeunit_formats[] =
 {
 	TIME_HMS,
@@ -371,6 +373,12 @@ void TitleWindow::create_objects()
 	stroker->create_objects();
 	x += stroker->get_w() + margin;
 #endif
+	// my reset button
+	//
+	add_tool(reset_button = new TitleResetButton(client, this, x3, y1+yS(30)));
+	reset_button->create_objects();
+
+
 	add_tool(timecode = new TitleTimecode(client, this, x, y));
 	y += timecode->get_h() + margin;
 	int tw = 0;
@@ -446,6 +454,7 @@ int TitleWindow::resize_event(int w, int h)
 	pitch_title->reposition_window(pitch_title->get_x(), pitch_title->get_y());
 	pitch->reposition_window(pitch->get_x(), pitch->get_y());
 
+	reset_button->reposition_window(reset_button->get_x(), reset_button->get_y());
 	color_button_title->reposition_window(color_button_title->get_x(), color_button_title->get_y());
 	color_button->reposition_window(color_button->get_x(), color_button->get_y());
 	outline_button_title->reposition_window(outline_button_title->get_x(), outline_button_title->get_y());
@@ -582,6 +591,7 @@ void TitleWindow::update_gui()
 	bold->update(client->config.style & BC_FONT_BOLD);
 	alias->update(client->config.style & FONT_ALIAS);
 	size->update(client->config.size);
+	pitch->update((int64_t)client->config.line_pitch);
 	motion->update(TitleMain::motion_to_text(client->config.motion_strategy));
 	loop->update(client->config.loop);
 	dropshadow->update((int64_t)client->config.dropshadow);
@@ -778,6 +788,62 @@ int TitlePitch::handle_event()
 {
 	*value = atol(get_text());
 	window->send_configure_change();
+	return 1;
+}
+
+
+
+TitleResetButton::TitleResetButton(TitleMain *client, TitleWindow *window, int x, int y)
+ : BC_GenericButton (x, y, _("Reset"))
+{
+	this->client = client;
+	this->window = window;
+	set_tooltip("Reset to default values");
+}
+
+TitleResetButton::
+~TitleResetButton()
+{
+}
+
+int TitleResetButton::handle_event()
+{
+	strcpy(client->config.font, "fixed");
+	client->config.title_x = 0;
+	client->config.title_y = 0;
+	client->config.title_w = 0;
+	client->config.title_h = 0;
+	client->config.hjustification = JUSTIFY_CENTER;
+	client->config.vjustification = JUSTIFY_MID;
+	client->config.style = FONT_ALIAS;
+	client->config.motion_strategy = NO_MOTION;
+	client->config.timecode_format = DEFAULT_TIMECODEFORMAT;
+	client->config.loop = 0;
+	client->config.dropshadow = 0;
+	client->config.fade_in = 0;
+	client->config.fade_out = 0;
+	client->config.pixels_per_second = 100;
+	client->config.outline_size = 0;
+	client->config.outline_color =  RED;
+	client->config.outline_alpha = 0xff;
+	client->config.color_stroke = 0xff0000;
+	client->config.size = 48;
+	client->config.line_pitch = 0;
+	client->config.color = WHITE;
+	client->config.alpha = 0xff;
+	client->config.timecode = 0;
+	client->config.background = 0;
+	strcpy(client->config.background_path, "");
+#ifdef USE_STROKER
+	client->config.stroke_width = 0;
+#endif
+	client->config.loop_playback = 0;
+	client->config.wlen = 0;
+	wchr_t wz = { 0 };
+	client->config.wtext[0] = wz;
+	window->send_configure_change();
+	window->update_gui();
+	window->flush();
 	return 1;
 }
 
@@ -1447,11 +1513,75 @@ TitleCurSubMenuItem::TitleCurSubMenuItem(TitleCurSubMenu *submenu, const char *t
 TitleCurSubMenuItem::~TitleCurSubMenuItem()
 {
 }
+
+// from https://stackoverflow.com/questions/779875/what-function-is-to-replace-a-substring-from-a-string-in-c
+void strreplace(char *src, char *str, char *rep)
+{
+	    char *p = strstr(src, str);
+	    if (p)
+	    {
+	        int len = strlen(src)+strlen(rep)-strlen(str);
+	        char r[len];
+	        memset(r, 0, len);
+	        if ( p >= src ){
+	            strncpy(r, src, p-src);
+	            r[p-src]='\0';
+	            strncat(r, rep, strlen(rep));
+	            strncat(r, p+strlen(str), p+strlen(str)-src+strlen(src));
+	            strcpy(src, r);
+	            strreplace(p+strlen(rep), str, rep);
+	        }
+	    }
+}
+
+
 int TitleCurSubMenuItem::handle_event()
 {
 	TitleCurPopup *popup = submenu->cur_item->popup;
 	TitleWindow *window = popup->window;
-	const char *item_text = get_text();
+	char *item_text = N_(get_text());
+
+	if (strstr(item_text, _(KW_NUDGE))) {
+		strreplace(item_text, _(KW_NUDGE), (char*)N_(KW_NUDGE));
+		}
+	else if (strstr(item_text, _(KW_COLOR))) {
+		strreplace(item_text, _(KW_COLOR), (char*)N_(KW_COLOR));
+		}
+	else if (strstr(item_text, _(KW_ALPHA))) {
+		strreplace(item_text, _(KW_ALPHA), (char*)N_(KW_ALPHA));
+		}
+	else if (strstr(item_text, _(KW_FONT))) {
+		strreplace(item_text, _(KW_FONT), (char*)N_(KW_FONT));
+		}
+	else if (strstr(item_text, _(KW_SIZE))) {
+		strreplace(item_text, _(KW_SIZE), (char*)N_(KW_SIZE));
+		}
+	else if (strstr(item_text, _(KW_BOLD))) {
+		strreplace(item_text, _(KW_BOLD), (char*)N_(KW_BOLD));
+		}
+	else if (strstr(item_text, _(KW_ITALIC))) {
+		strreplace(item_text, _(KW_ITALIC), (char*)N_(KW_ITALIC));
+		}
+	else if (strstr(item_text, _(KW_CAPS))) {
+		strreplace(item_text, _(KW_CAPS), (char*)N_(KW_CAPS));
+		}
+	else if (strstr(item_text, _(KW_UL))) {
+		strreplace(item_text, _(KW_UL), (char*)N_(KW_UL));
+		}
+	else if (strstr(item_text, _(KW_BLINK))) {
+		strreplace(item_text, _(KW_BLINK), (char*)N_(KW_BLINK));
+		}
+	else if (strstr(item_text, _(KW_FIXED))) {
+		strreplace(item_text, _(KW_FIXED), (char*)N_(KW_FIXED));
+		}
+	else if (strstr(item_text, _(KW_ALIAS))) {
+		strreplace(item_text, _(KW_ALIAS), (char*)N_(KW_ALIAS));
+		}
+	else if (strstr(item_text, _(KW_SUP))) {
+		strreplace(item_text, _(KW_SUP), (char*)N_(KW_SUP));
+		}
+
+
 	int ofs = *item_text == '/' ? 0 : -1;
 	switch( popup_type ) {
 	case POPUP_FONT: {
@@ -1470,8 +1600,51 @@ int TitleCurSubMenuItem::handle_event()
 		break;
 	}
 	char txt[BCSTRLEN];
-	sprintf(txt, "<%s>", item_text);
-	return window->insert_ibeam(txt, ofs);
+	sprintf(txt, "<%s>", N_(item_text));
+	//printf("Item text: %s \n", N_(item_text));
+
+	if (strstr(item_text, N_(KW_NUDGE))) {
+		strreplace(item_text, (char*)N_(KW_NUDGE), _(KW_NUDGE));
+		}
+	else if (strstr(item_text, N_(KW_COLOR))) {
+		strreplace(item_text, (char*)N_(KW_COLOR), _(KW_COLOR));
+		}
+	else if (strstr(item_text, N_(KW_ALPHA))) {
+		strreplace(item_text, (char*)N_(KW_ALPHA), _(KW_ALPHA));
+		}
+	else if (strstr(item_text, N_(KW_FONT))) {
+		strreplace(item_text, (char*)N_(KW_FONT), _(KW_FONT));
+		}
+	else if (strstr(item_text, N_(KW_SIZE))) {
+		strreplace(item_text, (char*)N_(KW_SIZE), _(KW_SIZE));
+		}
+	else if (strstr(item_text, N_(KW_BOLD))) {
+		strreplace(item_text, (char*)N_(KW_BOLD), _(KW_BOLD));
+		}
+	else if (strstr(item_text, N_(KW_ITALIC))) {
+		strreplace(item_text, (char*)N_(KW_ITALIC), _(KW_ITALIC));
+		}
+	else if (strstr(item_text, N_(KW_CAPS))) {
+		strreplace(item_text, (char*)N_(KW_CAPS), _(KW_CAPS));
+		}
+	else if (strstr(item_text, N_(KW_UL))) {
+		strreplace(item_text, (char*)N_(KW_UL), _(KW_UL));
+		}
+	else if (strstr(item_text, N_(KW_BLINK))) {
+		strreplace(item_text, (char*)N_(KW_BLINK), _(KW_BLINK));
+		}
+	else if (strstr(item_text, N_(KW_FIXED))) {
+		strreplace(item_text, (char*)N_(KW_FIXED), _(KW_FIXED));
+		}
+	else if (strstr(item_text, N_(KW_ALIAS))) {
+		strreplace(item_text, (char*)N_(KW_ALIAS), _(KW_ALIAS));
+		}
+	else if (strstr(item_text, N_(KW_SUP))) {
+		strreplace(item_text, (char*)N_(KW_SUP), _(KW_SUP));
+		}
+
+
+	return window->insert_ibeam(N_(txt), ofs);
 }
 
 TitleFontsPopup::TitleFontsPopup(TitleMain *client, TitleWindow *window)
@@ -1505,7 +1678,7 @@ int TitleFontsPopup::handle_event()
 	BC_ListBoxItem *item = get_selection(0, 0);
 	if( !item ) return 1;
 	const char *item_text = item->get_text();
-	char txt[BCTEXTLEN];  sprintf(txt, "<%s %s>", _(KW_FONT), item_text);
+	char txt[BCTEXTLEN];  sprintf(txt, "<%s %s>", N_(KW_FONT), item_text);
 	return window->insert_ibeam(txt);
 }
 

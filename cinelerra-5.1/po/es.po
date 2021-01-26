@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: Cinelerra 5.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-10-15 14:02-0600\n"
-"PO-Revision-Date: 2021-01-19 09:19+0100\n"
+"PO-Revision-Date: 2021-01-22 10:28+0100\n"
 "Last-Translator: Sergio Daniel Gomez <sergio.sgsistemas@gmail.com>\n"
 "Language-Team: SPANISH <LL@li.org>\n"
 "Language: es\n"
@@ -1797,7 +1797,7 @@ msgstr "Fecha"
 
 #: cinelerra/binfolder.C:50
 msgid "Track type"
-msgstr "Tipo de pista: Valor a=audio : v=vídeo"
+msgstr "Tipo de pista: Valor aud=audio : vid=vídeo"
 
 #: cinelerra/binfolder.C:51
 msgid "Width"
@@ -1901,11 +1901,11 @@ msgstr "info"
 
 #: cinelerra/binfolder.C:985 cinelerra/binfolder.C:2104
 msgid "audio"
-msgstr "a"
+msgstr "aud"
 
 #: cinelerra/binfolder.C:989 cinelerra/binfolder.C:2105
 msgid "video"
-msgstr "v"
+msgstr "vid"
 
 #: cinelerra/binfolder.C:1457
 msgid "Enable"
@@ -4335,7 +4335,7 @@ msgstr "Segundos:"
 
 #: cinelerra/editpanel.C:486
 msgid "Toggle label at current position ( l )"
-msgstr "Insertar etiqueta en la posición actual ( l )"
+msgstr "Insertar etiqueta en la posición actual ( L )"
 
 #: cinelerra/editpanel.C:511
 msgid "Next label ( ctrl -> )"

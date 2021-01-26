@@ -43,6 +43,7 @@ class TitleDrag;
 class TitleSize;
 class TitlePitch;
 class TitleEncoding;
+class TitleResetButton;
 class TitleColorButton;
 class TitleOutlineColorButton;
 class TitleDropShadow;
@@ -140,6 +141,7 @@ public:
 	TitlePitch *pitch;
 	BC_Title *encoding_title;
 	TitleEncoding *encoding;
+	TitleResetButton *reset_button;
 	BC_Title *color_button_title;
 	TitleColorButton *color_button;
 	BC_Title *outline_button_title;
@@ -176,6 +178,19 @@ public:
 	ArrayList<BC_ListBoxItem*> encodings;
 	ArrayList<BC_ListBoxItem*> paths;
 	ArrayList<BC_ListBoxItem*> fonts;
+};
+
+
+class TitleResetButton : public BC_GenericButton
+{
+public:
+	TitleResetButton(TitleMain *client, TitleWindow *window, int x, int y);
+	~TitleResetButton();
+
+	int handle_event();
+
+	TitleMain *client;
+	TitleWindow *window;
 };
 
 
