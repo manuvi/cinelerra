@@ -129,6 +129,9 @@ void FormatTools::create_objects(
 	this->prompt_video_compression = prompt_video_compression;
 	this->file_per_label = file_per_label;
 
+
+	if(asset->format == FILE_UNKNOWN)
+		asset->format = FILE_FFMPEG;
 //printf("FormatTools::create_objects 1\n");
 
 	if(!recording)
