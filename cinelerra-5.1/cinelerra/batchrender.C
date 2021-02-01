@@ -60,8 +60,6 @@
 #include "dvdcreate.h"
 #include "bdcreate.h"
 
-#include <stdlib.h>
-
 int BatchRenderThread::column_widths[] = { 42, 42, 42, 222, 222, 150 };
 const char *BatchRenderThread::column_titles[] = {
 	N_("Enabled"), N_("Labeled"), N_("Farmed"), N_("Output"), N_("EDL"), N_("Elapsed")
@@ -835,10 +833,8 @@ void BatchRenderGUI::create_objects()
 	y += batch_list->get_h() + mwindow->theme->widget_border;
 
 	add_subwindow(start_button = new BatchRenderStart(thread, x, y));
-	x = get_w() / 3 - BC_GenericButton::calculate_w(this, _("Stop")) / 3;
+	x = get_w() / 2 - BC_GenericButton::calculate_w(this, _("Stop")) / 2;
 	add_subwindow(stop_button = new BatchRenderStop(thread, x, y));
-	x = get_w() / 1.5 - BC_GenericButton::calculate_w(this, _("?")) / 1.5;
-	add_subwindow(help_button = new BatchRenderHelp(thread, x, y));
 	x = get_w() - BC_GenericButton::calculate_w(this, _("Close")) - xs10;
 	add_subwindow(cancel_button = new BatchRenderCancel(thread, x, y));
 
@@ -923,12 +919,10 @@ int BatchRenderGUI::resize_event(int w, int h)
 	y += batch_list->get_h() + mwindow->theme->widget_border;
 
 	start_button->reposition_window(x, y);
-	x = w / 3 - stop_button->get_w() / 3;
+	x = w / 2 - stop_button->get_w() / 2;
 	stop_button->reposition_window(x, y);
 	x = w - cancel_button->get_w() - xs10;
 	cancel_button->reposition_window(x, y);
-	x = w / 1.5 - help_button->get_w() / 1.5;
-	help_button->reposition_window(x, y);
 	return 1;
 }
 
@@ -1433,20 +1427,6 @@ int BatchRenderCancel::keypress_event()
 		thread->gui->set_done(1);
 		return 1;
 	}
-	return 0;
-}
-
-//new help button
-BatchRenderHelp::BatchRenderHelp(BatchRenderThread *thread, int x, int y)
- : BC_GenericButton(x, y, _("?"))
-{
-	this->thread = thread;
-	set_tooltip(_("Open quick start guide"));
-}
-
-int BatchRenderHelp::handle_event()
-{
-	system("$CIN_BROWSER file://$CIN_DAT/doc/help_br_index.html");
 	return 0;
 }
 

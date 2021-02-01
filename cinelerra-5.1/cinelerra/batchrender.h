@@ -314,15 +314,6 @@ public:
 	int *output;
 };
 
-//new help button
-class BatchRenderHelp : public BC_GenericButton
-{
-public:
-	BatchRenderHelp(BatchRenderThread *thread, int x, int y);
-	int handle_event();
-	BatchRenderThread *thread;
-};
-
 class BatchRenderGUI : public BC_Window
 {
 public:
@@ -371,7 +362,6 @@ public:
 	BatchRenderCurrentEDL *use_current_edl;
 	BatchRenderUpdateEDL *update_selected_edl;
 	BatchRenderUseFarm *use_renderfarm;
-	BatchRenderHelp *help_button;
 };
 
 
