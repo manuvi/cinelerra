@@ -6,7 +6,6 @@ var B_Lang = window.navigator.language||navigator.browserLanguage;
 var userLang = B_Lang.slice(0,2);
 var ref = 'help_br_en.pdf';
 switch(userLang){
-//Only uncomment when the file exists with this language, check that the name is correct.
     case 'fr':  ref = 'help_br_fr.pdf';  break; //French
     case 'de':  ref = 'help_br_de.pdf';  break; //German
     case 'ru':  ref = 'help_br_ru.pdf';  break; //Russian
@@ -15,7 +14,16 @@ switch(userLang){
     case 'nb':  ref = 'help_br_nb.pdf';  break; //Norwegian 1
     case 'no':  ref = 'help_br_no.pdf';  break; //Norwegian 2
     case 'nl':  ref = 'help_br_nl.pdf';  break; //Netherlander
-    case 'pt':  ref = 'help_br_pt.pdf';  break; //Portuguese
+    case 'pt':  ref = 'help_br_pt.pdf';  break; //Portuguese    
+//    case 'el':  ref = 'help_br_el.pdf';  break; //Greek
+//    case 'eu':  ref = 'help_br_eu.pdf';  break; //Basque
+//    case 'hi':  ref = 'help_br_hi.pdf';  break; //Hindi
+//    case 'ja':  ref = 'help_br_ja.pdf';  break; //Japanese
+//    case 'ko':  ref = 'help_br_ko.pdf';  break; //Korean
+//    case 'sl':  ref = 'help_br_sl.pdf';  break; //Slovenian
+//    case 'uk':  ref = 'help_br_uk.pdf';  break; //Ukrainian
+//    case 'vi':  ref = 'help_br_vi.pdf';  break; //Vietnamese
+//    case 'zh':  ref = 'help_br_zh.pdf';  break; //Chinese      
 }
 
 window.location.href = ref;
@@ -63,6 +71,15 @@ p {
 <p><a href="help_br_pt.pdf">Portuguese</a></p>
 <p><a href="help_br_es.pdf">Spanish</a></p>
 <p><a href="help_br_ru.pdf">Russian</a></p>
+//<p><a href="help_br_el.pdf">Greek</a></p>
+//<p><a href="help_br_eu.pdf">Basque</a></p>
+//<p><a href="help_br_hi.pdf">Hindi</a></p>
+//<p><a href="help_br_ja.pdf">Japanese</a></p>
+//<p><a href="help_br_ko.pdf">Korean</a></p>
+//<p><a href="help_br_sl.pdf">Slovenian</a></p>
+//<p><a href="help_br_uk.pdf">Ukrainian</a></p>
+//<p><a href="help_br_vi.pdf">Vietnamese</a></p>
+//<p><a href="help_br_zh.pdf">Chinese</a></p>
 <!-- new lines lang here -->
 
 
