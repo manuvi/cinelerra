@@ -141,6 +141,8 @@ public:
 	int yuv_color_range;
 // autocolor asset edit title
 	int autocolor_assets;
+// ongoing continuous backups
+	int ongoing_backups;
 // ctrl_toggle && !ctrl_down() clears selection before toggle
 	int ctrl_toggle;
 // rectify timeline audio waveform

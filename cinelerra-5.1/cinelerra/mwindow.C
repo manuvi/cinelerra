@@ -296,6 +296,7 @@ MWindow::~MWindow()
 	plugin_gui_lock->unlock();
 	hide_keyframe_guis();
 	clean_indexes();
+	clean_backups();
 	save_defaults();
 // Give up and go to a movie
 //  cant run valgrind if this is used
@@ -982,6 +983,58 @@ void MWindow::init_preferences()
 	BC_WindowBase::get_resources()->textbox_focus_policy = preferences->textbox_focus_policy;
 	BC_WindowBase::get_resources()->grab_input_focus = preferences->grab_input_focus;
 	YUV::yuv.yuv_set_colors(preferences->yuv_color_space, preferences->yuv_color_range);
+}
+
+void MWindow::clean_backups()
+{
+    FileSystem fs;
+    int total_excess;
+    long oldest = 0;
+    int oldest_item = -1;
+    char string[BCTEXTLEN];
+
+// Delete extra backups
+    fs.set_filter("backup*.prev_*");
+    fs.complete_path(preferences->index_directory);
+    fs.update(preferences->index_directory);
+
+    // set to 50 for now
+    // total_excess = fs.dir_list.total - preferences->index_count;
+    total_excess = fs.dir_list.total - 50;
+    printf("Total excess of backups: %i \n", total_excess);
+
+//printf("MWindow::clean_backups 1 %d\n", fs.dir_list.total);
+
+    while(total_excess > 0)
+    {
+// Get oldest
+       for(int i = 0; i < fs.dir_list.total; i++)
+       {
+           fs.join_names(string, preferences->index_directory, fs.dir_list[i]->name);
+
+           if(i == 0 || fs.get_date(string) <= oldest)
+           {
+               oldest = fs.get_date(string);
+               oldest_item = i;
+           }
+       }
+
+       if(oldest_item >= 0)
+       {
+// Remove backup file
+           fs.join_names(string,
+               preferences->index_directory,
+               fs.dir_list[oldest_item]->name);
+//printf("MWindow::clean_backups 1 %s\n", string);
+           if(remove(string))
+               perror("delete_backups");
+           delete fs.dir_list[oldest_item];
+           fs.dir_list.remove_number(oldest_item);
+
+       }
+
+       total_excess--;
+    }
 }
 
 void MWindow::clean_indexes()
@@ -4270,6 +4323,25 @@ void MWindow::get_backup_path(char *path, int len)
 	cp += snprintf(cp, ep-cp, idx ? BACKUPn_FILE : BACKUP_FILE, idx);
 }
 
+void MWindow::create_timestamped_copy_from_previous_backup(char *previouspath)
+{
+  if (previouspath == nullptr) return;
+  char backup_path[BCTEXTLEN];
+  backup_path[0] = 0;
+  time_t now = time(NULL);
+  struct tm* currenttime = localtime(&now);
+  snprintf(backup_path, sizeof(backup_path), 
+      "%s/%s_%d%.2d%.2d_%.2d%.2d%.2d",
+      File::get_config_path(), BACKUP_FILE1, 
+      currenttime->tm_year + 1900,
+      currenttime->tm_mon + 1,
+      currenttime->tm_mday,
+      currenttime->tm_hour,
+      currenttime->tm_min,
+      currenttime->tm_sec);
+	rename(previouspath, backup_path);
+}
+
 void MWindow::save_backup()
 {
 	FileXML file;
@@ -4280,6 +4352,8 @@ void MWindow::save_backup()
 	snprintf(backup_path1, sizeof(backup_path1), "%s/%s",
 		File::get_config_path(), BACKUP_FILE1);
 	get_backup_path(backup_path, sizeof(backup_path));
+	if( preferences->ongoing_backups )
+		create_timestamped_copy_from_previous_backup(backup_path1);
 	rename(backup_path, backup_path1);
 	edl->save_xml(&file, backup_path);
 	file.terminate_string();

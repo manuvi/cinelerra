@@ -232,7 +232,9 @@ void AppearancePrefs::create_objects()
 	UseUnsafeGUI *unsafe_gui = new UseUnsafeGUI(pwindow, x, y);
 	add_subwindow(unsafe_gui);
 	y += unsafe_gui->get_h() + ys5;
-
+	OngoingBackups *ongoing_backups = new OngoingBackups(pwindow, x, y);
+	add_subwindow(ongoing_backups);
+	y += ongoing_backups->get_h() + ys5;
 
 	x = get_w() / 3 + xs30;
 	y = y1;
@@ -669,6 +671,20 @@ UseUnsafeGUI::UseUnsafeGUI(PreferencesWindow *pwindow, int x, int y)
 int UseUnsafeGUI::handle_event()
 {
 	pwindow->thread->preferences->unsafe_gui = get_value();
+	return 1;
+}
+
+OngoingBackups::OngoingBackups(PreferencesWindow *pwindow, int x, int y)
+ : BC_CheckBox(x, y, pwindow->thread->preferences->ongoing_backups,
+	_("Autosave continuous backups"))
+{
+	this->pwindow = pwindow;
+	set_tooltip(_("When you stop Cinelerra, all but the newest 50 will be deleted but you risk \n running out of disk space if you do a lot of work without restarting."));
+}
+
+int OngoingBackups::handle_event()
+{
+	pwindow->thread->preferences->ongoing_backups = get_value();
 	return 1;
 }
 

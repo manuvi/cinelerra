@@ -286,6 +286,14 @@ public:
 	PreferencesWindow *pwindow;
 };
 
+class OngoingBackups: public BC_CheckBox
+{
+public:
+	OngoingBackups(PreferencesWindow *pwindow, int x, int y);
+	int handle_event();
+	PreferencesWindow *pwindow;
+};
+
 class BD_WarnRoot : public BC_CheckBox
 {
 public:

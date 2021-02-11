@@ -23,6 +23,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <time.h>
 
 #include "apatchgui.h"
 #include "arraylist.h"
@@ -384,6 +385,7 @@ public:
 	void crop_video(int mode);
 	void update_plugins();
 	void get_backup_path(char *path, int len);
+	void create_timestamped_copy_from_previous_backup(char *previouspath);
 // Call after every edit operation
 	void save_backup();
 	void load_backup();
@@ -853,6 +855,7 @@ public:
 	int get_cpus();
 //
 	void clean_indexes();
+	void clean_backups();
 //	TimeBomb timebomb;
 	SigHandler *sighandler;
 	int restart_status;
