@@ -1944,9 +1944,9 @@ int FFOptionsFormatView::handle_event()
 {
 	Asset *asset = fmt_config->asset;
 	char *format_name = asset->fformat;
-	char *replace_name0 = "mov";
-	char *replace_name1 = "mpegts";
-	char *replace_name2 = "matroska";
+	char replace_name0[] = "mov";
+	char replace_name1[] = "mpegts";
+	char replace_name2[] = "matroska";
 	if (!strcmp(format_name, "qt"))
 		format_name = replace_name0; // fixup
 	if (!strcmp(format_name, "m2ts"))

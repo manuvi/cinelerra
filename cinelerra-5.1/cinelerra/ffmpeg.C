@@ -1222,8 +1222,7 @@ int FFVideoStream::probe(int64_t pos)
 		return -1;
 	}
 		
-	if (ffmpeg->interlace_from_codec)
-		return 1;
+	if (ffmpeg->interlace_from_codec) return 1;
 
 		ret = read_frame(frame);
 		if( ret > 0 ) {
