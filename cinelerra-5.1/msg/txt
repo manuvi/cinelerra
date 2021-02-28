@@ -3,62 +3,42 @@ For usage help, refer to the following:
   https://cinelerra-gg.org/download/CinelerraGG_Manual.pdf
   http://g-raffa.eu/Cinelerra/HOWTO/basics.html
 .
-October 2020 New Features of note:
+2021 1st Quarter New Features of note:
+  The manual can now be used in HTML format besides PDF.
+  Autosave backups optional feature in Preferences.
+  Additional FFmpeg video/audio render formats available.
+  Aspect ratio and Interlace improvements are in.
+  Batch Render menu now has hidden feature to prevent mistakes.
+  Openjpeg upgraded from 2.3.1 to 2.4.0.
+.
+2020 New Features of note:
   Drag select and deselect edits was added on the timeline.
-  Gang mode for patchbay options is now available.
-  Proxy scale factor of 1:1 to change bitrate works.
   Tile mixers allows for designating a rectangular area.
-September 2020 New Features of note:
   Motion plugin improvements by SGE for better results.
-  Camera and Projector menus now include easy range change.
   Faster transition playing with cache + drag capable.
-  Histogram new feature of average frame calculation.
-August 2020 New Features of note:
   Bump Autos new feature; especially useful for speed.
   Language preference now in Settings->Preferences.
-  Align Timecodes time-reference added as an improvement.
-  Ctrl-s and Ctrl-z more standard usage implemented.
   Added drag speed highlighting for easier usage of auto.
   Option and shortcut to select multiple edits.
-July 2020 New Features of note:
   Align Timecodes for various timecodes/stamps is available.
-  FFmpeg plugins will have changes take effect when use Enter.
   Subtitles can be generated in either SRT, SUB, or uDVD form.
   Mix masters make it easy to use multicam mode on timeline.
-  Auto Rotate in the metadata will now automatically rotate.
-June 2020 New Features of note:
   Ganging modes added for DAW-like editing of channels.
   Rotate plugin has been modernized and improved.
-  Debug assist added of BC_TRACE_XERROR environment variable.
-  Perspective plugin minor addition of numbered corners.
-May 2020 New Features of note:
   Audio track height button added, separate from video height.
   New patchbay toggle to vary individual vertical track height.
-  "Refresh on Release" additional setting in Videoscope.
-  Rotate plugin improvement for visibility and scaling.
-April 2020 New Features of note:
   Potential Performance improvements added.
   New way of creating and using a stack of Effects.
   Additional ShapeWipe transitions are now available.
   BoxBlur plugin allows forjust blurring an area.
-  The Drag box for plugins automatically turns on/off.  
-March 2020 New Features of note:
   Videoscope is now on the Compositor and Viewer.
-  Additional enhancements made for the Videoscope.
   Several new Shape Wipe transitions are included.
-  Slider bars added to Projector and Camera menus.
-  OpenCV and OpenExr have been upgraded on some O/S.
-February 2020 New Features of note:
   New ColorSpace plugin to convert color space/range.
   Updated 17 thirdparty libraries to keep up to date.
   Rewrote and replaced OGG/Theora/Vorbis file codec.
-  Shortcut for "Delete last track" has changed.
   PulseAudio option is now built in as audio choice.
-January 2020 New Features of note:
   Updated reference Manual using LaTeX now complete.
   File by Reference capability now available.
-  Hauppauge Remote Control added for OTA TV.
-  Pulse Audio added as a sound driver choice.
 .
 2019 New Features of note:
   Edit EDLs feature added for easily editing nested EDLs.

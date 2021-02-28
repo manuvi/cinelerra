@@ -4325,7 +4325,7 @@ void MWindow::get_backup_path(char *path, int len)
 
 void MWindow::create_timestamped_copy_from_previous_backup(char *previouspath)
 {
-  if (previouspath == nullptr) return;
+  if (previouspath == NULL) return;
   char backup_path[BCTEXTLEN];
   backup_path[0] = 0;
   time_t now = time(NULL);
