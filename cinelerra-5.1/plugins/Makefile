@@ -110,6 +110,7 @@ DIRS = $(OPENCV_OBJS) \
 	parametric \
 	perspective \
 	photoscale \
+	posterize \
 	pitch \
 	polar \
 	radialblur \
@@ -142,6 +143,7 @@ DIRS = $(OPENCV_OBJS) \
 	timeavg \
 	timeblur \
 	timefront \
+	timelapsehelper \
 	timestretch \
 	timestretchrt \
 	titler \
