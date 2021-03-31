@@ -3,6 +3,12 @@ For usage help, refer to the following:
   https://cinelerra-gg.org/download/CinelerraGG_Manual.pdf
   http://g-raffa.eu/Cinelerra/HOWTO/basics.html
 .
+2021 March New Features of note:
+  AppImage is the method of dibrusging new releases;
+   Newer distros use: CinGG-20210331-x86_64.AppImage 
+   Older distros use: CinGG-20210331-x86_64-older_distros.AppImage
+  There are 2 new plugins: Posterize and Timelapse Helper.
+.
 2021 1st Quarter New Features of note:
   The manual can now be used in HTML format besides PDF.
   Autosave backups optional feature in Preferences.

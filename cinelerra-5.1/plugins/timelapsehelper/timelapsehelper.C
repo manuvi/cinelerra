@@ -161,9 +161,9 @@ void TimelapseHelperConfig::interpolate(TimelapseHelperConfig &prev,
 TimelapseHelperWindow::TimelapseHelperWindow(TimelapseHelper *plugin)
  : PluginClientWindow(plugin,
 	xS(230),
-	yS(160),
+	yS(60),
 	xS(230),
-	yS(160),
+	yS(60),
 	0)
 {
 	this->plugin = plugin;
@@ -185,7 +185,7 @@ void TimelapseHelperWindow::create_objects()
 		this,
 		x,
 		y,
-        get_w() - x - margin);
+        get_w() - x - margin - xS(20) );
     size->create_objects();
 	show_window();
 }
@@ -323,12 +323,12 @@ int TimelapseHelper::process_buffer(VFrame *frame,
     block_start = ref_position + (start_position - ref_position) * config.block_size;
     block_end = block_start + config.block_size;
 
-printf("TimelapseHelper::process_buffer %d current_position=%ld ref_position=%ld block_start=%ld block_end=%ld\n", 
-__LINE__, 
-start_position,
-ref_position,
-block_start,
-block_end);
+// printf("TimelapseHelper::process_buffer %d current_position=%ld ref_position=%ld block_start=%ld block_end=%ld\n",
+// __LINE__, 
+//start_position,
+//ref_position,
+//block_start,
+//block_end);
 
 // load initial reference frame from plugin start
 	if(!ref)

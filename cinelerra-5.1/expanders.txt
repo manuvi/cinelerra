@@ -14,6 +14,7 @@ Video Effects
 		Hue saturation
 		Interpolate Bayer
 		Invert Video
+		Posterize
 		RGBShift
 		RGB - 601
 		Reroute
@@ -162,6 +163,7 @@ Video Effects
 		Reverse video
 		Time Average
 		TimeFront
+		Timelapse Helper
 		F_amplify
 		F_deflicker
 		F_framerate
