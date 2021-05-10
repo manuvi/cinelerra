@@ -48,6 +48,8 @@ ZWindowGUI::ZWindowGUI(MWindow *mwindow, ZWindow *zwindow, Mixer *mixer)
 	playback_engine = 0;
 	highlighted = 0;
 	playable = zwindow->playable;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Multi-Camera");
 }
 
 ZWindowGUI::~ZWindowGUI()
@@ -113,6 +115,9 @@ int ZWindowGUI::keypress_event()
 		mwindow->gui->unlock_window();
 		lock_window("ZWindowGUI::keypress_event 1");
 	}
+
+	if( !result )
+		result = context_help_check_and_show();
 
 	return result;
 }

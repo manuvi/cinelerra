@@ -1152,6 +1152,9 @@ int BC_TextBox::keypress_event()
 	int result = 0;
 	int dispatch_event = 0;
 
+// Evtl catch Alt/H
+	if (context_help_check_and_show()) return 1;
+
 	if(!active || !enabled) return 0;
 
 	int wtext_len = wtext_update();

@@ -186,6 +186,7 @@ int BC_MenuBar::keypress_event()
 			result = menu_titles.values[i]->dispatch_keypress();
 		}
 	}
+	if (!result) result = context_help_check_and_show();
 	return result;
 }
 

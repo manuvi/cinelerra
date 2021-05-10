@@ -156,7 +156,7 @@ int TipWindowGUI::keypress_event()
 		set_done(0);
 		break;
 	}
-	return 0;
+	return context_help_check_and_show();
 }
 
 

@@ -362,6 +362,8 @@ MeterMeter::MeterMeter(MWindow *mwindow,
 	this->mwindow = mwindow;
 	this->panel = panel;
 	set_delays(TRACKING_RATE * 10, TRACKING_RATE);
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Sound Level Meters Window");
 }
 
 MeterMeter::~MeterMeter()
@@ -394,6 +396,8 @@ MeterShow::MeterShow(MWindow *mwindow, MeterPanel *panel, int x, int y)
 	this->mwindow = mwindow;
 	this->panel = panel;
 	set_tooltip(_("Show meters"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Sound Level Meters Window");
 }
 
 

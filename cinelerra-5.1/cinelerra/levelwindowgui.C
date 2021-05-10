@@ -41,6 +41,8 @@ LevelWindowGUI::LevelWindowGUI(MWindow *mwindow, LevelWindow *thread)
 {
 	this->thread = thread;
 	this->mwindow = mwindow;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Sound Level Meters Window");
 }
 
 LevelWindowGUI::~LevelWindowGUI()
@@ -121,7 +123,7 @@ int LevelWindowGUI::keypress_event()
 			return 1;
 		}
 	}
-	return 0;
+	return context_help_check_and_show();
 }
 
 int LevelWindowGUI::reset_over()

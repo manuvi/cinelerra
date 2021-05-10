@@ -272,6 +272,8 @@ ZoomPopup::ZoomPopup(MWindow *mwindow, ZoomPanel *panel, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Compositor Controls");
 }
 
 ZoomPopup::~ZoomPopup()
@@ -292,6 +294,8 @@ ZoomTumbler::ZoomTumbler(MWindow *mwindow, ZoomPanel *panel, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Compositor Controls");
 }
 
 ZoomTumbler::~ZoomTumbler()

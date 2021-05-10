@@ -5385,6 +5385,8 @@ ConfirmRefWindow::ConfirmRefWindow(MWindow *mwindow, char *path,
 {
 	this->mwindow = mwindow;
 	this->path = path;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("File by Reference");
 }
 
 ConfirmRefWindow::~ConfirmRefWindow()

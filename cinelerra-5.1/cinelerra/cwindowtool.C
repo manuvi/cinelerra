@@ -318,7 +318,8 @@ int CWindowToolGUI::keypress_event()
 		result = 1;
 	}
 
-	return result;
+	if( result ) return result;
+	return context_help_check_and_show();
 }
 
 int CWindowToolGUI::translation_event()
@@ -539,7 +540,7 @@ int CWindowCropApply::keypress_event()
 		handle_event();
 		return 1;
 	}
-	return 0;
+	return context_help_check_and_show();
 }
 
 const char *CWindowCropOpMode::crop_ops[] = {
@@ -594,6 +595,8 @@ int CWindowCropOpItem::handle_event()
 CWindowCropGUI::CWindowCropGUI(MWindow *mwindow, CWindowTool *thread)
  : CWindowToolGUI(mwindow, thread, _(PROGRAM_NAME ": Crop"), xS(330), yS(100))
 {
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Cropping");
 }
 
 
@@ -705,6 +708,8 @@ void CWindowCropGUI::update()
 CWindowEyedropGUI::CWindowEyedropGUI(MWindow *mwindow, CWindowTool *thread)
  : CWindowToolGUI(mwindow, thread, _(PROGRAM_NAME ": Color"), xS(220), yS(290))
 {
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Compositor Toolbar");
 }
 
 CWindowEyedropGUI::~CWindowEyedropGUI()
@@ -953,6 +958,8 @@ int CWindowEyedropCheckBox::handle_event()
 CWindowCameraGUI::CWindowCameraGUI(MWindow *mwindow, CWindowTool *thread)
  : CWindowToolGUI(mwindow, thread, _(PROGRAM_NAME ": Camera"), xS(580), yS(200))
 {
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Camera and Projector");
 }
 CWindowCameraGUI::~CWindowCameraGUI()
 {
@@ -1005,8 +1012,10 @@ void CWindowCameraGUI::create_objects()
 	add_subwindow(bar3 = new BC_TitleBar(x1, y, xS(180)-x1, xs5, xs5, _("Justify")));
 	x1 += bar3->get_w() + xS(35);
 	add_subwindow(bar4 = new BC_TitleBar(x1, y, xS(375)-x1, xs5, xs5, _("Curve type")));
+	bar4->context_help_set_keyword("Using Autos");
 	x1 += bar4->get_w() + xS(25);
 	add_subwindow(bar5 = new BC_TitleBar(x1, y, get_w()-xS(60)-x1, xs5, xs5, _("Keyframe")));
+	bar5->context_help_set_keyword("Using Autos");
 	y += bar3->get_h() + ys10;
 
 	x1 = x;
@@ -1023,21 +1032,29 @@ void CWindowCameraGUI::create_objects()
 	add_subwindow(button = new CWindowCameraBottom(mwindow, this, x1, y));
 	x1 += button->get_w() + xS(35);
 	add_subwindow(t_smooth = new CWindowCurveToggle(Camera_Crv_Smooth, mwindow, this, x1, y));
+	t_smooth->context_help_set_keyword("Using Autos");
 	x1 += t_smooth->get_w() + xs10;
 	add_subwindow(t_linear = new CWindowCurveToggle(Camera_Crv_Linear, mwindow, this, x1, y));
+	t_linear->context_help_set_keyword("Using Autos");
 	x1 += t_linear->get_w() + xs10;
 	add_subwindow(t_tangent = new CWindowCurveToggle(Camera_Crv_Tangent, mwindow, this, x1, y));
+	t_tangent->context_help_set_keyword("Using Autos");
 	x1 += t_tangent->get_w() + xs10;
 	add_subwindow(t_free = new CWindowCurveToggle(Camera_Crv_Free, mwindow, this, x1, y));
+	t_free->context_help_set_keyword("Using Autos");
 	x1 += t_free->get_w() + xs10;
 	add_subwindow(t_bump = new CWindowCurveToggle(Camera_Crv_Bump, mwindow, this, x1, y));
+	t_bump->context_help_set_keyword("Bump autos");
 	x1 += button->get_w() + xs25;
 	y += yS(5);
 	add_subwindow(add_keyframe = new CWindowCameraAddKeyframe(mwindow, this, x1, y));
+	add_keyframe->context_help_set_keyword("Using Autos");
 	x1 += add_keyframe->get_w() + xs15;
 	add_subwindow(auto_edge = new CWindowCurveAutoEdge(mwindow, this, x1, y));
+	auto_edge->context_help_set_keyword("Bump autos");
 	x1 += auto_edge->get_w() + xs10;
 	add_subwindow(auto_span = new CWindowCurveAutoSpan(mwindow, this, x1, y));
+	auto_span->context_help_set_keyword("Bump autos");
 	x1 += auto_span->get_w() + xS(50);
 	add_subwindow(reset = new CWindowCameraReset(mwindow, this, x1, y));
 
@@ -1539,6 +1556,8 @@ int CWindowCurveAutoSpan::handle_event()
 CWindowProjectorGUI::CWindowProjectorGUI(MWindow *mwindow, CWindowTool *thread)
  : CWindowToolGUI(mwindow, thread, _(PROGRAM_NAME ": Projector"), xS(580), yS(200))
 {
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Camera and Projector");
 }
 CWindowProjectorGUI::~CWindowProjectorGUI()
 {
@@ -1591,8 +1610,10 @@ void CWindowProjectorGUI::create_objects()
 	add_subwindow(bar3 = new BC_TitleBar(x1, y, xS(180)-x1, xs5, xs5, _("Justify")));
 	x1 += bar3->get_w() + xS(35);
 	add_subwindow(bar4 = new BC_TitleBar(x1, y, xS(375)-x1, xs5, xs5, _("Curve type")));
+	bar4->context_help_set_keyword("Using Autos");
 	x1 += bar4->get_w() + xS(25);
 	add_subwindow(bar5 = new BC_TitleBar(x1, y, get_w()-xS(60)-x1, xs5, xs5, _("Keyframe")));
+	bar5->context_help_set_keyword("Using Autos");
 	y += bar3->get_h() + ys10;
 
 	x1 = x;
@@ -1609,21 +1630,29 @@ void CWindowProjectorGUI::create_objects()
 	add_subwindow(button = new CWindowProjectorBottom(mwindow, this, x1, y));
 	x1 += button->get_w() + xS(35);
 	add_subwindow(t_smooth = new CWindowCurveToggle(Projector_Crv_Smooth, mwindow, this, x1, y));
+	t_smooth->context_help_set_keyword("Using Autos");
 	x1 += t_smooth->get_w() + xs10;
 	add_subwindow(t_linear = new CWindowCurveToggle(Projector_Crv_Linear, mwindow, this, x1, y));
+	t_linear->context_help_set_keyword("Using Autos");
 	x1 += t_linear->get_w() + xs10;
 	add_subwindow(t_tangent = new CWindowCurveToggle(Projector_Crv_Tangent, mwindow, this, x1, y));
+	t_tangent->context_help_set_keyword("Using Autos");
 	x1 += t_tangent->get_w() + xs10;
 	add_subwindow(t_free = new CWindowCurveToggle(Projector_Crv_Free, mwindow, this, x1, y));
+	t_free->context_help_set_keyword("Using Autos");
 	x1 += t_free->get_w() + xs10;
 	add_subwindow(t_bump = new CWindowCurveToggle(Projector_Crv_Bump, mwindow, this, x1, y));
+	t_bump->context_help_set_keyword("Bump autos");
 	x1 += button->get_w() + xs25;
 	y += yS(5);
 	add_subwindow(add_keyframe = new CWindowProjectorAddKeyframe(mwindow, this, x1, y));
+	add_keyframe->context_help_set_keyword("Using Autos");
 	x1 += add_keyframe->get_w() + xs15;
 	add_subwindow(auto_edge = new CWindowCurveAutoEdge(mwindow, this, x1, y));
+	auto_edge->context_help_set_keyword("Bump autos");
 	x1 += auto_edge->get_w() + xs10;
 	add_subwindow(auto_span = new CWindowCurveAutoSpan(mwindow, this, x1, y));
+	auto_span->context_help_set_keyword("Bump autos");
 	x1 += auto_span->get_w() + xS(50);
 	add_subwindow(reset = new CWindowProjectorReset(mwindow, this, x1, y));
 
@@ -2955,6 +2984,8 @@ CWindowMaskGUI::CWindowMaskGUI(MWindow *mwindow, CWindowTool *thread)
 	markers = 1;
 	boundary = 1;
 	preset_dialog = 0;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Masks");
 }
 CWindowMaskGUI::~CWindowMaskGUI()
 {
@@ -3712,6 +3743,8 @@ CWindowMaskPresetGUI::CWindowMaskPresetGUI(CWindowMaskPresetDialog *preset_dialo
  : BC_Window(title, x, y, xS(320), yS(100), xS(320), yS(100), 0, 0, 1)
 {
 	this->preset_dialog = preset_dialog;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Masks");
 }
 
 void CWindowMaskPresetGUI::create_objects()
@@ -3983,6 +4016,8 @@ void CWindowMaskGUI::save_masks(ArrayList<SubMask *> &masks)
 CWindowRulerGUI::CWindowRulerGUI(MWindow *mwindow, CWindowTool *thread)
  : CWindowToolGUI(mwindow, thread, _(PROGRAM_NAME ": Ruler"), xS(320), yS(240))
 {
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Compositor Toolbar");
 }
 
 CWindowRulerGUI::~CWindowRulerGUI()

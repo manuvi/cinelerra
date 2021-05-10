@@ -109,6 +109,8 @@ ColorWindow::ColorWindow(ColorPicker *thread, int x, int y, int w, int h, const 
    ColorGUI(this)
 {
 	this->thread = thread;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Title");
 }
 
 ColorWindow::~ColorWindow()

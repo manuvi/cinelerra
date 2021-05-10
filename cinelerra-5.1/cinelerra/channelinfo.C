@@ -349,6 +349,8 @@ ChanSearchGUI::ChanSearchGUI(ChanSearch *cswindow)
 	search_column_widths[0] = xS(120);
 	search_column_widths[2] = xS(120);
 	search_column_widths[1] = get_w()-search_column_widths[0]-search_column_widths[2]-xS(32);
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Capture at some Future Time via Batch");
 }
 
 ChanSearchGUI::~ChanSearchGUI()
@@ -1242,7 +1244,7 @@ int ChannelInfoOK::button_press_event()
 
 int ChannelInfoOK::keypress_event()
 {
-	return 0;
+	return context_help_check_and_show();
 }
 
 
@@ -1451,6 +1453,8 @@ ChannelInfoGUI::ChannelInfoGUI(ChannelInfo *iwindow,
 	if( bay_w > max_bay_w ) bay_w = max_bay_w;
 	panel_w = w;
 	panel_h = h - bay_h;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Capture at some Future Time via Batch");
 }
 
 ChannelInfoGUI::~ChannelInfoGUI()

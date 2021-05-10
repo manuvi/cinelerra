@@ -53,6 +53,8 @@ MTimeBar::MTimeBar(MWindow *mwindow,
 {
 	this->gui = gui;
 	this->pane = 0;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Time Format section");
 }
 
 MTimeBar::MTimeBar(MWindow *mwindow,
@@ -65,6 +67,8 @@ MTimeBar::MTimeBar(MWindow *mwindow,
 {
 	this->gui = mwindow->gui;
 	this->pane = pane;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Time Format section");
 }
 
 void MTimeBar::create_objects()

@@ -395,6 +395,8 @@ RewindButton::RewindButton(MWindow *mwindow, PlayTransport *transport, int x, in
  : PTransportButton(mwindow, transport, x, y, mwindow->theme->get_image_set("rewind"))
 {
 	set_tooltip(_("Rewind ( Home )"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Transport Controls");
 }
 int RewindButton::handle_event()
 {
@@ -408,6 +410,8 @@ FastReverseButton::FastReverseButton(MWindow *mwindow, PlayTransport *transport,
  : PTransportButton(mwindow, transport, x, y, mwindow->theme->get_image_set("fastrev"))
 {
 	set_tooltip(_("Fast reverse ( + or Alt-p )"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Transport Controls");
 }
 int FastReverseButton::handle_event()
 {
@@ -421,6 +425,8 @@ ReverseButton::ReverseButton(MWindow *mwindow, PlayTransport *transport, int x, 
  : PTransportButton(mwindow, transport, x, y, mwindow->theme->get_image_set("reverse"))
 {
 	set_tooltip(_("Normal reverse ( 6 or Alt-o )"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Transport Controls");
 }
 int ReverseButton::handle_event()
 {
@@ -434,6 +440,8 @@ FrameReverseButton::FrameReverseButton(MWindow *mwindow, PlayTransport *transpor
  : PTransportButton(mwindow, transport, x, y, mwindow->theme->get_image_set("framerev"))
 {
 	set_tooltip(_("Frame reverse ( 4 or Alt-u )"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Transport Controls");
 }
 int FrameReverseButton::handle_event()
 {
@@ -449,6 +457,8 @@ PlayButton::PlayButton(MWindow *mwindow, PlayTransport *transport, int x, int y)
  : PTransportButton(mwindow, transport, x, y, mwindow->theme->get_image_set("play"))
 {
 	set_tooltip(_("Normal forward ( 3 or Alt-l )"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Transport Controls");
 }
 int PlayButton::handle_event()
 {
@@ -464,6 +474,8 @@ FramePlayButton::FramePlayButton(MWindow *mwindow, PlayTransport *transport, int
  : PTransportButton(mwindow, transport, x, y, mwindow->theme->get_image_set("framefwd"))
 {
 	set_tooltip(_("Frame forward ( 1 or Alt-j )"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Transport Controls");
 }
 int FramePlayButton::handle_event()
 {
@@ -479,6 +491,8 @@ FastPlayButton::FastPlayButton(MWindow *mwindow, PlayTransport *transport, int x
  : PTransportButton(mwindow, transport, x, y, mwindow->theme->get_image_set("fastfwd"))
 {
 	set_tooltip(_("Fast forward ( Enter or Alt-; )"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Transport Controls");
 }
 int FastPlayButton::handle_event()
 {
@@ -490,6 +504,8 @@ EndButton::EndButton(MWindow *mwindow, PlayTransport *transport, int x, int y)
  : PTransportButton(mwindow, transport, x, y, mwindow->theme->get_image_set("end"))
 {
 	set_tooltip(_("Jump to end ( End )"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Transport Controls");
 }
 int EndButton::handle_event()
 {
@@ -503,6 +519,8 @@ StopButton::StopButton(MWindow *mwindow, PlayTransport *transport, int x, int y)
  : PTransportButton(mwindow, transport, x, y, mwindow->theme->get_image_set("stop"))
 {
 	set_tooltip(_("Stop ( 0 or Alt-m )"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Transport Controls");
 }
 int StopButton::handle_event()
 {

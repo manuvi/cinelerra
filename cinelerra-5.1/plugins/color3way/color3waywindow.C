@@ -554,8 +554,8 @@ int Color3WayPoint::cursor_leave_event()
 int Color3WayPoint::keypress_event()
 {
 	int result = 0;
-	if(!active) return 0;
-	if(ctrl_down() || shift_down()) return 0;
+	if(!active) return context_help_check_and_show();
+	if(ctrl_down() || shift_down()) return context_help_check_and_show();
 
 	switch(get_keypress())
 	{
@@ -584,6 +584,7 @@ int Color3WayPoint::keypress_event()
 		plugin->send_configure_change();
 		gui->update();
 	}
+	else result = context_help_check_and_show();
 	return result;
 }
 

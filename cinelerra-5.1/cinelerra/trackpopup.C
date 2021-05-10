@@ -389,6 +389,8 @@ TrackPopupUserTitleWindow::TrackPopupUserTitleWindow(MWindow *mwindow,
 	this->mwindow = mwindow;
 	this->popup = popup;
 	strcpy(new_text, !popup->edit ? "" : popup->edit->user_title);
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Track Popup Menu");
 }
 
 TrackPopupUserTitleWindow::~TrackPopupUserTitleWindow()
@@ -588,6 +590,8 @@ TrackPopupShowWindow::TrackPopupShowWindow(MWindow *mwindow,
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Track Popup Menu");
 }
 
 TrackPopupShowWindow::~TrackPopupShowWindow()

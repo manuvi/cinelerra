@@ -55,6 +55,9 @@ _720to480Window::_720to480Window(_720to480Main *client, int x, int y)
  : BC_Window(client->gui_string, x, y, xS(230), yS(150), xS(230), yS(150), 0, 0, 1)
 {
 	this->client = client;
+// *** CONTEXT_HELP ***
+	if(client) context_help_set_keyword(client->plugin_title());
+	else 	   context_help_set_keyword("Rendered Video Effects");
 }
 
 

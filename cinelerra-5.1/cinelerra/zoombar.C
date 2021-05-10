@@ -50,6 +50,8 @@ ZoomBar::ZoomBar(MWindow *mwindow, MWindowGUI *gui)
 {
 	this->gui = gui;
 	this->mwindow = mwindow;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Zoom Panel");
 }
 
 ZoomBar::~ZoomBar()

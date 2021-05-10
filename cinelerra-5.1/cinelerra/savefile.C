@@ -178,6 +178,8 @@ SaveProjectWindow::SaveProjectWindow(MWindow *mwindow, const char *dir_path,
 	this->overwrite = overwrite;
 	this->save_mode = save_mode;
 	this->reload = reload;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Export Project");
 }
 SaveProjectWindow::~SaveProjectWindow()
 {

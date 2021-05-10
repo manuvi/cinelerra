@@ -284,8 +284,10 @@ int BC_Pot::keypress_event()
 		show_value_tooltip();
 		draw(1);
 		handle_event();
+		return result;
 	}
-	return result;
+
+	return context_help_check_and_show();
 }
 
 int BC_Pot::cursor_enter_event()

@@ -113,6 +113,8 @@ CWindowGUI::CWindowGUI(MWindow *mwindow, CWindow *cwindow)
 	control_out_x = control_out_y = 0;
 	translating_zoom = 0;
 	highlighted = 0;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Compositor Window");
 }
 
 CWindowGUI::~CWindowGUI()
@@ -591,6 +593,9 @@ int CWindowGUI::keypress_event()
 
 	if( !result )
 		result = transport->keypress_event();
+
+	if( !result )
+		result = context_help_check_and_show();
 
 	return result;
 }

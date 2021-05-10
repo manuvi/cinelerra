@@ -390,6 +390,8 @@ AMixPatch::AMixPatch(MWindow *mwindow, APatchGUI *patch, int x, int y)
  : MixPatch(mwindow, patch, x, y)
 {
 	set_tooltip(_("Mixer"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Recover Mixer Windows");
 }
 
 AMixPatch::~AMixPatch()

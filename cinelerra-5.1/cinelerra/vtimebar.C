@@ -43,6 +43,8 @@ VTimeBar::VTimeBar(MWindow *mwindow,
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Preview Region Usage");
 }
 
 int VTimeBar::resize_event()

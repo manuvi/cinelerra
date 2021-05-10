@@ -685,6 +685,8 @@ AssetCopyWindow::AssetCopyWindow(AssetCopyDialog *copy_dialog)
 	ACW_W, ACW_H, ACW_W, ACW_H, 1, 0, 1)
 {
 	this->copy_dialog = copy_dialog;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Moving clips");
 }
 
 AssetCopyWindow::~AssetCopyWindow()
@@ -818,6 +820,8 @@ AssetPasteWindow::AssetPasteWindow(AssetPasteDialog *paste_dialog)
 	APW_W, APW_H, APW_W, APW_H, 1, 0, 1)
 {
 	this->paste_dialog = paste_dialog;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Moving clips");
 }
 
 AssetPasteWindow::~AssetPasteWindow()

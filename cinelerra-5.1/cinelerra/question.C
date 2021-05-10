@@ -76,7 +76,7 @@ int QuestionYesButton::keypress_event()
 		handle_event();
 		return 1;
 	}
-	return 0;
+	return context_help_check_and_show();
 }
 
 QuestionNoButton::QuestionNoButton(MWindow *mwindow, QuestionWindow *window, int x, int y)
@@ -98,5 +98,5 @@ int QuestionNoButton::keypress_event()
 		handle_event();
 		return 1;
 	}
-	return 0;
+	return context_help_check_and_show();
 }

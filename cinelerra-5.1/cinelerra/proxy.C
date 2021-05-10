@@ -396,6 +396,8 @@ ProxyWindow::ProxyWindow(MWindow *mwindow, ProxyDialog *dialog, int x, int y)
 	this->mwindow = mwindow;
 	this->dialog = dialog;
 	format_tools = 0;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Proxy");
 }
 
 ProxyWindow::~ProxyWindow()

@@ -47,6 +47,8 @@ AppearancePrefs::AppearancePrefs(MWindow *mwindow, PreferencesWindow *pwindow)
 	thumbnails = 0;
 	thumbnail_size = 0;
 	vicon_size = 0;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Appearance");
 }
 
 AppearancePrefs::~AppearancePrefs()
@@ -80,46 +82,58 @@ void AppearancePrefs::create_objects()
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x, y, _("Layout:"), LARGEFONT,
 		resources->text_default));
+	title->context_help_set_keyword("Layout section");
 	y += title->get_h() + ys10;
 	int y1 = y;
 
 	ViewTheme *theme;
-	add_subwindow(new BC_Title(x, y, _("Theme:")));
+	add_subwindow(title = new BC_Title(x, y, _("Theme:")));
+	title->context_help_set_keyword("Layout section");
 	add_subwindow(theme = new ViewTheme(x1, y, pwindow));
 	theme->create_objects();
+	theme->context_help_set_keyword("Layout section");
 	y += theme->get_h() + ys5;
 
 	x = x0;
 	ViewPluginIcons *plugin_icons;
-	add_subwindow(new BC_Title(x, y, _("Plugin Icons:")));
+	add_subwindow(title = new BC_Title(x, y, _("Plugin Icons:")));
+	title->context_help_set_keyword("Updatable Icon Image Support");
 	add_subwindow(plugin_icons = new ViewPluginIcons(x1, y, pwindow));
 	plugin_icons->create_objects();
+	plugin_icons->context_help_set_keyword("Updatable Icon Image Support");
 	y += plugin_icons->get_h() + ys10;
-	add_subwindow(new BC_Title(x, y, _("Language:")));
+	add_subwindow(title = new BC_Title(x, y, _("Language:")));
+	title->context_help_set_keyword("Layout section");
 	LayoutLocale *layout_locale;
 	add_subwindow(layout_locale = new LayoutLocale(x1, y, pwindow));
 	layout_locale->create_objects();
+	layout_locale->context_help_set_keyword("Layout section");
 	y += layout_locale->get_h() + ys15;
 	x1 = get_w()/2;
 
 	int x2 = x1 + xS(160), y2 = y;
 	y = y1;
 
-	add_subwindow(new BC_Title(x1, y, _("Layout Scale:")));
+	add_subwindow(title = new BC_Title(x1, y, _("Layout Scale:")));
+	title->context_help_set_keyword("Layout section");
 	layout_scale = new ViewLayoutScale(pwindow, this, x2, y);
 	layout_scale->create_objects();
 	y += layout_scale->get_h() + ys5;
-	add_subwindow(new BC_Title(x1, y, _("View thumbnail size:")));
+	add_subwindow(title = new BC_Title(x1, y, _("View thumbnail size:")));
+	title->context_help_set_keyword("Layout section");
 	thumbnail_size = new ViewThumbnailSize(pwindow, this, x2, y);
 	thumbnail_size->create_objects();
 	y += thumbnail_size->get_h() + ys5;
-	add_subwindow(new BC_Title(x1, y, _("Vicon quality:")));
+	add_subwindow(title = new BC_Title(x1, y, _("Vicon quality:")));
+	title->context_help_set_keyword("Layout section");
 	vicon_size = new ViewViconSize(pwindow, this, x2, y);
 	vicon_size->create_objects();
 	y += vicon_size->get_h() + ys5;
-	add_subwindow(new BC_Title(x1, y, _("Vicon color mode:")));
+	add_subwindow(title = new BC_Title(x1, y, _("Vicon color mode:")));
+	title->context_help_set_keyword("Layout section");
 	add_subwindow(vicon_color_mode = new ViewViconColorMode(pwindow, x2, y));
 	vicon_color_mode->create_objects();
+	vicon_color_mode->context_help_set_keyword("Layout section");
 	y += vicon_color_mode->get_h() + ys5;
 	y = bmax(y, y2);	
 	y += ys10;
@@ -129,36 +143,45 @@ void AppearancePrefs::create_objects()
 	y1 = y;
 	add_subwindow(title = new BC_Title(x, y, _("Time Format:"), LARGEFONT,
 		resources->text_default));
+	title->context_help_set_keyword("Time Format section");
 	y += title->get_h() + ys10;
 	add_subwindow(hms = new TimeFormatHMS(pwindow, this,
 		pwindow->thread->edl->session->time_format == TIME_HMS,
 		x, y));
+	hms->context_help_set_keyword("Time Format section");
 	y += ys20;
 	add_subwindow(hmsf = new TimeFormatHMSF(pwindow, this,
 		pwindow->thread->edl->session->time_format == TIME_HMSF,
 		x, y));
+	hmsf->context_help_set_keyword("Time Format section");
 	y += ys20;
 	add_subwindow(timecode = new TimeFormatTimecode(pwindow, this,
 		pwindow->thread->edl->session->time_format == TIME_TIMECODE,
 		x, y));
+	timecode->context_help_set_keyword("Time Format section");
 	y += ys20;
 	add_subwindow(samples = new TimeFormatSamples(pwindow, this,
 		pwindow->thread->edl->session->time_format == TIME_SAMPLES,
 		x, y));
+	samples->context_help_set_keyword("Time Format section");
 	y += ys20;
 	add_subwindow(hex = new TimeFormatHex(pwindow, this,
 		pwindow->thread->edl->session->time_format == TIME_SAMPLES_HEX,
 		x, y));
+	hex->context_help_set_keyword("Time Format section");
 	y += ys20;
 	add_subwindow(frames = new TimeFormatFrames(pwindow, this,
 		pwindow->thread->edl->session->time_format == TIME_FRAMES,
 		x, y));
+	frames->context_help_set_keyword("Time Format section");
 	y += ys20;
 	add_subwindow(feet = new TimeFormatFeet(pwindow, this,
 		pwindow->thread->edl->session->time_format == TIME_FEET_FRAMES,
 		x, y));
+	feet->context_help_set_keyword("Time Format section");
 	x += feet->get_w() + xS(15);
 	add_subwindow(title = new BC_Title(x, y, _("Frames per foot:")));
+	title->context_help_set_keyword("Time Format section");
 	x += title->get_w() + margin;
 	sprintf(string, "%0.2f", pwindow->thread->edl->session->frames_per_foot);
 	add_subwindow(new TimeFormatFeetSetting(pwindow,
@@ -168,14 +191,17 @@ void AppearancePrefs::create_objects()
 	add_subwindow(seconds = new TimeFormatSeconds(pwindow, this,
 		pwindow->thread->edl->session->time_format == TIME_SECONDS,
 		x, y));
+	seconds->context_help_set_keyword("Time Format section");
 	y += ys35;
 	y2 = y;
 	
 	x = x1;  y = y1;
-	add_subwindow(new BC_Title(x, y, _("Color:"), LARGEFONT,
+	add_subwindow(title = new BC_Title(x, y, _("Color:"), LARGEFONT,
 		resources->text_default));
+	title->context_help_set_keyword("Color section");
 	y += ys35;
 	add_subwindow(title = new BC_Title(x, y, _("Highlighting Inversion color:")));
+	title->context_help_set_keyword("Color section");
 	x += title->get_w() + margin;
 	char hex_color[BCSTRLEN];
 	sprintf(hex_color, "%06x", preferences->highlight_inverse);
@@ -183,24 +209,30 @@ void AppearancePrefs::create_objects()
 	x2 = x;  x = x1;
 	y += ys35;
 	add_subwindow(title = new BC_Title(x, y, _("Composer BG Color:")));
+	title->context_help_set_keyword("Color section");
 	int clr_color = pwindow->thread->edl->session->cwindow_clear_color;
         add_subwindow(cwdw_bg_color = new Composer_BG_Color(pwindow,
 		x2, y, xS(80), yS(24), clr_color));
 	draw_3d_border(x2-2,y-2, xS(80)+4,xS(24)+4, 1);
 	cwdw_bg_color->create_objects();
+	cwdw_bg_color->context_help_set_keyword("Color section");
 	x2 += cwdw_bg_color->get_w();
 	y += ys35;
 
 	add_subwindow(title = new BC_Title(x1, y, _("YUV color space:")));
+	title->context_help_set_keyword("Color Space and Color Range");
 	x = x2 - xS(120);
 	add_subwindow(yuv_color_space = new YuvColorSpace(x, y, pwindow));
 	yuv_color_space->create_objects();
+	yuv_color_space->context_help_set_keyword("Color Space and Color Range");
 	y += yuv_color_space->get_h() + ys5;
 
 	add_subwindow(title = new BC_Title(x1, y, _("YUV color range:")));
+	title->context_help_set_keyword("Color Space and Color Range");
 	x = x2 - xS(100);
 	add_subwindow(yuv_color_range = new YuvColorRange(x, y, pwindow));
 	yuv_color_range->create_objects();
+	yuv_color_range->context_help_set_keyword("Color Space and Color Range");
 	y += yuv_color_range->get_h() + ys35;
 	if( y2 < y ) y2 = y;
 
@@ -210,15 +242,19 @@ void AppearancePrefs::create_objects()
 	x = x0;  y1 = y;
 	add_subwindow(title = new BC_Title(x, y, _("Warnings:"), LARGEFONT,
 		resources->text_default));
+	title->context_help_set_keyword("Warnings section");
 	y += title->get_h() + ys10;
 	UseWarnIndecies *idx_warn = new UseWarnIndecies(pwindow, x, y);
 	add_subwindow(idx_warn);
+	idx_warn->context_help_set_keyword("Warnings section");
 	y += idx_warn->get_h() + ys5;
 	BD_WarnRoot *bdwr_warn = new BD_WarnRoot(pwindow, x, y);
 	add_subwindow(bdwr_warn);
+	bdwr_warn->context_help_set_keyword("Blu-ray Workaround for Mount");
 	y += bdwr_warn->get_h() + ys5;
 	UseWarnFileRef *warn_ref = new UseWarnFileRef(pwindow, x, y);
 	add_subwindow(warn_ref);
+	warn_ref->context_help_set_keyword("File by Reference");
 	y += warn_ref->get_h() + ys5;
 	
 	add_subwindow(new BC_Bar(x0, y, warn_ref->get_w()-x0 - xs30));
@@ -226,59 +262,75 @@ void AppearancePrefs::create_objects()
 
 	add_subwindow(title = new BC_Title(x, y, _("Dangerous:"), LARGEFONT,
 		resources->text_default));
+	title->context_help_set_keyword("Dangerous section");
 	y += title->get_h() + ys10;
 
 	
 	UseUnsafeGUI *unsafe_gui = new UseUnsafeGUI(pwindow, x, y);
 	add_subwindow(unsafe_gui);
+	unsafe_gui->context_help_set_keyword("Advanced features");
 	y += unsafe_gui->get_h() + ys5;
 	OngoingBackups *ongoing_backups = new OngoingBackups(pwindow, x, y);
 	add_subwindow(ongoing_backups);
+	ongoing_backups->context_help_set_keyword("Backup and Perpetual Session");
 	y += ongoing_backups->get_h() + ys5;
 
 	x = get_w() / 3 + xs30;
 	y = y1;
 	add_subwindow(title = new BC_Title(x, y, _("Flags:"), LARGEFONT,
 		resources->text_default));
+	title->context_help_set_keyword("Flags section");
 	y += title->get_h() + ys10;
 	y1 = y;
 	AutocolorAssets *autocolor_assets = new AutocolorAssets(pwindow, x, y);
 	add_subwindow(autocolor_assets);
+	autocolor_assets->context_help_set_keyword("Color Title Bars and Assets");
 	y += autocolor_assets->get_h() + ys5;
 	PerpetualSession *perpetual = new PerpetualSession(x, y, pwindow);
 	add_subwindow(perpetual);
+	perpetual->context_help_set_keyword("Backup and Perpetual Session");
 	y += perpetual->get_h() + ys5;
 	RectifyAudioToggle *rect_toggle = new RectifyAudioToggle(x, y, pwindow);
 	add_subwindow(rect_toggle);
+	rect_toggle->context_help_set_keyword("Flags section");
 	y += rect_toggle->get_h() + ys5;
 	CtrlToggle *ctrl_toggle = new CtrlToggle(x, y, pwindow);
 	add_subwindow(ctrl_toggle);
+	ctrl_toggle->context_help_set_keyword("Selection Methods");
 	y += ctrl_toggle->get_h() + ys5;
 	ForwardRenderDisplacement *displacement = new ForwardRenderDisplacement(pwindow, x, y);
 	add_subwindow(displacement);
+	displacement->context_help_set_keyword("Always Show Next Frame");
 	y += displacement->get_h() + ys5;
 	UseTipWindow *tip_win = new UseTipWindow(pwindow, x, y);
 	add_subwindow(tip_win);
+	tip_win->context_help_set_keyword("Flags section");
 	y += tip_win->get_h() + ys5;
 
 	x = 2*get_w() / 3 - xs30;
 	y = y1;
 	add_subwindow(thumbnails = new ViewThumbnails(x, y, pwindow));
+	thumbnails->context_help_set_keyword("Video Icons \\/ Audio Icons");
 	y += thumbnails->get_h() + ys5;
 	PopupMenuBtnup *pop_win = new PopupMenuBtnup(pwindow, x, y);
 	add_subwindow(pop_win);
+	pop_win->context_help_set_keyword("Flags section");
 	y += pop_win->get_h() + ys5;
 	GrabFocusPolicy *grab_input_focus = new GrabFocusPolicy(pwindow, x, y);
 	add_subwindow(grab_input_focus);
+	grab_input_focus->context_help_set_keyword("Flags section");
 	y += grab_input_focus->get_h() + ys5;
 	ActivateFocusPolicy *focus_activate = new ActivateFocusPolicy(pwindow, x, y);
 	add_subwindow(focus_activate);
+	focus_activate->context_help_set_keyword("Flags section");
 	y += focus_activate->get_h() + ys5;
 	DeactivateFocusPolicy *focus_deactivate = new DeactivateFocusPolicy(pwindow, x, y);
 	add_subwindow(focus_deactivate);
+	focus_deactivate->context_help_set_keyword("Flags section");
 	y += focus_deactivate->get_h() + ys5;
 	AutoRotate *auto_rotate = new AutoRotate(pwindow, x, y);
 	add_subwindow(auto_rotate);
+	auto_rotate->context_help_set_keyword("Flags section");
 	y += auto_rotate->get_h() + ys5;
 }
 

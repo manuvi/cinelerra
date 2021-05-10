@@ -290,7 +290,7 @@ int BC_OKButton::resize_event(int w, int h)
 int BC_OKButton::keypress_event()
 {
 	if(get_keypress() == RETURN) return handle_event();
-	return 0;
+	return context_help_check_and_show();
 }
 
 int BC_OKButton::calculate_h()
@@ -354,7 +354,7 @@ int BC_CancelButton::resize_event(int w,int h)
 int BC_CancelButton::keypress_event()
 {
 	if(get_keypress() == ESC) return handle_event();
-	return 0;
+	return context_help_check_and_show();
 }
 
 int BC_CancelButton::calculate_h()
@@ -512,7 +512,7 @@ int BC_OKTextButton::handle_event()
 int BC_OKTextButton::keypress_event()
 {
 	if(get_keypress() == RETURN) return handle_event();
-	return 0;
+	return context_help_check_and_show();
 }
 
 
@@ -541,7 +541,7 @@ int BC_CancelTextButton::handle_event()
 int BC_CancelTextButton::keypress_event()
 {
 	if(get_keypress() == ESC) return handle_event();
-	return 0;
+	return context_help_check_and_show();
 }
 
 

@@ -685,7 +685,7 @@ int Canvas::keypress_event(BC_WindowBase *caller)
 		set_fullscreen(0, 1);
 		break;
 	default:
-		return 0;
+		return caller->context_help_check_and_show();
 	}
 	return 1;
 }

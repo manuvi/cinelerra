@@ -39,6 +39,8 @@ CTimeBar::CTimeBar(MWindow *mwindow, CWindowGUI *gui,
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Preview Region Usage");
 }
 
 int CTimeBar::resize_event()

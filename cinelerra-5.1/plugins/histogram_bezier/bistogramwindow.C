@@ -182,6 +182,8 @@ int HistogramWindow::keypress_event()
 			result = 1;
 		}
 	}
+	if( !result )
+		result = context_help_check_and_show();
 	return result;
 }
 

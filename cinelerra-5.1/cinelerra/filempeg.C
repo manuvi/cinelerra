@@ -1727,6 +1727,8 @@ MPEGConfigAudio::MPEGConfigAudio(BC_WindowBase *parent_window, Asset *asset)
 {
 	this->parent_window = parent_window;
 	this->asset = asset;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Single File Rendering");
 }
 
 MPEGConfigAudio::~MPEGConfigAudio()
@@ -1881,6 +1883,8 @@ MPEGConfigVideo::MPEGConfigVideo(BC_WindowBase *parent_window,
 	this->parent_window = parent_window;
 	this->asset = asset;
 	reset_cmodel();
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Single File Rendering");
 }
 
 MPEGConfigVideo::~MPEGConfigVideo()

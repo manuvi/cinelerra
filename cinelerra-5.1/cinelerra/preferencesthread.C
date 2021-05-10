@@ -440,6 +440,8 @@ PreferencesWindow::PreferencesWindow(MWindow *mwindow,
 	category = 0;
 	dialog = 0;
 	confirm_dialog = 0;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Settings and Preferences");
 }
 
 PreferencesWindow::~PreferencesWindow()
@@ -691,7 +693,7 @@ int PreferencesOK::keypress_event()
 {
 	if( get_keypress() == RETURN )
 		return handle_event();
-	return 0;
+	return context_help_check_and_show();
 }
 
 int PreferencesOK::handle_event()
@@ -765,7 +767,7 @@ int PreferencesCancel::keypress_event()
 		thread->window->set_done(1);
 		return 1;
 	}
-	return 0;
+	return context_help_check_and_show();
 }
 int PreferencesCancel::handle_event()
 {

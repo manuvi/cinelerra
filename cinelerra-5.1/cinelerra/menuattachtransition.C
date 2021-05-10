@@ -138,6 +138,18 @@ TransitionDialog::TransitionDialog(MWindow *mwindow,
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
+// *** CONTEXT_HELP ***
+	switch( thread->data_type ) {
+	case TRACK_AUDIO:
+		context_help_set_keyword("Audio Transitions");
+		break;
+	case TRACK_VIDEO:
+		context_help_set_keyword("Video Transitions");
+		break;
+	default:
+		context_help_set_keyword("Transition Plugins");
+		break;
+	}
 }
 
 TransitionSetDefault::TransitionSetDefault(TransitionDialog *window, int x, int y)

@@ -990,6 +990,8 @@ RenderWindow::RenderWindow(MWindow *mwindow,
 	rangeselection = 0;
 	rangeinout = 0;
 	range1frame = 0;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Single File Rendering");
 }
 
 RenderWindow::~RenderWindow()

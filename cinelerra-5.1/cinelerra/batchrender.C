@@ -743,6 +743,8 @@ BatchRenderGUI::BatchRenderGUI(MWindow *mwindow,
 	this->mwindow = mwindow;
 	this->thread = thread;
 	use_renderfarm = 0;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Batch Rendering");
 }
 
 BatchRenderGUI::~BatchRenderGUI()
@@ -1163,7 +1165,7 @@ void BatchRenderSaveList::run()
 int BatchRenderSaveList::keypress_event() {
 	if( get_keypress() == 's' ||
 	    get_keypress() == 'S' ) return handle_event();
-	return 0;
+	return context_help_check_and_show();
 }
 
 
@@ -1244,7 +1246,7 @@ void BatchRenderLoadList::run()
 int BatchRenderLoadList::keypress_event() {
 	if( get_keypress() == 'o' ||
 	    get_keypress() == 'O' ) return handle_event();
-	return 0;
+	return context_help_check_and_show();
 }
 
 BatchRenderCurrentEDL::BatchRenderCurrentEDL(BatchRenderThread *thread,
@@ -1433,7 +1435,7 @@ int BatchRenderCancel::keypress_event()
 		thread->gui->set_done(1);
 		return 1;
 	}
-	return 0;
+	return context_help_check_and_show();
 }
 
 //new help button

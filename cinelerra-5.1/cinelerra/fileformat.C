@@ -37,6 +37,8 @@ FileFormat::FileFormat(MWindow *mwindow)
 		xS(375), yS(300), xS(375), yS(300))
 {
 	this->mwindow = mwindow;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Single File Rendering");
 }
 
 FileFormat::~FileFormat()

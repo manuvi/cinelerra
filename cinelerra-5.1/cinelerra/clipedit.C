@@ -141,6 +141,8 @@ ClipEditWindow::ClipEditWindow(MWindow *mwindow, ClipEdit *thread)
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Workflow with OpenEDL and Nested Clips");
 }
 
 ClipEditWindow::~ClipEditWindow()

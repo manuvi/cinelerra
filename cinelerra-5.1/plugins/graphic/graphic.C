@@ -872,7 +872,7 @@ int GraphicGUI::keypress_event()
 			}
 		}
 	}
-	return 0;
+	return context_help_check_and_show();
 }
 
 

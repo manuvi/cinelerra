@@ -59,6 +59,8 @@ ProbeEditWindow::ProbeEditWindow(FileProbeDialog *pb_dialog, int x, int y)
 	probe_enabled = 0;
 	pb_enabled = 0;
 	pb_disabled = 0;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Probe Order when Loading Media");
 }
 
 ProbeEditWindow::~ProbeEditWindow()

@@ -30,6 +30,9 @@ CDRipWindow::CDRipWindow(CDRipMain *cdripper, int x, int y)
 	x, y, xS(450), yS(230), xS(450), yS(230), 0, 0, 1)
 {
 	this->cdripper = cdripper;
+// *** CONTEXT_HELP ***
+	if(cdripper) context_help_set_keyword(cdripper->plugin_title());
+	else 	     context_help_set_keyword("Rendered Audio Effects");
 }
 
 CDRipWindow::~CDRipWindow()

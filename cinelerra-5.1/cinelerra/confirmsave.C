@@ -50,6 +50,7 @@ int ConfirmSave::get_save_path(MWindow *mwindow, char *filename)
 			_(PROGRAM_NAME ": Save"), string);
 		filebox->lock_window("ConfirmSave::get_save_path");
 		filebox->create_objects();
+		filebox->context_help_set_keyword("Saving Project Files");
 		filebox->unlock_window();
 		result = filebox->run_window();
 		mwindow->defaults->update("DIRECTORY", filebox->get_submitted_path());

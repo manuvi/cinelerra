@@ -151,6 +151,8 @@ CPanelProtect::CPanelProtect(MWindow *mwindow, CPanel *gui, int x, int y)
 	this->mwindow = mwindow;
 	this->gui = gui;
 	set_tooltip(_("Protect video from changes (F1)"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Compositor Toolbar");
 }
 CPanelProtect::~CPanelProtect()
 {
@@ -175,6 +177,8 @@ CPanelMask::CPanelMask(MWindow *mwindow, CPanel *gui, int x, int y)
 	this->mwindow = mwindow;
 	this->gui = gui;
 	set_tooltip(_("Edit mask (F3)"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Masks");
 }
 CPanelMask::~CPanelMask()
 {
@@ -197,6 +201,8 @@ CPanelRuler::CPanelRuler(MWindow *mwindow, CPanel *gui, int x, int y)
 	this->mwindow = mwindow;
 	this->gui = gui;
 	set_tooltip(_("Ruler (F4)"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Compositor Toolbar");
 }
 CPanelRuler::~CPanelRuler()
 {
@@ -219,6 +225,8 @@ CPanelMagnify::CPanelMagnify(MWindow *mwindow, CPanel *gui, int x, int y)
 	this->mwindow = mwindow;
 	this->gui = gui;
 	set_tooltip(_("Zoom view (F2)"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Compositor Toolbar");
 }
 CPanelMagnify::~CPanelMagnify()
 {
@@ -239,6 +247,8 @@ CPanelCamera::CPanelCamera(MWindow *mwindow, CPanel *gui, int x, int y)
 	this->mwindow = mwindow;
 	this->gui = gui;
 	set_tooltip(_("Adjust camera automation (F5)"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Camera and Projector");
 }
 CPanelCamera::~CPanelCamera()
 {
@@ -259,6 +269,8 @@ CPanelProj::CPanelProj(MWindow *mwindow, CPanel *gui, int x, int y)
 	this->mwindow = mwindow;
 	this->gui = gui;
 	set_tooltip(_("Adjust projector automation (F6)"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Camera and Projector");
 }
 CPanelProj::~CPanelProj()
 {
@@ -279,6 +291,8 @@ CPanelCrop::CPanelCrop(MWindow *mwindow, CPanel *gui, int x, int y)
 	this->mwindow = mwindow;
 	this->gui = gui;
 	set_tooltip(_("Crop a layer or output (F7)"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Cropping");
 }
 
 CPanelCrop::~CPanelCrop()
@@ -303,6 +317,8 @@ CPanelEyedrop::CPanelEyedrop(MWindow *mwindow, CPanel *gui, int x, int y)
 	this->mwindow = mwindow;
 	this->gui = gui;
 	set_tooltip(_("Get color (F8)"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Compositor Toolbar");
 }
 
 CPanelEyedrop::~CPanelEyedrop()
@@ -327,6 +343,8 @@ CPanelToolWindow::CPanelToolWindow(MWindow *mwindow, CPanel *gui, int x, int y)
 	this->mwindow = mwindow;
 	this->gui = gui;
 	set_tooltip(_("Show tool info (F9)"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Compositor Toolbar");
 }
 
 CPanelToolWindow::~CPanelToolWindow()
@@ -358,6 +376,8 @@ CPanelTitleSafe::CPanelTitleSafe(MWindow *mwindow, CPanel *gui, int x, int y)
 	this->mwindow = mwindow;
 	this->gui = gui;
 	set_tooltip(_("Show safe regions (F10)"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Compositor Toolbar");
 }
 CPanelTitleSafe::~CPanelTitleSafe()
 {

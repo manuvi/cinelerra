@@ -532,6 +532,8 @@ EXRConfigVideo::EXRConfigVideo(BC_WindowBase *parent_window, Asset *asset)
 {
 	this->parent_window = parent_window;
 	this->asset = asset;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Single File Rendering");
 }
 
 EXRConfigVideo::~EXRConfigVideo()

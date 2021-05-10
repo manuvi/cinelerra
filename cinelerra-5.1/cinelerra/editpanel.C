@@ -484,6 +484,8 @@ EditLabelbutton::EditLabelbutton(MWindow *mwindow, EditPanel *panel, int x, int 
 	this->mwindow = mwindow;
 	this->panel = panel;
 	set_tooltip(_("Toggle label at current position ( l )"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Labels");
 }
 
 EditLabelbutton::~EditLabelbutton()
@@ -493,7 +495,7 @@ int EditLabelbutton::keypress_event()
 {
 	if( get_keypress() == 'l' && !alt_down() )
 		return handle_event();
-	return 0;
+	return context_help_check_and_show();
 }
 int EditLabelbutton::handle_event()
 {
@@ -509,6 +511,8 @@ EditNextLabel::EditNextLabel(MWindow *mwindow,
 	this->mwindow = mwindow;
 	this->panel = panel;
 	set_tooltip(_("Next label ( ctrl -> )"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Labels");
 }
 EditNextLabel::~EditNextLabel()
 {
@@ -526,7 +530,7 @@ int EditNextLabel::keypress_event()
 			return 1;
 		}
 	}
-	return 0;
+	return context_help_check_and_show();
 }
 int EditNextLabel::handle_event()
 {
@@ -543,6 +547,8 @@ EditPrevLabel::EditPrevLabel(MWindow *mwindow,
 	this->mwindow = mwindow;
 	this->panel = panel;
 	set_tooltip(_("Previous label ( ctrl <- )"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Labels");
 }
 EditPrevLabel::~EditPrevLabel()
 {
@@ -560,7 +566,7 @@ int EditPrevLabel::keypress_event()
 			return 1;
 		}
 	}
-	return 0;
+	return context_help_check_and_show();
 }
 int EditPrevLabel::handle_event()
 {
@@ -577,6 +583,8 @@ EditPrevEdit::EditPrevEdit(MWindow *mwindow,
 	this->mwindow = mwindow;
 	this->panel = panel;
 	set_tooltip(_("Previous edit (alt <- )"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Snapping while Cutting and Dragging");
 }
 EditPrevEdit::~EditPrevEdit()
 {
@@ -594,7 +602,7 @@ int EditPrevEdit::keypress_event()
 			return 1;
 		}
 	}
-	return 0;
+	return context_help_check_and_show();
 }
 int EditPrevEdit::handle_event()
 {
@@ -611,6 +619,8 @@ EditNextEdit::EditNextEdit(MWindow *mwindow,
 	this->mwindow = mwindow;
 	this->panel = panel;
 	set_tooltip(_("Next edit ( alt -> )"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Snapping while Cutting and Dragging");
 }
 EditNextEdit::~EditNextEdit()
 {
@@ -628,7 +638,7 @@ int EditNextEdit::keypress_event()
 			return 1;
 		}
 	}
-	return 0;
+	return context_help_check_and_show();
 }
 int EditNextEdit::handle_event()
 {
@@ -644,6 +654,8 @@ EditCopy::EditCopy(MWindow *mwindow, EditPanel *panel, int x, int y)
 	this->mwindow = mwindow;
 	this->panel = panel;
 	set_tooltip(_("Copy ( c )"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Cut and Paste Editing");
 }
 EditCopy::~EditCopy()
 {
@@ -651,12 +663,12 @@ EditCopy::~EditCopy()
 
 int EditCopy::keypress_event()
 {
-	if( alt_down() ) return 0;
+	if( alt_down() ) return context_help_check_and_show();
 	if( (get_keypress() == 'c' && !ctrl_down()) ||
 	    (panel->is_vwindow() && get_keypress() == 'C') ) {
 		return handle_event();
 	}
-	return 0;
+	return context_help_check_and_show();
 }
 int EditCopy::handle_event()
 {
@@ -671,6 +683,8 @@ EditOverwrite::EditOverwrite(MWindow *mwindow, EditPanel *panel, int x, int y)
 	this->mwindow = mwindow;
 	this->panel = panel;
 	set_tooltip(_("Overwrite ( b )"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Two Screen Editing");
 }
 EditOverwrite::~EditOverwrite()
 {
@@ -682,13 +696,13 @@ int EditOverwrite::handle_event()
 }
 int EditOverwrite::keypress_event()
 {
-	if( alt_down() ) return 0;
+	if( alt_down() ) return context_help_check_and_show();
 	if( get_keypress() == 'b' ||
 	    (panel->is_vwindow() && get_keypress() == 'B') ) {
 		handle_event();
 		return 1;
 	}
-	return 0;
+	return context_help_check_and_show();
 }
 
 //set_inpoint
@@ -699,6 +713,8 @@ EditInPoint::EditInPoint(MWindow *mwindow, EditPanel *panel, int x, int y)
 	this->mwindow = mwindow;
 	this->panel = panel;
 	set_tooltip(_("In point ( [ or < )"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("In\\/Out Points");
 }
 EditInPoint::~EditInPoint()
 {
@@ -723,7 +739,7 @@ int EditInPoint::keypress_event()
 			return 1;
 		}
 	}
-	return 0;
+	return context_help_check_and_show();
 }
 
 //set_outpoint
@@ -734,6 +750,8 @@ EditOutPoint::EditOutPoint(MWindow *mwindow, EditPanel *panel, int x, int y)
 	this->mwindow = mwindow;
 	this->panel = panel;
 	set_tooltip(_("Out point ( ] or > )"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("In\\/Out Points");
 }
 EditOutPoint::~EditOutPoint()
 {
@@ -758,7 +776,7 @@ int EditOutPoint::keypress_event()
 			return 1;
 		}
 	}
-	return 0;
+	return context_help_check_and_show();
 }
 
 //splice_selection
@@ -768,6 +786,8 @@ EditSplice::EditSplice(MWindow *mwindow, EditPanel *panel, int x, int y)
 	this->mwindow = mwindow;
 	this->panel = panel;
 	set_tooltip(_("Splice ( v )"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Two Screen Editing");
 }
 EditSplice::~EditSplice()
 {
@@ -779,13 +799,13 @@ int EditSplice::handle_event()
 }
 int EditSplice::keypress_event()
 {
-	if( alt_down() ) return 0;
+	if( alt_down() ) return context_help_check_and_show();
 	if( (get_keypress() == 'v' && !ctrl_down()) ||
 	    (panel->is_vwindow() && get_keypress() == 'V') ) {
 		handle_event();
 		return 1;
 	}
-	return 0;
+	return context_help_check_and_show();
 }
 
 //to_clip
@@ -795,6 +815,8 @@ EditToClip::EditToClip(MWindow *mwindow, EditPanel *panel, int x, int y)
 	this->mwindow = mwindow;
 	this->panel = panel;
 	set_tooltip(_("To clip ( i )"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Two Screen Editing");
 }
 EditToClip::~EditToClip()
 {
@@ -807,13 +829,13 @@ int EditToClip::handle_event()
 
 int EditToClip::keypress_event()
 {
-	if( alt_down() ) return 0;
+	if( alt_down() ) return context_help_check_and_show();
 	if( get_keypress() == 'i' ||
 	    (panel->is_vwindow() && get_keypress() == 'I') ) {
 		handle_event();
 		return 1;
 	}
-	return 0;
+	return context_help_check_and_show();
 }
 
 //cut
@@ -823,6 +845,8 @@ EditCut::EditCut(MWindow *mwindow, EditPanel *panel, int x, int y)
 	this->mwindow = mwindow;
 	this->panel = panel;
 	set_tooltip(_("Split | Cut ( x )"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Cut and Paste Editing");
 }
 EditCut::~EditCut()
 {
@@ -830,10 +854,10 @@ EditCut::~EditCut()
 int EditCut::keypress_event()
 {
 	if( ctrl_down() || shift_down() || alt_down() )
-		return 0;
+		return context_help_check_and_show();
 	if( get_keypress() == 'x' )
 		return handle_event();
-	return 0;
+	return context_help_check_and_show();
 }
 
 int EditCut::handle_event()
@@ -849,6 +873,8 @@ EditPaste::EditPaste(MWindow *mwindow, EditPanel *panel, int x, int y)
 	this->mwindow = mwindow;
 	this->panel = panel;
 	set_tooltip(_("Paste ( v )"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Cut and Paste Editing");
 }
 EditPaste::~EditPaste()
 {
@@ -858,7 +884,7 @@ int EditPaste::keypress_event()
 {
 	if( get_keypress() == 'v' && !ctrl_down() )
 		return handle_event();
-	return 0;
+	return context_help_check_and_show();
 }
 int EditPaste::handle_event()
 {
@@ -873,6 +899,8 @@ EditFit::EditFit(MWindow *mwindow, EditPanel *panel, int x, int y)
 	this->mwindow = mwindow;
 	this->panel = panel;
 	set_tooltip(_("Fit selection to display ( f )"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Transport and Buttons Bar");
 }
 EditFit::~EditFit()
 {
@@ -883,7 +911,7 @@ int EditFit::keypress_event()
 		handle_event();
 		return 1;
 	}
-	return 0;
+	return context_help_check_and_show();
 }
 int EditFit::handle_event()
 {
@@ -898,6 +926,8 @@ EditFitAutos::EditFitAutos(MWindow *mwindow, EditPanel *panel, int x, int y)
 	this->mwindow = mwindow;
 	this->panel = panel;
 	set_tooltip(_("Fit all autos to display ( Alt + f )"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Using Autos");
 }
 EditFitAutos::~EditFitAutos()
 {
@@ -908,7 +938,7 @@ int EditFitAutos::keypress_event()
 		panel->panel_fit_autos(!ctrl_down() ? 1 : 0);
 		return 1;
 	}
-	return 0;
+	return context_help_check_and_show();
 }
 int EditFitAutos::handle_event()
 {
@@ -926,6 +956,8 @@ ArrowButton::ArrowButton(MWindow *mwindow, EditPanel *panel, int x, int y)
 	this->mwindow = mwindow;
 	this->panel = panel;
 	set_tooltip(_("Drag and drop editing mode"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Drag and Drop Editing");
 }
 
 int ArrowButton::handle_event()
@@ -946,6 +978,8 @@ IBeamButton::IBeamButton(MWindow *mwindow, EditPanel *panel, int x, int y)
 	this->mwindow = mwindow;
 	this->panel = panel;
 	set_tooltip(_("Cut and paste editing mode"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Cut and Paste Editing");
 }
 
 int IBeamButton::handle_event()
@@ -967,6 +1001,8 @@ KeyFrameButton::KeyFrameButton(MWindow *mwindow, EditPanel *panel, int x, int y)
 	this->mwindow = mwindow;
 	this->panel = panel;
 	set_tooltip(_("Generate keyframes while tweeking (j)"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Generate Keyframes while Tweaking");
 }
 
 int KeyFrameButton::handle_event()
@@ -984,7 +1020,7 @@ int KeyFrameButton::keypress_event()
 		panel->panel_set_auto_keyframes(value);
 		return 1;
 	}
-	return 0;
+	return context_help_check_and_show();
 }
 
 //set_span_keyframes
@@ -997,6 +1033,8 @@ SpanKeyFrameButton::SpanKeyFrameButton(MWindow *mwindow, EditPanel *panel, int x
 	this->mwindow = mwindow;
 	this->panel = panel;
 	set_tooltip(_("Allow keyframe spanning"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Allow Keyframe Spanning");
 }
 
 int SpanKeyFrameButton::handle_event()
@@ -1015,6 +1053,8 @@ LockLabelsButton::LockLabelsButton(MWindow *mwindow, EditPanel *panel, int x, in
 	this->mwindow = mwindow;
 	this->panel = panel;
 	set_tooltip(_("Lock labels from moving with edits"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Labels");
 }
 
 int LockLabelsButton::handle_event()
@@ -1032,6 +1072,8 @@ EditManualGoto::EditManualGoto(MWindow *mwindow, EditPanel *panel, int x, int y)
 	this->panel = panel;
 	mangoto = new ManualGoto(mwindow, panel);
 	set_tooltip(_("Manual goto ( g )"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Transport and Buttons Bar");
 }
 EditManualGoto::~EditManualGoto()
 {
@@ -1049,7 +1091,7 @@ int EditManualGoto::keypress_event()
 		handle_event();
 		return 1;
 	}
-	return 0;
+	return context_help_check_and_show();
 }
 
 
@@ -1062,6 +1104,8 @@ EditClick2Play::EditClick2Play(MWindow *mwindow, EditPanel *panel, int x, int y)
         this->mwindow = mwindow;
         this->panel = panel;
         set_tooltip(_("Click to play (p)"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Click to Play in Viewer and Compositor");
 }
 int EditClick2Play::handle_event()
 {
@@ -1078,7 +1122,7 @@ int EditClick2Play::keypress_event()
 		panel->set_click_to_play(value);
 		return 1;
 	}
-	return 0;
+	return context_help_check_and_show();
 }
 
 
@@ -1088,6 +1132,8 @@ EditCommercial::EditCommercial(MWindow *mwindow, EditPanel *panel, int x, int y)
 	this->mwindow = mwindow;
 	this->panel = panel;
 	set_tooltip(_("Commercial ( shift A )"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("The commercial DB");
 }
 EditCommercial::~EditCommercial()
 {
@@ -1095,10 +1141,10 @@ EditCommercial::~EditCommercial()
 int EditCommercial::keypress_event()
 {
 	if( ctrl_down() || !shift_down() || alt_down() )
-		return 0;
+		return context_help_check_and_show();
 	if( get_keypress() == 'A' )
 		return handle_event();
-	return 0;
+	return context_help_check_and_show();
 }
 
 int EditCommercial::handle_event()
@@ -1128,6 +1174,8 @@ EditUndo::EditUndo(MWindow *mwindow, EditPanel *panel, int x, int y)
 	this->mwindow = mwindow;
 	this->panel = panel;
 	set_tooltip(_("Undo ( z or Ctrl-z)"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Transport and Buttons Bar");
 }
 EditUndo::~EditUndo()
 {
@@ -1135,10 +1183,10 @@ EditUndo::~EditUndo()
 int EditUndo::keypress_event()
 {
 	if( ctrl_down() || shift_down() || alt_down() )
-		return 0;
+		return context_help_check_and_show();
 	if( get_keypress() == 'z' )
 		return handle_event();
-	return 0;
+	return context_help_check_and_show();
 }
 int EditUndo::handle_event()
 {
@@ -1152,6 +1200,8 @@ EditRedo::EditRedo(MWindow *mwindow, EditPanel *panel, int x, int y)
 	this->mwindow = mwindow;
 	this->panel = panel;
 	set_tooltip(_("Redo ( shift Z )"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Transport and Buttons Bar");
 }
 EditRedo::~EditRedo()
 {
@@ -1159,10 +1209,10 @@ EditRedo::~EditRedo()
 int EditRedo::keypress_event()
 {
 	if( ctrl_down() || !shift_down() || alt_down() )
-		return 0;
+		return context_help_check_and_show();
 	if( get_keypress() == 'Z' )
 		return handle_event();
-	return 0;
+	return context_help_check_and_show();
 }
 int EditRedo::handle_event()
 {
@@ -1293,6 +1343,8 @@ EditPanelScope::EditPanelScope(MWindow *mwindow, EditPanel *panel, int x, int y)
 	this->mwindow = mwindow;
 	this->panel = panel;
 	set_tooltip(_("View scope"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Videoscope");
 }
 
 EditPanelScope::~EditPanelScope()
@@ -1340,6 +1392,8 @@ EditPanelGangTracks::EditPanelGangTracks(MWindow *mwindow, EditPanel *panel,
 	this->panel = panel;
 	int gang = mwindow->edl->local_session->gang_tracks;
 	set_tooltip(_(gang_tips[gang]));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Displaying tracks: Ganged mode");
 }
 
 EditPanelGangTracks::~EditPanelGangTracks()
@@ -1387,6 +1441,8 @@ EditPanelTimecode::EditPanelTimecode(MWindow *mwindow,
 	this->panel = panel;
 	tc_dialog = 0;
 	set_tooltip(_("Set Timecode"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Align Timecodes");
 }
 
 EditPanelTimecode::~EditPanelTimecode()
@@ -1450,6 +1506,8 @@ EditPanelTcWindow::EditPanelTcWindow(EditPanelTcDialog *tc_dialog, int x, int y)
 	TCW_W, TCW_H, TCW_W, TCW_H, 0, 0, 1)
 {
 	this->tc_dialog = tc_dialog;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Align Timecodes");
 }
 
 EditPanelTcWindow::~EditPanelTcWindow()
@@ -1554,6 +1612,11 @@ void EditPanelTcInt::update(int v)
 
 int EditPanelTcInt::keypress_event()
 {
+	if( get_keypress() == 'h' && alt_down() ) {
+		context_help_show("Align Timecodes");
+		return 1;
+	}
+
 	if( (int)strlen(get_text()) >= digits )
 		BC_TextBox::update("");
 	int key = get_keypress();

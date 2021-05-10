@@ -1674,6 +1674,8 @@ NewFolderGUI::NewFolderGUI(NewFolderThread *thread, int x, int y, int w, int h)
 		x, y, xS(w), yS(h), -1, -1, 0, 0, 1)
 {
 	this->thread = thread;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("User Folders");
 }
 
 NewFolderGUI::~NewFolderGUI()
@@ -1748,6 +1750,8 @@ ModifyFolderGUI::ModifyFolderGUI(ModifyFolderThread *thread, int x, int y, int w
  : BC_Window(_(PROGRAM_NAME ": Modify folder"), x, y, w, h, xS(320), yS(200), 1, 0, 1)
 {
 	this->thread = thread;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("User Folders");
 }
 
 ModifyFolderGUI::~ModifyFolderGUI()
@@ -1944,6 +1948,8 @@ ModifyTargetGUI::ModifyTargetGUI(ModifyTargetThread *thread, int allow_resize)
 		-1, -1, allow_resize, 0, 1)
 {
 	this->thread = thread;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("User Folders");
 }
 
 ModifyTargetGUI::~ModifyTargetGUI()

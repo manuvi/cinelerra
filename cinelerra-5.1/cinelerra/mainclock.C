@@ -33,6 +33,8 @@ MainClock::MainClock(MWindow *mwindow, int x, int y, int w)
 	this->mwindow = mwindow;
 	position_offset = 0;
 	set_bg_color(mwindow->theme->clock_bg_color);
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Time Format section");
 }
 
 MainClock::~MainClock()

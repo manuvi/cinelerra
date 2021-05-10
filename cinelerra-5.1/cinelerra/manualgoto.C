@@ -83,6 +83,8 @@ ManualGotoWindow::ManualGotoWindow(ManualGoto *mango, int x, int y)
 	MGT_W, MGT_H, MGT_W, MGT_H, 0, 0, 1)
 {
 	this->mango = mango;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Transport and Buttons Bar");
 }
 
 ManualGotoWindow::~ManualGotoWindow()

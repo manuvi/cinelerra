@@ -51,6 +51,8 @@ GWindowGUI::GWindowGUI(MWindow *mwindow, int w, int h)
 	this->mwindow = mwindow;
 	camera_xyz = 0;
 	projector_xyz = 0;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Show Overlays");
 }
 
 GWindowGUI::~GWindowGUI()
@@ -63,7 +65,7 @@ const char *GWindowGUI::non_auto_text[NON_AUTOMATION_TOTAL] =
 	N_("Titles"),
 	N_("Transitions"),
 	N_("Plugin Keyframes"),
-	N_("Hard Edges"),
+	N_("Hard Edges")
 };
 
 const char *GWindowGUI::auto_text[AUTOMATION_TOTAL] =
@@ -80,6 +82,31 @@ const char *GWindowGUI::auto_text[AUTOMATION_TOTAL] =
 	N_("Mode"),
 	N_("Mask"),
 	N_("Speed")
+};
+
+const char *GWindowGUI::non_auto_help[NON_AUTOMATION_TOTAL] =
+{
+	"Video and Audio Tracks and Navigation",
+	"Video and Audio Tracks and Navigation",
+	"Transition Plugins",
+	"Edit Params",
+	"Cut and Paste Editing"
+};
+
+const char *GWindowGUI::auto_help[AUTOMATION_TOTAL] =
+{
+	"The Patchbay",
+	"Camera and Projector",
+	"Camera and Projector",
+	"Camera and Projector",
+	"Camera and Projector",
+	"Camera and Projector",
+	"Camera and Projector",
+	"The Patchbay",
+	"The Patchbay",
+	"Overlays",
+	"Masks",
+	"Fade Automation Usage and Auto Gang"
 };
 
 int GWindowGUI::auto_colors[AUTOMATION_TOTAL] =
@@ -164,6 +191,20 @@ const char *GWindowGUI::toggle_text(toggleinfo *tp)
 		return _("Hard Edges");
 	}
 	return "()";
+}
+
+const char *GWindowGUI::toggle_help(toggleinfo *tp)
+{
+	if( tp->isauto > 0 ) return auto_help[tp->ref];
+	if( !tp->isauto )    return non_auto_help[tp->ref];
+	switch( tp->ref ) {
+	case NONAUTOTOGGLES_CAMERA_XYZ:
+	case NONAUTOTOGGLES_PROJECTOR_XYZ:
+		return "Camera and Projector";
+	case NON_AUTOMATION_HARD_EDGES:
+		return "Cut and Paste Editing";
+	}
+	return "Show Overlays";
 }
 
 void GWindowGUI::calculate_extents(BC_WindowBase *gui, int *w, int *h)
@@ -273,6 +314,7 @@ void GWindowGUI::create_objects()
 					new GWindowColorButton(toggle, get_w()-wh-ys10, y+yS(2), wh, color);
 				add_tool(color_button);
 				color_button->create_objects();
+				color_button->context_help_set_keyword(toggle_help(tp));
 			}
 			else
 				draw_vframe(vframe, get_w()-vframe->get_w()-xs10, y);
@@ -299,6 +341,7 @@ void GWindowGUI::create_objects()
 				add_subwindow(new BC_Title(x1, y, accel));
 			}
 		}
+		toggle->context_help_set_keyword(toggle_help(tp));
 		y += toggles[i]->get_h() + ys5;
 	}
 	update_toggles(0);
@@ -408,7 +451,7 @@ int GWindowGUI::keypress_event()
 		}
 		break;
 	}
-	return 0;
+	return context_help_check_and_show();
 }
 
 int GWindowGUI::check_xyz(int group)

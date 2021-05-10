@@ -828,6 +828,8 @@ TGAConfigVideo::TGAConfigVideo(BC_WindowBase *gui, Asset *asset)
 	compression_items.append(new BC_ListBoxItem(FileTGA::compression_to_str(TGA_RGBA_RLE)));
 	compression_items.append(new BC_ListBoxItem(FileTGA::compression_to_str(TGA_RGB)));
 	compression_items.append(new BC_ListBoxItem(FileTGA::compression_to_str(TGA_RGBA)));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Single File Rendering");
 }
 
 TGAConfigVideo::~TGAConfigVideo()

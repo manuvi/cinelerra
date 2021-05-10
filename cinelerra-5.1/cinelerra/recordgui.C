@@ -112,6 +112,8 @@ RecordGUI::RecordGUI(MWindow *mwindow, Record *record)
 	}
 	total_dropped_frames = 0;
 	total_clipped_samples = 0;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Record Web Media");
 }
 
 RecordGUI::~RecordGUI()
@@ -588,7 +590,7 @@ int RecordGUISave::keypress_event()
 // 		handle_event();
 // 		return 1;
 // 	}
-	return 0;
+	return context_help_check_and_show();
 }
 
 RecordGUICancel::RecordGUICancel(RecordGUI *gui)
@@ -612,7 +614,7 @@ int RecordGUICancel::keypress_event()
 		return 1;
 	}
 
-	return 0;
+	return context_help_check_and_show();
 }
 
 
@@ -669,7 +671,7 @@ int RecordGUIDropFrames::keypress_event()
 		handle_event();
 		return 1;
 	}
-	return 0;
+	return context_help_check_and_show();
 }
 
 RecordGUIFillFrames::RecordGUIFillFrames(RecordGUI *gui, int x, int y)
@@ -693,7 +695,7 @@ int RecordGUIFillFrames::keypress_event()
 		handle_event();
 		return 1;
 	}
-	return 0;
+	return context_help_check_and_show();
 }
 
 RecordGUIPowerOff::RecordGUIPowerOff(RecordGUI *gui, int x, int y)
@@ -702,6 +704,8 @@ RecordGUIPowerOff::RecordGUIPowerOff(RecordGUI *gui, int x, int y)
 	this->set_underline(0);
 	this->gui = gui;
 	set_tooltip(_("poweroff system when batch record done."));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Capture at some Future Time via Batch");
 }
 
 int RecordGUIPowerOff::handle_event()
@@ -717,7 +721,7 @@ int RecordGUIPowerOff::keypress_event()
 		handle_event();
 		return 1;
 	}
-	return 0;
+	return context_help_check_and_show();
 }
 
 
@@ -727,6 +731,8 @@ RecordGUICommCheck::RecordGUICommCheck(RecordGUI *gui, int x, int y)
 	this->set_underline(0);
 	this->gui = gui;
 	set_tooltip(_("check for commercials."));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("The commercial DB");
 }
 
 int RecordGUICommCheck::handle_event()
@@ -743,7 +749,7 @@ int RecordGUICommCheck::keypress_event()
 		handle_event();
 		return 1;
 	}
-	return 0;
+	return context_help_check_and_show();
 }
 
 
@@ -830,7 +836,7 @@ int RecordGUIMonitorVideo::keypress_event()
 		handle_event();
 		return 1;
 	}
-	return 0;
+	return context_help_check_and_show();
 }
 
 
@@ -868,7 +874,7 @@ int RecordGUIMonitorAudio::keypress_event()
 		handle_event();
 		return 1;
 	}
-	return 0;
+	return context_help_check_and_show();
 }
 
 
@@ -877,6 +883,8 @@ RecordGUIAudioMeters::RecordGUIAudioMeters(RecordGUI *gui, int x, int y)
 {
 	this->set_underline(6);
 	this->gui = gui;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Sound Level Meters Window");
 }
 
 int RecordGUIAudioMeters::handle_event()
@@ -905,7 +913,7 @@ int RecordGUIAudioMeters::keypress_event()
 		handle_event();
 		return 1;
 	}
-	return 0;
+	return context_help_check_and_show();
 }
 
 RecordPath::RecordPath(RecordGUI *gui, int x, int y)
@@ -973,6 +981,8 @@ RecordGUINewBatch::RecordGUINewBatch(RecordGUI *gui, int x, int y)
 {
 	this->gui = gui;
 	set_tooltip(_("Create new clip."));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Capture at some Future Time via Batch");
 }
 int RecordGUINewBatch::handle_event()
 {
@@ -986,6 +996,8 @@ RecordGUIDeleteBatch::RecordGUIDeleteBatch(RecordGUI *gui, int x, int y)
 {
 	this->gui = gui;
 	set_tooltip(_("Delete clip."));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Capture at some Future Time via Batch");
 }
 
 int RecordGUIDeleteBatch::handle_event()
@@ -1000,6 +1012,8 @@ RecordGUIStartBatches::RecordGUIStartBatches(RecordGUI *gui, int x, int y)
 {
 	this->gui = gui;
 	set_tooltip(_("Start batch recording\nfrom the current position."));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Capture at some Future Time via Batch");
 }
 
 int RecordGUIStartBatches::handle_event()
@@ -1014,6 +1028,8 @@ RecordGUIStopBatches::RecordGUIStopBatches(RecordGUI *gui, int x, int y)
  : RecordBatchesGUI::StopBatches(gui->record->record_batches, x, y)
 {
 	this->gui = gui;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Capture at some Future Time via Batch");
 }
 
 int RecordGUIStopBatches::handle_event()
@@ -1031,6 +1047,8 @@ RecordGUIActivateBatch::RecordGUIActivateBatch(RecordGUI *gui, int x, int y)
 {
 	this->gui = gui;
 	set_tooltip(_("Make the highlighted\nclip active."));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Capture at some Future Time via Batch");
 }
 int RecordGUIActivateBatch::handle_event()
 {
@@ -1045,6 +1063,8 @@ RecordGUILabel::RecordGUILabel(RecordGUI *gui, int x, int y)
 {
 	this->gui = gui;
 	set_underline(0);
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Capture at some Future Time via Batch");
 }
 
 
@@ -1064,7 +1084,7 @@ int RecordGUILabel::keypress_event()
 		handle_event();
 		return 1;
 	}
-	return 0;
+	return context_help_check_and_show();
 }
 
 
@@ -1072,6 +1092,8 @@ RecordGUIClearLabels::RecordGUIClearLabels(RecordGUI *gui, int x, int y)
  : BC_GenericButton(x, y, _("ClrLbls"))
 {
 	this->gui = gui;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Capture at some Future Time via Batch");
 }
 
 
@@ -1247,7 +1269,12 @@ void RecordGUI::update_audio(int channels, double *max, int *over)
 
 int RecordGUI::keypress_event()
 {
-	return record_transport->keypress_event();
+	if (get_keypress() != 'h' || ! alt_down() ||
+	    ! is_tooltip_event_win() || ! cursor_inside())
+		return record_transport->keypress_event();
+
+	context_help_show("Record Web Media");
+	return 1;
 }
 
 void RecordGUI::update_labels(double new_position)
@@ -1622,7 +1649,7 @@ int RecordGUIDCOffset::handle_event()
 	return 1;
 }
 
-int RecordGUIDCOffset::keypress_event() { return 0; }
+int RecordGUIDCOffset::keypress_event() { return context_help_check_and_show(); }
 
 RecordGUIDCOffsetText::RecordGUIDCOffsetText(char *text, int y, int number)
  : BC_TextBox(xS(30), y+yS(1), xS(67), 1, text, 0)

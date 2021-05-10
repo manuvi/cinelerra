@@ -138,15 +138,18 @@ void FormatTools::create_objects(
 	{
 		int px = x;
 		window->add_subwindow(path_textbox = new FormatPathText(px, y, this));
+		path_textbox->context_help_set_keyword("File Format section");
 		px += path_textbox->get_w() + 5;
 		path_recent = new BC_RecentList("PATH", mwindow->defaults,
 					path_textbox, 10, px, y, xS(300), yS(100));
 		window->add_subwindow(path_recent);
 		path_recent->load_items(File::formattostr(asset->format));
+		path_recent->context_help_set_keyword("File Format section");
 		px += path_recent->get_w();
 		window->add_subwindow(path_button = new BrowseButton(
 			mwindow->theme, window, path_textbox, px, y, asset->path,
 			_("Output to file"), _("Select a file to write to:"), 0));
+		path_button->context_help_set_keyword("File Format section");
 
 // Set w for user.
 		w = MAX(w, xS(305));
@@ -160,29 +163,37 @@ void FormatTools::create_objects(
 
 	x = init_x;
 	window->add_subwindow(format_title = new BC_Title(x, y, _("File Format:")));
+	format_title->context_help_set_keyword("File Format section");
 	x += format_title->get_w() + margin;
 	window->add_subwindow(format_text = new BC_TextBox(x, y, xS(160), 1,
 		File::formattostr(asset->format)));
+	format_text->context_help_set_keyword("File Format section");
 	x += format_text->get_w() + margin;
 //printf("FormatTools::create_objects %d %p\n", __LINE__, window);
 	window->add_subwindow(format_button = new FormatFormat(x, y, this));
 	format_button->create_objects();
+	format_button->context_help_set_keyword("File Format section");
 	x += format_button->get_w() + 5;
 	window->add_subwindow(ffmpeg_type = new FFMpegType(x, y, xS(70), 1, asset->fformat));
 	FFMPEG::set_asset_format(asset, mwindow->edl, asset->fformat);
+	ffmpeg_type->context_help_set_keyword("File Format section");
 	x += ffmpeg_type->get_w();
 	window->add_subwindow(format_ffmpeg = new FormatFFMPEG(x, y, this));
 	format_ffmpeg->create_objects();
+	format_ffmpeg->context_help_set_keyword("File Format section");
 	x = init_x;
 	y += format_button->get_h() + ys10;
 	if( do_audio ) {
 		window->add_subwindow(audio_title = new BC_Title(x, y, _("Audio:"), LARGEFONT,
 			BC_WindowBase::get_resources()->audiovideo_color));
+		audio_title->context_help_set_keyword("File Format section");
 		x += audio_title->get_w() + margin;
 		window->add_subwindow(aparams_button = new FormatAParams(mwindow, this, x, y));
+		aparams_button->context_help_set_keyword("File Format section");
 		x += aparams_button->get_w() + margin;
 		if(prompt_audio) {
 			window->add_subwindow(audio_switch = new FormatAudio(x, y, this, asset->audio_data));
+			audio_switch->context_help_set_keyword("File Format section");
 		}
 		x = init_x;
 		ylev = y;
@@ -202,15 +213,18 @@ void FormatTools::create_objects(
 //printf("FormatTools::create_objects 8\n");
 		window->add_subwindow(video_title = new BC_Title(x, y, _("Video:"), LARGEFONT,
 			BC_WindowBase::get_resources()->audiovideo_color));
+		video_title->context_help_set_keyword("File Format section");
 		x += video_title->get_w() + margin;
 		if(prompt_video_compression) {
 			window->add_subwindow(vparams_button = new FormatVParams(mwindow, this, x, y));
+			vparams_button->context_help_set_keyword("File Format section");
 			x += vparams_button->get_w() + margin;
 		}
 
 //printf("FormatTools::create_objects 9\n");
 		if(prompt_video) {
 			window->add_subwindow(video_switch = new FormatVideo(x, y, this, asset->video_data));
+			video_switch->context_help_set_keyword("File Format section");
 			y += video_switch->get_h();
 		}
 		else {
@@ -228,6 +242,7 @@ void FormatTools::create_objects(
 	if( file_per_label ) {
 		labeled_files = new FormatFilePerLabel(this, x, y, file_per_label);
 		window->add_subwindow(labeled_files);
+		labeled_files->context_help_set_keyword("File Format section");
 		y += labeled_files->get_h() + ys10;
 	}
 

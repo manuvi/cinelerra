@@ -548,6 +548,8 @@ ConvertWindow::ConvertWindow(MWindow *mwindow, ConvertDialog *dialog, int x, int
 	this->mwindow = mwindow;
 	this->dialog = dialog;
 	format_tools = 0;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Transcode");
 }
 
 ConvertWindow::~ConvertWindow()

@@ -136,6 +136,8 @@ BrowseButtonWindow::BrowseButtonWindow(Theme *theme, int x, int y,
 	want_directory, // Want only directories
 	0, theme->browse_pad)
 {
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Loading Files");
 }
 
 BrowseButtonWindow::~BrowseButtonWindow()

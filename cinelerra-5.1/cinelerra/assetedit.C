@@ -228,6 +228,8 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
 	detail_dialog = 0;
 	win_width = 0;
 	win_height = 0;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Info Asset Details");
 }
 
 
@@ -780,6 +782,8 @@ DetailAssetWindow::DetailAssetWindow(MWindow *mwindow,
 	asset->add_user();
 	info[0] = 0;
 	text = 0;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Info Asset Details");
 }
 
 DetailAssetWindow::~DetailAssetWindow()

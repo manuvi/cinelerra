@@ -587,6 +587,8 @@ ChannelButton::ChannelButton(ChannelPicker *channel_picker, int x, int y)
 	thread = new ChannelEditThread(channel_picker,
 		channel_picker->channeldb);
 	set_tooltip(_("Edit channels"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Initial Setup for DVB Capture");
 }
 
 ChannelButton::~ChannelButton()
@@ -607,7 +609,6 @@ ChannelText::ChannelText(ChannelPicker *channel_picker, int x, int y)
 	channel_picker->current_channel_name(),
 	x, y, 200, 300)
 {
-
 	this->channel_picker = channel_picker;
 }
 
@@ -654,6 +655,8 @@ ChannelTumbler::ChannelTumbler(ChannelPicker *channel_picker,
  : BC_Tumbler(x, y)
 {
 	this->channel_picker = channel_picker;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Initial Setup for DVB Capture");
 }
 ChannelTumbler::~ChannelTumbler()
 {
@@ -682,7 +685,7 @@ int ChannelTumbler::keypress_event()
 		return 1;
 	}
 	else
-	return 0;
+	return context_help_check_and_show();
 }
 
 

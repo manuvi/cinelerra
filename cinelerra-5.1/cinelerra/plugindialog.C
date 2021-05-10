@@ -137,6 +137,18 @@ PluginDialog::PluginDialog(MWindow *mwindow,
 	this->mwindow = mwindow;
 	this->thread = thread;
 	single_standalone = 0;
+// *** CONTEXT_HELP ***
+	switch( thread->data_type ) {
+	case TRACK_AUDIO:
+		context_help_set_keyword("Audio Effects");
+		break;
+	case TRACK_VIDEO:
+		context_help_set_keyword("Video Effects");
+		break;
+	default:
+		context_help_set_keyword("How to Use Plugins");
+		break;
+	}
 }
 
 PluginDialog::~PluginDialog()
@@ -551,6 +563,67 @@ int PluginDialogNew::selection_changed()
 	return 1;
 }
 
+// *** CONTEXT_HELP ***
+int PluginDialogNew::keypress_event()
+{
+	int item, plugin_no;
+	char title[BCTEXTLEN];
+	PluginServer *plugin = 0;
+
+//	printf("PluginDialogNew::keypress_event: %d\n", get_keypress());
+
+	// If not our context help keystroke, redispatch it
+	// to the event handler of the base class
+	if (get_keypress() != 'h' || ! alt_down() ||
+	    ! is_tooltip_event_win() || ! cursor_inside())
+		return BC_ListBox::keypress_event();
+
+	// Try to show help for the plugin currently under mouse
+	item = get_highlighted_item();
+	if (item >= 0 && item < dialog->standalone_data.size()) {
+		plugin_no = ((PluginDialogListItem *)dialog->standalone_data[item])->item_no;
+		if (plugin_no >= 0 && plugin_no < dialog->plugindb.total)
+			plugin = dialog->plugindb.values[plugin_no];
+	}
+
+	// If some plugin is highlighted, show its help
+	// Otherwise show more general help
+	if (plugin) {
+		strcpy(title, plugin->title);
+		if (! strcmp(title, "Overlay")) {
+			// "Overlay" plugin title is ambiguous
+			if (plugin->audio) strcat(title, " \\(Audio\\)");
+			if (plugin->video) strcat(title, " \\(Video\\)");
+		}
+		if (plugin->is_ffmpeg()) {
+			// FFmpeg plugins can be audio or video
+			if (plugin->audio)
+				strcpy(title, "FFmpeg Audio Plugins");
+			if (plugin->video)
+				strcpy(title, "FFmpeg Video Plugins");
+		}
+		context_help_show(title);
+		return 1;
+	}
+	else {
+		switch (dialog->thread->data_type) {
+		case TRACK_AUDIO:
+			context_help_show("Audio Effects");
+			return 1;
+		case TRACK_VIDEO:
+			context_help_show("Video Effects");
+			return 1;
+		default:
+			context_help_show("How to Use Plugins");
+			return 1;
+		}
+		context_help_show("How to Use Plugins");
+		return 1;
+	}
+	context_help_show("How to Use Plugins");
+	return 1;
+}
+
 // PluginDialogAttachNew::PluginDialogAttachNew(MWindow *mwindow, PluginDialog *dialog, int x, int y)
 //  : BC_GenericButton(x, y, _("Attach"))
 // {
@@ -588,6 +661,7 @@ PluginDialogShared::PluginDialogShared(PluginDialog *dialog,
  : BC_ListBox(x, y, w, h, LISTBOX_TEXT, shared_data)
 {
 	this->dialog = dialog;
+	context_help_set_keyword("Shared Effects and Shared Tracks");
 }
 PluginDialogShared::~PluginDialogShared() { }
 int PluginDialogShared::handle_event()
@@ -661,6 +735,7 @@ PluginDialogModules::PluginDialogModules(PluginDialog *dialog,
  : BC_ListBox(x, y, w, h, LISTBOX_TEXT, module_data)
 {
 	this->dialog = dialog;
+	context_help_set_keyword("Shared Effects and Shared Tracks");
 }
 PluginDialogModules::~PluginDialogModules() { }
 int PluginDialogModules::handle_event()
@@ -717,6 +792,7 @@ PluginDialogSingle::PluginDialogSingle(PluginDialog *dialog, int x, int y)
 	_("Attach single standalone and share others"))
 {
 	this->dialog = dialog;
+	context_help_set_keyword("Shared Effects and Shared Tracks");
 }
 
 int PluginDialogSingle::handle_event()

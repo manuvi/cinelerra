@@ -171,6 +171,8 @@ ScopeEnable::ScopeEnable(MWindow *mwindow, RecordMonitor *record_monitor, int x,
 	this->record_monitor = record_monitor;
 	this->mwindow = mwindow;
 	set_tooltip(_("View scope"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Videoscope");
 }
 
 ScopeEnable::~ScopeEnable()

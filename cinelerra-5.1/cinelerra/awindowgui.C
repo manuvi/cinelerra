@@ -1322,6 +1322,8 @@ AWindowGUI::AWindowGUI(MWindow *mwindow, AWindow *awindow)
 	new_folder_thread = 0;
 	modify_folder_thread = 0;
 	folder_lock = new Mutex("AWindowGUI::folder_lock");
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Resources Window");
 }
 
 AWindowGUI::~AWindowGUI()
@@ -1759,6 +1761,8 @@ AWindowRemovePluginGUI(AWindow *awindow, AWindowRemovePlugin *thread,
 	VFrame *vframe = plugin->get_picon();
 	icon = vframe ? create_pixmap(vframe) : 0;
 	plugin_list.append(new BC_ListBoxItem(plugin->title, icon));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Delete Plugins to save Resources Space");
 }
 
 AWindowRemovePluginGUI::
@@ -1872,6 +1876,8 @@ BC_Window* AWindowRemovePlugin::new_gui()
 
 int AWindowGUI::keypress_event()
 {
+	char title[BCTEXTLEN];
+	PluginServer* plugin = 0;
 	switch( get_keypress() ) {
 	case 'w': case 'W':
 		if( ctrl_down() ) {
@@ -1893,7 +1899,7 @@ int AWindowGUI::keypress_event()
 		return cycle_assetlist_format();
 	case DELETE:
 		if( shift_down() && ctrl_down() ) {
-			PluginServer* plugin = selected_plugin();
+			plugin = selected_plugin();
 			if( !plugin ) break;
 			remove_plugin = new AWindowRemovePlugin(awindow, plugin);
 			unlock_window();
@@ -1922,7 +1928,30 @@ int AWindowGUI::keypress_event()
 		}
 		break;
 	}
-	return 0;
+// *** CONTEXT_HELP ***
+	if( get_keypress() != 'h' || ! alt_down() )	    return 0;
+	if( ! is_tooltip_event_win() || ! cursor_inside() ) return 0;
+	// If some plugin is selected, show its help
+	// Otherwise show general help
+	plugin = selected_plugin();
+	if( plugin ) {
+		strcpy(title, plugin->title);
+		if( ! strcmp(title, "Overlay") ) {
+			// "Overlay" plugin title is ambiguous
+			if( plugin->audio ) strcat(title, " \\(Audio\\)");
+			if( plugin->video ) strcat(title, " \\(Video\\)");
+		}
+		if( plugin->is_ffmpeg() ) {
+			// FFmpeg plugins can be audio or video
+			if( plugin->audio )
+				strcpy(title, "FFmpeg Audio Plugins");
+			if( plugin->video )
+				strcpy(title, "FFmpeg Video Plugins");
+		}
+		context_help_show(title);
+	}
+	else context_help_show("Resources Window");
+	return 1;
 }
 
 
@@ -3195,6 +3224,102 @@ void AWindowAssets::hide_tip_info()
 {
 	hide_tooltip();
 	info_tip = -1;
+}
+
+// *** CONTEXT_HELP ***
+int AWindowAssets::keypress_event()
+{
+	int item;
+	char title[BCTEXTLEN];
+	AssetPicon *picon = 0;
+	PluginServer *plugin = 0;
+
+//	printf("AWindowAssets::keypress_event: %d\n", get_keypress());
+
+	// If not our context help keystroke, redispatch it
+	// to the event handler of the base class
+	if (get_keypress() != 'h' || ! alt_down() ||
+	    ! is_tooltip_event_win() || ! cursor_inside())
+		return BC_ListBox::keypress_event();
+
+	switch (mwindow->edl->session->awindow_folder) {
+
+	case AW_AEFFECT_FOLDER:
+	case AW_VEFFECT_FOLDER:
+	case AW_ATRANSITION_FOLDER:
+	case AW_VTRANSITION_FOLDER:
+		// If plugin tips activated, show help for plugin under mouse
+		// Otherwise show help for the selected plugin
+		if (gui->tip_info) {
+			item = BC_ListBox::get_highlighted_item();
+			if (item >= 0 && item < gui->displayed_assets[0].size()) {
+				picon = (AssetPicon *) gui->displayed_assets[0][item];
+				if (picon) plugin = picon->plugin;
+			}
+		}
+		else plugin = gui->selected_plugin();
+		// If some plugin is highlighted or selected, show its help
+		// Otherwise show more general help
+		if (plugin) {
+			strcpy(title, plugin->title);
+			if (! strcmp(title, "Overlay")) {
+				// "Overlay" plugin title is ambiguous
+				if (plugin->audio)
+					strcat(title, " \\(Audio\\)");
+				if (plugin->video)
+					strcat(title, " \\(Video\\)");
+			}
+			if (plugin->is_ffmpeg()) {
+				// FFmpeg plugins can be audio or video
+				if (plugin->audio)
+					strcpy(title, "FFmpeg Audio Plugins");
+				if (plugin->video)
+					strcpy(title, "FFmpeg Video Plugins");
+			}
+			context_help_show(title);
+			return 1;
+		}
+		else {
+			switch (mwindow->edl->session->awindow_folder) {
+			case AW_AEFFECT_FOLDER:
+				context_help_show("Audio Effects");
+				return 1;
+			case AW_VEFFECT_FOLDER:
+				context_help_show("Video Effects");
+				return 1;
+			case AW_ATRANSITION_FOLDER:
+				context_help_show("Audio Transitions");
+				return 1;
+			case AW_VTRANSITION_FOLDER:
+				context_help_show("Video Transitions");
+				return 1;
+			default:
+				context_help_show("Resources Window");
+				return 1;
+			}
+			context_help_show("Resources Window");
+			return 1;
+		}
+
+	case AW_LABEL_FOLDER:
+		context_help_show("Labels");
+		return 1;
+
+	case AW_CLIP_FOLDER:
+		context_help_show("Nested Clips");
+		return 1;
+
+	case AW_PROXY_FOLDER:
+		context_help_show("Proxy");
+		return 1;
+
+	default:
+		context_help_show("Resources Window");
+		return 1;
+	}
+
+	context_help_show("Resources Window");
+	return 1;
 }
 
 

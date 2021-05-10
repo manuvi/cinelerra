@@ -73,6 +73,9 @@ ResampleWindow::ResampleWindow(ResampleEffect *plugin, int x, int y)
 				1)
 {
 	this->plugin = plugin;
+// *** CONTEXT_HELP ***
+	if(plugin) context_help_set_keyword(plugin->plugin_title());
+	else 	   context_help_set_keyword("Rendered Audio Effects");
 }
 
 void ResampleWindow::create_objects()

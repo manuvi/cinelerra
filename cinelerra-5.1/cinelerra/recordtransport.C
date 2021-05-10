@@ -175,6 +175,8 @@ RecordGUIRec::RecordGUIRec(RecordTransport *record_transport, int x, int y)
 {
 	this->record_transport = record_transport;
 	set_tooltip(_("Start recording\nfrom current position"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Recording Immediately to Capture");
 }
 
 RecordGUIRec::~RecordGUIRec()
@@ -192,7 +194,7 @@ int RecordGUIRec::handle_event()
 
 int RecordGUIRec::keypress_event()
 {
-	return 0;
+	return context_help_check_and_show();
 }
 
 RecordGUIRecFrame::RecordGUIRecFrame(RecordTransport *record_transport, int x, int y)
@@ -200,6 +202,8 @@ RecordGUIRecFrame::RecordGUIRecFrame(RecordTransport *record_transport, int x, i
 {
 	this->record_transport = record_transport;
 	set_tooltip(_("RecordTransport single frame"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Recording Immediately to Capture");
 }
 
 RecordGUIRecFrame::~RecordGUIRecFrame()
@@ -217,7 +221,7 @@ int RecordGUIRecFrame::handle_event()
 
 int RecordGUIRecFrame::keypress_event()
 {
-	return 0;
+	return context_help_check_and_show();
 }
 
 RecordGUIPlay::RecordGUIPlay(RecordTransport *record_transport, int x, int y)
@@ -240,7 +244,7 @@ int RecordGUIPlay::handle_event()
 
 int RecordGUIPlay::keypress_event()
 {
-	return 0;
+	return context_help_check_and_show();
 }
 
 
@@ -249,6 +253,8 @@ RecordGUIStop::RecordGUIStop(RecordTransport *record_transport, int x, int y)
 {
 	this->record_transport = record_transport;
 	set_tooltip(_("Stop operation"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Recording Immediately to Capture");
 }
 
 RecordGUIStop::~RecordGUIStop()
@@ -265,7 +271,7 @@ int RecordGUIStop::handle_event()
 
 int RecordGUIStop::keypress_event()
 {
-	return 0;
+	return context_help_check_and_show();
 }
 
 
@@ -288,7 +294,7 @@ int RecordGUIPause::handle_event()
 
 int RecordGUIPause::keypress_event()
 {
-	return 0;
+	return context_help_check_and_show();
 }
 
 
@@ -298,6 +304,8 @@ RecordGUIRewind::RecordGUIRewind(RecordTransport *record_transport, int x, int y
 {
 	this->record_transport = record_transport;
 	set_tooltip(_("Start over"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Recording Immediately to Capture");
 }
 
 RecordGUIRewind::~RecordGUIRewind()
@@ -314,7 +322,7 @@ int RecordGUIRewind::handle_event()
 
 int RecordGUIRewind::keypress_event()
 {
-	return 0;
+	return context_help_check_and_show();
 }
 
 
@@ -355,7 +363,7 @@ return 0;
 
 int RecordGUIBack::keypress_event()
 {
-	return 0;
+	return context_help_check_and_show();
 }
 
 
@@ -395,7 +403,7 @@ int RecordGUIFwd::repeat_event()
 
 int RecordGUIFwd::keypress_event()
 {
-	return 0;
+	return context_help_check_and_show();
 }
 
 
@@ -418,6 +426,6 @@ int RecordGUIEnd::handle_event()
 
 int RecordGUIEnd::keypress_event()
 {
-	return 0;
+	return context_help_check_and_show();
 }
 

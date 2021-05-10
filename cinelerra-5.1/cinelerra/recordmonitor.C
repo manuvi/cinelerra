@@ -260,6 +260,8 @@ RecordMonitorGUI::RecordMonitorGUI(MWindow *mwindow,
 	big_cursor_toggle = 0;
 	current_operation = MONITOR_NONE;
 	signal_status = 0;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Capturing and Recording Media");
 }
 
 RecordMonitorGUI::~RecordMonitorGUI()
@@ -525,6 +527,9 @@ int RecordMonitorGUI::keypress_event()
 #endif
 		break;
 	}
+
+	if( !result )
+		result = context_help_check_and_show();
 
 	return result;
 }

@@ -48,7 +48,7 @@ int SWindowOK::button_press_event()
 
 int SWindowOK::keypress_event()
 {
-	return 0;
+	return context_help_check_and_show();
 }
 
 
@@ -280,6 +280,8 @@ SWindowGUI::SWindowGUI(SWindow *swindow, int x, int y, int w, int h)
 	text_font = MEDIUMFONT;
 	text_rowsz = get_text_ascent(text_font)+1 + get_text_descent(text_font)+1;
 	sub_format = SUB_FORMAT_SRT;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Subtitles");
 }
 
 SWindowGUI::~SWindowGUI()

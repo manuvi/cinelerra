@@ -330,6 +330,9 @@ int HistogramWindow::keypress_event()
 		}
 	}
 
+	if (! result)
+		result = context_help_check_and_show();
+
 	return result;
 }
 

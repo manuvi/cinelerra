@@ -780,7 +780,7 @@ int BC_FileBox::keypress_event()
 		set_done(1);
 		return 1;
 	}
-	return 0;
+	return context_help_check_and_show();
 }
 
 int BC_FileBox::close_event()

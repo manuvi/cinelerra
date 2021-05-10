@@ -79,6 +79,8 @@ VWindowGUI::VWindowGUI(MWindow *mwindow, VWindow *vwindow)
 //	source = 0;
 	strcpy(loaded_title, "");
 	highlighted = 0;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Viewer Window");
 }
 
 VWindowGUI::~VWindowGUI()
@@ -382,6 +384,8 @@ int VWindowGUI::keypress_event()
 	}
 	if( !result )
 		result = transport->keypress_event();
+	if( !result )
+		result = context_help_check_and_show();
 	return result;
 }
 

@@ -36,6 +36,8 @@ AssetRemoveWindow::AssetRemoveWindow(MWindow *mwindow)
 {
 	this->mwindow = mwindow;
 	data = 0;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Resources Window");
 }
 
 AssetRemoveWindow::~AssetRemoveWindow()

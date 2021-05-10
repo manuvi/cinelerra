@@ -71,10 +71,13 @@ public:
 
 	static const char *non_auto_text[];
 	static const char *auto_text[];
+	static const char *non_auto_help[];
+	static const char *auto_help[];
 	static const char *xyz_group[];
 	static const char *xyz_accel[];
 	static int auto_colors[];
 	static const char *toggle_text(toggleinfo *tp);
+	static const char *toggle_help(toggleinfo *tp);
 
 	MWindow *mwindow;
 	GWindowToggle *toggles[NONAUTOTOGGLES_COUNT + AUTOMATION_TOTAL];

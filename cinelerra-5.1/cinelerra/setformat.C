@@ -280,6 +280,8 @@ SetFormatWindow::SetFormatWindow(MWindow *mwindow,
 	this->mwindow = mwindow;
 	this->thread = thread;
 	presets = 0;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Project and Media Attributes");
 }
 SetFormatWindow::~SetFormatWindow()
 {

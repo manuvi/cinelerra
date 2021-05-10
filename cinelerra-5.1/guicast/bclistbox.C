@@ -3485,7 +3485,7 @@ int BC_ListBox::expander_active()
 
 int BC_ListBox::keypress_event()
 {
-	if( !active ) return 0;
+	if( !active ) return context_help_check_and_show();
 
 //printf("BC_ListBox::keypress_event %d\n", __LINE__);
 
@@ -3611,6 +3611,9 @@ int BC_ListBox::keypress_event()
 		selection_changed();
 //printf("BC_ListBox::keypress_event %d\n", __LINE__);
 	}
+
+	if( !result )
+		result = context_help_check_and_show();
 
 	return result;
 }

@@ -90,6 +90,8 @@ MainMenu::MainMenu(MWindow *mwindow, MWindowGUI *gui, int w)
 {
 	this->gui = gui;
 	this->mwindow = mwindow;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Program Window");
 }
 
 MainMenu::~MainMenu()
@@ -2113,6 +2115,8 @@ LoadLayoutConfirm::LoadLayoutConfirm(LoadLayoutDialog *layout_dialog, int x, int
  : BC_Window(_(PROGRAM_NAME ": Layout"), x, y, xS(300),yS(140), xS(300),yS(140), 0)
 {
 	this->layout_dialog = layout_dialog;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Window Layouts");
 }
 
 LoadLayoutConfirm::~LoadLayoutConfirm()

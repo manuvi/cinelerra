@@ -581,6 +581,8 @@ MenuEffectWindow::MenuEffectWindow(MWindow *mwindow,
 	file_title = 0;
 	format_tools = 0;
 	loadmode = 0;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Rendered Effects");
 }
 
 MenuEffectWindow::~MenuEffectWindow()
@@ -688,7 +690,7 @@ int MenuEffectWindowOK::keypress_event()
 		handle_event();
 		return 1;
 	}
-	return 0;
+	return context_help_check_and_show();
 }
 
 MenuEffectWindowCancel::MenuEffectWindowCancel(MenuEffectWindow *window)
@@ -710,7 +712,7 @@ int MenuEffectWindowCancel::keypress_event()
 		handle_event();
 		return 1;
 	}
-	return 0;
+	return context_help_check_and_show();
 }
 
 MenuEffectWindowList::MenuEffectWindowList(MenuEffectWindow *window,
@@ -731,6 +733,54 @@ int MenuEffectWindowList::handle_event()
 	return 1;
 }
 
+// *** CONTEXT_HELP ***
+int MenuEffectWindowList::keypress_event()
+{
+	int item;
+	char title[BCTEXTLEN];
+
+//	printf("MenuEffectWindowList::keypress_event: %d\n", get_keypress());
+
+	// If not our context help keystroke, redispatch it
+	// to the event handler of the base class
+	if (get_keypress() != 'h' || ! alt_down() ||
+	    ! is_tooltip_event_win() || ! cursor_inside())
+		return BC_ListBox::keypress_event();
+
+	// Try to show help for the plugin currently under mouse
+	title[0] = '\0';
+	item = get_highlighted_item();
+	if (item >= 0 && item < window->plugin_list->total)
+		strcpy(title, window->plugin_list->values[item]->get_text());
+
+	// If some plugin is highlighted, show its help
+	// Otherwise show more general help
+	if (title[0]) {
+		if (! strcmp(title, "Overlay")) {
+			// "Overlay" plugin title is ambiguous
+			if (window->asset->audio_data)
+				strcat(title, " \\(Audio\\)");
+			if (window->asset->video_data)
+				strcat(title, " \\(Video\\)");
+		}
+		if (! strncmp(title, "F_", 2)) {
+			// FFmpeg plugins can be audio or video
+			if (window->asset->audio_data)
+				strcpy(title, "FFmpeg Audio Plugins");
+			if (window->asset->video_data)
+				strcpy(title, "FFmpeg Video Plugins");
+		}
+		context_help_show(title);
+		return 1;
+	}
+	else {
+		context_help_show("Rendered Effects");
+		return 1;
+	}
+	context_help_show("Rendered Effects");
+	return 1;
+}
+
 #define PROMPT_TEXT _("Set up effect panel and hit \"OK\"")
 #define MEP_W xS(260)
 #define MEP_H yS(100)
@@ -745,6 +795,8 @@ MenuEffectPrompt::MenuEffectPrompt(MWindow *mwindow)
 		MenuEffectPrompt::calculate_h(mwindow->gui),
 		0, 0, 1)
 {
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Rendered Effects");
 }
 
 int MenuEffectPrompt::calculate_w(BC_WindowBase *gui)

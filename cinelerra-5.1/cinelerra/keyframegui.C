@@ -475,6 +475,8 @@ KeyFrameWindow::KeyFrameWindow(MWindow *mwindow, KeyFrameThread *thread,
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Saved Plugin Presets");
 }
 
 void KeyFrameWindow::create_objects()
@@ -828,6 +830,6 @@ int KeyFramePresetsOK::keypress_event()
 			}
 		}
 	}
-	return 0;
+	return context_help_check_and_show();
 }
 

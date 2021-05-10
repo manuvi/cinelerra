@@ -47,6 +47,8 @@ MButtons::MButtons(MWindow *mwindow, MWindowGUI *gui)
 {
 	this->gui = gui;
 	this->mwindow = mwindow;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Transport and Buttons Bar");
 }
 
 MButtons::~MButtons()
@@ -91,6 +93,11 @@ int MButtons::keypress_event()
 	if(!result)
 	{
 		result = transport->keypress_event();
+	}
+
+	if(!result)
+	{
+		result = context_help_check_and_show();
 	}
 
 	return result;

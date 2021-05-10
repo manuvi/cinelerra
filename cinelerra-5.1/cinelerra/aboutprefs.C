@@ -36,6 +36,8 @@ const char *AboutPrefs::build_timestamp = COMPILEDATE;
 AboutPrefs::AboutPrefs(MWindow *mwindow, PreferencesWindow *pwindow)
  : PreferencesDialog(mwindow, pwindow)
 {
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("About");
 }
 
 AboutPrefs::~AboutPrefs()

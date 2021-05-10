@@ -353,6 +353,8 @@ PNGConfigVideo::PNGConfigVideo(BC_WindowBase *parent_window, Asset *asset)
 	compression = 0;
 	depth8 = 0;
 	depth16 = 0;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Single File Rendering");
 }
 
 PNGConfigVideo::~PNGConfigVideo()

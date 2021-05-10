@@ -672,7 +672,7 @@ int SynthWindow::keypress_event()
 		set_done(1);
 		return 1;
 	}
-	return 0;
+	return context_help_check_and_show();
 }
 
 int SynthWindow::resize_event(int w, int h)
@@ -1038,6 +1038,13 @@ void SynthNote::stop_note()
 
 int SynthNote::keypress_event()
 {
+// Evtl catch Alt/H
+	if (get_keypress() == 'h' && alt_down())
+	{
+		context_help_show();
+		return 1;
+	}
+
 	if(number >= FIRST_TITLE && number < LAST_TITLE)
 	{
 		if(get_keypress() == keyboard_map[number - FIRST_TITLE][0])

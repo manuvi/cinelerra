@@ -78,7 +78,7 @@ int ConfirmQuitYesButton::keypress_event()
 {
 	if( toupper(get_keypress()) == *get_text() )
 		return handle_event();
-	return 0;
+	return context_help_check_and_show();
 }
 
 ConfirmQuitNoButton::ConfirmQuitNoButton(MWindow *mwindow,
@@ -100,7 +100,7 @@ int ConfirmQuitNoButton::keypress_event()
 {
 	if( toupper(get_keypress()) == *get_text() )
 		return handle_event();
-	return 0;
+	return context_help_check_and_show();
 }
 
 ConfirmQuitCancelButton::ConfirmQuitCancelButton(MWindow *mwindow,
@@ -120,6 +120,6 @@ int ConfirmQuitCancelButton::handle_event()
 int ConfirmQuitCancelButton::keypress_event()
 {
 	if(get_keypress() == ESC) return handle_event();
-	return 0;
+	return context_help_check_and_show();
 }
 

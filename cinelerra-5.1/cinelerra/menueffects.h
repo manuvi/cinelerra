@@ -170,6 +170,7 @@ public:
 		ArrayList<BC_ListBoxItem*> *plugin_list);
 
 	int handle_event();
+	int keypress_event();
 	MenuEffectWindow *window;
 };
 

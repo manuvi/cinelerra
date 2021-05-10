@@ -172,6 +172,8 @@ ChannelEditWindow::ChannelEditWindow(ChannelEditThread *thread,
 	this->edit_thread = 0;
 	this->picture_thread = 0;
 	this->scan_confirm_thread = 0;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Initial Setup for DVB Capture");
 }
 
 ChannelEditWindow::~ChannelEditWindow()
@@ -625,6 +627,8 @@ ConfirmScan::ConfirmScan(ChannelEditWindow *gui, int x, int y)
 	0, 0, 0, 0, 1)
 {
 	this->gui = gui;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Initial Setup for DVB Capture");
 }
 
 void ConfirmScan::create_objects()
@@ -961,6 +965,8 @@ ChannelEditEditWindow::ChannelEditEditWindow(ChannelEditEditThread *thread,
 	this->channel_picker = channel_picker;
 	this->window = window;
 	this->thread = thread;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Initial Setup for DVB Capture");
 }
 ChannelEditEditWindow::~ChannelEditEditWindow()
 {
@@ -1338,6 +1344,8 @@ ChannelEditPictureWindow::ChannelEditPictureWindow(ChannelEditPictureThread *thr
 {
 	this->thread = thread;
 	this->channel_picker = channel_picker;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Initial Setup for DVB Capture");
 }
 ChannelEditPictureWindow::~ChannelEditPictureWindow()
 {
@@ -1683,7 +1691,7 @@ int ChannelEditCommon::keypress_event()
 		channel_picker->set_picture(device_id, get_value());
 		return 1;
 	}
-	return 0;
+	return context_help_check_and_show();
 }
 
 

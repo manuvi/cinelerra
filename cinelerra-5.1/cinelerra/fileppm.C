@@ -200,6 +200,8 @@ PPMConfigVideo::PPMConfigVideo(BC_WindowBase *gui, Asset *asset)
 {
 	this->gui = gui;
 	this->asset = asset;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Single File Rendering");
 }
 
 void PPMConfigVideo::create_objects()

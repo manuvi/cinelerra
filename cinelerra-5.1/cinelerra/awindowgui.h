@@ -412,6 +412,8 @@ public:
 	int mouse_over_event(int no);
 	void show_tip_info(const char *info, int no);
 	void hide_tip_info();
+// *** CONTEXT_HELP ***
+	int keypress_event();
 
 	MWindow *mwindow;
 	AWindowGUI *gui;

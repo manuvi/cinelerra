@@ -47,6 +47,8 @@ PlaybackPrefs::PlaybackPrefs(MWindow *mwindow, PreferencesWindow *pwindow, int c
 	video_device = 0;
 	audio_offset = 0;
 	play_gain = 0;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Playback A \\/ Playback B");
 }
 
 PlaybackPrefs::~PlaybackPrefs()
@@ -75,8 +77,10 @@ void PlaybackPrefs::create_objects()
 // Audio
 	BC_Title *title1, *title2;
 	add_subwindow(title1 = new BC_Title(x, y, _("Audio Out"), LARGEFONT));
+	title1->context_help_set_keyword("Audio Out section");
 	y += title1->get_h() + margin;
 	add_subwindow(title2 = new BC_Title(x, y, _("Playback buffer samples:"), MEDIUMFONT));
+	title2->context_help_set_keyword("Audio Out section");
 	x2 = title2->get_x() + title2->get_w() + margin;
 
 SET_TRACE
@@ -92,10 +96,12 @@ SET_TRACE
 	menu->add_item(new BC_MenuItem("65536"));
 	menu->add_item(new BC_MenuItem("131072"));
 	menu->add_item(new BC_MenuItem("262144"));
+	menu->context_help_set_keyword("Audio Out section");
 
 	y += menu->get_h() + ys5;
 	x2 = x;
 	add_subwindow(title1 = new BC_Title(x2, y, _("Audio offset (sec):")));
+	title1->context_help_set_keyword("Audio Out section");
 	x2 += title1->get_w() + xs5;
 	audio_offset = new PlaybackAudioOffset(pwindow, this, x2, y);
 	audio_offset->create_objects();
@@ -114,15 +120,18 @@ SET_TRACE
 	PlaybackMap51_2 *map51_2 = new PlaybackMap51_2(pwindow, this,
 		playback_config->aconfig->map51_2, y);
 	add_subwindow(map51_2);
+	map51_2->context_help_set_keyword("Audio Out section");
 	x2 =  map51_2->get_x() + map51_2->get_w() + xS(15);
 	y2 = y + BC_TextBox::calculate_h(this,MEDIUMFONT,1,1) - get_text_height(MEDIUMFONT);
 
 	add_subwindow(title2 = new BC_Title(x2, y2, _("Gain:")));
+	title2->context_help_set_keyword("Audio Out section");
 	x2 += title2->get_w() + xS(8);
 	play_gain = new PlaybackGain(x2, y, pwindow, this);
 	play_gain->create_objects();
 	y += yS(40);
-	add_subwindow(new BC_Title(x, y, _("Audio Driver:")));
+	add_subwindow(title1 = new BC_Title(x, y, _("Audio Driver:")));
+	title1->context_help_set_keyword("Audio Out section");
 	audio_device = new ADevicePrefs(x + xS(100), y, pwindow,
 		this, playback_config->aconfig, 0, MODEPLAY);
 	audio_device->initialize(0);
@@ -136,17 +145,21 @@ SET_TRACE
 
 SET_TRACE
 	add_subwindow(title1 = new BC_Title(x, y, _("Video Out"), LARGEFONT));
+	title1->context_help_set_keyword("Video Out section");
 	y += title1->get_h() + margin;
 
 SET_TRACE
 	add_subwindow(window = new VideoEveryFrame(pwindow, this, x, y));
+	window->context_help_set_keyword("Video Out section");
 	int x1 = x + window->get_w() + xs30;
 	const char *txt = _("Framerate achieved:");
 	int y1 = y + (window->get_h() - BC_Title::calculate_h(this, txt)) / 2;
 	add_subwindow(title1 = new BC_Title(x1, y1, txt));
+	title1->context_help_set_keyword("Video Out section");
 	x1 += title1->get_w() + margin;
 	add_subwindow(framerate_title = new BC_Title(x1, y1, "--", MEDIUMFONT, RED));
 	draw_framerate(0);
+	framerate_title->context_help_set_keyword("Video Out section");
 	y += window->get_h() + 2*margin;
 
 //	add_subwindow(asynchronous = new VideoAsynchronous(pwindow, x, y));
@@ -154,15 +167,18 @@ SET_TRACE
 
 SET_TRACE
 	add_subwindow(title1 = new BC_Title(x, y, _("Scaling equation: Enlarge / Reduce ")));
+	title1->context_help_set_keyword("Video Out section");
 	VScalingEquation *vscaling_equation =
 		new VScalingEquation(x + title1->get_w() + xS(65), y,
 			&pwindow->thread->edl->session->interpolation_type);
 	add_subwindow(vscaling_equation);
 	vscaling_equation->create_objects();
+	vscaling_equation->context_help_set_keyword("Video Out section");
 SET_TRACE
 	y += yS(35);
 
 	add_subwindow(title1 = new BC_Title(x, y, _("DVD Subtitle to display:")));
+	title1->context_help_set_keyword("Video Out section");
 	PlaybackSubtitleNumber *subtitle_number;
 	x1 = x + title1->get_w() + margin;
 	subtitle_number = new PlaybackSubtitleNumber(x1, y, pwindow, this);
@@ -172,13 +188,16 @@ SET_TRACE
 	PlaybackSubtitle *subtitle_toggle;
 	x1 += subtitle_number->get_w() + margin;
 	add_subwindow(subtitle_toggle = new PlaybackSubtitle(x2, y, pwindow, this));
+	subtitle_toggle->context_help_set_keyword("Video Out section");
 	y += subtitle_toggle->get_h();
 
 	PlaybackLabelCells *label_cells_toggle;
 	add_subwindow(label_cells_toggle = new PlaybackLabelCells(x2, y, pwindow, this));
+	label_cells_toggle->context_help_set_keyword("Video Out section");
 	y2 = y + label_cells_toggle->get_h();
 
 	add_subwindow(title1=new BC_Title(x2, y2, _("TOC Program No:"), MEDIUMFONT));
+	title1->context_help_set_keyword("Video Out section");
 	PlaybackProgramNumber *program_number;
 	program_number = new PlaybackProgramNumber(
 		x2 + title1->get_w() + xs10, y2, pwindow, this);
@@ -186,15 +205,18 @@ SET_TRACE
 
 	add_subwindow(interpolate_raw = new PlaybackInterpolateRaw( x, y,
 		pwindow, this));
+	interpolate_raw->context_help_set_keyword("Video Out section");
 	y += interpolate_raw->get_h() + margin;
 
 	add_subwindow(white_balance_raw = new PlaybackWhiteBalanceRaw(x, y,
 		pwindow, this));
 	if(!pwindow->thread->edl->session->interpolate_raw)
 		white_balance_raw->disable();
+	white_balance_raw->context_help_set_keyword("Video Out section");
 	y += white_balance_raw->get_h() + margin;
 
 	add_subwindow(vdevice_title = new BC_Title(x, y, _("Video Driver:")));
+	vdevice_title->context_help_set_keyword("Video Out section");
 	y += vdevice_title->get_h() + margin;
 	video_device = new VDevicePrefs(x, y, pwindow, this,
 		playback_config->vconfig, 0, MODEPLAY);
@@ -252,6 +274,8 @@ PlaybackViewFollows::PlaybackViewFollows(PreferencesWindow *pwindow, int value, 
  : BC_CheckBox(xS(10), y, value, _("View follows playback"))
 {
 	this->pwindow = pwindow;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Audio Out section");
 }
 
 int PlaybackViewFollows::handle_event()
@@ -265,6 +289,8 @@ PlaybackSoftwareTimer::PlaybackSoftwareTimer(PreferencesWindow *pwindow, int val
  : BC_CheckBox(xS(10), y, value, _("Disable hardware synchronization"))
 {
 	this->pwindow = pwindow;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Audio Out section");
 }
 
 int PlaybackSoftwareTimer::handle_event()
@@ -278,6 +304,8 @@ PlaybackRealTime::PlaybackRealTime(PreferencesWindow *pwindow, int value, int y)
  : BC_CheckBox(xS(10), y, value, _("Audio playback in real time priority (root only)"))
 {
 	this->pwindow = pwindow;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Audio Out section");
 }
 
 int PlaybackRealTime::handle_event()

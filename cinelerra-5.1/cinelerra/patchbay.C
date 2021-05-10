@@ -138,6 +138,8 @@ PatchBay::PatchBay(MWindow *mwindow, MWindowGUI *gui)
 	this->pane = 0;
 	drag_operation = Tracks::NONE;
 	for(int i = 0; i < TRANSFER_TYPES; i++) mode_icons[i] = 0;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("The Patchbay");
 }
 
 PatchBay::PatchBay(MWindow *mwindow,
@@ -156,6 +158,8 @@ PatchBay::PatchBay(MWindow *mwindow,
 	this->pane = pane;
 	drag_operation = Tracks::NONE;
 	for(int i = 0; i < TRANSFER_TYPES; i++) mode_icons[i] = 0;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("The Patchbay");
 // printf("PatchBay::PatchBay %d %d %d %d %d\n",
 // __LINE__,
 // x,

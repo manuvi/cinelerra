@@ -298,6 +298,8 @@ VModePatch::VModePatch(MWindow *mwindow, VPatchGUI *patch, int x, int y)
 	this->mode = mwindow->get_int_auto(patch, AUTOMATION_MODE)->value;
 	set_icon(patch->patchbay->mode_to_icon(this->mode));
 	set_tooltip(_("Overlay mode"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Overlays");
 }
 
 VModePatch::VModePatch(MWindow *mwindow, VPatchGUI *patch)
@@ -507,6 +509,8 @@ VMixPatch::VMixPatch(MWindow *mwindow, VPatchGUI *patch, int x, int y)
  : MixPatch(mwindow, patch, x, y)
 {
 	set_tooltip(_("Mixer"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Recover Mixer Windows");
 }
 
 VMixPatch::~VMixPatch()

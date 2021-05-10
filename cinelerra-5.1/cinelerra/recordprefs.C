@@ -42,6 +42,8 @@ RecordPrefs::RecordPrefs(MWindow *mwindow, PreferencesWindow *pwindow)
  : PreferencesDialog(mwindow, pwindow)
 {
 	this->mwindow = mwindow;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Recording");
 }
 
 RecordPrefs::~RecordPrefs()
@@ -70,6 +72,7 @@ void RecordPrefs::create_objects()
 
 	add_subwindow(title = new BC_Title(x, y, _("File Format:"),
 		LARGEFONT, resources->text_default));
+	title->context_help_set_keyword("File Format section");
 	y += title->get_h() + margin;
 
 	recording_format = new FormatTools(mwindow, this,
@@ -90,6 +93,7 @@ void RecordPrefs::create_objects()
 	realtime_toc = new RecordRealtimeTOC(mwindow, pwindow,
 		x0+xS(400), y0, pwindow->thread->edl->session->record_realtime_toc);
 	add_subwindow(realtime_toc);
+	realtime_toc->context_help_set_keyword("File Format section");
 
 // Audio hardware
 	add_subwindow(new BC_Bar(x, y, 	get_w() - x * 2));
@@ -99,11 +103,13 @@ void RecordPrefs::create_objects()
 	add_subwindow(title = new BC_Title(x, y,
 		_("Audio In"), LARGEFONT,
 		resources->text_default));
+	title->context_help_set_keyword("Audio In section");
 
 	y += title->get_h() + margin;
 
-	add_subwindow(new BC_Title(x, y, _("Record Driver:"),
+	add_subwindow(title = new BC_Title(x, y, _("Record Driver:"),
 		MEDIUMFONT, resources->text_default));
+	title->context_help_set_keyword("Audio In section");
 	audio_in_device = new ADevicePrefs(x + xS(110), y, pwindow, this, 0,
 		pwindow->thread->edl->session->aconfig_in, MODERECORD);
 	audio_in_device->initialize(1);
@@ -113,9 +119,13 @@ void RecordPrefs::create_objects()
 	int pad = RecordWriteLength::calculate_h(this,
 		MEDIUMFONT, 1, 1) + mwindow->theme->widget_border;
 	add_subwindow(title0 = new BC_Title(x, y, _("Samples read from device:")));
+	title0->context_help_set_keyword("Audio In section");
 	add_subwindow(title1 = new BC_Title(x, y + pad, _("Samples to write to disk:")));
+	title1->context_help_set_keyword("Audio In section");
 	add_subwindow(title2 = new BC_Title(x, y + pad * 2, _("Sample rate for recording:")));
+	title2->context_help_set_keyword("Audio In section");
 	add_subwindow(title3 = new BC_Title(x, y + pad * 3, _("Channels to record:")));
+	title3->context_help_set_keyword("Audio In section");
 	x2 = MAX(title0->get_w(), title1->get_w()) + margin;
 	x2 = MAX(x2, title2->get_w() + margin);
 	x2 = MAX(x2, title3->get_w() + margin);
@@ -134,11 +144,14 @@ void RecordPrefs::create_objects()
 	menu->add_item(new BC_MenuItem("65536"));
 	menu->add_item(new BC_MenuItem("131072"));
 	menu->add_item(new BC_MenuItem("262144"));
+	menu->context_help_set_keyword("Audio In section");
 
 	sprintf(string, "%jd", pwindow->thread->edl->session->record_write_length);
 	add_subwindow(textbox = new RecordWriteLength(mwindow, pwindow, x2, y, string));
+	textbox->context_help_set_keyword("Audio In section");
 	y += textbox->get_h() + mwindow->theme->widget_border;
 	add_subwindow(textbox = new RecordSampleRate(pwindow, x2, y));
+	textbox->context_help_set_keyword("Audio In section");
 	add_subwindow(new SampleRatePulldown(mwindow, textbox, x2 + textbox->get_w(), y));
 	y += textbox->get_h() + mwindow->theme->widget_border;
 
@@ -149,10 +162,12 @@ void RecordPrefs::create_objects()
 	RecordMap51_2 *record_map51_2 = new RecordMap51_2(mwindow, pwindow, x, y,
 		pwindow->thread->edl->session->aconfig_in->map51_2);
 	add_subwindow(record_map51_2);
+	record_map51_2->context_help_set_keyword("Audio In section");
 
 	x2 = x + record_map51_2->get_w() + xs30;
 	int y2 = y + BC_TextBox::calculate_h(this,MEDIUMFONT,1,1) - get_text_height(MEDIUMFONT);
 	add_subwindow(title = new BC_Title(x2, y2, _("Gain:")));
+	title->context_help_set_keyword("Audio In section");
 	x2 += title->get_w() + xS(8);
 	RecordGain *rec_gain = new RecordGain(pwindow, this, x2, y);
 	rec_gain->create_objects();
@@ -170,38 +185,47 @@ void RecordPrefs::create_objects()
 
 	add_subwindow(title1 = new BC_Title(x, y, _("Video In"), LARGEFONT,
 		resources->text_default));
+	title1->context_help_set_keyword("Video In section");
 	y += title1->get_h() + margin;
 
 	add_subwindow(title1 = new BC_Title(x, y, _("Record Driver:"), MEDIUMFONT,
 		resources->text_default));
+	title1->context_help_set_keyword("Video In section");
 	video_in_device = new VDevicePrefs(x + title1->get_w() + margin, y,
 		pwindow, this, 0, pwindow->thread->edl->session->vconfig_in, MODERECORD);
 	video_in_device->initialize(1);
 	y += video_in_device->get_h() + margin;
 
 	add_subwindow(title1 = new BC_Title(x, y, _("Frames to record to disk at a time:")));
+	title1->context_help_set_keyword("Video In section");
 	x1 = x + title1->get_w() + margin;
 	sprintf(string, "%d", pwindow->thread->edl->session->video_write_length);
 	add_subwindow(textbox = new VideoWriteLength(pwindow, string, x1, y));
+	textbox->context_help_set_keyword("Video In section");
 	x1 += textbox->get_w() + margin;
 	add_subwindow(new CaptureLengthTumbler(pwindow, textbox, x1, y));
 	y += ys27;
 
 	add_subwindow(title1 = new BC_Title(x, y, _("Frames to buffer in device:")));
+	title1->context_help_set_keyword("Video In section");
 	x1 = x + title1->get_w() + margin;
 	sprintf(string, "%d", pwindow->thread->edl->session->vconfig_in->capture_length);
 	add_subwindow(textbox = new VideoCaptureLength(pwindow, string, x1, y));
+	textbox->context_help_set_keyword("Video In section");
 	x1 += textbox->get_w() + margin;
 	add_subwindow(new CaptureLengthTumbler(pwindow, textbox, x1, y));
 	y += ys27;
 
 	x1 = x;
-	add_subwindow(new BC_Title(x1, y, _("Positioning:")));
+	add_subwindow(title1 = new BC_Title(x1, y, _("Positioning:")));
+	title1->context_help_set_keyword("Video In section");
 	x1 += xS(120);
 	add_subwindow(textbox = new BC_TextBox(x1, y, xS(200), 1, ""));
+	textbox->context_help_set_keyword("Video In section");
 	RecordPositioning *positioning = new RecordPositioning(pwindow,textbox);
 	add_subwindow(positioning);
 	positioning->create_objects();
+	positioning->context_help_set_keyword("Video In section");
 	y += positioning->get_h() + ys5;
 
 	add_subwindow(new RecordSyncDrives(pwindow,
@@ -211,22 +235,29 @@ void RecordPrefs::create_objects()
 
 	BC_TextBox *w_text, *h_text;
 	add_subwindow(title1 = new BC_Title(x, y, _("Size of captured frame:")));
+	title1->context_help_set_keyword("Video In section");
 	x += title1->get_w() + margin;
 	add_subwindow(w_text = new RecordW(pwindow, x, y));
+	w_text->context_help_set_keyword("Video In section");
 	x += w_text->get_w() + margin;
 	add_subwindow(title1 = new BC_Title(x, y, "x"));
+	title1->context_help_set_keyword("Video In section");
 	x += title1->get_w() + margin;
 	add_subwindow(h_text = new RecordH(pwindow, x, y));
+	h_text->context_help_set_keyword("Video In section");
 	x += h_text->get_w() + margin;
 	FrameSizePulldown *frame_sizes;
 	add_subwindow(frame_sizes = new FrameSizePulldown(mwindow->theme,
 		w_text, h_text, x, y));
+	frame_sizes->context_help_set_keyword("Video In section");
 	y += frame_sizes->get_h() + margin;
 
 	x = mwindow->theme->preferencesoptions_x;
 	add_subwindow(title1 = new BC_Title(x, y, _("Frame rate for recording:")));
+	title1->context_help_set_keyword("Video In section");
 	x += title1->get_w() + margin;
 	add_subwindow(textbox = new RecordFrameRate(pwindow, x, y));
+	textbox->context_help_set_keyword("Video In section");
 	x += textbox->get_w() + margin;
 	add_subwindow(new FrameRatePulldown(mwindow, textbox, x, y));
 
@@ -281,6 +312,8 @@ RecordRealTime::RecordRealTime(MWindow *mwindow,
 	_("Record in realtime priority (root only)"))
 {
 	this->pwindow = pwindow;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Audio In section");
 }
 
 int RecordRealTime::handle_event()
@@ -437,6 +470,8 @@ CaptureLengthTumbler::CaptureLengthTumbler(PreferencesWindow *pwindow, BC_TextBo
 {
 	this->pwindow = pwindow;
 	this->text = text;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Video In section");
 }
 
 int CaptureLengthTumbler::handle_up_event()
@@ -500,6 +535,8 @@ RecordSyncDrives::RecordSyncDrives(PreferencesWindow *pwindow, int value, int x,
  : BC_CheckBox(x, y, value, _("Sync drives automatically"))
 {
 	this->pwindow = pwindow;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Video In section");
 }
 
 int RecordSyncDrives::handle_event()

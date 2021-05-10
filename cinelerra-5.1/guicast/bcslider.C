@@ -210,8 +210,8 @@ int BC_Slider::repeat_event(int64_t duration)
 int BC_Slider::keypress_event()
 {
 	int result = 0;
-	if(!active || !enabled) return 0;
-	if(ctrl_down() || shift_down()) return 0;
+	if(!active || !enabled) return context_help_check_and_show();
+	if(ctrl_down() || shift_down()) return context_help_check_and_show();
 
 	switch(get_keypress())
 	{
@@ -238,8 +238,10 @@ int BC_Slider::keypress_event()
 		handle_event();
 		show_value_tooltip();
 		draw_face(1);
+		return result;
 	}
-	return result;
+
+	return context_help_check_and_show();
 }
 
 int BC_Slider::cursor_enter_event()

@@ -254,6 +254,7 @@ int BC_WindowBase::initialize()
 	display_lock_owner = 0;
 	test_keypress = 0;
 	keys_return[0] = 0;
+	context_help_keyword[0] = 0;
 	is_deleting = 0;
 	window_lock = 0;
 	resend_event_window = 0;
@@ -1729,6 +1730,90 @@ int BC_WindowBase::close_event()
 	set_done(1);
 	return 1;
 }
+
+// *** CONTEXT_HELP ***
+// This basic implementation serves solely for context help.
+// We are handling Alt/H only. Any subclass requiring more sophisticated
+// processing of keystrokes has to provide its own overloaded handler.
+int BC_WindowBase::keypress_event()
+{
+//	printf("BC_WindowBase::keypress_event: %d\n", get_keypress());
+	return context_help_check_and_show();
+}
+
+// The stuff up to END_CONTEXT_HELP serves solely for context help
+void BC_WindowBase::context_help_set_keyword(const char *keyword)
+{
+	if (keyword) strcpy(context_help_keyword, keyword);
+}
+
+const char *BC_WindowBase::context_help_get_keyword()
+{
+// If we have context_help_keyword defined here, return it.
+// Otherwise recursively track widget hierarchy up to top_level
+// and return the nearest found nonempty keyword.
+// If nothing found, the special keyword "TOC" is returned.
+	if (context_help_keyword[0] || this == top_level ||
+	    this == parent_window || ! parent_window) {
+		if (! context_help_keyword[0] && this == top_level)
+			context_help_set_keyword("TOC");
+		return context_help_keyword;
+	}
+	return parent_window->context_help_get_keyword();
+}
+
+void BC_WindowBase::context_help_show(const char *keyword)
+{
+	char cmd[BCTEXTLEN];
+
+	if (! keyword) return;
+
+	sprintf(cmd, "\"%s/doc/ContextManual.pl\" \"%s\"", getenv("CIN_DAT"),
+		keyword);
+//	printf("BC_WindowBase::context_help_show(%s):\n%s\n", keyword, cmd);
+
+// ContextManual.pl starts browser in background, so system() should not block
+	system(cmd);
+}
+
+void BC_WindowBase::context_help_show()
+{
+	context_help_show(context_help_get_keyword());
+}
+
+int BC_WindowBase::context_help_check_and_show(const char *keyword)
+{
+	if (! keyword)	  return 0;
+	if (! keyword[0]) return 0;
+
+// We are handling Alt/H only
+	if (get_keypress() != 'h' || ! alt_down()) return 0;
+
+// Restrict cursor location to that widget keystroke occured in
+	if (! is_tooltip_event_win() || ! cursor_inside()) return 0;
+
+	context_help_show(keyword);
+	return 1;
+}
+
+int BC_WindowBase::context_help_check_and_show()
+{
+	const char *keyword;
+
+// We are handling Alt/H only
+	if (get_keypress() != 'h' || ! alt_down()) return 0;
+
+// Restrict cursor location, so any subwindow can define its own help keyword
+	if (! is_tooltip_event_win() || ! cursor_inside()) return 0;
+
+// If a widget has not defined its own help keyword, the parent can provide it
+	keyword = context_help_get_keyword();
+	if (! keyword[0]) return 0;
+
+	context_help_show(keyword);
+	return 1;
+}
+// *** END_CONTEXT_HELP ***
 
 int BC_WindowBase::dispatch_drag_start()
 {
@@ -4034,6 +4119,12 @@ int BC_WindowBase::dump_windows()
 int BC_WindowBase::is_event_win()
 {
 	return this->win == top_level->event_win;
+}
+
+int BC_WindowBase::is_tooltip_event_win()
+{
+	return this->win == top_level->event_win ||
+		tooltip_popup && tooltip_popup->win == top_level->event_win;
 }
 
 void BC_WindowBase::set_dragging(int value)

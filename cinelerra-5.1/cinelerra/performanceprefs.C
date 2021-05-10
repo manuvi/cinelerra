@@ -41,6 +41,8 @@ PerformancePrefs::PerformancePrefs(MWindow *mwindow, PreferencesWindow *pwindow)
  : PreferencesDialog(mwindow, pwindow)
 {
 	hot_node = -1;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Performance");
 }
 
 PerformancePrefs::~PerformancePrefs()
@@ -63,6 +65,7 @@ void PerformancePrefs::create_objects()
 	char string[BCTEXTLEN];
 	BC_Resources *resources = BC_WindowBase::get_resources();
 	BC_WindowBase *win;
+	BC_Title *title;
 
 	node_list = 0;
 	generate_node_list();
@@ -72,9 +75,11 @@ void PerformancePrefs::create_objects()
 
 	int y0 = y;
 	win = add_subwindow(new BC_Title(x, y + ys5, _("Cache size (MB):"), MEDIUMFONT, resources->text_default));
+	win->context_help_set_keyword("Performance section");
 	int maxw = win->get_w();
 	int y1 = y += ys30;
 	win = add_subwindow(new BC_Title(x, y1 + ys5, _("Seconds to preroll renders:")));
+	win->context_help_set_keyword("Performance section");
 	maxw = bmax(win->get_w(), maxw);
 	int x2 = x + maxw + xs5;
 	int y2 = y += ys30;
@@ -87,9 +92,12 @@ void PerformancePrefs::create_objects()
 
 	int x1 = x + xmargin4;
 	add_subwindow(cache_transitions = new CacheTransitions(x1, y0, pwindow, this));
+	cache_transitions->context_help_set_keyword("Performance section");
 	win = add_subwindow(new BC_Title(x1, y1, _("Use HW Device:")));
+	win->context_help_set_keyword("Performance section");
 	maxw = win->get_w();
 	win = add_subwindow(new BC_Title(x1, y2, _("Project SMP cpus:")));
+	win->context_help_set_keyword("Performance section");
 	maxw = bmax(win->get_w(), maxw);
 	x2 = x1 + maxw + xs5;
 	PrefsUseHWDev *use_hw_dev = new PrefsUseHWDev(pwindow, this, x2, y1);
@@ -102,19 +110,23 @@ void PerformancePrefs::create_objects()
 	y += ys5;
 
 
-	add_subwindow(new BC_Title(x, y, _("Background Rendering (Video only)"), LARGEFONT, resources->text_default));
+	add_subwindow(title = new BC_Title(x, y, _("Background Rendering (Video only)"), LARGEFONT, resources->text_default));
+	title->context_help_set_keyword("Background Rendering");
 	y1 = y += ys30;
 
 	win = add_subwindow(new PrefsUseBRender(pwindow, x, y));
+	win->context_help_set_keyword("Background Rendering");
 
 	y += win->get_h() + ys10;
 	win = add_subwindow(new BC_Title(x, y, _("Frames per background rendering job:")));
+	win->context_help_set_keyword("Background Rendering");
 	y += win->get_h() + ys5;
 	PrefsBRenderFragment *brender_fragment = new PrefsBRenderFragment(pwindow, this,
 		x + xmargin3, y);
 	brender_fragment->create_objects();
 	y += brender_fragment->get_h() + ys5;
 	win = add_subwindow(new BC_Title(x, y, _("Frames to preroll background:")));
+	win->context_help_set_keyword("Background Rendering");
 	y += win->get_h() + ys5;
 	PrefsBRenderPreroll *bpreroll = new PrefsBRenderPreroll(pwindow, this,
 		x + xmargin3, y + ys5);
@@ -122,7 +134,8 @@ void PerformancePrefs::create_objects()
 	y += bpreroll->get_h() + ys20;
 
 	x += xmargin4;
-	add_subwindow(new BC_Title(x, y1, _("Output for background rendering:")));
+	add_subwindow(title = new BC_Title(x, y1, _("Output for background rendering:")));
+	title->context_help_set_keyword("Background Rendering");
 	y1 += ys20;
 	brender_tools = new FormatTools(mwindow, this,
 			pwindow->thread->preferences->brender_asset);
@@ -143,21 +156,28 @@ void PerformancePrefs::create_objects()
 // Renderfarm
 	add_subwindow(new BC_Bar(xs5, y, get_w() - xs10));
 	y += ys5;
-	add_subwindow(new BC_Title(x, y, _("Render Farm"), LARGEFONT, resources->text_default));
+	add_subwindow(title = new BC_Title(x, y, _("Render Farm"), LARGEFONT, resources->text_default));
+	title->context_help_set_keyword("Render Farm Menu");
 	x1 = get_w() - BC_GenericButton::calculate_w(this, _("Reset rates")) - x;
 	add_subwindow(new PrefsRenderFarmReset(pwindow, this, x1, y));
 	x1 = x + xmargin4;
 	BC_Title *node_title = new BC_Title(x1, y, _("Nodes:"));
 	add_subwindow(node_title);
+	node_title->context_help_set_keyword("Render Farm Menu");
 	x1 += node_title->get_w() + xS(15);
 	sprintf(string, _(MASTER_NODE_FRAMERATE_TEXT),
 		pwindow->thread->preferences->local_rate);
 	add_subwindow(master_rate = new BC_Title(x1, y, string));
+	master_rate->context_help_set_keyword("Render Farm Menu");
 	add_subwindow(node_list = new PrefsRenderFarmNodes(pwindow, this, x + xmargin4, y+=yS(25)));
+	node_list->context_help_set_keyword("Render Farm Menu");
 	add_subwindow(new PrefsRenderFarm(pwindow, x, y+=ys5));
-	add_subwindow(new BC_Title(x, y+=ys30, _("Hostname:")));
-	add_subwindow(new BC_Title(x + xmargin3, y, _("Port:")));
+	add_subwindow(title = new BC_Title(x, y+=ys30, _("Hostname:")));
+	title->context_help_set_keyword("Render Farm Menu");
+	add_subwindow(title = new BC_Title(x + xmargin3, y, _("Port:")));
+	title->context_help_set_keyword("Render Farm Menu");
 	add_subwindow(edit_node = new PrefsRenderFarmEditNode(pwindow, this, x, y+=yS(25)));
+	edit_node->context_help_set_keyword("Render Farm Menu");
 	edit_port = new PrefsRenderFarmPort(pwindow, this, x+xmargin3, y);
 	edit_port->create_objects();
 
@@ -165,16 +185,19 @@ void PerformancePrefs::create_objects()
 	add_subwindow(new PrefsRenderFarmNewNode(pwindow, this, x+xmargin2, y));
 	add_subwindow(new PrefsRenderFarmSortNodes(pwindow, this, x, y+=ys30));
 	add_subwindow(new PrefsRenderFarmDelNode(pwindow, this, x+xmargin2, y));
-	add_subwindow(new BC_Title(x, y+=ys35, _("Client Watchdog Timeout:")));
+	add_subwindow(title = new BC_Title(x, y+=ys35, _("Client Watchdog Timeout:")));
+	title->context_help_set_keyword("Render Farm Menu");
 	renderfarm_watchdog = new PrefsRenderFarmWatchdog(pwindow, this, x+xmargin3, y-ys5);
 	renderfarm_watchdog->create_objects();
-	add_subwindow(new BC_Title(x, y+=ys35, _("Total jobs to create:")));
+	add_subwindow(title = new BC_Title(x, y+=ys35, _("Total jobs to create:")));
+	title->context_help_set_keyword("Render Farm Menu");
 	PrefsRenderFarmJobs *jobs = new PrefsRenderFarmJobs(pwindow, this,
 		x + xmargin3, y-ys5);
 	jobs->create_objects();
 	y += jobs->get_h() + ys5;
 	win = add_subwindow(new BC_Title(x, y,
 		_("(overridden if new file at each label is checked)")));
+	win->context_help_set_keyword("Render Farm Menu");
 //	y += win->get_h() + ys5;
 // 	add_subwindow(new PrefsRenderFarmVFS(pwindow, this, x, y));
 // 	add_subwindow(new BC_Title(x, y,
@@ -406,6 +429,8 @@ PrefsRenderFarm::PrefsRenderFarm(PreferencesWindow *pwindow, int x, int y)
 	_("Use render farm"))
 {
 	this->pwindow = pwindow;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Render Farm section");
 }
 PrefsRenderFarm::~PrefsRenderFarm()
 {
@@ -424,6 +449,8 @@ PrefsForceUniprocessor::PrefsForceUniprocessor(PreferencesWindow *pwindow, int x
 	_("Force single processor use"))
 {
 	this->pwindow = pwindow;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Performance section");
 }
 PrefsForceUniprocessor::~PrefsForceUniprocessor()
 {
@@ -556,6 +583,8 @@ PrefsRenderFarmNewNode::PrefsRenderFarmNewNode(PreferencesWindow *pwindow, Perfo
 {
 	this->pwindow = pwindow;
 	this->subwindow = subwindow;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Render Farm Menu");
 }
 PrefsRenderFarmNewNode::~PrefsRenderFarmNewNode()
 {
@@ -586,6 +615,8 @@ PrefsRenderFarmReplaceNode::PrefsRenderFarmReplaceNode(PreferencesWindow *pwindo
 {
 	this->pwindow = pwindow;
 	this->subwindow = subwindow;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Render Farm Menu");
 }
 PrefsRenderFarmReplaceNode::~PrefsRenderFarmReplaceNode()
 {
@@ -610,6 +641,8 @@ PrefsRenderFarmDelNode::PrefsRenderFarmDelNode(PreferencesWindow *pwindow, Perfo
 {
 	this->pwindow = pwindow;
 	this->subwindow = subwindow;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Render Farm Menu");
 }
 PrefsRenderFarmDelNode::~PrefsRenderFarmDelNode()
 {
@@ -636,6 +669,8 @@ PrefsRenderFarmSortNodes::PrefsRenderFarmSortNodes(PreferencesWindow *pwindow,
 {
 	this->pwindow = pwindow;
 	this->subwindow = subwindow;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Render Farm Menu");
 }
 
 PrefsRenderFarmSortNodes::~PrefsRenderFarmSortNodes()
@@ -658,6 +693,8 @@ PrefsRenderFarmReset::PrefsRenderFarmReset(PreferencesWindow *pwindow,
 {
 	this->pwindow = pwindow;
 	this->subwindow = subwindow;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Render Farm Menu");
 }
 
 int PrefsRenderFarmReset::handle_event()

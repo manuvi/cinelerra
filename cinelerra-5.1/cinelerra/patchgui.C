@@ -626,6 +626,8 @@ MasterPatch::MasterPatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
 	this->mwindow = mwindow;
 	this->patch = patch;
 	set_tooltip(_("Master Track"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Displaying tracks: Ganged mode");
 }
 
 int MasterPatch::handle_event()

@@ -133,7 +133,27 @@ PluginClientWindow::PluginClientWindow(PluginClient *client,
 	client->window_x /* - w / 2 */, client->window_y /* - h / 2 */,
 	w, h, min_w, min_h, allow_resize, 0, 1)
 {
+	char title[BCTEXTLEN];
+
 	this->client = client;
+
+// *** CONTEXT_HELP ***
+	if(client) {
+		strcpy(title, client->plugin_title());
+		if(! strcmp(title, "Overlay")) {
+			// "Overlay" plugin title is ambiguous
+			if(client->is_audio()) strcat(title, " \\(Audio\\)");
+			if(client->is_video()) strcat(title, " \\(Video\\)");
+		}
+		if(client->server->is_ffmpeg()) {
+			// FFmpeg plugins can be audio or video
+			if(client->is_audio())
+				strcpy(title, "FFmpeg Audio Plugins");
+			if(client->is_video())
+				strcpy(title, "FFmpeg Video Plugins");
+		}
+		context_help_set_keyword(title);
+	}
 }
 
 PluginClientWindow::PluginClientWindow(const char *title,
@@ -141,6 +161,8 @@ PluginClientWindow::PluginClientWindow(const char *title,
  : BC_Window(title, x, y, w, h, min_w, min_h, allow_resize, 0, 1)
 {
 	this->client = 0;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword(title);
 }
 
 PluginClientWindow::~PluginClientWindow()

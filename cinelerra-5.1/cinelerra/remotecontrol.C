@@ -12,6 +12,8 @@ RemoteWindow::RemoteWindow(RemoteControl *remote_control)
 		0, 0, xS(16), yS(16), -1, -1, 1, 0, 1)
 {
 	this->remote_control = remote_control;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Remote Control for DVB");
 }
 
 RemoteWindow::~RemoteWindow()

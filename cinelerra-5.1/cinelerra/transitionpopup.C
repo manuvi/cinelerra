@@ -148,6 +148,8 @@ TransitionLengthDialog::TransitionLengthDialog(MWindow *mwindow,
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Transition Plugins");
 }
 
 TransitionLengthDialog::~TransitionLengthDialog()

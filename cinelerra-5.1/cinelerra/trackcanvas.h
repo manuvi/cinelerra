@@ -62,6 +62,19 @@ public:
 	int drag_start_event();
 	int cursor_leave_event();
 	int keypress_event();
+
+// *** CONTEXT_HELP ***
+	int help_transitions(int cursor_x, int cursor_y);
+	int help_transition_handles(int cursor_x, int cursor_y);
+	int help_keyframes(int cursor_x, int cursor_y);
+	int help_edit_handles(int cursor_x, int cursor_y);
+	int help_plugin_handles(int cursor_x, int cursor_y);
+	int help_plugins(int cursor_x, int cursor_y);
+	int help_plugin_autos(Track *track, int cursor_x, int cursor_y);
+	int help_autos(Track *track, Autos *autos, int cursor_x, int cursor_y, BC_Pixmap *pixmap);
+	int help_float_autos(Track *track, Autos *autos, int cursor_x, int cursor_y, int autogrouptype);
+	int help_int_autos(Track *track, Autos *autos, int cursor_x, int cursor_y);
+
 	void draw_resources(int mode = 0,
 		int indexes_only = 0,     // Redraw only certain audio resources with indexes
 		Indexable *indexable = 0);

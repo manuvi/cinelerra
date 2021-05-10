@@ -168,6 +168,8 @@ LoadFileWindow::LoadFileWindow(MWindow *mwindow,
 {
 	this->thread = thread;
 	this->mwindow = mwindow;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Loading Files");
 }
 
 LoadFileWindow::~LoadFileWindow()

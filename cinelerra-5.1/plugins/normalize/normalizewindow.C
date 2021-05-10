@@ -27,6 +27,8 @@ NormalizeWindow::NormalizeWindow(int x, int y)
  : BC_Window(_(PROGRAM_NAME ": Normalize"), x - xS(160), y - yS(75),
 		xS(320), yS(150), xS(320), yS(150), 0, 0, 1)
 {
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Rendered Audio Effects");
 }
 
 NormalizeWindow::~NormalizeWindow()

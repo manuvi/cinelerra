@@ -123,6 +123,7 @@ int VDevicePrefs::initialize(int creation)
 		dialog->add_subwindow(menu = new VDriverMenu(x, y + yS(10),
 				this, (mode == MODERECORD), driver));
 		menu->create_objects();
+		menu->context_help_set_keyword("Video Out section");
 	}
 
 	switch(this->driver)
@@ -216,11 +217,14 @@ void VDevicePrefs::create_dvb_objs()
 	dvb_adapter_title = new BC_Title(x1, y2, _("DVB Adapter:"),
 			MEDIUMFONT, resources->text_default);
 	dialog->add_subwindow(dvb_adapter_title);
+	dvb_adapter_title->context_help_set_keyword("Video Out section");
 	dialog->add_subwindow(device_text = new VDeviceTextBox(x1, y1, output_char));
+	device_text->context_help_set_keyword("Video Out section");
 	int x2 = x1 + device_text->get_w() + xS(5);
 	device_title = new BC_Title(x2, y2, _("dev:"),
 			MEDIUMFONT, resources->text_default);
 	dialog->add_subwindow(device_title);
+	device_title->context_help_set_keyword("Video Out section");
 	int *output_int = &in_config->dvb_in_device;
 	dvb_adapter_device = new VDeviceTumbleBox(this, x2, y1, output_int, 0, 9, xS(20));
 	dvb_adapter_device->create_objects();
@@ -228,6 +232,7 @@ void VDevicePrefs::create_dvb_objs()
 	follow_video_config = new BC_CheckBox(x1, y1,
 			&in_config->follow_video, _("Follow video config"));
 	dialog->add_subwindow(follow_video_config);
+	follow_video_config->context_help_set_keyword("Video Out section");
 }
 
 int VDevicePrefs::create_firewire_objs()
@@ -257,7 +262,9 @@ int VDevicePrefs::create_firewire_objs()
 	if(output_char)
 	{
 		dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Device Path:"), MEDIUMFONT, resources->text_default));
+		device_title->context_help_set_keyword("Video Out section");
 		dialog->add_subwindow(firewire_path = new VDeviceTextBox(x1, y + ys20, output_char));
+		firewire_path->context_help_set_keyword("Video Out section");
 		x1 += firewire_path->get_w() + xs5;
 	}
 
@@ -275,7 +282,9 @@ int VDevicePrefs::create_firewire_objs()
 			break;
 	}
 	dialog->add_subwindow(port_title = new BC_Title(x1, y, _("Port:"), MEDIUMFONT, resources->text_default));
+	port_title->context_help_set_keyword("Video Out section");
 	dialog->add_subwindow(firewire_port = new VDeviceIntBox(x1, y + ys20, output_int));
+	firewire_port->context_help_set_keyword("Video Out section");
 	x1 += firewire_port->get_w() + xs5;
 
 // Firewire channel
@@ -293,7 +302,9 @@ int VDevicePrefs::create_firewire_objs()
 	}
 
 	dialog->add_subwindow(channel_title = new BC_Title(x1, y, _("Channel:"), MEDIUMFONT, resources->text_default));
+	channel_title->context_help_set_keyword("Video Out section");
 	dialog->add_subwindow(firewire_channel = new VDeviceIntBox(x1, y + ys20, output_int));
+	firewire_channel->context_help_set_keyword("Video Out section");
 	x1 += firewire_channel->get_w() + xs5;
 
 
@@ -316,7 +327,9 @@ int VDevicePrefs::create_firewire_objs()
 	if(output_int)
 	{
 		dialog->add_subwindow(syt_title = new BC_Title(x1, y, _("Syt Offset:"), MEDIUMFONT, resources->text_default));
+		syt_title->context_help_set_keyword("Video Out section");
 		dialog->add_subwindow(firewire_syt = new VDeviceIntBox(x1, y + ys20, output_int));
+		firewire_syt->context_help_set_keyword("Video Out section");
 	}
 
 	return 0;
@@ -330,7 +343,9 @@ int VDevicePrefs::create_v4l2_objs()
 	int x1 = x + menu->get_w() + xs5;
 	output_char = pwindow->thread->edl->session->vconfig_in->v4l2_in_device;
 	dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Device path:"), MEDIUMFONT, resources->text_default));
+	device_title->context_help_set_keyword("Video Out section");
 	dialog->add_subwindow(device_text = new VDeviceTextBox(x1, y + ys20, output_char));
+	device_text->context_help_set_keyword("Video Out section");
 
 	return 0;
 }
@@ -342,11 +357,14 @@ int VDevicePrefs::create_v4l2jpeg_objs()
 	int x1 = x + menu->get_w() + xs5;
 	char *output_char = &pwindow->thread->edl->session->vconfig_in->v4l2jpeg_in_device[0];
 	dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Device path:"), MEDIUMFONT, resources->text_default));
+	device_title->context_help_set_keyword("Video Out section");
 	dialog->add_subwindow(device_text = new VDeviceTextBox(x1, y + ys20, output_char));
+	device_text->context_help_set_keyword("Video Out section");
 	x1 += bmax(device_title->get_w(),device_text->get_w()) + xs5;
 	int *output_int = &pwindow->thread->edl->session->vconfig_in->v4l2jpeg_in_fields;
 	fields_title = new BC_Title(x1, y, _("Fields:"), MEDIUMFONT, resources->text_default);
 	dialog->add_subwindow(fields_title);
+	fields_title->context_help_set_keyword("Video Out section");
 	device_fields = new VDeviceTumbleBox(this, x1, y + ys20, output_int, 1, 2, xS(20));
 	device_fields->create_objects();
 	return 0;
@@ -359,12 +377,15 @@ int VDevicePrefs::create_v4l2mpeg_objs()
 	int x1 = x + menu->get_w() + xS(5);
 	output_char = pwindow->thread->edl->session->vconfig_in->v4l2mpeg_in_device;
 	dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Device path:"), MEDIUMFONT, resources->text_default));
+	device_title->context_help_set_keyword("Video Out section");
 	int y1 = y + yS(20);
 	dialog->add_subwindow(device_text = new VDeviceTextBox(x1, y1, output_char));
+	device_text->context_help_set_keyword("Video Out section");
 	x1 += xS(64);  y1 += device_text->get_h() + yS(5);
 	follow_video_config = new BC_CheckBox(x1, y1,
 			&in_config->follow_video, _("Follow video config"));
 	dialog->add_subwindow(follow_video_config);
+	follow_video_config->context_help_set_keyword("Video Out section");
 	return 0;
 }
 
@@ -376,7 +397,9 @@ int VDevicePrefs::create_screencap_objs()
 	int x1 = x + menu->get_w() + xS(5);
 	output_char = pwindow->thread->edl->session->vconfig_in->screencapture_display;
 	dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Display:"), MEDIUMFONT, resources->text_default));
+	device_title->context_help_set_keyword("Video Out section");
 	dialog->add_subwindow(device_text = new VDeviceTextBox(x1, y + yS(20), output_char));
+	device_text->context_help_set_keyword("Video Out section");
 	return 0;
 }
 
@@ -400,8 +423,10 @@ int VDevicePrefs::create_x11_objs()
 	if( driver == PLAYBACK_X11 ) y1 -= yS(10);
 	dialog->add_subwindow(device_title = new BC_Title(x1, y1+yS(4), x11_display,
 			MEDIUMFONT, resources->text_default));
+	device_title->context_help_set_keyword("Video Out section");
 	int x2 = x1 + device_title->get_w() + xS(10), dy = device_title->get_h();
 	dialog->add_subwindow(device_text = new VDeviceTextBox(x2, y1, output_char));
+	device_text->context_help_set_keyword("Video Out section");
 	if( driver == PLAYBACK_X11 ) {
 		int y2 = device_text->get_h();
 		if( dy < y2 ) dy = y2;
@@ -409,6 +434,7 @@ int VDevicePrefs::create_x11_objs()
 		use_direct_x11 = new BC_CheckBox(x1, y1,
 			&out_config->use_direct_x11, _("use direct x11 render if possible"));
 		dialog->add_subwindow(use_direct_x11);
+		use_direct_x11->context_help_set_keyword("Video Out section");
 	}
 	return 0;
 }

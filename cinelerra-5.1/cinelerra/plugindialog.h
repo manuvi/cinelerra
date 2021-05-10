@@ -193,6 +193,7 @@ public:
 
 	int handle_event();
 	int selection_changed();
+	int keypress_event();
 	PluginDialog *dialog;
 };
 

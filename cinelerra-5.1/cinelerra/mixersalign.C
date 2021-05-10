@@ -521,6 +521,8 @@ MixersAlignWindow::MixersAlignWindow(MixersAlign *dialog, int x, int y)
  : BC_Window(_("Align Mixers"), x, y, xS(880), yS(380), xS(880), yS(380), 1)
 {
 	this->dialog = dialog;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Video sync using Waveforms");
 }
 MixersAlignWindow::~MixersAlignWindow()
 {

@@ -131,6 +131,8 @@ ShBtnEditWindow::ShBtnEditWindow(ShBtnEditDialog *shbtn_edit, int x, int y)
 {
 	this->shbtn_edit = shbtn_edit;
 	sb_dialog = 0;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Menu Bar Shell Commands");
 }
 
 ShBtnEditWindow::~ShBtnEditWindow()
@@ -224,6 +226,8 @@ ShBtnTextWindow::ShBtnTextWindow(ShBtnEditWindow *sb_window, int x, int y)
         this->sb_window = sb_window;
 	warn = sb_window->sb_dialog->pref->warn;
 	run_script = sb_window->sb_dialog->pref->run_script;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Menu Bar Shell Commands");
 }
 
 ShBtnTextWindow::~ShBtnTextWindow()
@@ -435,6 +439,8 @@ MainShBtns::MainShBtns(MWindow *mwindow, int x, int y)
 {
 	this->mwindow = mwindow;
 	set_tooltip(_("shell cmds"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Menu Bar Shell Commands");
 }
 
 int MainShBtns::load(Preferences *preferences)

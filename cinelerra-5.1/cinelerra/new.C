@@ -307,6 +307,8 @@ NewWindow::NewWindow(MWindow *mwindow, NewThread *new_thread, int x, int y)
 	folder = 0;
 	name = 0;
 	recent_folder = 0;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Project and Media Attributes");
 }
 
 NewWindow::~NewWindow()
@@ -712,6 +714,8 @@ FrameRatePulldown::FrameRatePulldown(MWindow *mwindow,
 {
 	this->mwindow = mwindow;
 	this->output = output;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Video In section");
 }
 int FrameRatePulldown::handle_event()
 {

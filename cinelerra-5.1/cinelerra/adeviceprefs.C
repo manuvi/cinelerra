@@ -117,6 +117,7 @@ int ADevicePrefs::initialize(int creation)
 		dialog->add_subwindow(menu = new ADriverMenu(x,
 			y + yS(10), this, (mode == MODERECORD), driver));
 		menu->create_objects();
+		menu->context_help_set_keyword("Audio Out section");
 	}
 
 	switch(*driver) {
@@ -321,11 +322,13 @@ int ADevicePrefs::create_oss_objs()
 			path_title = new BC_Title(x1, y, _("Device path:"),
 				MEDIUMFONT, resources->text_default);
 			dialog->add_subwindow(path_title);
+			path_title->context_help_set_keyword("Audio Out section");
 		}
 
 		oss_path[i] = new ADeviceTextBox(
 			x1, y1 + path_title->get_h() + margin, output_char);
 		dialog->add_subwindow(oss_path[i]);
+		oss_path[i]->context_help_set_keyword("Audio Out section");
 		x1 += oss_path[i]->get_w() + margin;
 		if(i == 0) {
 			switch(mode) {
@@ -342,6 +345,7 @@ int ADevicePrefs::create_oss_objs()
 			bits_title = new BC_Title(x1, y, _("Bits:"),
 					MEDIUMFONT, resources->text_default);
 			dialog->add_subwindow(bits_title);
+			bits_title->context_help_set_keyword("Audio Out section");
 			oss_bits = new BitsPopup(dialog,
 				x1, y1 + bits_title->get_h() + margin, 
 				output_int, 0, 0, 0, 0, 1);
@@ -392,6 +396,7 @@ int ADevicePrefs::create_alsa_objs()
 	path_title = new BC_Title(x1, y, _("Device:"),
 			MEDIUMFONT, resources->text_default);
 	dialog->add_subwindow(path_title);
+	path_title->context_help_set_keyword("Audio Out section");
 	y1 += path_title->get_h() + margin;
 	alsa_device = new ALSADevice(dialog,
 		x1, y1, output_char, alsa_drivers);
@@ -413,6 +418,7 @@ int ADevicePrefs::create_alsa_objs()
 	bits_title = new BC_Title(x1, y, _("Bits:"),
 			MEDIUMFONT, resources->text_default);
 	dialog->add_subwindow(bits_title);
+	bits_title->context_help_set_keyword("Audio Out section");
 	y1 = y + bits_title->get_h() + margin;
 	alsa_bits = new BitsPopup(dialog,
 			x1, y1, output_int, 0, 0, 0, 0, 1);
@@ -426,6 +432,7 @@ int ADevicePrefs::create_alsa_objs()
 				&out_config->interrupt_workaround,
 				_("Stop playback locks up."));
 		dialog->add_subwindow(alsa_workaround);
+		alsa_workaround->context_help_set_keyword("Audio Out section");
 	}
 #endif
 	return 0;
@@ -452,8 +459,10 @@ int ADevicePrefs::create_esound_objs()
 	server_title = new BC_Title(x1, y, _("Server:"),
 			MEDIUMFONT, resources->text_default);
 	dialog->add_subwindow(server_title);
+	server_title->context_help_set_keyword("Audio Out section");
 	server = new ADeviceTextBox(x1, y + yS(20), output_char);
 	dialog->add_subwindow(server);
+	server->context_help_set_keyword("Audio Out section");
 
 	switch(mode) {
 	case MODEPLAY:
@@ -470,8 +479,10 @@ int ADevicePrefs::create_esound_objs()
 	port_title = new BC_Title(x1, y, _("Port:"),
 			MEDIUMFONT, resources->text_default);
 	dialog->add_subwindow(port_title);
+	port_title->context_help_set_keyword("Audio Out section");
 	port = new ADeviceIntBox(x1, y + yS(20), output_int);
 	dialog->add_subwindow(port);
+	port->context_help_set_keyword("Audio Out section");
 	return 0;
 }
 
@@ -501,7 +512,9 @@ int ADevicePrefs::create_firewire_objs()
 
 	if(output_char) {
 		dialog->add_subwindow(path_title = new BC_Title(x1, y, _("Device Path:"), MEDIUMFONT, resources->text_default));
+		path_title->context_help_set_keyword("Audio Out section");
 		dialog->add_subwindow(firewire_path = new ADeviceTextBox(x1, y + ys20, output_char));
+		firewire_path->context_help_set_keyword("Audio Out section");
 		x1 += firewire_path->get_w() + xs5;
 	}
 
@@ -523,8 +536,10 @@ int ADevicePrefs::create_firewire_objs()
 	port_title = new BC_Title(x1, y, _("Port:"),
 			MEDIUMFONT, resources->text_default);
 	dialog->add_subwindow(port_title);
+	port_title->context_help_set_keyword("Audio Out section");
 	firewire_port = new ADeviceIntBox(x1, y + ys20, output_int);
 	dialog->add_subwindow(firewire_port);
+	firewire_port->context_help_set_keyword("Audio Out section");
 
 	x1 += firewire_port->get_w() + xs5;
 
@@ -543,8 +558,10 @@ int ADevicePrefs::create_firewire_objs()
 	channel_title = new BC_Title(x1, y, _("Channel:"),
 			MEDIUMFONT, resources->text_default);
 	dialog->add_subwindow(channel_title);
+	channel_title->context_help_set_keyword("Audio Out section");
 	firewire_channel = new ADeviceIntBox(x1, y + ys20, output_int);
 	dialog->add_subwindow(firewire_channel);
+	firewire_channel->context_help_set_keyword("Audio Out section");
 	x1 += firewire_channel->get_w() + xs5;
 
 // Syt offset
@@ -567,8 +584,10 @@ int ADevicePrefs::create_firewire_objs()
 		syt_title = new BC_Title(x1, y, _("Syt Offset:"),
 				MEDIUMFONT, resources->text_default);
 		dialog->add_subwindow(syt_title);
+		syt_title->context_help_set_keyword("Audio Out section");
 		firewire_syt = new ADeviceIntBox(x1, y + ys20, output_int);
 		dialog->add_subwindow(firewire_syt);
+		firewire_syt->context_help_set_keyword("Audio Out section");
 		x1 += firewire_syt->get_w() + xs5;
 	}
 
@@ -587,12 +606,15 @@ int ADevicePrefs::create_dvb_objs()
 	dvb_adapter_title = new BC_Title(x1, y2, _("DVB Adapter:"),
 			MEDIUMFONT, resources->text_default);
 	dialog->add_subwindow(dvb_adapter_title);
+	dvb_adapter_title->context_help_set_keyword("Audio Out section");
 	dvb_adapter_path = new ADeviceTextBox(x1, y1, output_char);
 	dialog->add_subwindow(dvb_adapter_path);
+	dvb_adapter_path->context_help_set_keyword("Audio Out section");
 	int x2 = x1 + dvb_adapter_path->get_w() + xS(5);
 	dvb_device_title = new BC_Title(x2, y2, _("dev:"),
 			MEDIUMFONT, resources->text_default);
 	dialog->add_subwindow(dvb_device_title);
+	dvb_device_title->context_help_set_keyword("Audio Out section");
 	int *output_int = &in_config->dvb_in_device;
 	dvb_adapter_device = new ADeviceTumbleBox(this, x2, y1, output_int, 0, 9, xS(20));
 	dvb_adapter_device->create_objects();
@@ -600,6 +622,7 @@ int ADevicePrefs::create_dvb_objs()
 	bits_title = new BC_Title(x2, y2, _("Bits:"),
 			MEDIUMFONT, resources->text_default);
 	dialog->add_subwindow(bits_title);
+	bits_title->context_help_set_keyword("Audio Out section");
 	output_int = &in_config->dvb_in_bits;
 	dvb_bits = new BitsPopup(dialog, x2, y1, output_int, 0, 0, 0, 0, 1);
 	dvb_bits->create_objects();
@@ -607,6 +630,7 @@ int ADevicePrefs::create_dvb_objs()
 	output_int =  &in_config->follow_audio;
 	follow_audio_config = new BC_CheckBox(x1, y1, output_int, _("Follow audio config"));
 	dialog->add_subwindow(follow_audio_config);
+	follow_audio_config->context_help_set_keyword("Audio Out section");
 	return 0;
 }
 
@@ -619,6 +643,7 @@ int ADevicePrefs::create_v4l2mpeg_objs()
 	bits_title = new BC_Title(x1, y2, _("Bits:"),
 			MEDIUMFONT, resources->text_default);
 	dialog->add_subwindow(bits_title);
+	bits_title->context_help_set_keyword("Audio Out section");
 	int *output_int = &in_config->v4l2_in_bits;
 	v4l2_bits = new BitsPopup(dialog, x1, y1, output_int, 0, 0, 0, 0, 1);
 	v4l2_bits->create_objects();
@@ -626,6 +651,7 @@ int ADevicePrefs::create_v4l2mpeg_objs()
 	follow_audio_config = new BC_CheckBox(x1, y1,
 			&in_config->follow_audio, _("Follow audio config"));
 	dialog->add_subwindow(follow_audio_config);
+	follow_audio_config->context_help_set_keyword("Audio Out section");
 	return 0;
 }
 
@@ -646,8 +672,10 @@ int ADevicePrefs::create_pulse_objs()
 	x1 += menu->get_w() + xS(5);
 	dialog->add_subwindow(server_title = new BC_Title(x1, y1,
 		_("Server (blank for default):")));
+	server_title->context_help_set_keyword("Audio Out section");
 	y1 += server_title->get_h() + yS(5);
 	dialog->add_subwindow(server = new ADeviceTextBox(x1, y1, output_char));
+	server->context_help_set_keyword("Audio Out section");
 #endif
 	return 0;
 }

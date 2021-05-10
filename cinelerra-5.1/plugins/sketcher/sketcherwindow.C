@@ -816,7 +816,7 @@ int SketcherWindow::keypress_event()
 			del_curve->handle_event() :
 			del_point->handle_event() ;
 	}
-	return 0;
+	return context_help_check_and_show();
 }
 
 

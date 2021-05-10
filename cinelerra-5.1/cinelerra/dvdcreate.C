@@ -645,7 +645,7 @@ int CreateDVD_OK::button_press_event()
 
 int CreateDVD_OK::keypress_event()
 {
-	return 0;
+	return context_help_check_and_show();
 }
 
 
@@ -873,6 +873,8 @@ CreateDVD_GUI::CreateDVD_GUI(CreateDVD_Thread *thread, int x, int y, int w, int 
 	need_farmed = 0;
 	ok = 0;
 	cancel = 0;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("DVD and Bluray Creation");
 }
 
 CreateDVD_GUI::~CreateDVD_GUI()

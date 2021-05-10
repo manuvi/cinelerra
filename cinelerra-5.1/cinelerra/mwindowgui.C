@@ -128,6 +128,8 @@ MWindowGUI::MWindowGUI(MWindow *mwindow)
 	cwindow_remote_handler = 0;
 	record_remote_handler = 0;
 	android_control = 0;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Program Window");
 }
 
 
@@ -1313,6 +1315,9 @@ int MWindowGUI::keypress_event()
 	if(result)
 		cursor_motion_event();
 
+	if(!result)
+		result = context_help_check_and_show();
+
 	return result;
 }
 
@@ -2371,6 +2376,8 @@ FFMpegToggle::FFMpegToggle(MWindow *mwindow, MButtons *mbuttons, int x, int y)
 	this->mwindow = mwindow;
 	this->mbuttons = mbuttons;
 	set_tooltip(get_value() ? FFMPEG_EARLY_TIP : FFMPEG_LATE_TIP);
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("FFmpeg Early Probe Explanation");
 }
 
 FFMpegToggle::~FFMpegToggle()
@@ -2395,6 +2402,8 @@ StackButton::StackButton(MWindow *mwindow, int x, int y)
 {
 	this->mwindow = mwindow;
 	set_tooltip(_("Close EDL"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("OpenEDL");
 }
 
 int StackButton::handle_event()
@@ -2425,6 +2434,8 @@ ProxyToggle::ProxyToggle(MWindow *mwindow, MButtons *mbuttons, int x, int y)
 	scaler_images = mwindow->edl->session->proxy_use_scaler;
 	set_tooltip(mwindow->edl->session->proxy_state!=PROXY_DISABLED ?
 		_("Disable proxy") : _("Enable proxy"));
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Proxy");
 }
 
 void ProxyToggle::show()
@@ -2478,6 +2489,6 @@ int ProxyToggle::keypress_event()
 			return handle_event();
 		}
 	}
-	return 0;
+	return context_help_check_and_show();
 }
 

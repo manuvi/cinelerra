@@ -189,7 +189,7 @@ int AVC1394GUISeekStart::handle_event()
 int  AVC1394GUISeekStart::keypress_event()
 {
 	if(get_keypress() == HOME) return handle_event();
-	return 0;
+	return context_help_check_and_show();
 }
 
 
@@ -214,7 +214,7 @@ int AVC1394GUIRewind::handle_event()
 int  AVC1394GUIRewind::keypress_event()
 {
 	if(get_keypress() == KPPLUS) return handle_event();
-	return 0;
+	return context_help_check_and_show();
 }
 
 AVC1394GUIReverse::AVC1394GUIReverse(MWindow *mwindow, AVC1394Control *avc, int x, int y)
@@ -246,7 +246,7 @@ int AVC1394GUIReverse::handle_event()
 int AVC1394GUIReverse::keypress_event()
 {
 	if(get_keypress() == KP6) return handle_event();
-	return 0;
+	return context_help_check_and_show();
 }
 
 AVC1394GUIStop::AVC1394GUIStop(MWindow *mwindow, AVC1394Control *avc, int x, int y)
@@ -270,7 +270,7 @@ int AVC1394GUIStop::handle_event()
 int AVC1394GUIStop::keypress_event()
 {
 	if(get_keypress() == KPINS) return handle_event();
-	return 0;
+	return context_help_check_and_show();
 }
 
 AVC1394GUIPlay::AVC1394GUIPlay(MWindow *mwindow, AVC1394Control *avc, int x, int y)
@@ -303,7 +303,7 @@ int AVC1394GUIPlay::handle_event()
 int AVC1394GUIPlay::keypress_event()
 {
 	if(get_keypress() == KP3) return handle_event();
-	return 0;
+	return context_help_check_and_show();
 }
 
 AVC1394GUIPause::AVC1394GUIPause(MWindow *mwindow, AVC1394Control *avc, int x,
@@ -327,7 +327,7 @@ int AVC1394GUIPause::handle_event()
 
 int AVC1394GUIPause::keypress_event()
 {
-    return 0;
+    return context_help_check_and_show();
 }
 
 AVC1394GUIFForward::AVC1394GUIFForward(MWindow *mwindow, AVC1394Control *avc, int x, int y)
@@ -351,7 +351,7 @@ int AVC1394GUIFForward::handle_event()
 int AVC1394GUIFForward::keypress_event()
 {
  	if(get_keypress() == KPENTER) return handle_event();
-    return 0;
+	return context_help_check_and_show();
 }
 
 
@@ -379,7 +379,7 @@ int AVC1394GUISeekEnd::handle_event()
 int AVC1394GUISeekEnd::keypress_event()
 {
 	if(get_keypress() == END) return handle_event();
-     return 0;
+	return context_help_check_and_show();
 }
 
 #endif

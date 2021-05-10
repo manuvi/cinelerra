@@ -158,10 +158,646 @@ void TrackCanvas::resize_event()
 //printf("TrackCanvas::resize_event 2\n");
 }
 
+// *** CONTEXT_HELP ***
+// This complicated implementation (up to *** END_CONTEXT_HELP ***)
+// serves solely for context dependent help
 int TrackCanvas::keypress_event()
 {
+	int cursor_x, cursor_y;
+
+//	printf("TrackCanvas::keypress_event: %d\n", get_keypress());
+	if (get_keypress() != 'h' || ! alt_down())	   return 0;
+	if (! is_tooltip_event_win() || ! cursor_inside()) return 0;
+
+	cursor_x = get_cursor_x();
+	cursor_y = get_cursor_y();
+
+// Provide different help depending on the kind of object under the cursor:
+// transition border handles
+// transition icons themselves
+// autos (keyframes or lines) and plugin keyframes
+// asset border handles
+// plugin border handles
+// plugin bars themselves
+	if (help_transition_handles(cursor_x, cursor_y)) return 1;
+	if (help_transitions(cursor_x, cursor_y))        return 1;
+	if (help_keyframes(cursor_x, cursor_y))          return 1;
+	if (help_edit_handles(cursor_x, cursor_y))       return 1;
+	if (help_plugin_handles(cursor_x, cursor_y))     return 1;
+	if (help_plugins(cursor_x, cursor_y))            return 1;
+
+// Show "Editing" chapter as a fallback when cursor was over anything else
+	context_help_show("Editing");
+	return 1;
+}
+
+int TrackCanvas::help_transitions(int cursor_x, int cursor_y)
+{
+	int done = 0;
+	int64_t x, y, w, h;
+	Transition *transition = 0;
+
+	// Detect, if any, the transition under cursor
+	for( Track *track = mwindow->edl->tracks->first; track && !done; track = track->next ) {
+		if( track->is_hidden() ) continue;
+		if( !track->show_transitions() ) continue;
+
+		for( Edit *edit = track->edits->first; edit; edit = edit->next ) {
+			if( edit->transition ) {
+				edit_dimensions(edit, x, y, w, h);
+				get_transition_coords(edit, x, y, w, h);
+
+				if( MWindowGUI::visible(x, x + w, 0, get_w()) &&
+					MWindowGUI::visible(y, y + h, 0, get_h()) ) {
+					if( cursor_x >= x && cursor_x < x + w &&
+						cursor_y >= y && cursor_y < y + h ) {
+						transition = edit->transition;
+						done = 1;
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	// If transition found, display its context help
+	if(transition) {
+		context_help_show(transition->title);
+		return 1;
+	}
+
 	return 0;
 }
+
+int TrackCanvas::help_keyframes(int cursor_x, int cursor_y)
+{
+	int result = 0;
+	EDLSession *session = mwindow->edl->session;
+
+	static BC_Pixmap *help_pixmaps[AUTOMATION_TOTAL] =
+	{
+		0, 0, 0, 0, 0, 0, 0, 0,
+		pankeyframe_pixmap,
+		modekeyframe_pixmap,
+		maskkeyframe_pixmap,
+		0,
+	};
+
+	for(Track *track = mwindow->edl->tracks->first;
+		track && !result;
+		track = track->next) {
+		if( track->is_hidden() ) continue;
+		Automation *automation = track->automation;
+
+		for(int i = 0; i < AUTOMATION_TOTAL && !result; i ++)
+		{
+// Event not trapped and automation visible
+			Autos *autos = automation->autos[i];
+			if(!result && session->auto_conf->autos[i] && autos) {
+				switch(i) {
+				case AUTOMATION_MODE:
+				case AUTOMATION_PAN:
+				case AUTOMATION_MASK:
+					result = help_autos(track, automation->autos[i],
+						cursor_x, cursor_y,
+						help_pixmaps[i]);
+						break;
+
+				default: {
+					switch(autos->get_type()) {
+					case Autos::AUTOMATION_TYPE_FLOAT: {
+						Automation automation(0, track);
+						int grouptype = automation.autogrouptype(i, track);
+
+						result = help_float_autos(track, autos,
+							cursor_x, cursor_y,
+							grouptype);
+
+						break; }
+
+					case Autos::AUTOMATION_TYPE_INT: {
+						result = help_int_autos(track, autos,
+							cursor_x, cursor_y);
+						break; }
+					}
+					break; }
+				}
+
+				if(result)
+				{
+					context_help_show("Using Autos");
+				}
+			}
+		}
+
+		if(!result && session->auto_conf->plugins) {
+			result = help_plugin_autos(track, cursor_x, cursor_y);
+			if(result) {
+				context_help_show("Edit Params");
+			}
+		}
+	}
+
+	return result;
+}
+
+int TrackCanvas::help_plugin_autos(Track *track, int cursor_x, int cursor_y)
+{
+	int result = 0;
+
+	double view_start;
+	double unit_start;
+	double view_end;
+	double unit_end;
+	double yscale;
+	int center_pixel;
+	double zoom_sample;
+	double zoom_units;
+
+	if(!track->expand_view) return 0;
+
+	calculate_viewport(track,
+		view_start,
+		unit_start,
+		view_end,
+		unit_end,
+		yscale,
+		center_pixel,
+		zoom_sample,
+		zoom_units);
+
+	for(int i = 0; i < track->plugin_set.total && !result; i++)
+	{
+		PluginSet *plugin_set = track->plugin_set.values[i];
+		int center_pixel = track->y_pixel -
+			mwindow->edl->local_session->track_start[pane->number];
+		if( track->show_titles() )
+			center_pixel += mwindow->theme->get_image("title_bg_data")->get_h();
+		if( track->show_assets() )
+			center_pixel += track->data_h;
+		center_pixel += (i + 0.5) * mwindow->theme->get_image("plugin_bg_data")->get_h();
+
+		for(Plugin *plugin = (Plugin*)plugin_set->first;
+			plugin && !result;
+			plugin = (Plugin*)plugin->next)
+		{
+			for(KeyFrame *keyframe = (KeyFrame*)plugin->keyframes->first;
+				keyframe && !result;
+				keyframe = (KeyFrame*)keyframe->next)
+			{
+				if(keyframe->position >= unit_start && keyframe->position < unit_end)
+				{
+					int64_t x = (int64_t)((keyframe->position - unit_start) / zoom_units);
+					int y = center_pixel - keyframe_pixmap->get_h() / 2;
+
+					if(cursor_x >= x && cursor_y >= y &&
+						cursor_x < x + keyframe_pixmap->get_w() &&
+						cursor_y < y + keyframe_pixmap->get_h())
+					{
+						result = 1;
+					}
+				}
+			}
+		}
+	}
+
+	return result;
+}
+
+int TrackCanvas::help_autos(Track *track, Autos *autos, int cursor_x,
+		int cursor_y, BC_Pixmap *pixmap)
+{
+	int result = 0;
+
+	double view_start;
+	double unit_start;
+	double view_end;
+	double unit_end;
+	double yscale;
+	int center_pixel;
+	double zoom_sample;
+	double zoom_units;
+
+	calculate_viewport(track,
+		view_start,
+		unit_start,
+		view_end,
+		unit_end,
+		yscale,
+		center_pixel,
+		zoom_sample,
+		zoom_units);
+
+	Auto *current;
+
+	for(current = autos->first; current && !result; current = NEXT)
+	{
+		if(current->position >= unit_start && current->position < unit_end)
+		{
+			int64_t x, y;
+			x = (int64_t)((double)(current->position - unit_start) /
+				zoom_units - (pixmap->get_w() / 2.0 + 0.5));
+			y = center_pixel - pixmap->get_h() / 2;
+
+			if(cursor_x >= x && cursor_y >= y &&
+				cursor_x < x + pixmap->get_w() &&
+				cursor_y < y + pixmap->get_h())
+			{
+				result = 1;
+			}
+		}
+	}
+
+	return result;
+}
+
+int TrackCanvas::help_float_autos(Track *track, Autos *autos, int cursor_x, int cursor_y, int autogrouptype)
+{
+	int result = 0;
+	int center_pixel;
+	double view_start, unit_start;
+	double view_end, unit_end, yscale;
+	double zoom_sample, zoom_units;
+	double slope;
+
+	calculate_viewport(track, view_start, unit_start, view_end, unit_end,
+			yscale, center_pixel, zoom_sample, zoom_units);
+
+// Get first auto before start
+	Auto *current = 0, *previous = 0;
+
+	for( current = autos->last;
+		current && current->position >= unit_start;
+		current = PREVIOUS ) ;
+
+	Auto *first_auto = current ? current :
+		 autos->first ? autos->first : autos->default_auto;
+
+	double ax = 0, ay = 0, ax2 = 0, ay2 = 0;
+	if( first_auto ) {
+		calculate_auto_position(0, &ax, &ay, 0, 0, 0, 0,
+			first_auto, unit_start, zoom_units, yscale, autogrouptype);
+	}
+	if( current )
+		current = NEXT;
+	else {
+		current = autos->first;
+		ax = 0;
+	}
+
+	do {
+		if(current) {
+			calculate_auto_position(1, &ax2, &ay2, 0, 0, 0, 0,
+				current, unit_start, zoom_units, yscale, autogrouptype);
+		}
+		else {
+			ax2 = get_w();
+			ay2 = ay;
+		}
+
+		slope = ax2 > ax ? (ay2 - ay) / (ax2 - ax) : 0;
+
+		if(ax2 > get_w()) {
+			ax2 = get_w();
+			ay2 = ay + slope * (get_w() - ax);
+		}
+
+		if(ax < 0) {
+			ay = ay + slope * (0 - ax);
+			ax = 0;
+		}
+
+// test handle
+		if( current && !result && current != autos->default_auto ) {
+			if( track->is_armed() ) {
+				result = test_floatauto((FloatAuto*)current, 0,
+					(int)center_pixel, (int)yscale, cursor_x, cursor_y,
+					unit_start, zoom_units, yscale, autogrouptype);
+			}
+		}
+
+// test joining line
+		if( !result && track->is_armed() ) {
+			result = test_floatline(center_pixel,
+				(FloatAutos*)autos, unit_start, zoom_units, yscale,
+// Exclude auto coverage from the end of the line.  The auto overlaps
+				(int)ax, (int)ax2 - HANDLE_W / 2, cursor_x, cursor_y,
+				0, autogrouptype);
+		}
+
+		if( current ) {
+			previous = current;
+			calculate_auto_position(0, &ax2, &ay2, 0, 0, 0, 0, previous,
+				unit_start, zoom_units, yscale, autogrouptype);
+			current = NEXT;
+		}
+		ax = ax2;  ay = ay2;
+	} while( current && current->position <= unit_end && !result );
+
+	if( ax < get_w() && !result ) {
+		ax2 = get_w();  ay2 = ay;
+		if(track->is_armed()) {
+			result = test_floatline(center_pixel,
+				(FloatAutos*)autos, unit_start, zoom_units, yscale,
+				(int)ax, (int)ax2, cursor_x, cursor_y,
+				0, autogrouptype);
+		}
+	}
+
+	return result;
+}
+
+int TrackCanvas::help_int_autos(Track *track, Autos *autos, int cursor_x, int cursor_y)
+{
+	int result = 0;
+	double view_start;
+	double unit_start;
+	double view_end;
+	double unit_end;
+	double yscale;
+	int center_pixel;
+	double zoom_sample;
+	double zoom_units;
+	double ax, ay, ax2, ay2;
+
+	calculate_viewport(track,
+		view_start,
+		unit_start,
+		view_end,
+		unit_end,
+		yscale,
+		center_pixel,
+		zoom_sample,
+		zoom_units);
+
+	double high = -yscale * 0.8 / 2;
+	double low = yscale * 0.8 / 2;
+
+// Get first auto before start
+	Auto *current;
+	for(current = autos->last; current && current->position >= unit_start; current = PREVIOUS)
+		;
+
+	if(current)
+	{
+		ax = 0;
+		ay = ((IntAuto*)current)->value > 0 ? high : low;
+		current = NEXT;
+	}
+	else
+	{
+		current = autos->first ? autos->first : autos->default_auto;
+		if(current)
+		{
+			ax = 0;
+			ay = ((IntAuto*)current)->value > 0 ? high : low;
+		}
+		else
+		{
+			ax = 0;
+			ay = yscale;
+		}
+	}
+
+	do
+	{
+		if(current)
+		{
+			ax2 = (double)(current->position - unit_start) / zoom_units;
+			ay2 = ((IntAuto*)current)->value > 0 ? high : low;
+		}
+		else
+		{
+			ax2 = get_w();
+			ay2 = ay;
+		}
+
+		if(ax2 > get_w()) ax2 = get_w();
+
+		if(current && !result)
+		{
+			if(current != autos->default_auto)
+			{
+				if(track->is_armed())
+				{
+					result = test_auto(current,
+						(int)ax2,
+						(int)ay2,
+						(int)center_pixel,
+						(int)yscale,
+						cursor_x,
+						cursor_y,
+						0);
+				}
+			}
+
+			current = NEXT;
+		}
+
+		if(!result)
+		{
+			if(track->is_armed())
+			{
+				result = test_toggleline(autos,
+					center_pixel,
+					(int)ax,
+					(int)ay,
+					(int)ax2,
+					(int)ay2,
+					cursor_x,
+					cursor_y,
+					0);
+			}
+		}
+
+		ax = ax2;
+		ay = ay2;
+	}while(current && current->position <= unit_end && !result);
+
+	if(ax < get_w() && !result)
+	{
+		ax2 = get_w();
+		ay2 = ay;
+		if(track->is_armed())
+		{
+			result = test_toggleline(autos,
+				center_pixel,
+				(int)ax,
+				(int)ay,
+				(int)ax2,
+				(int)ay2,
+				cursor_x,
+				cursor_y,
+				0);
+		}
+	}
+	return result;
+}
+
+int TrackCanvas::help_transition_handles(int cursor_x, int cursor_y)
+{
+	if( !mwindow->edl->session->auto_conf->transitions )
+		return 0;
+	int result = 0;
+
+	Track *track = mwindow->edl->tracks->first;
+	for( ; track && !result; track=track->next) {
+		if( track->is_hidden() ) continue;
+		Edit *edit = track->edits->first;
+		for( ; edit && !result; edit=edit->next ) {
+			Transition *trans = edit->transition;
+			if( !trans ) continue;
+			int64_t x, y, w, h;
+			edit_dimensions(edit, x, y, w, h);
+			int strip_x = x, edit_y = y;
+			get_transition_coords(edit, x, y, w, h);
+			VFrame *strip = mwindow->theme->get_image("plugin_bg_data");
+			int strip_y = y - strip->get_h();
+			if( track->show_assets() && track->show_titles() )
+				edit_y += mwindow->theme->get_image("title_bg_data")->get_h();
+			if( strip_y < edit_y ) strip_y = edit_y;
+			int strip_w = Units::round(edit->track->from_units(edit->transition->length) *
+				mwindow->edl->session->sample_rate / mwindow->edl->local_session->zoom_sample);
+			int x1 = strip_x + strip_w - HANDLE_W/2, x2 = x1 + HANDLE_W;
+			int y1 = strip_y + strip->get_h()/2 - HANDLE_H/2, y2 = y1 + HANDLE_W;
+			if( cursor_x >= x1 && cursor_x < x2 &&
+			    cursor_y >= y1 && cursor_y < y2 ) {
+				result = 1;
+			}
+		}
+	}
+
+	if( result ) {
+		context_help_show("Editing Effects");
+	}
+
+	return result;
+}
+
+int TrackCanvas::help_edit_handles(int cursor_x, int cursor_y)
+{
+	int result = 0;
+
+	for( Track *track=mwindow->edl->tracks->first; track && !result; track=track->next) {
+		if( track->is_hidden() ) continue;
+		for( Edit *edit=track->edits->first; edit && !result; edit=edit->next ) {
+			int64_t edit_x, edit_y, edit_w, edit_h;
+			edit_dimensions(edit, edit_x, edit_y, edit_w, edit_h);
+
+			if( cursor_x >= edit_x && cursor_x <= edit_x + edit_w &&
+			    cursor_y >= edit_y && cursor_y < edit_y + edit_h &&
+			    ( cursor_x < edit_x + HANDLE_W ||
+			      cursor_x >= edit_x + edit_w - HANDLE_W )) {
+				result = 1;
+			}
+		}
+	}
+
+	if( result ) {
+		context_help_show("Trimming");
+	}
+
+	return result;
+}
+
+int TrackCanvas::help_plugin_handles(int cursor_x, int cursor_y)
+{
+	int result = 0;
+
+	for(Track *track = mwindow->edl->tracks->first;
+		track && !result;
+		track = track->next) {
+		if( track->is_hidden() ) continue;
+		for(int i = 0; i < track->plugin_set.total && !result; i++) {
+			PluginSet *plugin_set = track->plugin_set.values[i];
+			for(Plugin *plugin = (Plugin*)plugin_set->first;
+				plugin && !result;
+				plugin = (Plugin*)plugin->next) {
+				int64_t plugin_x, plugin_y, plugin_w, plugin_h;
+				plugin_dimensions(plugin, plugin_x, plugin_y, plugin_w, plugin_h);
+
+				if(cursor_x >= plugin_x && cursor_x <= plugin_x + plugin_w &&
+				   cursor_y >= plugin_y && cursor_y < plugin_y + plugin_h &&
+				   (cursor_x < plugin_x + HANDLE_W ||
+				    cursor_x >= plugin_x + plugin_w - HANDLE_W)) {
+					result = 1;
+				}
+			}
+		}
+	}
+
+	if(result) {
+		context_help_show("Editing Effects");
+	}
+
+	return result;
+}
+
+int TrackCanvas::help_plugins(int cursor_x, int cursor_y)
+{
+	int done = 0;
+	int64_t x, y, w, h;
+	Track *track = 0;
+	Plugin *plugin = 0;
+	char title[BCTEXTLEN];
+
+	// Detect, if any, the plugin under cursor
+	for(track = mwindow->edl->tracks->first; track && !done; track = track->next) {
+		if(!track->expand_view) continue;
+
+		for(int i = 0; i < track->plugin_set.total && !done; i++) {
+			// first check if plugins are visible at all
+			if (!track->expand_view)
+				continue;
+			PluginSet *plugin_set = track->plugin_set.values[i];
+			for(plugin = (Plugin*)plugin_set->first;
+				plugin && !done;
+				plugin = (Plugin*)plugin->next) {
+				plugin_dimensions(plugin, x, y, w, h);
+				if(MWindowGUI::visible(x, x + w, 0, get_w()) &&
+					MWindowGUI::visible(y, y + h, 0, get_h())) {
+					if(cursor_x >= x && cursor_x < x + w &&
+						cursor_y >= y && cursor_y < y + h) {
+						done = 1;
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	// If plugin found, display its context help
+	if(plugin) {
+		strcpy(title, plugin->title);
+		if(! strcmp(title, "Overlay"))
+			// "Overlay" plugin title is ambiguous
+			switch(plugin->track->data_type)
+			{
+			case TRACK_AUDIO:
+				strcat(title, " \\(Audio\\)");
+				break;
+			case TRACK_VIDEO:
+				strcat(title, " \\(Video\\)");
+				break;
+			}
+		if(! strncmp(title, "F_", 2))
+			// FFmpeg plugins can be audio or video
+			switch(plugin->track->data_type)
+			{
+			case TRACK_AUDIO:
+				strcpy(title, "FFmpeg Audio Plugins");
+				break;
+			case TRACK_VIDEO:
+				strcpy(title, "FFmpeg Video Plugins");
+				break;
+			}
+		context_help_show(title);
+		return 1;
+	}
+
+	return 0;
+}
+// *** END_CONTEXT_HELP ***
 
 int TrackCanvas::cursor_leave_event()
 {

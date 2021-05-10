@@ -553,6 +553,11 @@ void Shuttle::key(unsigned short code, unsigned int value)
 		fprintf(stderr, "key(%d, %d) out of range\n", code + EVENT_CODE_KEY1, value);
 		return;
 	}
+// Show help if both Alt's pressed on keyboard together with a shuttle button
+	if( wdw && wdw->alt_down() ) {
+		if( value ) wdw->context_help_show("Shuttle key default arrangement");
+		return;
+	}
 	send_stroke_sequence(value ? KJS_KEY_DOWN : KJS_KEY_UP, code);
 }
 

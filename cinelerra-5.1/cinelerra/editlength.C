@@ -124,6 +124,8 @@ EditLengthDialog::EditLengthDialog(MWindow *mwindow,
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Edit Length");
 }
 
 EditLengthDialog::~EditLengthDialog()

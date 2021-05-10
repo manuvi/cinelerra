@@ -516,6 +516,8 @@ FFMPEGConfigAudio::FFMPEGConfigAudio(BC_WindowBase *parent_window,
 	audio_options = 0;
 	format_name = asset->fformat;
 	codec_name = asset->acodec;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Options for Render with FFmpeg");
 }
 
 FFMPEGConfigAudio::~FFMPEGConfigAudio()
@@ -681,6 +683,8 @@ FFMPEGConfigVideo::FFMPEGConfigVideo(BC_WindowBase *parent_window,
 	bitrate = 0;
 	quality = 0;
 	video_options = 0;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Options for Render with FFmpeg");
 }
 
 FFMPEGConfigVideo::~FFMPEGConfigVideo()
@@ -847,6 +851,8 @@ FFMPEGConfigFormat::FFMPEGConfigFormat(FFOptionsFormatViewDialog *view_dialog,
 	format_options = 0;
 	format_name = asset->fformat;
 	codec_name = 0;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Modifying FFmpeg Format Options");
 }
 
 FFMPEGConfigFormat::~FFMPEGConfigFormat()
@@ -1593,6 +1599,8 @@ FFOptionsWindow::FFOptionsWindow(FFOptionsDialog *dialog, int x, int y)
 	this->dialog = dialog;
 	this->selected = 0;
 	this->kind = 0;
+// *** CONTEXT_HELP ***
+	context_help_set_keyword("Modifying FFmpeg Format Options");
 }
 
 FFOptionsWindow::~FFOptionsWindow()

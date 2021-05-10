@@ -206,7 +206,7 @@ public:
 	virtual int cursor_motion_event() { return 0; };
 	virtual int cursor_leave_event();
 	virtual int cursor_enter_event();
-	virtual int keypress_event() { return 0; };
+	virtual int keypress_event();
 	virtual int keyrelease_event() { return 0; };
 	virtual int translation_event() { return 0; };
 	virtual int drag_start_event() { return 0; };
@@ -370,6 +370,8 @@ public:
 	BC_WindowBase* get_parent();
 // Event happened in this window
 	int is_event_win();
+// Event happened either in this window or in the associated tooltip
+	int is_tooltip_event_win();
 	int cursor_inside();
 // Deactivate everything and activate this subwindow
 	virtual int activate();
@@ -562,6 +564,14 @@ public:
 	Atom to_clipboard(const char *data, long len, int clipboard_num);
 	long from_clipboard(char *data, long maxlen, int clipboard_num);
 	long clipboard_len(int clipboard_num);
+
+// *** CONTEXT_HELP ***
+	void context_help_set_keyword(const char *keyword);
+	const char *context_help_get_keyword();
+	void context_help_show(const char *keyword);
+	void context_help_show();
+	int context_help_check_and_show(const char *keyword);
+	int context_help_check_and_show();
 
 	int test_keypress;
   	char keys_return[KEYPRESSLEN];
@@ -797,6 +807,9 @@ private:
 // Don't delete the background pixmap
 	int shared_bg_pixmap;
 	char title[BCTEXTLEN];
+
+// *** CONTEXT_HELP ***
+	char context_help_keyword[BCTEXTLEN];
 
 // X Window parameters
 	int screen;
