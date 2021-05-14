@@ -14812,3 +14812,7 @@ msgstr "Desenfoque Zoom"
 #: cinelerra/batchrender.C:1444
 msgid "Open quick start guide in default browser"
 msgstr "Abrir la guía de inicio rápido en su navegador web"
+
+#: cinelerra/appearanceprefs.C:731
+msgid "Autosave continuous backups"
+msgstr "Copia de seguridad continua"

@@ -129,3 +129,6 @@ pistas existentes" esto insertará las imágenes en una pista desbloqueada y al 
 contenido. La duración  de cada imagen será la definida en los ajustes. Ya solo nos resta
 hacer las transiciones y poner música.
 
+Cuando cierre Cinelerra se guardarán unicamente las últimas 50 copias de seguridad. Si
+trabaja durante mucho tiempo sin reiniciar Cinelerra, corre el riesgo de ocupar mucho
+espacio con las continuas copias de seguridad.

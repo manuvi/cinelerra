@@ -33,8 +33,6 @@ $index_node = 'Index.html';
 # Several special plugin names necessary to rewrite
 %rewrite = (
   # Rendered effects and transitions are not segmented in the Contents
-  # CD Ripper is an audio effect but erroneously placed
-  # under Rendered Video Effects in the manual
   "CD Ripper"           => "Rendered Audio Effects",
   "Normalize"           => "Rendered Audio Effects",
   "Resample"            => "Rendered Audio Effects",

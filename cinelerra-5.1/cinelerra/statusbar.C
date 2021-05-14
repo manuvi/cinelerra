@@ -128,7 +128,7 @@ void StatusBar::show_message(const char *text, int msg_color, int box_color)
 void StatusBar::reset_default_message()
 {
 	status_color = -1;
-	strcpy(default_msg, _("Welcome to Cinelerra."));
+	strcpy(default_msg, _("Welcome to CinGG - use ALT+h for context HELP."));
 }
 void StatusBar::update_default_message()
 {
