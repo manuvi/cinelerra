@@ -3,6 +3,13 @@ For usage help, refer to the following:
   https://cinelerra-gg.org/download/CinelerraGG_Manual.pdf
   http://g-raffa.eu/Cinelerra/HOWTO/basics.html
 .
+2021 May New Features of note:
+  Context Help has been added using hotkey Alt/h by Georgy.  The
+   help page will come up in your web browser tab for the item 
+   most relevant to where you used Alt/h on a menu, plugin, button,
+   icon, transition, window, or tooltip.  For additional information:
+   /https://cinelerra-gg.org/download/CinelerraGG_Manual/Troubleshooting_Help.html
+.
 2021 March New Features of note:
   AppImage is the method of dibrusging new releases;
    Newer distros use: CinGG-20210331-x86_64.AppImage 
