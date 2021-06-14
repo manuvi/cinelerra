@@ -1853,12 +1853,15 @@ int FFMPEG::check_sample_rate(AVCodec *codec, int sample_rate)
 	return 0;
 }
 
+// check_frame_rate and std_frame_rate needed for 23.976
+// and 59.94 fps mpeg2
 static inline AVRational std_frame_rate(int i)
 {
 	static const int m1 = 1001*12, m2 = 1000*12;
 	static const int freqs[] = {
 		40*m1, 48*m1, 50*m1, 60*m1, 80*m1,120*m1, 240*m1,
-		24*m2, 30*m2, 60*m2, 12*m2, 15*m2, 48*m2, 0,
+		24*m2, 30*m2, 60*m2, 12*m2, 15*m2, 48*m2, 90*m2,
+		100*m2, 120*m2, 144*m2, 72*m2, 0,
 	};
 	int freq = i<30*12 ? (i+1)*1001 : freqs[i-30*12];
 	return (AVRational) { freq, 1001*12 };
@@ -2914,7 +2917,12 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 			int mask_h = (1<<desc->log2_chroma_h)-1;
 			ctx->height = (vid->height+mask_h) & ~mask_h;
 			ctx->sample_aspect_ratio = to_sample_aspect_ratio(asset);
-			AVRational frame_rate = check_frame_rate(codec->supported_framerates, vid->frame_rate);
+			AVRational frame_rate;
+			if (ctx->codec->id == AV_CODEC_ID_MPEG1VIDEO ||
+			    ctx->codec->id == AV_CODEC_ID_MPEG2VIDEO)
+			frame_rate = check_frame_rate(codec->supported_framerates, vid->frame_rate);
+			else
+			frame_rate = av_d2q(vid->frame_rate, INT_MAX);
 			if( !frame_rate.num || !frame_rate.den ) {
 				eprintf(_("check_frame_rate failed %s\n"), filename);
 				ret = 1;

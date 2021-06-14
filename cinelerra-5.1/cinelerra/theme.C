@@ -286,6 +286,7 @@ void Theme::build_menus()
 	frame_sizes.append(new BC_ListBoxItem("160x120    "));
 	frame_sizes.append(new BC_ListBoxItem("240x160   HQVGA"));
 	frame_sizes.append(new BC_ListBoxItem("320x240    "));
+	frame_sizes.append(new BC_ListBoxItem("352x288    "));
 	frame_sizes.append(new BC_ListBoxItem("360x240    "));
 	frame_sizes.append(new BC_ListBoxItem("384x288    CIF"));
 	frame_sizes.append(new BC_ListBoxItem("400x300    qSVGA"));
@@ -337,12 +338,15 @@ void Theme::build_menus()
 	frame_sizes.append(new BC_ListBoxItem("7680x4320  8K UHD"));
 
 	sample_rates.append(new BC_ListBoxItem("8000"));
+	sample_rates.append(new BC_ListBoxItem("11025"));
 	sample_rates.append(new BC_ListBoxItem("16000"));
 	sample_rates.append(new BC_ListBoxItem("22050"));
 	sample_rates.append(new BC_ListBoxItem("32000"));
 	sample_rates.append(new BC_ListBoxItem("44100"));
 	sample_rates.append(new BC_ListBoxItem("48000"));
+	sample_rates.append(new BC_ListBoxItem("88000"));
 	sample_rates.append(new BC_ListBoxItem("96000"));
+	sample_rates.append(new BC_ListBoxItem("176400"));
 	sample_rates.append(new BC_ListBoxItem("192000"));
 
 	frame_rates.append(new BC_ListBoxItem("0.25"));
@@ -359,8 +363,12 @@ void Theme::build_menus()
 	frame_rates.append(new BC_ListBoxItem("50"));
 	frame_rates.append(new BC_ListBoxItem("59.94"));
 	frame_rates.append(new BC_ListBoxItem("60"));
+	frame_rates.append(new BC_ListBoxItem("72"));
+	frame_rates.append(new BC_ListBoxItem("85"));
+	frame_rates.append(new BC_ListBoxItem("90"));
 	frame_rates.append(new BC_ListBoxItem("100"));
 	frame_rates.append(new BC_ListBoxItem("120"));
+	frame_rates.append(new BC_ListBoxItem("144"));
 	frame_rates.append(new BC_ListBoxItem("1000"));
 
 	char string[BCTEXTLEN];
