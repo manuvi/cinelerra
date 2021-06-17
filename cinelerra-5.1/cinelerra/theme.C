@@ -369,6 +369,7 @@ void Theme::build_menus()
 	frame_rates.append(new BC_ListBoxItem("100"));
 	frame_rates.append(new BC_ListBoxItem("120"));
 	frame_rates.append(new BC_ListBoxItem("144"));
+	frame_rates.append(new BC_ListBoxItem("240"));
 	frame_rates.append(new BC_ListBoxItem("1000"));
 
 	char string[BCTEXTLEN];
