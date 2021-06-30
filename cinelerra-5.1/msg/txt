@@ -3,6 +3,10 @@ For usage help, refer to the following:
   https://cinelerra-gg.org/download/CinelerraGG_Manual.pdf
   http://g-raffa.eu/Cinelerra/HOWTO/basics.html
 .
+2021 June New Features of note:
+  High fps rendering formats added for over 60 fps.
+  Upgrade of libjpeg-turbo to 2.1.0.
+  Additional mxf + other rendering formats added.
 2021 May New Features of note:
   Context Help has been added using hotkey Alt/h by Georgy.  The
    help page will come up in your web browser tab for the item 
