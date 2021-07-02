@@ -7,6 +7,7 @@ For usage help, refer to the following:
   High fps rendering formats added for over 60 fps.
   Upgrade of libjpeg-turbo to 2.1.0.
   Additional mxf + other rendering formats added.
+.
 2021 May New Features of note:
   Context Help has been added using hotkey Alt/h by Georgy.  The
    help page will come up in your web browser tab for the item 
@@ -15,7 +16,7 @@ For usage help, refer to the following:
    /https://cinelerra-gg.org/download/CinelerraGG_Manual/Troubleshooting_Help.html
 .
 2021 March New Features of note:
-  AppImage is the method of dibrusging new releases;
+  AppImage is the method of distributing new releases;
    Newer distros use: CinGG-20210331-x86_64.AppImage 
    Older distros use: CinGG-20210331-x86_64-older_distros.AppImage
   There are 2 new plugins: Posterize and Timelapse Helper.
