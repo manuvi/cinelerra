@@ -134,7 +134,7 @@ void MainMenu::create_objects()
 	filemenu->add_item(new SubttlSWin(mwindow));
 
 	filemenu->add_item(render = new RenderItem(mwindow));
-//	filemenu->add_item(new ExportEDLItem(mwindow));
+	filemenu->add_item(new ExportEDLItem(mwindow));
 	filemenu->add_item(new BatchRenderMenuItem(mwindow));
 	filemenu->add_item(new CreateBD_MenuItem(mwindow));
 	filemenu->add_item(new CreateDVD_MenuItem(mwindow));

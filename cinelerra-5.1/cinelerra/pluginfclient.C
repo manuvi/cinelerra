@@ -845,7 +845,8 @@ static AVRational best_frame_rate(double frame_rate)
 	static const int m1 = 1001*12, m2 = 1000*12;
 	static const int freqs[] = {
 		40*m1, 48*m1, 50*m1, 60*m1, 80*m1,120*m1, 240*m1,
-		24*m2, 30*m2, 60*m2, 12*m2, 15*m2, 48*m2, 0,
+		24*m2, 30*m2, 60*m2, 12*m2, 15*m2, 48*m2, 90*m2,
+		100*m2, 120*m2, 144*m2, 72*m2, 0,
 	};
 	double max_err = 1.;
 	int freq, best_freq = 0;

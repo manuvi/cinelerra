@@ -65,7 +65,7 @@ void ExportEDLAsset::double_to_CMX3600(double seconds, double frame_rate, char *
 			TIME_HMSF,
 			0, // sample_rate ... unnecessary
 			frame_rate,
-			0);    // frames per foot
+			0); // frames per foot
 	if ((int)(seconds / 3600) <= 9)
 	{
 		str[0]='0';
@@ -92,18 +92,25 @@ int ExportEDLAsset::edit_to_timecodes(Edit *edit,
 	double edit_sourceend;
 	double edit_deststart;
 	double edit_destend;
-
+	double timecode_offset;
+	
+	// timecode_offset in seconds
+	timecode_offset = edit->track->edl->session->timecode_offset;
+	//printf("tc offset %f, \n", timecode_offset);
+	
+	
+	if(!strcmp(reel_name,""))
 	strcpy(reel_name, "   BL   ");
-	edit_sourcestart = 0;
-	edit_sourceend = track->from_units(edit->length);
-
+	edit_sourcestart = track->from_units(edit->startsource);
+	edit_sourceend = track->from_units(edit->length + edit->startsource);
+	
 	edit_deststart = track->from_units(edit->startproject);
 	edit_destend = track->from_units(edit->startproject + edit->length);
 
 	double_to_CMX3600(edit_sourcestart, frame_rate, sourceinpoint);
 	double_to_CMX3600(edit_sourceend, frame_rate, sourceoutpoint);
-	double_to_CMX3600(edit_deststart, frame_rate, destinpoint);
-	double_to_CMX3600(edit_destend, frame_rate, destoutpoint);
+	double_to_CMX3600(edit_deststart + timecode_offset, frame_rate, destinpoint);
+	double_to_CMX3600(edit_destend + timecode_offset, frame_rate, destoutpoint);
 
 	return 0;
 }
@@ -138,8 +145,32 @@ void ExportEDLAsset::export_it()
 	{
 
 		// TODO: Find docs about exact header for CMX3600
-		fprintf(fh, "TITLE: Cinproj   FORMAT: CMX 3600 4-Ch\n");
-
+		// https://xmil.biz/EDL-X/CMX3600.pdf
+		double frame_rate = edl->session->frame_rate;
+		int frame_rate_int = (int)frame_rate;
+		char proj_title[BCTEXTLEN];
+		strcpy(proj_title,basename(mwindow->session->filename));
+		fprintf(fh, "TITLE: %s fps: %f\n", proj_title, frame_rate);
+		switch(frame_rate_int) {
+		case 24:
+		case 25:
+		case 50:
+		case 60:
+		case 30:
+		{
+		if (frame_rate - frame_rate_int < 0.001)
+		fprintf(fh, "FCM: NON-DROP FRAME\n"); // fixme: select depending on fps
+		break;
+		}
+		default:
+		{
+		if ((frame_rate - frame_rate_int) > 0.001)
+		fprintf(fh, "FCM: DROP FRAME\n");
+		}
+		}
+		// newline after FCM
+		fprintf(fh, "\n");
+		
 		int colnum = 1;
 
 
@@ -147,6 +178,11 @@ void ExportEDLAsset::export_it()
 			edit;
 			edit = edit->next)
 		{
+		
+		// max number of entries in cmx3600
+		if (colnum > 999)
+		return;
+		
 			char reel_name[BCTEXTLEN];
 			char avselect[5];
 			char edittype[5] = "C   ";
@@ -155,6 +191,16 @@ void ExportEDLAsset::export_it()
 			char sourceoutpoint[12];
 			char destinpoint[12];
 			char destoutpoint[12];
+			
+			char filename[1024];
+			if (edit->asset)
+			strcpy(filename,basename(edit->asset->path));
+			
+			if(!edit->asset)
+			strcpy(reel_name,"BL  ");
+			else
+			strcpy(reel_name,"AX  ");
+			
 			if (track->data_type == TRACK_AUDIO)
 				strcpy(avselect, "A   ");
 			else
@@ -174,6 +220,8 @@ void ExportEDLAsset::export_it()
 					fprintf(fh, " %s %s", last_sourceout, last_sourceout);
 					fprintf(fh, " %s %s", destinpoint, destinpoint);
 					fprintf(fh,"\n");
+					if(edit->asset)
+					fprintf(fh,"* FROM CLIP NAME: %s\n", filename);
 				} else
 				{
 					colnum --;
@@ -183,6 +231,8 @@ void ExportEDLAsset::export_it()
 				fprintf(fh, " %s %s", sourceinpoint, sourceoutpoint);
 				fprintf(fh, " %s %s", destinpoint, destoutpoint);
 				fprintf(fh,"\n");
+				if(edit->asset)
+				fprintf(fh,"* FROM CLIP NAME: %s\n", filename);
 				last_dissolve = 1;
 			} else
 			{
@@ -191,12 +241,22 @@ void ExportEDLAsset::export_it()
 				fprintf(fh, " %s %s", sourceinpoint, sourceoutpoint);
 				fprintf(fh, " %s %s", destinpoint, destoutpoint);
 				fprintf(fh,"\n");
+				if(edit->asset)
+				fprintf(fh,"* FROM CLIP NAME: %s\n", filename);
 				last_dissolve = 0;
 			}
 
 			colnum ++;
 
 		}
+		
+		fprintf(fh, "\n");
+		
+		// file end for final cut pro 1.2.5 ?
+		fprintf(fh, "\x0D");
+		fprintf(fh, "\x0A");
+		fprintf(fh, "\x1A");
+		fprintf(fh, "\x1A");
 
 	}
 
