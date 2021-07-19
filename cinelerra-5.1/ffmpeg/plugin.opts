@@ -197,8 +197,8 @@ noise
 #overlay x=main_w-overlay_w-10:y=main_h-overlay_h-10 ###Input/output error
 owdenoise
 pad
-#palettegen ###Resource temporarily unavailable
-#paletteuse ###Input/output error
+#palettegen stats_mode=single ###Resource temporarily unavailable (single ok/need output file)
+#paletteuse ###Input/output error (requires input palette.png and output.gif files)
 pan 1c|c0=0.9*c0+0.1*c1
 perms
 perspective

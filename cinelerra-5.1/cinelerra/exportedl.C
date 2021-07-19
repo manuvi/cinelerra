@@ -401,6 +401,8 @@ ExportEDLWindow::ExportEDLWindow(MWindow *mwindow, ExportEDL *exportedl, ExportE
 {
 	this->mwindow = mwindow;
 	this->exportasset = exportasset;
+// *** CONTEXT_HELP ***
+ 	context_help_set_keyword("Export to EDL");
 	for( int i=0; i<2; ++i ) {
 		list_titles[i] = _(default_list_titles[i]);
 		list_widths[i] = xS(default_list_widths[i]);

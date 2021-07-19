@@ -104,7 +104,7 @@ Preferences::Preferences()
 	forward_render_displacement = 0;
 	dvd_yuv420p_interlace = 0;
 	highlight_inverse = 0xffffff;
-	yuv_color_space = BC_COLORS_BT601;
+	yuv_color_space = BC_COLORS_BT601_NTSC;
 	yuv_color_range = BC_COLORS_JPEG;
 	autocolor_assets = 0;
 	ctrl_toggle = 1;
@@ -322,6 +322,8 @@ void Preferences::scan_channels(char *string, int *channel_positions, int channe
 	}
 }
 
+
+// TODO validation, otherwise corrupted/edited Cinelerra_rc crash app!
 int Preferences::load_defaults(BC_Hash *defaults)
 {
 	char string[BCTEXTLEN];
@@ -349,6 +351,7 @@ int Preferences::load_defaults(BC_Hash *defaults)
 	layout_scale = defaults->get("LAYOUT_SCALE",layout_scale);
 	vicon_size = defaults->get("VICON_SIZE",vicon_size);
 	vicon_color_mode = defaults->get("VICON_COLOR_MODE",vicon_color_mode);
+	if (vicon_color_mode > ( MAX_VICON_COLOR_MODE -1 ) || vicon_color_mode <0) vicon_color_mode = 0;
 	strcpy(theme, _(DEFAULT_THEME));
 	strcpy(locale, DEFAULT_LOCALE);
 	strcpy(plugin_icons, DEFAULT_PICON);
@@ -385,7 +388,9 @@ int Preferences::load_defaults(BC_Hash *defaults)
 	dvd_yuv420p_interlace = defaults->get("DVD_YUV420P_INTERLACE", dvd_yuv420p_interlace);
 	highlight_inverse = defaults->get("HIGHLIGHT_INVERSE", highlight_inverse);
 	yuv_color_space = defaults->get("YUV_COLOR_SPACE", yuv_color_space);
+	if (yuv_color_space > (MAX_COLOR_SPACE - 1) || yuv_color_space < 0) yuv_color_space = 0;
 	yuv_color_range = defaults->get("YUV_COLOR_RANGE", yuv_color_range);
+	if (yuv_color_range > (MAX_COLOR_RANGE - 1) || yuv_color_range < 0) yuv_color_range = 0;
 	autocolor_assets = defaults->get("AUTOCOLOR_ASSETS", autocolor_assets);
 	ctrl_toggle = defaults->get("CTRL_TOGGLE", ctrl_toggle);
 	rectify_audio = defaults->get("RECTIFY_AUDIO", rectify_audio);

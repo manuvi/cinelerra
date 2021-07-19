@@ -143,9 +143,11 @@ void YUV::yuv_set_colors(int color_space, int color_range)
 	int mpeg;
 	switch( color_space ) {
 	default:
-	case BC_COLORS_BT601:  kr = BT601_Kr;   kb = BT601_Kb;   break;
+	case BC_COLORS_BT601_NTSC:  kr = BT601_NTSC_Kr;   kb = BT601_NTSC_Kb;   break;
+	case BC_COLORS_BT601_PAL: kr = BT601_PAL_Kr; kb = BT601_PAL_Kb; break;
 	case BC_COLORS_BT709:  kr = BT709_Kr;   kb = BT709_Kb;   break;
-	case BC_COLORS_BT2020: kr = BT2020_Kr;  kb = BT2020_Kb;  break;
+	case BC_COLORS_BT2020_NCL: 
+	case BC_COLORS_BT2020_CL: kr = BT2020_Kr;  kb = BT2020_Kb;  break;
 	}
 	switch( color_range ) {
 	default:

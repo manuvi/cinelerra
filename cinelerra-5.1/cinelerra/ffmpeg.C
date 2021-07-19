@@ -1589,9 +1589,11 @@ int FFVideoConvert::convert_picture_vframe(VFrame *frame, AVFrame *ip, AVFrame *
 	}
 	int color_space = SWS_CS_ITU601;
 	switch( preferences->yuv_color_space ) {
-	case BC_COLORS_BT601:  color_space = SWS_CS_ITU601;  break;
+	case BC_COLORS_BT601_PAL:  color_space = SWS_CS_ITU601;  break;
+	case BC_COLORS_BT601_NTSC: color_space = SWS_CS_SMPTE170M; break;
 	case BC_COLORS_BT709:  color_space = SWS_CS_ITU709;  break;
-	case BC_COLORS_BT2020: color_space = SWS_CS_BT2020;  break;
+	case BC_COLORS_BT2020_NCL: 
+	case BC_COLORS_BT2020_CL: color_space = SWS_CS_BT2020;  break;
 	}
 	const int *color_table = sws_getCoefficients(color_space);
 
@@ -1718,9 +1720,11 @@ int FFVideoConvert::convert_vframe_picture(VFrame *frame, AVFrame *op, AVFrame *
 	}
 	int color_space = SWS_CS_ITU601;
 	switch( preferences->yuv_color_space ) {
-	case BC_COLORS_BT601:  color_space = SWS_CS_ITU601;  break;
+	case BC_COLORS_BT601_PAL:  color_space = SWS_CS_ITU601;  break;
+	case BC_COLORS_BT601_NTSC: color_space = SWS_CS_SMPTE170M; break;
 	case BC_COLORS_BT709:  color_space = SWS_CS_ITU709;  break;
-	case BC_COLORS_BT2020: color_space = SWS_CS_BT2020;  break;
+	case BC_COLORS_BT2020_NCL:
+	case BC_COLORS_BT2020_CL: color_space = SWS_CS_BT2020;  break;
 	}
 	const int *color_table = sws_getCoefficients(color_space);
 
@@ -2638,18 +2642,22 @@ int FFMPEG::open_decoder()
 			}
 			switch( avpar->color_space ) {
 			case AVCOL_SPC_BT470BG:
+				vid->color_space = BC_COLORS_BT601_PAL;
+				break;
 			case AVCOL_SPC_SMPTE170M:
-				vid->color_space = BC_COLORS_BT601;
+				vid->color_space = BC_COLORS_BT601_NTSC;
 				break;
 			case AVCOL_SPC_BT709:
 				vid->color_space = BC_COLORS_BT709;
 				break;
 			case AVCOL_SPC_BT2020_NCL:
+				vid->color_space = BC_COLORS_BT2020_NCL;
+				break;
 			case AVCOL_SPC_BT2020_CL:
-				vid->color_space = BC_COLORS_BT2020;
+				vid->color_space = BC_COLORS_BT2020_CL;
 				break;
 			default:
-				vid->color_space = !file_base ? BC_COLORS_BT601 :
+				vid->color_space = !file_base ? BC_COLORS_BT601_NTSC :
 					file_base->file->preferences->yuv_color_space;
 				break;
 			}
@@ -2892,9 +2900,11 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 			if( (vid->color_space = asset->ff_color_space) < 0 )
 				vid->color_space = file_base->file->preferences->yuv_color_space;
 			switch( vid->color_space ) {
-			case BC_COLORS_BT601:  ctx->colorspace = AVCOL_SPC_SMPTE170M;  break;
+			case BC_COLORS_BT601_NTSC:  ctx->colorspace = AVCOL_SPC_SMPTE170M;  break;
+			case BC_COLORS_BT601_PAL: ctx->colorspace = AVCOL_SPC_BT470BG; break;
 			case BC_COLORS_BT709:  ctx->colorspace = AVCOL_SPC_BT709;      break;
-			case BC_COLORS_BT2020: ctx->colorspace = AVCOL_SPC_BT2020_NCL; break;
+			case BC_COLORS_BT2020_NCL: ctx->colorspace = AVCOL_SPC_BT2020_NCL; break;
+			case BC_COLORS_BT2020_CL: ctx->colorspace = AVCOL_SPC_BT2020_CL; break;
 			}
 			AVPixelFormat pix_fmt = av_get_pix_fmt(asset->ff_pixel_format);
 			if( opt_hw_dev != 0 ) {

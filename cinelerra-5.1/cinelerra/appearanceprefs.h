@@ -242,7 +242,8 @@ public:
 
 class ViewViconColorMode : public BC_PopupMenu
 {
-	static const char *vicon_color_modes[3];
+#define MAX_VICON_COLOR_MODE 3
+	static const char *vicon_color_modes[MAX_VICON_COLOR_MODE];
 public:
 	ViewViconColorMode(PreferencesWindow *pwindow, int x, int y);
 	~ViewViconColorMode();
@@ -377,7 +378,8 @@ public:
 class YuvColorSpace : public BC_PopupMenu
 {
 public:
-	static const char *color_space[3];
+#define MAX_COLOR_SPACE  5
+	static const char *color_space[MAX_COLOR_SPACE];
 	YuvColorSpace(int x, int y, PreferencesWindow *pwindow);
 	~YuvColorSpace();
 
@@ -399,7 +401,8 @@ public:
 class YuvColorRange : public BC_PopupMenu
 {
 public:
-	static const char *color_range[2];
+#define MAX_COLOR_RANGE 2
+	static const char *color_range[MAX_COLOR_RANGE];
 	YuvColorRange(int x, int y, PreferencesWindow *pwindow);
 	~YuvColorRange();
 

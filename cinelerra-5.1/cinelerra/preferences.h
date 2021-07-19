@@ -33,6 +33,8 @@
 #include "shbtnprefs.inc"
 #include "videoconfig.inc"
 
+// for MAX_COLOR_SPACE
+#include "appearanceprefs.h"
 
 class Preferences
 {

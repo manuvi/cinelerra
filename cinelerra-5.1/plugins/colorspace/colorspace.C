@@ -35,7 +35,7 @@ REGISTER_PLUGIN(ColorSpaceMain)
 ColorSpaceConfig::ColorSpaceConfig()
 {
 	inverse = 0;
-	inp_colorspace = BC_COLORS_BT601;
+	inp_colorspace = BC_COLORS_BT601_NTSC;
 	inp_colorrange = BC_COLORS_JPEG;
 	out_colorspace = BC_COLORS_BT709;
 	out_colorrange = BC_COLORS_JPEG;
@@ -307,20 +307,24 @@ void XTable::init(int len, int inv,
 	this->inp_space = inp_space;  this->out_space = out_space;
 	this->inp_range = inp_range;  this->out_range = out_range;
 
-	double iKr = BT601_Kr, iKb = BT601_Kb;
-	double oKr = BT601_Kr, oKb = BT601_Kb;
+	double iKr = BT601_NTSC_Kr, iKb = BT601_NTSC_Kb;
+	double oKr = BT601_NTSC_Kr, oKb = BT601_NTSC_Kb;
 	int impg = 0, ompg = 0;
 	switch( inp_space ) {
 	default:
-	case BC_COLORS_BT601:  iKr = BT601_Kr;   iKb = BT601_Kb;   break;
+	case BC_COLORS_BT601_NTSC:  iKr = BT601_NTSC_Kr;   iKb = BT601_NTSC_Kb;   break;
+	case BC_COLORS_BT601_PAL:  iKr = BT601_PAL_Kr;   iKb = BT601_PAL_Kb;   break;
 	case BC_COLORS_BT709:  iKr = BT709_Kr;   iKb = BT709_Kb;   break;
-	case BC_COLORS_BT2020: iKr = BT2020_Kr;  iKb = BT2020_Kb;  break;
+	case BC_COLORS_BT2020_NCL: 
+	case BC_COLORS_BT2020_CL: iKr = BT2020_Kr;  iKb = BT2020_Kb;  break;
 	}
 	switch( out_space ) {
 	default:
-	case BC_COLORS_BT601:  oKr = BT601_Kr;   oKb = BT601_Kb;   break;
+	case BC_COLORS_BT601_NTSC:  oKr = BT601_NTSC_Kr;   oKb = BT601_NTSC_Kb;   break;
+	case BC_COLORS_BT601_PAL:  oKr = BT601_PAL_Kr;   oKb = BT601_PAL_Kb;   break;
 	case BC_COLORS_BT709:  oKr = BT709_Kr;   oKb = BT709_Kb;   break;
-	case BC_COLORS_BT2020: oKr = BT2020_Kr;  oKb = BT2020_Kb;  break;
+	case BC_COLORS_BT2020_NCL: 
+	case BC_COLORS_BT2020_CL: oKr = BT2020_Kr;  oKb = BT2020_Kb;  break;
 	}
 
 	int iyuv = BC_CModels::is_yuv(inp_model);

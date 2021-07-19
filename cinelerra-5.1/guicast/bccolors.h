@@ -104,8 +104,11 @@ inverse:
 // white vector normalized, so:
 //  Kg = 1 - Kr - Kb
 
-#define BT601_Kr 0.299
-#define BT601_Kb 0.114
+#define BT601_NTSC_Kr 0.299
+#define BT601_NTSC_Kb 0.114
+
+#define BT601_PAL_Kr 0.299
+#define BT601_PAL_Kb 0.114
 
 #define BT709_Kr 0.2126
 #define BT709_Kb 0.0722
