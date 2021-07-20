@@ -4,7 +4,7 @@ strict=-2
 colorspace=bt2020_cl
 color_primaries=bt2020
 color_trc=bt2020_10bit
-cin_pix_fmt=yuv422p10le
+cin_pix_fmt=yuv422p12le
 # use framerate for 1 keyframe/sec, needed for seeks
 keyint_min=30
 x265-params=output-depth=10:keyint=30
