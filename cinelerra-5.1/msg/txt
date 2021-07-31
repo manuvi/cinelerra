@@ -3,6 +3,11 @@ For usage help, refer to the following:
   https://cinelerra-gg.org/download/CinelerraGG_Manual.pdf
   http://g-raffa.eu/Cinelerra/HOWTO/basics.html
 .
+2021 July New Features of note:
+  Libraries x264, x265, and libaom have been upgraded.
+  YUV Colorspace 601 and 2020 have been split into more
+   available options of 601 NTSC/PAL and 2020 NCL/CL.
+.
 2021 June New Features of note:
   High fps rendering formats added for over 60 fps.
   Upgrade of libjpeg-turbo to 2.1.0.
