@@ -463,8 +463,8 @@ void PluginDialogThread::apply()
 					&shared_location, plugin_type);
 		}
 		else if( edl->tracks->track_exists(track) ) {
-			double start = edl->local_session->get_selectionstart(1);
-			double end = edl->local_session->get_selectionend(1);
+			double start = edl->local_session->get_selectionstart();
+			double end = edl->local_session->get_selectionend();
 			if( start >= end ) {
 				start = 0;
 				end = track->get_length();

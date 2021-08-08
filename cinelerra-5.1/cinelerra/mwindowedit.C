@@ -841,8 +841,8 @@ void MWindow::insert_effect(char *title, SharedLocation *shared_location,
 	SharedLocation shared_location_local;
 	shared_location_local.copy_from(shared_location);
 	int first_track = 1;
-	double start_pos = edl->local_session->get_selectionstart(1);
-	double end_pos = edl->local_session->get_selectionend(1);
+	double start_pos = edl->local_session->get_selectionstart();
+	double end_pos = edl->local_session->get_selectionend();
 	for( ; current; current=NEXT ) {
 		if( current->data_type != data_type ) continue;
 		if( !current->is_armed() ) continue;
