@@ -1011,7 +1011,7 @@ void MixersAlign::apply_undo(int no)
 MixersAlignARender::MixersAlignARender(MWindow *mwindow, EDL *edl)
  : RenderEngine(0, mwindow->preferences, 0, 0)
 {
-	TransportCommand command;
+	TransportCommand command(mwindow->preferences);
 	command.command = NORMAL_FWD;
 	command.get_edl()->copy_all(edl);
 	command.change_type = CHANGE_ALL;

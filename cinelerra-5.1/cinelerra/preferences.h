@@ -193,6 +193,9 @@ public:
 	ArrayList<ShBtnPref *> shbtn_prefs;
 // file open probe order
 	ArrayList<ProbePref *> file_probes;
+// fast/slow forward and backward speeds, default 2.0/0.5
+	float fast_speed;
+	float slow_speed;
 
 // ====================================== Plugin Set ==============================
 	char plugin_dir[BCTEXTLEN];

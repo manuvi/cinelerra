@@ -949,7 +949,7 @@ int SnapshotMenuItem::handle_event()
 			processors > 1 ? 2 : 1, 0);
 		VFrame ***frames = file.get_video_buffer();
 		VFrame *frame = frames[0][0];
-		TransportCommand command;
+		TransportCommand command(preferences);
 		//command.command = audio_tracks ? NORMAL_FWD : CURRENT_FRAME;
 		command.command = CURRENT_FRAME;
 		command.get_edl()->copy_all(edl);

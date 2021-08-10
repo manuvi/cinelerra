@@ -137,7 +137,7 @@ int PackageRenderer::initialize(MWindow *mwindow,
 
 
 //printf("PackageRenderer::initialize %d\n", preferences->processors);
-	command = new TransportCommand;
+	command = new TransportCommand(preferences);
 	command->command = NORMAL_FWD;
 	command->get_edl()->copy_all(edl);
 	command->change_type = CHANGE_ALL;

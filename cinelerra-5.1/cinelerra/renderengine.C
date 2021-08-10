@@ -62,7 +62,7 @@ RenderEngine::RenderEngine(PlaybackEngine *playback_engine,
 	do_video = 0;
 	interrupted = 0;
  	this->preferences = new Preferences;
- 	this->command = new TransportCommand;
+ 	this->command = new TransportCommand(preferences);
  	this->preferences->copy_from(preferences);
 	edl = 0;
 

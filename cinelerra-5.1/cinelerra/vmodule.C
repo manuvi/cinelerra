@@ -178,7 +178,7 @@ int VModule::import_frame(VFrame *output, VEdit *current_edit,
 				nested_renderengine = 0;
 			}
 			if( !nested_command )
-				nested_command = new TransportCommand;
+				nested_command = new TransportCommand(get_preferences());
 			nested_command->command = command;
 			nested_command->get_edl()->copy_all(nested_edl);
 			nested_command->change_type = CHANGE_ALL;

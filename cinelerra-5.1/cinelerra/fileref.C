@@ -96,7 +96,7 @@ int FileREF::open_file(int rd, int wr)
 		asset->sample_rate = ref->get_sample_rate();
 		asset->audio_length = asset->audio_data ? ref->get_audio_samples() : 0;
 		strcpy(asset->acodec, "REF");
-		command = new TransportCommand();
+		command = new TransportCommand(file->preferences);
 		command->reset();
 		command->get_edl()->copy_all(ref);
 		command->command = NORMAL_FWD;

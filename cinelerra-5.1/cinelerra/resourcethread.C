@@ -327,7 +327,7 @@ void ResourceThreadBase::open_render_engine(EDL *nested_edl,
 
 	if( !render_engine ) {
 		MWindow *mwindow = resource_thread->mwindow;
-		TransportCommand command;
+		TransportCommand command(mwindow->preferences);
 		command.command = do_audio ? NORMAL_FWD : CURRENT_FRAME;
 		command.get_edl()->copy_all(nested_edl);
 		command.change_type = CHANGE_ALL;

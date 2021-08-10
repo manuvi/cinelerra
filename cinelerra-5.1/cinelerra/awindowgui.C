@@ -882,7 +882,7 @@ void AssetPicon::reset()
 
 void AssetPicon::open_render_engine(EDL *edl, int is_audio)
 {
-	TransportCommand command;
+	TransportCommand command(mwindow->preferences);
 	command.command = is_audio ? NORMAL_FWD : CURRENT_FRAME;
 	command.get_edl()->copy_all(edl);
 	command.change_type = CHANGE_ALL;

@@ -4601,7 +4601,7 @@ int TrackCanvas::render_handle_frame(EDL *edl, int64_t pos, int mode)
 	case 0: {
 		VFrame vlt(edl->get_w(), edl->get_h(), edl->session->color_model);
 		VFrame vrt(edl->get_w(), edl->get_h(), edl->session->color_model);
-		TransportCommand command;
+		TransportCommand command(mwindow->preferences);
 		command.command = CURRENT_FRAME;
 		command.get_edl()->copy_all((EDL *)edl);
 		command.change_type = CHANGE_ALL;

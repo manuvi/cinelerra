@@ -26,12 +26,13 @@
 #include "condition.inc"
 #include "edl.inc"
 #include "playbackengine.inc"
+#include "preferences.inc"
 #include "transportque.inc"
 
 class TransportCommand
 {
 public:
-	TransportCommand();
+	TransportCommand(Preferences *preferences);
 	~TransportCommand();
 
 	void reset();
@@ -41,7 +42,7 @@ public:
 	void set_playback_range(EDL *edl, int use_inout, int do_displacement);
 	static int single_frame(int command);
 	static int get_direction(int command);
-	static float get_speed(int command, float speed=0);
+	float get_speed(int command, float speed=0);
 
 // Adjust playback range with in/out points for rendering
 	void playback_range_adjust_inout();
@@ -84,6 +85,7 @@ public:
 private:
 // Copied to render engines
 	EDL *edl;
+	Preferences *preferences;
 };
 
 #endif

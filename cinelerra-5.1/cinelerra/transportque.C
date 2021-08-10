@@ -26,10 +26,12 @@
 #include "edlsession.h"
 #include "localsession.h"
 #include "playbackengine.h"
+#include "preferences.h"
 #include "tracks.h"
 #include "transportque.h"
 
-TransportCommand::TransportCommand()
+
+TransportCommand::TransportCommand(Preferences *preferences)
 {
 // In rendering we want a master EDL so settings don't get clobbered
 // in the middle of a job.
@@ -37,6 +39,7 @@ TransportCommand::TransportCommand()
 	edl->create_objects();
 	command = 0;
 	change_type = 0;
+	this->preferences = preferences;
 	reset();
 }
 
@@ -134,10 +137,16 @@ int TransportCommand::get_direction(int command)
 
 float TransportCommand::get_speed(int command, float speed)
 {
+// fast = 2.0, slow = 0.5
+// float my_fast_speed = 2.0;
+// float my_slow_speed = 0.5;
+float my_fast_speed = preferences->fast_speed;
+float my_slow_speed = preferences->slow_speed; 
+
 	switch(command) {
 	case SLOW_FWD:
 	case SLOW_REWIND:
-		return speed ? speed : 0.5;
+		return speed ? speed : my_slow_speed;
 
 	case NORMAL_FWD:
 	case NORMAL_REWIND:
@@ -149,7 +158,7 @@ float TransportCommand::get_speed(int command, float speed)
 
 	case FAST_FWD:
 	case FAST_REWIND:
-		return speed ? speed : 2.;
+		return speed ? speed : my_fast_speed;
 	}
 
 	return 0.;

@@ -1213,7 +1213,7 @@ Indexable *TitleMain::open_background(const char *filename)
 	nested_edl->create_objects();
 	nested_edl->set_path(filename);
 	nested_edl->load_xml(&xml_file, LOAD_ALL);
-	TransportCommand command;
+	TransportCommand command(server->preferences);
 	//command.command = audio_tracks ? NORMAL_FWD : CURRENT_FRAME;
 	command.command = CURRENT_FRAME;
 	command.get_edl()->copy_all(nested_edl);

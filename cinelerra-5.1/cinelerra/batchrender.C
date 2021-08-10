@@ -542,7 +542,7 @@ void BatchRenderThread::calculate_dest_paths(ArrayList<char*> *paths,
 			PackageDispatcher *packages = new PackageDispatcher;
 
 // Load EDL
-			TransportCommand *command = new TransportCommand;
+			TransportCommand *command = new TransportCommand(preferences);
 			FileXML *file = new FileXML;
 			file->read_from_file(job->edl_path);
 

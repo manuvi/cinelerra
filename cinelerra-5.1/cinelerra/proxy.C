@@ -741,7 +741,7 @@ void ProxyClient::process_package(LoadPackage *ptr)
 			result = 1;
 	}
 	else {
-		TransportCommand command;
+		TransportCommand command(preferences);
 		command.command = CURRENT_FRAME;
 		command.get_edl()->copy_all((EDL *)orig);
 		command.change_type = CHANGE_ALL;

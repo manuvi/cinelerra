@@ -97,7 +97,7 @@ VWindowGUI::~VWindowGUI()
 
 void VWindowGUI::draw_wave()
 {
-	TransportCommand command;
+	TransportCommand command(mwindow->preferences);
 	command.command = NORMAL_FWD;
 	command.get_edl()->copy_all(vwindow->get_edl());
 	command.change_type = CHANGE_ALL;

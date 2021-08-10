@@ -472,7 +472,7 @@ void ResourcePixmap::draw_audio_source(TrackCanvas *canvas, Edit *edit, int x, i
 			}
 
 			if( !mwindow->gui->render_engine ) {
-				TransportCommand command;
+				TransportCommand command(mwindow->preferences);
 				command.command = NORMAL_FWD;
 				command.get_edl()->copy_all(edit->nested_edl);
 				command.change_type = CHANGE_ALL;

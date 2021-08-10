@@ -128,6 +128,9 @@ Preferences::Preferences()
 	android_remote = 0;
 	android_port = 23432;
 	strcpy(android_pin, "cinelerra");
+	
+	fast_speed = 2.0;
+	slow_speed = 0.5;
 
 	memset(channel_positions, 0, sizeof(channel_positions));
 	int channels = 0;
@@ -201,6 +204,10 @@ void Preferences::copy_from(Preferences *that)
 	android_remote = that->android_remote;
 	android_port = that->android_port;
 	strcpy(android_pin, that->android_pin);
+	
+	slow_speed = that->slow_speed;
+	fast_speed = that->fast_speed;
+	
 	this->shbtn_prefs.remove_all_objects();
 	for( int i=0; i<that->shbtn_prefs.size(); ++i )
 		this->shbtn_prefs.append(new ShBtnPref(*that->shbtn_prefs[i]));
@@ -332,6 +339,8 @@ int Preferences::load_defaults(BC_Hash *defaults)
 	scan_commercials = defaults->get("SCAN_COMMERCIALS", scan_commercials);
 	android_remote = defaults->get("ANDROID_REMOTE", android_remote);
 	android_port = defaults->get("ANDROID_PORT", android_port);
+	fast_speed = defaults->get("FAST_SPEED", fast_speed);
+	slow_speed = defaults->get("SLOW_SPEED", slow_speed);
 	defaults->get("ANDROID_PIN", android_pin);
 	defaults->get("INDEX_DIRECTORY", index_directory);
 	index_size = defaults->get("INDEX_SIZE", index_size);
@@ -495,7 +504,8 @@ int Preferences::save_defaults(BC_Hash *defaults)
 	defaults->update("ANDROID_REMOTE", android_remote);
 	defaults->update("ANDROID_PIN", android_pin);
 	defaults->update("ANDROID_PORT", android_port);
-
+	defaults->update("SLOW_SPEED", slow_speed);
+	defaults->update("FAST_SPEED", fast_speed);
 	defaults->update("CACHE_SIZE", cache_size);
 	defaults->update("CACHE_TRANSITIONS", cache_transitions);
 	defaults->update("INDEX_DIRECTORY", index_directory);

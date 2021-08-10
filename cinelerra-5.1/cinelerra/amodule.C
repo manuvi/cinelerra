@@ -283,7 +283,7 @@ int AModule::import_samples(AEdit *edit,
 		int command = direction == PLAY_REVERSE ?
 			NORMAL_REWIND : NORMAL_FWD;
 		if( !nested_command )
-			nested_command = new TransportCommand;
+			nested_command = new TransportCommand(get_preferences());
 		nested_command->command = command;
 		nested_command->get_edl()->copy_all(nested_edl);
 		nested_command->change_type = CHANGE_ALL;
