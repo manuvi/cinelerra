@@ -92,7 +92,10 @@ void FormatPopup::create_objects()
 	if(!use_brender)
 		post_item(FILE_TIFF);
 	post_item(FILE_TIFF_LIST);
-
+#ifdef HAVE_OPENEXR
+	if(use_brender)
+	post_item(FILE_EXR_LIST);
+#endif
 	update(&format_items, 0, 0, 1);
 }
 
