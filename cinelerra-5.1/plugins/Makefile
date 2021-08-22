@@ -134,6 +134,7 @@ DIRS = $(OPENCV_OBJS) \
 	shiftinterlace \
 	slide \
 	spectrogram \
+	speed_pc \
 	spherecam \
 	svg \
 	swapchannels \

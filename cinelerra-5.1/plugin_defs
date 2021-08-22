@@ -106,6 +106,7 @@ video := \
 	sharpen \
 	shiftinterlace \
 	slide \
+	speed_pc \
 	spherecam \
 	svg \
 	swapchannels \

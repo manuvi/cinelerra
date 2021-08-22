@@ -161,6 +161,7 @@ Video Effects
 		Interpolate Video
 		ReframeRT
 		Reverse video
+		Speed PerCent
 		Time Average
 		TimeFront
 		Timelapse Helper
