@@ -376,6 +376,8 @@ vibrance
 #sr ###Input/output error
 #xstack ###Operation not permitted
 #agraphmonitor ###Input/output error
+; new in 4.2
+dresser
 ; broken in 4.3
 #anlms ###Input/output error
 #axcorrelate ###Input/output error
@@ -394,3 +396,32 @@ vibrance
 #ass
 #drawtext
 #subtitles
+; new in 4.4
+chromanr
+afreqshift
+aphseshift
+adenorm
+asupercut
+asubcut
+asuperpass
+asuperstop
+shufflepixels
+tmidequalizer
+estdif
+epx
+shear
+kirsch
+colortemperature
+colorcontrast
+colorcorrect
+colorize
+aexciter
+exposure
+monochrome
+; broken in 4.4
+#speechnorm
+#bitstream
+#identity ###Input/output error
+#msad ###Input/output error
+#setts
+#vif ###Input/output error

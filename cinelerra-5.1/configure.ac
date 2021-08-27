@@ -189,7 +189,7 @@ PKG_3RD([esound],[no],
   [ . ])
 
 PKG_3RD([ffmpeg],[yes],
-  [ffmpeg-4.3],
+  [ffmpeg-4.4],
   [ libavutil/libavutil.a \
     libavcodec/libavcodec.a \
     libpostproc/libpostproc.a \

@@ -603,6 +603,7 @@ int FFStream::encode_frame(AVFrame *frame)
 			ret = avcodec_send_frame(avctx, frame);
 		if( !ret && frame ) return pkts;
 		if( ret < 0 && ret != AVERROR(EAGAIN) ) break;
+		if ( ret == AVERROR(EAGAIN) && !frame ) continue;
 		FFPacket opkt;
 		ret = avcodec_receive_packet(avctx, opkt);
 		if( !frame && ret == AVERROR_EOF ) return pkts;
