@@ -29,13 +29,18 @@ Video Effects
 		F_chromahold
 		F_colorbalance
 		F_colorchannelmixer
+		F_colorcontrast
+		F_colorcorrect
+		F_colorize
 		F_colorkey
 		F_colorlevels
 		F_colormatrix
 		F_colorspace
+		F_colortemperature
 		F_curves
 		F_elbg
 		F_eq
+		F_exposure
 		F_fftfilt
 		F_floodfill
 		F_greyedge
@@ -48,6 +53,7 @@ Video Effects
 		F_lut3d
 		F_lutrgb
 		F_lutyuv
+		F_monochrome
 		F_negate
 		F_normalize
 		F_pseudocolor
@@ -87,6 +93,7 @@ Video Effects
 		F_smartblur
 		F_unsharp
 	- Denoise
+		F_chromanr
 		DeScratch
 		Denoise video
 		DotTV
@@ -140,6 +147,7 @@ Video Effects
 		F_perspective
 		F_rotate
 		F_scale
+		F_shear
 		F_super2xsai
 		F_swaprect
 		F_tile
@@ -174,13 +182,19 @@ Video Effects
 		F_realtime
 		F_tblend
 		F_tinterlace
+		F_tmidequalizer
 		F_tmix
 		F_vfrdet
+	- Artistic
+		F_shufflepixels
+		F_epx
+		F_kirsch
 	- Test
 		F_bench
 		F_bbox
 		F_ciescope
 		F_color
+		F_colorize
 		F_datascope
 		F_entropy
 		F_graphmonitor

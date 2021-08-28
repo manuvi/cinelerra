@@ -377,7 +377,7 @@ vibrance
 #xstack ###Operation not permitted
 #agraphmonitor ###Input/output error
 ; new in 4.2
-dresser
+deesser
 ; broken in 4.3
 #anlms ###Input/output error
 #axcorrelate ###Input/output error
@@ -399,7 +399,7 @@ dresser
 ; new in 4.4
 chromanr
 afreqshift
-aphseshift
+aphaseshift
 adenorm
 asupercut
 asubcut
