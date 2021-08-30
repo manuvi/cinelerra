@@ -172,6 +172,8 @@ Perspective:	Allows you to change the viewpoint of an object.
 Polar:		Bends and warps your video in weird ways based on
 		conversion from either polar coordinates to
 		rectangular or vice-versa.
+Posterize:	Reduces the color depth so as to decrease the displayed
+		color gradients.
 RGB - 601:	Used to reduce/increase contrast in your video via
 		601 compression or RGB expansion.
 RGBShift:	Align 3 separate planes of R, G, B if misaligned in
@@ -219,7 +221,9 @@ Threshold:	Converts the image to pure luminance and replaces
 Time Average:	Use to create trail patterns, or reduce noise in
 		still images.  A number of frames is accumulated
 		and then divided by a divisor to the the average.
+TimeBlur:	Use to blur a number of frames.
 TimeFront:	Performs spatio-temporal video warping.
+Timelapse Helper: Sets the number of frames to skip during playback.
 Title:		Add text/timestamp/background pngs to video along
 		with the ability to drag to a location if Drag on.
 		Flexible attributes in textbox (mouse right click):

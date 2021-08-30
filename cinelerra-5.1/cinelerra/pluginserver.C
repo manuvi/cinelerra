@@ -508,6 +508,7 @@ void PluginServer::process_transition(VFrame *input,
 		int64_t total_len)
 {
 	if( !plugin_open ) return;
+	if (total_len == 0) return;
 	PluginVClient *vclient = (PluginVClient*)client;
 	to_ram(input);
 	to_ram(output);

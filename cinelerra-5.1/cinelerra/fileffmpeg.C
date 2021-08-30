@@ -159,7 +159,7 @@ void FFMpegPixelFormat::update_formats()
 	pixfmts.remove_all_objects();
 	char video_codec[BCSTRLEN]; video_codec[0] = 0;
 	const char *vcodec = vid_config->asset->vcodec;
-	AVCodec *av_codec = !FFMPEG::get_codec(video_codec, "video", vcodec) ?
+	const AVCodec *av_codec = !FFMPEG::get_codec(video_codec, "video", vcodec) ?
 		avcodec_find_encoder_by_name(video_codec) : 0;
 	const AVPixelFormat *pix_fmts = av_codec ? av_codec->pix_fmts : 0;
 	if( pix_fmts ) {
@@ -190,7 +190,7 @@ void FFMpegSampleFormat::update_formats()
 	samplefmts.remove_all_objects();
 	char audio_codec[BCSTRLEN]; audio_codec[0] = 0;
 	const char *acodec = aud_config->asset->acodec;
-	AVCodec *av_codec = !FFMPEG::get_codec(audio_codec, "audio", acodec) ?
+	const AVCodec *av_codec = !FFMPEG::get_codec(audio_codec, "audio", acodec) ?
 		avcodec_find_encoder_by_name(audio_codec) : 0;
 	const AVSampleFormat *sample_fmts = av_codec ? av_codec->sample_fmts : 0;
 	if( sample_fmts ) {
@@ -1852,7 +1852,7 @@ int FFOptionsViewAudio::handle_event()
 	const char *name = asset->acodec;
 	char audio_format[BCSTRLEN];  audio_format[0] = 0;
 	char audio_codec[BCSTRLEN];   audio_codec[0] = 0;
-	AVCodec *codec = !ret &&
+	const AVCodec *codec = !ret &&
 	    !FFMPEG::get_format(audio_format, "audio", name) &&
 	    !FFMPEG::get_codec(audio_codec, "audio", name) ?
 		avcodec_find_encoder_by_name(audio_codec) : 0;
@@ -1890,7 +1890,7 @@ int FFOptionsViewVideo::handle_event()
 	const char *name = asset->vcodec;
 	char video_format[BCSTRLEN];  video_format[0] = 0;
 	char video_codec[BCSTRLEN];   video_codec[0] = 0;
-	AVCodec *codec = !ret &&
+	const AVCodec *codec = !ret &&
 	    !FFMPEG::get_format(video_format, "video", name) &&
 	    !FFMPEG::get_codec(video_codec, "video", name) ?
 		avcodec_find_encoder_by_name(video_codec) : 0;
