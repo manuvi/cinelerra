@@ -211,8 +211,11 @@ Sharpen:	Sharpen the video, either the luminance, horizontal,
 ShiftInterlace:	Shift the interlace lines using odd or even.
 Sketcher:	Sketch lines, curves, or points in different colors/
 		alpha and with fill using various pen widths/types.
-Speed PerCent:	Increase speed by a percentage value from 1 to 1000
-		with or without interpolation.
+Speed PerCent:	Change speed by a percentage value from 1 to 1000
+		with or without interpolation. A value of 100% means
+		normal speed; a value < 100% means slow motion
+		with duplication of missing frames without OpticFlow;
+		a value > 100% means fast with dropped frames.
 Sphere Cam:	Converts a fisheye image into panoramic projection.
 Swap Frames:	Swap frames with 0-1, 2-3, 4-5... or 1-2, 3-4, 5-6...
 Swap channels:	Swap R,G,B,Alpha with another color channel.

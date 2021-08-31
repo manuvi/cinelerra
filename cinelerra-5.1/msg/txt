@@ -3,6 +3,13 @@ For usage help, refer to the following:
   https://cinelerra-gg.org/download/CinelerraGG_Manual.pdf
   http://g-raffa.eu/Cinelerra/HOWTO/basics.html
 .
+2021 August New Features of note:
+  FFmpeg has been upgraded to 4.4 to include new plugins.
+  Speed PerCent plugin for easily changing video speed
+   is now available.
+  FAST_SPEED and SLOW_SPEED variables to personalize your
+   playback speed have been added.
+.
 2021 July New Features of note:
   Libraries x264, x265, and libaom have been upgraded.
   YUV Colorspace 601 and 2020 have been split into more
