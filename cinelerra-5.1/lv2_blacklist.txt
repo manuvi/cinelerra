@@ -1,4 +1,4 @@
-# last updated 2018/11/03 gg/pys/andrea
+# last updated 2021/09/08 MatN/pys
 http:*midi*
 http:*MIDI*
 
@@ -74,3 +74,11 @@ http://rakarrack.sourceforge.net/effects.html#har_no_mid
 http://yoshimi.sourceforge.net/lv2_plugin
 http://yoshimi.sourceforge.net/lv2_plugin_multi
 urn:juced:DrumSynth
+#
+# Problematic 5 tested by MatN as a result of Ardour new LV2 plugins
+#
+urn:ardour:a-comp
+urn:ardour:a-comp#stereo
+urn:ardour:a-exp
+urn:ardour:a-exp#stereo
+urn:ardour:a-fluidsynth
