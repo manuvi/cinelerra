@@ -37,6 +37,7 @@
 #include "pluginlv2ui.inc"
 #include "pluginserver.h"
 #include "pluginset.h"
+#include "preferences.h"
 #include "samples.h"
 #include "track.h"
 #include "tracks.h"
@@ -388,7 +389,7 @@ PluginClient *PluginServer::new_lv2_plugin()
 
 int MWindow::init_lv2_index(MWindow *mwindow, Preferences *preferences, FILE *fp)
 {
-	printf("init lv2 index:\n");
+	printf("init lv2 index: %s\n", preferences->lv2_path);
 	PluginLV2BlackList blacklist("lv2_blacklist.txt");
 
 	LilvWorld *world = lilv_world_new();
