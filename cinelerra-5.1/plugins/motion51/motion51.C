@@ -434,7 +434,9 @@ int Motion51Main::process_buffer(VFrame **frame, int64_t position, double frame_
 		&corner_float : &corner_uint8;
 
 	int use_opengl = get_use_opengl();
-	read_frame(out, target_layer, out_position, frame_rate, use_opengl);
+//	Do NOT use opengl here because if you so than dissolve, flash, and zoome can cause problems.
+//	read_frame(out, target_layer, out_position, frame_rate, use_opengl);
+	read_frame(out, target_layer, out_position, frame_rate, 0);
 	out_w = out->get_w();
 	out_h = out->get_h();
 	out_r = 0.5 * (out_w < out_h ? out_w : out_h);
