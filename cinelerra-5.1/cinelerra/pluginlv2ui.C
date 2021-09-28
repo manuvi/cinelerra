@@ -168,28 +168,7 @@ void PluginLV2ChildUI::start_gui()
 	update_lv2_input(config.ctls, 1);
 	connect_ports(config, PORTS_CONTROL | PORTS_ATOM);
 	int n = 0;
-#if 1
-// some plugins must have pointers, or they crash
-	float inp[nb_inputs], out[nb_outputs];
-	memset(&inp, 0, nb_inputs*sizeof(float));
-	memset(&out, 0, nb_outputs*sizeof(float));
-	int ich = 0, och = 0;
-	for( int i=0; i<config.nb_ports; ++i ) {
-		const LilvPort *lp = lilv_plugin_get_port_by_index(lilv, i);
-		if( !lp ) continue;
-		int port = config.ports[i];
-		if( !(port & PORTS_AUDIO) ) continue;
-		if( (port & PORTS_INPUT) ) {
-			lilv_instance_connect_port(inst, i, &inp[ich++]);
-			continue;
-		}
-		if( (port & PORTS_OUTPUT) ) {
-			lilv_instance_connect_port(inst, i, &out[och++]);
-			continue;
-		}
-	}
-	n = 1;
-#endif
+
 	updates = 0;
 	run_lilv(n);
 	if( gui ) {

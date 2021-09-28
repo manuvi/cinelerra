@@ -71,7 +71,9 @@ int main(int argc, char *argv[])
 	char temp_path[1024];
 	char out_path[1024];
 	char *ptr;
-	char system_command[1024];
+// TODO 2100 to get rid of compiler warning, but better solution needed:
+// temp_path and out_path parsing have potential buffer overflow.
+	char system_command[2100];   
 	int current_arg = 1;
 	int binary_mode = 0;
 	int string_mode = 0;

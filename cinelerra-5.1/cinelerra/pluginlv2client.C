@@ -383,7 +383,7 @@ PluginClient *PluginServer::new_lv2_plugin()
 {
 	PluginLV2Client *client = new PluginLV2Client(this);
 	if( client->load_lv2(path, client->title) ) { delete client;  return client = 0; }
-	client->init_lv2();
+	if( client->init_lv2() ) { delete client;  return client = 0; };
 	return client;
 }
 
@@ -400,12 +400,19 @@ int MWindow::init_lv2_index(MWindow *mwindow, Preferences *preferences, FILE *fp
 		const LilvPlugin *lilv = lilv_plugins_get(all_plugins, i);
 		const char *uri = lilv_node_as_uri(lilv_plugin_get_uri(lilv));
 		if( blacklist.is_badboy(uri) ) continue;
-printf("LOAD: %s\n", uri);
+// TODO It would be nice to print the full path of this particular plugin
+// in case it fails, because the systems' LV2 path might include multiple
+// directories. But function lilv_uri_to_path does not like the uri.
+
+// Don't print the newline, so called functions can concatenate their
+// error to the name.
+		printf("LOAD: %s ", uri);
 		PluginServer server(mwindow, uri, PLUGIN_TYPE_LV2);
 		int result = server.open_plugin(1, preferences, 0, 0);
 		if( !result ) {
 			server.write_table(fp, uri, PLUGIN_LV2_ID, 0);
 			server.close_plugin();
+			printf(" \n");
 		}
 	}
 

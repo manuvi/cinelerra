@@ -1,4 +1,4 @@
-# last updated 2021/09/08 MatN/pys
+# last updated 2021/09/28 MatN/andrea/pys/gg
 http:*midi*
 http:*MIDI*
 
@@ -42,6 +42,8 @@ http://plugin.org.uk/swh-plugins/buttlow_iir
 http://plugin.org.uk/swh-plugins/bwxover_iir
 http://plugin.org.uk/swh-plugins/highpass_iir
 http://plugin.org.uk/swh-plugins/lowpass_iir
+http://plugin.org.uk/swh-plugins/mbeq
+http://plugin.org.uk/swh-plugins/pitchScaleHQ
 #
 # Problematic 9 tested by Olivier Humbert (https://librazik.tuxfamily.org/)
 #
@@ -74,11 +76,10 @@ http://rakarrack.sourceforge.net/effects.html#har_no_mid
 http://yoshimi.sourceforge.net/lv2_plugin
 http://yoshimi.sourceforge.net/lv2_plugin_multi
 urn:juced:DrumSynth
+
+# 20210928 MatN
+# This Calf plugin somewhere internally uses fluidsynth and
+# gives several "invalid argument" errors.
 #
-# Problematic 5 tested by MatN as a result of Ardour new LV2 plugins
-#
-urn:ardour:a-comp
-urn:ardour:a-comp#stereo
-urn:ardour:a-exp
-urn:ardour:a-exp#stereo
-urn:ardour:a-fluidsynth
+http://calf.sourceforge.net/plugins/Vinyl
+

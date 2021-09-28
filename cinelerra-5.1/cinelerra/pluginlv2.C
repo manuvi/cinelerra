@@ -170,6 +170,12 @@ int PluginLV2::init_lv2(PluginLV2ClientConfig &conf, int sample_rate, int bfrsz)
 		}
 	}
 
+	if( !nb_inputs || !nb_outputs ) {
+		printf(": Unsupported lv2 plugin, missing audio input or output\n");
+		reset_lv2();
+		return 1;
+	}
+
 	uri_map.handle = (LV2_URID_Map_Handle)this;
 	uri_map.map = map_uri;
 	features.append(new Lv2Feature(LV2_URID__map, &uri_map));
@@ -209,7 +215,15 @@ int PluginLV2::init_lv2(PluginLV2ClientConfig &conf, int sample_rate, int bfrsz)
 		printf("lv2: lilv_plugin_instantiate failed\n");
 		return 1;
 	}
+	
+// After instantiate, some plugins require fields to be filled in before
+// activate is called. This is done via ConnectPort, which connects a
+// port to a data structure in the host (CinGG). So these have to be
+// allocated first.
 
+	init_buffer(bfrsz);
+	connect_ports(conf, PORTS_ALL);
+	
 	const LV2_Descriptor *lilv_desc = inst->lv2_descriptor;
 	worker_iface = !lilv_desc->extension_data ? 0 :
 		(LV2_Worker_Interface*)lilv_desc->extension_data(LV2_WORKER__interface);
@@ -222,7 +236,7 @@ int PluginLV2::init_lv2(PluginLV2ClientConfig &conf, int sample_rate, int bfrsz)
 		(lilv_plugin_has_feature(lilv, powerOf2BlockLength) ||
 		 lilv_plugin_has_feature(lilv, fixedBlockLength) ||
 		 lilv_plugin_has_feature(lilv, boundedBlockLength)) ? 4096 : 0;
-	init_buffer(bfrsz);
+
 	return 0;
 }
 
