@@ -3,6 +3,11 @@ For usage help, refer to the following:
   https://cinelerra-gg.org/download/CinelerraGG_Manual.pdf
   http://g-raffa.eu/Cinelerra/HOWTO/basics.html
 .
+2021 September New Features of note:
+  Improvements have been made to the LV2 plugin code that
+   makes it more robust and prevents crashes on startup.
+  Additional 9 Video icons in the Resources window added.
+.
 2021 August New Features of note:
   FFmpeg has been upgraded to 4.4 to include new plugins.
   Speed PerCent plugin for easily changing video speed
