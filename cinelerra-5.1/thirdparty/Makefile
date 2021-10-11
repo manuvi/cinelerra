@@ -200,7 +200,7 @@ lame.cfg_params?=--enable-shared=no
 lame.mak_params?= ; cd $(call bld_path,lame,include); ln -sf . lame
 libaom.cfg_vars?= mkdir aom.build && cd aom.build && $(call cmake_config,..)
 libaom.cfg_params?=  -DENABLE_TESTS=no -DCMAKE_BUILD_TYPE=Release -DENABLE_DOCS=no -DENABLE_SHARED=no -DCMAKE_INSTALL_LIBDIR=lib \
- -DCMAKE_INSTALL_PREFIX=$(call bld_path,libaom)/usr/local
+ -DENABLE_EXAMPLES=no -DCMAKE_INSTALL_PREFIX=$(call bld_path,libaom)/usr/local
 libaom.mak_params?= ; $(MAKE) -C libaom*/aom.build install
 dav1d.cfg_vars?=echo "echo dav1d custom make" >> configure; chmod +x ./configure;
 dav1d.mak_params?=; $(MAKE) -C dav1d* install DESTDIR="$(call bld_path,dav1d)"

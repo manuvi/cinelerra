@@ -26,6 +26,7 @@
 #include <stdarg.h>
 #include <ctype.h>
 #include <limits.h>
+#include <time.h>
 // work arounds (centos)
 #include <lzma.h>
 #ifndef INT64_MAX
@@ -1647,11 +1648,15 @@ void File::setenv_path(const char *var, const char *path, int overwrite)
 	getenv_path(env_path, path);
 	setenv(var, env_path, overwrite);
 }
-
-void File::init_cin_path()
+/**
+* @brief Set various environment variables to pass constant values to
+*        forks, shell scripts, and other parts of CinGG.
+*/
+void File::init_cin_env_vars()
 {
-	char env_path[BCTEXTLEN], env_pkg[BCTEXTLEN];
-// these values are advertised for forks/shell scripts
+	char env_path[BCTEXTLEN], env_pkg[BCTEXTLEN], build_name[32], dateTimeText[32];
+	struct stat st;
+	struct tm *dateTime;
 	get_exe_path(env_path, env_pkg);
 	setenv_path("CIN_PATH", env_path, 1);
 	setenv_path("CIN_PKG", env_pkg, 1);
@@ -1662,5 +1667,12 @@ void File::init_cin_path()
 	setenv_path("CIN_LADSPA", LADSPA_DIR, 0);
 	setenv_path("CIN_LOCALE", LOCALE_DIR, 0);
 	setenv_path("CIN_BROWSER", CIN_BROWSER, 0);
+// Create env_var CINGG_BUILD for use when running as AppImage
+	stat(env_path, &st);
+	dateTime = gmtime(&st.st_mtime);
+	strftime(dateTimeText, sizeof(dateTimeText), "%Y%m%d_%H%M%S", dateTime);
+    snprintf(build_name, sizeof(build_name), "CINGG_%s", dateTimeText);
+	build_name[sizeof(build_name) - 1] = 0;
+	setenv_path("CINGG_BUILD", build_name, 1);
 }
 

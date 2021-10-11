@@ -389,7 +389,7 @@ PluginClient *PluginServer::new_lv2_plugin()
 
 int MWindow::init_lv2_index(MWindow *mwindow, Preferences *preferences, FILE *fp)
 {
-	printf("init lv2 index: %s\n", preferences->lv2_path);
+	printf("build lv2 index for: %s\n", preferences->lv2_path);
 	PluginLV2BlackList blacklist("lv2_blacklist.txt");
 
 	LilvWorld *world = lilv_world_new();

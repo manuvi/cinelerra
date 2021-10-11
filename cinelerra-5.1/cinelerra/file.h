@@ -320,7 +320,7 @@ public:
 	Preferences *preferences;
 	int wr, rd;
 
-	static void init_cin_path();
+	static void init_cin_env_vars();
 	static void get_exe_path(char *result, char *bnp=0);
 	static void getenv_path(char *result, const char *path);
 	static void setenv_path(const char *var, const char *path, int overwrite);

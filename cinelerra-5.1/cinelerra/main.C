@@ -142,6 +142,15 @@ static float get_layout_scale()
 	return scale;
 }
 
+/*******************************************************************
+* @mainpage
+* Cinelerra-GG is a professional video editor for Linux. It is timeline
+* based, supports hundreds of (de)coders, LADSPA and LV2 audio plugins,
+* FFMPEG audio/video plugins, plus built-in audio/video plugins.
+* Screen sizes up to 8K, any frame rate, extensive compositing features,
+* title generator and more.
+*
+********************************************************************/
 int main(int argc, char *argv[])
 {
 // handle command line arguments first
@@ -170,7 +179,7 @@ int main(int argc, char *argv[])
 	Units::init();
 	const char *lang = getenv("LANGUAGE");
 	if( lang ) lang = cstrdup(lang);
-	File::init_cin_path();
+	File::init_cin_env_vars();
 	const char *locale_path = File::get_locale_path();
 	const char *cin = File::get_cin();
 

@@ -641,16 +641,3 @@ int PluginAClientLAD::process_realtime(int64_t size,
 	}
 	return size;
 }
-
-int MWindow::init_ladspa_index(MWindow *mwindow, Preferences *preferences,
-	FILE *fp, const char *plugin_dir)
-{
-	char plugin_path[BCTEXTLEN], *path = FileSystem::basepath(plugin_dir);
-	strcpy(plugin_path, path);  delete [] path;
-	printf("init ladspa index: %s\n", plugin_dir);
-	fprintf(fp, "%d\n", PLUGIN_FILE_VERSION);
-	fprintf(fp, "%s\n", plugin_dir);
-	init_plugin_index(mwindow, preferences, fp, plugin_path);
-	return 0;
-}
-

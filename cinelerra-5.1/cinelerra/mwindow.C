@@ -240,6 +240,7 @@ MWindow::MWindow()
 	sighandler = 0;
 	restart_status = 0;
 	screens = 1;
+	appimageDir = getenv("APPDIR"); //NULL if not running as appimage
 	in_destructor = 0;
 	speed_edl = 0;
 	beeper = 0;
@@ -556,21 +557,47 @@ void MWindow::get_plugin_path(char *path, const char *plug_dir, const char *fs_p
 	delete [] base_path;
 }
 
-int MWindow::load_plugin_index(MWindow *mwindow, FILE *fp, const char *plugin_dir)
+/**
+* @brief Load plugins according to an index file.
+* 
+* @details Builds an ArrayList of plugin servers only if there is no
+* mismatch for file layout version, index identifier, or executable
+* timestamp mismatch for the built-in plugins. If OK, add the plugin
+* servers to the global list.
+* 
+* @note If an error is returned the index file needs to be rebuilt, and
+* then this function must be called again.
+* There are two types of index files, with the same layout internally.
+* One called "Cinelerra_plugins" for built-ins, ffmpeg and lv2 .
+* The other type "ladspa_plugins.index_id" where index_id is either the
+* path or the $CIN_BUILD identifier if the path is from the running
+* AppImage itself. If there are multiple ladspa directories in the
+* path, there will be multiple index files.
+* 
+* @return  -1 if file no open, 0 if OK, 1 if error. 
+*/
+int MWindow::load_plugin_index(MWindow *mwindow, FILE *fp, const char *plugin_dir, const char *index_id)
 {
 	if( !fp ) return -1;
+	struct stat st;
+	fstat (fileno(fp), &st);	// don't bother if the file has just been created.
+	if( st.st_size < 4 ) return 1;
+	
 // load index
 	fseek(fp, 0, SEEK_SET);
 	int ret = 0;
 	char index_line[BCTEXTLEN];
-	int index_version = -1, len = strlen(plugin_dir);
+	int index_version = -1, len = strlen(index_id);
 	if( !fgets(index_line, BCTEXTLEN, fp) ||
 	    sscanf(index_line, "%d", &index_version) != 1 ||
 	    index_version != PLUGIN_FILE_VERSION ||
 	    !fgets(index_line, BCTEXTLEN, fp) ||
 	    (int)strlen(index_line)-1 != len || index_line[len] != '\n' ||
-	    strncmp(index_line, plugin_dir, len) != 0 ) ret = 1;
-
+	    strncmp(index_line, index_id, len) != 0 ) {
+//		printf("index file mismatch, version %d, index id length %d, expected id %s, file id %s\n", index_version, len, index_id, index_line);
+		ret = 1;
+	}
+	
 	ArrayList<PluginServer*> plugins;
 	while( !ret && !feof(fp) && fgets(index_line, BCTEXTLEN, fp) ) {
 		if( index_line[0] == ';' ) continue;
@@ -579,6 +606,7 @@ int MWindow::load_plugin_index(MWindow *mwindow, FILE *fp, const char *plugin_di
 		char path[BCTEXTLEN], title[BCTEXTLEN];
 		int64_t mtime = 0;
 		if( PluginServer::scan_table(index_line, type, path, title, mtime) ) {
+//			printf("PluginServer::scan_table failed for %s\n", index_line);
 			ret = 1; continue;
 		}
 		PluginServer *server = 0;
@@ -589,6 +617,7 @@ int MWindow::load_plugin_index(MWindow *mwindow, FILE *fp, const char *plugin_di
 			char plugin_path[BCTEXTLEN];  struct stat st;
 			sprintf(plugin_path, "%s/%s", plugin_dir, path);
 			if( stat(plugin_path, &st) || st.st_mtime != mtime ) {
+//				printf("Plugin %s index time %ld, file time %ld\n", plugin_path, mtime, st.st_mtime); 
 				ret = 1; continue;
 			}
 			server = new PluginServer(mwindow, plugin_path, type);
@@ -605,6 +634,7 @@ int MWindow::load_plugin_index(MWindow *mwindow, FILE *fp, const char *plugin_di
 // Create plugin server from index entry
 		server->set_title(title);
 		if( server->read_table(index_line) ) {
+//			printf("server->read_table failed for title %s, %s\n", title, index_line);
 			ret = 1;  continue;
 		}
 	}
@@ -643,17 +673,24 @@ int MWindow::check_plugin_index(ArrayList<PluginServer*> &plugins,
 	}
 	return 0;
 }
-
-
+/*
+* @brief Load built-in and LV2 plugins as specified in index file,
+*        rebuild the index file if needed.
+*/
 int MWindow::init_plugins(MWindow *mwindow, Preferences *preferences)
 {
 	if( !plugindb )
 		plugindb = new ArrayList<PluginServer*>;
 	init_ffmpeg();
-	char index_path[BCTEXTLEN], plugin_path[BCTEXTLEN];
+	char index_path[BCTEXTLEN], plugin_path[BCTEXTLEN], index_id[BCTEXTLEN];
 	create_defaults_path(index_path, PLUGIN_FILE);
 	char *plugin_dir = FileSystem::basepath(preferences->plugin_dir);
 	strcpy(plugin_path, plugin_dir);  delete [] plugin_dir;
+	// index_id is 2nd line of the index file, normally full plugin path,
+	// but fixed value if AppImage because the path changes on each run.
+	// And if the second line does not match on the next run the index is rebuilt.
+	if( mwindow->appimageDir ) strcpy(index_id, getenv("CINGG_BUILD"));
+	else strcpy(index_id, plugin_path);
 	FILE *fp = fopen(index_path,"a+");
 	if( !fp ) {
 		fprintf(stderr,_("MWindow::init_plugins: "
@@ -663,19 +700,19 @@ int MWindow::init_plugins(MWindow *mwindow, Preferences *preferences)
 	int fd = fileno(fp), ret = -1;
 	if( !flock(fd, LOCK_EX) ) {
 		fseek(fp, 0, SEEK_SET);
-		ret = load_plugin_index(mwindow, fp, plugin_path);
+		ret = load_plugin_index(mwindow, fp, plugin_path, index_id);
 	}
 	if( ret > 0 ) {
 		ftruncate(fd, 0);
 		fseek(fp, 0, SEEK_SET);
-		printf("init plugin index: %s\n", plugin_path);
+		printf("build plugin index for: %s\n", plugin_path);
 		fprintf(fp, "%d\n", PLUGIN_FILE_VERSION);
-		fprintf(fp, "%s\n", plugin_path);
+		fprintf(fp, "%s\n", index_id);
 		init_plugin_index(mwindow, preferences, fp, plugin_path);
 		init_ffmpeg_index(mwindow, preferences, fp);
 		init_lv2_index(mwindow, preferences, fp);
 		fseek(fp, 0, SEEK_SET);
-		ret = load_plugin_index(mwindow, fp, plugin_path);
+		ret = load_plugin_index(mwindow, fp, plugin_path, index_id);
 	}
 	if( ret ) {
 		fprintf(stderr,_("MWindow::init_plugins: "
@@ -686,26 +723,38 @@ int MWindow::init_plugins(MWindow *mwindow, Preferences *preferences)
 	return ret;
 }
 
+/*
+* @brief Load ladspa plugins as specified in index files, for each ladspa
+*        directory keep a separate index file. Rebuild index file(s) if needed.
+**/
 int MWindow::init_ladspa_plugins(MWindow *mwindow, Preferences *preferences)
 {
 #ifdef HAVE_LADSPA
 	char *path = getenv("LADSPA_PATH");
 	char ladspa_path[BCTEXTLEN];
-	if( !path ) {
+	if( !path ) {  			// if no env var, use CinGG's own ladspa dir
 		strncpy(ladspa_path, File::get_ladspa_path(), sizeof(ladspa_path));
 		path = ladspa_path;
 	}
 	for( int len=0; *path; path+=len ) {
 		char *cp = strchr(path,':');
 		len = !cp ? strlen(path) : cp-path;
-		char index_path[BCTEXTLEN], plugin_path[BCTEXTLEN];
+		char index_path[BCTEXTLEN], plugin_path[BCTEXTLEN], index_id[BCTEXTLEN];
 		memcpy(plugin_path, path, len);  plugin_path[len] = 0;
 		if( cp ) ++len;
 		char *plugin_dir = FileSystem::basepath(plugin_path);
 		strcpy(plugin_path, plugin_dir);  delete [] plugin_dir;
 		create_defaults_path(index_path, LADSPA_FILE);
 		cp = index_path + strlen(index_path);
-		for( char *bp=plugin_path; *bp!=0; ++bp )
+		// If the first part of the plugin_path matches the APPDIR, we are
+		// referring to CinGG's ladspa, replace the path by a fixed ID. APPDIR
+		// only exists if we are running as AppImage (with variable mount points).
+		if( mwindow->appimageDir && strncmp(plugin_path, mwindow->appimageDir, strlen(mwindow->appimageDir)) == 0 )
+			strcpy(index_id, getenv("CINGG_BUILD"));
+		else strcpy(index_id, plugin_path);
+
+		// Concatenate the path, replacing '/' with '_'. 
+		for( char *bp=index_id; *bp!=0; ++bp )
 			*cp++ = *bp=='/' ? '_' : *bp;
 		*cp = 0;
 		FILE *fp = fopen(index_path,"a+");
@@ -717,14 +766,17 @@ int MWindow::init_ladspa_plugins(MWindow *mwindow, Preferences *preferences)
 		int fd = fileno(fp), ret = -1;
 		if( !flock(fd, LOCK_EX) ) {
 			fseek(fp, 0, SEEK_SET);
-			ret = load_plugin_index(mwindow, fp, plugin_path);
+			ret = load_plugin_index(mwindow, fp, plugin_path, index_id);
 		}
 		if( ret > 0 ) {
 			ftruncate(fd, 0);
 			fseek(fp, 0, SEEK_SET);
-			init_ladspa_index(mwindow, preferences, fp, plugin_path);
+			printf("build ladspa plugin index for: %s\n", plugin_path);
+			fprintf(fp, "%d\n", PLUGIN_FILE_VERSION);
+			fprintf(fp, "%s\n", index_id);
+			init_plugin_index(mwindow, preferences, fp, plugin_path);
 			fseek(fp, 0, SEEK_SET);
-			ret = load_plugin_index(mwindow, fp, plugin_path);
+			ret = load_plugin_index(mwindow, fp, plugin_path, index_id);
 		}
 		if( ret ) {
 			fprintf(stderr,_("MWindow::init_ladspa_plugins: "

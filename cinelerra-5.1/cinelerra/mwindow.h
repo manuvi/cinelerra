@@ -817,13 +817,11 @@ public:
 		const char *plug_dir, const char *plug_path);
 	static void init_plugin_index(MWindow *mwindow, Preferences *preferences,
 		FILE *fp, const char *plugin_dir);
-	static int init_ladspa_index(MWindow *mwindow, Preferences *preferences,
-		FILE *fp, const char *plugin_dir);
 	static void scan_plugin_index(MWindow *mwindow, Preferences *preferences,
 		FILE *fp, const char *plug_dir, const char *plug_path, int &idx);
 	static void init_ffmpeg();
 	static void init_ffmpeg_index(MWindow *mwindow, Preferences *preferences, FILE *fp);
-	static int load_plugin_index(MWindow *mwindow, FILE *fp, const char *plugin_dir);
+	static int load_plugin_index(MWindow *mwindow, FILE *fp, const char *plugin_dir, const char *index_id);
 	static PluginServer *new_ffmpeg_server(MWindow *mwindow, const char *name);
 	static int init_lv2_index(MWindow *mwindow, Preferences *preferences, FILE *fp);
 	static PluginServer *new_lv2_server(MWindow *mwindow, const char *name);
@@ -860,6 +858,7 @@ public:
 	SigHandler *sighandler;
 	int restart_status;
 	int screens;
+	const char *appimageDir;
 	int in_destructor;
 	Shuttle *shuttle;
 	WinTV *wintv;
