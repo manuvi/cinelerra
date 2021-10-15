@@ -77,6 +77,7 @@ RenderFarmClient::RenderFarmClient(int port,
 	boot_preferences = new Preferences;
 	boot_preferences->load_defaults(boot_defaults);
 	MWindow::init_plugins(0, boot_preferences);
+	MWindow::init_ladspa_plugins(0, boot_preferences);  
 	BC_Signals::set_catch_segv(boot_preferences->trap_sigsegv);
 	BC_Signals::set_catch_intr(0);
         if( boot_preferences->trap_sigsegv ) {

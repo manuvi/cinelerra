@@ -684,7 +684,7 @@ void RenderThread::render_single(int test_overwrite, Asset *asset, EDL *edl,
 	render->result = 0;
 
 // Create rendering command
-	TransportCommand *command = new TransportCommand(mwindow->preferences);
+	TransportCommand *command = new TransportCommand(render->preferences);
 	command->command = NORMAL_FWD;
 	command->get_edl()->copy_all(edl);
 	command->change_type = CHANGE_ALL;

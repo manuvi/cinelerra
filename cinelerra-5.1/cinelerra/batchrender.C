@@ -597,8 +597,10 @@ void BatchRenderThread::start_rendering(char *config_path,
 	else {
 		BC_Trace::disable_locks();
 	}
-
+// In batch mode there is no mwindow, so init_plugins is called with
+// mwindow* = NULL.
 	MWindow::init_plugins(0, preferences);
+	MWindow::init_ladspa_plugins(0, preferences);  
 	char font_path[BCTEXTLEN];
 	strcpy(font_path, preferences->plugin_dir);
 	strcat(font_path, "/" FONT_SEARCHPATH);

@@ -240,7 +240,6 @@ MWindow::MWindow()
 	sighandler = 0;
 	restart_status = 0;
 	screens = 1;
-	appimageDir = getenv("APPDIR"); //NULL if not running as appimage
 	in_destructor = 0;
 	speed_edl = 0;
 	beeper = 0;
@@ -561,9 +560,8 @@ void MWindow::get_plugin_path(char *path, const char *plug_dir, const char *fs_p
 * @brief Load plugins according to an index file.
 * 
 * @details Builds an ArrayList of plugin servers only if there is no
-* mismatch for file layout version, index identifier, or executable
-* timestamp mismatch for the built-in plugins. If OK, add the plugin
-* servers to the global list.
+* mismatch for file layout version, index identifier, or timestamp of
+* the built-in plugins. If OK, add the plugin servers to the global list.
 * 
 * @note If an error is returned the index file needs to be rebuilt, and
 * then this function must be called again.
@@ -673,9 +671,13 @@ int MWindow::check_plugin_index(ArrayList<PluginServer*> &plugins,
 	}
 	return 0;
 }
-/*
+
+/**
 * @brief Load built-in and LV2 plugins as specified in index file,
 *        rebuild the index file if needed.
+* @param[in]	mwindow: GUI class pointer, will be NULL for batch
+*               rendering or renderfarm client.
+* @param[in]	preferences: Information from cinelerra_rc file.
 */
 int MWindow::init_plugins(MWindow *mwindow, Preferences *preferences)
 {
@@ -689,7 +691,7 @@ int MWindow::init_plugins(MWindow *mwindow, Preferences *preferences)
 	// index_id is 2nd line of the index file, normally full plugin path,
 	// but fixed value if AppImage because the path changes on each run.
 	// And if the second line does not match on the next run the index is rebuilt.
-	if( mwindow->appimageDir ) strcpy(index_id, getenv("CINGG_BUILD"));
+	if( getenv("APPDIR") && getenv("CINGG_BUILD")) strcpy(index_id, getenv("CINGG_BUILD"));
 	else strcpy(index_id, plugin_path);
 	FILE *fp = fopen(index_path,"a+");
 	if( !fp ) {
@@ -723,14 +725,18 @@ int MWindow::init_plugins(MWindow *mwindow, Preferences *preferences)
 	return ret;
 }
 
-/*
+/**
 * @brief Load ladspa plugins as specified in index files, for each ladspa
 *        directory keep a separate index file. Rebuild index file(s) if needed.
-**/
+* @param[in]	mwindow: GUI class pointer, will be NULL for batch
+*               rendering or renderfarm client.
+* @param[in]	preferences: Information from cinelerra_rc file.
+*/
 int MWindow::init_ladspa_plugins(MWindow *mwindow, Preferences *preferences)
 {
 #ifdef HAVE_LADSPA
 	char *path = getenv("LADSPA_PATH");
+	char *appdir = getenv("APPDIR");
 	char ladspa_path[BCTEXTLEN];
 	if( !path ) {  			// if no env var, use CinGG's own ladspa dir
 		strncpy(ladspa_path, File::get_ladspa_path(), sizeof(ladspa_path));
@@ -749,7 +755,7 @@ int MWindow::init_ladspa_plugins(MWindow *mwindow, Preferences *preferences)
 		// If the first part of the plugin_path matches the APPDIR, we are
 		// referring to CinGG's ladspa, replace the path by a fixed ID. APPDIR
 		// only exists if we are running as AppImage (with variable mount points).
-		if( mwindow->appimageDir && strncmp(plugin_path, mwindow->appimageDir, strlen(mwindow->appimageDir)) == 0 )
+		if( appdir && strncmp(plugin_path, appdir, strlen(appdir)) == 0 )
 			strcpy(index_id, getenv("CINGG_BUILD"));
 		else strcpy(index_id, plugin_path);
 
@@ -818,7 +824,7 @@ void MWindow::scan_plugin_index(MWindow *mwindow, Preferences *preferences, FILE
 		char fs_path[BCTEXTLEN], path[BCTEXTLEN];
 		get_plugin_path(fs_path, 0, fs.dir_list[i]->path);
 		get_plugin_path(path, plug_dir, fs_path);
-		if( fs.is_dir(fs_path) ) {
+		if( fs.is_dir(fs_path) ) {	// recursively scan child directory
 			scan_plugin_index(mwindow, preferences, fp, plug_dir, path, idx);
 			continue;
 		}

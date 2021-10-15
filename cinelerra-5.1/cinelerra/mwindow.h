@@ -858,7 +858,6 @@ public:
 	SigHandler *sighandler;
 	int restart_status;
 	int screens;
-	const char *appimageDir;
 	int in_destructor;
 	Shuttle *shuttle;
 	WinTV *wintv;
