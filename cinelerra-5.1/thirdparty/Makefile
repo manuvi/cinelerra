@@ -242,6 +242,7 @@ opencv.cfg_vars?=$(call cmake_config,.)
 opencv.cfg_params?= -DBUILD_SHARED_LIBS:BOOL=OFF
 openexr.cfg_vars?=true; \#
 openexr.mak_vars?=true; \#
+opus.cfg_params?= --disable-extra-programs
 speech_tools.mak_params?=-j1
 tiff.cfg_vars+=LIBS+=" -lpthread"
 tiff.cfg_params+= --enable-shared=no --disable-zstd $(call if_pkg,libwebp,\

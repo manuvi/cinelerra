@@ -2280,10 +2280,12 @@ TitleTranslateUnit::TitleTranslateUnit(TitleMain *plugin, TitleTranslate *server
 			else b = max - a; \
 			double_b = (1.0 * b * (max - a)/(max*1.0)); \
 			total_alpha = a + double_b; \
-			px = *op;  *op++ = (a*in_r + double_b*px) / total_alpha; \
-			px = *op;  *op++ = (a*(in_g-ofs) + double_b*(px-ofs)) / total_alpha + ofs; \
-			px = *op;  *op++ = (a*(in_b-ofs) + double_b*(px-ofs)) / total_alpha + ofs; \
-			if( comps == 4 ) { b = *op;  *op++ = a + b - a*b / max; } \
+			if (total_alpha > 0.00000001) { \
+				px = *op;  *op++ = (a*in_r + double_b*px) / total_alpha; \
+				px = *op;  *op++ = (a*(in_g-ofs) + double_b*(px-ofs)) / total_alpha + ofs; \
+				px = *op;  *op++ = (a*(in_b-ofs) + double_b*(px-ofs)) / total_alpha + ofs; \
+				if( comps == 4 ) { b = *op;  *op++ = a + b - a*b / max; } \
+			} \
 		} \
 	} \
 }
