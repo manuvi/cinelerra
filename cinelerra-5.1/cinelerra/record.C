@@ -46,7 +46,9 @@
 #include "keys.h"
 #include "language.h"
 #include "localsession.h"
+#ifdef HAVE_DV
 #include "libdv.h"
+#endif
 #include "libmjpeg.h"
 #include "libzmpeg3.h"
 #include "mainmenu.h"
@@ -215,10 +217,12 @@ int Record::load_defaults()
 	case VIDEO4LINUX2JPEG:
 		vcodec = CODEC_TAG_MJPEG;
 		break;
+#ifdef HAVE_DV
 	case CAPTURE_FIREWIRE:
 	case CAPTURE_IEC61883:
 		vcodec = CODEC_TAG_DVSD;
 		break;
+#endif
 	}
 	if( vcodec )
 		strcpy(default_asset->vcodec, vcodec);

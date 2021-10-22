@@ -29,7 +29,9 @@
 #include "ffmpeg.h"
 #include "indexfile.h"
 #include "interlacemodes.h"
+#ifdef HAVE_DV
 #include "libdv.h"
+#endif
 #include "libmjpeg.h"
 #include "mainerror.h"
 #include "mwindow.h"
