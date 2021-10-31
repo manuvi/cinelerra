@@ -3,6 +3,12 @@ For usage help, refer to the following:
   https://cinelerra-gg.org/download/CinelerraGG_Manual.pdf
   http://g-raffa.eu/Cinelerra/HOWTO/basics.html
 .
+2021 October changes of note:
+  Hungarian automated-google translation has been added.
+  Long existing bug when using Fade in/out in the Titler 
+   plugin when there is an alpha channel in use is fixed.
+  Added new render formats of Cineform, DPX, and mxf.
+  In AppImage, the plugins are no longer loaded every time.
 2021 September New Features of note:
   Improvements have been made to the LV2 plugin code that
    makes it more robust and prevents crashes on startup.
