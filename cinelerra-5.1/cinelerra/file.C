@@ -174,9 +174,11 @@ int File::get_options(FormatTools *format,
 	format_completion->lock("File::get_options");
 	switch( asset->format ) {
 #ifdef HAVE_CIN_3RDPARTY
+#ifdef HAVE_LIBZMPEG
 	case FILE_AC3: FileAC3::get_parameters(parent_window, asset, format_window,
 			audio_options, video_options, edl);
 		break;
+#endif
 #endif
 #ifdef HAVE_DV
 	case FILE_RAWDV:
@@ -543,9 +545,11 @@ int File::open_file(Preferences *preferences,
 		break; }
 // format already determined
 #ifdef HAVE_CIN_3RDPARTY
+#ifdef HAVE_LIBZMPEG
 	case FILE_AC3:
 		file = new FileAC3(this->asset, this);
 		break;
+#endif
 #endif
 	case FILE_SCENE:
 		file = new FileScene(this->asset, this);
