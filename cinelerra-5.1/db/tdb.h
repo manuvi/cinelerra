@@ -1,3 +1,4 @@
+#ifdef __I386__ || __x86-64__
 #ifndef __DB_H__
 #define __DB_H__
 #include <cstring>
@@ -1514,3 +1515,4 @@ public:
 };
 
 #endif
+#endif /* x86 */

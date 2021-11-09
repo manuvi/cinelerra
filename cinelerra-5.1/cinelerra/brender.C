@@ -103,6 +103,9 @@ void BRender::initialize()
 // Create socket for background process.
 	uuid_t socket_temp;
 	sprintf(socket_path, "/tmp/cinelerra.");
+#if defined(__TERMUX__)
+	sprintf(socket_path, "/data/data/com.termux/files/home/tmp/cinelerra.");
+#endif
 	uuid_generate(socket_temp);
 	uuid_unparse(socket_temp, socket_path + strlen(socket_path));
 SET_TEMP(socket_path);

@@ -283,8 +283,10 @@ MWindow::~MWindow()
 	delete convert_render;  convert_render = 0;
 	delete render;          render = 0;
 	delete mixers_align;    mixers_align = 0;
+#ifdef HAVE_COMMERCIALS
 	commit_commercial();
 	if( commercials && !commercials->remove_user() ) commercials = 0;
+#endif
 	close_mixers();
 	if( speed_edl ) { speed_edl->remove_user();  speed_edl = 0; }
 // Save defaults for open plugins

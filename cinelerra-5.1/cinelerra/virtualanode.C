@@ -475,11 +475,11 @@ int VirtualANode::render_pan(double *input, // start of input fragment
 			}
 		}
 		else if( EQUIV(intercept, 1) ) {
-			for(int j = 0; j < slope_len; j++, i++)
+			for(int64_t j = 0; j < slope_len; j++, i++)
 				output[i] += input[i];
 		}
 		else if( !EQUIV(intercept, 0) ) {
-			for(int j = 0; j < slope_len; j++, i++)
+			for(int64_t j = 0; j < slope_len; j++, i++)
 				output[i] += input[i] * intercept;
 		}
 		else
