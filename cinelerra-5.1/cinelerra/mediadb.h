@@ -1,4 +1,3 @@
-#ifdef __I386__ || __x86-64__
 #ifndef _MEDIA_DB_H_
 #define _MEDIA_DB_H_
 
@@ -240,4 +239,3 @@ public:
 };
 
 #endif
-#endif /* x86 */

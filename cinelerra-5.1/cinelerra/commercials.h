@@ -1,4 +1,3 @@
-#ifdef __I386__ || __x86-64__
 #ifndef _COMMERCIALS_H_
 #define _COMMERCIALS_H_
 
@@ -203,4 +202,3 @@ public:
 
 
 #endif
-#endif /* x86 */
