@@ -31,7 +31,7 @@
 #include "filexml.h"
 #include "guicast.h"
 #include "language.h"
-#if HAVE_LIBDV
+#if HAVE_DV
 #include "libdv.h"
 #endif
 #include "libmjpeg.h"

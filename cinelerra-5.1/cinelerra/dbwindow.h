@@ -1,3 +1,4 @@
+#if defined(__i386__) || defined(__x86_64__)
 #ifndef _DBWINDOW_H_
 #define _DBWINDOW_H_
 
@@ -296,3 +297,4 @@ public:
 
 
 #endif
+#endif /* x86 */

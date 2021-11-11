@@ -1,3 +1,4 @@
+#if defined(__i386__) || defined(__x86_64__)
 #ifndef _MEDIA_DB_H_
 #define _MEDIA_DB_H_
 
@@ -239,3 +240,4 @@ public:
 };
 
 #endif
+#endif /* x86 */
