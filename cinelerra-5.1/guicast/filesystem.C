@@ -536,7 +536,7 @@ int FileSystem::parse_tildas(char *new_dir)
 				new_user[j] = new_dir[i];
 			}
 			new_user[j] = 0;
-
+#if !defined(__TERMUX__)
 			setpwent();
 			while( (pw = getpwent()) != 0 )
 			{
@@ -550,6 +550,7 @@ int FileSystem::parse_tildas(char *new_dir)
       			}
 			}
 			endpwent();
+#endif
 			return 0;
 		}
 	}

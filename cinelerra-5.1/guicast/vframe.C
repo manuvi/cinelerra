@@ -334,7 +334,7 @@ if( memory_type != VFrame::SHARED )
 			shmid = -1;
 			break;
 
-		case VFrame::SHMGET:
+		case VFrame::SHM_GET:
 			if(data)
 				shmdt(data);
 			data = 0;
@@ -510,7 +510,7 @@ int VFrame::allocate_data(unsigned char *data, int shmid,
 		this->v_offset = v_offset;
 	}
 	else if( shmid >= 0 ) {
-		memory_type = VFrame::SHMGET;
+		memory_type = VFrame::SHM_GET;
 		this->data = (unsigned char*)shmat(shmid, NULL, 0);
 		if( this->data == (unsigned char*)-1 ) {
 			printf("VFrame::allocate_data %d could not attach"
@@ -593,7 +593,7 @@ void VFrame::set_memory(unsigned char *data,
 	else
 	if(shmid >= 0)
 	{
-		memory_type = VFrame::SHMGET;
+		memory_type = VFrame::SHM_GET;
 		this->data = (unsigned char*)shmat(shmid, NULL, 0);
 		this->shmid = shmid;
 	}
@@ -635,7 +635,7 @@ void VFrame::set_compressed_memory(unsigned char *data,
 	else
 	if(shmid >= 0)
 	{
-		memory_type = VFrame::SHMGET;
+		memory_type = VFrame::SHM_GET;
 		this->data = (unsigned char*)shmat(shmid, NULL, 0);
 		this->shmid = shmid;
 	}
@@ -713,7 +713,7 @@ UNBUFFER(data);
 			else
 				free(data);
 		}
-		else if( memory_type == VFrame::SHMGET ) {
+		else if( memory_type == VFrame::SHM_GET ) {
 			if( data ) shmdt(data);
 		}
 

@@ -28,6 +28,9 @@
 #include <string.h>
 #include <typeinfo>
 #include "thread.h"
+#if defined(__TERMUX__)
+#include "bthread.h"
+#endif
 
 
 Thread::Thread(int synchronous, int realtime, int autodelete)
@@ -102,8 +105,10 @@ void Thread::start()
 			perror("Thread::start pthread_attr_setschedparam");
 	}
 	else {
+#if !defined(__TERMUX__)
 		if(pthread_attr_setinheritsched(&attr, PTHREAD_INHERIT_SCHED) < 0)
 			perror("Thread::start pthread_attr_setinheritsched");
+#endif
 	}
 
 // autodelete may delete this immediately after create

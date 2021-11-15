@@ -26,6 +26,8 @@
 #include <pthread.h>
 #include <unistd.h>
 
+#if !defined(__TERMUX__)
+
 #ifndef NO_TID
 #include <sys/syscall.h>
 
@@ -35,6 +37,8 @@ static inline int gettid() { return syscall(SYS_gettid, 0, 0, 0); }
 #endif
 #else
 static inline long gettid() { return (long)pthread_self(); }
+#endif
+
 #endif
 
 // The thread does not autodelete by default.

@@ -417,7 +417,7 @@ private:
 	{
 		PRIVATE,
 		SHARED,
-		SHMGET
+		SHM_GET
 	};
 
 // Data pointer is pointing to someone else's buffer.

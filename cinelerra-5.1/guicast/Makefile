@@ -12,6 +12,14 @@ ifeq ($(OBJDIR), amd64)
 BOOTSTRAPFLAGS := -DBOOTSTRAP="\"objcopy -B i386 -I binary -O elf64-x86-64\""
 endif
 
+ifeq ($(OBJDIR), armv8l)
+BOOTSTRAPFLAGS := -DBOOTSTRAP="\"objcopy -B arm -I binary -O elf32-littlearm\""
+endif
+
+ifeq ($(OBJDIR), aarch64)
+BOOTSTRAPFLAGS := -DBOOTSTRAP="\"objcopy -B arm -I binary -O elf64-littlearm\""
+endif
+
 $(shell mkdir -p $(OBJDIR) )
 
 OBJS = \
