@@ -12,7 +12,7 @@ CFG_CFLAGS+=" -fno-omit-frame-pointer -fno-math-errno -fno-signed-zeros"
 CFG_CFLAGS+=" -pthread -Wall"
 # misguided pedantic warnings
 #  this is extra work, not a gain...
-CFG_CFLAGS+=" -Wno-unknown-warning-option"
+#CFG_CFLAGS+=" -Wno-unknown-warning-option"
 CFG_CFLAGS+=" -Wno-attributes"
 CFG_CFLAGS+=" -Wno-unused-result"
 CFG_CFLAGS+=" -Wno-stringop-overflow"
@@ -26,7 +26,9 @@ CFG_CFLAGS+=" -DPNG_SKIP_SETJMP_CHECK=1"
 CFG_CFLAGS+=" -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64"
 CFG_CFLAGS+=" -I/usr/include -I/usr/local/include"
 CFG_CFLAGS+=" -I/usr/include/freetype2 -I/usr/local/include/freetype2"
+CFG_CFLAGS+=" -I/data/data/com.termux/files/usr/include/freetype2"
 CFG_CFLAGS+=" -I/usr/include/uuid -I/usr/local/include/uuid"
+CFG_CFLAGS+=" -I/data/data/com.termux/files/usr/include/uuid -I/usr/local/include/uuid"
 CFG_CFLAGS+=" -I/usr/include/mjpegtools -I/usr/local/include/mjpegtools"
 
 AC_DEFUN([CHECK_WITH], [
@@ -317,6 +319,13 @@ PKG_3RD([libvorbis],[auto],
     lib/.libs/libvorbisfile.a ],
   [ include . ])
 
+## arch dep tests
+ARCH=[`uname -m`]
+I86=[`expr "x$ARCH" : 'xi[346]86.*'`]
+X86=[`expr "x$ARCH" : 'x..._64*'`]
+
+if test "x$I86$X86" != "x00" ; then
+
 PKG_3RD([mjpegtools],[yes],
   [mjpegtools-2.1.0],
   [ utils/mmxsse/.libs/libmmxsse.a \
@@ -327,6 +336,20 @@ PKG_3RD([mjpegtools],[yes],
     yuvfilters/.libs/libyuvfilters.a \
     mpeg2enc/.libs/libmpeg2encpp.a ],
   [ .  lavtools utils ])
+
+else
+
+PKG_3RD([mjpegtools],[yes],
+  [mjpegtools-2.1.0],
+  [ utils/.libs/libmjpegutils.a \
+    lavtools/.libs/liblavfile.a \
+    lavtools/.libs/liblavjpeg.a \
+    mplex/.libs/libmplex2.a \
+    yuvfilters/.libs/libyuvfilters.a \
+    mpeg2enc/.libs/libmpeg2encpp.a ],
+  [ .  lavtools utils ])
+
+fi
 
 PKG_3RD([openexr],[auto],
   [openexr-2.4.1],
@@ -428,6 +451,15 @@ PKG_3RD([ffnvcodec],[auto],
   [ ],
   [ . ])
 
+if test [ "$(uname -o)"] = "Android"  ; then
+
+PKG_3RD([libbthread],[auto],
+  [libbthread-master],
+  [ *.a ],
+  [ . ])
+fi
+
+
 AC_SUBST(STATIC_PKGS)
 
 AC_DEFUN([CHECK_ENABLE], [
@@ -474,6 +506,10 @@ if test "x$I86$X86" != "x00" ; then
   fi
   rm -f conftest.asm conftest.o
   REQUIRE_PROG(YASM, [yasm])
+fi
+
+if test "x$I86$X86" == "x00"; then
+   CFG_CFLAGS+=" -DNO_CTX -DNO_GDB -DNO_BTRACE"
 fi
 
 ## end arch dep tests
@@ -885,6 +921,7 @@ if test "x$BUILD_$1" = "x" ; then
 fi
 ])
 
+PKG_PROVIDE([libbthread])
 PKG_PROVIDE([a52dec])
 PKG_PROVIDE([djbfft])
 PKG_PROVIDE([encore])
@@ -1013,6 +1050,11 @@ fi
 
 if test "x$WANT_BOOBY" != "xno"; then
   CFG_CFLAGS+=" -DBOOBY"
+fi
+
+if test [ "$(uname -o)"] = "Android" ; then
+# termux
+EXTRA_LIBS+=' -liconv'
 fi
 
 # intel lock elision bugs
