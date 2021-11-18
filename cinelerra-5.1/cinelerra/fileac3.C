@@ -18,7 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-
+#ifdef HAVE_LIBZMPEG
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -421,3 +421,4 @@ int AC3ConfigAudioBitrate::handle_event()
 }
 
 #endif
+#endif //libzmpeg

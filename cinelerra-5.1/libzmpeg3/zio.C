@@ -1,4 +1,7 @@
 #include "libzmpeg3.h"
+#if defined(__TERMUX__)
+#include "bthread.h"
+#endif
 
 #ifdef USE_FUTEX
 typedef zmpeg3_t::zloc_t zzloc_t;

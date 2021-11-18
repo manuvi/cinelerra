@@ -5,7 +5,9 @@
 /* for quicktime build */
 #define MAXFRAMESAMPLES 65536
 #define ZDVB
+#if defined(__i386__) || defined(__x86_64__)
 #define USE_FUTEX
+#endif
 
 #ifndef __STDC_LIMIT_MACROS
 #define __STDC_LIMIT_MACROS

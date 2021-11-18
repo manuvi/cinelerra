@@ -56,7 +56,6 @@ OBJS := $(OVERLAYS) \
 	$(OBJDIR)/assets.o \
 	$(OBJDIR)/atrack.o \
 	$(OBJDIR)/attachmentpoint.o \
-	$(OBJDIR)/audio1394.o \
 	$(OBJDIR)/audioalsa.o \
 	$(OBJDIR)/audiodevice.o \
 	$(OBJDIR)/audiodvb.o \
@@ -70,8 +69,6 @@ OBJS := $(OVERLAYS) \
 	$(OBJDIR)/automation.o \
 	$(OBJDIR)/auto.o \
 	$(OBJDIR)/autos.o \
-	$(OBJDIR)/avc1394control.o \
-	$(OBJDIR)/avc1394transport.o \
 	$(OBJDIR)/awindowgui.o \
 	$(OBJDIR)/awindow.o \
 	$(OBJDIR)/batch.o \
@@ -112,8 +109,6 @@ OBJS := $(OVERLAYS) \
 	$(OBJDIR)/cwindowtool.o \
 	$(OBJDIR)/dcoffset.o \
 	$(OBJDIR)/deleteallindexes.o \
-	$(OBJDIR)/device1394input.o \
-	$(OBJDIR)/device1394output.o \
 	$(OBJDIR)/devicedvbinput.o \
 	$(OBJDIR)/devicev4l2base.o \
 	$(OBJDIR)/devicev4l2input.o \
@@ -170,8 +165,6 @@ OBJS := $(OVERLAYS) \
 	$(OBJDIR)/garbage.o \
 	$(OBJDIR)/gwindowgui.o \
 	$(OBJDIR)/gwindow.o \
-	$(OBJDIR)/iec61883input.o \
-	$(OBJDIR)/iec61883output.o \
 	$(OBJDIR)/indexable.o \
 	$(OBJDIR)/indexfile.o \
 	$(OBJDIR)/indexstate.o \
@@ -339,7 +332,6 @@ OBJS := $(OVERLAYS) \
 	$(OBJDIR)/undostack.o \
 	$(OBJDIR)/vattachmentpoint.o \
 	$(OBJDIR)/vautomation.o \
-	$(OBJDIR)/vdevice1394.o \
 	$(OBJDIR)/vdevicebase.o \
 	$(OBJDIR)/vdevicedvb.o \
 	$(OBJDIR)/vdeviceprefs.o \
@@ -378,6 +370,18 @@ OBJS := $(OVERLAYS) \
 	$(OBJDIR)/zwindow.o \
 	$(OBJDIR)/zwindowgui.o \
 
+ifneq ($(WANT_FIREWIRE),no)
+OBJS += \
+	$(OBJDIR)/audio1394.o \
+	$(OBJDIR)/avc1394control.o \
+	$(OBJDIR)/avc1394transport.o \
+	$(OBJDIR)/vdevice1394.o \
+	$(OBJDIR)/device1394input.o \
+	$(OBJDIR)/device1394output.o \
+	$(OBJDIR)/iec61883input.o \
+	$(OBJDIR)/iec61883output.o \
+
+endif
 ifneq ($(WANT_LIBZMPEG),no)
 OBJS += \
 	$(OBJDIR)/audiompeg.o \

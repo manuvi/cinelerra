@@ -142,7 +142,8 @@ AC_SUBST(MAK_INSTALLS)
 AC_SUBST(MAK_UNINSTALLS)
 
 if test "x$WANT_JOBS" = "xauto"; then
-  CPUS=`grep -c "^proc" /proc/cpuinfo`
+#  CPUS=`grep -c "^proc" /proc/cpuinfo`
+  CPUS=nproc
   WANT_JOBS=`expr $CPUS + $CPUS / 2 + 2`
 fi
 
