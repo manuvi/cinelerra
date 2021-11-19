@@ -31,7 +31,7 @@
 #include "filexml.h"
 #include "guicast.h"
 #include "language.h"
-#if HAVE_DV
+#ifdef HAVE_LIBDV
 #include "libdv.h"
 #endif
 #include "libmjpeg.h"
@@ -152,7 +152,7 @@ public:
 	int prev_channel;
 	int w, h;
 // Decompressors for different video drivers
-#if HAVE_DV
+#ifdef HAVE_LIBDV
 	dv_t *dv;
 #endif
 	mjpeg_t *mjpeg;
@@ -354,7 +354,7 @@ LiveVideo::LiveVideo(PluginServer *server)
 	w = xS(320);
 	h = yS(640);
 	prev_channel = 0;
-#if HAVE_DV
+#ifdef HAVE_LIBDV
 	dv = 0;
 #endif
 	mjpeg = 0;
@@ -376,7 +376,7 @@ LiveVideo::~LiveVideo()
 
 	delete channeldb;
 	delete temp;
-#if HAVE_DV
+#ifdef HAVE_LIBDV
 	if(dv) dv_delete(dv);
 #endif
 	if(mjpeg) mjpeg_delete(mjpeg);
@@ -507,7 +507,7 @@ int LiveVideo::process_buffer(VFrame *frame,
 			{
 				switch(session->vconfig_in->driver)
 				{
-#if HAVE_DV
+#ifdef HAVE_LIBDV
 					case CAPTURE_FIREWIRE:
 					case CAPTURE_IEC61883:
 // Decompress a DV frame from the driver
@@ -648,8 +648,3 @@ void LiveVideo::update_gui()
 		}
 	}
 }
-
-
-
-
-

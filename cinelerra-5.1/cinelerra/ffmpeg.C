@@ -1246,6 +1246,7 @@ int FFVideoStream::probe(int64_t pos)
 		ret = -1;
 
 	ret = ret > 0 ? 1 : ret < 0 ? -1 : 0;
+	av_frame_free(&frame);
 	return ret;
 }
 

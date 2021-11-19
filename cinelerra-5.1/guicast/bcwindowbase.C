@@ -2530,7 +2530,11 @@ void BC_WindowBase::init_im()
 	if(!(input_method = XOpenIM(display, NULL, NULL, NULL)))
 	{
 		printf("BC_WindowBase::init_im: Could not open input method.\n");
+		XSetLocaleModifiers("@im=local");
+		if(!(input_method = XOpenIM(display, NULL, NULL, NULL))) {
+		printf("BC_WindowBase::init_im: Could not open input method local.\n");
 		exit(1);
+		}
 	}
 	if(XGetIMValues(input_method, XNQueryInputStyle, &xim_styles, NULL) ||
 			xim_styles == NULL)
