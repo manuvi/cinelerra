@@ -80,7 +80,7 @@ UTILS += $(OBJDIR)/zmpeg3cc2txt
 
 LIBS = -lm -lpthread
 
-LIBS += $(lib_a52dec) $(lib_djbfft)
+LIBS += $(lib_a52dec) $(lib_djbfft) $(lib_libbthread)
 
 ifeq ($(DYNAMIC_FONTS), 1)
 LIBS += -lX11

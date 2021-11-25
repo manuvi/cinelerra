@@ -183,6 +183,7 @@ ffmpeg.cfg_params= \
 
 #cmake_config=echo "exec cmake \$$$$@ $(1)" > ./configure; chmod +x ./configure;
 cmake_config=echo 'cmake "$$$$@" "$(1)"' > ./configure; chmod +x ./configure;
+libbthread.cfg_vars?= echo "exec true" > ./configure; chmod +x ./configure;
 a52dec.mak_params?= ; cd $(call bld_path,a52dec,include); ln -sf . a52dec
 a52dec.cfg_vars?= CFLAGS+=" -U__FreeBSD__ $(call inc_path,djbfft)" LIBS+=" $(call ld_path,djbfft)"
 a52dec.cfg_params?=--enable-djbfft
@@ -317,6 +318,10 @@ else
 rules=$(eval $(1))
 endif
 
+uname := $(shell uname -o)
+ifeq ($(uname), Android)
+$(call rules,$(call std-build,libbthread))
+endif
 $(call rules,$(call std-build,a52dec,djbfft))
 $(call rules,$(call std-build,djbfft))
 $(call rules,$(call std-build,audiofile))
