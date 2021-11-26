@@ -592,9 +592,16 @@ install:	install-lv2ui
 endif
 
 ifneq ($(WANT_SHUTTLE),no)
+X11_INCS := /usr/include/
+X11_INCS1 := $(shell pkg-config --cflags-only-I x11 | sed "s/-I//")
+
+ifneq ($(X11_INCS1),)
+X11_INCS := $(X11_INCS1)
+endif
+
 $(OBJDIR)/shuttle.o:	shuttle.C shuttle_keys.h
-shuttle_keys.h: /usr/include/X11/keysymdef.h
-	sed -n < /usr/include/X11/keysymdef.h > shuttle_keys.h -f shuttle.sed
+shuttle_keys.h: $(X11_INCS)/X11/keysymdef.h
+	sed -n $(X11_INCS)/X11/keysymdef.h > shuttle_keys.h -f shuttle.sed
 endif
 
 $(OBJDIR)/pluginlv2gui.o:	pluginlv2gui.C
