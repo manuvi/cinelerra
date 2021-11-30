@@ -3,6 +3,10 @@ For usage help, refer to the following:
   https://cinelerra-gg.org/download/CinelerraGG_Manual.pdf
   http://g-raffa.eu/Cinelerra/HOWTO/basics.html
 .
+2021 November changes of note:
+  Libaom has been updated to v3.2.0 and may be faster.
+  Procedure to build for Android tablet/phone using Termux
+   is available and documented with additional tweaks.
 2021 October changes of note:
   Hungarian automated-google translation has been added.
   Long existing bug when using Fade in/out in the Titler 
