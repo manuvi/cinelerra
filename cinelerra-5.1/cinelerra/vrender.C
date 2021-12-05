@@ -70,6 +70,11 @@ VRender::VRender(RenderEngine *renderengine)
 	asynchronous = 0;     // render 1 frame at a time
 	framerate_counter = 0;
 	video_out = 0;
+	track_w = track_h = 0;
+	output_w = output_h = 0;
+	first_frame = 0;
+	output_offset = 0;
+	source_length = 0;
 	render_strategy = -1;
 }
 
