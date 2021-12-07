@@ -1,8 +1,0 @@
---- /dev/null	2021-05-22 06:52:04.572000000 +0300
-+++ libbthread-master/Makefile	2021-05-23 10:18:06.719050843 +0300
-@@ -0,0 +1,4 @@
-+all:
-+	cat `ls *.c` > just-pt.c
-+	g++ -c -o jpt.o just-pt.c -I.
-+	ar crs jpt.a jpt.o
-\ No newline at end of file
