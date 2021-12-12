@@ -17,7 +17,7 @@ BOOTSTRAPFLAGS := -DBOOTSTRAP="\"objcopy -B arm -I binary -O elf32-littlearm\""
 endif
 
 ifeq ($(OBJDIR), aarch64)
-BOOTSTRAPFLAGS := -DBOOTSTRAP="\"objcopy -B arm -I binary -O elf64-littlearm\""
+BOOTSTRAPFLAGS := -DBOOTSTRAP="\"objcopy -B aarch64 -I binary -O elf64-littleaarch64\""
 endif
 
 $(shell mkdir -p $(OBJDIR) )
