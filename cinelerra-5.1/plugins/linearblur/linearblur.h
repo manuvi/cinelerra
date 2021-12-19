@@ -43,12 +43,21 @@
 #define RESET_ANGLE  2
 #define RESET_STEPS  3
 
+#define RADIUS_MIN   0
+#define RADIUS_MAX 100
+#define ANGLE_MAX  180
+#define STEPS_MIN    1
+#define STEPS_MAX  200
+
 class LinearBlurMain;
 class LinearBlurWindow;
 class LinearBlurEngine;
+class LinearBlurIText;
+class LinearBlurISlider;
+class LinearBlurToggle;
 class LinearBlurReset;
 class LinearBlurDefaultSettings;
-class LinearBlurSliderClr;
+class LinearBlurClr;
 
 
 
@@ -91,6 +100,33 @@ public:
 	int *output;
 };
 
+class LinearBlurIText : public BC_TumbleTextBox
+{
+public:
+	LinearBlurIText(LinearBlurWindow *gui, LinearBlurMain *plugin,
+		LinearBlurISlider *slider, int *output, int x, int y, int min, int max);
+	~LinearBlurIText();
+	int handle_event();
+	LinearBlurWindow *gui;
+	LinearBlurMain *plugin;
+	LinearBlurISlider *slider;
+	int *output;
+	int min, max;
+};
+
+class LinearBlurISlider : public BC_ISlider
+{
+public:
+	LinearBlurISlider(LinearBlurMain *plugin,
+		LinearBlurIText *text, int *output, int x, int y,
+		int min, int max, int w);
+	~LinearBlurISlider();
+	int handle_event();
+	LinearBlurMain *plugin;
+	LinearBlurIText *text;
+	int *output;
+};
+
 class LinearBlurToggle : public BC_CheckBox
 {
 public:
@@ -124,11 +160,11 @@ public:
 	LinearBlurWindow *gui;
 };
 
-class LinearBlurSliderClr : public BC_Button
+class LinearBlurClr : public BC_Button
 {
 public:
-	LinearBlurSliderClr(LinearBlurMain *plugin, LinearBlurWindow *gui, int x, int y, int w, int clear);
-	~LinearBlurSliderClr();
+	LinearBlurClr(LinearBlurMain *plugin, LinearBlurWindow *gui, int x, int y, int clear);
+	~LinearBlurClr();
 	int handle_event();
 	LinearBlurMain *plugin;
 	LinearBlurWindow *gui;
@@ -144,14 +180,22 @@ public:
 	void create_objects();
 	void update_gui(int clear);
 
-	LinearBlurSize *angle, *steps, *radius;
+	LinearBlurIText *radius_text;
+	LinearBlurISlider *radius_slider;
+	LinearBlurClr *radius_Clr;
+
+	LinearBlurIText *angle_text;
+	LinearBlurISlider *angle_slider;
+	LinearBlurClr *angle_Clr;
+
+	LinearBlurIText *steps_text;
+	LinearBlurISlider *steps_slider;
+	LinearBlurClr *steps_Clr;
+
 	LinearBlurToggle *r, *g, *b, *a;
 	LinearBlurMain *plugin;
 	LinearBlurReset *reset;
 	LinearBlurDefaultSettings *default_settings;
-	LinearBlurSliderClr *radiusClr;
-	LinearBlurSliderClr *angleClr;
-	LinearBlurSliderClr *stepsClr;
 };
 
 

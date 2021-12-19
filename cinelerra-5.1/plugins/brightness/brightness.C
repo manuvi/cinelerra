@@ -255,8 +255,10 @@ void BrightnessMain::update_gui()
 		if(load_configuration())
 		{
 			((BrightnessWindow*)thread->window)->lock_window("BrightnessMain::update_gui");
-			((BrightnessWindow*)thread->window)->brightness->update(config.brightness);
-			((BrightnessWindow*)thread->window)->contrast->update(config.contrast);
+			((BrightnessWindow*)thread->window)->brightness_text->update(config.brightness);
+			((BrightnessWindow*)thread->window)->brightness_slider->update(config.brightness);
+			((BrightnessWindow*)thread->window)->contrast_text->update(config.contrast);
+			((BrightnessWindow*)thread->window)->contrast_slider->update(config.contrast);
 			((BrightnessWindow*)thread->window)->luma->update(config.luma);
 			((BrightnessWindow*)thread->window)->unlock_window();
 		}

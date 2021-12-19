@@ -23,6 +23,7 @@
 #include <string.h>
 
 #include "alpha.h"
+#include "theme.h"
 #include "filexml.h"
 #include "keyframe.h"
 #include "language.h"
@@ -32,6 +33,11 @@ REGISTER_PLUGIN(AlphaMain)
 
 
 AlphaConfig::AlphaConfig()
+{
+	reset();
+}
+
+void AlphaConfig::reset()
 {
 	a = 1.;
 }
@@ -56,12 +62,40 @@ void AlphaConfig::interpolate(AlphaConfig &prev, AlphaConfig &next,
 }
 
 
-AlphaSlider::AlphaSlider(AlphaWindow *window, AlphaMain *plugin,
-		int x, int y, int w)
- : BC_FSlider(x, y, 0, w, w, 0.f, 1.f, plugin->config.a)
+AlphaText::AlphaText(AlphaWindow *window, AlphaMain *plugin,
+		int x, int y)
+ : BC_TumbleTextBox(window, (float)plugin->config.a,
+	(float)OPACITY_MIN, (float)OPACITY_MAX, x, y, xS(60), 2)
 {
 	this->window = window;
 	this->plugin = plugin;
+	set_increment(0.1);
+}
+AlphaText::~AlphaText()
+{
+}
+
+int AlphaText::handle_event()
+{
+	float min = OPACITY_MIN, max = OPACITY_MAX;
+	float output = atof(get_text());
+
+	if(output > max) output = max;
+	else if(output < min) output = min;
+	plugin->config.a = output;
+	window->alpha_slider->update(plugin->config.a);
+	window->alpha_text->update(plugin->config.a);
+	plugin->send_configure_change();
+	return 1;
+}
+
+AlphaSlider::AlphaSlider(AlphaWindow *window, AlphaMain *plugin,
+		int x, int y, int w)
+ : BC_FSlider(x, y, 0, w, w, OPACITY_MIN, OPACITY_MAX, plugin->config.a)
+{
+	this->window = window;
+	this->plugin = plugin;
+	enable_show_value(0); // Hide caption
 	set_precision(0.001);
 }
 AlphaSlider::~AlphaSlider()
@@ -71,11 +105,30 @@ AlphaSlider::~AlphaSlider()
 int AlphaSlider::handle_event()
 {
 	plugin->config.a = get_value();
+	window->alpha_text->update(plugin->config.a);
 	plugin->send_configure_change();
 	return 1;
 }
 
-#define ALPHA_W xS(400)
+AlphaClr::AlphaClr(AlphaWindow *window, AlphaMain *plugin, int x, int y)
+ : BC_Button(x, y, plugin->get_theme()->get_image_set("reset_button"))
+{
+	this->window = window;
+	this->plugin = plugin;
+}
+AlphaClr::~AlphaClr()
+{
+}
+int AlphaClr::handle_event()
+{
+	plugin->config.reset();
+	window->update();
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+#define ALPHA_W xS(420)
 #define ALPHA_H yS(60)
 
 AlphaWindow::AlphaWindow(AlphaMain *plugin)
@@ -90,17 +143,28 @@ AlphaWindow::~AlphaWindow()
 
 void AlphaWindow::create_objects()
 {
-	int x = xS(10), y = yS(10);
+	int xs10 = xS(10), xs200 = xS(200);
+	int ys10 = yS(10);
+	int x = xs10, y = ys10;
+	int x2 = xS(80), x3 = xS(180);
+	int clr_x = get_w()-x - xS(22); // note: clrBtn_w = 22
+
 	BC_Title *title;
+
+	y += ys10;
 	add_subwindow(title = new BC_Title(x, y, _("Alpha:")));
-	y += title->get_h() + yS(5);
-	add_subwindow(alpha_slider = new AlphaSlider(this, plugin, x, y, xS(380)));
+	alpha_text = new AlphaText(this, plugin, (x + x2), y);
+	alpha_text->create_objects();
+	add_subwindow(alpha_slider = new AlphaSlider(this, plugin, x3, y, xs200));
+	clr_x = x3 + alpha_slider->get_w() + x;
+	add_subwindow(alpha_clr = new AlphaClr(this, plugin, clr_x, y));
 	show_window();
 }
 
 void AlphaWindow::update()
 {
 	float alpha = plugin->config.a;
+	alpha_text->update(alpha);
 	alpha_slider->update(alpha);
 }
 

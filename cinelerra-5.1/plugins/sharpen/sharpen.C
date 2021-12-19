@@ -52,7 +52,7 @@ void SharpenConfig::reset(int clear)
 			horizontal = 0;
 			luminance = 0;
 			break;
-		case RESET_SHARPEN_SLIDER : sharpness = 0;
+		case RESET_SHARPEN : sharpness = 0;
 			break;
 		case RESET_DEFAULT_SETTINGS :
 		default:

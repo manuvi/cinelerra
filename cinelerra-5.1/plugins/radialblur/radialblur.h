@@ -47,12 +47,23 @@
 #define RESET_ANGLE   3
 #define RESET_STEPS   4
 
+#define XY_MIN      0
+#define XY_MAX    100
+#define ANGLE_MIN   0
+#define ANGLE_MAX 360
+#define STEPS_MIN   1
+#define STEPS_MAX 100
+
 class RadialBlurMain;
 class RadialBlurWindow;
 class RadialBlurEngine;
+class RadialBlurIText;
+class RadialBlurISlider;
+class RadialBlurToggle;
 class RadialBlurReset;
 class RadialBlurDefaultSettings;
-class RadialBlurSliderClr;
+class RadialBlurClr;
+
 
 
 
@@ -81,18 +92,30 @@ public:
 };
 
 
-
-class RadialBlurSize : public BC_ISlider
+class RadialBlurIText : public BC_TumbleTextBox
 {
 public:
-	RadialBlurSize(RadialBlurMain *plugin,
-		int x,
-		int y,
-		int *output,
-		int min,
-		int max);
+	RadialBlurIText(RadialBlurWindow *gui, RadialBlurMain *plugin,
+		RadialBlurISlider *slider, int *output, int x, int y, int min, int max);
+	~RadialBlurIText();
+	int handle_event();
+	RadialBlurWindow *gui;
+	RadialBlurMain *plugin;
+	RadialBlurISlider *slider;
+	int *output;
+	int min, max;
+};
+
+class RadialBlurISlider : public BC_ISlider
+{
+public:
+	RadialBlurISlider(RadialBlurMain *plugin,
+		RadialBlurIText *text, int *output, int x, int y,
+		int min, int max, int w);
+	~RadialBlurISlider();
 	int handle_event();
 	RadialBlurMain *plugin;
+	RadialBlurIText *text;
 	int *output;
 };
 
@@ -129,11 +152,11 @@ public:
 	RadialBlurWindow *gui;
 };
 
-class RadialBlurSliderClr : public BC_Button
+class RadialBlurClr : public BC_Button
 {
 public:
-	RadialBlurSliderClr(RadialBlurMain *plugin, RadialBlurWindow *gui, int x, int y, int w, int clear);
-	~RadialBlurSliderClr();
+	RadialBlurClr(RadialBlurMain *plugin, RadialBlurWindow *gui, int x, int y, int clear);
+	~RadialBlurClr();
 	int handle_event();
 	RadialBlurMain *plugin;
 	RadialBlurWindow *gui;
@@ -149,15 +172,27 @@ public:
 	void create_objects();
 	void update_gui(int clear);
 
-	RadialBlurSize *x, *y, *steps, *angle;
+
+	RadialBlurIText *x_text;
+	RadialBlurISlider *x_slider;
+	RadialBlurClr *x_Clr;
+
+	RadialBlurIText *y_text;
+	RadialBlurISlider *y_slider;
+	RadialBlurClr *y_Clr;
+
+	RadialBlurIText *angle_text;
+	RadialBlurISlider *angle_slider;
+	RadialBlurClr *angle_Clr;
+
+	RadialBlurIText *steps_text;
+	RadialBlurISlider *steps_slider;
+	RadialBlurClr *steps_Clr;
+
 	RadialBlurToggle *r, *g, *b, *a;
 	RadialBlurMain *plugin;
 	RadialBlurReset *reset;
 	RadialBlurDefaultSettings *default_settings;
-	RadialBlurSliderClr *xClr;
-	RadialBlurSliderClr *yClr;
-	RadialBlurSliderClr *angleClr;
-	RadialBlurSliderClr *stepsClr;
 };
 
 

@@ -135,10 +135,10 @@ void LinearBlurConfig::interpolate(LinearBlurConfig &prev,
 
 LinearBlurWindow::LinearBlurWindow(LinearBlurMain *plugin)
  : PluginClientWindow(plugin,
-	xS(280),
-	yS(320),
-	xS(280),
-	yS(320),
+	xS(420),
+	yS(200),
+	xS(420),
+	yS(200),
 	0)
 {
 	this->plugin = plugin;
@@ -150,42 +150,69 @@ LinearBlurWindow::~LinearBlurWindow()
 
 void LinearBlurWindow::create_objects()
 {
-	int xs10 = xS(10), xs50 = xS(50), xs100 = xS(100);
-	int ys10 = yS(10), ys20 = yS(20), ys30 = yS(30), ys40 = yS(40);
+	int xs10 = xS(10), xs100 = xS(100), xs200 = xS(200);
+	int ys10 = yS(10), ys30 = yS(30), ys40 = yS(40);
 	int x = xs10, y = ys10;
-	int x1 = 0; int clrBtn_w = xs50;
+	int x2 = xS(80), x3 = xS(180);
+	int clr_x = get_w()-x - xS(22); // note: clrBtn_w = 22
 	int defaultBtn_w = xs100;
 
+	BC_Bar *bar;
+
+	y += ys10;
 	add_subwindow(new BC_Title(x, y, _("Length:")));
-	y += ys20;
-	add_subwindow(radius = new LinearBlurSize(plugin, x, y, &plugin->config.radius, 0, 100));
-	x1 = x + radius->get_w() + xs10;
-	add_subwindow(radiusClr = new LinearBlurSliderClr(plugin, this, x1, y, clrBtn_w, RESET_RADIUS));
-
+	radius_text = new LinearBlurIText(this, plugin,
+		0, &plugin->config.radius, (x + x2), y, RADIUS_MIN, RADIUS_MAX);
+	radius_text->create_objects();
+	radius_slider = new LinearBlurISlider(plugin,
+		radius_text, &plugin->config.radius, x3, y, RADIUS_MIN, RADIUS_MAX, xs200);
+	add_subwindow(radius_slider);
+	radius_text->slider = radius_slider;
+	clr_x = x3 + radius_slider->get_w() + x;
+	add_subwindow(radius_Clr = new LinearBlurClr(plugin, this, clr_x, y, RESET_RADIUS));
 	y += ys30;
+
 	add_subwindow(new BC_Title(x, y, _("Angle:")));
-	y += ys20;
-	add_subwindow(angle = new LinearBlurSize(plugin, x, y, &plugin->config.angle, -180, 180));
-	add_subwindow(angleClr = new LinearBlurSliderClr(plugin, this, x1, y, clrBtn_w, RESET_ANGLE));
-
+	angle_text = new LinearBlurIText(this, plugin,
+		0, &plugin->config.angle, (x + x2), y, -ANGLE_MAX, ANGLE_MAX);
+	angle_text->create_objects();
+	angle_slider = new LinearBlurISlider(plugin,
+		angle_text, &plugin->config.angle, x3, y, -ANGLE_MAX, ANGLE_MAX, xs200);
+	add_subwindow(angle_slider);
+	angle_text->slider = angle_slider;
+	add_subwindow(angle_Clr = new LinearBlurClr(plugin, this, clr_x, y, RESET_ANGLE));
 	y += ys30;
+
 	add_subwindow(new BC_Title(x, y, _("Steps:")));
-	y += ys20;
-	add_subwindow(steps = new LinearBlurSize(plugin, x, y, &plugin->config.steps, 1, 200));
-	add_subwindow(stepsClr = new LinearBlurSliderClr(plugin, this, x1, y, clrBtn_w, RESET_STEPS));
-
-	y += ys30;
-	add_subwindow(r = new LinearBlurToggle(plugin, x, y, &plugin->config.r, _("Red")));
-	y += ys30;
-	add_subwindow(g = new LinearBlurToggle(plugin, x, y, &plugin->config.g, _("Green")));
-	y += ys30;
-	add_subwindow(b = new LinearBlurToggle(plugin, x, y, &plugin->config.b, _("Blue")));
-	y += ys30;
-	add_subwindow(a = new LinearBlurToggle(plugin, x, y, &plugin->config.a, _("Alpha")));
+	steps_text = new LinearBlurIText(this, plugin,
+		0, &plugin->config.steps, (x + x2), y, STEPS_MIN, STEPS_MAX);
+	steps_text->create_objects();
+	steps_slider = new LinearBlurISlider(plugin,
+		steps_text, &plugin->config.steps, x3, y, STEPS_MIN, STEPS_MAX, xs200);
+	add_subwindow(steps_slider);
+	steps_text->slider = steps_slider;
+	add_subwindow(steps_Clr = new LinearBlurClr(plugin, this, clr_x, y, RESET_STEPS));
 	y += ys40;
+
+	add_subwindow(bar = new BC_Bar(x, y, get_w()-2*x));
+	y += ys10;
+	int x1 = x;
+	int toggle_w = (get_w()-2*x) / 4;
+	add_subwindow(r = new LinearBlurToggle(plugin, x1, y, &plugin->config.r, _("Red")));
+	x1 += toggle_w;
+	add_subwindow(g = new LinearBlurToggle(plugin, x1, y, &plugin->config.g, _("Green")));
+	x1 += toggle_w;
+	add_subwindow(b = new LinearBlurToggle(plugin, x1, y, &plugin->config.b, _("Blue")));
+	x1 += toggle_w;
+	add_subwindow(a = new LinearBlurToggle(plugin, x1, y, &plugin->config.a, _("Alpha")));
+	y += ys30;
+
+// Reset section
+	add_subwindow(bar = new BC_Bar(x, y, get_w()-2*x));
+	y += ys10;
 	add_subwindow(reset = new LinearBlurReset(plugin, this, x, y));
 	add_subwindow(default_settings = new LinearBlurDefaultSettings(plugin, this,
-		(xS(280) - xs10 - defaultBtn_w), y, defaultBtn_w));
+		(get_w() - xs10 - defaultBtn_w), y, defaultBtn_w));
 
 	show_window();
 	flush();
@@ -196,18 +223,27 @@ void LinearBlurWindow::create_objects()
 void LinearBlurWindow::update_gui(int clear)
 {
 	switch(clear) {
-		case RESET_RADIUS : radius->update(plugin->config.radius);
+		case RESET_RADIUS :
+			radius_text->update((int64_t)plugin->config.radius);
+			radius_slider->update(plugin->config.radius);
 			break;
-		case RESET_ANGLE : angle->update(plugin->config.angle);
+		case RESET_ANGLE :
+			angle_text->update((int64_t)plugin->config.angle);
+			angle_slider->update(plugin->config.angle);
 			break;
-		case RESET_STEPS : steps->update(plugin->config.steps);
+		case RESET_STEPS :
+			steps_text->update((int64_t)plugin->config.steps);
+			steps_slider->update(plugin->config.steps);
 			break;
 		case RESET_ALL :
 		case RESET_DEFAULT_SETTINGS :
 		default:
-			radius->update(plugin->config.radius);
-			angle->update(plugin->config.angle);
-			steps->update(plugin->config.steps);
+			radius_text->update((int64_t)plugin->config.radius);
+			radius_slider->update(plugin->config.radius);
+			angle_text->update((int64_t)plugin->config.angle);
+			angle_slider->update(plugin->config.angle);
+			steps_text->update((int64_t)plugin->config.steps);
+			steps_slider->update(plugin->config.steps);
 			r->update(plugin->config.r);
 			g->update(plugin->config.g);
 			b->update(plugin->config.b);
@@ -246,7 +282,56 @@ int LinearBlurToggle::handle_event()
 
 
 
+LinearBlurIText::LinearBlurIText(LinearBlurWindow *gui, LinearBlurMain *plugin,
+	LinearBlurISlider *slider, int *output, int x, int y, int min, int max)
+ : BC_TumbleTextBox(gui, *output,
+	min, max, x, y, xS(60), 0)
+{
+	this->gui = gui;
+	this->plugin = plugin;
+	this->output = output;
+	this->slider = slider;
+	this->min = min;
+	this->max = max;
+	set_increment(1);
+}
 
+LinearBlurIText::~LinearBlurIText()
+{
+}
+
+int LinearBlurIText::handle_event()
+{
+	*output = atoi(get_text());
+	if(*output > max) *output = max;
+	if(*output < min) *output = min;
+	slider->update(*output);
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+LinearBlurISlider::LinearBlurISlider(LinearBlurMain *plugin,
+	LinearBlurIText *text, int *output, int x, int y, int min, int max, int w)
+ : BC_ISlider(x, y, 0, w, w, min, max, *output)
+{
+	this->plugin = plugin;
+	this->output = output;
+	this->text = text;
+	enable_show_value(0); // Hide caption
+}
+
+LinearBlurISlider::~LinearBlurISlider()
+{
+}
+
+int LinearBlurISlider::handle_event()
+{
+	*output = get_value();
+	text->update((int64_t)*output);
+	plugin->send_configure_change();
+	return 1;
+}
 
 
 LinearBlurSize::LinearBlurSize(LinearBlurMain *plugin,
@@ -304,17 +389,17 @@ int LinearBlurDefaultSettings::handle_event()
 }
 
 
-LinearBlurSliderClr::LinearBlurSliderClr(LinearBlurMain *plugin, LinearBlurWindow *gui, int x, int y, int w, int clear)
- : BC_Button(x, y, w, plugin->get_theme()->get_image_set("reset_button"))
+LinearBlurClr::LinearBlurClr(LinearBlurMain *plugin, LinearBlurWindow *gui, int x, int y, int clear)
+ : BC_Button(x, y, plugin->get_theme()->get_image_set("reset_button"))
 {
 	this->plugin = plugin;
 	this->gui = gui;
 	this->clear = clear;
 }
-LinearBlurSliderClr::~LinearBlurSliderClr()
+LinearBlurClr::~LinearBlurClr()
 {
 }
-int LinearBlurSliderClr::handle_event()
+int LinearBlurClr::handle_event()
 {
 	// clear==1 ==> Radius slider
 	// clear==2 ==> Angle slider
@@ -508,9 +593,13 @@ void LinearBlurMain::update_gui()
 	{
 		load_configuration();
 		((LinearBlurWindow*)thread->window)->lock_window();
-		((LinearBlurWindow*)thread->window)->radius->update(config.radius);
-		((LinearBlurWindow*)thread->window)->angle->update(config.angle);
-		((LinearBlurWindow*)thread->window)->steps->update(config.steps);
+		((LinearBlurWindow*)thread->window)->radius_text->update((int64_t)config.radius);
+		((LinearBlurWindow*)thread->window)->radius_slider->update(config.radius);
+		((LinearBlurWindow*)thread->window)->angle_text->update((int64_t)config.angle);
+		((LinearBlurWindow*)thread->window)->angle_slider->update(config.angle);
+		((LinearBlurWindow*)thread->window)->steps_text->update((int64_t)config.steps);
+		((LinearBlurWindow*)thread->window)->steps_slider->update(config.steps);
+
 		((LinearBlurWindow*)thread->window)->r->update(config.r);
 		((LinearBlurWindow*)thread->window)->g->update(config.g);
 		((LinearBlurWindow*)thread->window)->b->update(config.b);

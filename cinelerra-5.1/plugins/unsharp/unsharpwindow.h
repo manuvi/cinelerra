@@ -26,67 +26,132 @@
 #include "unsharp.inc"
 #include "unsharpwindow.inc"
 
+
 #define RESET_DEFAULT_SETTINGS 10
 #define RESET_ALL       0
 #define RESET_RADIUS	1
 #define RESET_AMOUNT    2
 #define RESET_THRESHOLD 3
 
+#define RADIUS_MIN      0.10
+#define RADIUS_MAX      120.00
+#define AMOUNT_MIN      0.00
+#define AMOUNT_MAX      5.00
+#define THRESHOLD_MIN   0
+#define THRESHOLD_MAX 255
 
-class UnsharpRadius : public BC_FPot
+
+
+class UnsharpRadiusText : public BC_TumbleTextBox
 {
 public:
-	UnsharpRadius(UnsharpMain *plugin, int x, int y);
+	UnsharpRadiusText(UnsharpWindow *window,
+		UnsharpMain *plugin,
+		int x, int y);
+	~UnsharpRadiusText();
 	int handle_event();
+	UnsharpWindow *window;
 	UnsharpMain *plugin;
 };
 
-class UnsharpAmount : public BC_FPot
+class UnsharpRadiusSlider : public BC_FSlider
 {
 public:
-	UnsharpAmount(UnsharpMain *plugin, int x, int y);
+	UnsharpRadiusSlider(UnsharpWindow *window,
+		UnsharpMain *plugin,
+		int x, int y, int w);
+	~UnsharpRadiusSlider();
 	int handle_event();
+	UnsharpWindow *window;
 	UnsharpMain *plugin;
 };
 
-class UnsharpThreshold : public BC_IPot
+
+class UnsharpAmountText : public BC_TumbleTextBox
 {
 public:
-	UnsharpThreshold(UnsharpMain *plugin, int x, int y);
+	UnsharpAmountText(UnsharpWindow *window,
+		UnsharpMain *plugin,
+		int x, int y);
+	~UnsharpAmountText();
 	int handle_event();
+	UnsharpWindow *window;
 	UnsharpMain *plugin;
 };
+
+
+class UnsharpAmountSlider : public BC_FSlider
+{
+public:
+	UnsharpAmountSlider(UnsharpWindow *window,
+		UnsharpMain *plugin,
+		int x, int y, int w);
+	~UnsharpAmountSlider();
+	int handle_event();
+	UnsharpWindow *window;
+	UnsharpMain *plugin;
+};
+
+
+class UnsharpThresholdText : public BC_TumbleTextBox
+{
+public:
+	UnsharpThresholdText(UnsharpWindow *window,
+		UnsharpMain *plugin,
+		int x, int y);
+	~UnsharpThresholdText();
+	int handle_event();
+	UnsharpWindow *window;
+	UnsharpMain *plugin;
+};
+
+class UnsharpThresholdSlider : public BC_ISlider
+{
+public:
+	UnsharpThresholdSlider(UnsharpWindow *window,
+		UnsharpMain *plugin,
+		int x, int y, int w);
+	~UnsharpThresholdSlider();
+	int handle_event();
+	UnsharpWindow *window;
+	UnsharpMain *plugin;
+};
+
+
+class UnsharpClr : public BC_Button
+{
+public:
+	UnsharpClr(UnsharpWindow *window, UnsharpMain *plugin,
+		int x, int y, int clear);
+	~UnsharpClr();
+	int handle_event();
+	UnsharpWindow *window;
+	UnsharpMain *plugin;
+	int clear;
+};
+
 
 class UnsharpReset : public BC_GenericButton
 {
 public:
-	UnsharpReset(UnsharpMain *plugin, UnsharpWindow *window, int x, int y);
+	UnsharpReset(UnsharpWindow *window, UnsharpMain *plugin, int x, int y);
 	~UnsharpReset();
 	int handle_event();
-	UnsharpMain *plugin;
 	UnsharpWindow *window;
+	UnsharpMain *plugin;
 };
 
 class UnsharpDefaultSettings : public BC_GenericButton
 {
 public:
-	UnsharpDefaultSettings(UnsharpMain *plugin, UnsharpWindow *window, int x, int y, int w);
+	UnsharpDefaultSettings(UnsharpWindow *window, UnsharpMain *plugin, int x, int y, int w);
 	~UnsharpDefaultSettings();
 	int handle_event();
-	UnsharpMain *plugin;
 	UnsharpWindow *window;
+	UnsharpMain *plugin;
 };
 
-class UnsharpSliderClr : public BC_Button
-{
-public:
-	UnsharpSliderClr(UnsharpMain *plugin, UnsharpWindow *window, int x, int y, int w, int clear);
-	~UnsharpSliderClr();
-	int handle_event();
-	UnsharpMain *plugin;
-	UnsharpWindow *window;
-	int clear;
-};
+
 
 class UnsharpWindow : public PluginClientWindow
 {
@@ -97,22 +162,23 @@ public:
 	void create_objects();
 	void update_gui(int clear);
 
-	UnsharpRadius *radius;
-	UnsharpAmount *amount;
-	UnsharpThreshold *threshold;
 	UnsharpMain *plugin;
+
+	UnsharpRadiusText *radius_text;
+	UnsharpRadiusSlider *radius_slider;
+	UnsharpClr *radius_clr;
+
+	UnsharpAmountText *amount_text;
+	UnsharpAmountSlider *amount_slider;
+	UnsharpClr *amount_clr;
+
+	UnsharpThresholdText *threshold_text;
+	UnsharpThresholdSlider *threshold_slider;
+	UnsharpClr *threshold_clr;
+
 	UnsharpReset *reset;
 	UnsharpDefaultSettings *default_settings;
-	UnsharpSliderClr *radiusClr;
-	UnsharpSliderClr *amountClr;
-	UnsharpSliderClr *thresholdClr;
 };
-
-
-
-
-
-
 
 
 #endif

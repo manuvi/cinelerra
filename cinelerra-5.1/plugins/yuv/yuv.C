@@ -33,6 +33,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#define MAXVALUE 100
+
 #define RESET_ALL 0
 #define RESET_Y_SLIDER 1
 #define RESET_U_SLIDER 2
@@ -40,8 +42,10 @@
 
 class YUVEffect;
 class YUVWindow;
+class YUVFText;
+class YUVFSlider;
 class YUVReset;
-class YUVSliderClr;
+class YUVClr;
 
 
 class YUVConfig
@@ -61,14 +65,35 @@ public:
 	float y, u, v;
 };
 
-class YUVLevel : public BC_FSlider
+
+
+
+class YUVFText : public BC_TumbleTextBox
 {
 public:
-	YUVLevel(YUVEffect *plugin, float *output, int x, int y);
+	YUVFText(YUVWindow *window, YUVEffect *plugin,
+		YUVFSlider *slider, float *output, int x, int y, float min, float max);
+	~YUVFText();
+	int handle_event();
+	YUVWindow *window;
+	YUVEffect *plugin;
+	YUVFSlider *slider;
+	float *output;
+	float min, max;
+};
+
+
+class YUVFSlider : public BC_FSlider
+{
+public:
+	YUVFSlider(YUVEffect *plugin, YUVFText *text, float *output, int x, int y);
+	~YUVFSlider();
 	int handle_event();
 	YUVEffect *plugin;
+	YUVFText *text;
 	float *output;
 };
+
 
 class YUVReset : public BC_GenericButton
 {
@@ -80,11 +105,11 @@ public:
 	YUVWindow *window;
 };
 
-class YUVSliderClr : public BC_Button
+class YUVClr : public BC_Button
 {
 public:
-	YUVSliderClr(YUVEffect *plugin, YUVWindow *window, int x, int y, int w, int clear);
-	~YUVSliderClr();
+	YUVClr(YUVEffect *plugin, YUVWindow *window, int x, int y, int clear);
+	~YUVClr();
 	int handle_event();
 	YUVEffect *plugin;
 	YUVWindow *window;
@@ -97,10 +122,21 @@ public:
 	YUVWindow(YUVEffect *plugin);
 	void create_objects();
 	void update_gui(int clear);
-	YUVLevel *y, *u, *v;
+
+	YUVFText *y_text;
+	YUVFSlider *y_slider;
+	YUVClr *y_Clr;
+
+	YUVFText *u_text;
+	YUVFSlider *u_slider;
+	YUVClr *u_Clr;
+
+	YUVFText *v_text;
+	YUVFSlider *v_slider;
+	YUVClr *v_Clr;
+
 	YUVEffect *plugin;
 	YUVReset *reset;
-	YUVSliderClr *yClr, *uClr, *vClr;
 };
 
 
@@ -184,25 +220,54 @@ void YUVConfig::interpolate(YUVConfig &prev,
 
 
 
-#define MAXVALUE 100
 
-YUVLevel::YUVLevel(YUVEffect *plugin, float *output, int x, int y)
- : BC_FSlider(x,
-			y,
-			0,
-			xS(200),
-			yS(200),
-			-MAXVALUE,
-			MAXVALUE,
-			*output)
+
+YUVFText::YUVFText(YUVWindow *window, YUVEffect *plugin,
+	YUVFSlider *slider, float *output, int x, int y, float min, float max)
+ : BC_TumbleTextBox(window, *output,
+	min, max, x, y, xS(60), 2)
+{
+	this->window = window;
+	this->plugin = plugin;
+	this->output = output;
+	this->slider = slider;
+	this->min = min;
+	this->max = max;
+	set_increment(0.1);
+}
+
+YUVFText::~YUVFText()
+{
+}
+
+int YUVFText::handle_event()
+{
+	*output = atof(get_text());
+	if(*output > max) *output = max;
+	if(*output < min) *output = min;
+	slider->update(*output);
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+YUVFSlider::YUVFSlider(YUVEffect *plugin, YUVFText *text, float *output, int x, int y)
+ : BC_FSlider(x, y, 0, xS(200), xS(200), -MAXVALUE, MAXVALUE, *output)
 {
 	this->plugin = plugin;
 	this->output = output;
+	this->text = text;
+	enable_show_value(0); // Hide caption
 }
 
-int YUVLevel::handle_event()
+YUVFSlider::~YUVFSlider()
+{
+}
+
+int YUVFSlider::handle_event()
 {
 	*output = get_value();
+	text->update(*output);
 	plugin->send_configure_change();
 	return 1;
 }
@@ -226,17 +291,17 @@ int YUVReset::handle_event()
 }
 
 
-YUVSliderClr::YUVSliderClr(YUVEffect *plugin, YUVWindow *window, int x, int y, int w, int clear)
- : BC_Button(x, y, w, plugin->get_theme()->get_image_set("reset_button"))
+YUVClr::YUVClr(YUVEffect *plugin, YUVWindow *window, int x, int y, int clear)
+ : BC_Button(x, y, plugin->get_theme()->get_image_set("reset_button"))
 {
 	this->plugin = plugin;
 	this->window = window;
 	this->clear = clear;
 }
-YUVSliderClr::~YUVSliderClr()
+YUVClr::~YUVClr()
 {
 }
-int YUVSliderClr::handle_event()
+int YUVClr::handle_event()
 {
 	// clear==1 ==> Y slider
 	// clear==2 ==> U slider
@@ -249,34 +314,56 @@ int YUVSliderClr::handle_event()
 
 
 YUVWindow::YUVWindow(YUVEffect *plugin)
- : PluginClientWindow(plugin, xS(310), yS(135), xS(310), yS(135), 0)
+ : PluginClientWindow(plugin, xS(420), yS(160), xS(420), yS(160), 0)
 {
 	this->plugin = plugin;
 }
 
 void YUVWindow::create_objects()
 {
-	int xs10 = xS(10), xs40 = xS(40), xs50 = xS(50);
-	int ys10 = yS(10), ys30 = yS(30), ys35 = yS(35);
-	int x = xs10, y = ys10, x1 = xs40;
-	int x2 = 0; int clrBtn_w = xs50;
+	int xs10 = xS(10);
+	int ys10 = yS(10), ys30 = yS(30), ys40 = yS(40);
+	int x = xs10, y = ys10;
+	int x2 = xS(80), x3 = xS(180);
+	int clr_x = get_w()-x - xS(22); // note: clrBtn_w = 22
 
+	BC_Bar *bar;
+
+	y += ys10;
 	add_subwindow(new BC_Title(x, y, _("Y:")));
-	add_subwindow(this->y = new YUVLevel(plugin, &plugin->config.y, x1, y));
-	x2 = x1 + this->y->get_w() + xs10;
-	add_subwindow(yClr = new YUVSliderClr(plugin, this, x2, y, clrBtn_w, RESET_Y_SLIDER));
-
+	y_text = new YUVFText(this, plugin,
+		0, &plugin->config.y, (x + x2), y, -MAXVALUE, MAXVALUE);
+	y_text->create_objects();
+	y_slider = new YUVFSlider(plugin, y_text, &plugin->config.y, x3, y);
+	add_subwindow(y_slider);
+	y_text->slider = y_slider;
+	clr_x = x3 + y_slider->get_w() + x;
+	add_subwindow(y_Clr = new YUVClr(plugin, this, clr_x, y, RESET_Y_SLIDER));
 	y += ys30;
+
 	add_subwindow(new BC_Title(x, y, _("U:")));
-	add_subwindow(u = new YUVLevel(plugin, &plugin->config.u, x1, y));
-	add_subwindow(uClr = new YUVSliderClr(plugin, this, x2, y, clrBtn_w, RESET_U_SLIDER));
-
+	u_text = new YUVFText(this, plugin,
+		0, &plugin->config.u, (x + x2), y, -MAXVALUE, MAXVALUE);
+	u_text->create_objects();
+	u_slider = new YUVFSlider(plugin, u_text, &plugin->config.u, x3, y);
+	add_subwindow(u_slider);
+	u_text->slider = u_slider;
+	add_subwindow(u_Clr = new YUVClr(plugin, this, clr_x, y, RESET_U_SLIDER));
 	y += ys30;
-	add_subwindow(new BC_Title(x, y, _("V:")));
-	add_subwindow(v = new YUVLevel(plugin, &plugin->config.v, x1, y));
-	add_subwindow(vClr = new YUVSliderClr(plugin, this, x2, y, clrBtn_w, RESET_V_SLIDER));
 
-	y += ys35;
+	add_subwindow(new BC_Title(x, y, _("V:")));
+	v_text = new YUVFText(this, plugin,
+		0, &plugin->config.v, (x + x2), y, -MAXVALUE, MAXVALUE);
+	v_text->create_objects();
+	v_slider = new YUVFSlider(plugin, v_text, &plugin->config.v, x3, y);
+	add_subwindow(v_slider);
+	v_text->slider = v_slider;
+	add_subwindow(v_Clr = new YUVClr(plugin, this, clr_x, y, RESET_V_SLIDER));
+	y += ys40;
+
+// Reset section
+	add_subwindow(bar = new BC_Bar(x, y, get_w()-2*x));
+	y += ys10;
 	add_subwindow(reset = new YUVReset(plugin, this, x, y));
 
 	show_window();
@@ -288,17 +375,26 @@ void YUVWindow::create_objects()
 void YUVWindow::update_gui(int clear)
 {
 	switch(clear) {
-		case RESET_Y_SLIDER : this->y->update(plugin->config.y);
+		case RESET_Y_SLIDER :
+			y_text->update(plugin->config.y);
+			y_slider->update(plugin->config.y);
 			break;
-		case RESET_U_SLIDER : u->update(plugin->config.u);
+		case RESET_U_SLIDER :
+			u_text->update(plugin->config.u);
+			u_slider->update(plugin->config.u);
 			break;
-		case RESET_V_SLIDER : v->update(plugin->config.v);
+		case RESET_V_SLIDER :
+			v_text->update(plugin->config.v);
+			v_slider->update(plugin->config.v);
 			break;
 		case RESET_ALL :
 		default:
-			this->y->update(plugin->config.y);
-			u->update(plugin->config.u);
-			v->update(plugin->config.v);
+			y_text->update(plugin->config.y);
+			y_slider->update(plugin->config.y);
+			u_text->update(plugin->config.u);
+			u_slider->update(plugin->config.u);
+			v_text->update(plugin->config.v);
+			v_slider->update(plugin->config.v);
 			break;
 	}
 }
@@ -331,9 +427,12 @@ void YUVEffect::update_gui()
 	{
 		thread->window->lock_window();
 		load_configuration();
-		((YUVWindow*)thread->window)->y->update(config.y);
-		((YUVWindow*)thread->window)->u->update(config.u);
-		((YUVWindow*)thread->window)->v->update(config.v);
+		((YUVWindow*)thread->window)->y_text->update(config.y);
+		((YUVWindow*)thread->window)->y_slider->update(config.y);
+		((YUVWindow*)thread->window)->u_text->update(config.u);
+		((YUVWindow*)thread->window)->u_slider->update(config.u);
+		((YUVWindow*)thread->window)->v_text->update(config.v);
+		((YUVWindow*)thread->window)->v_slider->update(config.v);
 		thread->window->unlock_window();
 	}
 }

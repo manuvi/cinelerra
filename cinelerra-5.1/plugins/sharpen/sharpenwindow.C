@@ -33,7 +33,7 @@
 
 
 SharpenWindow::SharpenWindow(SharpenMain *client)
- : PluginClientWindow(client, xS(280), yS(190), xS(280), yS(190), 0) //195 was 150
+ : PluginClientWindow(client, xS(420), yS(190), xS(420), yS(190), 0)
 {
 	this->client = client;
 }
@@ -44,17 +44,22 @@ SharpenWindow::~SharpenWindow()
 
 void SharpenWindow::create_objects()
 {
-	int xs10 = xS(10), xs50 = xS(50), xs100 = xS(100);
-	int ys10 = yS(10), ys20 = yS(20), ys30 = yS(30), ys40 = yS(40);
+	int xs10 = xS(10), xs100 = xS(100), xs200 = xS(200);
+	int ys10 = yS(10), ys30 = yS(30), ys40 = yS(40);
 	int x = xs10, y = ys10;
-	int x1 = 0; int clrBtn_w = xs50;
+	int x2 = xS(80), x3 = xS(180);
+	int clr_x = get_w()-x - xS(22); // note: clrBtn_w = 22
 	int defaultBtn_w = xs100;
 
-	add_tool(new BC_Title(x, y, _("Sharpness")));
-	y += ys20;
-	add_tool(sharpen_slider = new SharpenSlider(client, &(client->config.sharpness), x, y));
-	x1 = x + sharpen_slider->get_w() + xs10;
-	add_subwindow(sharpen_sliderClr = new SharpenSliderClr(client, this, x1, y, clrBtn_w));
+	BC_Bar *bar;
+
+	y += ys10;
+	add_tool(new BC_Title(x, y, _("Sharpness:")));
+	sharpen_text = new SharpenText(client, this, (x + x2), y);
+	sharpen_text->create_objects();
+	add_tool(sharpen_slider = new SharpenSlider(client, this, x3, y, xs200));
+	clr_x = x3 + sharpen_slider->get_w() + x;
+	add_subwindow(sharpen_Clr = new SharpenClr(client, this, clr_x, y));
 
 	y += ys30;
 	add_tool(sharpen_interlace = new SharpenInterlace(client, x, y));
@@ -63,9 +68,13 @@ void SharpenWindow::create_objects()
 	y += ys30;
 	add_tool(sharpen_luminance = new SharpenLuminance(client, x, y));
 	y += ys40;
+
+// Reset section
+	add_subwindow(bar = new BC_Bar(x, y, get_w()-2*x));
+	y += ys10;
 	add_tool(reset = new SharpenReset(client, this, x, y));
 	add_subwindow(default_settings = new SharpenDefaultSettings(client, this,
-		(xS(280) - xs10 - defaultBtn_w), y, defaultBtn_w));
+		(get_w() - xs10 - defaultBtn_w), y, defaultBtn_w));
 
 	show_window();
 	flush();
@@ -74,12 +83,14 @@ void SharpenWindow::create_objects()
 void SharpenWindow::update_gui(int clear)
 {
 	switch(clear) {
-		case RESET_SHARPEN_SLIDER :
+		case RESET_SHARPEN :
+			sharpen_text->update((int64_t)client->config.sharpness);
 			sharpen_slider->update(client->config.sharpness);
 			break;
 		case RESET_ALL :
 		case RESET_DEFAULT_SETTINGS :
 		default:
+			sharpen_text->update((int64_t)client->config.sharpness);
 			sharpen_slider->update(client->config.sharpness);
 			sharpen_interlace->update(client->config.interlace);
 			sharpen_horizontal->update(client->config.horizontal);
@@ -88,28 +99,46 @@ void SharpenWindow::update_gui(int clear)
 	}
 }
 
-SharpenSlider::SharpenSlider(SharpenMain *client, float *output, int x, int y)
- : BC_ISlider(x,
- 	y,
-	0,
-	xS(200),
-	yS(200),
-	0,
-	MAXSHARPNESS,
-	(int)*output,
-	0,
-	0,
-	0)
+SharpenText::SharpenText(SharpenMain *client, SharpenWindow *gui, int x, int y)
+ : BC_TumbleTextBox(gui, client->config.sharpness,
+	0, MAXSHARPNESS, x, y, xS(60), 0)
 {
 	this->client = client;
-	this->output = output;
+	this->gui = gui;
+	set_increment(1);
+}
+
+SharpenText::~SharpenText()
+{
+}
+
+int SharpenText::handle_event()
+{
+	client->config.sharpness = atoi(get_text());
+	if(client->config.sharpness > MAXSHARPNESS)
+		client->config.sharpness = MAXSHARPNESS;
+	else
+		if(client->config.sharpness < 0) client->config.sharpness = 0;
+
+	gui->sharpen_slider->update((int64_t)client->config.sharpness);
+	client->send_configure_change();
+	return 1;
+}
+
+SharpenSlider::SharpenSlider(SharpenMain *client, SharpenWindow *gui, int x, int y, int w)
+ : BC_ISlider(x, y, 0, w, w, 0, MAXSHARPNESS, client->config.sharpness, 0, 0, 0)
+{
+	this->client = client;
+	this->gui = gui;
+	enable_show_value(0); // Hide caption
 }
 SharpenSlider::~SharpenSlider()
 {
 }
 int SharpenSlider::handle_event()
 {
-	*output = get_value();
+	client->config.sharpness = get_value();
+	gui->sharpen_text->update(client->config.sharpness);
 	client->send_configure_change();
 	return 1;
 }
@@ -199,19 +228,19 @@ int SharpenDefaultSettings::handle_event()
 }
 
 
-SharpenSliderClr::SharpenSliderClr(SharpenMain *client, SharpenWindow *gui, int x, int y, int w)
- : BC_Button(x, y, w, client->get_theme()->get_image_set("reset_button"))
+SharpenClr::SharpenClr(SharpenMain *client, SharpenWindow *gui, int x, int y)
+ : BC_Button(x, y, client->get_theme()->get_image_set("reset_button"))
 {
 	this->client = client;
 	this->gui = gui;
 }
-SharpenSliderClr::~SharpenSliderClr()
+SharpenClr::~SharpenClr()
 {
 }
-int SharpenSliderClr::handle_event()
+int SharpenClr::handle_event()
 {
-	client->config.reset(RESET_SHARPEN_SLIDER);
-	gui->update_gui(RESET_SHARPEN_SLIDER);
+	client->config.reset(RESET_SHARPEN);
+	gui->update_gui(RESET_SHARPEN);
 	client->send_configure_change();
 	return 1;
 }

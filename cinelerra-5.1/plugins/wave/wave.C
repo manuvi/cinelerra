@@ -152,64 +152,57 @@ int WaveReflective::handle_event()
 }
 
 
-WaveAmplitude::WaveAmplitude(WaveEffect *plugin, int x, int y)
- : BC_FSlider(x,
-			y,
-			0,
-			xS(200),
-			yS(200),
-			(float)0,
-			(float)100,
-			plugin->config.amplitude)
+WaveFText::WaveFText(WaveWindow *gui, WaveEffect *plugin,
+	WaveFSlider *slider, float *output, int x, int y, float min, float max)
+ : BC_TumbleTextBox(gui, *output,
+	min, max, x, y, xS(60), 2)
 {
+	this->gui = gui;
 	this->plugin = plugin;
+	this->output = output;
+	this->slider = slider;
+	this->min = min;
+	this->max = max;
+	set_increment(0.1);
 }
-int WaveAmplitude::handle_event()
+
+WaveFText::~WaveFText()
 {
-	plugin->config.amplitude = get_value();
+}
+
+int WaveFText::handle_event()
+{
+	*output = atof(get_text());
+	if(*output > max) *output = max;
+	if(*output < min) *output = min;
+	slider->update(*output);
 	plugin->send_configure_change();
 	return 1;
 }
 
 
-
-WavePhase::WavePhase(WaveEffect *plugin, int x, int y)
- : BC_FSlider(x,
-			y,
-			0,
-			xS(200),
-			yS(200),
-			(float)0,
-			(float)360,
-			plugin->config.phase)
+WaveFSlider::WaveFSlider(WaveEffect *plugin,
+	WaveFText *text, float *output, int x, int y, float min, float max)
+ : BC_FSlider(x, y, 0, xS(180), xS(180), min, max, *output)
 {
 	this->plugin = plugin;
+	this->output = output;
+	this->text = text;
+	enable_show_value(0); // Hide caption
 }
-int WavePhase::handle_event()
+
+WaveFSlider::~WaveFSlider()
 {
-	plugin->config.phase = get_value();
+}
+
+int WaveFSlider::handle_event()
+{
+	*output = get_value();
+	text->update(*output);
 	plugin->send_configure_change();
 	return 1;
 }
 
-WaveLength::WaveLength(WaveEffect *plugin, int x, int y)
- : BC_FSlider(x,
-			y,
-			0,
-			xS(200),
-			yS(200),
-			(float)0,
-			(float)50,
-			plugin->config.wavelength)
-{
-	this->plugin = plugin;
-}
-int WaveLength::handle_event()
-{
-	plugin->config.wavelength = get_value();
-	plugin->send_configure_change();
-	return 1;
-}
 
 WaveReset::WaveReset(WaveEffect *plugin, WaveWindow *gui, int x, int y)
  : BC_GenericButton(x, y, _("Reset"))
@@ -245,17 +238,17 @@ int WaveDefaultSettings::handle_event()
 	return 1;
 }
 
-WaveSliderClr::WaveSliderClr(WaveEffect *plugin, WaveWindow *gui, int x, int y, int w, int clear)
- : BC_Button(x, y, w, plugin->get_theme()->get_image_set("reset_button"))
+WaveClr::WaveClr(WaveEffect *plugin, WaveWindow *gui, int x, int y, int clear)
+ : BC_Button(x, y, plugin->get_theme()->get_image_set("reset_button"))
 {
 	this->plugin = plugin;
 	this->gui = gui;
 	this->clear = clear;
 }
-WaveSliderClr::~WaveSliderClr()
+WaveClr::~WaveClr()
 {
 }
-int WaveSliderClr::handle_event()
+int WaveClr::handle_event()
 {
 	// clear==1 ==> Amplitude slider
 	// clear==2 ==> Phase slider
@@ -270,7 +263,7 @@ int WaveSliderClr::handle_event()
 
 
 WaveWindow::WaveWindow(WaveEffect *plugin)
- : PluginClientWindow(plugin, xS(385), yS(140), xS(385), yS(140), 0)
+ : PluginClientWindow(plugin, xS(420), yS(160), xS(420), yS(160), 0)
 {
 	this->plugin = plugin;
 }
@@ -281,11 +274,14 @@ WaveWindow::~WaveWindow()
 
 void WaveWindow::create_objects()
 {
-	int xs10 = xS(10), xs50 = xS(50), xs100 = xS(100), xs115 = xS(115);
+	int xs10 = xS(10), xs100 = xS(100);
 	int ys10 = yS(10), ys30 = yS(30), ys40 = yS(40);
-	int x = xs10, y = ys10, x1 = xs115;
-	int x2 = 0; int clrBtn_w = xs50;
+	int x = xs10, y = ys10;
+	int x2 = xS(100), x3 = xS(200);
+	int clr_x = get_w()-x - xS(22); // note: clrBtn_w = 22
 	int defaultBtn_w = xs100;
+
+	BC_Bar *bar;
 
 //	add_subwindow(new BC_Title(x, y, _("Mode:")));
 //	add_subwindow(smear = new WaveSmear(plugin, this, x1, y));
@@ -294,25 +290,48 @@ void WaveWindow::create_objects()
 //	y += ys30;
 //	add_subwindow(reflective = new WaveReflective(plugin, x1, y));
 //	y += ys30;
+
+	y += ys10;
 	add_subwindow(new BC_Title(x, y, _("Amplitude:")));
-	add_subwindow(amplitude = new WaveAmplitude(plugin, x1, y));
-	x2 = x1 + amplitude->get_w() + xs10;
-	add_subwindow(amplitudeClr = new WaveSliderClr(plugin, this, x2, y, clrBtn_w, RESET_AMPLITUDE));
-
+	amplitude_text = new WaveFText(this, plugin,
+		0, &plugin->config.amplitude, (x + x2), y, AMPLITUDE_MIN, AMPLITUDE_MAX);
+	amplitude_text->create_objects();
+	amplitude_slider = new WaveFSlider(plugin,
+		amplitude_text, &plugin->config.amplitude, x3, y, AMPLITUDE_MIN, AMPLITUDE_MAX);
+	add_subwindow(amplitude_slider);
+	amplitude_text->slider = amplitude_slider;
+	clr_x = x3 + amplitude_slider->get_w() + x;
+	add_subwindow(amplitude_Clr = new WaveClr(plugin, this, clr_x, y, RESET_AMPLITUDE));
 	y += ys30;
+
 	add_subwindow(new BC_Title(x, y, _("Phase:")));
-	add_subwindow(phase = new WavePhase(plugin, x1, y));
-	add_subwindow(phaseClr = new WaveSliderClr(plugin, this, x2, y, clrBtn_w, RESET_PHASE));
-
+	phase_text = new WaveFText(this, plugin,
+		0, &plugin->config.phase, (x + x2), y, PHASE_MIN, PHASE_MAX);
+	phase_text->create_objects();
+	phase_slider = new WaveFSlider(plugin,
+		phase_text, &plugin->config.phase, x3, y, PHASE_MIN, PHASE_MAX);
+	add_subwindow(phase_slider);
+	phase_text->slider = phase_slider;
+	add_subwindow(phase_Clr = new WaveClr(plugin, this, clr_x, y, RESET_PHASE));
 	y += ys30;
-	add_subwindow(new BC_Title(x, y, _("Wavelength:")));
-	add_subwindow(wavelength = new WaveLength(plugin, x1, y));
-	add_subwindow(wavelengthClr = new WaveSliderClr(plugin, this, x2, y, clrBtn_w, RESET_WAVELENGTH));
 
+	add_subwindow(new BC_Title(x, y, _("Wavelength:")));
+	wavelength_text = new WaveFText(this, plugin,
+		0, &plugin->config.wavelength, (x + x2), y, WAVELENGTH_MIN, WAVELENGTH_MAX);
+	wavelength_text->create_objects();
+	wavelength_slider = new WaveFSlider(plugin,
+		wavelength_text, &plugin->config.wavelength, x3, y, WAVELENGTH_MIN, WAVELENGTH_MAX);
+	add_subwindow(wavelength_slider);
+	wavelength_text->slider = wavelength_slider;
+	add_subwindow(wavelength_Clr = new WaveClr(plugin, this, clr_x, y, RESET_WAVELENGTH));
 	y += ys40;
+
+// Reset section
+	add_subwindow(bar = new BC_Bar(x, y, get_w()-2*x));
+	y += ys10;
 	add_subwindow(reset = new WaveReset(plugin, this, x, y));
 	add_subwindow(default_settings = new WaveDefaultSettings(plugin, this,
-		(xS(385) - xs10 - defaultBtn_w), y, defaultBtn_w));
+		(get_w() - xs10 - defaultBtn_w), y, defaultBtn_w));
 
 	show_window();
 	flush();
@@ -328,18 +347,27 @@ void WaveWindow::update_mode()
 void WaveWindow::update_gui(int clear)
 {
 	switch(clear) {
-		case RESET_AMPLITUDE : amplitude->update(plugin->config.amplitude);
+		case RESET_AMPLITUDE :
+			amplitude_text->update(plugin->config.amplitude);
+			amplitude_slider->update(plugin->config.amplitude);
 			break;
-		case RESET_PHASE : phase->update(plugin->config.phase);
+		case RESET_PHASE :
+			phase_text->update(plugin->config.phase);
+			phase_slider->update(plugin->config.phase);
 			break;
-		case RESET_WAVELENGTH : wavelength->update(plugin->config.wavelength);
+		case RESET_WAVELENGTH :
+			wavelength_text->update(plugin->config.wavelength);
+			wavelength_slider->update(plugin->config.wavelength);
 			break;
 		case RESET_ALL :
 		case RESET_DEFAULT_SETTINGS :
 		default:
-			amplitude->update(plugin->config.amplitude);
-			phase->update(plugin->config.phase);
-			wavelength->update(plugin->config.wavelength);
+			amplitude_text->update(plugin->config.amplitude);
+			amplitude_slider->update(plugin->config.amplitude);
+			phase_text->update(plugin->config.phase);
+			phase_slider->update(plugin->config.phase);
+			wavelength_text->update(plugin->config.wavelength);
+			wavelength_slider->update(plugin->config.wavelength);
 			break;
 	}
 }
@@ -388,9 +416,12 @@ void WaveEffect::update_gui()
 		load_configuration();
 		((WaveWindow*)thread->window)->update_mode();
 //		thread->window->reflective->update(config.reflective);
-		((WaveWindow*)thread->window)->amplitude->update(config.amplitude);
-		((WaveWindow*)thread->window)->phase->update(config.phase);
-		((WaveWindow*)thread->window)->wavelength->update(config.wavelength);
+		((WaveWindow*)thread->window)->amplitude_text->update(config.amplitude);
+		((WaveWindow*)thread->window)->amplitude_slider->update(config.amplitude);
+		((WaveWindow*)thread->window)->phase_text->update(config.phase);
+		((WaveWindow*)thread->window)->phase_slider->update(config.phase);
+		((WaveWindow*)thread->window)->wavelength_text->update(config.wavelength);
+		((WaveWindow*)thread->window)->wavelength_slider->update(config.wavelength);
 		thread->window->unlock_window();
 	}
 }

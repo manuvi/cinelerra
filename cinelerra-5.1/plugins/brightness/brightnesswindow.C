@@ -33,7 +33,7 @@
 
 
 BrightnessWindow::BrightnessWindow(BrightnessMain *client)
- : PluginClientWindow(client, xS(370), yS(155), xS(370), yS(155), 0)
+ : PluginClientWindow(client, xS(420), yS(160), xS(420), yS(160), 0)
 {
 	this->client = client;
 }
@@ -44,36 +44,47 @@ BrightnessWindow::~BrightnessWindow()
 
 void BrightnessWindow::create_objects()
 {
-	int xs10 = xS(10);
-	int ys10 = yS(10), ys25 = yS(25), ys30 = yS(30), ys35 = yS(35);
-	int x = xs10, y = ys10, x1 = x + xS(90);
-	int x2 = 0; int clrBtn_w = xS(50);
+	int xs10 = xS(10), xs200 = xS(200);
+	int ys10 = yS(10), ys30 = yS(30), ys40 = yS(40);
+	int x = xs10, y = ys10;
+	int x2 = xS(80), x3 = xS(180);
+	int clr_x = get_w()-x - xS(22); // note: clrBtn_w = 22
 
-	add_tool(new BC_Title(x, y, _("Brightness/Contrast")));
-	y += ys25;
+	BC_Bar *bar;
+
+// Brightness
+	y += ys10;
 	add_tool(new BC_Title(x, y,_("Brightness:")));
-	add_tool(brightness = new BrightnessSlider(client,
-		&(client->config.brightness),
-		x1,
-		y,
-		1));
-	x2 = x1 + brightness->get_w() + xs10;
-	add_subwindow(brightnessClr = new BrightnessSliderClr(client, this, x2, y, clrBtn_w, 1));
-	y += ys25;
-	add_tool(new BC_Title(x, y, _("Contrast:")));
-	add_tool(contrast = new BrightnessSlider(client,
-		&(client->config.contrast),
-		x1,
-		y,
-		0));
-
-	add_subwindow(contrastClr = new BrightnessSliderClr(client, this, x2, y, clrBtn_w, 0));
+	brightness_text = new BrightnessFText(this, client,
+		0, &(client->config.brightness), (x + x2), y, -MAXVALUE, MAXVALUE);
+	brightness_text->create_objects();
+	brightness_slider = new BrightnessFSlider(client,
+		brightness_text, &(client->config.brightness), x3, y, -MAXVALUE, MAXVALUE, xs200, 1);
+	add_subwindow(brightness_slider);
+	brightness_text->slider = brightness_slider;
+	clr_x = x3 + brightness_slider->get_w() + x;
+	add_subwindow(brightness_Clr = new BrightnessClr(client, this, clr_x, y, RESET_BRIGHTNESS));
 	y += ys30;
-	add_tool(luma = new BrightnessLuma(client,
-		x,
-		y));
 
-	y += ys35;
+// Contrast
+	add_tool(new BC_Title(x, y, _("Contrast:")));
+	contrast_text = new BrightnessFText(this, client,
+		0, &(client->config.contrast), (x + x2), y, -MAXVALUE, MAXVALUE);
+	contrast_text->create_objects();
+	contrast_slider = new BrightnessFSlider(client,
+		contrast_text, &(client->config.contrast), x3, y, -MAXVALUE, MAXVALUE, xs200, 0);
+	add_subwindow(contrast_slider);
+	contrast_text->slider = contrast_slider;
+	add_subwindow(contrast_Clr = new BrightnessClr(client, this, clr_x, y, RESET_CONTRAST));
+	y += ys30;
+
+// Luma
+	add_tool(luma = new BrightnessLuma(client, x, y));
+	y += ys40;
+
+// Reset section
+	add_subwindow(bar = new BC_Bar(x, y, get_w()-2*x));
+	y += ys10;
 	add_subwindow(reset = new BrightnessReset(client, this, x, y));
 
 	show_window();
@@ -84,48 +95,93 @@ void BrightnessWindow::create_objects()
 void BrightnessWindow::update_gui(int clear)
 {
 	switch(clear) {
-		case RESET_CONTRAST : contrast->update(client->config.contrast);
+		case RESET_CONTRAST :
+			contrast_text->update(client->config.contrast);
+			contrast_slider->update(client->config.contrast);
 			break;
-		case RESET_BRIGHTNESS: brightness->update(client->config.brightness);
+		case RESET_BRIGHTNESS:
+			brightness_text->update(client->config.brightness);
+			brightness_slider->update(client->config.brightness);
 			break;
 		case RESET_ALL :
 		default:
-			brightness->update(client->config.brightness);
-			contrast->update(client->config.contrast);
+			brightness_text->update(client->config.brightness);
+			brightness_slider->update(client->config.brightness);
+			contrast_text->update(client->config.contrast);
+			contrast_slider->update(client->config.contrast);
 			luma->update(client->config.luma);
 			break;
 	}
 }
 
-BrightnessSlider::BrightnessSlider(BrightnessMain *client,
-	float *output,
-	int x,
-	int y,
-	int is_brightness)
- : BC_FSlider(x,
- 	y,
-	0,
-	xS(200),
-	yS(200),
-	-100,
-	100,
-	(int)*output)
+
+/* BRIGHTNESS VALUES
+  brightness is stored    from -100.00  to +100.00
+  brightness_slider  goes from -100.00  to +100.00
+  brightness_caption goes from   -1.000 to   +1.000
+  brightness_text    goes from -100.00  to +100.00
+*/
+
+/* CONTRAST VALUES
+  contrast is stored    from -100.00  to +100.00
+  contrast_slider  goes from -100.00  to +100.00
+  contrast_caption goes from    0.000 to   +5.000 (clear to +1.000)
+  contrast_text    goes from -100.00  to +100.00
+*/
+
+BrightnessFText::BrightnessFText(BrightnessWindow *window, BrightnessMain *client,
+	BrightnessFSlider *slider, float *output, int x, int y, float min, float max)
+ : BC_TumbleTextBox(window, *output,
+	min, max, x, y, xS(60), 2)
 {
+	this->window = window;
 	this->client = client;
 	this->output = output;
-	this->is_brightness = is_brightness;
+	this->slider = slider;
+	this->min = min;
+	this->max = max;
+	set_increment(0.01);
 }
-BrightnessSlider::~BrightnessSlider()
+
+BrightnessFText::~BrightnessFText()
 {
 }
-int BrightnessSlider::handle_event()
+
+int BrightnessFText::handle_event()
 {
-	*output = get_value();
+	*output = atof(get_text());
+	if(*output > max) *output = max;
+	else if(*output < min) *output = min;
+	slider->update(*output);
 	client->send_configure_change();
 	return 1;
 }
 
-char* BrightnessSlider::get_caption()
+BrightnessFSlider::BrightnessFSlider(BrightnessMain *client,
+	BrightnessFText *text, float *output, int x, int y,
+	float min, float max, int w, int is_brightness)
+ : BC_FSlider(x, y, 0, w, w, min, max, *output)
+{
+	this->client = client;
+	this->output = output;
+	this->text = text;
+	this->is_brightness = is_brightness;
+	enable_show_value(0); // Hide caption
+}
+
+BrightnessFSlider::~BrightnessFSlider()
+{
+}
+
+int BrightnessFSlider::handle_event()
+{
+	*output = get_value();
+	text->update(*output);
+	client->send_configure_change();
+	return 1;
+}
+
+char* BrightnessFSlider::get_caption()
 {
 	float fraction;
 	if(is_brightness)
@@ -181,22 +237,22 @@ int BrightnessReset::handle_event()
 	return 1;
 }
 
-BrightnessSliderClr::BrightnessSliderClr(BrightnessMain *client, BrightnessWindow *window, int x, int y, int w, int is_brightness)
- : BC_Button(x, y, w, client->get_theme()->get_image_set("reset_button"))
+BrightnessClr::BrightnessClr(BrightnessMain *client, BrightnessWindow *window, int x, int y, int clear)
+ : BC_Button(x, y, client->get_theme()->get_image_set("reset_button"))
 {
 	this->client = client;
 	this->window = window;
-	this->is_brightness = is_brightness;
+	this->clear = clear;
 }
-BrightnessSliderClr::~BrightnessSliderClr()
+BrightnessClr::~BrightnessClr()
 {
 }
-int BrightnessSliderClr::handle_event()
+int BrightnessClr::handle_event()
 {
-	// is_brightness==0 means Contrast slider   ==> "clear=1"
-	// is_brightness==1 means Brightness slider ==> "clear=2"
-	client->config.reset(is_brightness + 1);
-	window->update_gui(is_brightness + 1);
+	// clear==1 ==> Contrast text-slider
+	// clear==2 ==> Brightness text-slider
+	client->config.reset(clear);
+	window->update_gui(clear);
 	client->send_configure_change();
 	return 1;
 }

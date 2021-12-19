@@ -94,18 +94,50 @@ void YUVShiftConfig::interpolate(YUVShiftConfig &prev,
 
 
 
-#define MAXVALUE 100
 
-YUVShiftLevel::YUVShiftLevel(YUVShiftEffect *plugin, int *output, int x, int y)
- : BC_ISlider(x, y, 0, xS(200), yS(200), -MAXVALUE, MAXVALUE, *output)
+
+
+YUVShiftIText::YUVShiftIText(YUVShiftWindow *window, YUVShiftEffect *plugin,
+	YUVShiftISlider *slider, int *output, int x, int y, int min, int max)
+ : BC_TumbleTextBox(window, *output,
+	min, max, x, y, xS(60), 0)
+{
+	this->window = window;
+	this->plugin = plugin;
+	this->output = output;
+	this->slider = slider;
+	this->min = min;
+	this->max = max;
+	set_increment(1);
+}
+
+YUVShiftIText::~YUVShiftIText()
+{
+}
+
+int YUVShiftIText::handle_event()
+{
+	*output = atoi(get_text());
+	if(*output > max) *output = max;
+	if(*output < min) *output = min;
+	slider->update(*output);
+	plugin->send_configure_change();
+	return 1;
+}
+
+YUVShiftISlider::YUVShiftISlider(YUVShiftEffect *plugin, YUVShiftIText *text, int *output, int x, int y)
+ : BC_ISlider(x, y, 0, xS(200), xS(200), -MAXVALUE, MAXVALUE, *output)
 {
 	this->plugin = plugin;
 	this->output = output;
+	this->text = text;
+	enable_show_value(0); // Hide caption
 }
 
-int YUVShiftLevel::handle_event()
+int YUVShiftISlider::handle_event()
 {
 	*output = get_value();
+	text->update((int64_t)*output);
 	plugin->send_configure_change();
 	return 1;
 }
@@ -129,17 +161,17 @@ int YUVShiftReset::handle_event()
 }
 
 
-YUVShiftSliderClr::YUVShiftSliderClr(YUVShiftEffect *plugin, YUVShiftWindow *window, int x, int y, int w, int clear)
- : BC_Button(x, y, w, plugin->get_theme()->get_image_set("reset_button"))
+YUVShiftClr::YUVShiftClr(YUVShiftEffect *plugin, YUVShiftWindow *window, int x, int y, int clear)
+ : BC_Button(x, y, plugin->get_theme()->get_image_set("reset_button"))
 {
 	this->plugin = plugin;
 	this->window = window;
 	this->clear = clear;
 }
-YUVShiftSliderClr::~YUVShiftSliderClr()
+YUVShiftClr::~YUVShiftClr()
 {
 }
-int YUVShiftSliderClr::handle_event()
+int YUVShiftClr::handle_event()
 {
 	// clear==1 ==> y_dx slider --- clear==2 ==> y_dy slider
 	// clear==3 ==> u_dx slider --- clear==4 ==> u_dy slider
@@ -152,49 +184,92 @@ int YUVShiftSliderClr::handle_event()
 
 
 YUVShiftWindow::YUVShiftWindow(YUVShiftEffect *plugin)
- : PluginClientWindow(plugin, xS(320), yS(230), xS(320), yS(230), 0)
+ : PluginClientWindow(plugin, xS(420), yS(250), xS(420), yS(250), 0)
 {
 	this->plugin = plugin;
 }
 
 void YUVShiftWindow::create_objects()
 {
-	int xs10 = xS(10), xs50 = xS(50);
+	int xs10 = xS(10);
 	int ys10 = yS(10), ys30 = yS(30), ys40 = yS(40);
-	int x = xs10, y = ys10, x1 = xs50;
-	int x2 = 0; int clrBtn_w = xs50;
+	int x = xs10, y = ys10;
+	int x2 = xS(80), x3 = xS(180);
+	int clr_x = get_w()-x - xS(22); // note: clrBtn_w = 22
 
+	BC_Bar *bar;
+
+	y += ys10;
 	add_subwindow(new BC_Title(x, y, _("Y_dx:")));
-	add_subwindow(y_dx = new YUVShiftLevel(plugin, &plugin->config.y_dx, x1, y));
-	x2 = x1 + y_dx->get_w() + xs10;
-	add_subwindow(y_dxClr = new YUVShiftSliderClr(plugin, this, x2, y, clrBtn_w, RESET_Y_DX));
-
+	y_dx_text = new YUVShiftIText(this, plugin,
+		0, &plugin->config.y_dx, (x + x2), y, -MAXVALUE, MAXVALUE);
+	y_dx_text->create_objects();
+	y_dx_slider = new YUVShiftISlider(plugin,
+		y_dx_text, &plugin->config.y_dx, x3, y);
+	add_subwindow(y_dx_slider);
+	y_dx_text->slider = y_dx_slider;
+	clr_x = x3 + y_dx_slider->get_w() + x;
+	add_subwindow(y_dx_Clr = new YUVShiftClr(plugin, this, clr_x, y, RESET_Y_DX));
 	y += ys30;
+
 	add_subwindow(new BC_Title(x, y, _("Y_dy:")));
-	add_subwindow(y_dy = new YUVShiftLevel(plugin, &plugin->config.y_dy, x1, y));
-	add_subwindow(y_dyClr = new YUVShiftSliderClr(plugin, this, x2, y, clrBtn_w, RESET_Y_DY));
-
+	y_dy_text = new YUVShiftIText(this, plugin,
+		0, &plugin->config.y_dy, (x + x2), y, -MAXVALUE, MAXVALUE);
+	y_dy_text->create_objects();
+	y_dy_slider = new YUVShiftISlider(plugin,
+		y_dy_text, &plugin->config.y_dy, x3, y);
+	add_subwindow(y_dy_slider);
+	y_dy_text->slider = y_dy_slider;
+	add_subwindow(y_dy_Clr = new YUVShiftClr(plugin, this, clr_x, y, RESET_Y_DY));
 	y += ys30;
+
 	add_subwindow(new BC_Title(x, y, _("U_dx:")));
-	add_subwindow(u_dx = new YUVShiftLevel(plugin, &plugin->config.u_dx, x1, y));
-	add_subwindow(u_dxClr = new YUVShiftSliderClr(plugin, this, x2, y, clrBtn_w, RESET_U_DX));
-
+	u_dx_text = new YUVShiftIText(this, plugin,
+		0, &plugin->config.u_dx, (x + x2), y, -MAXVALUE, MAXVALUE);
+	u_dx_text->create_objects();
+	u_dx_slider = new YUVShiftISlider(plugin,
+		u_dx_text, &plugin->config.u_dx, x3, y);
+	add_subwindow(u_dx_slider);
+	u_dx_text->slider = u_dx_slider;
+	add_subwindow(u_dx_Clr = new YUVShiftClr(plugin, this, clr_x, y, RESET_U_DX));
 	y += ys30;
+
 	add_subwindow(new BC_Title(x, y, _("U_dy:")));
-	add_subwindow(u_dy = new YUVShiftLevel(plugin, &plugin->config.u_dy, x1, y));
-	add_subwindow(u_dyClr = new YUVShiftSliderClr(plugin, this, x2, y, clrBtn_w, RESET_U_DY));
-
+	u_dy_text = new YUVShiftIText(this, plugin,
+		0, &plugin->config.u_dy, (x + x2), y, -MAXVALUE, MAXVALUE);
+	u_dy_text->create_objects();
+	u_dy_slider = new YUVShiftISlider(plugin,
+		u_dy_text, &plugin->config.u_dy, x3, y);
+	add_subwindow(u_dy_slider);
+	u_dy_text->slider = u_dy_slider;
+	add_subwindow(u_dy_Clr = new YUVShiftClr(plugin, this, clr_x, y, RESET_U_DY));
 	y += ys30;
+
 	add_subwindow(new BC_Title(x, y, _("V_dx:")));
-	add_subwindow(v_dx = new YUVShiftLevel(plugin, &plugin->config.v_dx, x1, y));
-	add_subwindow(v_dxClr = new YUVShiftSliderClr(plugin, this, x2, y, clrBtn_w, RESET_V_DX));
-
+	v_dx_text = new YUVShiftIText(this, plugin,
+		0, &plugin->config.v_dx, (x + x2), y, -MAXVALUE, MAXVALUE);
+	v_dx_text->create_objects();
+	v_dx_slider = new YUVShiftISlider(plugin,
+		v_dx_text, &plugin->config.v_dx, x3, y);
+	add_subwindow(v_dx_slider);
+	v_dx_text->slider = v_dx_slider;
+	add_subwindow(v_dx_Clr = new YUVShiftClr(plugin, this, clr_x, y, RESET_V_DX));
 	y += ys30;
-	add_subwindow(new BC_Title(x, y, _("V_dy:")));
-	add_subwindow(v_dy = new YUVShiftLevel(plugin, &plugin->config.v_dy, x1, y));
-	add_subwindow(v_dyClr = new YUVShiftSliderClr(plugin, this, x2, y, clrBtn_w, RESET_V_DY));
 
+	add_subwindow(new BC_Title(x, y, _("V_dy:")));
+	v_dy_text = new YUVShiftIText(this, plugin,
+		0, &plugin->config.v_dy, (x + x2), y, -MAXVALUE, MAXVALUE);
+	v_dy_text->create_objects();
+	v_dy_slider = new YUVShiftISlider(plugin,
+		v_dy_text, &plugin->config.v_dy, x3, y);
+	add_subwindow(v_dy_slider);
+	v_dy_text->slider = v_dy_slider;
+	add_subwindow(v_dy_Clr = new YUVShiftClr(plugin, this, clr_x, y, RESET_V_DY));
 	y += ys40;
+
+// Reset section
+	add_subwindow(bar = new BC_Bar(x, y, get_w()-2*x));
+	y += ys10;
 	add_subwindow(reset = new YUVShiftReset(plugin, this, x, y));
 
 	show_window();
@@ -206,26 +281,44 @@ void YUVShiftWindow::create_objects()
 void YUVShiftWindow::update_gui(int clear)
 {
 	switch(clear) {
-		case RESET_Y_DX : y_dx->update(plugin->config.y_dx);
+		case RESET_Y_DX :
+			y_dx_text->update((int64_t)plugin->config.y_dx);
+			y_dx_slider->update(plugin->config.y_dx);
 			break;
-		case RESET_Y_DY : y_dy->update(plugin->config.y_dy);
+		case RESET_Y_DY :
+			y_dy_text->update((int64_t)plugin->config.y_dy);
+			y_dy_slider->update(plugin->config.y_dy);
 			break;
-		case RESET_U_DX : u_dx->update(plugin->config.u_dx);
+		case RESET_U_DX :
+			u_dx_text->update((int64_t)plugin->config.u_dx);
+			u_dx_slider->update(plugin->config.u_dx);
 			break;
-		case RESET_U_DY : u_dy->update(plugin->config.u_dy);
+		case RESET_U_DY :
+			u_dy_text->update((int64_t)plugin->config.u_dy);
+			u_dy_slider->update(plugin->config.u_dy);
 			break;
-		case RESET_V_DX : v_dx->update(plugin->config.v_dx);
+		case RESET_V_DX :
+			v_dx_text->update((int64_t)plugin->config.v_dx);
+			v_dx_slider->update(plugin->config.v_dx);
 			break;
-		case RESET_V_DY : v_dy->update(plugin->config.v_dy);
+		case RESET_V_DY :
+			v_dy_text->update((int64_t)plugin->config.v_dy);
+			v_dy_slider->update(plugin->config.v_dy);
 			break;
 		case RESET_ALL :
 		default:
-			y_dx->update(plugin->config.y_dx);
-			y_dy->update(plugin->config.y_dy);
-			u_dx->update(plugin->config.u_dx);
-			u_dy->update(plugin->config.u_dy);
-			v_dx->update(plugin->config.v_dx);
-			v_dy->update(plugin->config.v_dy);
+			y_dx_text->update((int64_t)plugin->config.y_dx);
+			y_dx_slider->update(plugin->config.y_dx);
+			y_dy_text->update((int64_t)plugin->config.y_dy);
+			y_dy_slider->update(plugin->config.y_dy);
+			u_dx_text->update((int64_t)plugin->config.u_dx);
+			u_dx_slider->update(plugin->config.u_dx);
+			u_dy_text->update((int64_t)plugin->config.u_dy);
+			u_dy_slider->update(plugin->config.u_dy);
+			v_dx_text->update((int64_t)plugin->config.v_dx);
+			v_dx_slider->update(plugin->config.v_dx);
+			v_dy_text->update((int64_t)plugin->config.v_dy);
+			v_dy_slider->update(plugin->config.v_dy);
 			break;
 	}
 }
@@ -259,12 +352,18 @@ void YUVShiftEffect::update_gui()
 		YUVShiftWindow *yuv_wdw = (YUVShiftWindow*)thread->window;
 		yuv_wdw->lock_window("YUVShiftEffect::update_gui");
 		load_configuration();
-		yuv_wdw->y_dx->update(config.y_dx);
-		yuv_wdw->y_dy->update(config.y_dy);
-		yuv_wdw->u_dx->update(config.u_dx);
-		yuv_wdw->u_dy->update(config.u_dy);
-		yuv_wdw->v_dx->update(config.v_dx);
-		yuv_wdw->v_dy->update(config.v_dy);
+		yuv_wdw->y_dx_text->update((int64_t)config.y_dx);
+		yuv_wdw->y_dx_slider->update(config.y_dx);
+		yuv_wdw->y_dy_text->update((int64_t)config.y_dy);
+		yuv_wdw->y_dy_slider->update(config.y_dy);
+		yuv_wdw->u_dx_text->update((int64_t)config.u_dx);
+		yuv_wdw->u_dx_slider->update(config.u_dx);
+		yuv_wdw->u_dy_text->update((int64_t)config.u_dy);
+		yuv_wdw->u_dy_slider->update(config.u_dy);
+		yuv_wdw->v_dx_text->update((int64_t)config.v_dx);
+		yuv_wdw->v_dx_slider->update(config.v_dx);
+		yuv_wdw->v_dy_text->update((int64_t)config.v_dy);
+		yuv_wdw->v_dy_slider->update(config.v_dy);
 		yuv_wdw->unlock_window();
 	}
 }

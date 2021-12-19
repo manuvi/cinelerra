@@ -42,12 +42,21 @@
 #define RESET_RADIUS  3
 #define RESET_STEPS   4
 
+#define XY_MIN       0
+#define XY_MAX     100
+#define RADIUS_MAX 100
+#define STEPS_MIN    1
+#define STEPS_MAX  100
+
 class ZoomBlurMain;
 class ZoomBlurWindow;
 class ZoomBlurEngine;
+class ZoomBlurIText;
+class ZoomBlurISlider;
+class ZoomBlurToggle;
 class ZoomBlurReset;
 class ZoomBlurDefaultSettings;
-class ZoomBlurSliderClr;
+class ZoomBlurClr;
 
 
 
@@ -77,17 +86,31 @@ public:
 
 
 
-class ZoomBlurSize : public BC_ISlider
+
+class ZoomBlurIText : public BC_TumbleTextBox
 {
 public:
-	ZoomBlurSize(ZoomBlurMain *plugin,
-		int x,
-		int y,
-		int *output,
-		int min,
-		int max);
+	ZoomBlurIText(ZoomBlurWindow *window, ZoomBlurMain *plugin,
+		ZoomBlurISlider *slider, int *output, int x, int y, int min, int max);
+	~ZoomBlurIText();
+	int handle_event();
+	ZoomBlurWindow *window;
+	ZoomBlurMain *plugin;
+	ZoomBlurISlider *slider;
+	int *output;
+	int min, max;
+};
+
+class ZoomBlurISlider : public BC_ISlider
+{
+public:
+	ZoomBlurISlider(ZoomBlurMain *plugin,
+		ZoomBlurIText *text, int *output, int x, int y,
+		int min, int max, int w);
+	~ZoomBlurISlider();
 	int handle_event();
 	ZoomBlurMain *plugin;
+	ZoomBlurIText *text;
 	int *output;
 };
 
@@ -113,12 +136,26 @@ public:
 	void create_objects();
 	void update_gui(int clear);
 
-	ZoomBlurSize *x, *y, *radius, *steps;
+	ZoomBlurIText *x_text;
+	ZoomBlurISlider *x_slider;
+	ZoomBlurClr *x_Clr;
+
+	ZoomBlurIText *y_text;
+	ZoomBlurISlider *y_slider;
+	ZoomBlurClr *y_Clr;
+
+	ZoomBlurIText *radius_text;
+	ZoomBlurISlider *radius_slider;
+	ZoomBlurClr *radius_Clr;
+
+	ZoomBlurIText *steps_text;
+	ZoomBlurISlider *steps_slider;
+	ZoomBlurClr *steps_Clr;
+
 	ZoomBlurToggle *r, *g, *b, *a;
 	ZoomBlurMain *plugin;
 	ZoomBlurReset *reset;
 	ZoomBlurDefaultSettings *default_settings;
-	ZoomBlurSliderClr *xClr, *yClr, *radiusClr, *stepsClr;
 };
 
 class ZoomBlurReset : public BC_GenericButton
@@ -142,11 +179,11 @@ public:
 };
 
 
-class ZoomBlurSliderClr : public BC_Button
+class ZoomBlurClr : public BC_Button
 {
 public:
-	ZoomBlurSliderClr(ZoomBlurMain *plugin, ZoomBlurWindow *window, int x, int y, int w, int clear);
-	~ZoomBlurSliderClr();
+	ZoomBlurClr(ZoomBlurMain *plugin, ZoomBlurWindow *window, int x, int y, int clear);
+	~ZoomBlurClr();
 	int handle_event();
 	ZoomBlurMain *plugin;
 	ZoomBlurWindow *window;

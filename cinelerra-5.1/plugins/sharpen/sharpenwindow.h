@@ -30,16 +30,17 @@
 
 #define RESET_DEFAULT_SETTINGS 10
 #define RESET_ALL 0
-#define RESET_SHARPEN_SLIDER 1
+#define RESET_SHARPEN 1
 
 class SharpenWindow;
 class SharpenInterlace;
+class SharpenText;
 class SharpenSlider;
 class SharpenHorizontal;
 class SharpenLuminance;
 class SharpenReset;
 class SharpenDefaultSettings;
-class SharpenSliderClr;
+class SharpenClr;
 
 class SharpenWindow : public PluginClientWindow
 {
@@ -51,24 +52,39 @@ public:
 	void update_gui(int clear);
 
 	SharpenMain *client;
+
+	SharpenText *sharpen_text;
 	SharpenSlider *sharpen_slider;
+	SharpenClr *sharpen_Clr;
+
 	SharpenInterlace *sharpen_interlace;
 	SharpenHorizontal *sharpen_horizontal;
 	SharpenLuminance *sharpen_luminance;
+
 	SharpenReset *reset;
 	SharpenDefaultSettings *default_settings;
-	SharpenSliderClr *sharpen_sliderClr;
+};
+
+class SharpenText : public BC_TumbleTextBox
+{
+public:
+	SharpenText(SharpenMain *client, SharpenWindow *gui, int x, int y);
+	~SharpenText();
+	int handle_event();
+
+	SharpenMain *client;
+	SharpenWindow *gui;
 };
 
 class SharpenSlider : public BC_ISlider
 {
 public:
-	SharpenSlider(SharpenMain *client, float *output, int x, int y);
+	SharpenSlider(SharpenMain *client, SharpenWindow *gui, int x, int y, int w);
 	~SharpenSlider();
 	int handle_event();
 
+	SharpenWindow *gui;
 	SharpenMain *client;
-	float *output;
 };
 
 class SharpenInterlace : public BC_CheckBox
@@ -121,11 +137,11 @@ public:
 	SharpenWindow *gui;
 };
 
-class SharpenSliderClr : public BC_Button
+class SharpenClr : public BC_Button
 {
 public:
-	SharpenSliderClr(SharpenMain *client, SharpenWindow *gui, int x, int y, int w);
-	~SharpenSliderClr();
+	SharpenClr(SharpenMain *client, SharpenWindow *gui, int x, int y);
+	~SharpenClr();
 	int handle_event();
 	SharpenMain *client;
 	SharpenWindow *gui;

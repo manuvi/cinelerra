@@ -97,48 +97,100 @@ void HueConfig::interpolate(HueConfig &prev,
 
 
 
+/* SATURATION VALUES
+  saturation is stored    from -100.00  to +100.00
+  saturation_slider  goes from -100.00  to +100.00
+  saturation_caption goes from    0.000 to   +2.000 (clear to +1.000)
+  saturation_text    goes from -100.00  to +100.00
+*/
+/* VALUE VALUES
+  value is stored    from -100.00  to +100.00
+  value_slider  goes from -100.00  to +100.00
+  value_caption goes from    0.000 to   +2.000 (clear to +1.000)
+  value_text    goes from -100.00  to +100.00
+*/
 
+HueText::HueText(HueEffect *plugin, HueWindow *gui, int x, int y)
+ : BC_TumbleTextBox(gui, plugin->config.hue,
+	(float)MINHUE, (float)MAXHUE, x, y, xS(60), 2)
+{
+	this->gui = gui;
+	this->plugin = plugin;
+	set_increment(0.01);
+}
 
-HueSlider::HueSlider(HueEffect *plugin, int x, int y, int w)
- : BC_FSlider(x,
-			y,
-			0,
-			w,
-			w,
-			(float)MINHUE,
-			(float)MAXHUE,
-			plugin->config.hue)
+HueText::~HueText()
+{
+}
+
+int HueText::handle_event()
+{
+	float min = MINHUE, max = MAXHUE;
+	float output = atof(get_text());
+	if(output > max) output = max;
+	if(output < min) output = min;
+	plugin->config.hue = output;
+	gui->hue_slider->update(plugin->config.hue);
+	plugin->send_configure_change();
+	return 1;
+}
+
+HueSlider::HueSlider(HueEffect *plugin, HueWindow *gui, int x, int y, int w)
+ : BC_FSlider(x, y, 0, w, w,
+	(float)MINHUE, (float)MAXHUE,
+	plugin->config.hue)
 {
 	this->plugin = plugin;
+	this->gui = gui;
+	enable_show_value(0); // Hide caption
 }
 int HueSlider::handle_event()
 {
 	plugin->config.hue = get_value();
+	gui->hue_text->update(plugin->config.hue);
 	plugin->send_configure_change();
 	return 1;
 }
 
 
+SaturationText::SaturationText(HueEffect *plugin, HueWindow *gui, int x, int y)
+ : BC_TumbleTextBox(gui, plugin->config.saturation,
+	(float)MINSATURATION, (float)MAXSATURATION, x, y, xS(60), 2)
+{
+	this->gui = gui;
+	this->plugin = plugin;
+	set_increment(0.01);
+}
 
+SaturationText::~SaturationText()
+{
+}
 
+int SaturationText::handle_event()
+{
+	float min = MINSATURATION, max = MAXSATURATION;
+	float output = atof(get_text());
+	if(output > max) output = max;
+	if(output < min) output = min;
+	plugin->config.saturation = output;
+	gui->sat_slider->update(plugin->config.saturation);
+	plugin->send_configure_change();
+	return 1;
+}
 
-
-
-SaturationSlider::SaturationSlider(HueEffect *plugin, int x, int y, int w)
- : BC_FSlider(x,
-			y,
-			0,
-			w,
-			w,
-			(float)MINSATURATION,
-			(float)MAXSATURATION,
-			plugin->config.saturation)
+SaturationSlider::SaturationSlider(HueEffect *plugin, HueWindow *gui, int x, int y, int w)
+ : BC_FSlider(x, y, 0, w, w,
+	(float)MINSATURATION, (float)MAXSATURATION,
+	plugin->config.saturation)
 {
 	this->plugin = plugin;
+	this->gui = gui;
+	enable_show_value(0); // Hide caption
 }
 int SaturationSlider::handle_event()
 {
 	plugin->config.saturation = get_value();
+	gui->sat_text->update(plugin->config.saturation);
 	plugin->send_configure_change();
 	return 1;
 }
@@ -146,32 +198,50 @@ int SaturationSlider::handle_event()
 char* SaturationSlider::get_caption()
 {
 	float fraction = ((float)plugin->config.saturation - MINSATURATION) /
-		MAXSATURATION;;
+		MAXSATURATION;
 	sprintf(string, "%0.4f", fraction);
 	return string;
 }
 
 
+ValueText::ValueText(HueEffect *plugin, HueWindow *gui, int x, int y)
+ : BC_TumbleTextBox(gui, plugin->config.value,
+	(float)MINVALUE, (float)MAXVALUE, x, y, xS(60), 2)
+{
+	this->gui = gui;
+	this->plugin = plugin;
+	set_increment(0.01);
+}
 
+ValueText::~ValueText()
+{
+}
 
+int ValueText::handle_event()
+{
+	float min = MINVALUE, max = MAXVALUE;
+	float output = atof(get_text());
+	if(output > max) output = max;
+	if(output < min) output = min;
+	plugin->config.value = output;
+	gui->value_slider->update(plugin->config.value);
+	plugin->send_configure_change();
+	return 1;
+}
 
-
-
-ValueSlider::ValueSlider(HueEffect *plugin, int x, int y, int w)
- : BC_FSlider(x,
-			y,
-			0,
-			w,
-			w,
-			(float)MINVALUE,
-			(float)MAXVALUE,
-			plugin->config.value)
+ValueSlider::ValueSlider(HueEffect *plugin, HueWindow *gui, int x, int y, int w)
+ : BC_FSlider(x, y, 0, w, w,
+	(float)MINVALUE, (float)MAXVALUE,
+	plugin->config.value)
 {
 	this->plugin = plugin;
+	this->gui = gui;
+	enable_show_value(0); // Hide caption
 }
 int ValueSlider::handle_event()
 {
 	plugin->config.value = get_value();
+	gui->value_text->update(plugin->config.value);
 	plugin->send_configure_change();
 	return 1;
 }
@@ -202,21 +272,21 @@ int HueReset::handle_event()
 }
 
 
-HueSliderClr::HueSliderClr(HueEffect *plugin, HueWindow *gui, int x, int y, int w, int clear)
- : BC_Button(x, y, w, plugin->get_theme()->get_image_set("reset_button"))
+HueClr::HueClr(HueEffect *plugin, HueWindow *gui, int x, int y, int clear)
+ : BC_Button(x, y, plugin->get_theme()->get_image_set("reset_button"))
 {
 	this->plugin = plugin;
 	this->gui = gui;
 	this->clear = clear;
 }
-HueSliderClr::~HueSliderClr()
+HueClr::~HueClr()
 {
 }
-int HueSliderClr::handle_event()
+int HueClr::handle_event()
 {
-	// clear==1 ==> Hue slider
-	// clear==2 ==> Saturation slider
-	// clear==3 ==> Value slider
+	// clear==1 ==> Hue
+	// clear==2 ==> Saturation
+	// clear==3 ==> Value
 	plugin->config.reset(clear);
 	gui->update_gui(clear);
 	plugin->send_configure_change();
@@ -227,33 +297,49 @@ int HueSliderClr::handle_event()
 
 
 HueWindow::HueWindow(HueEffect *plugin)
- : PluginClientWindow(plugin, xS(370), yS(140), xS(370), yS(140), 0)
+ : PluginClientWindow(plugin, xS(420), yS(160), xS(420), yS(160), 0)
 {
 	this->plugin = plugin;
 }
 void HueWindow::create_objects()
 {
-	int xs10 = xS(10), xs50 = xS(50), xs100 = xS(100), xs200 = xS(200);
+	int xs10 = xS(10), xs200 = xS(200);
 	int ys10 = yS(10), ys30 = yS(30), ys40 = yS(40);
-	int x = xs10, y = ys10, x1 = xs100;
-	int x2 = 0; int clrBtn_w = xs50;
+	int x = xs10, y = ys10;
+	int x2 = xS(80), x3 = xS(180);
+	int clr_x = get_w()-x - xS(22); // note: clrBtn_w = 22
 
+	BC_Bar *bar;
+
+// Hue
+	y += ys10;
 	add_subwindow(new BC_Title(x, y, _("Hue:")));
-	add_subwindow(hue = new HueSlider(plugin, x1, y, xs200));
-	x2 = x1 + hue->get_w() + xs10;
-	add_subwindow(hueClr = new HueSliderClr(plugin, this, x2, y, clrBtn_w, RESET_HUV));
-
+	hue_text = new HueText(plugin, this, (x + x2), y);
+	hue_text->create_objects();
+	add_subwindow(hue_slider = new HueSlider(plugin, this, x3, y, xs200));
+	clr_x = x3 + hue_slider->get_w() + x;
+	add_subwindow(hue_clr = new HueClr(plugin, this, clr_x, y, RESET_HUV));
 	y += ys30;
+
+// Saturation
 	add_subwindow(new BC_Title(x, y, _("Saturation:")));
-	add_subwindow(saturation = new SaturationSlider(plugin, x1, y, xs200));
-	add_subwindow(satClr = new HueSliderClr(plugin, this, x2, y, clrBtn_w, RESET_SAT));
-
+	sat_text = new SaturationText(plugin, this, (x + x2), y);
+	sat_text->create_objects();
+	add_subwindow(sat_slider = new SaturationSlider(plugin, this, x3, y, xs200));
+	add_subwindow(sat_clr = new HueClr(plugin, this, clr_x, y, RESET_SAT));
 	y += ys30;
-	add_subwindow(new BC_Title(x, y, _("Value:")));
-	add_subwindow(value = new ValueSlider(plugin, x1, y, xs200));
-	add_subwindow(valClr = new HueSliderClr(plugin, this, x2, y, clrBtn_w, RESET_VAL));
 
+// Value
+	add_subwindow(new BC_Title(x, y, _("Value:")));
+	value_text = new ValueText(plugin, this, (x + x2), y);
+	value_text->create_objects();
+	add_subwindow(value_slider = new ValueSlider(plugin, this, x3, y, xs200));
+	add_subwindow(value_clr = new HueClr(plugin, this, clr_x, y, RESET_VAL));
 	y += ys40;
+
+// Reset section
+	add_subwindow(bar = new BC_Bar(x, y, get_w()-2*x));
+	y += ys10;
 	add_subwindow(reset = new HueReset(plugin, this, x, y));
 	show_window();
 	flush();
@@ -264,17 +350,26 @@ void HueWindow::create_objects()
 void HueWindow::update_gui(int clear)
 {
 	switch(clear) {
-		case RESET_HUV : hue->update(plugin->config.hue);
+		case RESET_HUV :
+			hue_text->update(plugin->config.hue);
+			hue_slider->update(plugin->config.hue);
 			break;
-		case RESET_SAT : saturation->update(plugin->config.saturation);
+		case RESET_SAT :
+			sat_text->update(plugin->config.saturation);
+			sat_slider->update(plugin->config.saturation);
 			break;
-		case RESET_VAL : value->update(plugin->config.value);
+		case RESET_VAL :
+			value_text->update(plugin->config.value);
+			value_slider->update(plugin->config.value);
 			break;
 		case RESET_ALL :
 		default:
-			hue->update(plugin->config.hue);
-			saturation->update(plugin->config.saturation);
-			value->update(plugin->config.value);
+			hue_text->update(plugin->config.hue);
+			hue_slider->update(plugin->config.hue);
+			sat_text->update(plugin->config.saturation);
+			sat_slider->update(plugin->config.saturation);
+			value_text->update(plugin->config.value);
+			value_slider->update(plugin->config.value);
 			break;
 	}
 }
@@ -565,9 +660,12 @@ void HueEffect::update_gui()
 	{
 		((HueWindow*)thread->window)->lock_window();
 		load_configuration();
-		((HueWindow*)thread->window)->hue->update(config.hue);
-		((HueWindow*)thread->window)->saturation->update(config.saturation);
-		((HueWindow*)thread->window)->value->update(config.value);
+		((HueWindow*)thread->window)->hue_text->update(config.hue);
+		((HueWindow*)thread->window)->hue_slider->update(config.hue);
+		((HueWindow*)thread->window)->sat_text->update(config.saturation);
+		((HueWindow*)thread->window)->sat_slider->update(config.saturation);
+		((HueWindow*)thread->window)->value_text->update(config.value);
+		((HueWindow*)thread->window)->value_slider->update(config.value);
 		((HueWindow*)thread->window)->unlock_window();
 	}
 }

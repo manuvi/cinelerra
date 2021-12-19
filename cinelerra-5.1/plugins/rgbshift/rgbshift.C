@@ -94,18 +94,48 @@ void RGBShiftConfig::interpolate(RGBShiftConfig &prev,
 
 
 
-#define MAXVALUE 100
 
-RGBShiftLevel::RGBShiftLevel(RGBShiftEffect *plugin, int *output, int x, int y)
- : BC_ISlider(x, y, 0, xS(200), yS(200), -MAXVALUE, MAXVALUE, *output)
+RGBShiftIText::RGBShiftIText(RGBShiftWindow *window, RGBShiftEffect *plugin,
+	RGBShiftISlider *slider, int *output, int x, int y, int min, int max)
+ : BC_TumbleTextBox(window, *output,
+	min, max, x, y, xS(60), 0)
+{
+	this->window = window;
+	this->plugin = plugin;
+	this->output = output;
+	this->slider = slider;
+	this->min = min;
+	this->max = max;
+	set_increment(1);
+}
+
+RGBShiftIText::~RGBShiftIText()
+{
+}
+
+int RGBShiftIText::handle_event()
+{
+	*output = atoi(get_text());
+	if(*output > max) *output = max;
+	if(*output < min) *output = min;
+	slider->update(*output);
+	plugin->send_configure_change();
+	return 1;
+}
+
+RGBShiftISlider::RGBShiftISlider(RGBShiftEffect *plugin, RGBShiftIText *text, int *output, int x, int y)
+ : BC_ISlider(x, y, 0, xS(200), xS(200), -MAXVALUE, MAXVALUE, *output)
 {
 	this->plugin = plugin;
 	this->output = output;
+	this->text = text;
+	enable_show_value(0); // Hide caption
 }
 
-int RGBShiftLevel::handle_event()
+int RGBShiftISlider::handle_event()
 {
 	*output = get_value();
+	text->update((int64_t)*output);
 	plugin->send_configure_change();
 	return 1;
 }
@@ -129,17 +159,17 @@ int RGBShiftReset::handle_event()
 }
 
 
-RGBShiftSliderClr::RGBShiftSliderClr(RGBShiftEffect *plugin, RGBShiftWindow *window, int x, int y, int w, int clear)
- : BC_Button(x, y, w, plugin->get_theme()->get_image_set("reset_button"))
+RGBShiftClr::RGBShiftClr(RGBShiftEffect *plugin, RGBShiftWindow *window, int x, int y, int clear)
+ : BC_Button(x, y, plugin->get_theme()->get_image_set("reset_button"))
 {
 	this->plugin = plugin;
 	this->window = window;
 	this->clear = clear;
 }
-RGBShiftSliderClr::~RGBShiftSliderClr()
+RGBShiftClr::~RGBShiftClr()
 {
 }
-int RGBShiftSliderClr::handle_event()
+int RGBShiftClr::handle_event()
 {
 	// clear==1 ==> r_dx slider --- clear==2 ==> r_dy slider
 	// clear==3 ==> g_dx slider --- clear==4 ==> g_dy slider
@@ -152,49 +182,92 @@ int RGBShiftSliderClr::handle_event()
 
 
 RGBShiftWindow::RGBShiftWindow(RGBShiftEffect *plugin)
- : PluginClientWindow(plugin, xS(320), yS(230), xS(320), yS(230), 0)
+ : PluginClientWindow(plugin, xS(420), yS(250), xS(420), yS(250), 0)
 {
 	this->plugin = plugin;
 }
 
 void RGBShiftWindow::create_objects()
 {
-	int xs10 = xS(10), xs50 = xS(50);
+	int xs10 = xS(10);
 	int ys10 = yS(10), ys30 = yS(30), ys40 = yS(40);
-	int x = xs10, y = ys10, x1 = xs50;
-	int x2 = 0; int clrBtn_w = xs50;
+	int x = xs10, y = ys10;
+	int x2 = xS(80), x3 = xS(180);
+	int clr_x = get_w()-x - xS(22); // note: clrBtn_w = 22
 
+	BC_Bar *bar;
+
+	y += ys10;
 	add_subwindow(new BC_Title(x, y, _("R_dx:")));
-	add_subwindow(r_dx = new RGBShiftLevel(plugin, &plugin->config.r_dx, x1, y));
-	x2 = x1 + r_dx->get_w() + xs10;
-	add_subwindow(r_dxClr = new RGBShiftSliderClr(plugin, this, x2, y, clrBtn_w, RESET_R_DX));
-
+	r_dx_text = new RGBShiftIText(this, plugin,
+		0, &plugin->config.r_dx, (x + x2), y, -MAXVALUE, MAXVALUE);
+	r_dx_text->create_objects();
+	r_dx_slider = new RGBShiftISlider(plugin,
+		r_dx_text, &plugin->config.r_dx, x3, y);
+	add_subwindow(r_dx_slider);
+	r_dx_text->slider = r_dx_slider;
+	clr_x = x3 + r_dx_slider->get_w() + x;
+	add_subwindow(r_dx_Clr = new RGBShiftClr(plugin, this, clr_x, y, RESET_R_DX));
 	y += ys30;
+
 	add_subwindow(new BC_Title(x, y, _("R_dy:")));
-	add_subwindow(r_dy = new RGBShiftLevel(plugin, &plugin->config.r_dy, x1, y));
-	add_subwindow(r_dyClr = new RGBShiftSliderClr(plugin, this, x2, y, clrBtn_w, RESET_R_DY));
-
+	r_dy_text = new RGBShiftIText(this, plugin,
+		0, &plugin->config.r_dy, (x + x2), y, -MAXVALUE, MAXVALUE);
+	r_dy_text->create_objects();
+	r_dy_slider = new RGBShiftISlider(plugin,
+		r_dy_text, &plugin->config.r_dy, x3, y);
+	add_subwindow(r_dy_slider);
+	r_dy_text->slider = r_dy_slider;
+	add_subwindow(r_dy_Clr = new RGBShiftClr(plugin, this, clr_x, y, RESET_R_DY));
 	y += ys30;
+
 	add_subwindow(new BC_Title(x, y, _("G_dx:")));
-	add_subwindow(g_dx = new RGBShiftLevel(plugin, &plugin->config.g_dx, x1, y));
-	add_subwindow(g_dxClr = new RGBShiftSliderClr(plugin, this, x2, y, clrBtn_w, RESET_G_DX));
-
+	g_dx_text = new RGBShiftIText(this, plugin,
+		0, &plugin->config.g_dx, (x + x2), y, -MAXVALUE, MAXVALUE);
+	g_dx_text->create_objects();
+	g_dx_slider = new RGBShiftISlider(plugin,
+		g_dx_text, &plugin->config.g_dx, x3, y);
+	add_subwindow(g_dx_slider);
+	g_dx_text->slider = g_dx_slider;
+	add_subwindow(g_dx_Clr = new RGBShiftClr(plugin, this, clr_x, y, RESET_G_DX));
 	y += ys30;
+
 	add_subwindow(new BC_Title(x, y, _("G_dy:")));
-	add_subwindow(g_dy = new RGBShiftLevel(plugin, &plugin->config.g_dy, x1, y));
-	add_subwindow(g_dyClr = new RGBShiftSliderClr(plugin, this, x2, y, clrBtn_w, RESET_G_DY));
-
+	g_dy_text = new RGBShiftIText(this, plugin,
+		0, &plugin->config.g_dy, (x + x2), y, -MAXVALUE, MAXVALUE);
+	g_dy_text->create_objects();
+	g_dy_slider = new RGBShiftISlider(plugin,
+		g_dy_text, &plugin->config.g_dy, x3, y);
+	add_subwindow(g_dy_slider);
+	g_dy_text->slider = g_dy_slider;
+	add_subwindow(g_dy_Clr = new RGBShiftClr(plugin, this, clr_x, y, RESET_G_DY));
 	y += ys30;
+
 	add_subwindow(new BC_Title(x, y, _("B_dx:")));
-	add_subwindow(b_dx = new RGBShiftLevel(plugin, &plugin->config.b_dx, x1, y));
-	add_subwindow(b_dxClr = new RGBShiftSliderClr(plugin, this, x2, y, clrBtn_w, RESET_B_DX));
-
+	b_dx_text = new RGBShiftIText(this, plugin,
+		0, &plugin->config.b_dx, (x + x2), y, -MAXVALUE, MAXVALUE);
+	b_dx_text->create_objects();
+	b_dx_slider = new RGBShiftISlider(plugin,
+		b_dx_text, &plugin->config.b_dx, x3, y);
+	add_subwindow(b_dx_slider);
+	b_dx_text->slider = b_dx_slider;
+	add_subwindow(b_dx_Clr = new RGBShiftClr(plugin, this, clr_x, y, RESET_B_DX));
 	y += ys30;
-	add_subwindow(new BC_Title(x, y, _("B_dy:")));
-	add_subwindow(b_dy = new RGBShiftLevel(plugin, &plugin->config.b_dy, x1, y));
-	add_subwindow(b_dyClr = new RGBShiftSliderClr(plugin, this, x2, y, clrBtn_w, RESET_B_DY));
 
+	add_subwindow(new BC_Title(x, y, _("B_dy:")));
+	b_dy_text = new RGBShiftIText(this, plugin,
+		0, &plugin->config.b_dy, (x + x2), y, -MAXVALUE, MAXVALUE);
+	b_dy_text->create_objects();
+	b_dy_slider = new RGBShiftISlider(plugin,
+		b_dy_text, &plugin->config.b_dy, x3, y);
+	add_subwindow(b_dy_slider);
+	b_dy_text->slider = b_dy_slider;
+	add_subwindow(b_dy_Clr = new RGBShiftClr(plugin, this, clr_x, y, RESET_B_DY));
 	y += ys40;
+
+// Reset section
+	add_subwindow(bar = new BC_Bar(x, y, get_w()-2*x));
+	y += ys10;
 	add_subwindow(reset = new RGBShiftReset(plugin, this, x, y));
 
 	show_window();
@@ -206,26 +279,44 @@ void RGBShiftWindow::create_objects()
 void RGBShiftWindow::update_gui(int clear)
 {
 	switch(clear) {
-		case RESET_R_DX : r_dx->update(plugin->config.r_dx);
+		case RESET_R_DX :
+			r_dx_text->update((int64_t)plugin->config.r_dx);
+			r_dx_slider->update(plugin->config.r_dx);
 			break;
-		case RESET_R_DY : r_dy->update(plugin->config.r_dy);
+		case RESET_R_DY :
+			r_dy_text->update((int64_t)plugin->config.r_dy);
+			r_dy_slider->update(plugin->config.r_dy);
 			break;
-		case RESET_G_DX : g_dx->update(plugin->config.g_dx);
+		case RESET_G_DX :
+			g_dx_text->update((int64_t)plugin->config.g_dx);
+			g_dx_slider->update(plugin->config.g_dx);
 			break;
-		case RESET_G_DY : g_dy->update(plugin->config.g_dy);
+		case RESET_G_DY :
+			g_dy_text->update((int64_t)plugin->config.g_dy);
+			g_dy_slider->update(plugin->config.g_dy);
 			break;
-		case RESET_B_DX : b_dx->update(plugin->config.b_dx);
+		case RESET_B_DX :
+			b_dx_text->update((int64_t)plugin->config.b_dx);
+			b_dx_slider->update(plugin->config.b_dx);
 			break;
-		case RESET_B_DY : b_dy->update(plugin->config.b_dy);
+		case RESET_B_DY :
+			b_dy_text->update((int64_t)plugin->config.b_dy);
+			b_dy_slider->update(plugin->config.b_dy);
 			break;
 		case RESET_ALL :
 		default:
-			r_dx->update(plugin->config.r_dx);
-			r_dy->update(plugin->config.r_dy);
-			g_dx->update(plugin->config.g_dx);
-			g_dy->update(plugin->config.g_dy);
-			b_dx->update(plugin->config.b_dx);
-			b_dy->update(plugin->config.b_dy);
+			r_dx_text->update((int64_t)plugin->config.r_dx);
+			r_dx_slider->update(plugin->config.r_dx);
+			r_dy_text->update((int64_t)plugin->config.r_dy);
+			r_dy_slider->update(plugin->config.r_dy);
+			g_dx_text->update((int64_t)plugin->config.g_dx);
+			g_dx_slider->update(plugin->config.g_dx);
+			g_dy_text->update((int64_t)plugin->config.g_dy);
+			g_dy_slider->update(plugin->config.g_dy);
+			b_dx_text->update((int64_t)plugin->config.b_dx);
+			b_dx_slider->update(plugin->config.b_dx);
+			b_dy_text->update((int64_t)plugin->config.b_dy);
+			b_dy_slider->update(plugin->config.b_dy);
 			break;
 	}
 }
@@ -259,12 +350,18 @@ void RGBShiftEffect::update_gui()
 		RGBShiftWindow *yuv_wdw = (RGBShiftWindow*)thread->window;
 		yuv_wdw->lock_window("RGBShiftEffect::update_gui");
 		load_configuration();
-		yuv_wdw->r_dx->update(config.r_dx);
-		yuv_wdw->r_dy->update(config.r_dy);
-		yuv_wdw->g_dx->update(config.g_dx);
-		yuv_wdw->g_dy->update(config.g_dy);
-		yuv_wdw->b_dx->update(config.b_dx);
-		yuv_wdw->b_dy->update(config.b_dy);
+		yuv_wdw->r_dx_text->update((int64_t)config.r_dx);
+		yuv_wdw->r_dx_slider->update(config.r_dx);
+		yuv_wdw->r_dy_text->update((int64_t)config.r_dy);
+		yuv_wdw->r_dy_slider->update(config.r_dy);
+		yuv_wdw->g_dx_text->update((int64_t)config.g_dx);
+		yuv_wdw->g_dx_slider->update(config.g_dx);
+		yuv_wdw->g_dy_text->update((int64_t)config.g_dy);
+		yuv_wdw->g_dy_slider->update(config.g_dy);
+		yuv_wdw->b_dx_text->update((int64_t)config.b_dx);
+		yuv_wdw->b_dx_slider->update(config.b_dx);
+		yuv_wdw->b_dy_text->update((int64_t)config.b_dy);
+		yuv_wdw->b_dy_slider->update(config.b_dy);
 		yuv_wdw->unlock_window();
 	}
 }

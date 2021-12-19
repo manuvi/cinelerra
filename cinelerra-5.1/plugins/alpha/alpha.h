@@ -21,10 +21,16 @@
 #ifndef __ALPHA_H__
 #define __ALPHA_H__
 
+#define OPACITY_MIN 0.f
+#define OPACITY_MAX 1.f
+
 class AlphaConfig;
 class AlphaColors;
 class AlphaWindow;
 class AlphaMain;
+class AlphaText;
+class AlphaSlider;
+class AlphaClr;
 
 #include "bccolors.h"
 #include "filexml.inc"
@@ -36,6 +42,7 @@ class AlphaConfig
 {
 public:
 	AlphaConfig();
+	void reset();
 
 	int equivalent(AlphaConfig &that);
 	void copy_from(AlphaConfig &that);
@@ -43,6 +50,17 @@ public:
 		long prev_frame, long next_frame, long current_frame);
 
 	float a;
+};
+
+class AlphaText : public BC_TumbleTextBox
+{
+public:
+	AlphaText(AlphaWindow *window, AlphaMain *plugin, int x, int y);
+	~AlphaText();
+	int handle_event();
+
+	AlphaWindow *window;
+	AlphaMain *plugin;
 };
 
 class AlphaSlider : public BC_FSlider
@@ -56,6 +74,16 @@ public:
 	AlphaMain *plugin;
 };
 
+class AlphaClr : public BC_Button
+{
+public:
+	AlphaClr(AlphaWindow *window, AlphaMain *plugin, int x, int y);
+	~AlphaClr();
+	int handle_event();
+
+	AlphaWindow *window;
+	AlphaMain *plugin;
+};
 
 class AlphaWindow : public PluginClientWindow
 {
@@ -67,7 +95,9 @@ public:
 	void update();
 
 	AlphaMain *plugin;
+	AlphaText *alpha_text;
 	AlphaSlider *alpha_slider;
+	AlphaClr *alpha_clr;
 };
 
 class AlphaMain : public PluginVClient

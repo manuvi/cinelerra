@@ -41,8 +41,14 @@
 
 class HueEffect;
 class HueWindow;
+class HueText;
+class HueSlider;
+class SaturationText;
+class SaturationSlider;
+class ValueText;
+class ValueSlider;
 class HueReset;
-class HueSliderClr;
+class HueClr;
 
 #define MINHUE -180
 #define MAXHUE 180
@@ -73,31 +79,65 @@ public:
 	float hue, saturation, value;
 };
 
+class HueText : public BC_TumbleTextBox
+{
+public:
+	HueText(HueEffect *plugin, HueWindow *gui, int x, int y);
+	~HueText();
+	int handle_event();
+	HueEffect *plugin;
+	HueWindow *gui;
+};
+
 class HueSlider : public BC_FSlider
 {
 public:
-	HueSlider(HueEffect *plugin, int x, int y, int w);
+	HueSlider(HueEffect *plugin, HueWindow *gui, int x, int y, int w);
 	int handle_event();
 	HueEffect *plugin;
+	HueWindow *gui;
+};
+
+class SaturationText : public BC_TumbleTextBox
+{
+public:
+	SaturationText(HueEffect *plugin, HueWindow *gui, int x, int y);
+	~SaturationText();
+	int handle_event();
+	HueEffect *plugin;
+	HueWindow *gui;
 };
 
 class SaturationSlider : public BC_FSlider
 {
 public:
-	SaturationSlider(HueEffect *plugin, int x, int y, int w);
+	SaturationSlider(HueEffect *plugin, HueWindow *gui, int x, int y, int w);
 	int handle_event();
 	char* get_caption();
 	HueEffect *plugin;
+	HueWindow *gui;
 	char string[BCTEXTLEN];
 };
+
+class ValueText : public BC_TumbleTextBox
+{
+public:
+	ValueText(HueEffect *plugin, HueWindow *gui, int x, int y);
+	~ValueText();
+	int handle_event();
+	HueEffect *plugin;
+	HueWindow *gui;
+};
+
 
 class ValueSlider : public BC_FSlider
 {
 public:
-	ValueSlider(HueEffect *plugin, int x, int y, int w);
+	ValueSlider(HueEffect *plugin, HueWindow *gui, int x, int y, int w);
 	int handle_event();
 	char* get_caption();
 	HueEffect *plugin;
+	HueWindow *gui;
 	char string[BCTEXTLEN];
 };
 
@@ -111,11 +151,11 @@ public:
 	HueWindow *gui;
 };
 
-class HueSliderClr : public BC_Button
+class HueClr : public BC_Button
 {
 public:
-	HueSliderClr(HueEffect *plugin, HueWindow *gui, int x, int y, int w, int clear);
-	~HueSliderClr();
+	HueClr(HueEffect *plugin, HueWindow *gui, int x, int y, int clear);
+	~HueClr();
 	int handle_event();
 	HueEffect *plugin;
 	HueWindow *gui;
@@ -129,13 +169,20 @@ public:
 	void create_objects();
 	void update_gui(int clear);
 	HueEffect *plugin;
-	HueSlider *hue;
-	SaturationSlider *saturation;
-	ValueSlider *value;
+
+	HueText *hue_text;
+	HueSlider *hue_slider;
+	HueClr *hue_clr;
+
+	SaturationText *sat_text;
+	SaturationSlider *sat_slider;
+	HueClr *sat_clr;
+
+	ValueText *value_text;
+	ValueSlider *value_slider;
+	HueClr *value_clr;
+
 	HueReset *reset;
-	HueSliderClr *hueClr;
-	HueSliderClr *satClr;
-	HueSliderClr *valClr;
 };
 
 

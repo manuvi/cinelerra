@@ -51,11 +51,20 @@
 #define RESET_PHASE      2
 #define RESET_WAVELENGTH 3
 
+#define AMPLITUDE_MIN    0.00
+#define AMPLITUDE_MAX  100.00
+#define PHASE_MIN        0.00
+#define PHASE_MAX      360.00
+#define WAVELENGTH_MIN   0.00
+#define WAVELENGTH_MAX  50.00
+
 class WaveEffect;
 class WaveWindow;
+class WaveFText;
+class WaveFSlider;
 class WaveReset;
 class WaveDefaultSettings;
-class WaveSliderClr;
+class WaveClr;
 
 class WaveConfig
 {
@@ -104,28 +113,32 @@ public:
 	WaveEffect *plugin;
 };
 
-class WaveAmplitude : public BC_FSlider
+
+class WaveFText : public BC_TumbleTextBox
 {
 public:
-	WaveAmplitude(WaveEffect *plugin, int x, int y);
+	WaveFText(WaveWindow *gui, WaveEffect *plugin,
+		WaveFSlider *slider, float *output, int x, int y, float min, float max);
+	~WaveFText();
 	int handle_event();
+	WaveWindow *gui;
 	WaveEffect *plugin;
+	WaveFSlider *slider;
+	float *output;
+	float min, max;
 };
 
-class WavePhase : public BC_FSlider
+class WaveFSlider : public BC_FSlider
 {
 public:
-	WavePhase(WaveEffect *plugin, int x, int y);
+	WaveFSlider(WaveEffect *plugin,
+		WaveFText *text, float *output, int x, int y,
+		float min, float max);
+	~WaveFSlider();
 	int handle_event();
 	WaveEffect *plugin;
-};
-
-class WaveLength : public BC_FSlider
-{
-public:
-	WaveLength(WaveEffect *plugin, int x, int y);
-	int handle_event();
-	WaveEffect *plugin;
+	WaveFText *text;
+	float *output;
 };
 
 class WaveReset : public BC_GenericButton
@@ -148,11 +161,11 @@ public:
 	WaveWindow *gui;
 };
 
-class WaveSliderClr : public BC_Button
+class WaveClr : public BC_Button
 {
 public:
-	WaveSliderClr(WaveEffect *plugin, WaveWindow *gui, int x, int y, int w, int clear);
-	~WaveSliderClr();
+	WaveClr(WaveEffect *plugin, WaveWindow *gui, int x, int y, int clear);
+	~WaveClr();
 	int handle_event();
 	WaveEffect *plugin;
 	WaveWindow *gui;
@@ -176,14 +189,21 @@ public:
 //	WaveSmear *smear;
 //	WaveBlacken *blacken;
 //	WaveReflective *reflective;
-	WaveAmplitude *amplitude;
-	WavePhase *phase;
-	WaveLength *wavelength;
+
+	WaveFText *amplitude_text;
+	WaveFSlider *amplitude_slider;
+	WaveClr *amplitude_Clr;
+
+	WaveFText *phase_text;
+	WaveFSlider *phase_slider;
+	WaveClr *phase_Clr;
+
+	WaveFText *wavelength_text;
+	WaveFSlider *wavelength_slider;
+	WaveClr *wavelength_Clr;
+
 	WaveReset *reset;
 	WaveDefaultSettings *default_settings;
-	WaveSliderClr *amplitudeClr;
-	WaveSliderClr *phaseClr;
-	WaveSliderClr *wavelengthClr;
 };
 
 

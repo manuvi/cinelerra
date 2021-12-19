@@ -36,6 +36,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#define MAXVALUE 100
+
 #define RESET_ALL  0
 #define RESET_Y_DX 1
 #define RESET_Y_DY 2
@@ -46,8 +48,10 @@
 
 class YUVShiftEffect;
 class YUVShiftWindow;
+class YUVShiftIText;
+class YUVShiftISlider;
 class YUVShiftReset;
-class YUVShiftSliderClr;
+class YUVShiftClr;
 
 
 class YUVShiftConfig
@@ -67,12 +71,27 @@ public:
 	int y_dx, y_dy, u_dx, u_dy, v_dx, v_dy;
 };
 
-class YUVShiftLevel : public BC_ISlider
+class YUVShiftIText : public BC_TumbleTextBox
 {
 public:
-	YUVShiftLevel(YUVShiftEffect *plugin, int *output, int x, int y);
+	YUVShiftIText(YUVShiftWindow *window, YUVShiftEffect *plugin,
+		YUVShiftISlider *slider, int *output, int x, int y, int min, int max);
+	~YUVShiftIText();
+	int handle_event();
+	YUVShiftWindow *window;
+	YUVShiftEffect *plugin;
+	YUVShiftISlider *slider;
+	int *output;
+	int min, max;
+};
+
+class YUVShiftISlider : public BC_ISlider
+{
+public:
+	YUVShiftISlider(YUVShiftEffect *plugin, YUVShiftIText *text, int *output, int x, int y);
 	int handle_event();
 	YUVShiftEffect *plugin;
+	YUVShiftIText *text;
 	int *output;
 };
 
@@ -86,11 +105,11 @@ public:
 	YUVShiftWindow *window;
 };
 
-class YUVShiftSliderClr : public BC_Button
+class YUVShiftClr : public BC_Button
 {
 public:
-	YUVShiftSliderClr(YUVShiftEffect *plugin, YUVShiftWindow *window, int x, int y, int w, int clear);
-	~YUVShiftSliderClr();
+	YUVShiftClr(YUVShiftEffect *plugin, YUVShiftWindow *window, int x, int y, int clear);
+	~YUVShiftClr();
 	int handle_event();
 	YUVShiftEffect *plugin;
 	YUVShiftWindow *window;
@@ -103,12 +122,30 @@ public:
 	YUVShiftWindow(YUVShiftEffect *plugin);
 	void create_objects();
 	void update_gui(int clear);
-	YUVShiftLevel *y_dx, *y_dy, *u_dx, *u_dy, *v_dx, *v_dy;
+
+	YUVShiftIText *y_dx_text;
+	YUVShiftISlider *y_dx_slider;
+	YUVShiftClr *y_dx_Clr;
+	YUVShiftIText *y_dy_text;
+	YUVShiftISlider *y_dy_slider;
+	YUVShiftClr *y_dy_Clr;
+
+	YUVShiftIText *u_dx_text;
+	YUVShiftISlider *u_dx_slider;
+	YUVShiftClr *u_dx_Clr;
+	YUVShiftIText *u_dy_text;
+	YUVShiftISlider *u_dy_slider;
+	YUVShiftClr *u_dy_Clr;
+
+	YUVShiftIText *v_dx_text;
+	YUVShiftISlider *v_dx_slider;
+	YUVShiftClr *v_dx_Clr;
+	YUVShiftIText *v_dy_text;
+	YUVShiftISlider *v_dy_slider;
+	YUVShiftClr *v_dy_Clr;
+
 	YUVShiftEffect *plugin;
 	YUVShiftReset *reset;
-	YUVShiftSliderClr *y_dxClr, *y_dyClr;
-	YUVShiftSliderClr *u_dxClr, *u_dyClr;
-	YUVShiftSliderClr *v_dxClr, *v_dyClr;
 };
 
 

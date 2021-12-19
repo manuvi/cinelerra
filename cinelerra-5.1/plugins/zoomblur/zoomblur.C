@@ -37,8 +37,8 @@ void ZoomBlurConfig::reset(int clear)
 {
 	switch(clear) {
 		case RESET_ALL :
-			x = xS(50);
-			y = yS(50);
+			x = 50;
+			y = 50;
 			radius = 0;
 			steps = 1;
 			r = 1;
@@ -46,9 +46,9 @@ void ZoomBlurConfig::reset(int clear)
 			b = 1;
 			a = 1;
 			break;
-		case RESET_XSLIDER : x = xS(50);
+		case RESET_XSLIDER : x = 50;
 			break;
-		case RESET_YSLIDER : y = yS(50);
+		case RESET_YSLIDER : y = 50;
 			break;
 		case RESET_RADIUS : radius = 0;
 			break;
@@ -56,8 +56,8 @@ void ZoomBlurConfig::reset(int clear)
 			break;
 		case RESET_DEFAULT_SETTINGS :
 		default:
-			x = xS(50);
-			y = yS(50);
+			x = 50;
+			y = 50;
 			radius = 10;
 			steps = 10;
 			r = 1;
@@ -124,10 +124,10 @@ void ZoomBlurConfig::interpolate(ZoomBlurConfig &prev,
 
 ZoomBlurWindow::ZoomBlurWindow(ZoomBlurMain *plugin)
  : PluginClientWindow(plugin,
-	xS(280),
-	yS(370),
-	xS(280),
-	yS(370),
+	xS(420),
+	yS(230),
+	xS(420),
+	yS(230),
 	0)
 {
 	this->plugin = plugin;
@@ -139,48 +139,80 @@ ZoomBlurWindow::~ZoomBlurWindow()
 
 void ZoomBlurWindow::create_objects()
 {
-	int xs10 = xS(10), xs50 = xS(50), xs100 = xS(100);
-	int ys10 = yS(10), ys20 = yS(20), ys30 = yS(30), ys40 = yS(40);
+	int xs10 = xS(10), xs100 = xS(100), xs200 = xS(200);
+	int ys10 = yS(10), ys30 = yS(30), ys40 = yS(40);
 	int x = xs10, y = ys10;
-	int x1 = 0; int clrBtn_w = xs50;
+	int x2 = xS(80), x3 = xS(180);
+	int clr_x = get_w()-x - xS(22); // note: clrBtn_w = 22
 	int defaultBtn_w = xs100;
 
+	BC_Bar *bar;
+
+	y += ys10;
 	add_subwindow(new BC_Title(x, y, _("X:")));
-	y += ys20;
-	add_subwindow(this->x = new ZoomBlurSize(plugin, x, y, &plugin->config.x, 0, 100));
-	x1 = x + this->x->get_w() + xs10;
-	add_subwindow(xClr = new ZoomBlurSliderClr(plugin, this, x1, y, clrBtn_w, RESET_XSLIDER));
-
+	x_text = new ZoomBlurIText(this, plugin,
+		0, &plugin->config.x, (x + x2), y, XY_MIN, XY_MAX);
+	x_text->create_objects();
+	x_slider = new ZoomBlurISlider(plugin,
+		x_text, &plugin->config.x, x3, y, XY_MIN, XY_MAX, xs200);
+	add_subwindow(x_slider);
+	x_text->slider = x_slider;
+	clr_x = x3 + x_slider->get_w() + x;
+	add_subwindow(x_Clr = new ZoomBlurClr(plugin, this, clr_x, y, RESET_XSLIDER));
 	y += ys30;
+
 	add_subwindow(new BC_Title(x, y, _("Y:")));
-	y += ys20;
-	add_subwindow(this->y = new ZoomBlurSize(plugin, x, y, &plugin->config.y, 0, 100));
-	add_subwindow(yClr = new ZoomBlurSliderClr(plugin, this, x1, y, clrBtn_w, RESET_YSLIDER));
-
+	y_text = new ZoomBlurIText(this, plugin,
+		0, &plugin->config.y, (x + x2), y, XY_MIN, XY_MAX);
+	y_text->create_objects();
+	y_slider = new ZoomBlurISlider(plugin,
+		y_text, &plugin->config.y, x3, y, XY_MIN, XY_MAX, xs200);
+	add_subwindow(y_slider);
+	y_text->slider = y_slider;
+	add_subwindow(y_Clr = new ZoomBlurClr(plugin, this, clr_x, y, RESET_YSLIDER));
 	y += ys30;
+
 	add_subwindow(new BC_Title(x, y, _("Radius:")));
-	y += ys20;
-	add_subwindow(radius = new ZoomBlurSize(plugin, x, y, &plugin->config.radius, -100, 100));
-	add_subwindow(radiusClr = new ZoomBlurSliderClr(plugin, this, x1, y, clrBtn_w, RESET_RADIUS));
-
+	radius_text = new ZoomBlurIText(this, plugin,
+		0, &plugin->config.radius, (x + x2), y, -RADIUS_MAX, RADIUS_MAX);
+	radius_text->create_objects();
+	radius_slider = new ZoomBlurISlider(plugin,
+		radius_text, &plugin->config.radius, x3, y, -RADIUS_MAX, RADIUS_MAX, xs200);
+	add_subwindow(radius_slider);
+	radius_text->slider = radius_slider;
+	add_subwindow(radius_Clr = new ZoomBlurClr(plugin, this, clr_x, y, RESET_RADIUS));
 	y += ys30;
+
 	add_subwindow(new BC_Title(x, y, _("Steps:")));
-	y += ys20;
-	add_subwindow(steps = new ZoomBlurSize(plugin, x, y, &plugin->config.steps, 1, 100));
-	add_subwindow(stepsClr = new ZoomBlurSliderClr(plugin, this, x1, y, clrBtn_w, RESET_STEPS));
-
-	y += ys30;
-	add_subwindow(r = new ZoomBlurToggle(plugin, x, y, &plugin->config.r, _("Red")));
-	y += ys30;
-	add_subwindow(g = new ZoomBlurToggle(plugin, x, y, &plugin->config.g, _("Green")));
-	y += ys30;
-	add_subwindow(b = new ZoomBlurToggle(plugin, x, y, &plugin->config.b, _("Blue")));
-	y += ys30;
-	add_subwindow(a = new ZoomBlurToggle(plugin, x, y, &plugin->config.a, _("Alpha")));
+	steps_text = new ZoomBlurIText(this, plugin,
+		0, &plugin->config.steps, (x + x2), y, STEPS_MIN, STEPS_MAX);
+	steps_text->create_objects();
+	steps_slider = new ZoomBlurISlider(plugin,
+		steps_text, &plugin->config.steps, x3, y, STEPS_MIN, STEPS_MAX, xs200);
+	add_subwindow(steps_slider);
+	steps_text->slider = steps_slider;
+	add_subwindow(steps_Clr = new ZoomBlurClr(plugin, this, clr_x, y, RESET_STEPS));
 	y += ys40;
+
+	add_subwindow(bar = new BC_Bar(x, y, get_w()-2*x));
+	y += ys10;
+	int x1 = x;
+	int toggle_w = (get_w()-2*x) / 4;
+	add_subwindow(r = new ZoomBlurToggle(plugin, x1, y, &plugin->config.r, _("Red")));
+	x1 += toggle_w;
+	add_subwindow(g = new ZoomBlurToggle(plugin, x1, y, &plugin->config.g, _("Green")));
+	x1 += toggle_w;
+	add_subwindow(b = new ZoomBlurToggle(plugin, x1, y, &plugin->config.b, _("Blue")));
+	x1 += toggle_w;
+	add_subwindow(a = new ZoomBlurToggle(plugin, x1, y, &plugin->config.a, _("Alpha")));
+	y += ys30;
+
+// Reset section
+	add_subwindow(bar = new BC_Bar(x, y, get_w()-2*x));
+	y += ys10;
 	add_subwindow(reset = new ZoomBlurReset(plugin, this, x, y));
 	add_subwindow(default_settings = new ZoomBlurDefaultSettings(plugin, this,
-		(xS(280) - xS(10) - defaultBtn_w), y, defaultBtn_w));
+		(get_w() - xs10 - defaultBtn_w), y, defaultBtn_w));
 
 	show_window();
 	flush();
@@ -190,21 +222,33 @@ void ZoomBlurWindow::create_objects()
 void ZoomBlurWindow::update_gui(int clear)
 {
 	switch(clear) {
-		case RESET_XSLIDER : this->x->update(plugin->config.x);
+		case RESET_XSLIDER :
+			x_text->update((int64_t)plugin->config.x);
+			x_slider->update(plugin->config.x);
 			break;
-		case RESET_YSLIDER : this->y->update(plugin->config.y);
+		case RESET_YSLIDER :
+			y_text->update((int64_t)plugin->config.y);
+			y_slider->update(plugin->config.y);
 			break;
-		case RESET_RADIUS : radius->update(plugin->config.radius);
+		case RESET_RADIUS :
+			radius_text->update((int64_t)plugin->config.radius);
+			radius_slider->update(plugin->config.radius);
 			break;
-		case RESET_STEPS : steps->update(plugin->config.steps);
+		case RESET_STEPS :
+			steps_text->update((int64_t)plugin->config.steps);
+			steps_slider->update(plugin->config.steps);
 			break;
 		case RESET_ALL :
 		case RESET_DEFAULT_SETTINGS :
 		default:
-			this->x->update(plugin->config.x);
-			this->y->update(plugin->config.x);
-			radius->update(plugin->config.radius);
-			steps->update(plugin->config.steps);
+			x_text->update((int64_t)plugin->config.x);
+			x_slider->update(plugin->config.x);
+			y_text->update((int64_t)plugin->config.y);
+			y_slider->update(plugin->config.y);
+			radius_text->update((int64_t)plugin->config.radius);
+			radius_slider->update(plugin->config.radius);
+			steps_text->update((int64_t)plugin->config.steps);
+			steps_slider->update(plugin->config.steps);
 			r->update(plugin->config.r);
 			g->update(plugin->config.g);
 			b->update(plugin->config.b);
@@ -241,25 +285,53 @@ int ZoomBlurToggle::handle_event()
 }
 
 
+ZoomBlurIText::ZoomBlurIText(ZoomBlurWindow *window, ZoomBlurMain *plugin,
+	ZoomBlurISlider *slider, int *output, int x, int y, int min, int max)
+ : BC_TumbleTextBox(window, *output,
+	min, max, x, y, xS(60), 0)
+{
+	this->window = window;
+	this->plugin = plugin;
+	this->output = output;
+	this->slider = slider;
+	this->min = min;
+	this->max = max;
+	set_increment(1);
+}
+
+ZoomBlurIText::~ZoomBlurIText()
+{
+}
+
+int ZoomBlurIText::handle_event()
+{
+	*output = atoi(get_text());
+	if(*output > max) *output = max;
+	if(*output < min) *output = min;
+	slider->update(*output);
+	plugin->send_configure_change();
+	return 1;
+}
 
 
-
-
-
-ZoomBlurSize::ZoomBlurSize(ZoomBlurMain *plugin,
-	int x,
-	int y,
-	int *output,
-	int min,
-	int max)
- : BC_ISlider(x, y, 0, xS(200), yS(200), min, max, *output)
+ZoomBlurISlider::ZoomBlurISlider(ZoomBlurMain *plugin,
+	ZoomBlurIText *text, int *output, int x, int y, int min, int max, int w)
+ : BC_ISlider(x, y, 0, w, w, min, max, *output)
 {
 	this->plugin = plugin;
 	this->output = output;
+	this->text = text;
+	enable_show_value(0); // Hide caption
 }
-int ZoomBlurSize::handle_event()
+
+ZoomBlurISlider::~ZoomBlurISlider()
+{
+}
+
+int ZoomBlurISlider::handle_event()
 {
 	*output = get_value();
+	text->update((int64_t)*output);
 	plugin->send_configure_change();
 	return 1;
 }
@@ -301,17 +373,17 @@ int ZoomBlurDefaultSettings::handle_event()
 }
 
 
-ZoomBlurSliderClr::ZoomBlurSliderClr(ZoomBlurMain *plugin, ZoomBlurWindow *window, int x, int y, int w, int clear)
- : BC_Button(x, y, w, plugin->get_theme()->get_image_set("reset_button"))
+ZoomBlurClr::ZoomBlurClr(ZoomBlurMain *plugin, ZoomBlurWindow *window, int x, int y, int clear)
+ : BC_Button(x, y, plugin->get_theme()->get_image_set("reset_button"))
 {
 	this->plugin = plugin;
 	this->window = window;
 	this->clear = clear;
 }
-ZoomBlurSliderClr::~ZoomBlurSliderClr()
+ZoomBlurClr::~ZoomBlurClr()
 {
 }
-int ZoomBlurSliderClr::handle_event()
+int ZoomBlurClr::handle_event()
 {
 	// clear==1 ==> X slider
 	// clear==2 ==> Y slider
@@ -537,10 +609,14 @@ void ZoomBlurMain::update_gui()
 	{
 		load_configuration();
 		thread->window->lock_window();
-		((ZoomBlurWindow*)thread->window)->x->update(config.x);
-		((ZoomBlurWindow*)thread->window)->y->update(config.y);
-		((ZoomBlurWindow*)thread->window)->radius->update(config.radius);
-		((ZoomBlurWindow*)thread->window)->steps->update(config.steps);
+		((ZoomBlurWindow*)thread->window)->x_text->update((int64_t)config.x);
+		((ZoomBlurWindow*)thread->window)->x_slider->update(config.x);
+		((ZoomBlurWindow*)thread->window)->y_text->update((int64_t)config.y);
+		((ZoomBlurWindow*)thread->window)->y_slider->update(config.y);
+		((ZoomBlurWindow*)thread->window)->radius_text->update((int64_t)config.radius);
+		((ZoomBlurWindow*)thread->window)->radius_slider->update(config.radius);
+		((ZoomBlurWindow*)thread->window)->steps_text->update((int64_t)config.steps);
+		((ZoomBlurWindow*)thread->window)->steps_slider->update(config.steps);
 		((ZoomBlurWindow*)thread->window)->r->update(config.r);
 		((ZoomBlurWindow*)thread->window)->g->update(config.g);
 		((ZoomBlurWindow*)thread->window)->b->update(config.b);

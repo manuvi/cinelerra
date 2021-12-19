@@ -43,11 +43,19 @@
 #define RESET_DEPTH 1
 #define RESET_ANGLE 2
 
+#define DEPTH_MIN   1.00
+#define DEPTH_MAX 100.00
+#define ANGLE_MIN   1.00
+#define ANGLE_MAX 360.00
+
+
 class PolarEffect;
 class PolarEngine;
 class PolarWindow;
+class PolarFText;
+class PolarFSlider;
 class PolarReset;
-class PolarSliderClr;
+class PolarClr;
 
 
 class PolarConfig
@@ -73,21 +81,33 @@ public:
 
 
 
-class PolarDepth : public BC_FSlider
+class PolarFText : public BC_TumbleTextBox
 {
 public:
-	PolarDepth(PolarEffect *plugin, int x, int y);
+	PolarFText(PolarWindow *window, PolarEffect *plugin,
+		PolarFSlider *slider, float *output, int x, int y, float min, float max);
+	~PolarFText();
 	int handle_event();
+	PolarWindow *window;
 	PolarEffect *plugin;
+	PolarFSlider *slider;
+	float *output;
+	float min, max;
 };
 
-class PolarAngle : public BC_FSlider
+class PolarFSlider : public BC_FSlider
 {
 public:
-	PolarAngle(PolarEffect *plugin, int x, int y);
+	PolarFSlider(PolarEffect *plugin,
+		PolarFText *text, float *output, int x, int y,
+		float min, float max, int w);
+	~PolarFSlider();
 	int handle_event();
 	PolarEffect *plugin;
+	PolarFText *text;
+	float *output;
 };
+
 
 class PolarReset : public BC_GenericButton
 {
@@ -99,11 +119,11 @@ public:
 	PolarWindow *window;
 };
 
-class PolarSliderClr : public BC_Button
+class PolarClr : public BC_Button
 {
 public:
-	PolarSliderClr(PolarEffect *plugin, PolarWindow *window, int x, int y, int w, int clear);
-	~PolarSliderClr();
+	PolarClr(PolarEffect *plugin, PolarWindow *window, int x, int y, int clear);
+	~PolarClr();
 	int handle_event();
 	PolarEffect *plugin;
 	PolarWindow *window;
@@ -117,11 +137,16 @@ public:
 	void create_objects();
 	void update_gui(int clear);
 	PolarEffect *plugin;
-	PolarDepth *depth;
-	PolarAngle *angle;
+
+	PolarFText *depth_text;
+	PolarFSlider *depth_slider;
+	PolarClr *depth_Clr;
+
+	PolarFText *angle_text;
+	PolarFSlider *angle_slider;
+	PolarClr *angle_Clr;
+
 	PolarReset *reset;
-	PolarSliderClr *depthClr;
-	PolarSliderClr *angleClr;
 };
 
 
@@ -235,10 +260,10 @@ void PolarConfig::interpolate(PolarConfig &prev,
 
 PolarWindow::PolarWindow(PolarEffect *plugin)
  : PluginClientWindow(plugin,
-	xS(330),
-	yS(122),
-	xS(330),
-	yS(122),
+	xS(420),
+	yS(130),
+	xS(420),
+	yS(130),
 	0)
 {
 	this->plugin = plugin;
@@ -246,21 +271,41 @@ PolarWindow::PolarWindow(PolarEffect *plugin)
 
 void PolarWindow::create_objects()
 {
-	int xs10 = xS(10), xs50 = xS(50);
-	int ys10 = yS(10), ys40 = yS(40);
-	int x = xs10, y = ys10, x1 = x + xs50;
-	int x2 = 0; int clrBtn_w = xs50;
+	int xs10 = xS(10), xs200 = xS(200);
+	int ys10 = yS(10), ys30 = yS(30), ys40 = yS(40);
+	int x = xs10, y = ys10;
+	int x2 = xS(80), x3 = xS(180);
+	int clr_x = get_w()-x - xS(22); // note: clrBtn_w = 22
 
+	BC_Bar *bar;
+
+	y += ys10;
 	add_subwindow(new BC_Title(x, y, _("Depth:")));
-	add_subwindow(depth = new PolarDepth(plugin, x1, y));
-	x2 = x1 + depth->get_w() + xs10;
-	add_subwindow(depthClr = new PolarSliderClr(plugin, this, x2, y, clrBtn_w, RESET_DEPTH));
+	depth_text = new PolarFText(this, plugin,
+		0, &plugin->config.depth, (x + x2), y, DEPTH_MIN, DEPTH_MAX);
+	depth_text->create_objects();
+	depth_slider = new PolarFSlider(plugin,
+		depth_text, &plugin->config.depth, x3, y, DEPTH_MIN, DEPTH_MAX, xs200);
+	add_subwindow(depth_slider);
+	depth_text->slider = depth_slider;
+	clr_x = x3 + depth_slider->get_w() + x;
+	add_subwindow(depth_Clr = new PolarClr(plugin, this, clr_x, y, RESET_DEPTH));
+	y += ys30;
 
-	y += ys40;
 	add_subwindow(new BC_Title(x, y, _("Angle:")));
-	add_subwindow(angle = new PolarAngle(plugin, x1, y));
-	add_subwindow(angleClr = new PolarSliderClr(plugin, this, x2, y, clrBtn_w, RESET_ANGLE));
+	angle_text = new PolarFText(this, plugin,
+		0, &plugin->config.angle, (x + x2), y, ANGLE_MIN, ANGLE_MAX);
+	angle_text->create_objects();
+	angle_slider = new PolarFSlider(plugin,
+		angle_text, &plugin->config.angle, x3, y, ANGLE_MIN, ANGLE_MAX, xs200);
+	add_subwindow(angle_slider);
+	angle_text->slider = angle_slider;
+	add_subwindow(angle_Clr = new PolarClr(plugin, this, clr_x, y, RESET_ANGLE));
 	y += ys40;
+
+// Reset section
+	add_subwindow(bar = new BC_Bar(x, y, get_w()-2*x));
+	y += ys10;
 	add_subwindow(reset = new PolarReset(plugin, this, x, y));
 
 	show_window();
@@ -271,14 +316,20 @@ void PolarWindow::create_objects()
 void PolarWindow::update_gui(int clear)
 {
 	switch(clear) {
-		case RESET_DEPTH : depth->update(plugin->config.depth);
+		case RESET_DEPTH :
+			depth_text->update(plugin->config.depth);
+			depth_slider->update(plugin->config.depth);
 			break;
-		case RESET_ANGLE : angle->update(plugin->config.angle);
+		case RESET_ANGLE :
+			angle_text->update(plugin->config.angle);
+			angle_slider->update(plugin->config.angle);
 			break;
 		case RESET_ALL :
 		default:
-			depth->update(plugin->config.depth);
-			angle->update(plugin->config.angle);
+			depth_text->update(plugin->config.depth);
+			depth_slider->update(plugin->config.depth);
+			angle_text->update(plugin->config.angle);
+			angle_slider->update(plugin->config.angle);
 			break;
 	}
 }
@@ -287,48 +338,56 @@ void PolarWindow::update_gui(int clear)
 
 
 
-PolarDepth::PolarDepth(PolarEffect *plugin, int x, int y)
- : BC_FSlider(x,
-	   	y,
-		0,
-		xS(200),
-		yS(200),
-		(float)1,
-		(float)100,
-		plugin->config.depth)
+PolarFText::PolarFText(PolarWindow *window, PolarEffect *plugin,
+	PolarFSlider *slider, float *output, int x, int y, float min, float max)
+ : BC_TumbleTextBox(window, *output,
+	min, max, x, y, xS(60), 2)
 {
+	this->window = window;
 	this->plugin = plugin;
+	this->output = output;
+	this->slider = slider;
+	this->min = min;
+	this->max = max;
+	set_increment(0.1);
 }
-int PolarDepth::handle_event()
+
+PolarFText::~PolarFText()
 {
-	plugin->config.depth = get_value();
+}
+
+int PolarFText::handle_event()
+{
+	*output = atof(get_text());
+	if(*output > max) *output = max;
+	if(*output < min) *output = min;
+	slider->update(*output);
 	plugin->send_configure_change();
 	return 1;
 }
 
 
-
-
-
-PolarAngle::PolarAngle(PolarEffect *plugin, int x, int y)
- : BC_FSlider(x,
-	   	y,
-		0,
-		xS(200),
-		yS(200),
-		(float)1,
-		(float)360,
-		plugin->config.angle)
+PolarFSlider::PolarFSlider(PolarEffect *plugin,
+	PolarFText *text, float *output, int x, int y, float min, float max, int w)
+ : BC_FSlider(x, y, 0, w, w, min, max, *output)
 {
 	this->plugin = plugin;
+	this->output = output;
+	this->text = text;
+	enable_show_value(0); // Hide caption
 }
-int PolarAngle::handle_event()
+
+PolarFSlider::~PolarFSlider()
 {
-	plugin->config.angle = get_value();
+}
+
+int PolarFSlider::handle_event()
+{
+	*output = get_value();
+	text->update(*output);
 	plugin->send_configure_change();
 	return 1;
 }
-
 
 
 PolarReset::PolarReset(PolarEffect *plugin, PolarWindow *window, int x, int y)
@@ -349,17 +408,17 @@ int PolarReset::handle_event()
 }
 
 
-PolarSliderClr::PolarSliderClr(PolarEffect *plugin, PolarWindow *window, int x, int y, int w, int clear)
- : BC_Button(x, y, w, plugin->get_theme()->get_image_set("reset_button"))
+PolarClr::PolarClr(PolarEffect *plugin, PolarWindow *window, int x, int y, int clear)
+ : BC_Button(x, y, plugin->get_theme()->get_image_set("reset_button"))
 {
 	this->plugin = plugin;
 	this->window = window;
 	this->clear = clear;
 }
-PolarSliderClr::~PolarSliderClr()
+PolarClr::~PolarClr()
 {
 }
-int PolarSliderClr::handle_event()
+int PolarClr::handle_event()
 {
 	// clear==1 ==> Depth slider
 	// clear==2 ==> Angle slider
@@ -404,8 +463,10 @@ void PolarEffect::update_gui()
 	{
 		load_configuration();
 		thread->window->lock_window();
-		((PolarWindow*)thread->window)->angle->update(config.angle);
-		((PolarWindow*)thread->window)->depth->update(config.depth);
+		((PolarWindow*)thread->window)->angle_text->update(config.angle);
+		((PolarWindow*)thread->window)->angle_slider->update(config.angle);
+		((PolarWindow*)thread->window)->depth_text->update(config.depth);
+		((PolarWindow*)thread->window)->depth_slider->update(config.depth);
 		thread->window->unlock_window();
 	}
 }

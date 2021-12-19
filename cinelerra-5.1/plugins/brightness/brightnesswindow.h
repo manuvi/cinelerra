@@ -32,12 +32,15 @@
 #define RESET_CONTRAST   1
 #define RESET_BRIGHTNESS 2
 
+#define MAXVALUE 100.00
+
 class BrightnessThread;
 class BrightnessWindow;
-class BrightnessSlider;
+class BrightnessFText;
+class BrightnessFSlider;
 class BrightnessLuma;
 class BrightnessReset;
-class BrightnessSliderClr;
+class BrightnessClr;
 
 
 class BrightnessWindow : public PluginClientWindow
@@ -49,23 +52,45 @@ public:
 	void create_objects();
 
 	BrightnessMain *client;
-	BrightnessSlider *brightness;
-	BrightnessSlider *contrast;
+
+	BrightnessFText *brightness_text;
+	BrightnessFSlider *brightness_slider;
+	BrightnessClr *brightness_Clr;
+
+	BrightnessFText *contrast_text;
+	BrightnessFSlider *contrast_slider;
+	BrightnessClr *contrast_Clr;
+
 	BrightnessLuma *luma;
 	BrightnessReset *reset;
-	BrightnessSliderClr *brightnessClr;
-	BrightnessSliderClr *contrastClr;
 };
 
-class BrightnessSlider : public BC_FSlider
+class BrightnessFText : public BC_TumbleTextBox
 {
 public:
-	BrightnessSlider(BrightnessMain *client, float *output, int x, int y, int is_brightness);
-	~BrightnessSlider();
+	BrightnessFText(BrightnessWindow *window, BrightnessMain *client,
+		BrightnessFSlider *slider, float *output, int x, int y, float min, float max);
+	~BrightnessFText();
+	int handle_event();
+	BrightnessWindow *window;
+	BrightnessMain *client;
+	BrightnessFSlider *slider;
+	float *output;
+	float min, max;
+};
+
+class BrightnessFSlider : public BC_FSlider
+{
+public:
+	BrightnessFSlider(BrightnessMain *client,
+		BrightnessFText *text, float *output, int x, int y,
+		float min, float max, int w, int is_brightness);
+	~BrightnessFSlider();
 	int handle_event();
 	char* get_caption();
 
 	BrightnessMain *client;
+	BrightnessFText *text;
 	float *output;
 	int is_brightness;
 	char string[BCTEXTLEN];
@@ -77,7 +102,6 @@ public:
 	BrightnessLuma(BrightnessMain *client, int x, int y);
 	~BrightnessLuma();
 	int handle_event();
-
 	BrightnessMain *client;
 };
 
@@ -91,15 +115,15 @@ public:
 	BrightnessWindow *window;
 };
 
-class BrightnessSliderClr : public BC_Button
+class BrightnessClr : public BC_Button
 {
 public:
-	BrightnessSliderClr(BrightnessMain *client, BrightnessWindow *window, int x, int y, int w, int is_brightness);
-	~BrightnessSliderClr();
+	BrightnessClr(BrightnessMain *client, BrightnessWindow *window, int x, int y, int clear);
+	~BrightnessClr();
 	int handle_event();
 	BrightnessMain *client;
 	BrightnessWindow *window;
-	int is_brightness;
+	int clear;
 };
 
 #endif

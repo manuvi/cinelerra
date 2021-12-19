@@ -38,8 +38,8 @@ void RadialBlurConfig::reset(int clear)
 {
 	switch(clear) {
 		case RESET_ALL :
-			x = xS(50);
-			y = yS(50);
+			x = 50;
+			y = 50;
 			angle = 0;
 			steps = 1;
 			r = 1;
@@ -47,9 +47,9 @@ void RadialBlurConfig::reset(int clear)
 			b = 1;
 			a = 1;
 			break;
-		case RESET_XSLIDER : x = xS(50);
+		case RESET_XSLIDER : x = 50;
 			break;
-		case RESET_YSLIDER : y = yS(50);
+		case RESET_YSLIDER : y = 50;
 			break;
 		case RESET_ANGLE : angle = 0;
 			break;
@@ -57,8 +57,8 @@ void RadialBlurConfig::reset(int clear)
 			break;
 		case RESET_DEFAULT_SETTINGS :
 		default:
-			x = xS(50);
-			y = yS(50);
+			x = 50;
+			y = 50;
 			angle = 33;
 			steps = 10;
 			r = 1;
@@ -126,10 +126,10 @@ void RadialBlurConfig::interpolate(RadialBlurConfig &prev,
 
 RadialBlurWindow::RadialBlurWindow(RadialBlurMain *plugin)
  : PluginClientWindow(plugin,
-	xS(250),
-	yS(380),
-	xS(250),
-	yS(380),
+	xS(420),
+	yS(230),
+	xS(420),
+	yS(230),
 	0)
 {
 	this->plugin = plugin;
@@ -141,48 +141,80 @@ RadialBlurWindow::~RadialBlurWindow()
 
 void RadialBlurWindow::create_objects()
 {
-	int xs10 = xS(10), xs50 = xS(50), xs100 = xS(100);
-	int ys10 = yS(10), ys20 = yS(20), ys30 = yS(30), ys40 = yS(45);
+	int xs10 = xS(10), xs100 = xS(100), xs200 = xS(200);
+	int ys10 = yS(10), ys30 = yS(30), ys40 = yS(40);
 	int x = xs10, y = ys10;
-	int x1 = 0; int clrBtn_w = xs50;
+	int x2 = xS(80), x3 = xS(180);
+	int clr_x = get_w()-x - xS(22); // note: clrBtn_w = 22
 	int defaultBtn_w = xs100;
 
+	BC_Bar *bar;
+
+	y += ys10;
 	add_subwindow(new BC_Title(x, y, _("X:")));
-	y += ys20;
-	add_subwindow(this->x = new RadialBlurSize(plugin, x, y, &plugin->config.x, 0, 100));
-	x1 = x + this->x->get_w() + xs10;
-	add_subwindow(xClr = new RadialBlurSliderClr(plugin, this, x1, y, clrBtn_w, RESET_XSLIDER));
-
+	x_text = new RadialBlurIText(this, plugin,
+		0, &plugin->config.x, (x + x2), y, XY_MIN, XY_MAX);
+	x_text->create_objects();
+	x_slider = new RadialBlurISlider(plugin,
+		x_text, &plugin->config.x, x3, y, XY_MIN, XY_MAX, xs200);
+	add_subwindow(x_slider);
+	x_text->slider = x_slider;
+	clr_x = x3 + x_slider->get_w() + x;
+	add_subwindow(x_Clr = new RadialBlurClr(plugin, this, clr_x, y, RESET_XSLIDER));
 	y += ys30;
+
 	add_subwindow(new BC_Title(x, y, _("Y:")));
-	y += ys20;
-	add_subwindow(this->y = new RadialBlurSize(plugin, x, y, &plugin->config.y, 0, 100));
-	add_subwindow(yClr = new RadialBlurSliderClr(plugin, this, x1, y, clrBtn_w, RESET_YSLIDER));
-
+	y_text = new RadialBlurIText(this, plugin,
+		0, &plugin->config.y, (x + x2), y, XY_MIN, XY_MAX);
+	y_text->create_objects();
+	y_slider = new RadialBlurISlider(plugin,
+		y_text, &plugin->config.y, x3, y, XY_MIN, XY_MAX, xs200);
+	add_subwindow(y_slider);
+	y_text->slider = y_slider;
+	add_subwindow(y_Clr = new RadialBlurClr(plugin, this, clr_x, y, RESET_YSLIDER));
 	y += ys30;
+
 	add_subwindow(new BC_Title(x, y, _("Angle:")));
-	y += ys20;
-	add_subwindow(angle = new RadialBlurSize(plugin, x, y, &plugin->config.angle, 0, 360));
-	add_subwindow(angleClr = new RadialBlurSliderClr(plugin, this, x1, y, clrBtn_w, RESET_ANGLE));
-
+	angle_text = new RadialBlurIText(this, plugin,
+		0, &plugin->config.angle, (x + x2), y, ANGLE_MIN, ANGLE_MAX);
+	angle_text->create_objects();
+	angle_slider = new RadialBlurISlider(plugin,
+		angle_text, &plugin->config.angle, x3, y, ANGLE_MIN, ANGLE_MAX, xs200);
+	add_subwindow(angle_slider);
+	angle_text->slider = angle_slider;
+	add_subwindow(angle_Clr = new RadialBlurClr(plugin, this, clr_x, y, RESET_ANGLE));
 	y += ys30;
+
 	add_subwindow(new BC_Title(x, y, _("Steps:")));
-	y += ys20;
-	add_subwindow(steps = new RadialBlurSize(plugin, x, y, &plugin->config.steps, 1, 100));
-	add_subwindow(stepsClr = new RadialBlurSliderClr(plugin, this, x1, y, clrBtn_w, RESET_STEPS));
-
-	y += ys30;
-	add_subwindow(r = new RadialBlurToggle(plugin, x, y, &plugin->config.r, _("Red")));
-	y += ys30;
-	add_subwindow(g = new RadialBlurToggle(plugin, x, y, &plugin->config.g, _("Green")));
-	y += ys30;
-	add_subwindow(b = new RadialBlurToggle(plugin, x, y, &plugin->config.b, _("Blue")));
-	y += ys30;
-	add_subwindow(a = new RadialBlurToggle(plugin, x, y, &plugin->config.a, _("Alpha")));
+	steps_text = new RadialBlurIText(this, plugin,
+		0, &plugin->config.steps, (x + x2), y, STEPS_MIN, STEPS_MAX);
+	steps_text->create_objects();
+	steps_slider = new RadialBlurISlider(plugin,
+		steps_text, &plugin->config.steps, x3, y, STEPS_MIN, STEPS_MAX, xs200);
+	add_subwindow(steps_slider);
+	steps_text->slider = steps_slider;
+	add_subwindow(steps_Clr = new RadialBlurClr(plugin, this, clr_x, y, RESET_STEPS));
 	y += ys40;
+
+	add_subwindow(bar = new BC_Bar(x, y, get_w()-2*x));
+	y += ys10;
+	int x1 = x;
+	int toggle_w = (get_w()-2*x) / 4;
+	add_subwindow(r = new RadialBlurToggle(plugin, x1, y, &plugin->config.r, _("Red")));
+	x1 += toggle_w;
+	add_subwindow(g = new RadialBlurToggle(plugin, x1, y, &plugin->config.g, _("Green")));
+	x1 += toggle_w;
+	add_subwindow(b = new RadialBlurToggle(plugin, x1, y, &plugin->config.b, _("Blue")));
+	x1 += toggle_w;
+	add_subwindow(a = new RadialBlurToggle(plugin, x1, y, &plugin->config.a, _("Alpha")));
+	y += ys30;
+
+// Reset section
+	add_subwindow(bar = new BC_Bar(x, y, get_w()-2*x));
+	y += ys10;
 	add_subwindow(reset = new RadialBlurReset(plugin, this, x, y));
 	add_subwindow(default_settings = new RadialBlurDefaultSettings(plugin, this,
-		(xS(250) - xS(10) - defaultBtn_w), y, defaultBtn_w));
+		(get_w() - xs10 - defaultBtn_w), y, defaultBtn_w));
 
 	show_window();
 	flush();
@@ -192,21 +224,33 @@ void RadialBlurWindow::create_objects()
 void RadialBlurWindow::update_gui(int clear)
 {
 	switch(clear) {
-		case RESET_XSLIDER : this->x->update(plugin->config.x);
+		case RESET_XSLIDER :
+			x_text->update((int64_t)plugin->config.x);
+			x_slider->update(plugin->config.x);
 			break;
-		case RESET_YSLIDER : this->y->update(plugin->config.y);
+		case RESET_YSLIDER :
+			y_text->update((int64_t)plugin->config.y);
+			y_slider->update(plugin->config.y);
 			break;
-		case RESET_ANGLE : angle->update(plugin->config.angle);
+		case RESET_ANGLE :
+			angle_text->update((int64_t)plugin->config.angle);
+			angle_slider->update(plugin->config.angle);
 			break;
-		case RESET_STEPS : steps->update(plugin->config.steps);
+		case RESET_STEPS :
+			steps_text->update((int64_t)plugin->config.steps);
+			steps_slider->update(plugin->config.steps);
 			break;
 		case RESET_ALL :
 		case RESET_DEFAULT_SETTINGS :
 		default:
-			this->x->update(plugin->config.x);
-			this->y->update(plugin->config.y);
-			angle->update(plugin->config.angle);
-			steps->update(plugin->config.steps);
+			x_text->update((int64_t)plugin->config.x);
+			x_slider->update(plugin->config.x);
+			y_text->update((int64_t)plugin->config.y);
+			y_slider->update(plugin->config.y);
+			angle_text->update((int64_t)plugin->config.angle);
+			angle_slider->update(plugin->config.angle);
+			steps_text->update((int64_t)plugin->config.steps);
+			steps_slider->update(plugin->config.steps);
 			r->update(plugin->config.r);
 			g->update(plugin->config.g);
 			b->update(plugin->config.b);
@@ -242,33 +286,56 @@ int RadialBlurToggle::handle_event()
 }
 
 
-
-
-
-
-
-RadialBlurSize::RadialBlurSize(RadialBlurMain *plugin,
-	int x,
-	int y,
-	int *output,
-	int min,
-	int max)
- : BC_ISlider(x, y, 0, xS(200), yS(200), min, max, *output)
+RadialBlurIText::RadialBlurIText(RadialBlurWindow *gui, RadialBlurMain *plugin,
+	RadialBlurISlider *slider, int *output, int x, int y, int min, int max)
+ : BC_TumbleTextBox(gui, *output,
+	min, max, x, y, xS(60), 0)
 {
+	this->gui = gui;
 	this->plugin = plugin;
 	this->output = output;
+	this->slider = slider;
+	this->min = min;
+	this->max = max;
+	set_increment(1);
 }
-int RadialBlurSize::handle_event()
+
+RadialBlurIText::~RadialBlurIText()
 {
-	*output = get_value();
+}
+
+int RadialBlurIText::handle_event()
+{
+	*output = atoi(get_text());
+	if(*output > max) *output = max;
+	if(*output < min) *output = min;
+	slider->update(*output);
 	plugin->send_configure_change();
 	return 1;
 }
 
 
+RadialBlurISlider::RadialBlurISlider(RadialBlurMain *plugin,
+	RadialBlurIText *text, int *output, int x, int y, int min, int max, int w)
+ : BC_ISlider(x, y, 0, w, w, min, max, *output)
+{
+	this->plugin = plugin;
+	this->output = output;
+	this->text = text;
+	enable_show_value(0); // Hide caption
+}
 
+RadialBlurISlider::~RadialBlurISlider()
+{
+}
 
-
+int RadialBlurISlider::handle_event()
+{
+	*output = get_value();
+	text->update((int64_t)*output);
+	plugin->send_configure_change();
+	return 1;
+}
 
 
 RadialBlurReset::RadialBlurReset(RadialBlurMain *plugin, RadialBlurWindow *gui, int x, int y)
@@ -307,17 +374,17 @@ int RadialBlurDefaultSettings::handle_event()
 }
 
 
-RadialBlurSliderClr::RadialBlurSliderClr(RadialBlurMain *plugin, RadialBlurWindow *gui, int x, int y, int w, int clear)
- : BC_Button(x, y, w, plugin->get_theme()->get_image_set("reset_button"))
+RadialBlurClr::RadialBlurClr(RadialBlurMain *plugin, RadialBlurWindow *gui, int x, int y, int clear)
+ : BC_Button(x, y, plugin->get_theme()->get_image_set("reset_button"))
 {
 	this->plugin = plugin;
 	this->gui = gui;
 	this->clear = clear;
 }
-RadialBlurSliderClr::~RadialBlurSliderClr()
+RadialBlurClr::~RadialBlurClr()
 {
 }
-int RadialBlurSliderClr::handle_event()
+int RadialBlurClr::handle_event()
 {
 	// clear==1 ==> X slider
 	// clear==2 ==> Y slider
@@ -399,10 +466,15 @@ void RadialBlurMain::update_gui()
 	{
 		load_configuration();
 		thread->window->lock_window();
-		((RadialBlurWindow*)thread->window)->x->update(config.x);
-		((RadialBlurWindow*)thread->window)->y->update(config.y);
-		((RadialBlurWindow*)thread->window)->angle->update(config.angle);
-		((RadialBlurWindow*)thread->window)->steps->update(config.steps);
+		((RadialBlurWindow*)thread->window)->x_text->update((int64_t)config.x);
+		((RadialBlurWindow*)thread->window)->x_slider->update(config.x);
+		((RadialBlurWindow*)thread->window)->y_text->update((int64_t)config.y);
+		((RadialBlurWindow*)thread->window)->y_slider->update(config.y);
+		((RadialBlurWindow*)thread->window)->angle_text->update((int64_t)config.angle);
+		((RadialBlurWindow*)thread->window)->angle_slider->update(config.angle);
+		((RadialBlurWindow*)thread->window)->steps_text->update((int64_t)config.steps);
+		((RadialBlurWindow*)thread->window)->steps_slider->update(config.steps);
+
 		((RadialBlurWindow*)thread->window)->r->update(config.r);
 		((RadialBlurWindow*)thread->window)->g->update(config.g);
 		((RadialBlurWindow*)thread->window)->b->update(config.b);

@@ -27,7 +27,7 @@
 
 
 UnsharpWindow::UnsharpWindow(UnsharpMain *plugin)
- : PluginClientWindow(plugin, xS(285), yS(170), xS(285), yS(170), 0)
+ : PluginClientWindow(plugin, xS(420), yS(160), xS(420), yS(160), 0)
 {
 	this->plugin = plugin;
 }
@@ -38,32 +38,52 @@ UnsharpWindow::~UnsharpWindow()
 
 void UnsharpWindow::create_objects()
 {
-	int xs10 = xS(10), xs50 = xS(50), xs90 = xS(90), xs100 = xS(100);
-	int ys10 = yS(10), ys40 = yS(40), ys50 = yS(50);
-	int x = xs10, y = ys10, x1 = xs90;
-	int x2 = 0; int clrBtn_w = xs50;
+	int xs10 = xS(10), xs100 = xS(100), xs200 = xS(200);
+	int ys10 = yS(10), ys30 = yS(30), ys40 = yS(40);
+	int x = xs10, y = ys10;
+	int x2 = xS(80), x3 = xS(180);
+	int clr_x = get_w()-x - xS(22); // note: clrBtn_w = 22
 	int defaultBtn_w = xs100;
+
 	BC_Title *title;
+	BC_Bar *bar;
 
-	add_subwindow(title = new BC_Title(x, y + ys10, _("Radius:")));
-	add_subwindow(radius = new UnsharpRadius(plugin, x + x1, y));
-	x2 = xS(285) - xs10 - clrBtn_w;
-	add_subwindow(radiusClr = new UnsharpSliderClr(plugin, this, x2, y + ys10, clrBtn_w, RESET_RADIUS));
-
+// Radius
+	y += ys10;
+	add_subwindow(title = new BC_Title(x, y, _("Radius:")));
+	radius_text = new UnsharpRadiusText(this, plugin, (x + x2), y);
+	radius_text->create_objects();
+	radius_slider = new UnsharpRadiusSlider(this, plugin, x3, y, xs200);
+	add_subwindow(radius_slider);
+	clr_x = x3 + radius_slider->get_w() + x;
+	add_subwindow(radius_clr = new UnsharpClr(this, plugin,
+		clr_x, y, RESET_RADIUS));
+	y += ys30;
+// Amount
+	add_subwindow(title = new BC_Title(x, y, _("Amount:")));
+	amount_text = new UnsharpAmountText(this, plugin, (x + x2), y);
+	amount_text->create_objects();
+	amount_slider = new UnsharpAmountSlider(this, plugin, x3, y, xs200);
+	add_subwindow(amount_slider);
+	add_subwindow(amount_clr = new UnsharpClr(this, plugin,
+		clr_x, y, RESET_AMOUNT));
+	y += ys30;
+// Threshold
+	add_subwindow(title = new BC_Title(x, y, _("Threshold:")));
+	threshold_text = new UnsharpThresholdText(this, plugin, (x + x2), y);
+	threshold_text->create_objects();
+	threshold_slider = new UnsharpThresholdSlider(this, plugin, x3, y, xs200);
+	add_subwindow(threshold_slider);
+	add_subwindow(threshold_clr = new UnsharpClr(this, plugin,
+		clr_x, y, RESET_THRESHOLD));
 	y += ys40;
-	add_subwindow(title = new BC_Title(x, y + ys10, _("Amount:")));
-	add_subwindow(amount = new UnsharpAmount(plugin, x + x1, y));
-	add_subwindow(amountClr = new UnsharpSliderClr(plugin, this, x2, y + ys10, clrBtn_w, RESET_AMOUNT));
 
-	y += ys40;
-	add_subwindow(title = new BC_Title(x, y + ys10, _("Threshold:")));
-	add_subwindow(threshold = new UnsharpThreshold(plugin, x + x1, y));
-	add_subwindow(thresholdClr = new UnsharpSliderClr(plugin, this, x2, y + ys10, clrBtn_w, RESET_THRESHOLD));
-
-	y += ys50;
-	add_subwindow(reset = new UnsharpReset(plugin, this, x, y));
-	add_subwindow(default_settings = new UnsharpDefaultSettings(plugin, this,
-		(xS(285) - xs10 - defaultBtn_w), y, defaultBtn_w));
+// Reset section
+	add_subwindow(bar = new BC_Bar(x, y, get_w()-2*x));
+	y += ys10;
+	add_subwindow(reset = new UnsharpReset(this, plugin, x, y));
+	add_subwindow(default_settings = new UnsharpDefaultSettings(this,plugin,
+		(get_w() - xs10 - defaultBtn_w), y, defaultBtn_w));
 
 	show_window();
 	flush();
@@ -73,68 +93,189 @@ void UnsharpWindow::create_objects()
 void UnsharpWindow::update_gui(int clear)
 {
 	switch(clear) {
-		case RESET_RADIUS : radius->update(plugin->config.radius);
+		case RESET_RADIUS : 
+			radius_text->update(plugin->config.radius);
+			radius_slider->update(plugin->config.radius);
 			break;
-		case RESET_AMOUNT : amount->update(plugin->config.amount);
+		case RESET_AMOUNT : 
+			amount_text->update(plugin->config.amount);
+			amount_slider->update(plugin->config.amount);
 			break;
-		case RESET_THRESHOLD : threshold->update(plugin->config.threshold);
+		case RESET_THRESHOLD : 
+			threshold_text->update((int64_t)plugin->config.threshold);
+			threshold_slider->update((int64_t)plugin->config.threshold);
 			break;
 		case RESET_ALL :
 		case RESET_DEFAULT_SETTINGS :
 		default:
-			radius->update(plugin->config.radius);
-			amount->update(plugin->config.amount);
-			threshold->update(plugin->config.threshold);
+			radius_text->update(plugin->config.radius);
+			radius_slider->update(plugin->config.radius);
+			amount_text->update(plugin->config.amount);
+			amount_slider->update(plugin->config.amount);
+			threshold_text->update((int64_t)plugin->config.threshold);
+			threshold_slider->update((int64_t)plugin->config.threshold);
 			break;
 	}
 }
 
 
 
-
-
-
-
-
-
-
-UnsharpRadius::UnsharpRadius(UnsharpMain *plugin, int x, int y)
- : BC_FPot(x, y, plugin->config.radius, 0.1, 120)
+/* *********************************** */
+/* **** UNSHARP RADIUS *************** */
+UnsharpRadiusText::UnsharpRadiusText(UnsharpWindow *window, UnsharpMain *plugin, int x, int y)
+ : BC_TumbleTextBox(window, plugin->config.radius,
+	(float)RADIUS_MIN, (float)RADIUS_MAX, x, y, xS(60), 2)
 {
+	this->window = window;
 	this->plugin = plugin;
+	set_increment(0.1);
 }
-int UnsharpRadius::handle_event()
+
+UnsharpRadiusText::~UnsharpRadiusText()
+{
+}
+
+int UnsharpRadiusText::handle_event()
+{
+	float min = RADIUS_MIN, max = RADIUS_MAX;
+	float output = atof(get_text());
+	if(output > max) output = max;
+	if(output < min) output = min;
+	plugin->config.radius = output;
+	window->radius_slider->update(plugin->config.radius);
+	window->radius_text->update(plugin->config.radius);
+	plugin->send_configure_change();
+	return 1;
+}
+
+UnsharpRadiusSlider::UnsharpRadiusSlider(UnsharpWindow *window, UnsharpMain *plugin,
+	int x, int y, int w)
+ : BC_FSlider(x, y, 0, w, w, RADIUS_MIN, RADIUS_MAX, plugin->config.radius)
+{
+	this->window = window;
+	this->plugin = plugin;
+	enable_show_value(0); // Hide caption
+	set_precision(0.01);
+}
+
+UnsharpRadiusSlider::~UnsharpRadiusSlider()
+{
+}
+
+int UnsharpRadiusSlider::handle_event()
 {
 	plugin->config.radius = get_value();
+	window->radius_text->update(plugin->config.radius);
+	plugin->send_configure_change();
+	return 1;
+}
+/* *********************************** */
+
+
+/* *********************************** */
+/* **** UNSHARP AMOUNT *************** */
+UnsharpAmountText::UnsharpAmountText(UnsharpWindow *window, UnsharpMain *plugin, int x, int y)
+ : BC_TumbleTextBox(window, plugin->config.amount,
+	(float)AMOUNT_MIN, (float)AMOUNT_MAX, x, y, xS(60), 2)
+{
+	this->window = window;
+	this->plugin = plugin;
+	set_increment(0.1);
+}
+
+UnsharpAmountText::~UnsharpAmountText()
+{
+}
+
+int UnsharpAmountText::handle_event()
+{
+	float min = AMOUNT_MIN, max = AMOUNT_MAX;
+	float output = atof(get_text());
+	if(output > max) output = max;
+	if(output < min) output = min;
+	plugin->config.amount = output;
+	window->amount_slider->update(plugin->config.amount);
+	window->amount_text->update(plugin->config.amount);
 	plugin->send_configure_change();
 	return 1;
 }
 
-UnsharpAmount::UnsharpAmount(UnsharpMain *plugin, int x, int y)
- : BC_FPot(x, y, plugin->config.amount, 0, 5)
+UnsharpAmountSlider::UnsharpAmountSlider(UnsharpWindow *window, UnsharpMain *plugin,
+	int x, int y, int w)
+ : BC_FSlider(x, y, 0, w, w, AMOUNT_MIN, AMOUNT_MAX, plugin->config.amount)
 {
+	this->window = window;
 	this->plugin = plugin;
+	enable_show_value(0); // Hide caption
+	set_precision(0.01);
 }
-int UnsharpAmount::handle_event()
+
+UnsharpAmountSlider::~UnsharpAmountSlider()
+{
+}
+
+int UnsharpAmountSlider::handle_event()
 {
 	plugin->config.amount = get_value();
+	window->amount_text->update(plugin->config.amount);
+	plugin->send_configure_change();
+	return 1;
+}
+/* *********************************** */
+
+
+/* *********************************** */
+/* **** UNSHARP THRESHOLD ************ */
+UnsharpThresholdText::UnsharpThresholdText(UnsharpWindow *window, UnsharpMain *plugin, int x, int y)
+ : BC_TumbleTextBox(window, plugin->config.threshold,
+	THRESHOLD_MIN, THRESHOLD_MAX, x, y, xS(60))
+{
+	this->window = window;
+	this->plugin = plugin;
+	set_increment(1);
+}
+
+UnsharpThresholdText::~UnsharpThresholdText()
+{
+}
+
+int UnsharpThresholdText::handle_event()
+{
+	int min = THRESHOLD_MIN, max = THRESHOLD_MAX;
+	int output = atoi(get_text());
+	if(output > max) output = max;
+	if(output < min) output = min;
+	plugin->config.threshold = output;
+	window->threshold_slider->update(plugin->config.threshold);
+	window->threshold_text->update((int64_t)plugin->config.threshold);
 	plugin->send_configure_change();
 	return 1;
 }
 
-UnsharpThreshold::UnsharpThreshold(UnsharpMain *plugin, int x, int y)
- : BC_IPot(x, y, plugin->config.threshold, 0, 255)
+UnsharpThresholdSlider::UnsharpThresholdSlider(UnsharpWindow *window, UnsharpMain *plugin,
+	int x, int y, int w)
+ : BC_ISlider(x, y, 0, w, w, THRESHOLD_MIN, THRESHOLD_MAX, plugin->config.threshold)
 {
+	this->window = window;
 	this->plugin = plugin;
+	enable_show_value(0); // Hide caption
 }
-int UnsharpThreshold::handle_event()
+
+UnsharpThresholdSlider::~UnsharpThresholdSlider()
+{
+}
+
+int UnsharpThresholdSlider::handle_event()
 {
 	plugin->config.threshold = get_value();
+	window->threshold_text->update((int64_t)plugin->config.threshold);
 	plugin->send_configure_change();
 	return 1;
 }
+/* *********************************** */
 
-UnsharpReset::UnsharpReset(UnsharpMain *plugin, UnsharpWindow *window, int x, int y)
+
+UnsharpReset::UnsharpReset(UnsharpWindow *window, UnsharpMain *plugin, int x, int y)
  : BC_GenericButton(x, y, _("Reset"))
 {
 	this->plugin = plugin;
@@ -151,7 +292,7 @@ int UnsharpReset::handle_event()
 	return 1;
 }
 
-UnsharpDefaultSettings::UnsharpDefaultSettings(UnsharpMain *plugin, UnsharpWindow *window, int x, int y, int w)
+UnsharpDefaultSettings::UnsharpDefaultSettings(UnsharpWindow *window, UnsharpMain *plugin, int x, int y, int w)
  : BC_GenericButton(x, y, w, _("Default"))
 {
 	this->plugin = plugin;
@@ -168,17 +309,17 @@ int UnsharpDefaultSettings::handle_event()
 	return 1;
 }
 
-UnsharpSliderClr::UnsharpSliderClr(UnsharpMain *plugin, UnsharpWindow *window, int x, int y, int w, int clear)
- : BC_Button(x, y, w, plugin->get_theme()->get_image_set("reset_button"))
+UnsharpClr::UnsharpClr(UnsharpWindow *window, UnsharpMain *plugin, int x, int y, int clear)
+ : BC_Button(x, y, plugin->get_theme()->get_image_set("reset_button"))
 {
-	this->plugin = plugin;
 	this->window = window;
+	this->plugin = plugin;
 	this->clear = clear;
 }
-UnsharpSliderClr::~UnsharpSliderClr()
+UnsharpClr::~UnsharpClr()
 {
 }
-int UnsharpSliderClr::handle_event()
+int UnsharpClr::handle_event()
 {
 	// clear==1 ==> Radius slider
 	// clear==2 ==> Amount slider

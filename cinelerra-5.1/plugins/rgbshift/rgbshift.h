@@ -37,6 +37,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#define MAXVALUE 100
+
 #define RESET_ALL  0
 #define RESET_R_DX 1
 #define RESET_R_DY 2
@@ -47,8 +49,10 @@
 
 class RGBShiftEffect;
 class RGBShiftWindow;
+class RGBShiftIText;
+class RGBShiftISlider;
 class RGBShiftReset;
-class RGBShiftSliderClr;
+class RGBShiftClr;
 
 
 class RGBShiftConfig
@@ -68,12 +72,27 @@ public:
 	int r_dx, r_dy, g_dx, g_dy, b_dx, b_dy;
 };
 
-class RGBShiftLevel : public BC_ISlider
+class RGBShiftIText : public BC_TumbleTextBox
 {
 public:
-	RGBShiftLevel(RGBShiftEffect *plugin, int *output, int x, int y);
+	RGBShiftIText(RGBShiftWindow *window, RGBShiftEffect *plugin,
+		RGBShiftISlider *slider, int *output, int x, int y, int min, int max);
+	~RGBShiftIText();
+	int handle_event();
+	RGBShiftWindow *window;
+	RGBShiftEffect *plugin;
+	RGBShiftISlider *slider;
+	int *output;
+	int min, max;
+};
+
+class RGBShiftISlider : public BC_ISlider
+{
+public:
+	RGBShiftISlider(RGBShiftEffect *plugin, RGBShiftIText *text, int *output, int x, int y);
 	int handle_event();
 	RGBShiftEffect *plugin;
+	RGBShiftIText *text;
 	int *output;
 };
 
@@ -87,11 +106,11 @@ public:
 	RGBShiftWindow *window;
 };
 
-class RGBShiftSliderClr : public BC_Button
+class RGBShiftClr : public BC_Button
 {
 public:
-	RGBShiftSliderClr(RGBShiftEffect *plugin, RGBShiftWindow *window, int x, int y, int w, int clear);
-	~RGBShiftSliderClr();
+	RGBShiftClr(RGBShiftEffect *plugin, RGBShiftWindow *window, int x, int y, int clear);
+	~RGBShiftClr();
 	int handle_event();
 	RGBShiftEffect *plugin;
 	RGBShiftWindow *window;
@@ -104,12 +123,30 @@ public:
 	RGBShiftWindow(RGBShiftEffect *plugin);
 	void create_objects();
 	void update_gui(int clear);
-	RGBShiftLevel *r_dx, *r_dy, *g_dx, *g_dy, *b_dx, *b_dy;
+
+	RGBShiftIText *r_dx_text;
+	RGBShiftISlider *r_dx_slider;
+	RGBShiftClr *r_dx_Clr;
+	RGBShiftIText *r_dy_text;
+	RGBShiftISlider *r_dy_slider;
+	RGBShiftClr *r_dy_Clr;
+
+	RGBShiftIText *g_dx_text;
+	RGBShiftISlider *g_dx_slider;
+	RGBShiftClr *g_dx_Clr;
+	RGBShiftIText *g_dy_text;
+	RGBShiftISlider *g_dy_slider;
+	RGBShiftClr *g_dy_Clr;
+
+	RGBShiftIText *b_dx_text;
+	RGBShiftISlider *b_dx_slider;
+	RGBShiftClr *b_dx_Clr;
+	RGBShiftIText *b_dy_text;
+	RGBShiftISlider *b_dy_slider;
+	RGBShiftClr *b_dy_Clr;
+
 	RGBShiftEffect *plugin;
 	RGBShiftReset *reset;
-	RGBShiftSliderClr *r_dxClr, *r_dyClr;
-	RGBShiftSliderClr *g_dxClr, *g_dyClr;
-	RGBShiftSliderClr *b_dxClr, *b_dyClr;
 };
 
 
