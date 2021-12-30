@@ -31,10 +31,10 @@
 
 BlurWindow::BlurWindow(BlurMain *client)
  : PluginClientWindow(client,
-	xS(210),
-	yS(360),
-	xS(210),
-	yS(360),
+	xS(420),
+	yS(250),
+	xS(420),
+	yS(250),
 	0)
 {
 	this->client = client;
@@ -47,67 +47,97 @@ BlurWindow::~BlurWindow()
 
 void BlurWindow::create_objects()
 {
-	int xs10 = xS(10);
-	int ys10 = yS(10), ys20 = yS(20), ys30 = yS(30), ys35 = yS(35), ys40 = yS(40);
+	int xs10 = xS(10), xs20 = xS(20), xs200 = xS(200);
+	int ys10 = yS(10), ys20 = yS(20), ys30 = yS(30), ys40 = yS(40);
+	int x2 = xS(80), x3 = xS(180);
 	int x = xs10, y = ys10;
-	BC_Title *title;
+	int clr_x = get_w()-x - xS(22); // note: clrBtn_w = 22
 
-	add_subwindow(new BC_Title(x, y, _("Blur")));
+	BC_TitleBar *title_bar;
+	BC_Bar *bar;
+
+	add_subwindow(title_bar = new BC_TitleBar(x, y, get_w()-2*x, xs20, xs10, _("Radius")));
+	y += ys20;
+	add_subwindow(new BC_Title(x, y, _("Radius:")));
+	radius_text = new BlurRadiusText(client, this, (x + x2), y);
+	radius_text->create_objects();
+	add_subwindow(radius_slider = new BlurRadiusSlider(client, this, x3, y, xs200));
+	clr_x = x3 + radius_slider->get_w() + x;
+	add_subwindow(radius_Clr = new BlurRadiusClr(client, this, clr_x, y));
+// December 2021: Disable and Hide 'Alpha determines radius' checkbox for bug(?)
+//	y += ys30;
+	add_subwindow(a_key = new BlurAKey(client, x, y));
+	y += ys40;
+
+	add_subwindow(title_bar = new BC_TitleBar(x, y, get_w()-2*x, xs20, xs10, _("Direction")));
 	y += ys20;
 	add_subwindow(horizontal = new BlurHorizontal(client, this, x, y));
 	y += ys30;
 	add_subwindow(vertical = new BlurVertical(client, this, x, y));
-	y += ys35;
-	add_subwindow(title = new BC_Title(x, y, _("Radius:")));
-	y += title->get_h() + ys10;
-	add_subwindow(radius = new BlurRadius(client, this, x, y));
-	add_subwindow(radius_text = new BlurRadiusText(client, this, x + radius->get_w() + xs10, y, 100));
-	y += radius->get_h() + ys10;
-	add_subwindow(a_key = new BlurAKey(client, x, y));
-	y += ys30;
-	add_subwindow(a = new BlurA(client, x, y));
-	y += ys30;
-	add_subwindow(r = new BlurR(client, x, y));
-	y += ys30;
-	add_subwindow(g = new BlurG(client, x, y));
-	y += ys30;
-	add_subwindow(b = new BlurB(client, x, y));
 	y += ys40;
+
+	add_subwindow(title_bar = new BC_TitleBar(x, y, get_w()-2*x, xs20, xs10, _("Color channel")));
+	y += ys20;
+	int x1 = x;
+	int toggle_w = (get_w()-2*x) / 4;
+	add_subwindow(r = new BlurR(client, x1, y));
+	x1 += toggle_w;
+	add_subwindow(g = new BlurG(client, x1, y));
+	x1 += toggle_w;
+	add_subwindow(b = new BlurB(client, x1, y));
+	x1 += toggle_w;
+	add_subwindow(a = new BlurA(client, x1, y));
+	y += ys30;
+
+// Reset section
+	add_subwindow(bar = new BC_Bar(x, y, get_w()-2*x));
+	y += ys10;
 	add_subwindow(reset = new BlurReset(client, this, x, y));
 
 	show_window();
+
+// December 2021: Disable and Hide 'Alpha determines radius' checkbox for bug(?)
+	a_key->disable();
+	a_key->hide_window();
+
 	flush();
 }
 
 // for Reset button
-void BlurWindow::update()
+void BlurWindow::update(int clear)
 {
-	horizontal->update(client->config.horizontal);
-	vertical->update(client->config.vertical);
-	radius->update(client->config.radius);
-	radius_text->update((int64_t)client->config.radius);
-	a_key->update(client->config.a_key);
-	a->update(client->config.a);
-	r->update(client->config.r);
-	g->update(client->config.g);
-	b->update(client->config.b);
+	switch(clear) {
+		case RESET_RADIUS :
+			radius_slider->update(client->config.radius);
+			radius_text->update((int64_t)client->config.radius);
+			break;
+		case RESET_ALL :
+		default:
+			horizontal->update(client->config.horizontal);
+			vertical->update(client->config.vertical);
+			radius_slider->update(client->config.radius);
+			radius_text->update((int64_t)client->config.radius);
+			a_key->update(client->config.a_key);
+			a->update(client->config.a);
+			r->update(client->config.r);
+			g->update(client->config.g);
+			b->update(client->config.b);
+			break;
+	}
 }
 
 
-BlurRadius::BlurRadius(BlurMain *client, BlurWindow *gui, int x, int y)
- : BC_IPot(x,
- 	y,
-	client->config.radius,
-	0,
-	MAXRADIUS)
+BlurRadiusSlider::BlurRadiusSlider(BlurMain *client, BlurWindow *gui, int x, int y, int w)
+ : BC_ISlider(x, y, 0, w, w, 0, MAXRADIUS, client->config.radius, 0, 0, 0)
 {
 	this->client = client;
 	this->gui = gui;
+	enable_show_value(0); // Hide caption
 }
-BlurRadius::~BlurRadius()
+BlurRadiusSlider::~BlurRadiusSlider()
 {
 }
-int BlurRadius::handle_event()
+int BlurRadiusSlider::handle_event()
 {
 	client->config.radius = get_value();
 	gui->radius_text->update((int64_t)client->config.radius);
@@ -118,21 +148,24 @@ int BlurRadius::handle_event()
 
 
 
-BlurRadiusText::BlurRadiusText(BlurMain *client, BlurWindow *gui, int x, int y, int w)
- : BC_TextBox(x,
-	y,
-	w,
-	1,
-	client->config.radius)
+BlurRadiusText::BlurRadiusText(BlurMain *client, BlurWindow *gui, int x, int y)
+ : BC_TumbleTextBox(gui, client->config.radius,
+	0, MAXRADIUS, x, y, xS(60), 0)
 {
 	this->client = client;
 	this->gui = gui;
+	set_increment(1);
 }
-
+BlurRadiusText::~BlurRadiusText()
+{
+}
 int BlurRadiusText::handle_event()
 {
 	client->config.radius = atoi(get_text());
-	gui->radius->update((int64_t)client->config.radius);
+	if(client->config.radius > MAXRADIUS) client->config.radius = MAXRADIUS;
+	else if(client->config.radius < 0) client->config.radius = 0;
+	gui->radius_text->update((int64_t)client->config.radius);
+	gui->radius_slider->update(client->config.radius);
 	client->send_configure_change();
 	return 1;
 }
@@ -182,7 +215,7 @@ int BlurHorizontal::handle_event()
 
 
 BlurA::BlurA(BlurMain *client, int x, int y)
- : BC_CheckBox(x, y, client->config.a, _("Blur alpha"))
+ : BC_CheckBox(x, y, client->config.a, _("Alpha"))
 {
 	this->client = client;
 }
@@ -209,7 +242,7 @@ int BlurAKey::handle_event()
 }
 
 BlurR::BlurR(BlurMain *client, int x, int y)
- : BC_CheckBox(x, y, client->config.r, _("Blur red"))
+ : BC_CheckBox(x, y, client->config.r, _("Red"))
 {
 	this->client = client;
 }
@@ -221,7 +254,7 @@ int BlurR::handle_event()
 }
 
 BlurG::BlurG(BlurMain *client, int x, int y)
- : BC_CheckBox(x, y, client->config.g, _("Blur green"))
+ : BC_CheckBox(x, y, client->config.g, _("Green"))
 {
 	this->client = client;
 }
@@ -233,7 +266,7 @@ int BlurG::handle_event()
 }
 
 BlurB::BlurB(BlurMain *client, int x, int y)
- : BC_CheckBox(x, y, client->config.b, _("Blur blue"))
+ : BC_CheckBox(x, y, client->config.b, _("Blue"))
 {
 	this->client = client;
 }
@@ -255,8 +288,26 @@ BlurReset::~BlurReset()
 }
 int BlurReset::handle_event()
 {
-	client->config.reset();
-	window->update();
+	client->config.reset(RESET_ALL);
+	window->update(RESET_ALL);
 	client->send_configure_change();
 	return 1;
 }
+
+BlurRadiusClr::BlurRadiusClr(BlurMain *client, BlurWindow *gui, int x, int y)
+ : BC_Button(x, y, client->get_theme()->get_image_set("reset_button"))
+{
+	this->client = client;
+	this->gui = gui;
+}
+BlurRadiusClr::~BlurRadiusClr()
+{
+}
+int BlurRadiusClr::handle_event()
+{
+	client->config.reset(RESET_RADIUS);
+	gui->update(RESET_RADIUS);
+	client->send_configure_change();
+	return 1;
+}
+

@@ -1,4 +1,6 @@
 matroska ffv1
+# For specific version, remove # and change the 3 on next line
+# level=3
 threads=8
 context=1
 slices=30

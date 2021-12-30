@@ -31,12 +31,16 @@ class BlurWindow;
 #include "guicast.h"
 #include "mutex.h"
 #include "thread.h"
+#include "theme.h"
 
+#define RESET_ALL 0
+#define RESET_RADIUS 1
 
 class BlurVertical;
 class BlurHorizontal;
-class BlurRadius;
+class BlurRadiusSlider;
 class BlurRadiusText;
+class BlurRadiusClr;
 class BlurA;
 class BlurR;
 class BlurG;
@@ -51,13 +55,14 @@ public:
 	~BlurWindow();
 
 	void create_objects();
-	void update();
+	void update(int clear);
 
 	BlurMain *client;
 	BlurVertical *vertical;
 	BlurHorizontal *horizontal;
-	BlurRadius *radius;
+	BlurRadiusSlider *radius_slider;
 	BlurRadiusText *radius_text;
+	BlurRadiusClr *radius_Clr;
 	BlurA *a;
 	BlurR *r;
 	BlurG *g;
@@ -104,20 +109,21 @@ public:
 };
 
 
-class BlurRadius : public BC_IPot
+class BlurRadiusSlider : public BC_ISlider
 {
 public:
-	BlurRadius(BlurMain *client, BlurWindow *gui, int x, int y);
-	~BlurRadius();
+	BlurRadiusSlider(BlurMain *client, BlurWindow *gui, int x, int y, int w);
+	~BlurRadiusSlider();
 	int handle_event();
 	BlurMain *client;
 	BlurWindow *gui;
 };
 
-class BlurRadiusText : public BC_TextBox
+class BlurRadiusText : public BC_TumbleTextBox
 {
 public:
-	BlurRadiusText(BlurMain *client, BlurWindow *gui, int x, int y, int w);
+	BlurRadiusText(BlurMain *client, BlurWindow *gui, int x, int y);
+	~BlurRadiusText();
 	int handle_event();
 	BlurMain *client;
 	BlurWindow *gui;
@@ -153,6 +159,16 @@ public:
 	int handle_event();
 	BlurMain *client;
 	BlurWindow *window;
+};
+
+class BlurRadiusClr : public BC_Button
+{
+public:
+	BlurRadiusClr(BlurMain *client, BlurWindow *gui, int x, int y);
+	~BlurRadiusClr();
+	int handle_event();
+	BlurMain *client;
+	BlurWindow *gui;
 };
 
 

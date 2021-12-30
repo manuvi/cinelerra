@@ -40,16 +40,24 @@
 
 BlurConfig::BlurConfig()
 {
-	reset();
+	reset(RESET_ALL);
 }
 
-void BlurConfig::reset()
+void BlurConfig::reset(int clear)
 {
-	vertical = 1;
-	horizontal = 1;
-	radius = 5;
-	a_key = 0;
-	a = r = g = b = 1;
+	switch(clear) {
+		case RESET_RADIUS :
+			radius = 5;
+			break;
+		case RESET_ALL :
+		default:
+			vertical = 1;
+			horizontal = 1;
+			radius = 5;
+			a_key = 0;
+			a = r = g = b = 1;
+			break;
+	}
 }
 
 int BlurConfig::equivalent(BlurConfig &that)
@@ -293,7 +301,7 @@ void BlurMain::update_gui()
 			((BlurWindow*)thread->window)->lock_window("BlurMain::update_gui");
 			((BlurWindow*)thread->window)->horizontal->update(config.horizontal);
 			((BlurWindow*)thread->window)->vertical->update(config.vertical);
-			((BlurWindow*)thread->window)->radius->update(config.radius);
+			((BlurWindow*)thread->window)->radius_slider->update(config.radius);
 			((BlurWindow*)thread->window)->radius_text->update((int64_t)config.radius);
 			((BlurWindow*)thread->window)->a_key->update(config.a_key);
 			((BlurWindow*)thread->window)->a->update(config.a);
