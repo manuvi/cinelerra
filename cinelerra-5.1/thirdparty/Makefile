@@ -185,8 +185,10 @@ ffmpeg.cfg_params= \
 cmake_config=echo 'cmake "$$$$@" "$(1)"' > ./configure; chmod +x ./configure;
 libbthread.cfg_vars?= echo "exec true" > ./configure; chmod +x ./configure;
 a52dec.mak_params?= ; cd $(call bld_path,a52dec,include); ln -sf . a52dec
-a52dec.cfg_vars?= CFLAGS+=" -U__FreeBSD__ $(call inc_path,djbfft)" LIBS+=" $(call ld_path,djbfft)"
-a52dec.cfg_params?=--enable-djbfft
+a52dec.cflags?= "$(call inc_path,djbfft)"
+a52dec.ldflags?= "$(call ld_path,djbfft)"
+a52dec.cfg_vars?= CFLAGS+=" -U__FreeBSD__ $(call inc_path,djbfft)" LIBS+=" $(call ld_path,djbfft)"; autoreconf -ifv && automake -caf;
+a52dec.cfg_params?=--enable-djbfft --disable-oss
 djbfft.cfg_vars?=echo "$(call bld_path,djbfft)" > conf-home; \
  (CFLAGS="$(CFLAGS)"; $(CFG_VARS)$(if $(CFG_VARS),; )echo "$(CC) $$$$CFLAGS") > conf-cc; \
  echo > ./configure; chmod +x ./configure;
@@ -212,28 +214,32 @@ mjpegtools.cfg_vars?= ./autogen.sh;
 mjpegtools.cfg_params?= --enable-shared=no --without-libquicktime --without-libdv \
  --without-libpng --without-dga --without-gtk --without-libsdl --without-sdlgfx
 mjpegtools.mak_params?= all
-ladspa.cfg_vars?= CFLAGS+=' -Dinline="" '
+ladspa.cfg_vars?= CFLAGS+=' -Dinline="" '; autoreconf -ifv && automake -caf;
 ladspa.mak_params?=; $(MAKE) -C ladspa* install DESTDIR=$(call bld_path,ladspa)
-libavc1394.cfg_vars?=PKG_CONFIG_PATH=$(call bld_path,libraw1394)
+libavc1394.cfg_vars?= PKG_CONFIG_PATH="$(call bld_path,libraw1394)";autoreconf -ifv -I m4 && automake -caf;
 libavc1394.cflags?="$(call inc_path,libraw1394)"
 libavc1394.ldflags?="$(call ld_path,libraw1394,src/.libs)"
-libavc1394.cfg_params?= --enable-shared=no
+libavc1394.cfg_params?= PKG_CONFIG_PATH="$(call bld_path,libraw1394)" --enable-shared=no
 libavc1394.mak_params?=; cd $(call bld_path,libavc1394); ln -sf ../librom1394/rom1394.h libavc1394/.
+libdv.cfg_vars?= autoreconf -ifv -I m4 && automake -caf;
 libdv.cfg_params?= --disable-gtk --enable-shared=no
-libiec61883.cfg_vars?=PKG_CONFIG_PATH=$(call bld_path,libraw1394)
+libiec61883.cfg_vars?=PKG_CONFIG_PATH=$(call bld_path,libraw1394); autoreconf -ifv && automake -caf;
 libiec61883.cflags?="$(call inc_path,libraw1394)"
 libiec61883.ldflags?="$(call ld_path,libraw1394,src/.libs)"
-libiec61883.cfg_params?= --enable-shared=no
+libiec61883.cfg_params?= PKG_CONFIG_PATH="$(call bld_path,libraw1394)" --enable-shared=no
 libiec61883.mak_params?=; cd $(call bld_path,libiec61883,src); ln -sf . libiec61883
 libjpeg.cfg_vars?= mkdir build && cd build && $(call cmake_config,..)
 libjpeg.cfg_params?= -DENABLE_SHARED=no -DCMAKE_INSTALL_LIBDIR=lib 
 libjpeg.mak_params?= -C build all install DESTDIR=$(call bld_path,libjpeg)
+libogg.cfg_vars?= autoreconf -ifv -I m4 && automake -caf;
 libogg.cfg_params?= --enable-shared=no
 libraw1394.cfg_params?=  --enable-shared=no; ln -sf src libraw1394
-libtheora.cfg_vars?=PKG_CONFIG_PATH=$(call bld_path,libogg):$(call bld_path,libvorbis)
+libtheora.cfg_vars?=PKG_CONFIG_PATH=$(call bld_path,libogg):$(call bld_path,libvorbis); autoreconf -ifv -I m4 && automake -caf;
+libiec61883.cflags?="$(call inc_path,libraw1394)"
 libtheora.cflags?="$(call inc_path,libogg) $(call inc_path,libvorbis)"
 libtheora.ldflags?="$(call ld_path,libvorbis,lib/.libs) $(call ld_path,libogg,src/.libs)"
 libtheora.cfg_params?= --disable-examples --disable-spec --enable-shared=no
+libuuid.cfg_vars?= autoreconf -ifv -I m4 && automake -caf;
 libuuid.cfg_params?=--enable-shared=no
 libvorbis.cfg_params?= --disable-oggtest --enable-shared=no
 openjpeg.cfg_params?= -DBUILD_SHARED_LIBS:BOOL=OFF
@@ -245,7 +251,7 @@ openexr.cfg_vars?=true; \#
 openexr.mak_vars?=true; \#
 opus.cfg_params?= --disable-extra-programs
 speech_tools.mak_params?=-j1
-tiff.cfg_vars+=LIBS+=" -lpthread"
+tiff.cfg_vars+=LIBS+=" -lpthread"; autoreconf -ifv -I m4 && automake -caf;
 tiff.cfg_params+= --enable-shared=no --disable-zstd $(call if_pkg,libwebp,\
  --with-webp-include-dir=$(call pkg_incl,libwebp)\
  --with-webp-lib-dir=$(call pkg_libs,libwebp))\
