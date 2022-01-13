@@ -197,7 +197,7 @@ audiofile.cfg_params?=--enable-shared=no
 audiofile.mak_params?=LIBS="-lm -lstdc++"
 flac.cfg_params?= --enable-shared=no
 flac.cflags?="$(call inc_path,libogg) $(call ld_path,libogg,src/.libs)"
-giflib.cfg_params=echo "exec true" > ./configure; chmod +x ./configure;
+giflib.cfg_vars=echo "exec true" > ./configure; chmod +x ./configure;
 lame.cfg_vars?= CFLAGS+=" -O"
 lame.cfg_params?=--enable-shared=no
 lame.mak_params?= ; cd $(call bld_path,lame,include); ln -sf . lame
