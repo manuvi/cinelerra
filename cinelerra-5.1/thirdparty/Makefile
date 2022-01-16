@@ -191,12 +191,13 @@ a52dec.cfg_vars?= CFLAGS+=" -U__FreeBSD__ $(call inc_path,djbfft)" LIBS+=" $(cal
 a52dec.cfg_params?=--enable-djbfft --disable-oss
 djbfft.cfg_vars?=echo "$(call bld_path,djbfft)" > conf-home; \
  (CFLAGS="$(CFLAGS)"; $(CFG_VARS)$(if $(CFG_VARS),; )echo "$(CC) $$$$CFLAGS") > conf-cc; \
- echo > ./configure; chmod +x ./configure;
+ echo "exec true" > ./configure; chmod +x ./configure;
 djbfft.mak_params?=; cd $(call bld_path,djbfft); ln -sf djbfft.a libdjbfft.a
 audiofile.cfg_params?=--enable-shared=no
 audiofile.mak_params?=LIBS="-lm -lstdc++"
 flac.cfg_params?= --enable-shared=no
 flac.cflags?="$(call inc_path,libogg) $(call ld_path,libogg,src/.libs)"
+ffnvcodec.cfg_vars=echo "exec true" > ./configure; chmod +x ./configure;
 giflib.cfg_vars=echo "exec true" > ./configure; chmod +x ./configure;
 lame.cfg_vars?= CFLAGS+=" -O"
 lame.cfg_params?=--enable-shared=no
