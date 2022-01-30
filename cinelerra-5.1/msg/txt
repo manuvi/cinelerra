@@ -3,61 +3,46 @@ For usage help, refer to the following:
   https://cinelerra-gg.org/download/CinelerraGG_Manual.pdf
   http://g-raffa.eu/Cinelerra/HOWTO/basics.html
 .
-2021 Decemeber changes of note:
-  15 plugin GUIs are visually improved and minor changes.
-  Libjpeg-turbo has been updated to version 2.1.2.
-2021 November changes of note:
-  Libaom has been updated to v3.2.0 and may be faster.
-  Procedure to build for Android tablet/phone using Termux
-   is available and documented with additional tweaks.
-2021 October changes of note:
-  Hungarian automated-google translation has been added.
-  Long existing bug when using Fade in/out in the Titler 
-   plugin when there is an alpha channel in use is fixed.
-  Added new render formats of Cineform, DPX, and mxf.
-  In AppImage, the plugins are no longer loaded every time.
-2021 September New Features of note:
-  Improvements have been made to the LV2 plugin code that
-   makes it more robust and prevents crashes on startup.
-  Additional 9 Video icons in the Resources window added.
-.
-2021 August New Features of note:
-  FFmpeg has been upgraded to 4.4 to include new plugins.
-  Speed PerCent plugin for easily changing video speed
-   is now available.
-  FAST_SPEED and SLOW_SPEED variables to personalize your
-   playback speed have been added.
-.
-2021 July New Features of note:
-  Libraries x264, x265, and libaom have been upgraded.
-  YUV Colorspace 601 and 2020 have been split into more
-   available options of 601 NTSC/PAL and 2020 NCL/CL.
-.
-2021 June New Features of note:
-  High fps rendering formats added for over 60 fps.
-  Upgrade of libjpeg-turbo to 2.1.0.
-  Additional mxf + other rendering formats added.
-.
-2021 May New Features of note:
-  Context Help has been added using hotkey Alt/h by Georgy.  The
-   help page will come up in your web browser tab for the item 
-   most relevant to where you used Alt/h on a menu, plugin, button,
-   icon, transition, window, or tooltip.  For additional information:
-   /https://cinelerra-gg.org/download/CinelerraGG_Manual/Troubleshooting_Help.html
-.
-2021 March New Features of note:
-  AppImage is the method of distributing new releases;
-   Newer distros use: CinGG-20210331-x86_64.AppImage 
-   Older distros use: CinGG-20210331-x86_64-older_distros.AppImage
-  There are 2 new plugins: Posterize and Timelapse Helper.
-.
-2021 1st Quarter New Features of note:
+2022 January changes of note:
+  This month has only had minor changes and fixes added.
+2021 New Features of note:
+  Context Help has been added using hotkey alt/h by Georgy. The
+    help page will come up in your web browser tab for the item 
+    most relevant to where Alt/h used on a menu, plugin, button,
+    icon, transition, window, or tooltip. Additional information:
+    /https://cinelerra-gg.org/download/CinelerraGG_Manual/Troubleshooting_Help.html
   The manual can now be used in HTML format besides PDF.
-  Autosave backups optional feature in Preferences.
-  Additional FFmpeg video/audio render formats available.
-  Aspect ratio and Interlace improvements are in.
-  Batch Render menu now has hidden feature to prevent mistakes.
-  Openjpeg upgraded from 2.3.1 to 2.4.0.
+  AppImage is now the method of distributing new releases;
+    Newer distros use:
+      CinGG-20210331-x86_64.AppImage 
+      CinGG-20211231-multibit.AppImage
+    Older distros use:
+      CinGG-20210331-x86_64-older_distros.AppImage
+      CinGG-20211231-x86-64-older_distros-multibit.AppImage
+    32-bit distros use:
+      CinGG-20211231-i386.AppImage            
+      CinGG-20211231-i386-newer_distros.AppImage  
+  Procedures to build for Android tablet/phone using Termux and
+    for aarch64 have been proven and partially documented.
+  The following libraries have been upgraded to newer versions:
+    ffmpeg to 4.4; libjpeg-turbo to version 2.1.2; x264; x265;
+    libaom to v3.2.0 and may be faster; openjpeg to 2.4.0.
+  Render formats have been added or improved to include:
+    Cineform, DPX, mxf, miscellaneous FFmpeg video/audio;
+    and high fps rendering formats added for over 60 fps.
+  Plugin changes and additions:
+    Speed PerCent plugin for easily changing speed added.
+    Posterize and Timelapse Helper are new plugins.
+    The update of ffmpeg, included several new plugins.
+    Improvements have been made to the LV2 plugin code that
+      makes it more robust and prevents crashes on startup.
+    15 plugin GUIs are visually improved and minor changes.
+  FAST_SPEED and SLOW_SPEED variables to personalize your
+    playback speed have been added.
+  YUV Colorspace 601 and 2020 have been split into more
+    available options of 601 NTSC/PAL and 2020 NCL/CL.
+  Autosave backups optional feature in Preferences added.
+  Batch Render menu now has hidden feature to avoid mistakes.
 .
 2020 New Features of note:
   Drag select and deselect edits was added on the timeline.

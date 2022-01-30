@@ -594,6 +594,7 @@ void TitleUnit::draw_frame(int mode, VFrame *dst, VFrame *src, int x, int y)
 	int color = chr->color, max = 0xff;
 	int alpha = chr->alpha * chr->fade;
 	int ofs = BC_CModels::is_yuv(dst->get_color_model()) ? 0x80 : 0x00;
+
 	switch( mode ) {
 	case DRAW_ALPHA: {
 		while( y_inp < inp_h && y_out < out_h ) {
@@ -2154,6 +2155,7 @@ int TitleMain::draw_underline(VFrame *mask, int alpha)
 
 void TitleMain::draw_overlay()
 {
+//printf("TitleMain::draw_overlay 1\n");
         fade = 1;
         if( !EQUIV(config.fade_in, 0) ) {
 		int64_t plugin_start = get_startproject();
@@ -2273,19 +2275,12 @@ TitleTranslateUnit::TitleTranslateUnit(TitleMain *plugin, TitleTranslate *server
 			type in_r = (cp00[0]*a00 + cp01[0]*a01 + cp10[0]*a10 + cp11[0]*a11)*s + r; \
 			type in_g = (cp00[1]*a00 + cp01[1]*a01 + cp10[1]*a10 + cp11[1]*a11)*s + r; \
 			type in_b = (cp00[2]*a00 + cp01[2]*a01 + cp10[2]*a10 + cp11[2]*a11)*s + r; \
-			type a = in_a*plugin->fade, px; \
-			type b ; \
-			double total_alpha, double_b; \
-			if ( comps == 4 ) { b = *(op+3); } \
-			else b = max - a; \
-			double_b = (1.0 * b * (max - a)/(max*1.0)); \
-			total_alpha = a + double_b; \
-			if (total_alpha > 0.00000001) { \
-				px = *op;  *op++ = (a*in_r + double_b*px) / total_alpha; \
-				px = *op;  *op++ = (a*(in_g-ofs) + double_b*(px-ofs)) / total_alpha + ofs; \
-				px = *op;  *op++ = (a*(in_b-ofs) + double_b*(px-ofs)) / total_alpha + ofs; \
-				if( comps == 4 ) { b = *op;  *op++ = a + b - a*b / max; } \
-			} \
+			type a = in_a*plugin->fade, b = max - a, px; \
+			/*if( comps == 4 ) { b = (b * op[3]) / max; }*/ \
+			px = *op;  *op++ = (a*in_r + b*px) / max; \
+			px = *op;  *op++ = (a*(in_g-ofs) + b*(px-ofs)) / max + ofs; \
+			px = *op;  *op++ = (a*(in_b-ofs) + b*(px-ofs)) / max + ofs; \
+			if( comps == 4 ) { b = *op;  *op++ = a + b - a*b / max; } \
 		} \
 	} \
 }
