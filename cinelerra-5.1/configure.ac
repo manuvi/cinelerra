@@ -289,7 +289,7 @@ PKG_3RD([openjpeg],[auto],
   [ src/lib/openjp2 ])
 
 PKG_3RD([libogg],[auto],
-  [libogg-1.3.4],
+  [libogg-1.3.5],
   [ src/.libs/libogg.a ],
   [ include ])
 
@@ -376,7 +376,7 @@ PKG_3RD([ilmBase],[auto], [ilmBase], [] [])
 #  [])
 #
 PKG_3RD([tiff],[auto],
-  [tiff-4.1.0],
+  [tiff-4.3.0],
   [ libtiff/.libs/libtiff.a \
     libtiff/.libs/libtiffxx.a \
     port/.libs/libport.a ],[
