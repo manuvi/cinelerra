@@ -208,7 +208,7 @@ if test "x$WANT_GIT_FFMPEG" != "xno" ; then
 fi
 
 PKG_3RD([fftw],[auto],
-  [fftw-3.3.8],
+  [fftw-3.3.10],
   [ .libs/libfftw3.a \
     libbench2/libbench2.a \
     rdft/scalar/r2cb/.libs/librdft_scalar_r2cb.a \
