@@ -248,8 +248,21 @@ openjpeg.cfg_vars?=$(call cmake_config,.)
 openjpeg.mak_params?= ; cd $(call bld_path,openjpeg,src/lib/openjp2); ln -sf . openjpeg-2.1
 opencv.cfg_vars?=$(call cmake_config,.)
 opencv.cfg_params?= -DBUILD_SHARED_LIBS:BOOL=OFF
-openexr.cfg_vars?=true; \#
-openexr.mak_vars?=true; \#
+Imath.cfg_vars?= mkdir Imath.build && cd Imath.build && $(call cmake_config,..)
+Imath.cfg_params?= -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_LIBDIR=lib \
+ -DBUILD_TESTING=no \
+ -DBUILD_SHARED_LIBS=no \
+ -DCMAKE_INSTALL_PREFIX=$(call bld_path,Imath)/usr/local
+Imath.mak_params?= ; $(MAKE) -C Imath*/Imath.build install
+openexr.cfg_vars?= mkdir openexr.build && cd openexr.build && $(call cmake_config,..)
+openexr.cfg_params?= -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_LIBDIR=lib \
+ -DImath_DIR=$$(call bld_path,Imath)/usr/local/lib/cmake/Imath \
+ -DENABLE_SHARED=no -DBUILD_TESTING=no \
+ -DOPENEXR_BUILD_TOOLS=no -DOPENEXR_INSTALL_EXAMPLES=no \
+ -DOPENEXR_INSTALL_TOOLS=no \
+ -DBUILD_SHARED_LIBS=no \
+ -DCMAKE_INSTALL_PREFIX=$(call bld_path,openexr)/usr/local
+openexr.mak_params?= ; $(MAKE) -C openexr*/openexr.build install
 opus.cfg_params?= --disable-extra-programs
 speech_tools.mak_params?=-j1
 tiff.cfg_vars+=LIBS+=" -lpthread"; autoreconf -ifv -I m4 && automake -caf;
@@ -340,7 +353,7 @@ $(call rules,$(call std-build,ffmpeg, twolame lame openjpeg opus \
 $(call rules,$(call std-build,fftw))
 $(call rules,$(call std-build,flac,libogg))
 $(call rules,$(call std-build,giflib))
-$(call rules,$(call std-build,ilmBase, openexr))
+$(call rules,$(call std-build,Imath))
 $(call rules,$(call std-build,ladspa))
 $(call rules,$(call std-build,lame))
 $(call rules,$(call std-build,libaom))
@@ -358,8 +371,7 @@ $(call rules,$(call std-build,libuuid))
 $(call rules,$(call std-build,libvorbis))
 $(call rules,$(call std-build,mjpegtools, libjpeg))
 $(call rules,$(call std-build,opencv))
-$(call rules,$(call std-build,openexr))
-$(call rules,$(call std-build,openExr, ilmBase))
+$(call rules,$(call std-build,openexr, Imath))
 $(call rules,$(call std-build,openjpeg))
 $(call rules,$(call std-build,opus))
 $(call rules,$(call std-build,speech_tools))

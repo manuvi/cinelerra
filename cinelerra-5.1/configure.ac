@@ -353,18 +353,17 @@ PKG_3RD([mjpegtools],[yes],
 fi
 
 PKG_3RD([openexr],[auto],
-  [openexr-2.4.1],
-  [ usr/local/lib/libHalf.a \
-    usr/local/lib/libIex.a \
-    usr/local/lib/libIexMath.a \
-    usr/local/lib/libIlmThread.a \
-    usr/local/lib/libImath.a \
-    usr/local/lib/libIlmImf.a \
-    usr/local/lib/libIlmImfUtil.a ],
+  [openexr],
+  [ usr/local/lib/libIex-3_1.a \
+    usr/local/lib/libIlmThread-3_1.a \
+    usr/local/lib/libOpenEXR-3_1.a \
+    usr/local/lib/libOpenEXRCore-3_1.a \
+    usr/local/lib/libOpenEXRUtil-3_1.a ],
   [ usr/local/include/OpenEXR ])
 
-PKG_3RD([openExr],[auto], [openExr], [] [])
-PKG_3RD([ilmBase],[auto], [ilmBase], [] [])
+PKG_3RD([Imath],[auto], [Imath], 
+  [ usr/local/lib/libImath-3_1.a ], 
+  [usr/local/include/Imath])
 
 #PKG_3RD([festival],[no],
 #  [festival],
@@ -596,8 +595,8 @@ CHECK_LIB([openjpeg], [openjp2], [opj_version])
 CHECK_HEADERS([openjpeg], [openjpeg headers], [openjpeg.h])
 CHECK_LIB([libsndfile], [sndfile], [sf_open])
 CHECK_HEADERS([libsndfile], [sndfile headers], [sndfile.h])
-CHECK_LIB([ilmbase], [IlmImf], [ImfOpenInputFile])
-CHECK_HEADERS([ilmbase], [IlmImf headers], [OpenEXR/ImfCRgbaFile.h])
+CHECK_LIB([Imath], [IlmImf], [ImfOpenInputFile])
+CHECK_HEADERS([Imath], [IlmImf headers], [OpenEXR/ImfCRgbaFile.h])
 CHECK_LIB([libvpx], [vpx], [vpx_codec_decode])
 CHECK_HEADERS([libvpx], [vpx headers], [vpx/vpx_decoder.h])
 CHECK_LIB([mjpegtools], [mjpegutils], [mjpeg_info])
@@ -810,7 +809,7 @@ CHECK_WANT([OPENEXR], [auto], [use openexr], [
  AC_MSG_CHECKING([for openexr available])
  saved_LIBS="$LIBS"
  saved_CXXFLAGS="$CXXFLAGS"
- # ilmbase libs
+ # Imath libs
  LIBS=" -lIlmImf -lIlmThread -lIex -lpthread"
  CXXFLAGS="-I/usr/include/OpenEXR -I/usr/local/include/OpenEXR"
  AC_LANG_PUSH(C++)
@@ -848,10 +847,10 @@ EXROStream() : Imf::OStream("mypath") {} };
 AC_SUBST([HAVE_OPENEXR])
 # have all or none
 test "x$HAVE_openexr" = "xyes" && \
-test "x$HAVE_ilmbase" = "xyes" && \
+test "x$HAVE_Imath" = "xyes" && \
   HAVE_OPENEXR=yes || \
 HAVE_openexr=no \
-HAVE_ilmbase=no \
+HAVE_Imath=no \
   HAVE_OPENEXR=no
 
 # build global_config
@@ -892,7 +891,7 @@ for dep in \
         ffmpeg/twolame ffmpeg/lame ffmpeg/openjpeg \
         ffmpeg/libvorbis ffmpeg/libtheora ffmpeg/x264 ffmpeg/x265 \
         libiec61883/libraw1394 libavc1394/librom1394 \
-        openexr/ilmbase ilmbase/libogg \
+        openexr/Imath Imath/libogg \
         libtheora/libogg libtheora/libvorbis ; do
   lib=`dirname $dep`;  needs=`basename $dep`
   eval pkg_lib="\$PKG_$lib"
@@ -932,7 +931,7 @@ PKG_PROVIDE([ffmpeg])
 PKG_PROVIDE([fftw])
 PKG_PROVIDE([flac])
 PKG_PROVIDE([giflib])
-PKG_PROVIDE([ilmBase], [$WANT_OPENEXR])
+PKG_PROVIDE([Imath], [$WANT_OPENEXR])
 PKG_PROVIDE([ladspa],[$WANT_LADSPA_BUILD])
 PKG_PROVIDE([lame])
 PKG_PROVIDE([libavc1394],[$WANT_FIREWIRE])
@@ -949,7 +948,6 @@ PKG_PROVIDE([mjpegtools])
 PKG_PROVIDE([libaom])
 PKG_PROVIDE([dav1d])
 PKG_PROVIDE([libwebp])
-PKG_PROVIDE([openExr], [$WANT_OPENEXR])
 PKG_PROVIDE([openexr], [$WANT_OPENEXR])
 PKG_PROVIDE([openjpeg])
 PKG_PROVIDE([tiff])

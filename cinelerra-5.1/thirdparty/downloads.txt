@@ -1,8 +1,8 @@
 #https://www.cybercom.net/~dcoffin/dcraw/dcraw.c (moved to next line for 9.28 2018/06/01)
 # dcraw.c.xz is checked into GIT at version 9.27; should be 9.28 cuz that is what dcraw.C is based on (/mnt0)
 https://www.dechifro.org/dcraw/dcraw.c
-http://download-mirror.savannah.gnu.org/releases//openexr/ilmbase-2.2.1.tar.gz
-http://gnu.mirrors.pair.com/savannah/savannah//openexr/openexr-2.2.1.tar.gz
+https://github.com/AcademySoftwareFoundation/Imath/archive/refs/tags/v3.1.4.tar.gz
+https://github.com/AcademySoftwareFoundation/openexr/archive/refs/tags/v3.1.4.tar.gz
 https://sourceforge.net/projects/opencvlibrary/files/  4.3.0
 https://github.com/opencv/opencv_contrib/releases   4.3.0
 #https://sourceforge.net/projects/opencore-amr/files/fdk-aac/fdk-aac-2.2.0.tar.gz/download
