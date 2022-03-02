@@ -45,6 +45,7 @@
 #include "filecr2.h"
 #include "filedb.h"
 #include "filedv.h"
+#include "filedpx.h"
 #include "fileexr.h"
 #include "fileffmpeg.h"
 #include "fileflac.h"
@@ -210,6 +211,11 @@ int File::get_options(FormatTools *format,
 		FileJPEG::get_parameters(parent_window, asset, format_window,
 			audio_options, video_options, edl);
 		break;
+	case FILE_DPX:
+	case FILE_DPX_LIST:
+		FileDPX::get_parameters(parent_window, asset, format_window,
+			audio_options, video_options, edl);
+		break;
 #ifdef HAVE_OPENEXR
 	case FILE_EXR:
 	case FILE_EXR_LIST:
@@ -278,6 +284,7 @@ int File::can_scale_input(Asset *asset)
 	case FILE_MPEG:
 	case FILE_FFMPEG:
 		return 1;
+	case FILE_DPX:
 	case FILE_EXR:
 	case FILE_JPEG:
 	case FILE_PNG:
@@ -379,6 +386,7 @@ const char *File::default_probes[] = {
 	"PPM",
 	"JPEG",
 	"GIF",
+	"DPX",
 #ifdef HAVE_OPENEXR
 	"EXR",
 #endif
@@ -392,7 +400,7 @@ const char *File::default_probes[] = {
 #endif
 	"MPEG",
 	"EDL",
-       	"FFMPEG_Late", 
+	"FFMPEG_Late",
 }; 
 const int File::nb_probes =
 	sizeof(File::default_probes)/sizeof(File::default_probes[0]); 
@@ -461,6 +469,11 @@ int File::probe()
 			else if( FileGIF::check_sig(this->asset) )
 				file = new FileGIF(this->asset, this);
 			else continue;
+			return FILE_OK;
+		}
+		if( !strcmp(pref->name,"DPX") ) { // DPX file
+			if( !FileDPX::check_sig(this->asset, data) ) continue;
+			file = new FileDPX(this->asset, this);
 			return FILE_OK;
 		}
 #ifdef HAVE_OPENEXR
@@ -590,12 +603,18 @@ int File::open_file(Preferences *preferences,
 		file = new FileGIFList(this->asset, this);
 		break;
 
+	case FILE_DPX:
+	case FILE_DPX_LIST:
+		file = new FileDPX(this->asset, this);
+		break;
+
 #ifdef HAVE_OPENEXR
 	case FILE_EXR:
 	case FILE_EXR_LIST:
 		file = new FileEXR(this->asset, this);
 		break;
 #endif
+
 	case FILE_FLAC:
 		file = new FileFLAC(this->asset, this);
 		break;
@@ -1273,6 +1292,8 @@ int File::strtoformat(const char *format)
 	if( !strcasecmp(format, _(TIFF_LIST_NAME)) ) return FILE_TIFF_LIST;
 	if( !strcasecmp(format, _(JPEG_NAME)) ) return FILE_JPEG;
 	if( !strcasecmp(format, _(JPEG_LIST_NAME)) ) return FILE_JPEG_LIST;
+	if( !strcasecmp(format, _(DPX_NAME)) ) return FILE_DPX;
+	if( !strcasecmp(format, _(DPX_LIST_NAME)) ) return FILE_DPX_LIST;
 	if( !strcasecmp(format, _(EXR_NAME)) ) return FILE_EXR;
 	if( !strcasecmp(format, _(EXR_LIST_NAME)) ) return FILE_EXR_LIST;
 	if( !strcasecmp(format, _(FLAC_NAME)) ) return FILE_FLAC;
@@ -1317,6 +1338,8 @@ const char* File::formattostr(int format)
 	case FILE_FLAC:		return _(FLAC_NAME);
 	case FILE_GIF:		return _(GIF_NAME);
 	case FILE_GIF_LIST:	return _(GIF_LIST_NAME);
+	case FILE_DPX:		return _(DPX_NAME);
+	case FILE_DPX_LIST:	return _(DPX_LIST_NAME);
 	case FILE_EXR:		return _(EXR_NAME);
 	case FILE_EXR_LIST:	return _(EXR_LIST_NAME);
 #ifdef HAVE_LIBZMPEG
@@ -1409,6 +1432,8 @@ int File::get_best_colormodel(Asset *asset, int driver)
 #endif
 	case FILE_JPEG:
 	case FILE_JPEG_LIST:	return FileJPEG::get_best_colormodel(asset, driver);
+	case FILE_DPX:
+	case FILE_DPX_LIST:	return FileDPX::get_best_colormodel(asset, driver);	
 #ifdef HAVE_OPENEXR
 	case FILE_EXR:
 	case FILE_EXR_LIST:	return FileEXR::get_best_colormodel(asset, driver);
@@ -1544,7 +1569,9 @@ const char* File::get_tag(int format)
 	case FILE_AU:           return "au";
 	case FILE_RAWDV:        return "dv";
 	case FILE_DB:           return "db";
+	case FILE_DPX:          return "dpx";
 	case FILE_EXR:          return "exr";
+	case FILE_DPX_LIST:     return "dpxs";
 	case FILE_EXR_LIST:     return "exrs";
 	case FILE_FLAC:         return "flac";
 	case FILE_JPEG:         return "jpg";
@@ -1594,6 +1621,8 @@ const char* File::get_prefix(int format)
 	case FILE_PNG_LIST:	return "PNG_LIST";
 	case FILE_PPM_LIST:	return "PPM_LIST";
 	case FILE_AC3:		return "AC3";
+	case FILE_DPX:		return "DPX";
+	case FILE_DPX_LIST:	return "DPX_LIST";
 	case FILE_EXR:		return "EXR";
 	case FILE_EXR_LIST:	return "EXR_LIST";
 	case FILE_CR2:		return "CR2";
