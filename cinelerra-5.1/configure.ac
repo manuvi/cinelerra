@@ -450,6 +450,11 @@ PKG_3RD([ffnvcodec],[auto],
   [ffnvcodec],
   [ ],
   [ . ])
+  
+PKG_3RD([libdpx],[auto],
+  [libdpx],
+  [libdpx/libdpx.a ],
+  [libdpx])
 
 if test [ "$(uname -o)"] = "Android"  ; then
 
@@ -963,6 +968,7 @@ PKG_PROVIDE([serd], [$WANT_LV2])
 PKG_PROVIDE([sord], [$WANT_LV2])
 PKG_PROVIDE([suil], [$WANT_LV2])
 PKG_PROVIDE([ffnvcodec], [$WANT_NV])
+PKG_PROVIDE([libdpx])
 
 if test "x$WANT_LV2" = "xyes"; then
   if test "x$HAVE_lv2" = "xyes" -a "x$BUILD_lilv" = "x0"; then
