@@ -44,6 +44,7 @@
 #include <sys/prctl.h>
 #endif
 #include <sys/types.h>
+#include <mutex>
 
 BC_Signals* BC_Signals::global_signals = 0;
 static int signal_done = 0;
@@ -162,8 +163,7 @@ static void bc_list_openfiles(int lines, FILE *ofp, const char *fmt,...)
 }
 
 // Can't use Mutex because it would be recursive
-static pthread_mutex_t *handler_lock = 0;
-
+static  std::mutex handler_lock;
 
 static const char* signal_titles[] =
 {
@@ -249,10 +249,10 @@ static void signal_entry(int signum)
 {
 	signal(signum, SIG_DFL);
 
-	pthread_mutex_lock(handler_lock);
+	handler_lock.lock();
 	int done = signal_done;
 	signal_done = 1;
-	pthread_mutex_unlock(handler_lock);
+	handler_lock.unlock();
 	if( done ) exit(0);
 
 	printf("signal_entry: got %s my pid=%d execution table size=%d:\n",
@@ -337,8 +337,6 @@ void BC_Signals::initialize(const char *trap_path)
 	BC_Signals::global_signals = this;
 	BC_Trace::global_trace = this;
 	set_trap_path(trap_path);
-	handler_lock = (pthread_mutex_t*)calloc(1, sizeof(pthread_mutex_t));
-	pthread_mutex_init(handler_lock, 0);
 	old_err_handler = XSetErrorHandler(x_error_handler);
 	initialize2();
 }

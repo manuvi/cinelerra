@@ -29,7 +29,6 @@
 #include "bcsignals.inc"
 #include "bctrace.h"
 #include <stdio.h>
-#include <pthread.h>
 #include <signal.h>
 #include <X11/Xlib.h>
 
