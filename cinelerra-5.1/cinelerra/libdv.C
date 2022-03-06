@@ -7,7 +7,7 @@
 #include "bccmodels.h"
 #include "libdv.h"
 
-#include <pthread.h>
+#include <threads.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -21,18 +21,15 @@
 
 
 static int dv_initted = 0;
-static pthread_mutex_t dv_lock;
+static mtx_t dv_lock;
 
 dv_t* dv_new()
 {
 	dv_t *dv = (dv_t *)calloc(1, sizeof(dv_t));
 	if(!dv_initted)
 	{
-		pthread_mutexattr_t attr;
+		mtx_init(&dv_lock, mtx_plain);
 		dv_initted = 1;
-//		dv_init();
-		pthread_mutexattr_init(&attr);
-		pthread_mutex_init(&dv_lock, &attr);
 	}
 
 	dv->decoder = dv_decoder_new(0, 0, 0);
@@ -86,7 +83,7 @@ int dv_read_video(dv_t *dv,
 	unsigned char *pixels[3];
 
 //printf("dv_read_video 1 %d\n", color_model);
-	pthread_mutex_lock(&dv_lock);
+	mtx_lock(&dv_lock);
 	switch(bytes)
 	{
 		case DV_PAL_SIZE:
@@ -162,14 +159,9 @@ int dv_read_video(dv_t *dv,
 			DV_WIDTH);
 	}
 	dv->decoder->prev_frame_decoded = 1;
-	pthread_mutex_unlock(&dv_lock);
+	mtx_unlock(&dv_lock);
 	return 0;
 }
-
-
-
-
-
 
 int dv_read_audio(dv_t *dv,
 		unsigned char *samples,
@@ -213,17 +205,8 @@ int dv_read_audio(dv_t *dv,
 		}
 	}
 
-
-
-
-
-
 	return samples_read;
 }
-
-
-
-
 
 // Encodes BC_YUV422 only
 

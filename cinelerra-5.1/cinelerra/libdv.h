@@ -16,7 +16,6 @@ extern "C" {
 
 
 #include <libdv/dv.h>
-#include <pthread.h>
 #include <sys/time.h>
 
 typedef struct
