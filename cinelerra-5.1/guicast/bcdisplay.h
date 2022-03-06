@@ -41,10 +41,8 @@
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
 #include <X11/cursorfont.h>
-#include <pthread.h>
 
 // For single threaded event handling
-
 
 #ifdef SINGLE_THREAD
 class BC_Display
@@ -97,7 +95,7 @@ public:
 
 	Display *display;
 	static BC_Display *display_global;
-	static pthread_mutex_t display_lock;
+	static std::mutex display_lock;
 	int window_locked;
 // Copy of atoms which every window has.
 	Atom DelWinXAtom;

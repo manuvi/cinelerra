@@ -30,11 +30,8 @@
 #include "language.h"
 #include "mutex.h"
 
-#include <pthread.h>
-
 #ifdef SINGLE_THREAD
 
-pthread_mutex_t BC_Display::display_lock = PTHREAD_MUTEX_INITIALIZER;
 BC_Display* BC_Display::display_global = 0;
 
 BC_Display::BC_Display(const char *display_name)
@@ -93,12 +90,12 @@ BC_Display::~BC_Display()
 
 Display* BC_Display::get_display(const char *name)
 {
-	pthread_mutex_lock(&display_lock);
+	display_lock.lock();
 	if(!display_global)
 	{
 		display_global = new BC_Display(name);
 	}
-	pthread_mutex_unlock(&display_lock);
+	display_lock.unlock();
 
 	return display_global->display;
 }
@@ -341,9 +338,9 @@ void BC_Display::unlock_repeaters(int64_t duration)
 
 void BC_Display::lock_display(const char *location)
 {
-	pthread_mutex_lock(&BC_Display::display_lock);
+	display_lock.lock();
 	++BC_Display::display_global->window_locked;
-	pthread_mutex_unlock(&BC_Display::display_lock);
+	display_lock.unlock();
 
 //printf("BC_Display::lock_display %d %s result=%d\n", __LINE__, location, result);
 	XLockDisplay(BC_Display::display_global->display);
@@ -351,11 +348,11 @@ void BC_Display::lock_display(const char *location)
 
 void BC_Display::unlock_display()
 {
-	pthread_mutex_lock(&BC_Display::display_lock);
+	display_lock.lock();
 	--BC_Display::display_global->window_locked;
 //	if(BC_Display::display_global->window_locked < 0)
 //		BC_Display::display_global->window_locked = 0;
-	pthread_mutex_unlock(&BC_Display::display_lock);
+	display_lock.unlock();
 
 //printf("BC_Display::unlock_display %d result=%d\n", __LINE__, result);
 	XUnlockDisplay(BC_Display::display_global->display);
