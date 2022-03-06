@@ -1,3 +1,4 @@
+
 #ifdef HAVE_LV2
 
 #include "bctrace.h"
@@ -51,10 +52,10 @@ PluginLV2::PluginLV2()
 	schedule.handle = (LV2_Worker_Schedule_Handle)this;
 	schedule.schedule_work = lv2_worker_schedule;
 	worker_iface = 0;  worker_done = -1;
-	pthread_mutex_init(&worker_lock, 0);
-	pthread_mutex_init(&startup_lock, 0);
-	pthread_mutex_lock(&startup_lock);
-	pthread_cond_init(&worker_ready, 0);
+	mtx_init(&worker_lock, mtx_plain);
+	mtx_init(&startup_lock, mtx_plain);
+	mtx_lock(&startup_lock);
+	cnd_init(&worker_ready);
 	work_avail = 0;   work_input = 0;
 	work_output = 0;  work_tail = &work_output;
 }
@@ -63,8 +64,8 @@ PluginLV2::~PluginLV2()
 {
 	reset_lv2();
 	if( world )     lilv_world_free(world);
-	pthread_mutex_destroy(&worker_lock);
-	pthread_cond_destroy(&worker_ready);
+	mtx_destroy(&worker_lock);
+	cnd_destroy(&worker_ready);
 }
 
 void PluginLV2::reset_lv2()
@@ -430,25 +431,25 @@ PluginLV2Work *PluginLV2::get_work()
 	return wp;
 }
 
-void *PluginLV2::worker_func()
+int PluginLV2::worker_func()
 {
-	pthread_mutex_lock(&worker_lock);
-	pthread_mutex_unlock(&startup_lock);
+	mtx_lock(&worker_lock);
+	mtx_unlock(&startup_lock);
 	for(;;) {
 		while( !worker_done && !work_input )
-			pthread_cond_wait(&worker_ready, &worker_lock);
+			cnd_wait(&worker_ready, &worker_lock);
 		if( worker_done ) break;
 		PluginLV2Work *wp = work_input;  work_input = wp->next;
 
-		pthread_mutex_unlock(&worker_lock);
+		mtx_unlock(&worker_lock);
 		worker_iface->work(inst, lv2_worker_respond, this, wp->used, wp->data);
-		pthread_mutex_lock(&worker_lock);
+		mtx_lock(&worker_lock);
 		wp->next = work_avail;  work_avail = wp;
 	}
-	pthread_mutex_unlock(&worker_lock);
-	return NULL;
+	mtx_unlock(&worker_lock);
+	return 0;
 }
-void *PluginLV2::worker_func(void* vp)
+int PluginLV2::worker_func(void* vp)
 {
 	PluginLV2 *the = (PluginLV2 *)vp;
 	return the->worker_func();
@@ -456,18 +457,18 @@ void *PluginLV2::worker_func(void* vp)
 
 void PluginLV2::worker_start()
 {
-	pthread_create(&worker_thread, 0, worker_func, this);
-	pthread_mutex_lock(&startup_lock);
+	thrd_create(&worker_thread, worker_func, this);
+	mtx_lock(&startup_lock);
 }
 
 void PluginLV2::worker_stop()
 {
 	if( !worker_done ) {
 		worker_done = 1;
-		pthread_mutex_lock(&worker_lock);
-		pthread_cond_signal(&worker_ready);
-		pthread_mutex_unlock(&worker_lock);
-		pthread_join(worker_thread, 0);
+		mtx_lock(&worker_lock);
+		cnd_signal(&worker_ready);
+		mtx_unlock(&worker_lock);
+		thrd_join(worker_thread, 0);
 		worker_thread = 0;
 	}
 	work_stop(work_avail);
@@ -488,12 +489,12 @@ void PluginLV2::work_stop(PluginLV2Work *&work)
 LV2_Worker_Status PluginLV2::worker_schedule(uint32_t inp_size, const void *inp_data)
 {
 	if( is_forked() ) {
-		if( !pthread_mutex_trylock(&worker_lock) ) {
+		if( mtx_trylock(&worker_lock) == thrd_success ) {
 			PluginLV2Work *wp = get_work();
 			wp->load(inp_data, inp_size);
 			wp->next = work_input;  work_input = wp;
-			pthread_cond_signal(&worker_ready);
-			pthread_mutex_unlock(&worker_lock);
+			cnd_signal(&worker_ready);
+			mtx_unlock(&worker_lock);
 		}
 	}
 	else if( worker_iface )
@@ -509,11 +510,11 @@ LV2_Worker_Status PluginLV2::lv2_worker_schedule(LV2_Worker_Schedule_Handle vp,
 
 LV2_Worker_Status PluginLV2::worker_respond(uint32_t out_size, const void *out_data)
 {
-	pthread_mutex_lock(&worker_lock);
+	mtx_lock(&worker_lock);
 	PluginLV2Work *wp = get_work();
 	wp->load(out_data, out_size);
 	*work_tail = wp;  work_tail = &wp->next;
-	pthread_mutex_unlock(&worker_lock);
+	mtx_unlock(&worker_lock);
 	return LV2_WORKER_SUCCESS;
 }
 LV2_Worker_Status PluginLV2::lv2_worker_respond(LV2_Worker_Respond_Handle vp,
@@ -525,16 +526,16 @@ LV2_Worker_Status PluginLV2::lv2_worker_respond(LV2_Worker_Respond_Handle vp,
 
 void PluginLV2::worker_responses()
 {
-	pthread_mutex_lock(&worker_lock);
+	mtx_lock(&worker_lock);
 	while( work_output ) {
 		PluginLV2Work *rp = work_output;
 		if( !(work_output=rp->next) ) work_tail = &work_output;
-		pthread_mutex_unlock(&worker_lock);
+		mtx_unlock(&worker_lock);
 		worker_iface->work_response(inst, rp->used, rp->data);
-		pthread_mutex_lock(&worker_lock);
+		mtx_lock(&worker_lock);
 		rp->next = work_avail;  work_avail = rp;
 	}
-	pthread_mutex_unlock(&worker_lock);
+	mtx_unlock(&worker_lock);
 }
 
 #include "file.h"

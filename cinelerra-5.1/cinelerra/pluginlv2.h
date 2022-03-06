@@ -6,6 +6,7 @@
 #include "pluginlv2config.h"
 #include "samples.inc"
 
+#include <threads.h>
 #include <lilv/lilv.h>
 #define NS_EXT "http://lv2plug.in/ns/ext/"
 
@@ -118,10 +119,10 @@ public:
 	LV2_URID bufsz_sequenceSize;
 	LV2_URID ui_updateRate;
 
-	pthread_t worker_thread;
+	thrd_t worker_thread;
 	LV2_Worker_Interface *worker_iface;
-	static void *worker_func(void *vp);
-	void *worker_func();
+	static int worker_func(void *vp);
+	int worker_func();
 	void worker_start();
 	void worker_stop();
 	LV2_Worker_Status worker_schedule(uint32_t inp_size, const void *inp_data);
@@ -137,8 +138,8 @@ public:
 	LV2_Worker_Schedule schedule;
 	PluginLV2Work *work_avail, *work_input;
 	PluginLV2Work *work_output, **work_tail;
-	pthread_mutex_t startup_lock, worker_lock;
-	pthread_cond_t worker_ready;
+	mtx_t startup_lock, worker_lock;
+	cnd_t worker_ready;
 	int worker_done;
 };
 
