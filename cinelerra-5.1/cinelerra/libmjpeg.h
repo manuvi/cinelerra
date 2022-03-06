@@ -32,7 +32,7 @@ extern "C" {
 #include <stdio.h>
 #include <jpeglib.h>
 #include <png.h>
-#include "pthread.h"
+#include <threads.h>
 #include <setjmp.h>
 
 #define MAXFIELDS 2
@@ -61,8 +61,8 @@ typedef struct
 	struct jpeg_decompress_struct jpeg_decompress;
 	struct jpeg_compress_struct jpeg_compress;
 	struct mjpeg_error_mgr jpeg_error;
-	pthread_t tid;   /* ID of thread */
-	pthread_mutex_t input_lock, output_lock;
+	thrd_t tid;   /* ID of thread */
+	mtx_t input_lock, output_lock;
 	int done;     /* Flag to end */
 	int error;
 // Pointer to uncompressed YUV rows
@@ -122,7 +122,7 @@ typedef struct
 	int rowspan;
 
 // Workarounds for thread unsafe libraries
-	pthread_mutex_t decompress_init;
+	mtx_t decompress_init;
 	int decompress_initialized;
 } mjpeg_t;
 

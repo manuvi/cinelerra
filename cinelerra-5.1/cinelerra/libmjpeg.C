@@ -691,12 +691,12 @@ static void delete_jpeg_objects(mjpeg_compressor *engine)
 
 static void unlock_compress_loop(mjpeg_compressor *engine)
 {
-	pthread_mutex_unlock(&(engine->input_lock));
+	mtx_unlock(&(engine->input_lock));
 }
 
 static void lock_compress_loop(mjpeg_compressor *engine)
 {
-	pthread_mutex_lock(&(engine->output_lock));
+	mtx_lock(&(engine->output_lock));
 }
 
 // Make temp rows for compressor
@@ -786,9 +786,9 @@ printf("decompress_field %d\n", __LINE__);
 
 //printf("%d %d\n", engine->jpeg_decompress.comp_info[0].h_samp_factor, engine->jpeg_decompress.comp_info[0].v_samp_factor);
 // Must be here because the color model isn't known until now
-	pthread_mutex_lock(&(mjpeg->decompress_init));
+	mtx_lock(&(mjpeg->decompress_init));
 	allocate_temps(mjpeg);
-	pthread_mutex_unlock(&(mjpeg->decompress_init));
+	mtx_unlock(&(mjpeg->decompress_init));
 	get_rows(mjpeg, engine);
 
 //printf("decompress_field 30\n");
@@ -808,17 +808,19 @@ finish:
 	;
 }
 
-void mjpeg_decompress_loop(mjpeg_compressor *engine)
+int mjpeg_decompress_loop(void *param)
 {
+	mjpeg_compressor *engine = (mjpeg_compressor *)param;
 	while(!engine->done)
 	{
-		pthread_mutex_lock(&engine->input_lock);
+		mtx_lock(&engine->input_lock);
 		if(!engine->done)
 		{
 			decompress_field(engine);
 		}
-		pthread_mutex_unlock(&(engine->output_lock));
+		mtx_unlock(&(engine->output_lock));
 	}
+	return 0;
 }
 
 
@@ -851,17 +853,19 @@ static void compress_field(mjpeg_compressor *engine)
 }
 
 
-void mjpeg_compress_loop(mjpeg_compressor *engine)
+int mjpeg_compress_loop(void *param)
 {
+	mjpeg_compressor *engine = (mjpeg_compressor *)param;
 	while(!engine->done)
 	{
-		pthread_mutex_lock(&engine->input_lock);
+		mtx_lock(&engine->input_lock);
 		if(!engine->done)
 		{
 			compress_field(engine);
 		}
-		pthread_mutex_unlock(&engine->output_lock);
+		mtx_unlock(&engine->output_lock);
 	}
+	return 0;
 }
 
 static void delete_temps(mjpeg_t *mjpeg)
@@ -880,8 +884,6 @@ mjpeg_compressor* mjpeg_new_decompressor(mjpeg_t *mjpeg, int instance)
 {
 	mjpeg_compressor *result = new mjpeg_compressor();
 	memset(result, 0, sizeof(mjpeg_compressor));
-	pthread_attr_t  attr;
-	pthread_mutexattr_t mutex_attr;
 
 	result->mjpeg = mjpeg;
 	result->instance = instance;
@@ -894,15 +896,12 @@ mjpeg_compressor* mjpeg_new_decompressor(mjpeg_t *mjpeg, int instance)
 	result->mcu_rows[1] = new unsigned char *[16];
 	result->mcu_rows[2] = new unsigned char *[16];
 
-	pthread_mutexattr_init(&mutex_attr);
-//	pthread_mutexattr_settype(&mutex_attr, PTHREAD_MUTEX_ADAPTIVE_NP);
-	pthread_mutex_init(&(result->input_lock), &mutex_attr);
-	pthread_mutex_lock(&(result->input_lock));
-	pthread_mutex_init(&(result->output_lock), &mutex_attr);
-	pthread_mutex_lock(&(result->output_lock));
+	mtx_init(&(result->input_lock), mtx_plain);
+	mtx_lock(&(result->input_lock));
+	mtx_init(&(result->output_lock), mtx_plain);
+	mtx_lock(&(result->output_lock));
 
-	pthread_attr_init(&attr);
-	pthread_create(&(result->tid), &attr, (void*(*)(void*))mjpeg_decompress_loop, result);
+	thrd_create(&(result->tid), mjpeg_decompress_loop, result);
 
 	return result;
 }
@@ -910,10 +909,10 @@ mjpeg_compressor* mjpeg_new_decompressor(mjpeg_t *mjpeg, int instance)
 void mjpeg_delete_decompressor(mjpeg_compressor *engine)
 {
 	engine->done = 1;
-	pthread_mutex_unlock(&(engine->input_lock));
-	pthread_join(engine->tid, 0);
-	pthread_mutex_destroy(&(engine->input_lock));
-	pthread_mutex_destroy(&(engine->output_lock));
+	mtx_unlock(&(engine->input_lock));
+	thrd_join(engine->tid, 0);
+	mtx_destroy(&(engine->input_lock));
+	mtx_destroy(&(engine->output_lock));
 	jpeg_destroy_decompress(&(engine->jpeg_decompress));
 	delete_rows(engine);
 	delete [] engine->mcu_rows[0];
@@ -924,8 +923,6 @@ void mjpeg_delete_decompressor(mjpeg_compressor *engine)
 
 mjpeg_compressor* mjpeg_new_compressor(mjpeg_t *mjpeg, int instance)
 {
-	pthread_attr_t  attr;
-	pthread_mutexattr_t mutex_attr;
 	mjpeg_compressor *result = new mjpeg_compressor();
 	memset(result, 0, sizeof(mjpeg_compressor));
 
@@ -979,15 +976,12 @@ mjpeg_compressor* mjpeg_new_compressor(mjpeg_t *mjpeg, int instance)
 	result->mcu_rows[1] = new unsigned char *[16];
 	result->mcu_rows[2] = new unsigned char *[16];
 
-	pthread_mutexattr_init(&mutex_attr);
-//	pthread_mutexattr_settype(&mutex_attr, PTHREAD_MUTEX_ADAPTIVE_NP);
-	pthread_mutex_init(&(result->input_lock), &mutex_attr);
-	pthread_mutex_lock(&(result->input_lock));
-	pthread_mutex_init(&(result->output_lock), &mutex_attr);
-	pthread_mutex_lock(&(result->output_lock));
+	mtx_init(&(result->input_lock), mtx_plain);
+	mtx_lock(&(result->input_lock));
+	mtx_init(&(result->output_lock), mtx_plain);
+	mtx_lock(&(result->output_lock));
 
-	pthread_attr_init(&attr);
-	pthread_create(&(result->tid), &attr, (void*(*)(void*))mjpeg_compress_loop, result);
+	thrd_create(&(result->tid), mjpeg_compress_loop, result);
 	return result;
 }
 
@@ -995,10 +989,10 @@ mjpeg_compressor* mjpeg_new_compressor(mjpeg_t *mjpeg, int instance)
 void mjpeg_delete_compressor(mjpeg_compressor *engine)
 {
 	engine->done = 1;
-	pthread_mutex_unlock(&(engine->input_lock));
-	pthread_join(engine->tid, 0);
-	pthread_mutex_destroy(&(engine->input_lock));
-	pthread_mutex_destroy(&(engine->output_lock));
+	mtx_unlock(&(engine->input_lock));
+	thrd_join(engine->tid, 0);
+	mtx_destroy(&(engine->input_lock));
+	mtx_destroy(&(engine->output_lock));
 	jpeg_destroy((j_common_ptr)&(engine->jpeg_compress));
 	if(engine->output_buffer) delete [] engine->output_buffer;
 	delete_rows(engine);
@@ -1280,7 +1274,6 @@ mjpeg_t* mjpeg_new(int w,
 {
 	mjpeg_t *result = new mjpeg_t();
 	memset(result, 0, sizeof(*result));
-	pthread_mutexattr_t mutex_attr;
 
 	result->output_w = w;
 	result->output_h = h;
@@ -1290,10 +1283,7 @@ mjpeg_t* mjpeg_new(int w,
 	result->quality = 80;
 	result->use_float = 0;
 
-	pthread_mutexattr_init(&mutex_attr);
-//	pthread_mutexattr_settype(&mutex_attr, PTHREAD_MUTEX_ADAPTIVE_NP);
-	pthread_mutex_init(&(result->decompress_init), &mutex_attr);
-
+	mtx_init(&(result->decompress_init), mtx_plain);
 
 // Calculate coded dimensions
 // An interlaced frame with 4:2:0 sampling must be a multiple of 32
@@ -1304,8 +1294,6 @@ mjpeg_t* mjpeg_new(int w,
 		result->coded_h = (h % 16) ? h + (16 - (h % 16)) : h;
 	else
 		result->coded_h = (h % 32) ? h + (32 - (h % 32)) : h;
-
-
 
 //printf("mjpeg_new %d %d %d %d\n", result->output_w, result->output_h, result->coded_w, result->coded_h);
 	return result;
