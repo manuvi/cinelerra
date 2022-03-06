@@ -2,7 +2,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <math.h>
-#include <pthread.h>
+#include <thread>
+#include <mutex>
 #include <signal.h>
 #include <string.h>
 #include <unistd.h>
@@ -190,23 +191,22 @@ void gg_ximage::put_image(gg_window &gw)
 class gg_thread
 {
 public:
-  pthread_t tid;
+  std::thread tid;
   gg_window &gw;
   gg_ximage *imgs[2], *img;
   int active, done;
   gg_thread(gg_window &gw, int shm) ;
   ~gg_thread();
 
-  static void *entry(void *t);
   void start();
-  void *run();
+  int run();
   void join();
   void post(gg_ximage *ip);
   gg_ximage *next_img();
 
-  pthread_mutex_t draw;
-  void draw_lock() { pthread_mutex_lock(&draw); }
-  void draw_unlock() { pthread_mutex_unlock(&draw); }
+  std::mutex draw;
+  void draw_lock() { draw.lock(); }
+  void draw_unlock() { draw.unlock(); }
 };
 
 gg_thread::gg_thread(gg_window &gw, int shm)
@@ -216,37 +216,26 @@ gg_thread::gg_thread(gg_window &gw, int shm)
   imgs[1] = new gg_ximage(gw.display, gw.w, gw.h, shm);
   done = -1;
   img = 0;  active = 0;
-  pthread_mutex_init(&draw, 0);
 }
 
 gg_thread::~gg_thread()
 {
   delete imgs[0];
   delete imgs[1];
-  pthread_mutex_destroy(&draw);
-}
-
-void *gg_thread::entry(void *t)
-{
-  return ((gg_thread*)t)->run();
 }
 
 void gg_thread::start()
 {
-  pthread_attr_t attr;
-  pthread_attr_init(&attr);
-  pthread_attr_setinheritsched(&attr, PTHREAD_INHERIT_SCHED);
   done = 0;
-  pthread_create(&tid, &attr, &entry, this);
-  pthread_attr_destroy(&attr);
+  tid = std::thread(&gg_thread::run, this);
 }
 void gg_thread::join()
 {
   done = 1;
-  pthread_join(tid, 0);
+  tid.join();
 }
 
-void *gg_thread::run()
+int gg_thread::run()
 {
   while( !done ) {
     if( XPending(gw.display) ) {
@@ -267,7 +256,7 @@ void *gg_thread::run()
     img = 0;
     draw_unlock();
   }
-  return (void*)0;
+  return 0;
 }
 
 gg_ximage *gg_thread::next_img()
