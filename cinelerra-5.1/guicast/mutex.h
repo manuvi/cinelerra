@@ -22,71 +22,108 @@
 #ifndef MUTEX_H
 #define MUTEX_H
 
-#include <pthread.h>
 #include <stdio.h>
+#include <mutex>
+#include <thread>
+#include <string>
+#include <cstddef>
 #include "bctrace.inc"
 
+/**
+ * @brief Native CINELERRA Mutex class
+ * 
+ */
 class Mutex : public trace_info
 {
 public:
+	/**
+	 * @brief Construct a new Mutex object
+	 * 
+	 * @param title name used for debug purpose
+	 * @param recursive define if the Mutex object can be locked from the owner
+	 *   thread more times without going in deadlock state
+	 */
 	Mutex(const char *title = 0, int recursive = 0);
+	
+	/**
+	 * @brief Destroy the Mutex object
+	 * 
+	 */
 	~Mutex();
 
+	/**
+	 * @brief lock the Mutex on the caller thread id
+	 * 
+	 * @param location from where the Mutex lock is called, for debug purposes
+	 * @return int always return 0
+	 */
 	int lock(const char *location = 0);
+	
+	/**
+	 * @brief unlock the Mutex object. In recursion mode, if the object is locked more than
+	 *   one time, the unlock has to be called 'counter' times to be really unlocked
+	 * 
+	 * @return int always return 0
+	 */
 	int unlock();
-// Calls pthread_mutex_trylock, whose effect depends on library version.
+
+	/**
+	 * @brief try to lock the Mutex object
+	 * 
+	 * @param location from where the Mutex lock is called, for debug purposes
+	 * @return int could return EBUSY or zero or the state of try_lock 
+	 */
 	int trylock(const char *location = 0);
+	
+	/**
+	 * @brief Internal structure reset
+	 * 
+	 * @return int always return 0
+	 */
 	int reset();
-// Returns 1 if count is > 0
-	int is_locked();
 
-// Number of times the thread currently holding the mutex has locked it.
-// For recursive locking.
+	/**
+	 * @brief checks if the mutex has been already locked
+	 * 
+	 * @return bool true if locked, false otherwise
+	 */
+	bool is_locked();
+
+	/**
+	 * @brief Number of times the thread currently holding the mutex has locked it.
+	 *   For recursive locking.
+	 */
 	int count;
-// ID of the thread currently holding the mutex.  For recursive locking.
-	pthread_t thread_id;
-	int thread_id_valid;
+
+	/**
+	 * @brief ID of the thread currently holding the mutex.  For recursive locking.
+	 * 
+	 */
+	std::thread::id thread_id;
+		
+	/**
+	 * @brief recursive flag
+	 * 
+	 */
 	int recursive;
-// Lock the variables for recursive locking.
-	pthread_mutex_t recursive_lock;
-	pthread_mutex_t mutex;
-	const char *title;
+
+	/**
+	 * @brief Lock the variables for recursive locking.
+	 * 
+	 */
+	std::mutex recursive_lock;
+
+	/**
+	 * @brief main mutex object
+	 * 
+	 */
+	std::mutex mutex;
+
+	/**
+	 * @brief name of the Mutex object, for debug purposes
+	 * 
+	 */
+	std::string title;
 };
 
-#if 0
-#include <stdio.h>
-
-class TMutex : public Mutex
-{ // logged
-public:
-	TMutex(const char *title = 0, int recursive = 0)
-         : Mutex(title, recursive) {
-		printf("new TMutex(%s) = %p\n", title, this);
-	}
-	~TMutex() {
-		printf("del TMutex(%s) = %p\n", title, this);
-	}
-	int lock(const char *location = 0) {
-		printf("locking %p: %s\n", this, title);  int ret = Mutex::lock(location);
-		printf("locked %p:%d %s\n", this, ret,  title);  return ret;
-	}
-	int unlock() {
-		printf("unlocking %p: %s\n", this, title);  return Mutex::unlock();
-	}
-	int trylock(const char *location = 0) {
-		printf("try locking %p: %s\n", this, title);  int ret = Mutex::trylock(location);
-		printf("try locked %p:%d %s\n", this, ret, title);  return ret;
-	}
-	int reset() {
-		printf("reset %p: %s\n", this, title);
-		return Mutex::reset();
-	}
-	int is_locked() {
-		int ret = Mutex::is_locked();
-		printf("is_locked %p:%d %s\n", this, ret, title);
-		return ret;
-	}
-};
-
-#endif
 #endif

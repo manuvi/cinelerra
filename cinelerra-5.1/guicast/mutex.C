@@ -22,66 +22,58 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <iostream>
 
 #include "bcsignals.h"
 #include "mutex.h"
 
 
-Mutex::Mutex(const char *title, int recursive)
+Mutex::Mutex(const char *title, int recursive) :	
+	count(0),
+	recursive(recursive)
 {
-	this->title = title;
-	pthread_mutexattr_t attr;
-	pthread_mutexattr_init(&attr);
-	pthread_mutex_init(&mutex, &attr);
-	pthread_mutex_init(&recursive_lock, &attr);
-	count = 0;
-	this->recursive = recursive;
-	thread_id = 0;
-	thread_id_valid = 0;
+	if ( title != nullptr ) 
+	{
+		this->title = std::string(title);
+	}
 }
 
 Mutex::~Mutex()
 {
-	pthread_mutex_destroy(&mutex);
-	pthread_mutex_destroy(&recursive_lock);
 	UNSET_ALL_LOCKS(this);
 }
 
 int Mutex::lock(const char *location)
 {
-// Test recursive owner and give up if we already own it
-	if(recursive)
+	// Test recursive owner and give up if we already own it
+	if( recursive )
 	{
-		pthread_mutex_lock(&recursive_lock);
-		if(thread_id_valid && pthread_self() == thread_id)
+		recursive_lock.lock();
+		if ( count > 0 )
 		{
-			count++;
-			pthread_mutex_unlock(&recursive_lock);
-			return 0;
+			if ( std::this_thread::get_id() == thread_id )
+			{
+				count ++;
+				recursive_lock.unlock();
+				return 0;
+			}
 		}
-		pthread_mutex_unlock(&recursive_lock);
+		recursive_lock.unlock();
 	}
 
-
-	SET_LOCK(this, title, location);
-	if(pthread_mutex_lock(&mutex)) perror("Mutex::lock");
+	SET_LOCK(this, title.c_str(), location);
+	
+	try {
+		mutex.lock();
+	} catch(const std::system_error& e) {
+		std::cerr << "Mutex::lock with code" << e.code() << ":" << e.what() << std::endl;
+	}
 	set_owner();
-
-
-// Update recursive status for the first lock
-	if(recursive)
+	count = 1;
+	if ( recursive )
 	{
-		pthread_mutex_lock(&recursive_lock);
-		count = 1;
-		thread_id = pthread_self();
-		thread_id_valid = 1;
-		pthread_mutex_unlock(&recursive_lock);
+		thread_id = std::this_thread::get_id();
 	}
-	else
-	{
-		count = 1;
-	}
-
 
 	SET_LOCK2
 	return 0;
@@ -90,77 +82,81 @@ int Mutex::lock(const char *location)
 int Mutex::unlock()
 {
 	if( count <= 0 ) {
-		printf("Mutex::unlock not locked: %s\n", title);
+		std::cerr << "Mutex::unlock not locked: " << title << std::endl;
 		booby();
 		return 0;
 	}
-// Remove from recursive status
-	if(recursive)
+
+	// Remove from recursive status
+	if( recursive )
 	{
-		pthread_mutex_lock(&recursive_lock);
-		count--;
-// Still locked
-		if(count > 0)
+		recursive_lock.lock();
+		count --;
+		
+		// still locked
+		if ( count > 0 )
 		{
-			pthread_mutex_unlock(&recursive_lock);
+			recursive_lock.unlock();
 			return 0;
 		}
-// Not owned anymore
-		thread_id = 0;
-		thread_id_valid = 0;
-		pthread_mutex_unlock(&recursive_lock);
+		recursive_lock.unlock();
 	}
 	else
+	{
 		count = 0;
-
+	}
 
 	UNSET_LOCK(this);
 	unset_owner();
 
-	int ret = pthread_mutex_unlock(&mutex);
-	if( ret ) fprintf(stderr, "Mutex::unlock: %s\n",strerror(ret));
+	try {
+		mutex.unlock();
+	} catch(const std::system_error& e) {
+		std::cerr << "Mutex::unlock with code" << e.code() << ":" << e.what() << std::endl;
+	}
 	return 0;
 }
 
 int Mutex::trylock(const char *location)
 {
-	if( count ) return EBUSY;
-	int ret = pthread_mutex_trylock(&mutex);
-	if( ret ) return ret;
+	// Already locked
+	if ( count ) 
+	{
+		return EBUSY;
+	}
+
+	if ( !mutex.try_lock() )
+	{
+		return 1;
+	}
 	set_owner();
 
-// Update recursive status for the first lock
-	if(recursive) {
-		pthread_mutex_lock(&recursive_lock);
+	// Update recursive status for the first lock
+	if( recursive ) 
+	{
+		recursive_lock.lock();
 		count = 1;
-		thread_id = pthread_self();
-		thread_id_valid = 1;
-		pthread_mutex_unlock(&recursive_lock);
+		thread_id = std::this_thread::get_id();
+		recursive_lock.unlock();
 	}
 	else
 		count = 1;
 
-	SET_LOCK(this, title, location);
+	SET_LOCK(this, title.c_str(), location);
 	SET_LOCK2
 	return 0;
 }
 
-int Mutex::is_locked()
+bool Mutex::is_locked()
 {
 	return count;
 }
 
 int Mutex::reset()
 {
-	pthread_mutex_destroy(&mutex);
-	pthread_mutexattr_t attr;
-	pthread_mutexattr_init(&attr);
-	pthread_mutex_init(&mutex, &attr);
 	UNSET_ALL_LOCKS(this)
 	unset_owner();
 	trace = 0;
 	count = 0;
-	thread_id = 0;
-	thread_id_valid = 0;
 	return 0;
 }
