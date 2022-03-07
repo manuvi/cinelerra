@@ -30,6 +30,8 @@
 #include "bcwindowbase.inc"
 #include "bccmodels.h"
 #include "vframe.inc"
+#include <deque>
+#include <string>
 
 // Maximum number of prev or next effects to be pushed onto the stacks.
 #define MAX_STACK_ELEMENTS 255
@@ -470,8 +472,8 @@ private:
 // Location of working image if OpenGL playback
 	int opengl_state;
 
-	ArrayList<char*> prev_effects;
-	ArrayList<char*> next_effects;
+	std::deque<std::string> prev_effects;
+	std::deque<std::string> next_effects;
 	BC_Hash *params;
 };
 

@@ -194,8 +194,8 @@ VFrame::~VFrame()
 {
 	clear_objects(1);
 // Delete effect stack
-	prev_effects.remove_all_objects();
-	next_effects.remove_all_objects();
+	//prev_effects.remove_all_objects();
+	//next_effects.remove_all_objects();
 	delete params;
 	delete scene;
 }
@@ -266,12 +266,12 @@ int VFrame::reset_parameters(int do_opengl)
 	color_model = 0;
 	compressed_allocated = 0;
 	compressed_size = 0;   // Size of current image
-	w = 0;
-	h = 0;
-	y = u = v = a = 0;
-	y_offset = 0;
-	u_offset = 0;
-	v_offset = 0;
+    w = 0;
+    h = 0;
+    y = u = v = a = 0;
+    y_offset = 0;
+    u_offset = 0;
+    v_offset = 0;	
 	sequence_number = -1;
 	timestamp = -1.;
 	is_keyframe = 0;
@@ -291,8 +291,8 @@ int VFrame::reset_parameters(int do_opengl)
 		texture = 0;
 	}
 
-	prev_effects.set_array_delete();
-	next_effects.set_array_delete();
+	prev_effects.clear();
+	next_effects.clear();
 	return 0;
 }
 
@@ -1272,48 +1272,66 @@ int VFrame::get_scale_tables(int *column_table, int *row_table,
 
 void VFrame::push_prev_effect(const char *name)
 {
-	char *ptr;
-	prev_effects.append(ptr = new char[strlen(name) + 1]);
-	strcpy(ptr, name);
-	if(prev_effects.total > MAX_STACK_ELEMENTS) prev_effects.remove_object(0);
+	if ( prev_effects.size() < MAX_STACK_ELEMENTS )
+		prev_effects.push_front(name);
 }
 
 void VFrame::pop_prev_effect()
 {
-	if(prev_effects.total)
-		prev_effects.remove_object(prev_effects.last());
+	if ( prev_effects.size() > 0 )
+		prev_effects.pop_back();
 }
 
 void VFrame::push_next_effect(const char *name)
 {
-	char *ptr;
-	next_effects.append(ptr = new char[strlen(name) + 1]);
-	strcpy(ptr, name);
-	if(next_effects.total > MAX_STACK_ELEMENTS) next_effects.remove_object(0);
+	if ( next_effects.size() < MAX_STACK_ELEMENTS )
+		next_effects.push_front(name);
 }
 
 void VFrame::pop_next_effect()
 {
-	if(next_effects.total)
-		next_effects.remove_object(next_effects.last());
+	if ( next_effects.size() > 0 )
+		next_effects.pop_back();
 }
 
 const char* VFrame::get_next_effect(int number)
 {
-	if(!next_effects.total) return "";
+	// empty check
+	if ( next_effects.empty() )
+	{
+		return "";
+	}
 	else
-	if(number > next_effects.total - 1) number = next_effects.total - 1;
+	{
+		// max size check
+		if ( number > (int)(next_effects.size() - 1) )
+		{
+			number = next_effects.size() - 1;
+		}
 
-	return next_effects.values[next_effects.total - number - 1];
+		// return value counting from last inserted
+		return next_effects.at(next_effects.size() - number - 1).c_str();
+	}
 }
 
 const char* VFrame::get_prev_effect(int number)
 {
-	if(!prev_effects.total) return "";
+	// empty check
+	if ( prev_effects.empty() )
+	{
+		return "";
+	}
 	else
-	if(number > prev_effects.total - 1) number = prev_effects.total - 1;
+	{
+		// max size check
+		if ( number > (int)(prev_effects.size() - 1) )
+		{
+			number = prev_effects.size() - 1;
+		}
 
-	return prev_effects.values[prev_effects.total - number - 1];
+		// return value counting from last inserted
+		return prev_effects.at(prev_effects.size() - number - 1).c_str();
+	}
 }
 
 BC_Hash* VFrame::get_params()
@@ -1323,8 +1341,8 @@ BC_Hash* VFrame::get_params()
 
 void VFrame::clear_stacks()
 {
-	next_effects.remove_all_objects();
-	prev_effects.remove_all_objects();
+	next_effects.clear();
+	prev_effects.clear();
 	params->clear();
 	status = 1;
 }
@@ -1339,10 +1357,8 @@ void VFrame::copy_stacks(VFrame *src)
 {
 	clear_stacks();
 
-	for( int i=0; i < src->next_effects.total; ++i )
-		next_effects.append(cstrdup(src->next_effects[i]));
-	for( int i=0; i < src->prev_effects.total; ++i )
-		prev_effects.append(cstrdup(src->prev_effects[i]));
+	next_effects = src->next_effects;
+	prev_effects = src->prev_effects;
 
 	copy_params(src);
 }
@@ -1355,15 +1371,11 @@ int VFrame::copy_vframe(VFrame *frame)
 
 int VFrame::equal_stacks(VFrame *src)
 {
-	for(int i = 0; i < src->next_effects.total && i < next_effects.total; i++)
-	{
-		if(strcmp(src->next_effects.values[i], next_effects.values[i])) return 0;
-	}
+	if ( src->next_effects != next_effects )
+		return 0;
 
-	for(int i = 0; i < src->prev_effects.total && i < prev_effects.total; i++)
-	{
-		if(strcmp(src->prev_effects.values[i], prev_effects.values[i])) return 0;
-	}
+	if ( src->prev_effects != prev_effects )
+		return 0;
 
 	if(!params->equivalent(src->params)) return 0;
 	return 1;
@@ -1373,11 +1385,11 @@ void VFrame::dump_stacks()
 {
 	printf("VFrame::dump_stacks\n");
 	printf("	next_effects:\n");
-	for(int i = next_effects.total - 1; i >= 0; i--)
-		printf("		%s\n", next_effects.values[i]);
+	for(int i = next_effects.size() - 1; i >= 0; i--)
+		printf("		%s\n", next_effects.at(i).c_str());
 	printf("	prev_effects:\n");
-	for(int i = prev_effects.total - 1; i >= 0; i--)
-		printf("		%s\n", prev_effects.values[i]);
+	for(int i = prev_effects.size() - 1; i >= 0; i--)
+		printf("		%s\n", prev_effects.at(i).c_str());
 }
 
 void VFrame::dump_params()
